@@ -1,0 +1,57 @@
+<ivysettings>
+  <!--
+    This property is used later in the ivy.xml file to set
+    the project's revision. Unless overridden, it defaults
+    to the Maven SNAPSHOT convention, as that it works well
+    for publishing local test builds to ~/.m2/repository.
+  -->
+  <property name="revision" value="0.1-SNAPSHOT" override="false"/>
+  <property name="restlet.version" value="2.0.9" />
+
+  <!-- "default" is defined later in the file. -->
+  <settings defaultResolver="default" />
+
+  <!-- Pulls in the "public" resolver for ibiblio-hosted jars. -->
+  <include url="${ivy.default.settings.dir}/ivysettings-public.xml"/>
+
+  <resolvers>
+    <!-- add any 3rd-party maven repos here... -->
+    <ibiblio name="sun-repo-2" m2compatible="true" root="http://download.java.net/maven/2/" />
+    <ibiblio name="oracle" m2compatible="true" root="http://download.oracle.com/maven/" />
+    <ibiblio name="huygens" m2compatible="true" root="http://maven.huygens.knaw.nl/repository/" />
+
+    <!--
+      for *retrieving* artifacts for local testing builds,
+      we'll use maven's own .m2/repository.
+    -->
+    <ibiblio name="m2-local" m2compatible="true" root="file://${user.home}/.m2/repository" changingPattern=".*SNAPSHOT"/>
+	<ibiblio name="maven-restlet" m2compatible="true" root="http://maven.restlet.org" />
+
+    <!--
+      For publishing artifacts to a maven repository
+    -->
+    <filesystem name="m2-publish" m2compatible="true">
+      <artifact pattern="${publish.repo}/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"/>
+    </filesystem>
+
+    <!-- strings the separate resolvers all together -->
+    <chain name="default" changingPattern=".*SNAPSHOT">
+      <resolver ref="public"/>
+      <resolver ref="sun-repo-2"/>
+      <resolver ref="oracle"/>
+	  <resolver ref="maven-restlet"/>
+      <resolver ref="huygens"/>
+      <!--
+        Potential gotcha: you want your m2-local to be last, or at least
+        after the public repo. Otherwise maven proper might partially
+        download a project into ~/.m2, but not include sources, and if
+        m2-local is first, ivy will pull the artifacts out of ~/.m2 and
+        cache the partially-downloaded view of the repo (i.e. no sources).
+        If public is first, ivy will always try to get artifacts from their
+        canonical source.
+      -->
+      <resolver ref="m2-local"/>
+    </chain>
+  </resolvers>
+
+</ivysettings>

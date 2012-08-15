@@ -1,0 +1,37 @@
+<ivy-module version="2.0">
+
+  <!--
+    We set the revision to the revision property from ivysettings.xml,
+    which defaults to SNAPSHOT. This is overriden when publishing.
+  -->
+	<info organisation="nl.knaw.huygens" module="repository" revision="${revision}"/>
+
+  <configurations>
+    <conf name="main" />
+    <conf name="test" extends="main" visibility="private"/>
+  </configurations>
+
+  <publications>
+    <!--
+      We explicitly list a pom as an artifact of our project. This way
+      the Ivy publish task will also upload the pom to the maven repo.
+    -->
+    <artifact type="jar" ext="jar" conf="main"/>
+    <artifact type="pom" ext="pom" conf="main"/>
+  </publications>
+
+  <dependencies>
+    <dependency org="com.google.guava" name="guava" rev="r09" conf="main->default" />
+	<dependency org="org.restlet.jee" name="org.restlet" rev="${restlet.version}" conf="main->default" />
+	<dependency org="org.restlet.jee" name="org.restlet.ext.servlet" rev="${restlet.version}" conf="main->default" />			
+	<dependency org="org.restlet.jee" name="org.restlet.ext.jackson" rev="${restlet.version}" conf="main->default" >
+		<exclude org="org.codehaus.jackson" module="jackson-core-asl" />
+		<exclude org="org.codehaus.jackson" module="jackson-mapper-asl" />
+	</dependency>
+	<dependency org="org.codehaus.jackson" name="jackson-core-asl" rev="1.9.9" />
+	<dependency org="org.codehaus.jackson" name="jackson-mapper-asl" rev="1.9.9" />
+	<dependency org="org.mongodb" name="mongo-java-driver" rev="2.8.0" />
+	<dependency org="commons-configuration" name="commons-configuration" rev="1.6" conf="main->default" />
+  </dependencies>
+
+</ivy-module>
