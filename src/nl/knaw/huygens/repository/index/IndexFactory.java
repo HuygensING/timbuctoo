@@ -3,7 +3,7 @@ package nl.knaw.huygens.repository.index;
 import java.util.Map;
 
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.util.MarginalScholarshipException;
+import nl.knaw.huygens.repository.util.RepositoryException;
 
 import com.google.common.collect.Maps;
 
@@ -29,12 +29,12 @@ public class IndexFactory {
   }
 
 
-  public void flushIndices() throws MarginalScholarshipException {
+  public void flushIndices() throws RepositoryException {
     try {
       server.commitAllChanged();
     } catch (Exception e) {
       e.printStackTrace();
-      throw new MarginalScholarshipException(e);
+      throw new RepositoryException(e);
     }
   }
 
