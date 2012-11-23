@@ -9,9 +9,6 @@ public class IDMapper {
   private static final Map<Class<?>, String> prefixMap;
   static {
     Map<Class<?>, String> aMap = Maps.newHashMap();
-    aMap.put(Codex.class, "COD");
-    aMap.put(Text.class, "TXT");
-    aMap.put(Person.class, "PER");
     aMap.put(Search.class, "QRY");
     prefixMap = Collections.unmodifiableMap(aMap);
   }
