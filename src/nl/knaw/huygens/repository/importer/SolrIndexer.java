@@ -10,7 +10,7 @@ import nl.knaw.huygens.repository.model.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.StorageFactory;
 import nl.knaw.huygens.repository.util.Configuration;
-import nl.knaw.huygens.repository.util.MarginalScholarshipException;
+import nl.knaw.huygens.repository.util.RepositoryException;
 import nl.knaw.huygens.repository.util.Paths;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -78,7 +78,7 @@ public class SolrIndexer {
         //System.out.println("id: " + mainDoc.getId());
         try {
           indexer.add(mainDoc);
-        } catch (MarginalScholarshipException e) {
+        } catch (RepositoryException e) {
           System.out.println("\nError while indexing publication " + mainDoc.getId());
           throw new Exception(e);
         }
