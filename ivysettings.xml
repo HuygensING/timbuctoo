@@ -6,7 +6,9 @@
     for publishing local test builds to ~/.m2/repository.
   -->
   <property name="revision" value="0.1-SNAPSHOT" override="false"/>
-  <property name="restlet.version" value="2.0.9" />
+  <property name="restlet.version" value="2.1.0" />
+  <property name="slf4j.version" value="1.6.1" />
+  <property name="solr.version" value="3.6.1" />
 
   <!-- "default" is defined later in the file. -->
   <settings defaultResolver="default" />

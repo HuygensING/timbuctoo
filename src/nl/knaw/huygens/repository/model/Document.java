@@ -1,20 +1,27 @@
 package nl.knaw.huygens.repository.model;
 
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
+import nl.knaw.huygens.repository.model.storage.Storage;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public abstract class Document {
   protected String type;
 
   private String id;
-  private String revision;
+
+  private int rev;
 
   private Change lastChange;
+
+  private Change creation;
 
   private boolean _deleted;
 
   @JsonProperty("_id")
+  @IndexAnnotation(fieldName="id")
   public String getId() {
     return id;
   }
@@ -24,14 +31,14 @@ public abstract class Document {
     this.id = id;
   }
 
-  @JsonProperty("_rev")
-  public String getRevision() {
-    return revision;
+  @JsonProperty("^rev")
+  public int getRev() {
+    return rev;
   }
 
-  @JsonProperty("_rev")
-  public void setRevision(String rev) {
-    this.revision = rev;
+  @JsonProperty("^rev")
+  public void setRev(int rev) {
+    this.rev = rev;
   }
 
   public String getType() {
@@ -52,6 +59,15 @@ public abstract class Document {
     this.lastChange = lastChange;
   }
 
+  @JsonProperty("^creation")
+  public Change getCreation() {
+    return creation;
+  }
+
+  @JsonProperty("^creation")
+  public void setCreation(Change creation) {
+    this.creation = creation;
+  }
 
   @JsonProperty("^deleted")
   public boolean isDeleted() {
@@ -62,6 +78,11 @@ public abstract class Document {
   public void setDeleted(boolean deleted) {
     this._deleted = deleted;
   }
+
+  @JsonIgnore
+  public abstract String getDescription();
+
+  public abstract void fetchAll(Storage storage);
 
   public static Class<? extends Document> getSubclassByString(String type) {
     return getSubclassByString(type, Document.class.getPackage().getName());
