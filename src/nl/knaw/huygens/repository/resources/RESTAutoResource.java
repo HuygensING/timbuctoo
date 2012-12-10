@@ -14,7 +14,7 @@ import nl.knaw.huygens.repository.model.Document;
 
 import com.google.inject.Inject;
 
-@Path("/resources/{resourceType: [a-zA-Z]+}")
+@Path("resources/{resourceType: [a-zA-Z]+}")
 public class RESTAutoResource {
     private final StorageManager storageManager;
     
