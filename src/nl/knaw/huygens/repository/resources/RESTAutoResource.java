@@ -6,11 +6,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.storage.StorageIterator;
 
 import com.google.inject.Inject;
 
@@ -27,19 +27,17 @@ public class RESTAutoResource {
     @Path("/")
     @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON})
     // FIXME use queryparam to delimit document search.
-    public List<Document> getAllDocs(@PathParam("resourceType") String resourceType) {
+    public List<? extends Document> getAllDocs(@PathParam("resourceType") String resourceType, @QueryParam("rows") int rows, @QueryParam("start") int start) {
       Class<? extends Document> cls = Document.getSubclassByString(resourceType);
-      StorageIterator<? extends Document> allDocs = storageManager.getAll(cls);
-      // FIXME Implementme
-      //allDocs.
-      return null;
+      List<? extends Document> allLimited = storageManager.getAllLimited(cls, start, rows);
+      return allLimited;
     }
     
     @GET
     @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}")
     public Document getDoc(@PathParam("resourceType") String resourceType, @PathParam("id") String id) {
-      // FIXME
-      return null;
+      Class<? extends Document> cls = Document.getSubclassByString(resourceType);
+      return storageManager.getCompleteDocument(id, cls);
     }
 
 }

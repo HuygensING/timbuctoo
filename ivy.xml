@@ -26,7 +26,11 @@
     <!-- Google Juice -->
     <dependency org="com.google.inject" name="guice" rev="3.0" conf="main->default" />
     <!-- Jersey -->
-	<dependency org="org.glassfish.jersey.core" name="jersey-server" rev="2.0-m10" conf="main->default"/>
+		<dependency org="com.sun.jersey" name="jersey-server" rev="${jersey.version}" conf="main->default"/>
+		<dependency org="com.sun.jersey" name="jersey-core" rev="${jersey.version}" conf="main->default"/>
+		<dependency org="com.sun.jersey" name="jersey-servlet" rev="${jersey.version}" conf="main->default"/>
+		
+		<dependency org="com.sun.jersey.contribs" name="jersey-guice" rev="${jersey.version}" conf="main->default"/>
 	
 	<!-- Solr for indexing -->
 	<dependency org="org.apache.solr" name="solr-core" rev="${solr.version}" conf="main->default">
