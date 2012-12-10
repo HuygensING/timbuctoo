@@ -1,14 +1,13 @@
 package nl.knaw.huygens.repository.managers;
 
 import java.util.Date;
+import java.util.List;
+
+import javax.ws.rs.core.HttpHeaders;
 
 import nl.knaw.huygens.repository.model.Change;
 import nl.knaw.huygens.repository.model.Document;
-
-import org.apache.commons.lang.StringUtils;
-import org.restlet.data.Form;
-import org.restlet.resource.ServerResource;
-import org.restlet.security.User;
+import nl.knaw.huygens.repository.model.User;
 
 public class ChangeManager {
   public enum InfoType {
@@ -19,27 +18,32 @@ public class ChangeManager {
     protected String name;
     protected String id;
   }
+
   private interface InfoGetter {
-    Info getInfo(ServerResource resource);
+    Info getInfo(HttpHeaders req);
   }
+
   private static class ShibInfoGetter implements InfoGetter {
     @Override
-    public Info getInfo(ServerResource resource) {
+    public Info getInfo(HttpHeaders reqHeaders) {
       Info rv = new Info();
-      Form headers = (Form) resource.getRequestAttributes().get("org.restlet.http.headers");
-      rv.id = headers.getFirstValue("persistent-id");
-      String firstName = headers.getFirstValue("shib-givenname");
-      String lastName = headers.getFirstValue("shib-surname");
-      if (firstName != null && !firstName.isEmpty() && lastName != null && !lastName.isEmpty()) {
-        rv.name = firstName + " " + lastName;
-      } else if (firstName != null && !firstName.isEmpty()) {
-        rv.name = firstName;
-      } else {
-        String commonName = headers.getFirstValue("shib-commonname");
-        if (StringUtils.isEmpty(commonName)) {
-          commonName = headers.getFirstValue("shib-email");
+      List<String> persistentId = reqHeaders.getRequestHeader("persistent-id");
+      List<String> firstName = reqHeaders.getRequestHeader("shib-givenname");
+      List<String> lastName = reqHeaders.getRequestHeader("shib-surname");
+      List<String> commonName = reqHeaders.getRequestHeader("shib-commonname");
+      List<String> email = reqHeaders.getRequestHeader("shib-email");
+      if (persistentId.isEmpty()
+          || (firstName.isEmpty() && lastName.isEmpty() && commonName.isEmpty() && email.isEmpty())) {
+        throw new RuntimeException("Not enough identification information!");
+      }
+      rv.id = persistentId.get(0);
+      if (!firstName.isEmpty()) {
+        rv.name = firstName.get(0);
+        if (!lastName.isEmpty()) {
+          rv.name += " " + lastName.get(0);
         }
-        rv.name = commonName;
+      } else {
+        rv.name = commonName.isEmpty() ? email.get(0) : commonName.get(0);
       }
       return rv;
     }
@@ -47,12 +51,14 @@ public class ChangeManager {
 
   public class BasicInfoGetter implements InfoGetter {
     @Override
-    public Info getInfo(ServerResource resource) {
+    public Info getInfo(HttpHeaders reqHeaders) {
       Info rv = new Info();
+      reqHeaders.getCookies();
       try {
-        User x = resource.getClientInfo().getUser();
-        rv.id = x.getIdentifier();
-        rv.name = x.getFirstName() + " " + x.getLastName();
+        // FIXME this is really broken.
+        User x = null; // resource.getClientInfo().getUser();
+        rv.id = x.getId();
+        rv.name = x.firstName + " " + x.lastName;
       } catch (Exception ex) {
         // Some exception, silently catch (yay evilness)
       }
@@ -64,22 +70,22 @@ public class ChangeManager {
 
   public ChangeManager(InfoType t) {
     switch (t) {
-    case BASIC:
-      infoGetter = new BasicInfoGetter();
-      break;
-    case SHIB:
-      infoGetter = new ShibInfoGetter();
-      break;
+      case BASIC:
+        infoGetter = new BasicInfoGetter();
+        break;
+      case SHIB:
+        infoGetter = new ShibInfoGetter();
+        break;
     }
   }
 
-  public void setDocumentChange(Document doc, ServerResource res) {
-    doc.setLastChange(getChange(res));
+  public void setDocumentChange(Document doc, HttpHeaders reqHeaders) {
+    doc.setLastChange(getChange(reqHeaders));
   }
 
-  public Change getChange(ServerResource resource) {
+  public Change getChange(HttpHeaders reqHeaders) {
     long stamp = new Date().getTime();
-    Info info = infoGetter.getInfo(resource);
+    Info info = infoGetter.getInfo(reqHeaders);
     return new Change(stamp, info.id, info.name);
   }
 }
