@@ -23,11 +23,10 @@
 
     <!-- Google Guava -->
     <dependency org="com.google.guava" name="guava" rev="13.0.1" conf="main->default" />
-    <!-- Restlet for actual server stuff -->
-	<dependency org="org.restlet.jee" name="org.restlet" rev="${restlet.version}" conf="main->default" />
-	<dependency org="org.restlet.jee" name="org.restlet.ext.servlet" rev="${restlet.version}" conf="main->default" />			
-	<dependency org="org.restlet.jee" name="org.restlet.ext.freemarker" rev="${restlet.version}" conf="main->default" />
-	<dependency org="org.restlet.jee" name="org.restlet.ext.rome" rev="${restlet.version}" conf="main->default" />
+    <!-- Google Juice -->
+    <dependency org="com.google.inject" name="guice" rev="3.0" conf="main->default" />
+    <!-- Jersey -->
+	<dependency org="org.glassfish.jersey.core" name="jersey-server" rev="2.0-m10" conf="main->default"/>
 	
 	<!-- Solr for indexing -->
 	<dependency org="org.apache.solr" name="solr-core" rev="${solr.version}" conf="main->default">
