@@ -2,10 +2,10 @@ package nl.knaw.huygens.repository.server;
 
 import java.util.Map;
 
-import org.apache.commons.configuration.ConfigurationException;
-
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.util.Configuration;
+
+import org.apache.commons.configuration.ConfigurationException;
 
 import com.google.common.collect.Maps;
 import com.google.inject.Guice;
@@ -24,7 +24,7 @@ public class RepositoryCtxListener extends GuiceServletContextListener {
       protected void configureServlets() {
         Configuration conf;
         try {
-          conf = new Configuration();
+          conf = new Configuration("../config.xml");
         } catch (ConfigurationException e) {
           e.printStackTrace();
           throw new RuntimeException(e);
