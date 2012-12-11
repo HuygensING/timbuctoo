@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config version="0.1">
+	<settings>
+		<paths> <!-- located inside user.home -->
+			<solr>repository/solr</solr>
+			<source>data/source</source>
+			<json>data/json</json>
+		</paths>
+		<database>
+			<type>mongo</type>
+			<host>localhost</host>
+			<name>repository</name>
+			<port>27017</port>
+			<user>test</user>
+			<password>test</password>
+		</database>
+		<solr>
+			<config>solrconfig.xml</config>
+		</solr>
+		<doctypes>person</doctypes>
+		<indexeddoctypes>person</indexeddoctypes>
+		<versioneddoctypes>person,user</versioneddoctypes>
+		<defaultdoctype>person</defaultdoctype>
+		<public_url>https://repository.huygens.knaw.nl/</public_url>
+		<feed>
+			<title>Repository changes</title>
+		</feed>
+		<project>
+			<name>Repository webservice</name>
+			<desc>Repository project.</desc>
+			<owner>Huygens ING</owner>
+			<internalname>repository</internalname>
+		</project>
+	</settings>
+</config>

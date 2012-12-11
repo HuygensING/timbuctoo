@@ -24,7 +24,7 @@ public class RESTAutoResource {
     }
     
     @GET
-    @Path("/")
+    @Path("/all")
     @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON})
     // FIXME use queryparam to delimit document search.
     public List<? extends Document> getAllDocs(@PathParam("resourceType") String resourceType, @QueryParam("rows") int rows, @QueryParam("start") int start) {
