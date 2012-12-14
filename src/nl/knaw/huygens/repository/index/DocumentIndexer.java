@@ -11,11 +11,13 @@ public class DocumentIndexer<T extends Document> {
 	private final LocalSolrServer localSolrServer;
 	private final String core;
 	private final ModelIterator modelIterator;
+	private final Hub hub;
 
-  public DocumentIndexer(Class<T> entity, ModelIterator iterator, LocalSolrServer server) {
+  public DocumentIndexer(Class<T> entity, ModelIterator iterator, LocalSolrServer server, Hub hub) {
     this.localSolrServer = server;
     this.modelIterator = iterator;
     this.core = entity.getSimpleName().toLowerCase();
+    this.hub = hub;
   }
 
   public void add(T entity) throws RepositoryException {
@@ -45,7 +47,7 @@ public class DocumentIndexer<T extends Document> {
   public void flush() throws RepositoryException {
     try {
       localSolrServer.commit(core);
-      Hub.getInstance().publish(new Events.IndexChangedEvent());
+      hub.publish(new Events.IndexChangedEvent());
     } catch (Exception ex) {
       throw new RepositoryException(ex);
     }

@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.index;
 import java.util.Map;
 
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.util.RepositoryException;
 
 import com.google.common.collect.Maps;
@@ -11,11 +12,13 @@ public class IndexFactory {
   private final LocalSolrServer server;
   private final ModelIterator modelIterator;
   private Map<Class<? extends Document>, DocumentIndexer<? extends Document>> indexerCache;
+  private final Hub hub;
 
-  public IndexFactory(ModelIterator modelIterator, LocalSolrServer server) {
+  public IndexFactory(ModelIterator modelIterator, LocalSolrServer server, Hub hub) {
     this.server = server;
     this.modelIterator = modelIterator;
     this.indexerCache = Maps.newHashMap();
+    this.hub = hub;
   }
 
   @SuppressWarnings("unchecked")
@@ -23,7 +26,7 @@ public class IndexFactory {
     if (indexerCache.containsKey(cls)) {
       return (DocumentIndexer<T>) indexerCache.get(cls);
     }
-    DocumentIndexer<T> rv = new DocumentIndexer<T>(cls, modelIterator, server);
+    DocumentIndexer<T> rv = new DocumentIndexer<T>(cls, modelIterator, server, hub);
     indexerCache.put(cls, rv);
     return rv;
   }

@@ -15,6 +15,7 @@ import java.util.Map;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.User;
+import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.util.Configuration;
 import nl.knaw.huygens.repository.util.CryptoUtils;
 
@@ -36,8 +37,9 @@ public class SetupDatabase {
 
 	public static void main(String[] args) throws ConfigurationException, IOException {
 	  initialize(new Configuration("config.xml"));
+	  Hub hub = new Hub();
 
-	  storageManager = new StorageManager(conf);
+	  storageManager = new StorageManager(conf, hub);
 	  System.out.println("Emptying the database...");
 	  storageManager.getStorage().empty();
 	  System.out.println("Emptied the database.");

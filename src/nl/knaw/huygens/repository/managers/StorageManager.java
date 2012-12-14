@@ -31,8 +31,10 @@ public class StorageManager {
   private Storage storage;
   private Map<Class<? extends Document>, Map<Class<? extends Document>, List<List<String>>>> annotationCache;
   private List<String> documentTypes;
+  private final Hub hub;
 
-  public StorageManager(Configuration conf) {
+  public StorageManager(Configuration conf, Hub hub) {
+    this.hub = hub;
     StorageConfiguration storageConf = new StorageConfiguration(conf);
     documentTypes = storageConf.getDocumentTypes();
     storage = StorageFactory.getInstance(storageConf);
@@ -41,9 +43,10 @@ public class StorageManager {
   }
 
   // Test-only!
-  protected StorageManager(Storage storage, List<String> documentTypes) {
+  protected StorageManager(Storage storage, List<String> documentTypes, Hub hub) {
     this.storage = storage;
     this.documentTypes = documentTypes;
+    this.hub = hub;
     fillAnnotationCache();
     ensureIndices();
   }
@@ -77,7 +80,7 @@ public class StorageManager {
     storage.addItem(doc, entityCls);
     try {
       doc.fetchAll(storage);
-      Hub.getInstance().publish(added(doc, entityCls));
+      hub.publish(added(doc, entityCls));
     } catch (Exception ex) {
       throw new IOException(ex);
     }
@@ -90,7 +93,7 @@ public class StorageManager {
 
     try {
       doc.fetchAll(storage);
-      Hub.getInstance().publish(modified(doc, entityCls));
+      hub.publish(modified(doc, entityCls));
     } catch (Exception ex) {
       throw new IOException(ex);
     }
@@ -99,7 +102,7 @@ public class StorageManager {
   public <T extends Document> void removeDocument(T doc, Class<T> entityCls) throws IOException {
     storage.deleteItem(doc.getId(), entityCls, doc.getLastChange());
     try {
-      Hub.getInstance().publish(removed(doc, entityCls));
+      hub.publish(removed(doc, entityCls));
     } catch (Exception ex) {
       throw new IOException(ex);
     }

@@ -85,13 +85,4 @@ public class Hub {
     }
     return published;
   }
-
-  private static Hub instance;
-
-  public static Hub getInstance() {
-    if (instance == null) {
-      instance = new Hub();
-    }
-    return instance;
-  }
 }

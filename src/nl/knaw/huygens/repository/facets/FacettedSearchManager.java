@@ -40,13 +40,13 @@ public class FacettedSearchManager {
 
   private Map<String, Set<String>> solrFieldNameCache;
 
-  public FacettedSearchManager(LocalSolrServer localSolrServer, ModelIterator modelIterator) {
+  public FacettedSearchManager(LocalSolrServer localSolrServer, ModelIterator modelIterator, Hub hub) {
     this.localSolrServer = localSolrServer;
     this.modelIterator = modelIterator;
     this.facetFieldNameCache = Maps.newHashMap();
     this.facetFieldFilterCache = Maps.newHashMap();
     this.solrFieldNameCache = Maps.newHashMap();
-    Hub.getInstance().subscribe(this);
+    hub.subscribe(this);
   }
 
   @Subscribe
