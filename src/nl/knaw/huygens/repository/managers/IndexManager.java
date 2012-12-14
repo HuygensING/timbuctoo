@@ -36,9 +36,11 @@ public class IndexManager {
   private IndexFactory indexFactory;
   private Map<Class<? extends Document>, List<Class<? extends Document>>> indexRelations;
   private StorageManager storageManager;
+  private final Hub hub;
 
-  public IndexManager(Configuration conf, StorageManager storageManager, IndexFactory indexFactory) {
+  public IndexManager(Configuration conf, StorageManager storageManager, IndexFactory indexFactory, Hub hub) {
     this.storageManager = storageManager;
+    this.hub = hub;
     indexedTypes = Sets.newHashSet();
     String[] docTypes = conf.getSetting("indexeddoctypes").split(",");
     for (String docType : docTypes) {
@@ -63,8 +65,9 @@ public class IndexManager {
     subscribeUs();
   }
 
-  protected IndexManager(IndexFactory factory, String indexedTypes, Map<Class<? extends Document>, List<Class<? extends Document>>> indexRelations) {
+  protected IndexManager(IndexFactory factory, String indexedTypes, Map<Class<? extends Document>, List<Class<? extends Document>>> indexRelations, Hub hub) {
     this.indexFactory = factory;
+    this.hub = hub;
     this.indexedTypes = Sets.newHashSet();
     String[] docTypes = indexedTypes.split(",");
     for (String docType : docTypes) {
@@ -75,7 +78,7 @@ public class IndexManager {
   }
 
   private void subscribeUs() {
-    Hub.getInstance().subscribe(this);
+    hub.subscribe(this);
   }
 
   @Subscribe

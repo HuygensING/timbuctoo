@@ -26,11 +26,11 @@
     <!-- Google Juice -->
     <dependency org="com.google.inject" name="guice" rev="3.0" conf="main->default" />
     <!-- Jersey -->
-		<dependency org="com.sun.jersey" name="jersey-server" rev="${jersey.version}" conf="main->default"/>
-		<dependency org="com.sun.jersey" name="jersey-core" rev="${jersey.version}" conf="main->default"/>
-		<dependency org="com.sun.jersey" name="jersey-servlet" rev="${jersey.version}" conf="main->default"/>
-		
-		<dependency org="com.sun.jersey.contribs" name="jersey-guice" rev="${jersey.version}" conf="main->default"/>
+    <dependency org="com.sun.jersey" name="jersey-server" rev="${jersey.version}" conf="main->default"/>
+    <dependency org="com.sun.jersey" name="jersey-core" rev="${jersey.version}" conf="main->default"/>
+    <dependency org="com.sun.jersey" name="jersey-servlet" rev="${jersey.version}" conf="main->default"/>
+
+    <dependency org="com.sun.jersey.contribs" name="jersey-guice" rev="${jersey.version}" conf="main->default"/>
 	
 	<!-- Solr for indexing -->
 	<dependency org="org.apache.solr" name="solr-core" rev="${solr.version}" conf="main->default">
@@ -78,6 +78,7 @@
 	<dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.1.1" conf="main->default" />
   	<dependency org="com.fasterxml.jackson.core" name="jackson-core" rev="2.1.1" conf="main->default" />
   	<dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="2.1.1" conf="main->default" />
+  	<dependency org="com.fasterxml.jackson.jaxrs" name="jackson-jaxrs-json-provider" rev="2.1.1" conf="main->default" />
   	
   	<!-- Mongo support -->
   	<dependency org="org.mongodb" name="mongo-java-driver" rev="2.9.1" conf="main->default" />

@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.server;
 import java.util.Map;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
+import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.util.Configuration;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -29,11 +30,14 @@ public class RepositoryCtxListener extends GuiceServletContextListener {
           e.printStackTrace();
           throw new RuntimeException(e);
         }
-        StorageManager storageManager = new StorageManager(conf);
+        Hub hub = new Hub();
+        StorageManager storageManager = new StorageManager(conf, hub);
         bind(StorageManager.class).toInstance(storageManager);
+        bind(Hub.class).toInstance(hub);
         Map<String, String> params = Maps.newHashMap();
-        params.put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.repository.resources");
-        serve("/repository/*").with(GuiceContainer.class, params);
+        params.put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.repository.resources;com.fasterxml.jackson.jaxrs.json");
+        params.put(PackagesResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, "com.sun.jersey.api.container.filter.LoggingFilter");
+        serve("/*").with(GuiceContainer.class, params);
       }
     });
   }

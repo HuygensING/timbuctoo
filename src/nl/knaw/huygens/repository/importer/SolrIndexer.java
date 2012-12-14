@@ -7,11 +7,12 @@ import nl.knaw.huygens.repository.index.ModelIterator;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.storage.Storage;
 import nl.knaw.huygens.repository.model.storage.StorageIterator;
+import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.storage.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.StorageFactory;
 import nl.knaw.huygens.repository.util.Configuration;
-import nl.knaw.huygens.repository.util.RepositoryException;
 import nl.knaw.huygens.repository.util.Paths;
+import nl.knaw.huygens.repository.util.RepositoryException;
 
 import org.apache.commons.configuration.ConfigurationException;
 
@@ -35,7 +36,7 @@ public class SolrIndexer {
     String solrPath = Paths.pathInUserHome(conf.getSetting("paths.solr", "solr"));
     String[] doctypes = conf.getSetting("indexeddoctypes", "").split(",");
     LocalSolrServer solrServer = new LocalSolrServer(solrPath, doctypes);
-    indices = new IndexFactory(new ModelIterator(), solrServer);
+    indices = new IndexFactory(new ModelIterator(), solrServer, new Hub());
 
     int rv = 0;
     for (String doctype : doctypes) {
