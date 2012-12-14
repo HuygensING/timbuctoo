@@ -1,0 +1,86 @@
+package nl.knaw.huygens.repository.providers;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.List;
+
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.MessageBodyWriter;
+import javax.ws.rs.ext.Provider;
+
+import nl.knaw.huygens.repository.model.Document;
+
+import org.apache.commons.lang.StringEscapeUtils;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Singleton;
+
+
+@Provider
+@Produces(MediaType.TEXT_HTML)
+@Singleton
+public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extends Document>> {
+  private static byte[] PREAMBLE;
+  private ObjectMapper mapper = new ObjectMapper();
+  private JsonFactory factory = new JsonFactory();
+  
+  public DocumentListHTMLProvider() {
+    try {
+      PREAMBLE = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">".getBytes("UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
+  }
+  
+  @Override
+  public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
+      MediaType mediaType) {
+    return true;
+  }
+
+  @Override
+  public long getSize(List<? extends Document> t, Class<?> type, Type genericType, Annotation[] annotations,
+      MediaType mediaType) {
+    return -1;
+  }
+
+  @Override
+  public void writeTo(List<? extends Document> docs, Class<?> type, Type genericType, Annotation[] annotations,
+      MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
+      throws IOException, WebApplicationException {
+    entityStream.write(PREAMBLE);
+    entityStream.write("<title>".getBytes("UTF-8"));
+    byte[] title = encodeTitle(docs.isEmpty() ? null : docs.get(0), docs.size());
+    entityStream.write(title);
+    entityStream.write("</title></head><body><h1>".getBytes("UTF-8"));
+    entityStream.write(title);
+    entityStream.write("</h1>".getBytes("UTF-8"));
+    JsonGenerator jgen = new HTMLGenerator(factory.createGenerator(entityStream));
+    
+    for (Document doc : docs) {
+      entityStream.write("<h2>".getBytes("UTF-8"));
+      entityStream.write(encodeDocTitle(doc));
+      entityStream.write("</h2>".getBytes("UTF-8"));
+      mapper.writeValue(jgen, doc);
+    }
+  }
+
+  private byte[] encodeDocTitle(Document doc) throws UnsupportedEncodingException {
+   String t = StringEscapeUtils.escapeHtml(doc.getDescription());
+   return t.getBytes("UTF-8");
+  }
+
+  private byte[] encodeTitle(Document exampleDoc, int size) throws UnsupportedEncodingException {
+    String typeInfo = exampleDoc != null ? exampleDoc.getType() : "?";
+    String t = size + " instances of " + typeInfo;
+    return t.getBytes("UTF-8");
+  }
+}

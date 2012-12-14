@@ -93,7 +93,7 @@ public class SetupDatabase {
 
 			sourceDir = new File(conf.getSetting("paths.source", ""));
 		} catch (IOException e) {
-			throw new RuntimeException();
+			throw new RuntimeException(e);
 		}
 	}
 

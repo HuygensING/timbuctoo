@@ -117,6 +117,9 @@ public class StorageManager {
   }
 
   public <T extends Document> List<T> getAllLimited(Class<T> cls, int offset, int limit) {
+    if (limit == 0) {
+      return Collections.<T>emptyList();
+    }
     return storage.resolveIterator(storage.getAllByType(cls), offset, limit);
   }
 

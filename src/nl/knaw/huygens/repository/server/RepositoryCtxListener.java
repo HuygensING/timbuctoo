@@ -35,7 +35,7 @@ public class RepositoryCtxListener extends GuiceServletContextListener {
         bind(StorageManager.class).toInstance(storageManager);
         bind(Hub.class).toInstance(hub);
         Map<String, String> params = Maps.newHashMap();
-        params.put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.repository.resources;com.fasterxml.jackson.jaxrs.json");
+        params.put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.repository.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.repository.providers");
         params.put(PackagesResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, "com.sun.jersey.api.container.filter.LoggingFilter");
         serve("/*").with(GuiceContainer.class, params);
       }
