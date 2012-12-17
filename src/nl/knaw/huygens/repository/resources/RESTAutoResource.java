@@ -9,7 +9,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
@@ -37,11 +36,6 @@ public class RESTAutoResource {
       Class<? extends Document> cls = Document.getSubclassByString(resourceType);
       List<? extends Document> allLimited = storageManager.getAllLimited(cls, start, rows);
       return allLimited;
-      //return Response.ok(getWrappedEntity(allLimited)).build();
-    }
-    
-    private <T extends Document> GenericEntity<List<T>> getWrappedEntity(List<T> allLimited) {
-      return new GenericEntity<List<T>>(allLimited) {};
     }
 
     @GET
