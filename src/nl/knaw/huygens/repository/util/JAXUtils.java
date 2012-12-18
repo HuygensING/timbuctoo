@@ -20,17 +20,12 @@ import com.google.common.collect.Lists;
 public class JAXUtils {
 
   public static class API {
-    public static final int GET = 1;
-    public static final int POST = 2;
-    public static final int PUT = 4;
-    public static final int DELETE = 8;
-    
     public String path;
     public List<String> mediaTypes;
-    public int requestTypes;
+    public List<String> requestTypes;
     public String desc;
     
-    public API(String path, int requestTypes, List<String> mediaTypes, String desc) {
+    public API(String path, List<String> requestTypes, List<String> mediaTypes, String desc) {
       this.path = path;
       this.mediaTypes = mediaTypes;
       this.requestTypes = requestTypes;
@@ -51,17 +46,26 @@ public class JAXUtils {
     List<API> rv = Lists.newArrayList();
     Method[] methods = cls.getMethods();
     for (Method m : methods) {
-      int reqs = 0;
-      reqs |= m.isAnnotationPresent(GET.class) ? API.GET : 0;
-      reqs |= m.isAnnotationPresent(POST.class) ? API.POST : 0;
-      reqs |= m.isAnnotationPresent(PUT.class) ? API.PUT : 0;
-      reqs |= m.isAnnotationPresent(DELETE.class) ? API.DELETE : 0;
-      if (reqs == 0) {
+      List<String> reqs = Lists.newArrayList();
+      if (m.isAnnotationPresent(GET.class)) {
+        reqs.add("GET");
+      }
+      if (m.isAnnotationPresent(POST.class)) {
+        reqs.add("POST");
+      }
+      if (m.isAnnotationPresent(PUT.class)) {
+        reqs.add("PUT");
+      }
+      if (m.isAnnotationPresent(DELETE.class)) {
+        reqs.add("DELETE");
+      }
+      if (reqs.isEmpty()) {
         continue;
       }
+      
       String subPath = getPathValue(m);
       String completePath = Strings.isNullOrEmpty(subPath) ? basePath : basePath + "/" + subPath;
-      completePath = completePath.replaceAll("\\{([^:]*):[^}]*\\}", "{\1}");
+      completePath = completePath.replaceAll("\\{([^:]*):[^}]*\\}", "{$1}");
       
       List<String> returnTypes;
       Produces p = m.getAnnotation(Produces.class);
@@ -77,7 +81,7 @@ public class JAXUtils {
       }
       rv.add(new API(completePath, reqs, returnTypes, desc));
     }
-    return null;
+    return rv;
   }
 
   private static String getPathValue(AnnotatedElement cls) {
