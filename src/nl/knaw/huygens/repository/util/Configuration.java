@@ -3,11 +3,13 @@ package nl.knaw.huygens.repository.util;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class Configuration {
   private static final String DEFAULT_CONFIG_FILE = "../config.xml";
@@ -71,5 +73,16 @@ public class Configuration {
 
   public String getSettingProperty(String key, String property, String defaultValue) {
     return xmlConfig.getString(key + "[@" + property + "]", defaultValue);
+  }
+
+  public Map<String, String> getAll() {
+    @SuppressWarnings("unchecked")
+    Iterator<String> it = xmlConfig.getKeys(SETTINGS_PREFIX);
+    Map<String, String> rv = Maps.newHashMap();
+    while (it.hasNext()) {
+      String k = it.next().replaceFirst(SETTINGS_PREFIX, "");
+      rv.put(k, getSetting(k));
+    }
+    return rv;
   }
 }

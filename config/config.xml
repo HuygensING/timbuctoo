@@ -5,6 +5,7 @@
 			<solr>repository/solr</solr>
 			<source>data/source</source>
 			<json>data/json</json>
+			<web>../web</web>
 		</paths>
 		<database>
 			<type>mongo</type>
