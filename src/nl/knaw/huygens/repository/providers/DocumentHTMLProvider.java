@@ -42,7 +42,7 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
       MediaType mediaType) {
-    if (!mediaType.equals(MediaType.TEXT_HTML)) {
+    if (!mediaType.toString().startsWith(MediaType.TEXT_HTML)) {
       return false;
     }
     
