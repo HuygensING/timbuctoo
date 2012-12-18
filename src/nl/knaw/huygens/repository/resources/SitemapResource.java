@@ -22,11 +22,11 @@ import com.google.common.collect.Lists;
 @Path("api")
 public class SitemapResource {
   public static class Sitemap extends Document {
-    public List<API> availableAPIs;
+    public List<API> availableAPIList;
     
     public Sitemap(Application app) {
       setType("sitemap");
-      setId(String.format("T%1$010d", System.currentTimeMillis()));
+      setId(String.format("T%d", System.currentTimeMillis()));
       List<API> rv = Lists.newArrayList();
       Set<Class<?>> allResources = JAXUtils.getAllResources(app);
       for (Class<?> cls : allResources) {
@@ -35,7 +35,7 @@ public class SitemapResource {
           rv.addAll(generatedAPIs);
         }
       }
-      availableAPIs = rv;
+      availableAPIList = rv;
     }
 
     @Override
