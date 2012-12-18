@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -43,7 +44,25 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
       MediaType mediaType) {
-    return true;
+    if (!mediaType.toString().startsWith(MediaType.TEXT_HTML)) {
+      return false;
+    }
+    
+    boolean isWritable;
+    if (List.class.isAssignableFrom(type)
+        && genericType instanceof ParameterizedType) {
+      ParameterizedType parameterizedType = (ParameterizedType) genericType;
+      Type[] actualTypeArgs = (parameterizedType.getActualTypeArguments());
+      isWritable = actualTypeArgs.length == 1;
+      if (isWritable) {
+        Class<?> cls = actualTypeArgs[0].getClass();
+        isWritable = Document.class.isAssignableFrom(cls);
+      }
+    } else {
+      isWritable = false;
+    }
+    
+    return isWritable;
   }
 
   @Override
