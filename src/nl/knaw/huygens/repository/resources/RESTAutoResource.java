@@ -41,6 +41,7 @@ public class RESTAutoResource {
     @GET
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
     @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}")
+    @JsonView(JsonViews.WebView.class)
     public Document getDoc(@PathParam("resourceType") String resourceType, @PathParam("id") String id) {
       Class<? extends Document> cls = Document.getSubclassByString(resourceType);
       Document doc = storageManager.getCompleteDocument(id, cls);
