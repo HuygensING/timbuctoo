@@ -31,6 +31,9 @@
     <dependency org="com.sun.jersey" name="jersey-servlet" rev="${jersey.version}" conf="main->default"/>
 
     <dependency org="com.sun.jersey.contribs" name="jersey-guice" rev="${jersey.version}" conf="main->default"/>
+    
+    <!-- Tomcat servlet API -->
+    <dependency org="org.apache.tomcat" name="tomcat-servlet-api" rev="7.0.21" conf="build->default"/>
 	
 	<!-- Solr for indexing -->
 	<dependency org="org.apache.solr" name="solr-core" rev="${solr.version}" conf="main->default">
