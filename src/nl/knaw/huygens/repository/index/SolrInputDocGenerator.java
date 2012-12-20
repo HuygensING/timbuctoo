@@ -19,19 +19,19 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-class DocIndexer implements AnnotatedMethodProcessor {
+public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
   private SolrInputDocument doc;
   private Document instance;
   private ModelIterator iterator;
 
-  DocIndexer(ModelIterator iterator, Document instance) {
+  public SolrInputDocGenerator(ModelIterator iterator, Document instance) {
     this.doc = new SolrInputDocument();
     this.instance = instance;
     this.iterator = iterator;
   }
 
   @Override
-public void process(Method m, IndexAnnotation annotation) {
+  public void process(Method m, IndexAnnotation annotation) {
     indexMethodOnce(doc, instance, m, annotation);
   }
 

@@ -210,6 +210,7 @@ public class MongoDBStorage implements Storage {
     db = mongo.getDB(dbName);
   }
 
+  // FIXME: THESE SHOULD BE ON A UTILITY CLASS
   @Override
 public <T extends Document> List<T> resolveIterator(StorageIterator<T> it, int limit) {
     return resolveIterator(it, 0, limit);
@@ -236,6 +237,10 @@ public <T extends Document> List<T> readFromIterator(StorageIterator<T> it, int 
     return it.getSome(limit);
   }
 
+  // FIXME this should probably on the index.
+  // FIXME Separately, we should investigate how to optimize
+  // client-server sync wrt autocomplete fields etc. when there
+  // are DB updates.
   @Override
   public Map<String, String> getSimpleMap(Class<? extends Document> cls) {
     JacksonDBCollection<? extends Document,String> collection = getCollection(cls);

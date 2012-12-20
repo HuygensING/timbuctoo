@@ -54,7 +54,7 @@ public class DocumentIndexer<T extends Document> {
   }
 
   protected SolrInputDocument getSolrInputDocument(T entity) {
-    DocIndexer indexer = new DocIndexer(modelIterator, entity);
+    SolrInputDocGenerator indexer = new SolrInputDocGenerator(modelIterator, entity);
     modelIterator.processMethods(indexer, entity.getClass().getMethods());
     return indexer.getResult();
   }
