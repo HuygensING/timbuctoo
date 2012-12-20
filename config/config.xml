@@ -32,5 +32,8 @@
 			<owner>Huygens ING</owner>
 			<internalname>repository</internalname>
 		</project>
+		<html>
+			<defaultstylesheet>/static/css/static-html.css</defaultstylesheet>
+		</html>
 	</settings>
 </config>

@@ -20,7 +20,10 @@ import org.apache.commons.lang.StringEscapeUtils;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 
 @Provider
@@ -31,9 +34,14 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
   private ObjectMapper mapper = new ObjectMapper();
   private JsonFactory factory = new JsonFactory();
   
-  public DocumentHTMLProvider() {
+  @Inject
+  public DocumentHTMLProvider(@Named("html.defaultstylesheet") String stylesheetLink) {
     try {
-      PREAMBLE = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">".getBytes("UTF-8");
+      String preambleString = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">";
+      if (!Strings.isNullOrEmpty(stylesheetLink)) {
+        preambleString += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + stylesheetLink + "\"/>";
+      }
+      PREAMBLE = preambleString.getBytes("UTF-8");
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
     }
