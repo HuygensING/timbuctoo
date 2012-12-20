@@ -9,15 +9,6 @@ public class Change {
     this.authorId = authorId;
     this.authorPrettyName = authorPrettyName;
   }
-  public void setDateStamp(long dateStamp) {
-    this.dateStamp = dateStamp;
-  }
-  public void setAuthorId(String authorId) {
-    this.authorId = authorId;
-  }
-  public void setAuthorPrettyName(String authorPrettyName) {
-    this.authorPrettyName = authorPrettyName;
-  }
   public long dateStamp;
   public String authorId;
   public String authorPrettyName;

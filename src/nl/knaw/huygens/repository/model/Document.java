@@ -40,6 +40,8 @@ public abstract class Document {
   public void setRev(int rev) {
     this.rev = rev;
   }
+  
+  // FIXME this should be ^type, but it's used as a string elsewhere so be Very Careful when changing!
 
   public String getType() {
     return type;

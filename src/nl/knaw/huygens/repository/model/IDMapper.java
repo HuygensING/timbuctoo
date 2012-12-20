@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 
+// FIXME this should be an annotation on the search class
 public class IDMapper {
   private static final Map<Class<?>, String> prefixMap;
   static {

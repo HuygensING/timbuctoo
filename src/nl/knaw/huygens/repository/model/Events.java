@@ -1,5 +1,6 @@
 package nl.knaw.huygens.repository.model;
 
+// FIXME apart package
 public class Events {
   public static class IndexChangedEvent {
 

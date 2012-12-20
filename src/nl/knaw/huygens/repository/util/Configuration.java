@@ -81,7 +81,9 @@ public class Configuration {
     Map<String, String> rv = Maps.newHashMap();
     while (it.hasNext()) {
       String k = it.next().replaceFirst(SETTINGS_PREFIX, "");
-      rv.put(k, getSetting(k));
+      String v = getSetting(k);
+      System.err.println(k + ": " + v);
+      rv.put(k, v);
     }
     return rv;
   }

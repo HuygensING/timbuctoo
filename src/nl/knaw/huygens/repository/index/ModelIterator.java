@@ -31,6 +31,8 @@ public class ModelIterator {
     }
   }
 
+  
+  // FIXME getFieldName should probably go somewhere else...
   /**
    * Determines the index field name from the method name (only used if the annotation doesn't specify a fieldname).
    */

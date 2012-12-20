@@ -37,6 +37,7 @@ public class LocalSolrServer {
 
   private static final String SOLR_DEFAULT_FIELD = "id";
 
+  // FIXME this is probably suboptimal:
   private static final int ROWS = 2000;
   private static final int FACET_LIMIT = 1000;
 

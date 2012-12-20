@@ -32,14 +32,15 @@ public class RepositoryCtxListener extends GuiceServletContextListener {
           e.printStackTrace();
           throw new RuntimeException(e);
         }
+        Names.bindProperties(this.binder(), conf.getAll());
         Hub hub = new Hub();
         StorageManager storageManager = new StorageManager(conf, hub);
         bind(StorageManager.class).toInstance(storageManager);
         bind(Hub.class).toInstance(hub);
-        Names.bindProperties(this.binder(), conf.getAll());
         Map<String, String> params = Maps.newHashMap();
         params.put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.repository.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.repository.providers");
         params.put(PackagesResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, "com.sun.jersey.api.container.filter.LoggingFilter");
+        // FIXME: Constrain this regexp please!
         params.put(ServletContainer.PROPERTY_WEB_PAGE_CONTENT_REGEX, ".*static.*");
         params.put(ServletContainer.FEATURE_FILTER_FORWARD_ON_404, "true");
         filter("/*").through(GuiceContainer.class, params);
