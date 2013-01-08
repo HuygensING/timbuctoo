@@ -3,7 +3,7 @@ package nl.knaw.huygens.repository.storage.mongo;
 import java.util.List;
 
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.storage.StorageIterator;
+import nl.knaw.huygens.repository.storage.StorageIterator;
 
 public class StorageUtils {
   public static <T extends Document> List<T> readFromIterator(StorageIterator<T> it, int offset, int limit) {

@@ -16,10 +16,10 @@ import net.vz.mongodb.jackson.WriteResult;
 import nl.knaw.huygens.repository.model.Change;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.IDPrefix;
-import nl.knaw.huygens.repository.model.storage.GenericDBRef;
-import nl.knaw.huygens.repository.model.storage.JsonViews;
-import nl.knaw.huygens.repository.model.storage.Storage;
-import nl.knaw.huygens.repository.model.storage.StorageIterator;
+import nl.knaw.huygens.repository.storage.GenericDBRef;
+import nl.knaw.huygens.repository.storage.JsonViews;
+import nl.knaw.huygens.repository.storage.Storage;
+import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.mongo.MongoUtils.MongoChanges;
 
 import org.bson.BSONObject;

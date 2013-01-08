@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.model.storage;
+package nl.knaw.huygens.repository.storage;
 
 import java.util.Iterator;
 import java.util.List;

@@ -10,9 +10,9 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Events.DocumentAddEvent;
 import nl.knaw.huygens.repository.model.Events.DocumentDeleteEvent;
 import nl.knaw.huygens.repository.model.Events.DocumentEditEvent;
-import nl.knaw.huygens.repository.model.storage.StorageIterator;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.pubsub.Subscribe;
+import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.util.Configuration;
 
 import com.google.common.collect.Lists;

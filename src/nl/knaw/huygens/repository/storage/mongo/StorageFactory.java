@@ -2,7 +2,7 @@ package nl.knaw.huygens.repository.storage.mongo;
 
 import java.util.Map;
 
-import nl.knaw.huygens.repository.model.storage.Storage;
+import nl.knaw.huygens.repository.storage.Storage;
 
 import com.google.common.collect.Maps;
 
