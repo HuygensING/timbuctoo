@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.model.storage;
+package nl.knaw.huygens.repository.storage;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.mongo.MongoDBRef;

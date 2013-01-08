@@ -2,7 +2,7 @@ package nl.knaw.huygens.repository.model;
 
 
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
-import nl.knaw.huygens.repository.model.storage.Storage;
+import nl.knaw.huygens.repository.storage.Storage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

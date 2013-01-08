@@ -2,7 +2,7 @@ package nl.knaw.huygens.repository.model;
 
 import java.util.List;
 
-import nl.knaw.huygens.repository.model.storage.Storage;
+import nl.knaw.huygens.repository.storage.Storage;
 
 @IDPrefix("QRY")
 public class Search extends Document {

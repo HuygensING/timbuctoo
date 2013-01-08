@@ -1,8 +1,8 @@
 package nl.knaw.huygens.repository.storage.mongo;
 
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.storage.GenericDBRef;
-import nl.knaw.huygens.repository.model.storage.JsonViews;
+import nl.knaw.huygens.repository.storage.GenericDBRef;
+import nl.knaw.huygens.repository.storage.JsonViews;
 
 import com.fasterxml.jackson.annotation.JsonView;
 

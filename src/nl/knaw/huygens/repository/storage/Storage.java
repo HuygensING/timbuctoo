@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.model.storage;
+package nl.knaw.huygens.repository.storage;
 
 import java.io.IOException;
 import java.util.List;
