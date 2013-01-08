@@ -210,33 +210,6 @@ public class MongoDBStorage implements Storage {
     db = mongo.getDB(dbName);
   }
 
-  // FIXME: THESE SHOULD BE ON A UTILITY CLASS
-  @Override
-public <T extends Document> List<T> resolveIterator(StorageIterator<T> it, int limit) {
-    return resolveIterator(it, 0, limit);
-  }
-  @Override
-public <T extends Document> List<T> resolveIterator(StorageIterator<T> it, int offset, int limit) {
-    if (offset > 0) {
-      it.skip(offset);
-    }
-    List<T> rv = it.getSome(limit);
-    it.close();
-    return rv;
-  }
-
-  @Override
-public <T extends Document> List<T> readFromIterator(StorageIterator<T> it, int limit) {
-    return readFromIterator(it, 0, limit);
-  }
-  @Override
-public <T extends Document> List<T> readFromIterator(StorageIterator<T> it, int offset, int limit) {
-    if (offset > 0) {
-      it.skip(offset);
-    }
-    return it.getSome(limit);
-  }
-
   // FIXME this should probably on the index.
   // FIXME Separately, we should investigate how to optimize
   // client-server sync wrt autocomplete fields etc. when there

@@ -33,11 +33,6 @@ public interface Storage {
 
   public void empty();
 
-  public <T extends Document> List<T> resolveIterator(StorageIterator<T> it, int limit);
-  public <T extends Document> List<T> resolveIterator(StorageIterator<T> it, int offset, int limit);
-  public <T extends Document> List<T> readFromIterator(StorageIterator<T> it, int limit);
-  public <T extends Document> List<T> readFromIterator(StorageIterator<T> it, int offset, int limit);
-
   public <T extends Document> void fetchAll(List<GenericDBRef<T>> refs, Class<T> cls);
 
   public <T extends Document> List<String> getIdsForQuery(Class<T> cls, List<String> accessors, String[] id);

@@ -21,6 +21,7 @@ import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.storage.RevisionChanges;
 import nl.knaw.huygens.repository.storage.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.StorageFactory;
+import nl.knaw.huygens.repository.storage.StorageUtils;
 import nl.knaw.huygens.repository.util.Configuration;
 
 import com.google.common.collect.Lists;
@@ -120,7 +121,7 @@ public class StorageManager {
     if (limit == 0) {
       return Collections.<T>emptyList();
     }
-    return storage.resolveIterator(storage.getAllByType(cls), offset, limit);
+    return StorageUtils.resolveIterator(storage.getAllByType(cls), offset, limit);
   }
 
 
