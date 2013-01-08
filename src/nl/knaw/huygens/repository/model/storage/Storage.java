@@ -6,7 +6,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.repository.model.Change;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.storage.RevisionChanges;
+import nl.knaw.huygens.repository.storage.mongo.RevisionChanges;
 
 public interface Storage {
   public <T extends Document> T getItem(String id, Class<T> cls);

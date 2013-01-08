@@ -1,7 +1,7 @@
 package nl.knaw.huygens.repository.model.storage;
 
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.storage.MongoDBRef;
+import nl.knaw.huygens.repository.storage.mongo.MongoDBRef;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
