@@ -129,7 +129,7 @@ public class SetupDatabase {
 	        try {
 	          Map<?,?> map = mapper.readValue(line, Map.class);
 	          output.write(line + "\n");
-	          System.out.print((counter % 10 == 9) ? map.get("type") + " " + map.get("_id") + " |\n" : map.get("type") + " " + map.get("_id") + " | ");
+	          System.out.print((counter % 10 == 9) ? map.get("^type") + " " + map.get("_id") + " |\n" : map.get("^type") + " " + map.get("_id") + " | ");
 	        } catch (Exception e) {
 	          noErrors = false;
 	          System.out.print(e.getMessage() + " : " + line + "\n");

@@ -41,11 +41,12 @@ public abstract class Document {
     this.rev = rev;
   }
   
-  // FIXME this should be ^type, but it's used as a string elsewhere so be Very Careful when changing!
-
+  @JsonProperty("^type")
   public String getType() {
     return type;
   }
+  
+  @JsonProperty("^type")
   public void setType(String type) {
     this.type = type;
   }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import nl.knaw.huygens.repository.model.storage.Storage;
 
+@IDPrefix("QRY")
 public class Search extends Document {
   private List<String> ids;
   private String term;

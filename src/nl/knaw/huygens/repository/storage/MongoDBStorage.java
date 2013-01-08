@@ -16,6 +16,7 @@ import net.vz.mongodb.jackson.WriteResult;
 import nl.knaw.huygens.repository.model.Change;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.IDMapper;
+import nl.knaw.huygens.repository.model.IDPrefix;
 import nl.knaw.huygens.repository.model.storage.GenericDBRef;
 import nl.knaw.huygens.repository.model.storage.JsonViews;
 import nl.knaw.huygens.repository.model.storage.Storage;
@@ -376,8 +377,13 @@ public void ensureIndex(Class<? extends Document> cls, List<List<String>> access
   }
 
   private <T extends Document> void setNextId(Class<T> cls, T item) {
-    Counter newCounter = counterCol.findAndModify(new BasicDBObject("_id", MongoUtils.getCollectionName(cls)), null, null, false, new BasicDBObject("$inc", new BasicDBObject("next", 1)), true, true);
-    String newId = IDMapper.getFullId(cls, newCounter.next);
+    BasicDBObject idFinder = new BasicDBObject("_id", MongoUtils.getCollectionName(cls));
+    BasicDBObject counterIncrement = new BasicDBObject("$inc", new BasicDBObject("next", 1));
+    
+    // Find by id, return all fields, use default sort, increment the counter, return the new object, create if no object exists:
+    Counter newCounter = counterCol.findAndModify(idFinder, null, null, false, counterIncrement, true, true);
+    
+    String newId = cls.getAnnotation(IDPrefix.class).value() + String.format("%1$010d", newCounter.next);
     item.setId(newId);
   }
 
