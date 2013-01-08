@@ -1,14 +1,14 @@
-package nl.knaw.huygens.repository.storage.mongo;
+package nl.knaw.huygens.repository.storage;
 
 import java.util.Map;
 
-import nl.knaw.huygens.repository.storage.Storage;
+import nl.knaw.huygens.repository.storage.mongo.MongoDBStorage;
 
 import com.google.common.collect.Maps;
 
 
 public class StorageFactory {
-  protected static enum StorageType {
+  public static enum StorageType {
     MONGO(MongoDBStorage.class);
     private Class<? extends Storage> cls;
     StorageType(Class<? extends Storage> cls) {
