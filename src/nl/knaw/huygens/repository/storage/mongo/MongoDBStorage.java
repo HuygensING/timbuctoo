@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.storage;
+package nl.knaw.huygens.repository.storage.mongo;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -20,7 +20,7 @@ import nl.knaw.huygens.repository.model.storage.GenericDBRef;
 import nl.knaw.huygens.repository.model.storage.JsonViews;
 import nl.knaw.huygens.repository.model.storage.Storage;
 import nl.knaw.huygens.repository.model.storage.StorageIterator;
-import nl.knaw.huygens.repository.storage.MongoUtils.MongoChanges;
+import nl.knaw.huygens.repository.storage.mongo.MongoUtils.MongoChanges;
 
 import org.bson.BSONObject;
 

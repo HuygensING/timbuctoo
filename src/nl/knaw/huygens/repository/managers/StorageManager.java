@@ -18,10 +18,10 @@ import nl.knaw.huygens.repository.model.storage.RelatedDocuments;
 import nl.knaw.huygens.repository.model.storage.Storage;
 import nl.knaw.huygens.repository.model.storage.StorageIterator;
 import nl.knaw.huygens.repository.pubsub.Hub;
-import nl.knaw.huygens.repository.storage.RevisionChanges;
-import nl.knaw.huygens.repository.storage.StorageConfiguration;
-import nl.knaw.huygens.repository.storage.StorageFactory;
-import nl.knaw.huygens.repository.storage.StorageUtils;
+import nl.knaw.huygens.repository.storage.mongo.RevisionChanges;
+import nl.knaw.huygens.repository.storage.mongo.StorageConfiguration;
+import nl.knaw.huygens.repository.storage.mongo.StorageFactory;
+import nl.knaw.huygens.repository.storage.mongo.StorageUtils;
 import nl.knaw.huygens.repository.util.Configuration;
 
 import com.google.common.collect.Lists;
