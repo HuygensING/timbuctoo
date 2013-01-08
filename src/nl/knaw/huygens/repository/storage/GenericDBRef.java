@@ -1,17 +1,21 @@
 package nl.knaw.huygens.repository.storage;
 
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.storage.mongo.MongoDBRef;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.annotation.JsonView;
 
-@JsonDeserialize(as = MongoDBRef.class)
-public interface GenericDBRef<T extends Document> {
-  public T getItem();
+public class GenericDBRef<T extends Document> {
 
-  public void setItem(T obj);
+  private T item = null;
+  public String type;
+  public String id;
 
-  public String getId();
+  public void setItem(T obj) {
+    item = obj;
+  }
 
-  public String getType();
+  @JsonView(JsonViews.WebView.class)
+  public T getItem() {
+    return item;
+  }
 }

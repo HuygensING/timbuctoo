@@ -1,8 +1,8 @@
-package nl.knaw.huygens.repository.storage.mongo;
+package nl.knaw.huygens.repository.storage;
 
 import java.util.List;
 
-import nl.knaw.huygens.repository.storage.mongo.StorageFactory.StorageType;
+import nl.knaw.huygens.repository.storage.StorageFactory.StorageType;
 import nl.knaw.huygens.repository.util.Configuration;
 
 import com.google.common.base.Joiner;

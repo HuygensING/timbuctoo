@@ -19,6 +19,7 @@ import nl.knaw.huygens.repository.model.IDPrefix;
 import nl.knaw.huygens.repository.storage.GenericDBRef;
 import nl.knaw.huygens.repository.storage.JsonViews;
 import nl.knaw.huygens.repository.storage.Storage;
+import nl.knaw.huygens.repository.storage.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.mongo.MongoUtils.MongoChanges;
 
@@ -235,7 +236,7 @@ public class MongoDBStorage implements Storage {
   public <T extends Document> void fetchAll(List<GenericDBRef<T>> refs, Class<T> cls) {
     Set<String> mongoRefs = Sets.newHashSetWithExpectedSize(refs.size());
     for (GenericDBRef<T> ref : refs) {
-      mongoRefs.add(ref.getId());
+      mongoRefs.add(ref.id);
     }
     JacksonDBCollection<T, String> col = getCollection(cls);
     Map<String, T> results = Maps.newHashMapWithExpectedSize(mongoRefs.size());
@@ -250,7 +251,7 @@ public class MongoDBStorage implements Storage {
     }
     for (GenericDBRef<T> ref : refs) {
       if (ref.getItem() == null) {
-        ref.setItem(results.get(ref.getId()));
+        ref.setItem(results.get(ref.id));
       }
     }
   }
