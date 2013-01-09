@@ -7,4 +7,5 @@ th, td {
   padding: 5px;
   border-spacing: 2px;
   border: 1px inset #000;
+  text-align: left;
 }

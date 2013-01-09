@@ -22,7 +22,7 @@
 		<indexeddoctypes>person</indexeddoctypes>
 		<versioneddoctypes>person,user</versioneddoctypes>
 		<defaultdoctype>person</defaultdoctype>
-		<public_url>https://repository.huygens.knaw.nl/</public_url>
+		<public_url>http://localhost:8088/repository/</public_url>
 		<feed>
 			<title>Repository changes</title>
 		</feed>
