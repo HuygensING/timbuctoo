@@ -54,7 +54,7 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
       return false;
     }
     
-    return true;
+    return Document.class.isAssignableFrom(type);
   }
 
   @Override
