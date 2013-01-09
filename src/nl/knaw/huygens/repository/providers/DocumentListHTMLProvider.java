@@ -39,11 +39,11 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
   private JsonFactory factory = new JsonFactory();
   
   @Inject
-  public DocumentListHTMLProvider(@Named("html.defaultstylesheet") String stylesheetLink) {
+  public DocumentListHTMLProvider(@Named("html.defaultstylesheet") String stylesheetLink, @Named("public_url") String publicURL) {
     try {
       String preambleString = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">";
       if (!Strings.isNullOrEmpty(stylesheetLink)) {
-        preambleString += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + stylesheetLink + "\"/>";
+        preambleString += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + publicURL + stylesheetLink + "\"/>";
       }
       PREAMBLE = preambleString.getBytes("UTF-8");
     } catch (UnsupportedEncodingException e) {
