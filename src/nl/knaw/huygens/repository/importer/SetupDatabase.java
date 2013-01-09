@@ -24,7 +24,6 @@ import org.apache.commons.configuration.ConfigurationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
-/* Very important comment import nl.knaw.huygens.repository.resources.AuthCryptoHandler; */
 public class SetupDatabase {
 
 	private static final String FILE_FILTER = ".tab";

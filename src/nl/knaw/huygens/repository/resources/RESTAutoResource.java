@@ -34,6 +34,9 @@ public class RESTAutoResource {
     public List<? extends Document> getAllDocs(@PathParam("resourceType") String resourceType,
         @QueryParam("rows") @DefaultValue("200") int rows, @QueryParam("start") int start) {
       Class<? extends Document> cls = Document.getSubclassByString(resourceType);
+      if (cls == null) {
+        throw new WebApplicationException(404);
+      }
       List<? extends Document> allLimited = storageManager.getAllLimited(cls, start, rows);
       return allLimited;
     }
@@ -44,6 +47,9 @@ public class RESTAutoResource {
     @JsonView(JsonViews.WebView.class)
     public Document getDoc(@PathParam("resourceType") String resourceType, @PathParam("id") String id) {
       Class<? extends Document> cls = Document.getSubclassByString(resourceType);
+      if (cls == null) {
+        throw new WebApplicationException(404);
+      }
       Document doc = storageManager.getCompleteDocument(id, cls);
       if (doc == null) {
         throw new WebApplicationException(404);
