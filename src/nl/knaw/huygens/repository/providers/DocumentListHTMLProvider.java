@@ -19,6 +19,8 @@ import nl.knaw.huygens.repository.model.Document;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
+import sun.reflect.generics.reflectiveObjects.WildcardTypeImpl;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -63,8 +65,17 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
       Type[] actualTypeArgs = (parameterizedType.getActualTypeArguments());
       isWritable = actualTypeArgs.length == 1;
       if (isWritable) {
-        Class<?> cls = actualTypeArgs[0].getClass();
-        isWritable = Document.class.isAssignableFrom(cls);
+        Class<?> cls = null;
+        if (actualTypeArgs[0] instanceof WildcardTypeImpl) {
+          WildcardTypeImpl wildcard = (WildcardTypeImpl) actualTypeArgs[0];
+          Type[] bounds = wildcard.getUpperBounds();
+          if (bounds.length == 1 && bounds[0] instanceof Class<?>) {
+            cls = (Class<?>) bounds[0];
+          }
+        } else {
+          cls = actualTypeArgs[0].getClass();
+        }
+        isWritable = cls != null && Document.class.isAssignableFrom(cls);
       }
     } else {
       isWritable = false;
