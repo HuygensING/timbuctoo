@@ -1,10 +1,13 @@
 package nl.knaw.huygens.repository.index;
 
+import java.lang.reflect.Method;
+
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Events;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.util.RepositoryException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
 
 public class DocumentIndexer<T extends Document> {
@@ -54,8 +57,27 @@ public class DocumentIndexer<T extends Document> {
   }
 
   protected SolrInputDocument getSolrInputDocument(T entity) {
-    SolrInputDocGenerator indexer = new SolrInputDocGenerator(modelIterator, entity);
+    SolrInputDocGenerator indexer = new SolrInputDocGenerator(entity);
     modelIterator.processMethods(indexer, entity.getClass().getMethods());
     return indexer.getResult();
+  }
+  
+  /**
+   * Determines the index field name from the method name (only used if the annotation doesn't specify a fieldname).
+   */
+  public static String getFieldName(Method m) {
+    String name = m.getName();
+    String type = m.getReturnType().getSimpleName();
+    String rv = name.startsWith("get") ? name.substring(3) : name; // eliminate 'get' part
+    String[] parts = StringUtils.splitByCharacterTypeCamelCase(rv);
+    type = type.replaceAll("\\[\\]", "");
+    if (type.equals("boolean")) {
+      type = "b";
+    } else if (type.equals("int") || type.equals("long")) {
+      type = "i";
+    } else {
+      type = "s";
+    }
+    return "facet_" + type + "_" + StringUtils.join(parts, "_").toLowerCase();
   }
 }

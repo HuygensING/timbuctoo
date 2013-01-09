@@ -6,9 +6,6 @@ import java.lang.reflect.Method;
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.indexdata.IndexAnnotations;
 
-import org.apache.commons.lang.StringUtils;
-
-
 public class ModelIterator {
   public void processMethods(AnnotatedMethodProcessor proc, Method[] methods) {
     for (Method m : methods) {
@@ -29,26 +26,5 @@ public class ModelIterator {
         processMethod(proc, m, ((IndexAnnotations) annotation).value());
       }
     }
-  }
-
-  
-  // FIXME getFieldName should probably go somewhere else...
-  /**
-   * Determines the index field name from the method name (only used if the annotation doesn't specify a fieldname).
-   */
-  public String getFieldName(Method m) {
-    String name = m.getName();
-    String type = m.getReturnType().getSimpleName();
-    String rv = name.startsWith("get") ? name.substring(3) : name; // eliminate 'get' part
-    String[] parts = StringUtils.splitByCharacterTypeCamelCase(rv);
-    type = type.replaceAll("\\[\\]", "");
-    if (type.equals("boolean")) {
-      type = "b";
-    } else if (type.equals("int") || type.equals("long")) {
-      type = "i";
-    } else {
-      type = "s";
-    }
-    return "facet_" + type + "_" + StringUtils.join(parts, "_").toLowerCase();
   }
 }
