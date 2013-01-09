@@ -1,5 +1,7 @@
 package nl.knaw.huygens.repository.storage.generic;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import nl.knaw.huygens.repository.model.Document;
@@ -30,4 +32,16 @@ public class StorageUtils {
     return readFromIterator(it, 0, limit);
   }
 
+
+  public static void sortDocumentsByLastChange(List<Document> docs) {
+    Collections.sort(docs, new Comparator<Document>() {
+      @Override
+      public int compare(Document o1, Document o2) {
+        long o1s = o1 != null && o1.getLastChange() != null ? o1.getLastChange().dateStamp : 0;
+        long o2s = o2 != null && o2.getLastChange() != null ? o2.getLastChange().dateStamp : 0;
+        long d = o2s - o1s;
+        return d > 0 ? 1 : (d < 0 ? -1 : 0);
+      }
+    });
+  }
 }
