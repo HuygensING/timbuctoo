@@ -88,7 +88,7 @@ public class SetupDatabase {
 			jsonDir.delete();
 			jsonDir.mkdir();
 
-			File errorReport = new File(conf.getSetting("paths.json", "") + "/report.txt");
+			File errorReport = new File("import-report.txt");
 			errors = new BufferedWriter(new FileWriter(errorReport));
 
 			sourceDir = new File(conf.getSetting("paths.source", ""));
