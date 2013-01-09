@@ -9,8 +9,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @IDPrefix("USR")
 public class User extends Document {
-  // FIXME separate IDs and email addresses.
   public String pwHash;
+  public String email;
   public String firstName;
   public String lastName;
   public List<String> groups;
