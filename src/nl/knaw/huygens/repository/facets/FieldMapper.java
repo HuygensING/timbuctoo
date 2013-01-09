@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 import nl.knaw.huygens.repository.index.AnnotatedMethodProcessor;
-import nl.knaw.huygens.repository.index.ModelIterator;
+import nl.knaw.huygens.repository.index.DocumentIndexer;
 import nl.knaw.huygens.repository.indexdata.CustomIndexer;
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.indexdata.CustomIndexer.NoopIndexer;
@@ -13,10 +13,8 @@ import com.google.common.collect.Maps;
 
 class FieldMapper implements AnnotatedMethodProcessor {
   private Map<String, Boolean> rv = Maps.newHashMap();
-  private ModelIterator iterator;
 
-  public FieldMapper(ModelIterator iterator) {
-    this.iterator = iterator;
+  public FieldMapper() {
   }
 
   public void process(Method m, IndexAnnotation annotation) {
@@ -38,7 +36,7 @@ class FieldMapper implements AnnotatedMethodProcessor {
     }
 
     if (fieldName.length() == 0) {
-      fieldName = iterator.getFieldName(m);
+      fieldName = DocumentIndexer.getFieldName(m);
     }
     if (!rv.containsKey(fieldName)) {
       boolean isComplex = annotation.isComplex();

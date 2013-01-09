@@ -22,12 +22,10 @@ import com.google.common.collect.Sets;
 public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
   private SolrInputDocument doc;
   private Document instance;
-  private ModelIterator iterator;
 
-  public SolrInputDocGenerator(ModelIterator iterator, Document instance) {
+  public SolrInputDocGenerator(Document instance) {
     this.doc = new SolrInputDocument();
     this.instance = instance;
-    this.iterator = iterator;
   }
 
   @Override
@@ -64,7 +62,7 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
     if (indexClass.equals(NoopIndexer.class)) {
       name = argData.fieldName();
       if (name.length() == 0) {
-        name = iterator.getFieldName(m);
+        name = DocumentIndexer.getFieldName(m);
       }
       indexer = null;
     } else {
