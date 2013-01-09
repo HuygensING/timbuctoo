@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.storage;
+package nl.knaw.huygens.repository.storage.generic;
 
 public class JsonViews {
   public static class WebView {

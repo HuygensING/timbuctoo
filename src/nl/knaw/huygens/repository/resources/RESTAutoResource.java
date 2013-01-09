@@ -13,7 +13,7 @@ import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.storage.JsonViews;
+import nl.knaw.huygens.repository.storage.generic.JsonViews;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.inject.Inject;

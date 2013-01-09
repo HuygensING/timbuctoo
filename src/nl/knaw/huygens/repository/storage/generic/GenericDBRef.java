@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.storage;
+package nl.knaw.huygens.repository.storage.generic;
 
 import nl.knaw.huygens.repository.model.Document;
 

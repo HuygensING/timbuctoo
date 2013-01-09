@@ -1,8 +1,7 @@
-package nl.knaw.huygens.repository.storage;
+package nl.knaw.huygens.repository.storage.generic;
 
 import java.util.List;
 
-import nl.knaw.huygens.repository.storage.StorageFactory.StorageType;
 import nl.knaw.huygens.repository.util.Configuration;
 
 import com.google.common.base.Joiner;

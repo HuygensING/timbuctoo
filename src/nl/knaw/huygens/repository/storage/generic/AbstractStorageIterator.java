@@ -1,7 +1,9 @@
-package nl.knaw.huygens.repository.storage;
+package nl.knaw.huygens.repository.storage.generic;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+
+import nl.knaw.huygens.repository.storage.StorageIterator;
 
 
 public abstract class AbstractStorageIterator<T> implements StorageIterator<T> {

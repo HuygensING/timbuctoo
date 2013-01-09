@@ -3,7 +3,7 @@ package nl.knaw.huygens.repository.storage.mongo;
 import java.util.List;
 
 import net.vz.mongodb.jackson.DBCursor;
-import nl.knaw.huygens.repository.storage.AbstractStorageIterator;
+import nl.knaw.huygens.repository.storage.generic.AbstractStorageIterator;
 
 public class MongoDBIteratorWrapper<T> extends AbstractStorageIterator<T> {
 
