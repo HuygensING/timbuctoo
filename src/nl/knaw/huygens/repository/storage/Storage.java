@@ -6,6 +6,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
+import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 
 public interface Storage {
   public <T extends Document> T getItem(String id, Class<T> cls);

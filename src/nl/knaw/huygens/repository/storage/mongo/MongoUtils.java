@@ -6,7 +6,7 @@ import java.util.Set;
 
 import net.vz.mongodb.jackson.internal.object.BsonObjectGenerator;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.storage.JsonViews;
+import nl.knaw.huygens.repository.storage.generic.JsonViews;
 
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;

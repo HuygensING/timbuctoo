@@ -2,8 +2,8 @@ package nl.knaw.huygens.repository.storage.mongo;
 
 import java.util.List;
 
-import nl.knaw.huygens.repository.storage.JsonViews;
 import nl.knaw.huygens.repository.storage.RevisionChanges;
+import nl.knaw.huygens.repository.storage.generic.JsonViews;
 
 import org.bson.BSONObject;
 
