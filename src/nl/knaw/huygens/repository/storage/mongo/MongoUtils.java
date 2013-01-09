@@ -2,7 +2,6 @@ package nl.knaw.huygens.repository.storage.mongo;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import net.vz.mongodb.jackson.internal.object.BsonObjectGenerator;
@@ -12,98 +11,14 @@ import nl.knaw.huygens.repository.storage.JsonViews;
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.deser.std.UntypedObjectDeserializer;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mongodb.DBObject;
 
 public class MongoUtils {
-  public static class BSONDeserializer extends JsonDeserializer<BSONObject> {
-    UntypedObjectDeserializer nestedSer = new UntypedObjectDeserializer();
-    @Override
-    public BSONObject deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-      @SuppressWarnings("unchecked")
-      Map<Object, Object> x = (Map<Object, Object>) nestedSer.deserialize(jp, ctxt);
-      return new BasicBSONObject(x);
-    }
-  }
-  public static class MongoChanges implements RevisionChanges {
-    public static class MongoRev implements RevisionChanges.Rev {
-      private BSONObject obj;
-      public MongoRev(BSONObject obj) {
-        this.obj = obj;
-      }
-      @Override
-    public BSONObject fromNext() {
-        return (BSONObject) obj.get("fromnext");
-      }
-      @Override
-    public BSONObject fromPrev() {
-        return (BSONObject) obj.get("frompast");
-      }
-    }
-
-    protected MongoChanges() {
-      // do nothing, used for Jackson
-    }
-
-    public MongoChanges(String id, BSONObject origObj) {
-      _id = id;
-      original = origObj;
-      changes = Lists.newArrayList();
-      Object origRev = original.get("^rev");
-      try {
-        lastRev = (Integer) origRev;
-      } catch (Exception ex) {
-        System.err.println("invalid revision value: " + origRev.toString());
-        lastRev = -1;
-      }
-    }
-
-    public String _id;
-    public int lastRev;
-
-    @JsonDeserialize(contentUsing=BSONDeserializer.class)
-    public List<BSONObject> changes;
-    @JsonDeserialize(using=BSONDeserializer.class)
-    public BSONObject original;
-
-    @Override
-    @JsonIgnore
-    public String getId() {
-      return _id;
-    }
-
-    @JsonView(JsonViews.WebView.class)
-    @Override
-    public List<Rev> getRevisions() {
-      List<Rev> revs = Lists.newArrayListWithCapacity(changes.size());
-      for (BSONObject obj : changes) {
-        revs.add(new MongoRev(obj));
-      }
-      return revs;
-    }
-    @Override
-    public int getLastRev() {
-      return lastRev;
-    }
-
-    @Override
-    public BSONObject getOriginal() {
-      return original;
-    }
-  }
-
   private static ObjectWriter dbWriter;
   static {
     ObjectMapper mapper = new ObjectMapper();

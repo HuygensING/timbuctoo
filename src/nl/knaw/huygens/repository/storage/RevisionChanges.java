@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.storage.mongo;
+package nl.knaw.huygens.repository.storage;
 
 import java.util.List;
 

@@ -21,7 +21,6 @@ import nl.knaw.huygens.repository.storage.JsonViews;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.StorageIterator;
-import nl.knaw.huygens.repository.storage.mongo.MongoUtils.MongoChanges;
 
 import org.bson.BSONObject;
 
