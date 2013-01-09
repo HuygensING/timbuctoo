@@ -11,8 +11,8 @@ import java.util.List;
 
 import net.vz.mongodb.jackson.internal.MongoJacksonMapperModule;
 import nl.knaw.huygens.repository.managers.StorageManager;
-import nl.knaw.huygens.repository.model.Change;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.util.Configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

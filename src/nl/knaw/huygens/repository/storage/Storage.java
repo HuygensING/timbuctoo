@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.repository.model.Change;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.mongo.RevisionChanges;
 
 public interface Storage {

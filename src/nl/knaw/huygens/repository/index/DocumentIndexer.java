@@ -2,8 +2,8 @@ package nl.knaw.huygens.repository.index;
 
 import java.lang.reflect.Method;
 
+import nl.knaw.huygens.repository.events.Events;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.Events;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.util.RepositoryException;
 

@@ -1,4 +1,6 @@
-package nl.knaw.huygens.repository.model;
+package nl.knaw.huygens.repository.events;
+
+import nl.knaw.huygens.repository.model.Document;
 
 // FIXME apart package
 public class Events {

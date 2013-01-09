@@ -1,5 +1,7 @@
 package nl.knaw.huygens.repository.model;
 
+import nl.knaw.huygens.repository.model.util.Datable;
+import nl.knaw.huygens.repository.model.util.IDPrefix;
 import nl.knaw.huygens.repository.storage.Storage;
 
 @IDPrefix("PER")
