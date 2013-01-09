@@ -9,19 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.vz.mongodb.jackson.DBCursor;
-import net.vz.mongodb.jackson.DBQuery;
-import net.vz.mongodb.jackson.JacksonDBCollection;
-import net.vz.mongodb.jackson.WriteResult;
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.Change;
-import nl.knaw.huygens.repository.model.util.IDPrefix;
-import nl.knaw.huygens.repository.storage.Storage;
-import nl.knaw.huygens.repository.storage.StorageIterator;
-import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
-import nl.knaw.huygens.repository.storage.generic.JsonViews;
-import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
-
 import org.bson.BSONObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,6 +24,20 @@ import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
+
+import net.vz.mongodb.jackson.DBCursor;
+import net.vz.mongodb.jackson.DBQuery;
+import net.vz.mongodb.jackson.JacksonDBCollection;
+import net.vz.mongodb.jackson.WriteResult;
+
+import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.Change;
+import nl.knaw.huygens.repository.model.util.IDPrefix;
+import nl.knaw.huygens.repository.storage.Storage;
+import nl.knaw.huygens.repository.storage.StorageIterator;
+import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
+import nl.knaw.huygens.repository.storage.generic.JsonViews;
+import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 
 public class MongoDBStorage implements Storage {
   private Mongo mongo;
@@ -302,7 +303,7 @@ public void ensureIndex(Class<? extends Document> cls, List<List<String>> access
       }
       removeNested(newObj, accessorList, referredId);
       col.update(DBQuery.is("_id", doc.getId()).is("^rev", doc.getRev()), newObj);
-      changeVersionObj(doc.getId(), MongoUtils.bsondiff(newObj, origObj), MongoUtils.bsondiff(origObj, newObj), doc.getRev(), versionCol);
+      changeVersionObj(doc.getId(), MongoDiff.diffToNewObject(newObj, origObj), MongoDiff.diffToNewObject(origObj, newObj), doc.getRev(), versionCol);
     }
   }
 
@@ -396,7 +397,7 @@ public void ensureIndex(Class<? extends Document> cls, List<List<String>> access
     JacksonDBCollection<MongoChanges, String> versionCol = getVersioningCollection(cls);
     long count = versionCol.count(DBQuery.is("_id", id));
     if (count != 0 && oldItem != null) {
-      changeVersionObj(id, MongoUtils.diff(item,  oldItem), MongoUtils.diff(oldItem,  item), oldRev, versionCol);
+      changeVersionObj(id, MongoDiff.diffDocuments(item,  oldItem), MongoDiff.diffDocuments(oldItem,  item), oldRev, versionCol);
     } else {
       versionCol.insert(new MongoChanges(id, MongoUtils.getObjectForDoc(item)));
     }
