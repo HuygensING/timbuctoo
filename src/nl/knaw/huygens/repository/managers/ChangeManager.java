@@ -5,9 +5,9 @@ import java.util.List;
 
 import javax.ws.rs.core.HttpHeaders;
 
-import nl.knaw.huygens.repository.model.Change;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.User;
+import nl.knaw.huygens.repository.model.util.Change;
 
 public class ChangeManager {
   public enum InfoType {

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.model;
+package nl.knaw.huygens.repository.model.util;
 
 public class Change {
   public Change() {

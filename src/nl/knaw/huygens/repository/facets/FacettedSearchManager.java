@@ -8,10 +8,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.events.Events.IndexChangedEvent;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.index.ModelIterator;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.Events.IndexChangedEvent;
 import nl.knaw.huygens.repository.model.Search;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.pubsub.Subscribe;

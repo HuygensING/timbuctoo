@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.model;
+package nl.knaw.huygens.repository.model.util;
 
 import java.io.Serializable;
 import java.util.Calendar;

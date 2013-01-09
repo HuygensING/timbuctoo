@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.ws.rs.core.Application;
 
+import nl.knaw.huygens.repository.model.util.IDPrefix;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.util.JAXUtils;
 import nl.knaw.huygens.repository.util.JAXUtils.API;

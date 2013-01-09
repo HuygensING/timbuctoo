@@ -4,12 +4,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.events.Events.DocumentAddEvent;
+import nl.knaw.huygens.repository.events.Events.DocumentDeleteEvent;
+import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.index.DocumentIndexer;
 import nl.knaw.huygens.repository.index.IndexFactory;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.Events.DocumentAddEvent;
-import nl.knaw.huygens.repository.model.Events.DocumentDeleteEvent;
-import nl.knaw.huygens.repository.model.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.pubsub.Subscribe;
 import nl.knaw.huygens.repository.storage.StorageIterator;

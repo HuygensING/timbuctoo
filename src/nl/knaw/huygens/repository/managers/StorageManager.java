@@ -7,12 +7,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.repository.model.Change;
+import nl.knaw.huygens.repository.events.Events.DocumentAddEvent;
+import nl.knaw.huygens.repository.events.Events.DocumentChangeEvent;
+import nl.knaw.huygens.repository.events.Events.DocumentDeleteEvent;
+import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.Events.DocumentAddEvent;
-import nl.knaw.huygens.repository.model.Events.DocumentChangeEvent;
-import nl.knaw.huygens.repository.model.Events.DocumentDeleteEvent;
-import nl.knaw.huygens.repository.model.Events.DocumentEditEvent;
+import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.storage.RelatedDocument;
 import nl.knaw.huygens.repository.storage.RelatedDocuments;
