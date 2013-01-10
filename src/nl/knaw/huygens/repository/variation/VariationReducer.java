@@ -29,8 +29,12 @@ public class VariationReducer {
     if (commonData != null) {
       processCommonData(variationName, commonData, rv);
     }
-    if (specificData != null && specificData.isObject()) {
-      rv.setAll((ObjectNode) specificData);
+    if (specificData != null) {
+      if (specificData.isObject()) {
+        rv.setAll((ObjectNode) specificData);
+      } else {
+        throw new VariationException("Non-object variation data; this should never happen.");
+      }
     }
     return mapper.treeToValue(rv, cls);
   }
