@@ -13,6 +13,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.huygens.repository.model.Document;
 
 public class VariationReducer {
+  private ObjectMapper mapper;
+
   public static class VariationException extends IOException {
     private static final long serialVersionUID = 2225153974182989864L;
     public VariationException(String msg) {
@@ -20,8 +22,15 @@ public class VariationReducer {
     }
   }
 
-  public static <T extends Document> T reduce(JsonNode n, Class<T> cls) throws VariationException, JsonProcessingException {
-    ObjectMapper mapper = new ObjectMapper();
+  public VariationReducer() {
+    mapper = new ObjectMapper();
+  }
+  
+  public VariationReducer(ObjectMapper mapper) {
+    this.mapper = mapper;
+  }
+  
+  public <T extends Document> T reduce(JsonNode n, Class<T> cls) throws VariationException, JsonProcessingException {
     final String variationName = getVariationName(cls);
     JsonNode commonData = n.get("common");
     JsonNode specificData = n.get(variationName);
@@ -39,7 +48,7 @@ public class VariationReducer {
     return mapper.treeToValue(rv, cls);
   }
 
-  private static void processCommonData(final String variationName, JsonNode commonData, ObjectNode rv) throws VariationException {
+  private void processCommonData(final String variationName, JsonNode commonData, ObjectNode rv) throws VariationException {
     Iterator<Entry<String, JsonNode>> fields = commonData.fields(); 
     // Go through all common fields:
     while (fields.hasNext()) {
@@ -56,7 +65,7 @@ public class VariationReducer {
     }
   }
 
-  private static void fetchAndAssignMatchingValue(final String variationName, ObjectNode rv, String k, ArrayNode ary) throws VariationException {
+  private void fetchAndAssignMatchingValue(final String variationName, ObjectNode rv, String k, ArrayNode ary) throws VariationException {
     int i = 0;
     for (JsonNode elem : ary) {
       if (elem.isObject()) {
@@ -82,7 +91,7 @@ public class VariationReducer {
     rv.putNull(k);
   }
 
-  private static boolean arrayContains(ArrayNode stringAry, String stringEl) {
+  private boolean arrayContains(ArrayNode stringAry, String stringEl) {
     // I assume there is a better way to do this but I have not found it:
     int i = stringAry.size();
     while (i-- > 0) {
@@ -93,9 +102,13 @@ public class VariationReducer {
     return false;
   }
 
-  private static String getVariationName(Class<?> cls) {
+  private String getVariationName(Class<?> cls) {
     String packageName = cls.getPackage().getName();
     final String variationName = packageName.substring(packageName.lastIndexOf('.') + 1);
     return variationName;
+  }
+
+  public void setMapper(ObjectMapper mapper) {
+    this.mapper = mapper;
   }
 }

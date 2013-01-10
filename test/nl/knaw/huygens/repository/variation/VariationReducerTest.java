@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -28,13 +29,20 @@ public class VariationReducerTest {
     public void fetchAll(Storage storage) {
     }
   }
+
+  private VariationReducer reducer;
+  
+  @Before
+  public void setUp() {
+    reducer = new VariationReducer();
+  }
   
   @Test
   public void testReduce() throws IOException {
     String x = "{\"common\":{\"a\":[{\"v\":\"a\", \"agreed\":[\"variation\"]}]}, \"variation\": {\"blah\": \"stuff\"}}";
     ObjectMapper m = new ObjectMapper();
     JsonNode t = m.readTree(x);
-    X val = VariationReducer.reduce(t, X.class);
+    X val = reducer.reduce(t, X.class);
     X testVal = new X();
     testVal.a = "a";
     testVal.blah = "stuff"; 
@@ -46,7 +54,7 @@ public class VariationReducerTest {
     String x = "{\"variation\": {\"blah\": \"stuff\"}}";
     ObjectMapper m = new ObjectMapper();
     JsonNode t = m.readTree(x);
-    X val = VariationReducer.reduce(t, X.class);
+    X val = reducer.reduce(t, X.class);
     X testVal = new X();
     testVal.blah = "stuff"; 
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
@@ -57,7 +65,7 @@ public class VariationReducerTest {
     String x = "{\"common\":{\"a\":[{\"v\":\"b\", \"agreed\":[\"blub\"]}, {\"v\":\"a\", \"agreed\":[\"variation\"]}]}}";
     ObjectMapper m = new ObjectMapper();
     JsonNode t = m.readTree(x);
-    X val = VariationReducer.reduce(t, X.class);
+    X val = reducer.reduce(t, X.class);
     X testVal = new X();
     testVal.a = "a";
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
@@ -68,7 +76,7 @@ public class VariationReducerTest {
     String x = "{\"common\":{\"a\":[{\"v\":\"b\", \"agreed\":[\"blub\"]}]}}";
     ObjectMapper m = new ObjectMapper();
     JsonNode t = m.readTree(x);
-    X val = VariationReducer.reduce(t, X.class);
+    X val = reducer.reduce(t, X.class);
     X testVal = new X();
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -79,7 +87,7 @@ public class VariationReducerTest {
     ObjectMapper m = new ObjectMapper();
     JsonNode t = m.readTree(x);
     
-    VariationReducer.reduce(t, X.class); // This will throw
+    reducer.reduce(t, X.class); // This will throw
   }
   
   
@@ -89,7 +97,7 @@ public class VariationReducerTest {
     ObjectMapper m = new ObjectMapper();
     JsonNode t = m.readTree(x);
     
-    VariationReducer.reduce(t, X.class); // This will throw
+    reducer.reduce(t, X.class); // This will throw
   }
   
   @Test(expected = VariationException.class)
@@ -98,7 +106,7 @@ public class VariationReducerTest {
     ObjectMapper m = new ObjectMapper();
     JsonNode t = m.readTree(x);
     
-    VariationReducer.reduce(t, X.class); // This will throw
+    reducer.reduce(t, X.class); // This will throw
   }
   
   @Test(expected = VariationException.class)
@@ -107,6 +115,6 @@ public class VariationReducerTest {
     ObjectMapper m = new ObjectMapper();
     JsonNode t = m.readTree(x);
     
-    VariationReducer.reduce(t, X.class); // This will throw
+    reducer.reduce(t, X.class); // This will throw
   }
 }
