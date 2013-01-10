@@ -33,6 +33,9 @@ public class MongoUtils {
   }
 
   public static DBObject getObjectForDoc(Object doc) throws IOException {
+    if (doc == null) {
+      return null;
+    }
     BsonObjectGenerator generator = new BsonObjectGenerator();
     dbWriter.writeValue(generator, doc);
     return generator.getDBObject();
