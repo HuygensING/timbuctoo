@@ -2,9 +2,6 @@ package nl.knaw.huygens.repository.storage.mongo;
 
 import java.util.List;
 
-import nl.knaw.huygens.repository.storage.RevisionChanges;
-import nl.knaw.huygens.repository.storage.generic.JsonViews;
-
 import org.bson.BSONObject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -12,18 +9,24 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
 
+import nl.knaw.huygens.repository.storage.RevisionChanges;
+import nl.knaw.huygens.repository.storage.generic.JsonViews;
+
 public class MongoChanges implements RevisionChanges {
   public static class MongoRev implements RevisionChanges.Rev {
     private BSONObject obj;
+
     public MongoRev(BSONObject obj) {
       this.obj = obj;
     }
+
     @Override
-  public BSONObject fromNext() {
+    public BSONObject fromNext() {
       return (BSONObject) obj.get("fromnext");
     }
+
     @Override
-  public BSONObject fromPrev() {
+    public BSONObject fromPrev() {
       return (BSONObject) obj.get("frompast");
     }
   }
@@ -48,9 +51,9 @@ public class MongoChanges implements RevisionChanges {
   public String _id;
   public int lastRev;
 
-  @JsonDeserialize(contentUsing=BSONDeserializer.class)
+  @JsonDeserialize(contentUsing = BSONDeserializer.class)
   public List<BSONObject> changes;
-  @JsonDeserialize(using=BSONDeserializer.class)
+  @JsonDeserialize(using = BSONDeserializer.class)
   public BSONObject original;
 
   @Override
@@ -68,6 +71,7 @@ public class MongoChanges implements RevisionChanges {
     }
     return revs;
   }
+
   @Override
   public int getLastRev() {
     return lastRev;
