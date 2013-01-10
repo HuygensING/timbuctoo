@@ -15,8 +15,6 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import nl.knaw.huygens.repository.model.Document;
-
 import org.apache.commons.lang.StringEscapeUtils;
 
 import sun.reflect.generics.reflectiveObjects.WildcardTypeImpl;
@@ -28,6 +26,8 @@ import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
+import nl.knaw.huygens.repository.model.Document;
 
 
 @Provider
@@ -109,6 +109,7 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
       entityStream.write("</h2>".getBytes("UTF-8"));
       mapper.writeValue(jgen, doc);
     }
+    entityStream.write("</body></html>".getBytes("UTF-8"));
   }
 
   private byte[] encodeDocTitle(Document doc) throws UnsupportedEncodingException {

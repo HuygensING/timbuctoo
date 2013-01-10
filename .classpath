@@ -15,7 +15,7 @@
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/mongo-jackson-mapper-2.0-SNAPSHOT.jar">
+	<classpathentry kind="lib" path="lib/mongo-jackson-mapper-2.0-SNAPSHOT.jar" sourcepath="lib/mongo-jackson-mapper-2.0-SNAPSHOT-sources.jar">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>

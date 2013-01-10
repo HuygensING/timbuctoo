@@ -13,8 +13,6 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import nl.knaw.huygens.repository.model.Document;
-
 import org.apache.commons.lang.StringEscapeUtils;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -24,6 +22,8 @@ import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
+import nl.knaw.huygens.repository.model.Document;
 
 
 @Provider
@@ -76,6 +76,7 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
     entityStream.write("</h1>".getBytes("UTF-8"));
     JsonGenerator jgen = new HTMLGenerator(factory.createGenerator(entityStream));
     mapper.writeValue(jgen, doc);
+    entityStream.write("</body></html>".getBytes("UTF-8"));
   }
 
   private byte[] encodeTitle(Document doc) throws UnsupportedEncodingException {
