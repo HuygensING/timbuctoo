@@ -1,6 +1,5 @@
 package nl.knaw.huygens.repository.variation;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -15,13 +14,6 @@ import nl.knaw.huygens.repository.model.Document;
 public class VariationReducer {
   private ObjectMapper mapper;
 
-  public static class VariationException extends IOException {
-    private static final long serialVersionUID = 2225153974182989864L;
-    public VariationException(String msg) {
-      super(msg);
-    }
-  }
-
   public VariationReducer() {
     mapper = new ObjectMapper();
   }
@@ -31,8 +23,8 @@ public class VariationReducer {
   }
   
   public <T extends Document> T reduce(JsonNode n, Class<T> cls) throws VariationException, JsonProcessingException {
-    final String variationName = getVariationName(cls);
-    JsonNode commonData = n.get("common");
+    final String variationName = VariationUtils.getVariationName(cls);
+    JsonNode commonData = n.get(VariationUtils.COMMON_PROPS);
     JsonNode specificData = n.get(variationName);
     ObjectNode rv = mapper.createObjectNode();
     if (commonData != null) {
@@ -43,6 +35,14 @@ public class VariationReducer {
         rv.setAll((ObjectNode) specificData);
       } else {
         throw new VariationException("Non-object variation data; this should never happen.");
+      }
+    }
+    Iterator<Entry<String, JsonNode>> nodeFields = n.fields();
+    while (nodeFields.hasNext()) {
+      Entry<String, JsonNode> entry = nodeFields.next();
+      String key = entry.getKey();
+      if (key.startsWith("^") || key.startsWith("_")) {
+        rv.put(key, entry.getValue());
       }
     }
     return mapper.treeToValue(rv, cls);
@@ -70,11 +70,11 @@ public class VariationReducer {
     for (JsonNode elem : ary) {
       if (elem.isObject()) {
         // Check the list of agreeing VREs to see if we want this one:
-        JsonNode agreedValueNode = elem.get("agreed");
-        if (agreedValueNode.isArray()) {
+        JsonNode agreedValueNode = elem.get(VariationUtils.AGREED);
+        if (agreedValueNode != null && agreedValueNode.isArray()) {
           ArrayNode agreedValues = (ArrayNode) agreedValueNode;
           if (arrayContains(agreedValues, variationName)) {
-            rv.put(k, elem.get("v"));
+            rv.put(k, elem.get(VariationUtils.VALUE));
             return;
           }
         } else {
@@ -100,12 +100,6 @@ public class VariationReducer {
       }
     }
     return false;
-  }
-
-  private String getVariationName(Class<?> cls) {
-    String packageName = cls.getPackage().getName();
-    final String variationName = packageName.substring(packageName.lastIndexOf('.') + 1);
-    return variationName;
   }
 
   public void setMapper(ObjectMapper mapper) {
