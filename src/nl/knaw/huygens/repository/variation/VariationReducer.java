@@ -1,5 +1,6 @@
 package nl.knaw.huygens.repository.variation;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -8,6 +9,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.DBObject;
+
+import net.vz.mongodb.jackson.internal.stream.JacksonDBObject;
 
 import nl.knaw.huygens.repository.model.Document;
 
@@ -104,5 +108,19 @@ public class VariationReducer {
 
   public void setMapper(ObjectMapper mapper) {
     this.mapper = mapper;
+  }
+  
+
+  public <T extends Document> T reduceDBObject(DBObject obj, Class<T> cls) throws VariationException, JsonProcessingException, IOException {
+    if (obj == null) {
+      return null;
+    }
+    if (obj instanceof JacksonDBObject) {
+      @SuppressWarnings("unchecked")
+      JsonNode tree = ((JacksonDBObject<JsonNode>) obj).getObject();
+      return reduce(tree, cls);
+    }
+
+    throw new IOException("Huh? DB didn't generate the right type of object out of the data stream...");
   }
 }

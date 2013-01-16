@@ -9,7 +9,7 @@ import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 
 public interface Storage {
-  public <T extends Document> T getItem(String id, Class<T> cls);
+  public <T extends Document> T getItem(String id, Class<T> cls) throws IOException;
 
   public <T extends Document> StorageIterator<T> getAllByType(Class<T> cls);
 

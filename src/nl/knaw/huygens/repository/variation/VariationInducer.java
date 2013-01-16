@@ -44,7 +44,7 @@ public class VariationInducer {
   }
   
   public <T extends Document> JsonNode induce(T item, Class<T> cls, ObjectNode existingItem) throws VariationException {
-    Class<?> commonClass = getEarliestCommonClass(cls);
+    Class<?> commonClass = VariationUtils.getEarliestCommonClass(cls);
     JsonNode commonTree = asTree(item, commonClass);
     JsonNode completeTree = asTree(item, cls);
 
@@ -178,16 +178,6 @@ public class VariationInducer {
     existingCommonTree.put(key, n);
   }
 
-  private Class<?> getEarliestCommonClass(Class<?> cls) {
-    while (cls != null) {
-      if (VariationUtils.getVariationName(cls).equals(VariationUtils.BASE_MODEL_PACKAGE_VARIATION)) {
-        return cls;
-      }
-      cls = cls.getSuperclass();
-    }
-    return null;
-  }
-  
   /**
    * This is a modified copy of the built-in "valueAsTree" method on ObjectMapper.
    * The modification includes being able to specify the view and the type used

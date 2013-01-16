@@ -1,9 +1,9 @@
 package nl.knaw.huygens.repository.managers;
 
 import java.util.Date;
-import java.util.List;
+import java.util.Enumeration;
 
-import javax.ws.rs.core.HttpHeaders;
+import javax.servlet.http.HttpServletRequest;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.User;
@@ -20,43 +20,45 @@ public class ChangeManager {
   }
 
   private interface InfoGetter {
-    Info getInfo(HttpHeaders req);
+    Info getInfo(HttpServletRequest req);
   }
 
   private static class ShibInfoGetter implements InfoGetter {
     @Override
-    public Info getInfo(HttpHeaders reqHeaders) {
+    public Info getInfo(HttpServletRequest reqHeaders) {
       Info rv = new Info();
-      List<String> persistentId = reqHeaders.getRequestHeader("persistent-id");
-      List<String> firstName = reqHeaders.getRequestHeader("shib-givenname");
-      List<String> lastName = reqHeaders.getRequestHeader("shib-surname");
-      List<String> commonName = reqHeaders.getRequestHeader("shib-commonname");
-      List<String> email = reqHeaders.getRequestHeader("shib-email");
-      if (persistentId.isEmpty()
-          || (firstName.isEmpty() && lastName.isEmpty() && commonName.isEmpty() && email.isEmpty())) {
+      Enumeration<String> persistentId = reqHeaders.getHeaders("persistent-id");
+      Enumeration<String> firstName = reqHeaders.getHeaders("shib-givenname");
+      Enumeration<String> lastName = reqHeaders.getHeaders("shib-surname");
+      Enumeration<String> commonName = reqHeaders.getHeaders("shib-commonname");
+      Enumeration<String> email = reqHeaders.getHeaders("shib-email");
+      if (!persistentId.hasMoreElements()
+          || (!firstName.hasMoreElements() && !lastName.hasMoreElements() && !commonName.hasMoreElements() && !email.hasMoreElements())) {
         throw new RuntimeException("Not enough identification information!");
       }
-      rv.id = persistentId.get(0);
-      if (!firstName.isEmpty()) {
-        rv.name = firstName.get(0);
-        if (!lastName.isEmpty()) {
-          rv.name += " " + lastName.get(0);
+      rv.id = persistentId.nextElement();
+      if (firstName.hasMoreElements()) {
+        rv.name = firstName.nextElement();
+        if (lastName.hasMoreElements()) {
+          rv.name += " " + lastName.nextElement();
         }
       } else {
-        rv.name = commonName.isEmpty() ? email.get(0) : commonName.get(0);
+        rv.name = commonName.hasMoreElements() ? commonName.nextElement() : email.nextElement();
       }
       return rv;
     }
   }
 
-  public class BasicInfoGetter implements InfoGetter {
+  public static class BasicInfoGetter implements InfoGetter {
     @Override
-    public Info getInfo(HttpHeaders reqHeaders) {
+    public Info getInfo(HttpServletRequest req) {
       Info rv = new Info();
-      reqHeaders.getCookies();
       try {
-        // FIXME this is really broken.
-        User x = null; // resource.getClientInfo().getUser();
+        Object userObj = req.getAttribute("repo-user");
+        if (!(userObj instanceof User)) {
+          throw new Exception("Invalid user object for change.");
+        }
+        User x = (User) userObj; // resource.getClientInfo().getUser();
         rv.id = x.getId();
         rv.name = x.firstName + " " + x.lastName;
       } catch (Exception ex) {
@@ -79,13 +81,13 @@ public class ChangeManager {
     }
   }
 
-  public void setDocumentChange(Document doc, HttpHeaders reqHeaders) {
-    doc.setLastChange(getChange(reqHeaders));
+  public void setDocumentChange(Document doc, HttpServletRequest req) {
+    doc.setLastChange(getChange(req));
   }
 
-  public Change getChange(HttpHeaders reqHeaders) {
+  public Change getChange(HttpServletRequest req) {
     long stamp = new Date().getTime();
-    Info info = infoGetter.getInfo(reqHeaders);
+    Info info = infoGetter.getInfo(req);
     return new Change(stamp, info.id, info.name);
   }
 }

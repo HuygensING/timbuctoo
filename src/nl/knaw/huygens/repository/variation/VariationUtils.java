@@ -12,4 +12,22 @@ public class VariationUtils {
     return variationName;
   }
 
+  public static Class<?> getBaseClass(Class<?> cls) {
+    Class<?> lastCls = null;
+    while (cls != null) {
+      lastCls = cls;
+      cls = cls.getSuperclass();
+    }
+    return lastCls;
+  }
+
+  public static Class<?> getEarliestCommonClass(Class<?> cls) {
+    while (cls != null) {
+      if (getVariationName(cls).equals(BASE_MODEL_PACKAGE_VARIATION)) {
+        return cls;
+      }
+      cls = cls.getSuperclass();
+    }
+    return null;
+  }
 }
