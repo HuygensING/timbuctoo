@@ -7,6 +7,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 import nl.knaw.huygens.repository.events.Events.DocumentAddEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentChangeEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentDeleteEvent;
@@ -23,9 +26,6 @@ import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.generic.StorageFactory;
 import nl.knaw.huygens.repository.storage.generic.StorageUtils;
 import nl.knaw.huygens.repository.util.Configuration;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public class StorageManager {
 
@@ -53,7 +53,13 @@ public class StorageManager {
   }
 
   public <T extends Document> T getCompleteDocument(String pid, Class<T> entityCls) {
-    T rv = storage.getItem(pid, entityCls);
+    T rv;
+    try {
+      rv = storage.getItem(pid, entityCls);
+    } catch (IOException e) {
+      e.printStackTrace();
+      rv = null;
+    }
     if (rv != null) {
       rv.fetchAll(storage);
     }
@@ -61,7 +67,12 @@ public class StorageManager {
   }
 
   public <T extends Document> T getDocument(String pid, Class<T> entityCls) {
-    return storage.getItem(pid, entityCls);
+    try {
+      return storage.getItem(pid, entityCls);
+    } catch (IOException e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 
   public <T extends Document> StorageIterator<T> getAll(Class<T> entityCls) {
