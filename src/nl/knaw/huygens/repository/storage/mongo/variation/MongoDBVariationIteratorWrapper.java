@@ -17,6 +17,7 @@ public class MongoDBVariationIteratorWrapper<T extends Document> implements Stor
   private final DBCursor delegate;
   private final VariationReducer reducer;
   private final Class<T> cls;
+  private Boolean closed;
 
   public MongoDBVariationIteratorWrapper(DBCursor delegate, VariationReducer reducer, Class<T> cls) {
     this.delegate = delegate;
@@ -64,7 +65,11 @@ public class MongoDBVariationIteratorWrapper<T extends Document> implements Stor
 
   @Override
   public boolean hasNext() {
-    return delegate.hasNext();
+    boolean rv = delegate.hasNext();
+    if (!rv) {
+      close();
+    }
+    return rv;
   }
 
   @Override
@@ -74,7 +79,12 @@ public class MongoDBVariationIteratorWrapper<T extends Document> implements Stor
 
   @Override
   public void close() {
-    delegate.close();
+    synchronized(closed) {
+      if (!closed) {
+        closed = true;
+        delegate.close();
+      }
+    }
   }
 
 }
