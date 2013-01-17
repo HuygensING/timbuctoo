@@ -29,7 +29,7 @@ public interface Storage {
 
   public void destroy();
 
-  public List<Document> getLastChanged(int limit);
+  public List<Document> getLastChanged(int limit) throws IOException;
 
   public void empty();
 

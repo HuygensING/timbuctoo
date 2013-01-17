@@ -2,6 +2,7 @@ package nl.knaw.huygens.repository.variation;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
 import com.mongodb.DBObject;
 
 import net.vz.mongodb.jackson.internal.stream.JacksonDBObject;
@@ -24,6 +26,23 @@ public class VariationReducer {
   
   public VariationReducer(ObjectMapper mapper) {
     this.mapper = mapper;
+  }
+  
+  
+  public <T extends Document> List<T> reduceDBObject(List<DBObject> nodes, Class<T> cls) throws IOException {
+    List<T> rv = Lists.newArrayListWithCapacity(nodes.size());
+    for (DBObject n : nodes) {
+      rv.add(reduceDBObject(n, cls));
+    }
+    return rv;
+  }
+  
+  public <T extends Document> List<T> reduce(List<JsonNode> nodes, Class<T> cls) throws VariationException, JsonProcessingException {
+    List<T> rv = Lists.newArrayListWithCapacity(nodes.size());
+    for (JsonNode n : nodes) {
+      rv.add(reduce(n, cls));
+    }
+    return rv;
   }
   
   public <T extends Document> T reduce(JsonNode n, Class<T> cls) throws VariationException, JsonProcessingException {
