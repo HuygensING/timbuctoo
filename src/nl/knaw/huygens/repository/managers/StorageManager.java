@@ -125,7 +125,12 @@ public class StorageManager {
   }
 
   public List<Document> getLastChanged(int limit) {
-    return storage.getLastChanged(limit);
+    try {
+      return storage.getLastChanged(limit);
+    } catch (IOException e) {
+      e.printStackTrace();
+      return Collections.<Document>emptyList();
+    }
   }
 
   public <T extends Document> List<T> getAllLimited(Class<T> cls, int offset, int limit) {

@@ -16,6 +16,7 @@ import com.mongodb.DBObject;
 import net.vz.mongodb.jackson.internal.stream.JacksonDBObject;
 
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.storage.mongo.variation.DBJsonNode;
 
 public class VariationReducer {
   private ObjectMapper mapper;
@@ -130,16 +131,19 @@ public class VariationReducer {
   }
   
 
+  @SuppressWarnings("unchecked")
   public <T extends Document> T reduceDBObject(DBObject obj, Class<T> cls) throws VariationException, JsonProcessingException, IOException {
     if (obj == null) {
       return null;
     }
+    JsonNode tree;
     if (obj instanceof JacksonDBObject) {
-      @SuppressWarnings("unchecked")
-      JsonNode tree = ((JacksonDBObject<JsonNode>) obj).getObject();
-      return reduce(tree, cls);
+      tree = ((JacksonDBObject<JsonNode>) obj).getObject();
+    } else if (obj instanceof DBJsonNode) {
+      tree = ((DBJsonNode) obj).getDelegate();
+    } else {
+      throw new IOException("Huh? DB didn't generate the right type of object out of the data stream...");
     }
-
-    throw new IOException("Huh? DB didn't generate the right type of object out of the data stream...");
+    return reduce(tree, cls);
   }
 }

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -35,8 +36,6 @@ import nl.knaw.huygens.repository.variation.VariationException;
 import nl.knaw.huygens.repository.variation.VariationReducer;
 import nl.knaw.huygens.repository.variation.VariationUtils;
 
-// FIXME: this is a WIP, and needs to essentially stop using MongoUtils.getCollection and MongoUtils.getVersioningCollection.
-// instead, it should use a 'real' DBCollection, and wrap the results from there.
 public abstract class MongoVariationStorage implements Storage {
   protected Mongo mongo;
   protected DB db;
@@ -49,6 +48,7 @@ public abstract class MongoVariationStorage implements Storage {
   protected List<String> versionedDocumentTypes;
   
   private final VariationReducer reducer;
+  private MongoOptions options;
 
   static class Counter {
     @JsonProperty("_id")
@@ -57,12 +57,11 @@ public abstract class MongoVariationStorage implements Storage {
   }
 
   public MongoVariationStorage(StorageConfiguration conf) throws UnknownHostException, MongoException {
-    dbName = conf.getDbName();
-    mongo = new Mongo(conf.getHost(), conf.getPort());
-    
-    MongoOptions options = new MongoOptions();
+    dbName = conf.getDbName();    
+    options = new MongoOptions();
     options.safe = true;
     options.dbDecoderFactory = new TreeDecoderFactory();
+    options.dbEncoderFactory = new TreeEncoderFactory(new ObjectMapper());
     mongo = new Mongo(new ServerAddress(conf.getHost(), conf.getPort()), options);
     db = mongo.getDB(dbName);
     if (conf.requiresAuth()) {
@@ -84,7 +83,7 @@ public abstract class MongoVariationStorage implements Storage {
   @Override
   public <T extends Document> StorageIterator<T> getAllByType(Class<T> cls) {
     DBCollection col = getRawCollection(cls);
-    String t = MongoUtils.getCollectionName(VariationUtils.getEarliestCommonClass(cls));
+    String t = MongoUtils.getCollectionName(VariationUtils.getFirstCommonClass(cls));
     DBObject query = new BasicDBObject("^type", t);
     return new MongoDBVariationIteratorWrapper<T>(col.find(query), reducer, cls);
   }
@@ -199,7 +198,9 @@ public abstract class MongoVariationStorage implements Storage {
     return Joiner.on(".").join(accessors) + ".id";
   }
 
-  private DBCollection getRawCollection(Class<?> cls) {
-    return db.getCollection(MongoUtils.getCollectionName(VariationUtils.getBaseClass(cls)));
+  protected DBCollection getRawCollection(Class<? extends Document> cls) {
+    DBCollection col = db.getCollection(MongoUtils.getCollectionName(VariationUtils.getBaseClass(cls)));
+    col.setDBEncoderFactory(options.dbEncoderFactory);
+    return col;
   }
 }

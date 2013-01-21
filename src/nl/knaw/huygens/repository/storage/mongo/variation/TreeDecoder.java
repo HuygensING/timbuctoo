@@ -10,13 +10,13 @@ import org.bson.BSONObject;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.util.BufferRecycler;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.DBCallback;
 import com.mongodb.DBCollection;
 import com.mongodb.DBDecoder;
 import com.mongodb.DBObject;
 
 import de.undercouch.bson4jackson.BsonParser;
-import net.vz.mongodb.jackson.internal.stream.JacksonDBObject;
 
 public class TreeDecoder implements DBDecoder {
 
@@ -57,10 +57,9 @@ public class TreeDecoder implements DBDecoder {
 
   @Override
   public DBObject decode(InputStream in, DBCollection collection) throws IOException {
-    JacksonDBObject<JsonNode> decoded = new JacksonDBObject<JsonNode>();
     BsonParser jp = new BsonParser(new IOContext(new BufferRecycler(), in, false), 0, BsonParser.Feature.HONOR_DOCUMENT_LENGTH.getMask(), in);
-    decoded.setObject((JsonNode) jp.readValueAsTree());
-    return decoded;
+    jp.setCodec(new ObjectMapper());
+    return new DBJsonNode((JsonNode) jp.readValueAsTree());
   }
 
 }

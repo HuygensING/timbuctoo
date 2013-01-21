@@ -27,7 +27,7 @@ public class VariationInducerTest {
     VariationInducer inducer = new VariationInducer();
     JsonNode t = m.readTree(testStr);
     TestDoc x = new TestDoc();
-    x.a = "a";
+    x.name = "a";
     x.blah = "stuff";
     JsonNode allVariations = inducer.induce(x, TestDoc.class);
     assertEquals(t, allVariations);
@@ -47,7 +47,7 @@ public class VariationInducerTest {
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     JsonNode t = m.readTree(testStr);
     TestDoc x = new TestDoc();
-    x.a = "a";
+    x.name = "a";
     x.blah = "stuff";
     JsonNode allVariations = inducer.induce(x, TestDoc.class, existing);
     assertEquals(t, allVariations);
@@ -67,7 +67,7 @@ public class VariationInducerTest {
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     JsonNode t = m.readTree(testStr);
     TestDoc x = new TestDoc();
-    x.a = "a";
+    x.name = "a";
     x.blah = "stuff";
     JsonNode allVariations = inducer.induce(x, TestDoc.class, existing);
     assertEquals(t, allVariations);
@@ -88,7 +88,7 @@ public class VariationInducerTest {
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     JsonNode t = m.readTree(testStr);
     TestDoc x = new TestDoc();
-    x.a = "a";
+    x.name = "a";
     x.blah = "stuff";
     JsonNode allVariations = inducer.induce(x, TestDoc.class, existing);
     assertEquals(t, allVariations);
@@ -109,7 +109,7 @@ public class VariationInducerTest {
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     JsonNode t = m.readTree(testStr);
     TestDoc x = new TestDoc();
-    x.a = "a";
+    x.name = "a";
     x.blah = "stuff";
     JsonNode allVariations = inducer.induce(x, TestDoc.class, existing);
     assertEquals(t, allVariations);
@@ -130,7 +130,7 @@ public class VariationInducerTest {
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     JsonNode t = m.readTree(testStr);
     TestDoc x = new TestDoc();
-    x.a = "a";
+    x.name = "a";
     x.blah = "stuff";
     JsonNode allVariations = inducer.induce(x, TestDoc.class, existing);
     assertEquals(t, allVariations);
@@ -151,7 +151,7 @@ public class VariationInducerTest {
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     JsonNode t = m.readTree(testStr);
     TestDoc x = new TestDoc();
-    x.a = "a";
+    x.name = "a";
     x.blah = "stuff";
     JsonNode allVariations = inducer.induce(x, TestDoc.class, existing);
     assertEquals(t, allVariations);
@@ -174,7 +174,7 @@ public class VariationInducerTest {
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     TestDoc x = new TestDoc();
     x.setId("TST002");
-    x.a = "a";
+    x.name = "a";
     x.blah = "stuff";
     inducer.induce(x, TestDoc.class, existing);
   }
@@ -189,7 +189,7 @@ public class VariationInducerTest {
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     TestDoc x = new TestDoc();
     x.setId("TST001");
-    x.a = "a";
+    x.name = "a";
     x.blah = "stuff";
     try {
       inducer.induce(x, TestDoc.class, existing);
