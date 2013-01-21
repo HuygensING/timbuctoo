@@ -1,6 +1,7 @@
 package nl.knaw.huygens.repository.storage.mongo;
 
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,7 +85,7 @@ abstract class MongoDBStorage implements Storage {
 
 
   @Override
-  public <T extends Document> StorageIterator<T> getByMultipleIds(List<String> ids, Class<T> entityCls) {
+  public <T extends Document> StorageIterator<T> getByMultipleIds(Collection<String> ids, Class<T> entityCls) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, entityCls);
     return new MongoDBIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)));
   }

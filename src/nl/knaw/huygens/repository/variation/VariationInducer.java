@@ -2,6 +2,8 @@ package nl.knaw.huygens.repository.variation;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -11,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
+import com.google.common.collect.Lists;
 import com.mongodb.DBObject;
 
 import net.vz.mongodb.jackson.internal.stream.JacksonDBObject;
@@ -42,16 +45,24 @@ public class VariationInducer {
   }
   
   public <T extends Document> JsonNode induce(T item, Class<T> cls) throws VariationException {
-    ObjectNode treeNode = mapper.createObjectNode();
-    treeNode.put(VariationUtils.COMMON_PROPS, mapper.createObjectNode());
-    return induce(item, cls, treeNode);
+    return induce(item, cls, (ObjectNode) null);
+  }
+  
+  public <T extends Document> List<JsonNode> induce(List<T> items, Class<T> cls, Map<String, DBObject> existingItems) throws VariationException {
+    List<JsonNode> rv = Lists.newArrayListWithCapacity(items.size());
+    for (T item : items) {
+      rv.add(induce(item, cls, existingItems.get(item.getId())));
+    }
+    return rv;
   }
   
   @SuppressWarnings("unchecked")
   public <T extends Document> JsonNode induce(T item, Class<T> cls, DBObject existingItem) throws VariationException {
-
     ObjectNode o;
-    if (existingItem instanceof JacksonDBObject) {
+    if (existingItem == null) {
+      o = mapper.createObjectNode();
+      o.put(VariationUtils.COMMON_PROPS, mapper.createObjectNode());
+    } else if (existingItem instanceof JacksonDBObject) {
       o = (ObjectNode) (((JacksonDBObject<JsonNode>) existingItem).getObject());
     } else if (existingItem instanceof DBJsonNode) {
       o = (ObjectNode) ((DBJsonNode) existingItem).getDelegate();
@@ -66,7 +77,10 @@ public class VariationInducer {
     Class<?> commonClass = VariationUtils.getFirstCommonClass(cls);
     JsonNode commonTree = asTree(item, commonClass);
     JsonNode completeTree = asTree(item, cls);
-
+    if (existingItem == null) {
+      existingItem = mapper.createObjectNode();
+      existingItem.put(VariationUtils.COMMON_PROPS, mapper.createObjectNode());
+    }
     JsonNode existingCommonNode = existingItem.get(VariationUtils.COMMON_PROPS);
     if (existingCommonNode == null || !existingCommonNode.isObject()) {
       throw new VariationException("Common object is not an object?");
@@ -229,6 +243,14 @@ public class VariationInducer {
 
   public void setView(Class<?> view) {
     this.view = view;
+  }
+
+  public ObjectMapper getMapper() {
+    return mapper;
+  }
+
+  public void setMapper(ObjectMapper mapper) {
+    this.mapper = mapper;
   }
 
 }

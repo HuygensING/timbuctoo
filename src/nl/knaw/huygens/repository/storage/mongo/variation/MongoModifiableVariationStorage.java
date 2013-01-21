@@ -2,6 +2,7 @@ package nl.knaw.huygens.repository.storage.mongo.variation;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -40,8 +41,14 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
 
   @Override
   public <T extends Document> void addItems(List<T> items, Class<T> cls) throws IOException {
-    // TODO Auto-generated method stub
-    
+    List<JsonNode> jsonNodes = inducer.induce(items, cls, Collections.<String, DBObject>emptyMap());
+    DBCollection col = getRawCollection(cls);
+    DBObject[] dbObjects = new DBObject[jsonNodes.size()];
+    int i = 0;
+    for (JsonNode n : jsonNodes) {
+      dbObjects[i++] = new DBJsonNode(n);
+    }
+    col.insert(dbObjects);
   }
 
   @Override
@@ -50,6 +57,9 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
     BasicDBObject q = new BasicDBObject("_id", id);
     q.put("^rev", updatedItem.getRev());
     DBObject existingNode = col.findOne(q);
+    if (existingNode == null) {
+      throw new IOException("No document was found for ID " + id + " and revision " + String.valueOf(updatedItem.getRev()) + " !");
+    }
     JsonNode updatedNode = inducer.induce(updatedItem, cls, existingNode);
     ((ObjectNode) updatedNode).put("^rev", updatedItem.getRev() + 1);
     JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>();
@@ -59,8 +69,10 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
 
   @Override
   public <T extends Document> void deleteItem(String id, Class<T> cls, Change change) throws IOException {
-    // TODO Auto-generated method stub
-    
+    DBCollection col = getRawCollection(cls);
+    BasicDBObject up = new BasicDBObject("$inc", new BasicDBObject("^rev", 1));
+    up.put("$set", new BasicDBObject("^deleted", true));
+    col.update(new BasicDBObject("_id", id), up);
   }
 
   @Override

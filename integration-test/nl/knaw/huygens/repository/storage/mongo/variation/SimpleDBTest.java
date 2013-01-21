@@ -1,6 +1,7 @@
 package nl.knaw.huygens.repository.storage.mongo.variation;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
@@ -24,24 +25,52 @@ public class SimpleDBTest {
   public void test() throws IOException {
     StorageConfiguration conf = new StorageConfiguration("127.0.0.1", 27017, "integrationtest", "test", "test", "mongo");
     MongoModifiableVariationStorage s = new MongoModifiableVariationStorage(conf);
+    String docId = "TST0001";
+    try {
+      s.db.getCollection("testbasedoc").remove(new BasicDBObject("_id", docId));
+    } catch (Exception ex) {
+      System.err.println("Caught exception trying to remove item...");
+      ex.printStackTrace();
+    }
+
     try {
       TestDoc doc = new TestDoc();
       doc.name = "blub";
       doc.blah = "Floo";
-      doc.setId("TST0001");
+      doc.setRev(0);
+      doc.setId(docId);
       s.addItem(doc , TestDoc.class);
       OtherDoc otherDoc = new OtherDoc();
       otherDoc.name = "blob";
       otherDoc.otherThing = "Flups";
-      otherDoc.setId("TST0001");
-      s.updateItem("TST0001", otherDoc, OtherDoc.class);
-      TestDoc returnedItem = s.getItem("TST0001", TestDoc.class);
-      assertEquals(new BasicDBObject("^rev", null), MongoDiff.diffDocuments(returnedItem, doc));
+      otherDoc.setId(docId);
+      otherDoc.setRev(0);
+      s.updateItem(docId, otherDoc, OtherDoc.class);
+      TestDoc returnedItem = s.getItem(docId, TestDoc.class);
+      BasicDBObject expectedChange = new BasicDBObject("^rev", 1);
+      assertEquals(expectedChange, MongoDiff.diffDocuments(doc, returnedItem));
+      
+      TestDoc doc2 = new TestDoc();
+      doc2.name = "blubber";
+      doc2.blah = "Floo";
+      doc2.setId(docId);
+      doc2.setRev(1);
+      s.updateItem(docId, doc2, TestDoc.class);
+      returnedItem = s.getItem(docId, TestDoc.class);
+      expectedChange.put("^rev", 2);
+      assertEquals(expectedChange, MongoDiff.diffDocuments(doc2, returnedItem));
+      
+      s.deleteItem(docId, TestDoc.class, null);
+      expectedChange.put("^deleted", true);
+      expectedChange.put("^rev", 3);
+      expectedChange.put("name", "blubber");
+      returnedItem = s.getItem(docId, TestDoc.class);
+      assertEquals(expectedChange, MongoDiff.diffDocuments(doc, returnedItem));
     } catch (Exception ex) {
+      fail();
       ex.printStackTrace();
     } finally {
-      s.db.getCollection("testbasedoc").remove(new BasicDBObject("_id", "TST0001"));
-      s.destroy();
+      s.db.getCollection("testbasedoc").remove(new BasicDBObject("_id", docId));
     }
     
   }
