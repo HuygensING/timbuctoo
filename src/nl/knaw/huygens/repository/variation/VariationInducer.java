@@ -11,8 +11,12 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
+import com.mongodb.DBObject;
+
+import net.vz.mongodb.jackson.internal.stream.JacksonDBObject;
 
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.storage.mongo.variation.DBJsonNode;
 
 public class VariationInducer {
   private ObjectMapper mapper;
@@ -21,19 +25,19 @@ public class VariationInducer {
 
   public VariationInducer() {
     mapper = new ObjectMapper();
-    view = null;
-    writerWithView = mapper.writerWithView(view);
+    setView(null);
+    writerWithView = mapper.writerWithView(getView());
   }
   
   public VariationInducer(ObjectMapper mapper) {
     this.mapper = mapper;
-    this.view = null;
-    writerWithView = mapper.writerWithView(view);
+    this.setView(null);
+    writerWithView = mapper.writerWithView(getView());
   }
   
   public VariationInducer(ObjectMapper mapper, Class<?> view) {
     this.mapper = mapper;
-    this.view = view;
+    this.setView(view);
     writerWithView = mapper.writerWithView(view);
   }
   
@@ -43,8 +47,23 @@ public class VariationInducer {
     return induce(item, cls, treeNode);
   }
   
+  @SuppressWarnings("unchecked")
+  public <T extends Document> JsonNode induce(T item, Class<T> cls, DBObject existingItem) throws VariationException {
+
+    ObjectNode o;
+    if (existingItem instanceof JacksonDBObject) {
+      o = (ObjectNode) (((JacksonDBObject<JsonNode>) existingItem).getObject());
+    } else if (existingItem instanceof DBJsonNode) {
+      o = (ObjectNode) ((DBJsonNode) existingItem).getDelegate();
+    } else {
+      throw new VariationException("Unknown type of DBObject!");
+    }
+    return induce(item, cls, o);
+  }
+
+  
   public <T extends Document> JsonNode induce(T item, Class<T> cls, ObjectNode existingItem) throws VariationException {
-    Class<?> commonClass = VariationUtils.getEarliestCommonClass(cls);
+    Class<?> commonClass = VariationUtils.getFirstCommonClass(cls);
     JsonNode commonTree = asTree(item, commonClass);
     JsonNode completeTree = asTree(item, cls);
 
@@ -202,6 +221,14 @@ public class VariationInducer {
       throw new IllegalArgumentException(e.getMessage(), e);
     }
     return result;
+  }
+
+  public Class<?> getView() {
+    return view;
+  }
+
+  public void setView(Class<?> view) {
+    this.view = view;
   }
 
 }

@@ -5,10 +5,8 @@ import com.mongodb.DBDecoderFactory;
 
 
 public class TreeDecoderFactory implements DBDecoderFactory {
-
   @Override
   public DBDecoder create() {
     return new TreeDecoder();
   }
-
 }

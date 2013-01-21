@@ -28,7 +28,7 @@ public class VariationReducerTest {
     JsonNode t = m.readTree(x);
     TestDoc val = reducer.reduce(t, TestDoc.class);
     TestDoc testVal = new TestDoc();
-    testVal.a = "a";
+    testVal.name = "a";
     testVal.blah = "stuff"; 
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -49,7 +49,7 @@ public class VariationReducerTest {
     JsonNode t = m.readTree(x);
     TestDoc val = reducer.reduce(t, TestDoc.class);
     TestDoc testVal = new TestDoc();
-    testVal.a = "a";
+    testVal.name = "a";
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
 
