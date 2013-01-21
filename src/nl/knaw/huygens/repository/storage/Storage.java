@@ -1,6 +1,7 @@
 package nl.knaw.huygens.repository.storage;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +16,7 @@ public interface Storage {
 
   public Map<String, String> getSimpleMap(Class<? extends Document> cls);
 
-  public <T extends Document> StorageIterator<T> getByMultipleIds(List<String> ids, Class<T> entityCls);
+  public <T extends Document> StorageIterator<T> getByMultipleIds(Collection<String> ids, Class<T> entityCls);
 
   public <T extends Document> void addItem(T newItem, Class<T> cls) throws IOException;
 
@@ -40,4 +41,5 @@ public interface Storage {
   public void ensureIndex(Class<? extends Document> cls, List<List<String>> accessorList);
 
   public <T extends Document> void removeReference(Class<T> cls, List<String> accessorList, List<String> referringIds, String referredId, Change change);
+
 }
