@@ -1,9 +1,15 @@
-package nl.knaw.huygens.repository.variation.base.model;
+package nl.knaw.huygens.repository.variation.model;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.Storage;
 
+/**
+ * Basic POJO object used for testing
+ */
 public abstract class TestBaseDoc extends Document {
+  /**
+   * Simple string prop for testing.
+   */
   public String name;
   
   @Override
@@ -13,7 +19,5 @@ public abstract class TestBaseDoc extends Document {
 
   @Override
   public void fetchAll(Storage storage) {
-    // TODO Auto-generated method stub
-    
   }
 }

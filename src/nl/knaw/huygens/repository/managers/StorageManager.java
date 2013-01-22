@@ -79,14 +79,9 @@ public class StorageManager {
     return storage.getAllByType(entityCls);
   }
 
-  public <T extends Document> Map<String, String> getSimpleCollection(Class<T> entityCls) {
-    return storage.getSimpleMap(entityCls);
-  }
-
   public <T extends Document> RevisionChanges getVersions(String id, Class<T> entityCls) {
     return storage.getAllRevisions(id, entityCls);
   }
-
 
   public <T extends Document> void addDocument(T doc, Class<T> entityCls) throws IOException {
     storage.addItem(doc, entityCls);
