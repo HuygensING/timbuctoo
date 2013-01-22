@@ -3,7 +3,6 @@ package nl.knaw.huygens.repository.storage;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
@@ -13,8 +12,6 @@ public interface Storage {
   public <T extends Document> T getItem(String id, Class<T> cls) throws IOException;
 
   public <T extends Document> StorageIterator<T> getAllByType(Class<T> cls);
-
-  public Map<String, String> getSimpleMap(Class<? extends Document> cls);
 
   public <T extends Document> StorageIterator<T> getByMultipleIds(Collection<String> ids, Class<T> entityCls);
 

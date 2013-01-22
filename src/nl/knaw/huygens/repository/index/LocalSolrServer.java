@@ -17,6 +17,8 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.LukeRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.SimpleOrderedMap;
@@ -25,9 +27,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class LocalSolrServer {
+
+  private static final String DESC_FIELD = "desc";
+
+  private static final String ID_FIELD = "id";
 
   private final Logger LOG = LoggerFactory.getLogger(LocalSolrServer.class);
 
@@ -35,7 +42,7 @@ public class LocalSolrServer {
 
   private Set<String> modifiedCores = Sets.newHashSetWithExpectedSize(3);
 
-  private static final String SOLR_DEFAULT_FIELD = "id";
+  private static final String SOLR_DEFAULT_FIELD = ID_FIELD;
 
   // FIXME this is probably suboptimal:
   private static final int ROWS = 2000;
@@ -79,7 +86,7 @@ public class LocalSolrServer {
 
   public void update(String core, SolrInputDocument doc) throws IndexException {
     try {
-      solrServers.get(core).deleteById(doc.getFieldValue("id").toString());
+      solrServers.get(core).deleteById(doc.getFieldValue(ID_FIELD).toString());
       solrServers.get(core).add(doc);
       modifiedCores.add(core);
     } catch (Exception e) {
@@ -89,7 +96,7 @@ public class LocalSolrServer {
 
   public void delete(String core, SolrInputDocument doc) throws IndexException {
     try {
-      solrServers.get(core).deleteById(doc.getFieldValue("id").toString());
+      solrServers.get(core).deleteById(doc.getFieldValue(ID_FIELD).toString());
       modifiedCores.add(core);
     } catch (Exception e) {
       throw new IndexException(e.getMessage());
@@ -157,5 +164,24 @@ public class LocalSolrServer {
 
   public Collection<String> getCoreNames() {
     return solrServers.keySet();
+  }
+
+  /**
+   * Obtain a simple mapping of IDs to descriptions of the document
+   * @param core
+   * @return
+   * @throws SolrServerException
+   */
+  public Map<String, String> getSimpleMap(String core) throws SolrServerException {
+    SolrQuery query = new SolrQuery();
+    query.setFields(ID_FIELD, DESC_FIELD);
+    query.setQuery("*:*");
+    QueryResponse response = solrServers.get(core).query(query);
+    SolrDocumentList results = response.getResults();
+    Map<String, String> rv = Maps.newHashMapWithExpectedSize(results.size());
+    for (SolrDocument doc : results) {
+      rv.put(doc.getFieldValue(ID_FIELD).toString(), doc.getFieldValue(DESC_FIELD).toString());
+    }
+    return rv;
   }
 }

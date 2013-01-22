@@ -12,8 +12,8 @@ import com.mongodb.BasicDBObject;
 
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.mongo.MongoDiff;
-import nl.knaw.huygens.repository.storage.mongo.variation.model.projecta.OtherDoc;
-import nl.knaw.huygens.repository.variation.TestDoc;
+import nl.knaw.huygens.repository.variation.model.projecta.OtherDoc;
+import nl.knaw.huygens.repository.variation.model.projectb.TestDoc;
 
 public class SimpleDBTest {
 

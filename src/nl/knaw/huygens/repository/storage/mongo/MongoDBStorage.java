@@ -102,27 +102,6 @@ abstract class MongoDBStorage implements Storage {
     return changedDocs.subList(0, limit);
   }
 
-  // FIXME this should probably on the index.
-  // FIXME Separately, we should investigate how to optimize
-  // client-server sync wrt autocomplete fields etc. when there
-  // are DB updates.
-  @Override
-  public Map<String, String> getSimpleMap(Class<? extends Document> cls) {
-    JacksonDBCollection<? extends Document,String> collection = MongoUtils.getCollection(db, cls);
-    DBCursor<? extends Document> cursor = collection.find();
-    Map<String, String> rv = Maps.newHashMapWithExpectedSize(cursor.count());
-    try {
-      while (cursor.hasNext()) {
-        Document d = cursor.next();
-        d.fetchAll(this);
-        rv.put(d.getId(), d.getDescription());
-      }
-    } finally {
-      cursor.close();
-    }
-    return rv;
-  }
-
   @Override
   public <T extends Document> void fetchAll(List<GenericDBRef<T>> refs, Class<T> cls) {
     Set<String> mongoRefs = Sets.newHashSetWithExpectedSize(refs.size());

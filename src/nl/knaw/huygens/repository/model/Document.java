@@ -1,12 +1,12 @@
 package nl.knaw.huygens.repository.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.Storage;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public abstract class Document {
   protected String type;
@@ -84,6 +84,7 @@ public abstract class Document {
   }
 
   @JsonIgnore
+  @IndexAnnotation(fieldName = "desc")
   public abstract String getDescription();
 
   public abstract void fetchAll(Storage storage);
