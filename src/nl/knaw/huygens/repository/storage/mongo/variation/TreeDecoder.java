@@ -59,7 +59,9 @@ public class TreeDecoder implements DBDecoder {
   public DBObject decode(InputStream in, DBCollection collection) throws IOException {
     BsonParser jp = new BsonParser(new IOContext(new BufferRecycler(), in, false), 0, BsonParser.Feature.HONOR_DOCUMENT_LENGTH.getMask(), in);
     jp.setCodec(new ObjectMapper());
-    return new DBJsonNode((JsonNode) jp.readValueAsTree());
+    JsonNode tree = (JsonNode) jp.readValueAsTree();
+    jp.close();
+    return new DBJsonNode(tree);
   }
 
 }
