@@ -34,8 +34,7 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
   public <T extends Document> void addItem(T newItem, Class<T> cls) throws IOException {
     JsonNode jsonNode = inducer.induce(newItem, cls);
     DBCollection col = getRawCollection(cls);
-    JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>();
-    insertedItem.setObject(jsonNode);
+    JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
     col.insert(insertedItem);
   }
 
@@ -46,7 +45,8 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
     DBObject[] dbObjects = new DBObject[jsonNodes.size()];
     int i = 0;
     for (JsonNode n : jsonNodes) {
-      dbObjects[i++] = new DBJsonNode(n);
+      JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(n, JsonNode.class);
+      dbObjects[i++] = updatedDBObj;
     }
     col.insert(dbObjects);
   }
@@ -62,8 +62,7 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
     }
     JsonNode updatedNode = inducer.induce(updatedItem, cls, existingNode);
     ((ObjectNode) updatedNode).put("^rev", updatedItem.getRev() + 1);
-    JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>();
-    updatedDBObj.setObject(updatedNode);
+    JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(updatedNode, JsonNode.class);
     col.update(q, updatedDBObj);
   }
 
