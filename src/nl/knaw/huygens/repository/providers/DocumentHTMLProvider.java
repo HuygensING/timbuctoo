@@ -67,6 +67,7 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
   public void writeTo(Document doc, Class<?> type, Type genericType, Annotation[] annotations,
       MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
       throws IOException, WebApplicationException {
+    // FIXME: this should somehow pass/use the annotations to Jackson
     entityStream.write(PREAMBLE);
     entityStream.write("<title>".getBytes("UTF-8"));
     byte[] title = encodeTitle(doc);
