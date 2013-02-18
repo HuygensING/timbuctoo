@@ -11,14 +11,14 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.google.inject.Inject;
+
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 
-import com.fasterxml.jackson.annotation.JsonView;
-import com.google.inject.Inject;
-
-@Path("resources/{resourceType: [a-zA-Z]+}")
+@Path("resources/{entityType: [a-zA-Z]+}")
 public class RESTAutoResource {
     private final StorageManager storageManager;
     
@@ -31,9 +31,9 @@ public class RESTAutoResource {
     @Path("/all")
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
     @JsonView(JsonViews.WebView.class)
-    public List<? extends Document> getAllDocs(@PathParam("resourceType") String resourceType,
+    public List<? extends Document> getAllDocs(@PathParam("entityType") String entityType,
         @QueryParam("rows") @DefaultValue("200") int rows, @QueryParam("start") int start) {
-      Class<? extends Document> cls = Document.getSubclassByString(resourceType);
+      Class<? extends Document> cls = Document.getSubclassByString(entityType);
       if (cls == null) {
         throw new WebApplicationException(404);
       }
@@ -45,8 +45,8 @@ public class RESTAutoResource {
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
     @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}")
     @JsonView(JsonViews.WebView.class)
-    public Document getDoc(@PathParam("resourceType") String resourceType, @PathParam("id") String id) {
-      Class<? extends Document> cls = Document.getSubclassByString(resourceType);
+    public Document getDoc(@PathParam("entityType") String entityType, @PathParam("id") String id) {
+      Class<? extends Document> cls = Document.getSubclassByString(entityType);
       if (cls == null) {
         throw new WebApplicationException(404);
       }
