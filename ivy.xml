@@ -51,10 +51,7 @@
 		<exclude org="commons-digester" />
 		<exclude org="commons-logging" />		
 	</dependency>
-	
-	<!-- Freemarker for HTML templating -->
-	<dependency org="org.freemarker" name="freemarker" rev="2.3.16" conf="main->default" />
-	
+
 	<!-- Apache commons. Should actually probably decide on either Guava or Commons... -->
     <dependency org="commons-io" name="commons-io" rev="2.0.1" conf="main->default" />
 	<dependency org="commons-configuration" name="commons-configuration" rev="1.6" conf="main->default" />
