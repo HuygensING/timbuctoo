@@ -17,6 +17,8 @@ public class ChangeManager {
   private static class Info {
     protected String name;
     protected String id;
+    protected String vreName;
+    protected String vreId;
   }
 
   private interface InfoGetter {
@@ -45,6 +47,7 @@ public class ChangeManager {
       } else {
         rv.name = commonName.hasMoreElements() ? commonName.nextElement() : email.nextElement();
       }
+      // FIXME this should get VRE Identification as well.
       return rv;
     }
   }
@@ -58,7 +61,9 @@ public class ChangeManager {
         if (!(userObj instanceof User)) {
           throw new Exception("Invalid user object for change.");
         }
+        // FIXME this info-getter isn't correctly implemented yet.
         User x = (User) userObj; // resource.getClientInfo().getUser();
+        // FIXME this should get VRE Identification as well.
         rv.id = x.getId();
         rv.name = x.firstName + " " + x.lastName;
       } catch (Exception ex) {
@@ -88,6 +93,6 @@ public class ChangeManager {
   public Change getChange(HttpServletRequest req) {
     long stamp = new Date().getTime();
     Info info = infoGetter.getInfo(req);
-    return new Change(stamp, info.id, info.name);
+    return new Change(stamp, info.id, info.name, info.vreId, info.vreName);
   }
 }

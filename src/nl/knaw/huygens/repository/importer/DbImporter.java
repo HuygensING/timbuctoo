@@ -9,14 +9,15 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+
 import net.vz.mongodb.jackson.internal.MongoJacksonMapperModule;
+
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.util.Configuration;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 
 public class DbImporter {
   private final Configuration conf;
@@ -25,7 +26,7 @@ public class DbImporter {
     this.conf = conf;
     this.storage = storage;
   }
-  public <T extends Document> void bulkImport(Class<T> entityClass, boolean setChange)  {
+  public <T extends Document> void bulkImport(Class<T> entityClass, boolean setChange, String vreId, String vreName)  {
     ObjectMapper mapper = new ObjectMapper();
     MongoJacksonMapperModule.configure(mapper);
     try {
@@ -36,7 +37,7 @@ public class DbImporter {
       while ((line = input.readLine()) != null) {
         T item = mapper.readValue(line, entityClass);
         if (setChange) {
-          Change change = new Change(new Date().getTime(), "database-id", "Database import");
+          Change change = new Change(new Date().getTime(), "database-id", "Database import", vreId, vreName);
           if (item.getLastChange() == null) {
             item.setLastChange(change);
           }

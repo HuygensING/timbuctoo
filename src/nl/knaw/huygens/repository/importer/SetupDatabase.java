@@ -12,17 +12,17 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Map;
 
+import org.apache.commons.configuration.ConfigurationException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.User;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.util.Configuration;
 import nl.knaw.huygens.repository.util.CryptoUtils;
-
-import org.apache.commons.configuration.ConfigurationException;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 
 public class SetupDatabase {
 
@@ -37,6 +37,9 @@ public class SetupDatabase {
 	public static void main(String[] args) throws ConfigurationException, IOException {
 	  initialize(new Configuration("config.xml"));
 	  Hub hub = new Hub();
+	  // FIXME: this should be configurable, and for that we need a commandline parsing tool.
+	  String vreId = "test-vre";
+	  String vreName = "Test VRE";
 
 	  storageManager = new StorageManager(conf, hub);
 	  System.out.println("Emptying the database...");
@@ -54,7 +57,7 @@ public class SetupDatabase {
 	    if (cls == null) {
 	      System.err.println("Couldn't find a model for document type " + model + "! Are you sure you modeled everything correctly?");
 	    } else {
-	      importer.bulkImport(cls, true);
+	      importer.bulkImport(cls, true, vreId, vreName);
 	    }
 	  }
 	  System.out.println("Creating indices...");
