@@ -72,8 +72,11 @@ public class Datable implements Serializable {
   }
 
   private void convertFromEDTF(String text) {
-    text = text.replace("<", "").replace(">", "").trim();
-    EDTFPattern edtf = EDTFPattern.matchingPattern(text);
+    EDTFPattern edtf = null;
+    if(text != null){
+      text = text.replace("<", "").replace(">", "").trim();
+      edtf = EDTFPattern.matchingPattern(text);
+    }
     if (edtf == null || edtf.equals("")) {
       setCertainty(Certainty.LOW);
     } else {
