@@ -8,9 +8,12 @@ import java.util.List;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import com.mongodb.Mongo;
 import com.mongodb.MongoException;
+import com.mongodb.MongoOptions;
 
 import net.vz.mongodb.jackson.internal.stream.JacksonDBObject;
 
@@ -26,6 +29,12 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
 
   public MongoModifiableVariationStorage(StorageConfiguration conf) throws UnknownHostException, MongoException {
     super(conf);
+    inducer = new VariationInducer();
+    inducer.setView(JsonViews.DBView.class);
+  }
+  
+  public MongoModifiableVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options) throws UnknownHostException, MongoException {
+    super(conf, m, db, options);
     inducer = new VariationInducer();
     inducer.setView(JsonViews.DBView.class);
   }
@@ -79,6 +88,10 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
     db.cleanCursors(true);
     mongo.dropDatabase(dbName);
     db = mongo.getDB(dbName);
+  }
+  
+  public void resetDB(DB db) {
+    this.db = db;
   }
 
   @Override

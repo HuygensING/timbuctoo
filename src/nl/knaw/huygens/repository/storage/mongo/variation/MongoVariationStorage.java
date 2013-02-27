@@ -43,12 +43,11 @@ public abstract class MongoVariationStorage implements Storage {
   protected String dbName;
 
   private final String COUNTER_COLLECTION_NAME = "counters";
-  protected final JacksonDBCollection<Counter, String> counterCol;
+  protected JacksonDBCollection<Counter, String> counterCol;
 
-  private final List<String> documentCollections;
-  protected List<String> versionedDocumentTypes;
+  private Set<String> documentCollections;
   
-  private final VariationReducer reducer;
+  private VariationReducer reducer;
   private MongoOptions options;
 
   static class Counter {
@@ -56,21 +55,31 @@ public abstract class MongoVariationStorage implements Storage {
     public String id;
     public int next;
   }
-
+  
   public MongoVariationStorage(StorageConfiguration conf) throws UnknownHostException, MongoException {
-    dbName = conf.getDbName();    
+    dbName = conf.getDbName();
     options = new MongoOptions();
     options.safe = true;
     options.dbDecoderFactory = new TreeDecoderFactory();
-    options.dbEncoderFactory = new TreeEncoderFactory(new ObjectMapper());
-    mongo = new Mongo(new ServerAddress(conf.getHost(), conf.getPort()), options);
+    options.dbEncoderFactory = new TreeEncoderFactory(new ObjectMapper());    mongo = new Mongo(new ServerAddress(conf.getHost(), conf.getPort()), options);
     db = mongo.getDB(dbName);
     if (conf.requiresAuth()) {
       db.authenticate(conf.getUser(), conf.getPassword().toCharArray());
     }
+    initializeVariationCollections(conf);
+  }
+  
+  public MongoVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options) throws UnknownHostException, MongoException {
+    this.options = options;
+    dbName = conf.getDbName();
+    this.mongo = m;
+    this.db = db;
+    initializeVariationCollections(conf);
+  }
+
+  private void initializeVariationCollections(StorageConfiguration conf) {
     counterCol = JacksonDBCollection.wrap(db.getCollection(COUNTER_COLLECTION_NAME), Counter.class, String.class);
     documentCollections = conf.getDocumentTypes();
-    versionedDocumentTypes = conf.getVersionedTypes();
     reducer = new VariationReducer();
   }
 

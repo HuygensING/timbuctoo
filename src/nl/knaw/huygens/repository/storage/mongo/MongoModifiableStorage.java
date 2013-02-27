@@ -10,7 +10,9 @@ import org.bson.BSONObject;
 import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
 import com.mongodb.CommandResult;
+import com.mongodb.DB;
 import com.mongodb.DBObject;
+import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 
 import net.vz.mongodb.jackson.DBQuery;
@@ -24,11 +26,16 @@ import nl.knaw.huygens.repository.model.util.IDPrefix;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 
-public class MongoDBModifiableStorage extends MongoDBStorage implements Storage {
+public class MongoModifiableStorage extends MongoStorage implements Storage {
 
-  public MongoDBModifiableStorage(StorageConfiguration conf) throws UnknownHostException, MongoException {
+  public MongoModifiableStorage(StorageConfiguration conf) throws UnknownHostException, MongoException {
     super(conf);
   }
+  
+  public MongoModifiableStorage(StorageConfiguration conf, Mongo m, DB loanedDB) throws UnknownHostException, MongoException {
+    super(conf, m, loanedDB);
+  }
+
 
   @Override
   public <T extends Document> void addItem(T newItem, Class<T> cls) throws IOException {
@@ -116,6 +123,10 @@ public class MongoDBModifiableStorage extends MongoDBStorage implements Storage 
     db.cleanCursors(true);
     mongo.dropDatabase(dbName);
     db = mongo.getDB(dbName);
+  }
+  
+  public void resetDB(DB db) {
+    this.db = db;
   }
 
   @Override

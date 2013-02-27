@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -31,7 +32,7 @@ public class StorageManager {
 
   private Storage storage;
   private Map<Class<? extends Document>, Map<Class<? extends Document>, List<List<String>>>> annotationCache;
-  private List<String> documentTypes;
+  private Set<String> documentTypes;
   private final Hub hub;
 
   public StorageManager(Configuration conf, Hub hub) {
@@ -44,7 +45,7 @@ public class StorageManager {
   }
 
   // Test-only!
-  protected StorageManager(Storage storage, List<String> documentTypes, Hub hub) {
+  protected StorageManager(Storage storage, Set<String> documentTypes, Hub hub) {
     this.storage = storage;
     this.documentTypes = documentTypes;
     this.hub = hub;

@@ -29,16 +29,16 @@ import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.generic.StorageUtils;
 
-abstract class MongoDBStorage implements Storage {
+abstract class MongoStorage implements Storage {
   protected Mongo mongo;
   protected DB db;
   protected String dbName;
 
   private final String COUNTER_COLLECTION_NAME = "counters";
-  protected final JacksonDBCollection<Counter, String> counterCol;
+  protected JacksonDBCollection<Counter, String> counterCol;
 
-  private final List<String> documentCollections;
-  protected List<String> versionedDocumentTypes;
+  private Set<String> documentCollections;
+  protected Set<String> versionedDocumentTypes;
 
   static class Counter {
     @JsonProperty("_id")
@@ -46,7 +46,7 @@ abstract class MongoDBStorage implements Storage {
     public int next;
   }
 
-  public MongoDBStorage(StorageConfiguration conf) throws UnknownHostException, MongoException {
+  public MongoStorage(StorageConfiguration conf) throws UnknownHostException, MongoException {
     dbName = conf.getDbName();
     mongo = new Mongo(conf.getHost(), conf.getPort());
     db = mongo.getDB(dbName);
@@ -54,9 +54,19 @@ abstract class MongoDBStorage implements Storage {
       db.authenticate(conf.getUser(), conf.getPassword().toCharArray());
     }
     db.setWriteConcern(WriteConcern.SAFE);
+    initializeDB(conf);
+  }
+
+  private void initializeDB(StorageConfiguration conf) {
     counterCol = JacksonDBCollection.wrap(db.getCollection(COUNTER_COLLECTION_NAME), Counter.class, String.class);
     documentCollections = conf.getDocumentTypes();
     versionedDocumentTypes = conf.getVersionedTypes();
+  }
+
+  public MongoStorage(StorageConfiguration conf, Mongo m, DB loanedDB) {
+    mongo = m;
+    db = loanedDB;
+    initializeDB(conf);
   }
 
   @Override

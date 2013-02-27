@@ -19,6 +19,7 @@
 			<config>solrconfig.xml</config>
 		</solr>
 		<doctypes>person</doctypes>
+		<variationdoctypes>person</variationdoctypes>
 		<indexeddoctypes>person</indexeddoctypes>
 		<versioneddoctypes>person,user</versioneddoctypes>
 		<defaultdoctype>person</defaultdoctype>
