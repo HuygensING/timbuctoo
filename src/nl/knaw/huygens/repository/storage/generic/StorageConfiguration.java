@@ -1,11 +1,11 @@
 package nl.knaw.huygens.repository.storage.generic;
 
-import java.util.List;
-
-import nl.knaw.huygens.repository.util.Configuration;
+import java.util.Set;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
+import nl.knaw.huygens.repository.util.Configuration;
 
 public class StorageConfiguration {
   private String host;
@@ -15,8 +15,9 @@ public class StorageConfiguration {
   private String password;
   private String type;
   private String key;
-  private List<String> documentTypes;
-  private List<String> versionedTypes;
+  private Set<String> documentTypes;
+  private Set<String> versionedTypes;
+  private Set<String> variationTypes;
 
   public StorageConfiguration(String host, int port, String dbName, String user, String password, String type) {
     this.host = host;
@@ -36,9 +37,11 @@ public class StorageConfiguration {
     password = conf.getSetting("database.password", null);
     key = Joiner.on(":").useForNull("null").join(host, port, dbName, user, password);
     String docTypes = conf.getSetting("doctypes");
-    documentTypes = Lists.newArrayList(docTypes.split(","));
+    documentTypes = Sets.newHashSet(docTypes.split(","));
     String versionedDocTypes = conf.getSetting("versioneddoctypes", docTypes);
-    versionedTypes = Lists.newArrayList(versionedDocTypes.split(","));
+    versionedTypes = Sets.newHashSet(versionedDocTypes.split(","));
+    String variationDocTypes = conf.getSetting("variationdoctypes", docTypes);
+    variationTypes = Sets.newHashSet(variationDocTypes.split(",")); 
   }
 
   public boolean requiresAuth() {
@@ -80,11 +83,15 @@ public class StorageConfiguration {
     return key;
   }
 
-  public List<String> getDocumentTypes() {
+  public Set<String> getDocumentTypes() {
     return documentTypes;
   }
 
-  public List<String> getVersionedTypes() {
+  public Set<String> getVersionedTypes() {
     return versionedTypes;
+  }
+
+  public Set<String> getVariationDocumentTypes() {
+    return variationTypes;
   }
 }
