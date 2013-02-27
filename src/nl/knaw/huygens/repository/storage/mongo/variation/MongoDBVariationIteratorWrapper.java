@@ -17,7 +17,7 @@ public class MongoDBVariationIteratorWrapper<T extends Document> implements Stor
   private final DBCursor delegate;
   private final VariationReducer reducer;
   private final Class<T> cls;
-  private Boolean closed;
+  private boolean closed;
 
   public MongoDBVariationIteratorWrapper(DBCursor delegate, VariationReducer reducer, Class<T> cls) {
     this.delegate = delegate;
@@ -52,9 +52,18 @@ public class MongoDBVariationIteratorWrapper<T extends Document> implements Stor
   @Override
   public List<T> getSome(int count) {
     List<T> rv = Lists.newArrayListWithCapacity(count);
-    while (count-- > 0) {
+    while (count-- > 0 && delegate.hasNext()) {
+      DBObject next;
       try {
-        rv.add(reducer.reduceDBObject(delegate.next(), cls));
+        next = delegate.next();
+      } catch (Exception ex) {
+        // Gotta love how mongo documents that there's a nomoreelements exception... nuh-uh.
+        close();
+        break;
+      }
+      
+      try {
+        rv.add(reducer.reduceDBObject(next, cls));
       } catch (IOException e) {
         e.printStackTrace();
         rv.add(null);
@@ -79,7 +88,7 @@ public class MongoDBVariationIteratorWrapper<T extends Document> implements Stor
 
   @Override
   public void close() {
-    synchronized(closed) {
+    synchronized(this) {
       if (!closed) {
         closed = true;
         delegate.close();
