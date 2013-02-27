@@ -177,11 +177,12 @@ public class DatableTest {
   }
 
   /**
-   * When a datable is initialized with a null value, it should throw an Exception.
+   * When a datable is initialized with a null value, it should
+   * not throw an Exception.
    */
   @Test
   public void testNullString() {
-    Datable datable = new Datable(null);
+    new Datable(null);
   }
 
 }
