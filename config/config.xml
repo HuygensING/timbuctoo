@@ -8,7 +8,7 @@
 			<web>../web</web>
 		</paths>
 		<database>
-			<type>mongo</type>
+			<type>mongocombo</type>
 			<host>localhost</host>
 			<name>repository</name>
 			<port>27017</port>
