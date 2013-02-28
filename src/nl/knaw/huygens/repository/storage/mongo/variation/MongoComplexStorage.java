@@ -94,7 +94,7 @@ public class MongoComplexStorage implements Storage {
   }
 
   @Override
-  public RevisionChanges getAllRevisions(String id, Class<? extends Document> baseCls) {
+  public <T extends Document> RevisionChanges<T> getAllRevisions(String id, Class<T> baseCls) {
     return getStorageForType(baseCls).getAllRevisions(id, baseCls);
   }
 
@@ -132,11 +132,6 @@ public class MongoComplexStorage implements Storage {
   @Override
   public void ensureIndex(Class<? extends Document> cls, List<List<String>> accessorList) {
     getStorageForType(cls).ensureIndex(cls, accessorList);
-  }
-
-  @Override
-  public <T extends Document> void removeReference(Class<T> cls, List<String> accessorList, List<String> referringIds, String referredId, Change change) {
-    getStorageForType(cls).removeReference(cls, accessorList, referringIds, referredId, change);
   }
 
 }

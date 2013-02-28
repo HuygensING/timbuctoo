@@ -2,10 +2,11 @@ package nl.knaw.huygens.repository.storage.mongo;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.Iterator;
 import java.util.List;
 
-import org.bson.BSONObject;
+import org.mongojack.DBQuery;
+import org.mongojack.JacksonDBCollection;
+import org.mongojack.WriteResult;
 
 import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
@@ -14,11 +15,6 @@ import com.mongodb.DB;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
-
-import net.vz.mongodb.jackson.DBQuery;
-import net.vz.mongodb.jackson.DBQuery.Query;
-import net.vz.mongodb.jackson.JacksonDBCollection;
-import net.vz.mongodb.jackson.WriteResult;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
@@ -51,13 +47,13 @@ public class MongoModifiableStorage extends MongoStorage implements Storage {
     boolean shouldVersion = versionedDocumentTypes.contains(col.getName());
 
     // Create the changes objects for all these documents:
-    List<MongoChanges> changes = Lists.newArrayListWithCapacity(items.size());
+    List<MongoChanges<T>> changes = Lists.newArrayListWithCapacity(items.size());
     int lastId = 0;
     for (T item : items) {
       String itemId = item.getId();
       lastId = Math.max(lastId, Integer.parseInt(itemId.substring(3), 10));
       if (shouldVersion) {
-        changes.add(new MongoChanges(item.getId(), MongoUtils.getObjectForDoc(item)));
+        changes.add(new MongoChanges<T>(item.getId(), item));
       }
     }
 
@@ -104,18 +100,12 @@ public class MongoModifiableStorage extends MongoStorage implements Storage {
     T item = col.findAndModify(DBQuery.is("_id", id), update);
 
     // Then update the versioning table:
-    JacksonDBCollection<MongoChanges, String> versionCol = MongoUtils.getVersioningCollection(db, cls);
+    JacksonDBCollection<MongoChanges<T>, String> versionCol = MongoUtils.getVersioningCollection(db, cls);
     int oldRev = item.getRev();
-    // Use item.isDeleted() rather than a hardcoded 'false',
-    // because we're technically not sure if it wasn't deleted already.
-    BasicDBObject fromnext = new BasicDBObject("^deleted", item.isDeleted());
-    BasicDBObject frompast = new BasicDBObject("^deleted", true);
-    frompast.put("^rev", oldRev + 1);
-    frompast.put("^lastChange", newLastChange);
-    fromnext.put("^rev", oldRev);
-    fromnext.put("^lastChange", MongoUtils.getObjectForDoc(item.getLastChange()));
-    changeVersionObj(id, fromnext, frompast, oldRev, versionCol);
     item.setRev(oldRev + 1);
+    item.setLastChange(change);
+    item.setDeleted(true);
+    changeVersionObj(id, oldRev, versionCol, item);
   }
 
   @Override
@@ -127,65 +117,6 @@ public class MongoModifiableStorage extends MongoStorage implements Storage {
   
   public void resetDB(DB db) {
     this.db = db;
-  }
-
-  @Override
-  public <T extends Document> void removeReference(Class<T> cls, List<String> accessorList, List<String> referringIds, String referredId, Change change) {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
-    JacksonDBCollection<MongoChanges, String> versionCol = MongoUtils.getVersioningCollection(db, cls);
-    List<T> docs = col.find(DBQuery.in("_id", referringIds)).toArray();
-    for (T doc : docs) {
-      doc.setLastChange(change);
-      DBObject newObj;
-      DBObject origObj;
-      try {
-        origObj = MongoUtils.getObjectForDoc(doc);
-        newObj = MongoUtils.getObjectForDoc(doc);
-      } catch (IOException ex) {
-        continue;
-      }
-      removeNested(newObj, accessorList, referredId);
-      col.update(DBQuery.is("_id", doc.getId()).is("^rev", doc.getRev()), newObj);
-      changeVersionObj(doc.getId(), MongoDiff.diffToNewObject(newObj, origObj), MongoDiff.diffToNewObject(origObj, newObj), doc.getRev(), versionCol);
-    }
-  }
-
-  private boolean removeNested(Object newObj, List<String> accessorList, String referredId) {
-    // Deal with lists first:
-    if (newObj instanceof List) {
-      @SuppressWarnings("unchecked")
-      List<Object> l = (List<Object>) newObj;
-      // Using an iterator (shudder) in order to correctly remove elements.
-      Iterator<Object> it = l.iterator();
-      while (it.hasNext()) {
-        Object item = it.next();
-        if (removeNested(item, accessorList, referredId)) {
-          it.remove();
-        }
-      }
-      return false;
-    }
-
-    // If this is the last accessor, we're throwing out the entire object
-    // keeping the reference...
-    if (accessorList.size() == 1) {
-      if (newObj instanceof BSONObject) {
-        Object x = ((BSONObject) newObj).get(accessorList.get(0));
-        if (x instanceof BSONObject) {
-          if (((BSONObject) x).get("id").equals(referredId)) {
-            return true;
-          }
-        }
-      }
-    } else if (newObj instanceof BSONObject) {
-      // Recurse into objects:
-      String k = accessorList.get(0);
-      Object newerObj = ((BSONObject) newObj).get(k);
-      if (removeNested(newerObj, accessorList.subList(1, accessorList.size()), referredId)) {
-        ((BSONObject) newObj).removeField(k);
-      }
-    }
-    return false;
   }
 
   private <T extends Document> void setNextId(Class<T> cls, T item) {
@@ -234,37 +165,20 @@ public class MongoModifiableStorage extends MongoStorage implements Storage {
   }
 
   private <T extends Document> void updateVersionCol(String id, T oldItem, T item, int oldRev, Class<T> cls) throws MongoException, IOException {
-    JacksonDBCollection<MongoChanges, String> versionCol = MongoUtils.getVersioningCollection(db, cls);
+    JacksonDBCollection<MongoChanges<T>, String> versionCol = MongoUtils.getVersioningCollection(db, cls);
     long count = versionCol.count(DBQuery.is("_id", id));
     if (count != 0 && oldItem != null) {
-      BSONObject newToOld = MongoDiff.diffDocuments(item, oldItem);
-      BSONObject oldToNew = MongoDiff.diffDocuments(oldItem, item);
-      changeVersionObj(id, newToOld, oldToNew, oldRev, versionCol);
+      changeVersionObj(id, oldRev, versionCol, item);
     } else {
-      versionCol.insert(new MongoChanges(id, MongoUtils.getObjectForDoc(item)));
+      versionCol.insert(new MongoChanges<T>(id, item));
     }
   }
 
-  private <T extends Document> void changeVersionObj(String id, BSONObject fromnext, BSONObject frompast, int oldRev, JacksonDBCollection<MongoChanges, String> versionCol)
+  private <T extends Document> void changeVersionObj(String id, int oldRev, JacksonDBCollection<MongoChanges<T>, String> versionCol, T item)
       throws MongoException {
-    // Create an object with the changes:
-    String oldChangeKey = "changes." + Integer.toString(oldRev) + ".fromnext";
-    DBObject setProps = new BasicDBObject(oldChangeKey, fromnext);
-
-    String changeKey = "changes." + Integer.toString(oldRev + 1);
-    setProps.put(changeKey, new BasicDBObject("frompast", frompast));
-
-    setProps.put("lastRev", oldRev + 1);
-
-    // NB: the list pushes (by index) are technically concurrency-unsafe (ie,
-    // suffer from ABA issues)
-    // which we mitigate by using the rev check to verify that we're changing
-    // what we think
-    // we're changing. Mongo then guarantees the atomicity of the following
-    // update:
-    DBObject update = new BasicDBObject("$set", setProps);
-    Query query = DBQuery.is("_id", id).is("lastRev", oldRev);
-    WriteResult<MongoChanges, String> updateResult = versionCol.update(query, update);
+    MongoChanges<T> oldItem = versionCol.findOne(DBQuery.is("_id", id));
+    oldItem.getRevisions().add(item);
+    WriteResult<MongoChanges<T>, String> updateResult = versionCol.updateById(id, oldItem);
 
     CommandResult cachedLastError = updateResult.getCachedLastError();
     if (!cachedLastError.ok() || updateResult.getN() != 1) {

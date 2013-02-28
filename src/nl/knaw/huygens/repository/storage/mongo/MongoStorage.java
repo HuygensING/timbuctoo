@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.mongojack.DBCursor;
+import org.mongojack.DBQuery;
+import org.mongojack.JacksonDBCollection;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -17,10 +21,6 @@ import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
-
-import net.vz.mongodb.jackson.DBCursor;
-import net.vz.mongodb.jackson.DBQuery;
-import net.vz.mongodb.jackson.JacksonDBCollection;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.Storage;
@@ -82,7 +82,7 @@ abstract class MongoStorage implements Storage {
   }
 
   @Override
-  public MongoChanges getAllRevisions(String id, Class<? extends Document> baseCls) {
+  public <T extends Document> MongoChanges<T> getAllRevisions(String id, Class<T> baseCls) {
     return MongoUtils.getVersioningCollection(db, baseCls).findOneById(id);
   }
 

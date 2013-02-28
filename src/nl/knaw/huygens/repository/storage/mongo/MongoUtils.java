@@ -5,15 +5,17 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.mongojack.JacksonDBCollection;
+import org.mongojack.internal.object.BsonObjectGenerator;
+
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-
-import net.vz.mongodb.jackson.JacksonDBCollection;
-import net.vz.mongodb.jackson.internal.object.BsonObjectGenerator;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
@@ -50,9 +52,10 @@ public class MongoUtils {
     return JacksonDBCollection.wrap(col, cls, String.class, JsonViews.DBView.class);
   }
 
-  public static <T extends Document> JacksonDBCollection<MongoChanges, String> getVersioningCollection(DB db, Class<T> cls) {
+  public static <T extends Document> JacksonDBCollection<MongoChanges<T>, String> getVersioningCollection(DB db, Class<T> cls) {
     DBCollection col = db.getCollection(getVersioningCollectionName(cls));
-    return JacksonDBCollection.wrap(col, MongoChanges.class, String.class, JsonViews.DBView.class);
+    JavaType someType = TypeFactory.defaultInstance().constructParametricType(MongoChanges.class, cls);
+    return RepoJacksonDBCollection.wrap(col, someType, JsonViews.DBView.class);
   }
   
   public static void sortDocumentsByLastChange(List<DBObject> docs) {

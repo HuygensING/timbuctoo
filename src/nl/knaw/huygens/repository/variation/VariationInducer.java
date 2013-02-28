@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.google.common.collect.Lists;
 import com.mongodb.DBObject;
 
-import net.vz.mongodb.jackson.internal.stream.JacksonDBObject;
+import org.mongojack.internal.stream.JacksonDBObject;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.mongo.variation.DBJsonNode;
