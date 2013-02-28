@@ -6,8 +6,9 @@ import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -53,7 +54,8 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
   public <T extends Document> void addItems(List<T> items, Class<T> cls) throws IOException {
     List<JsonNode> jsonNodes = inducer.induce(items, cls, Collections.<String, DBObject>emptyMap());
     DBCollection col = getRawCollection(cls);
-    DBObject[] dbObjects = new DBObject[jsonNodes.size()];
+    @SuppressWarnings("unchecked")
+    JacksonDBObject<JsonNode>[] dbObjects = new JacksonDBObject[jsonNodes.size()];
     int i = 0;
     for (JsonNode n : jsonNodes) {
       JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(n, JsonNode.class);
@@ -107,7 +109,7 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
     } catch (Exception ex) {
       throw new IOException("Couldn't read properly from database.");
     }
-    JsonNode changeTree = ((TreeEncoderFactory) options.dbEncoderFactory).getObjectMapper().valueToTree(change);
+    JsonNode changeTree = getMapper().valueToTree(change);
     node.put("^deleted", true).put("^lastChange", changeTree);
     int rev = node.get("^rev").asInt();
     node.put("^rev", rev + 1);
@@ -116,20 +118,38 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
     col.update(q, updatedNode);
     addVersion(cls, id, updatedNode);
   }
-  
-  private <T extends Document> void addInitialVersion(Class<T> cls, String id, DBObject initialVersion) {
-    DBCollection col = getRawVersionCollection(cls);
-    DBObject item = new BasicDBObject("_id", id);
-    BasicDBList versionList = new BasicDBList();
-    versionList.add(initialVersion);
-    item.put("versions", versionList);
-    col.insert(item);
+
+  private ObjectMapper getMapper() {
+    return ((TreeEncoderFactory) options.dbEncoderFactory).getObjectMapper();
   }
   
-  private <T extends Document> void addVersion(Class<T> cls, String id, DBObject newVersion) {
+  private <T extends Document> void addInitialVersion(Class<T> cls, String id, JacksonDBObject<JsonNode> initialVersion) {
     DBCollection col = getRawVersionCollection(cls);
-    DBObject update = new BasicDBObject("$push", new BasicDBObject("versions", newVersion));
-    col.update(new BasicDBObject("_id", id), update);
+    JsonNode actualVersion = initialVersion.getObject();
+    
+    ObjectMapper mapper = getMapper();
+    ArrayNode versionsNode = mapper.createArrayNode();
+    versionsNode.add(actualVersion);
+    
+    ObjectNode itemNode = mapper.createObjectNode();
+    itemNode.put("versions", versionsNode);
+    itemNode.put("_id", id);
+    
+    col.insert(new JacksonDBObject<JsonNode>(itemNode, JsonNode.class));
+  }
+  
+  private <T extends Document> void addVersion(Class<T> cls, String id, JacksonDBObject<JsonNode> newVersion) {
+    DBCollection col = getRawVersionCollection(cls);
+    JsonNode actualVersion = newVersion.getObject();
+    
+    ObjectMapper mapper = getMapper();
+    ObjectNode versionNode = mapper.createObjectNode();
+    versionNode.put("versions", actualVersion);
+    
+    ObjectNode update = mapper.createObjectNode();
+    update.put("$push", versionNode);
+    
+    col.update(new BasicDBObject("_id", id), new JacksonDBObject<JsonNode>(update, JsonNode.class));
   }
 
   @Override
