@@ -25,6 +25,8 @@ public class SimpleDBTest {
   public void test() throws IOException {
     StorageConfiguration conf = new StorageConfiguration("127.0.0.1", 27017, "integrationtest", "test", "test", "mongo");
     MongoModifiableVariationStorage s = new MongoModifiableVariationStorage(conf);
+    s.db.getCollection("testbasedoc").drop();
+    s.db.getCollection("testbasedoc-versions").drop();
     String docId = "TST0001";
     try {
       s.db.getCollection("testbasedoc").remove(new BasicDBObject("_id", docId));
@@ -67,10 +69,11 @@ public class SimpleDBTest {
       returnedItem = s.getItem(docId, TestDoc.class);
       assertEquals(expectedChange, MongoDiff.diffDocuments(doc, returnedItem));
     } catch (Exception ex) {
-      fail();
       ex.printStackTrace();
+      fail();
     } finally {
-      s.db.getCollection("testbasedoc").remove(new BasicDBObject("_id", docId));
+      s.db.getCollection("testbasedoc").drop();
+      s.db.getCollection("testbasedoc-versions").drop();
     }
     
   }

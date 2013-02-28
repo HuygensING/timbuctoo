@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -45,6 +46,7 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
     DBCollection col = getRawCollection(cls);
     JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
     col.insert(insertedItem);
+    addInitialVersion(cls, newItem.getId(), insertedItem);
   }
 
   @Override
@@ -58,6 +60,16 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
       dbObjects[i++] = updatedDBObj;
     }
     col.insert(dbObjects);
+    for (i = 0; i < dbObjects.length; i++) {
+      Object idObj = dbObjects[i].get("_id");
+      String id = "";
+      try {
+        id = (String) idObj;
+      } catch (Exception ex) {
+        throw new IOException("Couldn't find an ID for this item: " + dbObjects[i].toString());
+      }
+      addInitialVersion(cls, id, dbObjects[i]);
+    }
   }
 
   @Override
@@ -73,14 +85,51 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
     ((ObjectNode) updatedNode).put("^rev", updatedItem.getRev() + 1);
     JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(updatedNode, JsonNode.class);
     col.update(q, updatedDBObj);
+    addVersion(cls, id, updatedDBObj);
   }
 
   @Override
   public <T extends Document> void deleteItem(String id, Class<T> cls, Change change) throws IOException {
     DBCollection col = getRawCollection(cls);
-    BasicDBObject up = new BasicDBObject("$inc", new BasicDBObject("^rev", 1));
-    up.put("$set", new BasicDBObject("^deleted", true));
-    col.update(new BasicDBObject("_id", id), up);
+    BasicDBObject q = new BasicDBObject("_id", id);
+    DBObject existingNode = col.findOne(q);
+    if (existingNode == null) {
+      throw new IOException("No document was found for ID " + id + "!");
+    }
+    ObjectNode node;
+    try {
+      DBJsonNode realNode = (DBJsonNode) existingNode;
+      JsonNode jsonNode = realNode.getDelegate();
+      if (!jsonNode.isObject()) {
+        throw new Exception();
+      }
+      node = (ObjectNode) jsonNode;
+    } catch (Exception ex) {
+      throw new IOException("Couldn't read properly from database.");
+    }
+    JsonNode changeTree = ((TreeEncoderFactory) options.dbEncoderFactory).getObjectMapper().valueToTree(change);
+    node.put("^deleted", true).put("^lastChange", changeTree);
+    int rev = node.get("^rev").asInt();
+    node.put("^rev", rev + 1);
+    q.put("^rev", rev);
+    JacksonDBObject<JsonNode> updatedNode = new JacksonDBObject<JsonNode>(node, JsonNode.class);
+    col.update(q, updatedNode);
+    addVersion(cls, id, updatedNode);
+  }
+  
+  private <T extends Document> void addInitialVersion(Class<T> cls, String id, DBObject initialVersion) {
+    DBCollection col = getRawVersionCollection(cls);
+    DBObject item = new BasicDBObject("_id", id);
+    BasicDBList versionList = new BasicDBList();
+    versionList.add(initialVersion);
+    item.put("versions", versionList);
+    col.insert(item);
+  }
+  
+  private <T extends Document> void addVersion(Class<T> cls, String id, DBObject newVersion) {
+    DBCollection col = getRawVersionCollection(cls);
+    DBObject update = new BasicDBObject("$push", new BasicDBObject("versions", newVersion));
+    col.update(new BasicDBObject("_id", id), update);
   }
 
   @Override
@@ -99,5 +148,4 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
     // TODO Auto-generated method stub
     
   }
-
 }
