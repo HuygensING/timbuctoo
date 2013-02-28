@@ -23,7 +23,7 @@ public interface Storage {
 
   public <T extends Document> void deleteItem(String id, Class<T> cls, Change change) throws IOException;
 
-  public RevisionChanges getAllRevisions(String id, Class<? extends Document> baseCls);
+  public <T extends Document> RevisionChanges<T> getAllRevisions(String id, Class<T> baseCls);
 
   public void destroy();
 
@@ -36,7 +36,4 @@ public interface Storage {
   public <T extends Document> List<String> getIdsForQuery(Class<T> cls, List<String> accessors, String[] id);
 
   public void ensureIndex(Class<? extends Document> cls, List<List<String>> accessorList);
-
-  public <T extends Document> void removeReference(Class<T> cls, List<String> accessorList, List<String> referringIds, String referredId, Change change);
-
 }

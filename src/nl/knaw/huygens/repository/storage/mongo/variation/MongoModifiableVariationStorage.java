@@ -17,7 +17,7 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 
-import net.vz.mongodb.jackson.internal.stream.JacksonDBObject;
+import org.mongojack.internal.stream.JacksonDBObject;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
@@ -161,11 +161,5 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
   
   public void resetDB(DB db) {
     this.db = db;
-  }
-
-  @Override
-  public <T extends Document> void removeReference(Class<T> cls, List<String> accessorList, List<String> referringIds, String referredId, Change change) {
-    // TODO Auto-generated method stub
-    
   }
 }

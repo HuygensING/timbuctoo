@@ -12,7 +12,7 @@ import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
-import net.vz.mongodb.jackson.internal.MongoJacksonMapperModule;
+import org.mongojack.internal.MongoJacksonMapperModule;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;

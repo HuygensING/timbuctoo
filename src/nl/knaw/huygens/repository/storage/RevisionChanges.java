@@ -2,14 +2,9 @@ package nl.knaw.huygens.repository.storage;
 
 import java.util.List;
 
-public interface RevisionChanges {
+import nl.knaw.huygens.repository.model.Document;
 
-  public interface Rev {
-    public Object fromNext();
-    public Object fromPrev();
-  }
+public interface RevisionChanges<T extends Document> {
   public String getId();
-  public List<Rev> getRevisions();
-  public int getLastRev();
-  public Object getOriginal();
+  public List<T> getRevisions();
 }

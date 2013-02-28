@@ -117,29 +117,13 @@ public class IndexManager {
     if (indexedTypes.contains(cls)) {
       DocumentIndexer<T> indexer = indexFactory.getIndexForType(cls);
       indexer.remove(doc);
-      handleRelatedDelete(cls, doc, false);
       indexFactory.flushIndices();
-    } else {
-      handleRelatedDelete(cls, doc, true);
     }
   }
 
   private <T extends Document> void handleRelatedEdit(Class<T> referredCls, T referredDoc, boolean flush) {
     Map<Class<? extends Document>, Set<String>> docsToIndex = getAllReferringDocIds(referredCls, referredDoc.getId());
     modifyAllDocs(docsToIndex);
-    if (flush) {
-      indexFactory.flushIndices();
-    }
-  }
-
-  private <T extends Document> void handleRelatedDelete(Class<T> referredCls, T referredDoc, boolean flush) {
-    Map<Class<? extends Document>, Map<List<String>, List<String>>> docMap = Maps.newHashMap();
-    getAllReferringDocIdsByMethod(docMap, referredCls, referredDoc.getId());
-    for (Class<? extends Document> cls : docMap.keySet()) {
-      storageManager.removeFromReferringDocs(cls, docMap.get(cls), referredDoc.getId(), referredDoc.getLastChange());
-    }
-    recurseNonIndexedTypes(docMap);
-    modifyAllDocs(flattenReferringDocumentMap(docMap));
     if (flush) {
       indexFactory.flushIndices();
     }

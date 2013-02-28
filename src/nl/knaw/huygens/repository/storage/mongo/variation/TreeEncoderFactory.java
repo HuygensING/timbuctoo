@@ -5,7 +5,7 @@ import com.mongodb.DBEncoder;
 import com.mongodb.DBEncoderFactory;
 import com.mongodb.DefaultDBEncoder;
 
-import net.vz.mongodb.jackson.internal.stream.JacksonDBEncoder;
+import org.mongojack.internal.stream.JacksonDBEncoder;
 
 public class TreeEncoderFactory implements DBEncoderFactory {
 

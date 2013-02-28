@@ -16,7 +16,6 @@ import nl.knaw.huygens.repository.events.Events.DocumentChangeEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentDeleteEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.storage.RelatedDocument;
 import nl.knaw.huygens.repository.storage.RelatedDocuments;
@@ -80,7 +79,7 @@ public class StorageManager {
     return storage.getAllByType(entityCls);
   }
 
-  public <T extends Document> RevisionChanges getVersions(String id, Class<T> entityCls) {
+  public <T extends Document> RevisionChanges<T> getVersions(String id, Class<T> entityCls) {
     return storage.getAllRevisions(id, entityCls);
   }
 
@@ -230,14 +229,6 @@ public class StorageManager {
     } catch (Exception ex) {
       System.err.println("Failed to close storage!");
       ex.printStackTrace();
-    }
-  }
-
-  public void removeFromReferringDocs(Class<? extends Document> cls, Map<List<String>, List<String>> referringDocsByAccessors, String referredId, Change change) {
-    for (Map.Entry<List<String>, List<String>> entry : referringDocsByAccessors.entrySet()) {
-      List<String> accessorList = entry.getKey();
-      List<String> docs = entry.getValue();
-      storage.removeReference(cls, accessorList, docs, referredId, change);
     }
   }
 }
