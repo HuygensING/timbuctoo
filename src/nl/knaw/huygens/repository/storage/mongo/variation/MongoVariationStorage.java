@@ -48,7 +48,7 @@ public abstract class MongoVariationStorage implements Storage {
   private Set<String> documentCollections;
   
   private VariationReducer reducer;
-  private MongoOptions options;
+  protected MongoOptions options;
 
   static class Counter {
     @JsonProperty("_id")
@@ -61,7 +61,8 @@ public abstract class MongoVariationStorage implements Storage {
     options = new MongoOptions();
     options.safe = true;
     options.dbDecoderFactory = new TreeDecoderFactory();
-    options.dbEncoderFactory = new TreeEncoderFactory(new ObjectMapper());    mongo = new Mongo(new ServerAddress(conf.getHost(), conf.getPort()), options);
+    options.dbEncoderFactory = new TreeEncoderFactory(new ObjectMapper());
+    mongo = new Mongo(new ServerAddress(conf.getHost(), conf.getPort()), options);
     db = mongo.getDB(dbName);
     if (conf.requiresAuth()) {
       db.authenticate(conf.getUser(), conf.getPassword().toCharArray());
@@ -189,6 +190,13 @@ public abstract class MongoVariationStorage implements Storage {
 
   protected DBCollection getRawCollection(Class<? extends Document> cls) {
     DBCollection col = db.getCollection(MongoUtils.getCollectionName(VariationUtils.getBaseClass(cls)));
+    col.setDBEncoderFactory(options.dbEncoderFactory);
+    return col;
+  }
+  
+
+  protected <T extends Document> DBCollection getRawVersionCollection(Class<T> cls) {
+    DBCollection col = db.getCollection(MongoUtils.getVersioningCollectionName(VariationUtils.getBaseClass(cls)));
     col.setDBEncoderFactory(options.dbEncoderFactory);
     return col;
   }
