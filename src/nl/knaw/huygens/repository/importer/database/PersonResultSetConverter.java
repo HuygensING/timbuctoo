@@ -34,12 +34,18 @@ public class PersonResultSetConverter implements ResultSetConverter<Person> {
       person.birthDate = new Datable(birthDate);
       person.deathDate = new Datable(deathDate);
       person.name = name;
-      person.setId("PER" + UUID.randomUUID().toString());
+      person.setId("PER" + generateId());
 
       persons.add(person);
     }
 
     return persons;
+  }
+  
+  //TODO: Find a better solution to create unique ids.
+  private String generateId(){
+    String id = ""+ UUID.randomUUID().getMostSignificantBits();
+    return id.replace("-", "");
   }
 
   private String getPropertyValue(ResultSet resultSet, Collection<String> columnNames) throws SQLException {
