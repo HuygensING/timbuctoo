@@ -61,41 +61,4 @@ public class PersonImporter {
 
     System.out.println("persons.size(): " + persons.size());
   }
-
-  // public static void main(String[] args) throws SQLException,
-  // ConfigurationException, IOException {
-  // Connection con = null;
-  // Statement stmt = null;
-  // ResultSet rs = null;
-  //
-  // Configuration conf = new Configuration("config.xml");
-  // Hub hub = new Hub();
-  // StorageManager storageManager = new StorageManager(conf, hub);
-  // PersonImporter importer = new PersonImporter();
-  // try {
-  // con = DriverManager.getConnection(url, user, pwd);
-  // stmt = con.createStatement();
-  // rs =
-  // stmt.executeQuery("SELECT voornaam, tussenvoegsel, geslachtsnaam, geboortedatum, overlijdensdatum FROM persoon;");
-  //
-  // List<Person> persons = importer.generatePersons(rs);
-  //
-  // for(Person person : persons){
-  // storageManager.addDocument(person, Person.class);
-  // }
-  //
-  // System.out.println(persons.size() + " persons imported.");
-  //
-  // } finally {
-  // if (rs != null) {
-  // rs.close();
-  // }
-  // if (stmt != null) {
-  // stmt.close();
-  // }
-  // if (con != null) {
-  // con.close();
-  // }
-  // }
-  // }
 }
