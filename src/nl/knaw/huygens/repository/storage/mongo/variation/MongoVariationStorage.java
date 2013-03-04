@@ -51,6 +51,10 @@ public abstract class MongoVariationStorage implements Storage {
   
   private VariationReducer reducer;
   protected MongoOptions options;
+  
+  private ObjectMapper objectMapper;
+  private TreeEncoderFactory treeEncoderFactory;
+  private TreeDecoderFactory treeDecoderFactory;
 
   static class Counter {
     @JsonProperty("_id")
@@ -58,12 +62,12 @@ public abstract class MongoVariationStorage implements Storage {
     public int next;
   }
   
+  private Map<Class<? extends Document>, DBCollection> collectionCache;
+  
   public MongoVariationStorage(StorageConfiguration conf) throws UnknownHostException, MongoException {
     dbName = conf.getDbName();
     options = new MongoOptions();
     options.safe = true;
-    options.dbDecoderFactory = new TreeDecoderFactory();
-    options.dbEncoderFactory = new TreeEncoderFactory(new ObjectMapper());
     mongo = new Mongo(new ServerAddress(conf.getHost(), conf.getPort()), options);
     db = mongo.getDB(dbName);
     if (conf.requiresAuth()) {
@@ -81,6 +85,10 @@ public abstract class MongoVariationStorage implements Storage {
   }
 
   private void initializeVariationCollections(StorageConfiguration conf) {
+    objectMapper = new ObjectMapper();
+    treeEncoderFactory = new TreeEncoderFactory(objectMapper);
+    treeDecoderFactory = new TreeDecoderFactory();
+    collectionCache = Maps.newHashMap();
     counterCol = JacksonDBCollection.wrap(db.getCollection(COUNTER_COLLECTION_NAME), Counter.class, String.class);
     documentCollections = conf.getDocumentTypes();
     reducer = new VariationReducer();
@@ -88,14 +96,14 @@ public abstract class MongoVariationStorage implements Storage {
 
   @Override
   public <T extends Document> T getItem(String id, Class<T> cls) throws VariationException, IOException {
-    DBCollection col = getRawCollection(cls);
+    DBCollection col = getVariationCollection(cls);
     DBObject query = new BasicDBObject("_id", id);
     return reducer.reduceDBObject(col.findOne(query), cls);
   }
 
   @Override
   public <T extends Document> StorageIterator<T> getAllByType(Class<T> cls) {
-    DBCollection col = getRawCollection(cls);
+    DBCollection col = getVariationCollection(cls);
     String t = MongoUtils.getCollectionName(VariationUtils.getFirstCommonClass(cls));
     DBObject query = new BasicDBObject("^type", t);
     return new MongoDBVariationIteratorWrapper<T>(col.find(query), reducer, cls);
@@ -116,7 +124,7 @@ public abstract class MongoVariationStorage implements Storage {
 
   @Override
   public <T extends Document> StorageIterator<T> getByMultipleIds(Collection<String> ids, Class<T> entityCls) {
-    DBCollection col = getRawCollection(entityCls);
+    DBCollection col = getVariationCollection(entityCls);
     return new MongoDBVariationIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)), reducer, entityCls);
   }
 
@@ -140,7 +148,7 @@ public abstract class MongoVariationStorage implements Storage {
     for (GenericDBRef<T> ref : refs) {
       mongoRefs.add(ref.id);
     }
-    DBCollection col = getRawCollection(cls);
+    DBCollection col = getVariationCollection(cls);
     Map<String, T> results = Maps.newHashMapWithExpectedSize(mongoRefs.size());
     DBCursor resultCursor = col.find(DBQuery.in("_id", mongoRefs));
     MongoDBVariationIteratorWrapper<T> it = new MongoDBVariationIteratorWrapper<T>(resultCursor, reducer, cls);
@@ -158,7 +166,7 @@ public abstract class MongoVariationStorage implements Storage {
 
   @Override
   public <T extends Document> List<String> getIdsForQuery(Class<T> cls, List<String> accessors, String[] ids) {
-    DBCollection collection = getRawCollection(cls);
+    DBCollection collection = getVariationCollection(cls);
     String queryStr = getQueryStr(accessors);
     DBObject query;
     if (ids.length == 1) {
@@ -180,7 +188,7 @@ public abstract class MongoVariationStorage implements Storage {
 
   @Override
   public void ensureIndex(Class<? extends Document> cls, List<List<String>> accessorList) {
-    DBCollection col = getRawCollection(cls);
+    DBCollection col = getVariationCollection(cls);
     for (List<String> accessors : accessorList) {
       col.ensureIndex(getQueryStr(accessors));
     }
@@ -190,9 +198,16 @@ public abstract class MongoVariationStorage implements Storage {
     return Joiner.on(".").join(accessors) + ".id";
   }
 
-  protected DBCollection getRawCollection(Class<? extends Document> cls) {
-    DBCollection col = db.getCollection(MongoUtils.getCollectionName(VariationUtils.getBaseClass(cls)));
-    col.setDBEncoderFactory(options.dbEncoderFactory);
+  protected DBCollection getVariationCollection(Class<? extends Document> cls) {
+    DBCollection col;
+    if (!collectionCache.containsKey(cls)) {
+      col = db.getCollection(MongoUtils.getCollectionName(VariationUtils.getBaseClass(cls)));
+      col.setDBDecoderFactory(treeDecoderFactory);
+      col.setDBEncoderFactory(treeEncoderFactory);
+      collectionCache.put(cls, col);
+    } else {
+      col = collectionCache.get(cls);
+    }
     return col;
   }
   
