@@ -9,6 +9,8 @@ import org.mongojack.JacksonDBCollection;
 import org.mongojack.WriteResult;
 
 import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.mongodb.BasicDBObject;
 import com.mongodb.CommandResult;
 import com.mongodb.DB;
@@ -18,18 +20,21 @@ import com.mongodb.MongoException;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.model.util.IDPrefix;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 
+@Singleton
 public class MongoModifiableStorage extends MongoStorage implements Storage {
 
-  public MongoModifiableStorage(StorageConfiguration conf) throws UnknownHostException, MongoException {
-    super(conf);
+  @Inject
+  public MongoModifiableStorage(StorageConfiguration conf, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+    super(conf, docTypeRegistry);
   }
   
-  public MongoModifiableStorage(StorageConfiguration conf, Mongo m, DB loanedDB) throws UnknownHostException, MongoException {
-    super(conf, m, loanedDB);
+  public MongoModifiableStorage(StorageConfiguration conf, Mongo m, DB loanedDB, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+    super(conf, m, loanedDB, docTypeRegistry);
   }
 
 

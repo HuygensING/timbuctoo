@@ -7,6 +7,7 @@ import java.util.Set;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.inject.Inject;
 
 import nl.knaw.huygens.repository.events.Events.DocumentAddEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentDeleteEvent;
@@ -14,6 +15,7 @@ import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.index.DocumentIndexer;
 import nl.knaw.huygens.repository.index.IndexFactory;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.pubsub.Subscribe;
 import nl.knaw.huygens.repository.storage.StorageIterator;
@@ -37,6 +39,9 @@ public class IndexManager {
   private Map<Class<? extends Document>, List<Class<? extends Document>>> indexRelations;
   private StorageManager storageManager;
   private final Hub hub;
+  
+  @Inject
+  private DocumentTypeRegister docTypeRegistry;
 
   public IndexManager(Configuration conf, StorageManager storageManager, IndexFactory indexFactory, Hub hub) {
     this.storageManager = storageManager;
@@ -44,7 +49,7 @@ public class IndexManager {
     indexedTypes = Sets.newHashSet();
     String[] docTypes = conf.getSetting("indexeddoctypes").split(",");
     for (String docType : docTypes) {
-      indexedTypes.add(Document.getSubclassByString(docType));
+      indexedTypes.add(docTypeRegistry.getClassFromTypeString(docType));
     }
     indexRelations = Maps.newHashMap();
     List<String> keys = conf.getSettingKeys("indexrelations.");
@@ -55,9 +60,9 @@ public class IndexManager {
         if (items.length > 0) {
           List<Class<? extends Document>> clsList = Lists.newArrayList();
           for (String item : items) {
-            clsList.add(Document.getSubclassByString(item));
+            clsList.add(docTypeRegistry.getClassFromTypeString(item));
           }
-          indexRelations.put(Document.getSubclassByString(k), clsList);
+          indexRelations.put(docTypeRegistry.getClassFromTypeString(k), clsList);
         }
       }
     }
@@ -71,7 +76,7 @@ public class IndexManager {
     this.indexedTypes = Sets.newHashSet();
     String[] docTypes = indexedTypes.split(",");
     for (String docType : docTypes) {
-      this.indexedTypes.add(Document.getSubclassByString(docType));
+      this.indexedTypes.add(docTypeRegistry.getClassFromTypeString(docType));
     }
     this.indexRelations = indexRelations == null ? Maps.<Class<? extends Document>, List<Class<? extends Document>>>newHashMap() : indexRelations;
     subscribeUs();

@@ -1,10 +1,13 @@
 package nl.knaw.huygens.repository.importer;
 
+import org.apache.commons.configuration.ConfigurationException;
+
 import nl.knaw.huygens.repository.index.DocumentIndexer;
 import nl.knaw.huygens.repository.index.IndexFactory;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.index.ModelIterator;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
@@ -13,8 +16,6 @@ import nl.knaw.huygens.repository.storage.generic.StorageFactory;
 import nl.knaw.huygens.repository.util.Configuration;
 import nl.knaw.huygens.repository.util.Paths;
 import nl.knaw.huygens.repository.util.RepositoryException;
-
-import org.apache.commons.configuration.ConfigurationException;
 
 public class SolrIndexer {
   private static Storage storage;
@@ -31,7 +32,9 @@ public class SolrIndexer {
   }
 
   public static void main(String[] args) {
-    storage = StorageFactory.getInstance(new StorageConfiguration(conf));
+    DocumentTypeRegister docTypeRegistry = new DocumentTypeRegister();
+    storage = StorageFactory.getInstance(new StorageConfiguration(conf), docTypeRegistry);
+
 
     String solrPath = Paths.pathInUserHome(conf.getSetting("paths.solr", "solr"));
     String[] doctypes = conf.getSetting("indexeddoctypes", "").split(",");
@@ -40,7 +43,7 @@ public class SolrIndexer {
 
     int rv = 0;
     for (String doctype : doctypes) {
-      Class<? extends Document> cls = Document.getSubclassByString(doctype);
+      Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(doctype);
       if (cls == null) {
         System.err.println("Error: couldn't find class for configured doctype " + doctype + "! Are you sure your models are complete?");
       } else {

@@ -5,10 +5,14 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
 
+import org.mongojack.internal.stream.JacksonDBObject;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -17,18 +21,18 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 
-import org.mongojack.internal.stream.JacksonDBObject;
-
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.variation.VariationInducer;
 
+@Singleton
 public class MongoModifiableVariationStorage extends MongoVariationStorage {
 
   private VariationInducer inducer;
 
+  @Inject
   public MongoModifiableVariationStorage(StorageConfiguration conf) throws UnknownHostException, MongoException {
     super(conf);
     inducer = new VariationInducer();

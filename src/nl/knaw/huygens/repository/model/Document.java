@@ -88,28 +88,4 @@ public abstract class Document {
   public abstract String getDescription();
 
   public abstract void fetchAll(Storage storage);
-
-  public static Class<? extends Document> getSubclassByString(String type) {
-    return getSubclassByString(type, Document.class.getPackage().getName());
-  }
-
-  @SuppressWarnings("unchecked")
-  public static Class<? extends Document> getSubclassByString(String type, String containerPackage) {
-    if (type == null || type.length() < 2) {
-      return null;
-    }
-    String className = type.substring(0, 1).toUpperCase() + type.substring(1).toLowerCase();
-    className = containerPackage + "." + className;
-    try {
-      Class<?> cls = Class.forName(className);
-      if (Document.class.isAssignableFrom(cls)) {
-        return (Class<? extends Document>) cls;
-      }
-      return null;
-    } catch (ClassNotFoundException e) {
-      return null;
-    } catch (ClassCastException e) {
-      return null;
-    }
-  }
 }

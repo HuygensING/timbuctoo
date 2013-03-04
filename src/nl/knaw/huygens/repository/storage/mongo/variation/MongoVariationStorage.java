@@ -16,6 +16,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.inject.Singleton;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -37,6 +38,7 @@ import nl.knaw.huygens.repository.variation.VariationException;
 import nl.knaw.huygens.repository.variation.VariationReducer;
 import nl.knaw.huygens.repository.variation.VariationUtils;
 
+@Singleton
 public abstract class MongoVariationStorage implements Storage {
   protected Mongo mongo;
   protected DB db;
