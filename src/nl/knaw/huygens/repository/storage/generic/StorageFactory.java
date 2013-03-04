@@ -1,12 +1,12 @@
 package nl.knaw.huygens.repository.storage.generic;
 
 
+import java.lang.reflect.Constructor;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
 
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
-import nl.knaw.huygens.repository.server.RepositoryCtxListener;
 import nl.knaw.huygens.repository.storage.Storage;
 
 
@@ -25,7 +25,9 @@ public class StorageFactory {
       String k = storageConfiguration.getKey();
       if (!storages.containsKey(k)) {
         Class<? extends Storage> cls = type.getCls();
-        Storage storage = RepositoryCtxListener.getMyInjector().getInstance(cls);
+        Constructor<? extends Storage> constructor;
+        constructor = cls.getConstructor(StorageConfiguration.class, DocumentTypeRegister.class);
+        Storage storage = constructor.newInstance(storageConfiguration, docTypeRegistry);
         storages.put(k, storage);
       }
       return storages.get(k);
