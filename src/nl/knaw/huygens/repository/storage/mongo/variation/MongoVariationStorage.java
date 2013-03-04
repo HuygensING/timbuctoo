@@ -53,7 +53,7 @@ public abstract class MongoVariationStorage implements Storage {
   protected MongoOptions options;
   
   private ObjectMapper objectMapper;
-  private TreeEncoderFactory treeEncoderFactory;
+  protected TreeEncoderFactory treeEncoderFactory;
   private TreeDecoderFactory treeDecoderFactory;
 
   static class Counter {

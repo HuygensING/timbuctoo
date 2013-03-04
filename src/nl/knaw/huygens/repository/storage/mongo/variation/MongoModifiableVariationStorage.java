@@ -26,7 +26,9 @@ import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.model.util.IDPrefix;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
+import nl.knaw.huygens.repository.storage.mongo.MongoUtils;
 import nl.knaw.huygens.repository.variation.VariationInducer;
+import nl.knaw.huygens.repository.variation.VariationUtils;
 
 @Singleton
 public class MongoModifiableVariationStorage extends MongoVariationStorage {
@@ -133,7 +135,7 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
   }
 
   private ObjectMapper getMapper() {
-    return ((TreeEncoderFactory) options.dbEncoderFactory).getObjectMapper();
+    return treeEncoderFactory.getObjectMapper();
   }
   
   private <T extends Document> void addInitialVersion(Class<T> cls, String id, JacksonDBObject<JsonNode> initialVersion) {
@@ -166,7 +168,7 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
   }
   
   private <T extends Document> void setNextId(Class<T> cls, T item) {
-    BasicDBObject idFinder = new BasicDBObject("_id", getVariationCollection(cls));
+    BasicDBObject idFinder = new BasicDBObject("_id", MongoUtils.getCollectionName(VariationUtils.getBaseClass(cls)));
     BasicDBObject counterIncrement = new BasicDBObject("$inc", new BasicDBObject("next", 1));
 
     // Find by id, return all fields, use default sort, increment the counter,
