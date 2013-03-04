@@ -23,6 +23,7 @@ import com.mongodb.MongoOptions;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
+import nl.knaw.huygens.repository.model.util.IDPrefix;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.variation.VariationInducer;
@@ -47,6 +48,9 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
 
   @Override
   public <T extends Document> void addItem(T newItem, Class<T> cls) throws IOException {
+    if (newItem.getId() == null) {
+      setNextId(cls, newItem);
+    }
     JsonNode jsonNode = inducer.induce(newItem, cls);
     DBCollection col = getRawCollection(cls);
     JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
@@ -56,6 +60,11 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
 
   @Override
   public <T extends Document> void addItems(List<T> items, Class<T> cls) throws IOException {
+    for (T item : items) {
+      if (item.getId() == null) {
+        setNextId(cls, item);
+      }
+    }
     List<JsonNode> jsonNodes = inducer.induce(items, cls, Collections.<String, DBObject>emptyMap());
     DBCollection col = getRawCollection(cls);
     @SuppressWarnings("unchecked")
@@ -154,6 +163,18 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
     update.put("$push", versionNode);
     
     col.update(new BasicDBObject("_id", id), new JacksonDBObject<JsonNode>(update, JsonNode.class));
+  }
+  
+  private <T extends Document> void setNextId(Class<T> cls, T item) {
+    BasicDBObject idFinder = new BasicDBObject("_id", getRawCollection(cls));
+    BasicDBObject counterIncrement = new BasicDBObject("$inc", new BasicDBObject("next", 1));
+
+    // Find by id, return all fields, use default sort, increment the counter,
+    // return the new object, create if no object exists:
+    Counter newCounter = counterCol.findAndModify(idFinder, null, null, false, counterIncrement, true, true);
+
+    String newId = cls.getAnnotation(IDPrefix.class).value() + String.format("%1$010d", newCounter.next);
+    item.setId(newId);
   }
 
   @Override

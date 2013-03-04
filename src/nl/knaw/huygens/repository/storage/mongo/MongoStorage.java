@@ -112,7 +112,6 @@ public abstract class MongoStorage implements Storage {
   public List<Document> getLastChanged(int limit) {
     List<Document> changedDocs = Lists.newArrayList();
     for (String colName : documentCollections) {
-      // FIXME
       JacksonDBCollection<? extends Document, String> col = MongoUtils.getCollection(db, docTypeRegistry.getClassFromTypeString(colName));
       changedDocs.addAll(col.find().sort(new BasicDBObject("^lastChange.dateStamp", -1)).limit(limit).toArray());
     }
