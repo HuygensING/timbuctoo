@@ -118,7 +118,7 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
   }
 
   private byte[] encodeTitle(Document exampleDoc, int size) throws UnsupportedEncodingException {
-    String typeInfo = exampleDoc != null ? exampleDoc.getType() : "?";
+    String typeInfo = exampleDoc != null ? exampleDoc.getClass().getSimpleName() : "?";
     String t = size + " instances of " + typeInfo;
     return t.getBytes("UTF-8");
   }

@@ -92,4 +92,8 @@
 	
 	<!-- Mongo with Jackson 2.0 -->
 	<dependency org="org.mongojack" name="mongojack" rev="2.0.0-RC1" conf="main->default" />
+	
+	<!-- Apache validation -->
+	<dependency org="javax.validation" name="validation-api" rev="1.0.0.GA"/>
+	<dependency org="org.apache.bval" name="org.apache.bval.bundle" rev="0.5"/>
 </ivy-module>

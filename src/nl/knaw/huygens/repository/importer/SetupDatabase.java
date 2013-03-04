@@ -77,7 +77,6 @@ public class SetupDatabase {
 
 	private static void createAdminUser() throws IOException {
 	  User admin = new User();
-	  admin.setType("user");
 	  admin.setId(null); // Will be filled in by the storage implementation.
 	  admin.email = "admin@example.com";
 	  admin.pwHash = CryptoUtils.generatePwHash("password");

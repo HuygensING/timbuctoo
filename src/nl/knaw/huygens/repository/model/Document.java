@@ -1,6 +1,9 @@
 package nl.knaw.huygens.repository.model;
 
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -9,8 +12,9 @@ import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.Storage;
 
 public abstract class Document {
-  protected String type;
-
+  
+  @NotNull
+  @Pattern(regexp = "[A-Z]{3}\\d{10}")
   private String id;
 
   private int rev;
@@ -41,17 +45,6 @@ public abstract class Document {
   public void setRev(int rev) {
     this.rev = rev;
   }
-  
-  @JsonProperty("^type")
-  public String getType() {
-    return type;
-  }
-  
-  @JsonProperty("^type")
-  public void setType(String type) {
-    this.type = type;
-  }
-
 
   @JsonProperty("^lastChange")
   public Change getLastChange() {
