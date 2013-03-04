@@ -11,7 +11,11 @@ import org.apache.commons.configuration.ConfigurationException;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Person;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.pubsub.Hub;
+import nl.knaw.huygens.repository.storage.Storage;
+import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
+import nl.knaw.huygens.repository.storage.generic.StorageFactory;
 import nl.knaw.huygens.repository.util.Configuration;
 
 public class PersonImporter {
@@ -19,7 +23,10 @@ public class PersonImporter {
   public static void main(String[] args) throws SQLException, ConfigurationException, IOException {
     Configuration conf = new Configuration("config.xml");
     Hub hub = new Hub();
-    StorageManager storageManager = new StorageManager(conf, hub);
+    DocumentTypeRegister docTypeRegistry = new DocumentTypeRegister();
+    StorageConfiguration storageConfiguration = new StorageConfiguration(conf);
+    Storage storage = StorageFactory.getInstance(storageConfiguration, docTypeRegistry);
+    StorageManager storageManager = new StorageManager(storageConfiguration, storage , hub, docTypeRegistry);
     storageManager.getStorage().empty();
     String mySQLURL = "jdbc:mysql://localhost:3306/raa_web";
     String mySQLUser = "root";

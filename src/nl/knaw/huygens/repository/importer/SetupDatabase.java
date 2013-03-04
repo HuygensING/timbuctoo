@@ -20,7 +20,11 @@ import com.google.common.collect.Lists;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.User;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.pubsub.Hub;
+import nl.knaw.huygens.repository.storage.Storage;
+import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
+import nl.knaw.huygens.repository.storage.generic.StorageFactory;
 import nl.knaw.huygens.repository.util.Configuration;
 import nl.knaw.huygens.repository.util.CryptoUtils;
 
@@ -41,7 +45,10 @@ public class SetupDatabase {
 	  String vreId = "test-vre";
 	  String vreName = "Test VRE";
 
-	  storageManager = new StorageManager(conf, hub);
+	  DocumentTypeRegister docTypeRegistry = new DocumentTypeRegister();
+	  StorageConfiguration storageConfiguration = new StorageConfiguration(conf);
+    Storage storage = StorageFactory.getInstance(storageConfiguration, docTypeRegistry);
+    storageManager = new StorageManager(storageConfiguration, storage , hub, docTypeRegistry);
 	  System.out.println("Emptying the database...");
 	  storageManager.getStorage().empty();
 	  System.out.println("Emptied the database.");
@@ -53,7 +60,7 @@ public class SetupDatabase {
 	  importer = new DbImporter(conf, storageManager);
 	  String[] models = conf.getSetting("doctypes").split(",");
 	  for (String model : models) {
-	    Class<? extends Document> cls = Document.getSubclassByString(model);
+	    Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(model);
 	    if (cls == null) {
 	      System.err.println("Couldn't find a model for document type " + model + "! Are you sure you modeled everything correctly?");
 	    } else {

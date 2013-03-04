@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
@@ -15,6 +17,7 @@ import com.mongodb.ServerAddress;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.RevisionChanges;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
@@ -24,6 +27,7 @@ import nl.knaw.huygens.repository.storage.mongo.MongoModifiableStorage;
 import nl.knaw.huygens.repository.storage.mongo.MongoUtils;
 import nl.knaw.huygens.repository.variation.VariationUtils;
 
+@Singleton
 public class MongoComplexStorage implements Storage {
   
   private String dbName;
@@ -35,7 +39,8 @@ public class MongoComplexStorage implements Storage {
   
   private Set<String> variationDoctypes; 
 
-  public MongoComplexStorage(StorageConfiguration conf) throws UnknownHostException, MongoException {
+  @Inject
+  public MongoComplexStorage(StorageConfiguration conf, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
     dbName = conf.getDbName();    
     options = new MongoOptions();
     options.safe = true;
@@ -47,7 +52,7 @@ public class MongoComplexStorage implements Storage {
       db.authenticate(conf.getUser(), conf.getPassword().toCharArray());
     }
     variationDoctypes = conf.getVariationDocumentTypes();
-    plainStorage = new MongoModifiableStorage(conf, mongo, db);
+    plainStorage = new MongoModifiableStorage(conf, mongo, db, docTypeRegistry);
     variationStorage = new MongoModifiableVariationStorage(conf, mongo, db, options);
   }
   

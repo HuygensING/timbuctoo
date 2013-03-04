@@ -10,12 +10,15 @@ import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import nl.knaw.huygens.repository.events.Events.DocumentAddEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentChangeEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentDeleteEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.storage.RelatedDocument;
 import nl.knaw.huygens.repository.storage.RelatedDocuments;
@@ -23,29 +26,32 @@ import nl.knaw.huygens.repository.storage.RevisionChanges;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
-import nl.knaw.huygens.repository.storage.generic.StorageFactory;
 import nl.knaw.huygens.repository.storage.generic.StorageUtils;
-import nl.knaw.huygens.repository.util.Configuration;
 
+@Singleton
 public class StorageManager {
 
   private Storage storage;
   private Map<Class<? extends Document>, Map<Class<? extends Document>, List<List<String>>>> annotationCache;
   private Set<String> documentTypes;
+  
   private final Hub hub;
+  private DocumentTypeRegister docTypeRegistry;
 
-  public StorageManager(Configuration conf, Hub hub) {
+  @Inject
+  public StorageManager(StorageConfiguration storageConf, Storage storage, Hub hub, DocumentTypeRegister docTypeRegistry) {
     this.hub = hub;
-    StorageConfiguration storageConf = new StorageConfiguration(conf);
+    this.docTypeRegistry = docTypeRegistry;
     documentTypes = storageConf.getDocumentTypes();
-    storage = StorageFactory.getInstance(storageConf);
+    this.storage = storage;
     fillAnnotationCache();
     ensureIndices();
   }
 
   // Test-only!
-  protected StorageManager(Storage storage, Set<String> documentTypes, Hub hub) {
+  protected StorageManager(Storage storage, Set<String> documentTypes, Hub hub, DocumentTypeRegister docTypeRegistry) {
     this.storage = storage;
+    this.docTypeRegistry = docTypeRegistry;
     this.documentTypes = documentTypes;
     this.hub = hub;
     fillAnnotationCache();
@@ -159,7 +165,7 @@ public class StorageManager {
   private void fillAnnotationCache() {
     annotationCache = Maps.newHashMap();
     for (String docType : documentTypes) {
-      Class<? extends Document> cls = Document.getSubclassByString(docType);
+      Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(docType);
       annotationCache.put(cls, getAllAnnotations(cls));
     }
   }

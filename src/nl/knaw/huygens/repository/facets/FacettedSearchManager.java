@@ -8,14 +8,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import nl.knaw.huygens.repository.events.Events.IndexChangedEvent;
-import nl.knaw.huygens.repository.index.LocalSolrServer;
-import nl.knaw.huygens.repository.index.ModelIterator;
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.Search;
-import nl.knaw.huygens.repository.pubsub.Hub;
-import nl.knaw.huygens.repository.pubsub.Subscribe;
-
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
@@ -25,6 +17,15 @@ import org.apache.solr.common.SolrDocumentList;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.inject.Inject;
+
+import nl.knaw.huygens.repository.events.Events.IndexChangedEvent;
+import nl.knaw.huygens.repository.index.LocalSolrServer;
+import nl.knaw.huygens.repository.index.ModelIterator;
+import nl.knaw.huygens.repository.model.Search;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
+import nl.knaw.huygens.repository.pubsub.Hub;
+import nl.knaw.huygens.repository.pubsub.Subscribe;
 
 public class FacettedSearchManager {
 
@@ -39,6 +40,9 @@ public class FacettedSearchManager {
   private Map<String, Map<String, Boolean>> facetFieldFilterCache;
 
   private Map<String, Set<String>> solrFieldNameCache;
+  
+  @Inject
+  private DocumentTypeRegister docTypeRegistry;
 
   public FacettedSearchManager(LocalSolrServer localSolrServer, ModelIterator modelIterator, Hub hub) {
     this.localSolrServer = localSolrServer;
@@ -174,7 +178,7 @@ public class FacettedSearchManager {
 
   private Map<String, Boolean> getFieldFiltersFromModel(String core) {
     if (!facetFieldFilterCache.containsKey(core)) {
-      Class<?> responseTypeCls = Document.getSubclassByString(core);
+      Class<?> responseTypeCls = docTypeRegistry.getClassFromTypeString(core);
       FieldMapper mapper = new FieldMapper();
       modelIterator.processMethods(mapper, responseTypeCls.getMethods());
       facetFieldFilterCache.put(core, mapper.getResult());

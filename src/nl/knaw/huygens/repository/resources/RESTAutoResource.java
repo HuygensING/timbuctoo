@@ -21,15 +21,18 @@ import com.google.inject.Inject;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 
 @Path("resources/{entityType: [a-zA-Z]+}")
 public class RESTAutoResource {
     private final StorageManager storageManager;
+    private final DocumentTypeRegister docTypeRegistry;
     
     @Inject
-    public RESTAutoResource(final StorageManager manager) {
+    public RESTAutoResource(final StorageManager manager, final DocumentTypeRegister docTypeRegistry) {
       storageManager = manager;
+      this.docTypeRegistry = docTypeRegistry;
     }
     
     @GET
@@ -38,7 +41,7 @@ public class RESTAutoResource {
     @JsonView(JsonViews.WebView.class)
     public List<? extends Document> getAllDocs(@PathParam("entityType") String entityType,
         @QueryParam("rows") @DefaultValue("200") int rows, @QueryParam("start") int start) {
-      Class<? extends Document> cls = Document.getSubclassByString(entityType);
+      Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(entityType);
       if (cls == null) {
         throw new WebApplicationException(404);
       }
@@ -52,7 +55,7 @@ public class RESTAutoResource {
     @Path("/all")
     @JsonView(JsonViews.WebView.class)
     public <T extends Document> void getAllDocs(@PathParam("entityType") String entityType, Document input) throws IOException {
-      Class<? extends Document> cls = Document.getSubclassByString(entityType);
+      Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(entityType);
       if (cls == null) {
         throw new WebApplicationException(404);
       }
@@ -76,7 +79,7 @@ public class RESTAutoResource {
     @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}")
     @JsonView(JsonViews.WebView.class)
     public Document getDoc(@PathParam("entityType") String entityType, @PathParam("id") String id) {
-      Class<? extends Document> cls = Document.getSubclassByString(entityType);
+      Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(entityType);
       if (cls == null) {
         throw new WebApplicationException(404);
       }
@@ -93,7 +96,7 @@ public class RESTAutoResource {
     @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}")
     @JsonView(JsonViews.WebView.class)
     public <T extends Document> void putDoc(@PathParam("entityType") String entityType, @PathParam("id") String id, Document input) throws IOException {
-      Class<? extends Document> cls = Document.getSubclassByString(entityType);
+      Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(entityType);
       if (cls == null) {
         throw new WebApplicationException(404);
       }
@@ -117,7 +120,7 @@ public class RESTAutoResource {
     @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}")
     @JsonView(JsonViews.WebView.class)
     public <T extends Document> void putDoc(@PathParam("entityType") String entityType, @PathParam("id") String id) throws IOException {
-      Class<? extends Document> cls = Document.getSubclassByString(entityType);
+      Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(entityType);
       if (cls == null) {
         throw new WebApplicationException(404);
       }

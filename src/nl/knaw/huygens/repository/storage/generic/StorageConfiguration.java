@@ -4,6 +4,7 @@ import java.util.Set;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
+import com.google.inject.Inject;
 
 import nl.knaw.huygens.repository.util.Configuration;
 
@@ -28,6 +29,7 @@ public class StorageConfiguration {
     this.type = type;
   }
 
+  @Inject
   public StorageConfiguration(Configuration conf) {
     type = conf.getSetting("database.type", "unknown");
     host = conf.getSetting("database.host", "localhost");

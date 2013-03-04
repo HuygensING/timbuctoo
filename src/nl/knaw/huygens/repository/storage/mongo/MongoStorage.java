@@ -15,6 +15,8 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
@@ -23,13 +25,15 @@ import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.generic.StorageUtils;
 
-abstract class MongoStorage implements Storage {
+@Singleton
+public abstract class MongoStorage implements Storage {
   protected Mongo mongo;
   protected DB db;
   protected String dbName;
@@ -39,6 +43,7 @@ abstract class MongoStorage implements Storage {
 
   private Set<String> documentCollections;
   protected Set<String> versionedDocumentTypes;
+  private final DocumentTypeRegister docTypeRegistry;
 
   static class Counter {
     @JsonProperty("_id")
@@ -46,7 +51,9 @@ abstract class MongoStorage implements Storage {
     public int next;
   }
 
-  public MongoStorage(StorageConfiguration conf) throws UnknownHostException, MongoException {
+  @Inject
+  public MongoStorage(StorageConfiguration conf, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+    this.docTypeRegistry = docTypeRegistry;
     dbName = conf.getDbName();
     mongo = new Mongo(conf.getHost(), conf.getPort());
     db = mongo.getDB(dbName);
@@ -63,9 +70,10 @@ abstract class MongoStorage implements Storage {
     versionedDocumentTypes = conf.getVersionedTypes();
   }
 
-  public MongoStorage(StorageConfiguration conf, Mongo m, DB loanedDB) {
+  public MongoStorage(StorageConfiguration conf, Mongo m, DB loanedDB, DocumentTypeRegister docTypeRegistry) {
     mongo = m;
     db = loanedDB;
+    this.docTypeRegistry = docTypeRegistry;
     initializeDB(conf);
   }
 
@@ -104,7 +112,8 @@ abstract class MongoStorage implements Storage {
   public List<Document> getLastChanged(int limit) {
     List<Document> changedDocs = Lists.newArrayList();
     for (String colName : documentCollections) {
-      JacksonDBCollection<? extends Document, String> col = MongoUtils.getCollection(db, Document.getSubclassByString(colName));
+      // FIXME
+      JacksonDBCollection<? extends Document, String> col = MongoUtils.getCollection(db, docTypeRegistry.getClassFromTypeString(colName));
       changedDocs.addAll(col.find().sort(new BasicDBObject("^lastChange.dateStamp", -1)).limit(limit).toArray());
     }
     
