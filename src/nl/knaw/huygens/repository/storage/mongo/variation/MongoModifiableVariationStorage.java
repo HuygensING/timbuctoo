@@ -52,7 +52,7 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
       setNextId(cls, newItem);
     }
     JsonNode jsonNode = inducer.induce(newItem, cls);
-    DBCollection col = getRawCollection(cls);
+    DBCollection col = getVariationCollection(cls);
     JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
     col.insert(insertedItem);
     addInitialVersion(cls, newItem.getId(), insertedItem);
@@ -66,7 +66,7 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
       }
     }
     List<JsonNode> jsonNodes = inducer.induce(items, cls, Collections.<String, DBObject>emptyMap());
-    DBCollection col = getRawCollection(cls);
+    DBCollection col = getVariationCollection(cls);
     @SuppressWarnings("unchecked")
     JacksonDBObject<JsonNode>[] dbObjects = new JacksonDBObject[jsonNodes.size()];
     int i = 0;
@@ -89,7 +89,7 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
 
   @Override
   public <T extends Document> void updateItem(String id, T updatedItem, Class<T> cls) throws IOException {
-    DBCollection col = getRawCollection(cls);
+    DBCollection col = getVariationCollection(cls);
     BasicDBObject q = new BasicDBObject("_id", id);
     q.put("^rev", updatedItem.getRev());
     DBObject existingNode = col.findOne(q);
@@ -105,7 +105,7 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
 
   @Override
   public <T extends Document> void deleteItem(String id, Class<T> cls, Change change) throws IOException {
-    DBCollection col = getRawCollection(cls);
+    DBCollection col = getVariationCollection(cls);
     BasicDBObject q = new BasicDBObject("_id", id);
     DBObject existingNode = col.findOne(q);
     if (existingNode == null) {
@@ -166,7 +166,7 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
   }
   
   private <T extends Document> void setNextId(Class<T> cls, T item) {
-    BasicDBObject idFinder = new BasicDBObject("_id", getRawCollection(cls));
+    BasicDBObject idFinder = new BasicDBObject("_id", getVariationCollection(cls));
     BasicDBObject counterIncrement = new BasicDBObject("$inc", new BasicDBObject("next", 1));
 
     // Find by id, return all fields, use default sort, increment the counter,

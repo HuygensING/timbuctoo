@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mongodb.DB;
@@ -37,15 +36,13 @@ public class MongoComplexStorage implements Storage {
   private MongoModifiableStorage plainStorage;
   private MongoModifiableVariationStorage variationStorage;
   
-  private Set<String> variationDoctypes; 
+  private Set<String> variationDoctypes;
 
   @Inject
   public MongoComplexStorage(StorageConfiguration conf, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
-    dbName = conf.getDbName();    
+    dbName = conf.getDbName();
     options = new MongoOptions();
     options.safe = true;
-    options.dbDecoderFactory = new TreeDecoderFactory();
-    options.dbEncoderFactory = new TreeEncoderFactory(new ObjectMapper());
     mongo = new Mongo(new ServerAddress(conf.getHost(), conf.getPort()), options);
     db = mongo.getDB(dbName);
     if (conf.requiresAuth()) {
