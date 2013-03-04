@@ -1,11 +1,14 @@
 package nl.knaw.huygens.repository.importer.database;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.apache.commons.configuration.ConfigurationException;
 
@@ -20,41 +23,36 @@ import nl.knaw.huygens.repository.util.Configuration;
 
 public class PersonImporter {
 
+  private String connectionString;
+  private String userName;
+  private String password;
+  private String query;
+  private Map<String, List<String>> objectMapping;
+
   public static void main(String[] args) throws SQLException, ConfigurationException, IOException {
     Configuration conf = new Configuration("config.xml");
     Hub hub = new Hub();
     DocumentTypeRegister docTypeRegistry = new DocumentTypeRegister();
+
     StorageConfiguration storageConfiguration = new StorageConfiguration(conf);
     Storage storage = StorageFactory.getInstance(storageConfiguration, docTypeRegistry);
-    StorageManager storageManager = new StorageManager(storageConfiguration, storage , hub, docTypeRegistry);
+    StorageManager storageManager = new StorageManager(storageConfiguration, storage, hub, docTypeRegistry);
     storageManager.getStorage().empty();
-    String mySQLURL = "jdbc:mysql://localhost:3306/raa_web";
-    String mySQLUser = "root";
-    String mySQLPwd = "M4SQ1!";
-    String query = "SELECT voornaam, tussenvoegsel, geslachtsnaam, geboortedatum, overlijdensdatum FROM persoon;";
 
-    Map<String, List<String>> mySQLPropertyMapping = new HashMap<String, List<String>>();
-    mySQLPropertyMapping.put("name", Arrays.asList(new String[] { "voornaam", "tussenvoegsel", "geslachtsnaam" }));
-    mySQLPropertyMapping.put("birthDate", Arrays.asList(new String[] { "geboortedatum" }));
-    mySQLPropertyMapping.put("deathDate", Arrays.asList(new String[] { "overlijdensdatum" }));
+    PersonImporter importer = new PersonImporter();
 
-    importPersons(mySQLURL, mySQLUser, mySQLPwd, query, mySQLPropertyMapping, storageManager);
+    importer.importData("resources/DWCPersonMapping.properties", storageManager);
+    importer.importData("resources/RAAPersonMapping.properties", storageManager);
 
-    String postGreSQLURL = "jdbc:postgresql://localhost:5432/bia";
-    String postGreSQLUser = "bia_user";
-    String postGreSQLPwd = "B14_Us3r";
-    String postGreSQLuery = "SELECT family_name, given_name, preposition, intraposition, postposition, birth_date, death_date FROM persons;";
-
-    Map<String, List<String>> postGreSQLPropertyMapping = new HashMap<String, List<String>>();
-    postGreSQLPropertyMapping.put("name", Arrays.asList(new String[] { "given_name", "preposition", "intraposition", "postposition", "family_name" }));
-    postGreSQLPropertyMapping.put("birthDate", Arrays.asList(new String[] { "birth_date" }));
-    postGreSQLPropertyMapping.put("deathDate", Arrays.asList(new String[] { "death_date" }));
-
-    importPersons(postGreSQLURL, postGreSQLUser, postGreSQLPwd, postGreSQLuery, postGreSQLPropertyMapping, storageManager);
-
+    storageManager.ensureIndices();
   }
 
-  private static void importPersons(String mySQLURL, String mySQLUser, String mySQLPwd, String query, Map<String, List<String>> propertyMapping, StorageManager storageManager)
+  public void importData(String configFile, StorageManager storageManager) throws SQLException, IOException {
+    this.readMapping(configFile);
+    this.importPersons(this.connectionString, this.userName, this.password, this.query, this.objectMapping, storageManager);
+  }
+
+  private void importPersons(String mySQLURL, String mySQLUser, String mySQLPwd, String query, Map<String, List<String>> propertyMapping, StorageManager storageManager)
       throws SQLException, IOException {
     PersonResultSetConverter mySQLConverter = new PersonResultSetConverter(propertyMapping);
 
@@ -62,10 +60,43 @@ public class PersonImporter {
     List<Person> persons = mySQLImporter.executeQuery(query, mySQLConverter);
 
     for (Person person : persons) {
-      System.out.println(person.getId() + ": " + person.getDescription());
+      System.out.println(person.getDescription());
       storageManager.addDocument(person, Person.class);
     }
 
     System.out.println("persons.size(): " + persons.size());
+  }
+
+  private void readMapping(String filePath) throws IOException {
+    Properties mapping = new Properties();
+    mapping.load(new FileInputStream(filePath));
+
+    this.objectMapping = new HashMap<String, List<String>>();
+    for (Entry<Object, Object> entry : mapping.entrySet()) {
+      if ("connectionString".equals(entry.getKey())) {
+        this.connectionString = (String) entry.getValue();
+      } else if ("userName".equals(entry.getKey())) {
+        this.userName = (String) entry.getValue();
+      } else if ("password".equals(entry.getKey())) {
+        this.password = (String) entry.getValue();
+      } else if ("query".equals(entry.getKey())) {
+        this.query = (String) entry.getValue();
+      } else {
+        String key = (String) entry.getKey();
+        List<String> value = getEntryValue((String) entry.getValue());
+        this.objectMapping.put(key, value);
+      }
+    }
+  }
+
+  private List<String> getEntryValue(String value) {
+    List<String> values = new ArrayList<String>();
+    String[] valueParts = value.split(",");
+
+    for (String valuePart : valueParts) {
+      values.add(valuePart.trim());
+    }
+
+    return values;
   }
 }
