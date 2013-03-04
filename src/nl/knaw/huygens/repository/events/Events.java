@@ -20,10 +20,6 @@ public class Events {
       return doc;
     }
 
-    public String getType() {
-      return doc.getType();
-    }
-
     public Class<T> getCls() {
       return cls;
     }

@@ -2,6 +2,10 @@ package nl.knaw.huygens.repository.server;
 
 import java.util.Map;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+
 import org.apache.commons.configuration.ConfigurationException;
 
 import com.google.common.collect.Maps;
@@ -36,6 +40,11 @@ public class RepositoryCtxListener extends GuiceServletContextListener {
       bind(Hub.class).toInstance(hub);
       bind(Configuration.class).toInstance(conf);
       configureStorage(conf);
+      
+      ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
+      Validator validator = vf.getValidator();
+      bind(Validator.class).toInstance(validator);
+      
       Map<String, String> params = Maps.newHashMap();
       params.put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.repository.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.repository.providers");
       params.put(PackagesResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, "com.sun.jersey.api.container.filter.LoggingFilter");
