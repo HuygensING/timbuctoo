@@ -175,8 +175,20 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
     // return the new object, create if no object exists:
     Counter newCounter = counterCol.findAndModify(idFinder, null, null, false, counterIncrement, true, true);
 
-    String newId = cls.getAnnotation(IDPrefix.class).value() + String.format("%1$010d", newCounter.next);
+    String newId = getClassPrefix(cls) + String.format("%1$010d", newCounter.next);
     item.setId(newId);
+  }
+
+  private String getClassPrefix(Class<?> cls) {
+    while (cls != null && !cls.equals(Document.class)) {
+      IDPrefix annotation = cls.getAnnotation(IDPrefix.class);
+      if (annotation != null) {
+        return annotation.value();
+      }
+      cls = cls.getSuperclass();
+    }
+    // We don't know what this is supposed to be, return "UNK" for unknown...
+    return "UNK";
   }
 
   @Override
