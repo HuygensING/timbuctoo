@@ -52,7 +52,6 @@ public class HTMLGeneratorTest {
         "B;<br>\n" +
         "C;<br>\n" +
         "</td></tr>\n" +
-        "<tr><th>Type</th><td>none</td></tr>\n" +
         "<tr><th>Id</th><td>none</td></tr>\n" +
         "<tr><th>Rev</th><td>0</td></tr>\n" +
         "<tr><th>Last Change</th><td>none</td></tr>\n" +

@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.mongojack.internal.stream.JacksonDBObject;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,8 +14,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.mongodb.DBObject;
-
-import org.mongojack.internal.stream.JacksonDBObject;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.mongo.variation.DBJsonNode;
@@ -48,15 +48,23 @@ public class VariationReducer {
   
   public <T extends Document> T reduce(JsonNode n, Class<T> cls) throws VariationException, JsonProcessingException {
     final String variationName = VariationUtils.getVariationName(cls);
-    JsonNode commonData = n.get(VariationUtils.COMMON_PROPS);
-    JsonNode specificData = n.get(variationName);
+    String idPrefix = variationName + "-";
+    List<JsonNode> specificData = Lists.newArrayListWithExpectedSize(1);
     ObjectNode rv = mapper.createObjectNode();
-    if (commonData != null) {
-      processCommonData(variationName, commonData, rv);
+    for (Class<? extends Document> someCls : VariationUtils.getAllClasses(cls)) {
+      String id = VariationUtils.getClassId(someCls);
+      JsonNode data = n.get(id);
+      if (data != null) {
+        if (id.startsWith(idPrefix)) {
+          specificData.add(data);
+        } else {
+          processCommonData(variationName, data, rv);
+        }
+      }
     }
-    if (specificData != null) {
-      if (specificData.isObject()) {
-        rv.setAll((ObjectNode) specificData);
+    for (JsonNode d : specificData) {
+      if (d.isObject()) {
+        rv.setAll((ObjectNode) d);
       } else {
         throw new VariationException("Non-object variation data; this should never happen.");
       }
