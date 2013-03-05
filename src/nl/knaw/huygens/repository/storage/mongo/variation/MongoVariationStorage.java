@@ -28,6 +28,7 @@ import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
@@ -36,7 +37,6 @@ import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
 import nl.knaw.huygens.repository.storage.mongo.MongoUtils;
 import nl.knaw.huygens.repository.variation.VariationException;
 import nl.knaw.huygens.repository.variation.VariationReducer;
-import nl.knaw.huygens.repository.variation.VariationUtils;
 
 @Singleton
 public abstract class MongoVariationStorage implements Storage {
@@ -63,8 +63,10 @@ public abstract class MongoVariationStorage implements Storage {
   }
   
   private Map<Class<? extends Document>, DBCollection> collectionCache;
+  protected final DocumentTypeRegister docTypeRegistry;
   
-  public MongoVariationStorage(StorageConfiguration conf) throws UnknownHostException, MongoException {
+  public MongoVariationStorage(StorageConfiguration conf, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+    this.docTypeRegistry = docTypeRegistry;
     dbName = conf.getDbName();
     options = new MongoOptions();
     options.safe = true;
@@ -76,8 +78,9 @@ public abstract class MongoVariationStorage implements Storage {
     initializeVariationCollections(conf);
   }
   
-  public MongoVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options) throws UnknownHostException, MongoException {
+  public MongoVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
     this.options = options;
+    this.docTypeRegistry = docTypeRegistry;
     dbName = conf.getDbName();
     this.mongo = m;
     this.db = db;
@@ -104,7 +107,8 @@ public abstract class MongoVariationStorage implements Storage {
   @Override
   public <T extends Document> StorageIterator<T> getAllByType(Class<T> cls) {
     DBCollection col = getVariationCollection(cls);
-    String t = MongoUtils.getCollectionName(VariationUtils.getFirstCommonClass(cls));
+    // FIXME this is totally incorrect.
+    String t = MongoUtils.getCollectionName(cls);
     DBObject query = new BasicDBObject("^type", t);
     return new MongoDBVariationIteratorWrapper<T>(col.find(query), reducer, cls);
   }
@@ -201,7 +205,7 @@ public abstract class MongoVariationStorage implements Storage {
   protected DBCollection getVariationCollection(Class<? extends Document> cls) {
     DBCollection col;
     if (!collectionCache.containsKey(cls)) {
-      col = db.getCollection(MongoUtils.getCollectionName(VariationUtils.getBaseClass(cls)));
+      col = db.getCollection(docTypeRegistry.getCollectionId(cls));
       col.setDBDecoderFactory(treeDecoderFactory);
       col.setDBEncoderFactory(treeEncoderFactory);
       collectionCache.put(cls, col);
@@ -213,7 +217,7 @@ public abstract class MongoVariationStorage implements Storage {
   
 
   protected <T extends Document> DBCollection getRawVersionCollection(Class<T> cls) {
-    DBCollection col = db.getCollection(MongoUtils.getVersioningCollectionName(VariationUtils.getBaseClass(cls)));
+    DBCollection col = db.getCollection(docTypeRegistry.getCollectionId(cls) + "-versions");
     col.setDBEncoderFactory(options.dbEncoderFactory);
     return col;
   }
