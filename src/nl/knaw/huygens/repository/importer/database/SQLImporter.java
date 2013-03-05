@@ -1,5 +1,6 @@
 package nl.knaw.huygens.repository.importer.database;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -22,7 +23,7 @@ public class SQLImporter {
     this.password = password;
   }
 
-  public <T extends Document> List<T> executeQuery(String query, ResultSetConverter<T> converter) throws SQLException {
+  public <T extends Document> List<T> executeQuery(String query, GenericResultSetConverter<T> converter) throws SQLException, InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException {
     List<T> returnValue = new ArrayList<T>();
 
     Connection connection = null;

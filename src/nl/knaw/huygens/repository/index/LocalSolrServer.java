@@ -104,7 +104,8 @@ public class LocalSolrServer {
   }
 
   public void commit(String core) throws SolrServerException, IOException {
-    solrServers.get(core).commit();
+    SolrServer server = solrServers.get(core);
+    server.commit();
     modifiedCores.remove(core);
   }
 
@@ -116,6 +117,7 @@ public class LocalSolrServer {
   }
 
   public void setSolrServer(SolrServer solrServer, String core) {
+    System.out.println("setSolrServer: " + core);
     this.solrServers.put(core, solrServer);
   }
 
