@@ -23,12 +23,11 @@ import com.mongodb.MongoOptions;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.model.util.IDPrefix;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
-import nl.knaw.huygens.repository.storage.mongo.MongoUtils;
 import nl.knaw.huygens.repository.variation.VariationInducer;
-import nl.knaw.huygens.repository.variation.VariationUtils;
 
 @Singleton
 public class MongoModifiableVariationStorage extends MongoVariationStorage {
@@ -36,14 +35,14 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
   private VariationInducer inducer;
 
   @Inject
-  public MongoModifiableVariationStorage(StorageConfiguration conf) throws UnknownHostException, MongoException {
-    super(conf);
+  public MongoModifiableVariationStorage(StorageConfiguration conf, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+    super(conf, docTypeRegistry);
     inducer = new VariationInducer();
     inducer.setView(JsonViews.DBView.class);
   }
   
-  public MongoModifiableVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options) throws UnknownHostException, MongoException {
-    super(conf, m, db, options);
+  public MongoModifiableVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+    super(conf, m, db, options, docTypeRegistry);
     inducer = new VariationInducer();
     inducer.setView(JsonViews.DBView.class);
   }
@@ -168,7 +167,7 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
   }
   
   private <T extends Document> void setNextId(Class<T> cls, T item) {
-    BasicDBObject idFinder = new BasicDBObject("_id", MongoUtils.getCollectionName(VariationUtils.getBaseClass(cls)));
+    BasicDBObject idFinder = new BasicDBObject("_id", docTypeRegistry.getCollectionId(cls));
     BasicDBObject counterIncrement = new BasicDBObject("$inc", new BasicDBObject("next", 1));
 
     // Find by id, return all fields, use default sort, increment the counter,

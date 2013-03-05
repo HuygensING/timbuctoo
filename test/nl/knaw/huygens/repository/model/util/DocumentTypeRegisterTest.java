@@ -24,7 +24,7 @@ public class DocumentTypeRegisterTest {
     registry.registerPackageFromClass(TestDoc.class);
     assertEquals("Should work for document", "document", registry.getTypeString(Document.class));
     assertEquals("Should work for base doc", "testbasedoc", registry.getTypeString(TestBaseDoc.class));
-    assertEquals("Should work for test doc", "testbasedoc", registry.getTypeString(TestDoc.class));
+    assertEquals("Should work for test doc", "testdoc", registry.getTypeString(TestDoc.class));
   }
 
 }

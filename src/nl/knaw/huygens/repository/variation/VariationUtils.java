@@ -15,27 +15,6 @@ public class VariationUtils {
     String packageName = cls.getPackage().getName();
     return packageName.substring(packageName.lastIndexOf('.') + 1);
   }
-
-  @SuppressWarnings("unchecked")
-  public static Class<? extends Document> getBaseClass(Class<? extends Document> cls) {
-    Class<? extends Document> lastCls = cls;
-    while (cls != null && !cls.equals(Document.class)) {
-      lastCls = cls;
-      cls = (Class<? extends Document>) cls.getSuperclass();
-    }
-    return lastCls;
-  }
-
-  @SuppressWarnings("unchecked")
-  public static Class<? extends Document> getFirstCommonClass(Class<? extends Document> cls) {
-    while (cls != null && !cls.equals(Document.class)) {
-      if (getVariationName(cls).equals(BASE_MODEL_PACKAGE_VARIATION)) {
-        return cls;
-      }
-      cls = (Class<? extends Document>) cls.getSuperclass();
-    }
-    return null;
-  }
   
   @SuppressWarnings("unchecked")
   public static List<Class<? extends Document>> getAllClasses(Class<? extends Document> cls) {

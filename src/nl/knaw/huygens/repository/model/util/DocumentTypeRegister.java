@@ -14,7 +14,7 @@ import com.google.common.reflect.ClassPath.ClassInfo;
 import com.google.inject.Singleton;
 
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.variation.VariationUtils;
+import nl.knaw.huygens.repository.storage.mongo.MongoUtils;
 
 @Singleton
 public class DocumentTypeRegister {
@@ -22,10 +22,12 @@ public class DocumentTypeRegister {
   private Map<Class<? extends Document>, String> typeToStringMap;
   private List<String> unreadablePackages;
   private ClassPath classPath = null;
+  private Map<Class<? extends Document>, String> typeToCollectionIdMap;
   
   public DocumentTypeRegister() {
     stringToTypeMap = Maps.newHashMap();
     typeToStringMap = Maps.newHashMap();
+    typeToCollectionIdMap = Maps.newHashMap();
     unreadablePackages = Lists.newArrayList();
     try {
       classPath = ClassPath.from(this.getClass().getClassLoader());
@@ -39,7 +41,7 @@ public class DocumentTypeRegister {
     if (typeToStringMap.containsKey(docCls)) {
       return typeToStringMap.get(docCls);
     }
-    return (VariationUtils.getBaseClass(docCls).getSimpleName()).toLowerCase();
+    return MongoUtils.getCollectionName(docCls);
   }
 
   public Class<? extends Document> getClassFromTypeString(String id) {
@@ -59,6 +61,15 @@ public class DocumentTypeRegister {
     return null;
   }
   
+  public String getCollectionId(Class<? extends Document> docCls) {
+    if (typeToCollectionIdMap.containsKey(docCls)) {
+      return typeToCollectionIdMap.get(docCls);
+    }
+    String collectionId = MongoUtils.getCollectionName(getBaseClass(docCls));
+    typeToCollectionIdMap.put(docCls, collectionId);
+    return collectionId;
+  }
+  
   public void registerPackageFromClass(Class<?> cls) {
     registerPackage(cls.getPackage().getName());
   }
@@ -71,10 +82,12 @@ public class DocumentTypeRegister {
       Class<?> cls = info.load();
       if (Document.class.isAssignableFrom(cls)) {
         Class<? extends Document> docCls = (Class<? extends Document>) cls;
-        Class<? extends Document> baseClass = VariationUtils.getBaseClass(docCls);
-        String typeId = baseClass.getSimpleName().toLowerCase();
+        String typeId = docCls.getSimpleName().toLowerCase();
         stringToTypeMap.put(typeId, docCls);
         typeToStringMap.put(docCls, typeId);
+        Class<? extends Document> baseCls = getBaseClass(docCls);
+        String baseTypeId = MongoUtils.getCollectionName(baseCls);
+        typeToCollectionIdMap.put(docCls, baseTypeId);
         classesDetected++;
       }
     }
@@ -84,6 +97,16 @@ public class DocumentTypeRegister {
       System.err.println("No classes detected, adding package for runtime checking");
       unreadablePackages.add(packageId);
     }
+  }
+  
+  @SuppressWarnings("unchecked")
+  private Class<? extends Document> getBaseClass(Class<? extends Document> cls) {
+    Class<? extends Document> lastCls = cls;
+    while (cls != null && !cls.equals(Document.class)) {
+      lastCls = cls;
+      cls = (Class<? extends Document>) cls.getSuperclass();
+    }
+    return lastCls;
   }
 
 }

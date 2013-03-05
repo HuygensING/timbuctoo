@@ -23,8 +23,6 @@ import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.mongo.MongoModifiableStorage;
-import nl.knaw.huygens.repository.storage.mongo.MongoUtils;
-import nl.knaw.huygens.repository.variation.VariationUtils;
 
 @Singleton
 public class MongoComplexStorage implements Storage {
@@ -37,9 +35,11 @@ public class MongoComplexStorage implements Storage {
   private MongoModifiableVariationStorage variationStorage;
   
   private Set<String> variationDoctypes;
+  private final DocumentTypeRegister docTypeRegistry;
 
   @Inject
   public MongoComplexStorage(StorageConfiguration conf, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+    this.docTypeRegistry = docTypeRegistry;
     dbName = conf.getDbName();
     options = new MongoOptions();
     options.safe = true;
@@ -50,11 +50,11 @@ public class MongoComplexStorage implements Storage {
     }
     variationDoctypes = conf.getVariationDocumentTypes();
     plainStorage = new MongoModifiableStorage(conf, mongo, db, docTypeRegistry);
-    variationStorage = new MongoModifiableVariationStorage(conf, mongo, db, options);
+    variationStorage = new MongoModifiableVariationStorage(conf, mongo, db, options, docTypeRegistry);
   }
   
   private Storage getStorageForType(Class<? extends Document > cls) {
-    if (variationDoctypes.contains(MongoUtils.getCollectionName(VariationUtils.getBaseClass(cls)))) {
+    if (variationDoctypes.contains(docTypeRegistry.getCollectionId(cls))) {
       return variationStorage;
     }
     return plainStorage;

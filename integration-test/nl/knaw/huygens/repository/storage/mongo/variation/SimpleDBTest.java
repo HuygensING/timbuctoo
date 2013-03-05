@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import com.mongodb.BasicDBObject;
 
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.mongo.MongoDiff;
 import nl.knaw.huygens.repository.variation.model.projecta.OtherDoc;
@@ -24,7 +25,8 @@ public class SimpleDBTest {
   @Test
   public void test() throws IOException {
     StorageConfiguration conf = new StorageConfiguration("127.0.0.1", 27017, "integrationtest", "test", "test", "mongo");
-    MongoModifiableVariationStorage s = new MongoModifiableVariationStorage(conf);
+    DocumentTypeRegister docTypeRegistry = new DocumentTypeRegister();
+    MongoModifiableVariationStorage s = new MongoModifiableVariationStorage(conf, docTypeRegistry );
     s.db.getCollection("testbasedoc").drop();
     s.db.getCollection("testbasedoc-versions").drop();
     String docId = "TST0001";
