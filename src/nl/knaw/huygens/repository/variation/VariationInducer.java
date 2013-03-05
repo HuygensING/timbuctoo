@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.mongojack.internal.stream.JacksonDBObject;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,9 +16,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.mongodb.DBObject;
-
-import org.mongojack.internal.stream.JacksonDBObject;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.mongo.variation.DBJsonNode;
@@ -60,8 +61,8 @@ public class VariationInducer {
   public <T extends Document> JsonNode induce(T item, Class<T> cls, DBObject existingItem) throws VariationException {
     ObjectNode o;
     if (existingItem == null) {
-      o = mapper.createObjectNode();
-      o.put(VariationUtils.COMMON_PROPS, mapper.createObjectNode());
+      List<Class<? extends Document>> classIds = VariationUtils.getAllClasses(cls);
+      o = createNode(null, cls, classIds);
     } else if (existingItem instanceof JacksonDBObject) {
       o = (ObjectNode) (((JacksonDBObject<JsonNode>) existingItem).getObject());
     } else if (existingItem instanceof DBJsonNode) {
@@ -72,55 +73,74 @@ public class VariationInducer {
     return induce(item, cls, o);
   }
 
+  private <T extends Document> ObjectNode createNode(ObjectNode o, Class<T> cls, List<Class<? extends Document>> allClasses) {
+    if (o == null) {
+      o = mapper.createObjectNode();
+    }
+    for (Class<? extends Document> someCls : allClasses) {
+      String classId = VariationUtils.getClassId(someCls);
+      if (!o.has(classId)) {
+        o.put(classId, mapper.createObjectNode());
+      }
+    }
+    return o;
+  }
+
   
   public <T extends Document> JsonNode induce(T item, Class<T> cls, ObjectNode existingItem) throws VariationException {
-    Class<?> commonClass = VariationUtils.getFirstCommonClass(cls);
-    JsonNode commonTree = asTree(item, commonClass);
-    JsonNode completeTree = asTree(item, cls);
-    if (existingItem == null) {
-      existingItem = mapper.createObjectNode();
-      existingItem.put(VariationUtils.COMMON_PROPS, mapper.createObjectNode());
+    if (cls == null || item == null) {
+      throw new IllegalArgumentException();
     }
-    JsonNode existingCommonNode = existingItem.get(VariationUtils.COMMON_PROPS);
-    if (existingCommonNode == null || !existingCommonNode.isObject()) {
-      throw new VariationException("Common object is not an object?");
-    }
-    ObjectNode existingCommonTree = (ObjectNode) existingCommonNode;
-    
-    String variation = VariationUtils.getVariationName(cls);
-    if (!existingItem.has(variation)) {
-      existingItem.put(variation, mapper.createObjectNode());
-    }
-    JsonNode existingVariation = existingItem.get(variation);
-    if (!existingVariation.isObject()) {
-      throw new VariationException("Variation object (" + variation + ") is not an object?");
-    }
-    ObjectNode variationNode = (ObjectNode) existingVariation;
-    
-    Iterator<Entry<String, JsonNode>> fields = completeTree.fields();
-    while (fields.hasNext()) {
-      Entry<String, JsonNode> field = fields.next();
-      String k = field.getKey();
-      JsonNode fieldNode = field.getValue();
-      /* For each property, there are 3 possibilities:
-       * a) it is a prefixed (^ or _) property, which should always be the same among all variations
-       *    and is used for identifying different objects, their version, etc.
-       * b) it is common between different variations (project/VRE/whatever)
-       * c) it is specific to a single variation (project/VRE/whatever)
-       */
-      if (k.startsWith("^") || k.startsWith("_")) {
-        // Either this is a new object and we need to add the property, or it is an existing one in which
-        // case we should check for an exact match:
-        if (!existingItem.has(k)) {
-          existingItem.put(k, fieldNode);
-        } else if (!fieldNode.equals(existingItem.get(k))) {
-          throw new VariationException("Inducing object into wrong object; fields " + k + " are not equal (" +
-                                       fieldNode.toString() + " vs. " + existingItem.get(k).toString() + "!");
+    String variationId = VariationUtils.getVariationName(cls);
+    List<Class<? extends Document>> allClasses = VariationUtils.getAllClasses(cls);
+    existingItem = createNode(existingItem, cls, allClasses);
+    int size = allClasses.size();
+    int i = size;
+    Map<String, Object> finishedKeys = Maps.newHashMap(); 
+    while (i-- > 0) {
+      Class<? extends Document> someCls = allClasses.get(i);
+      String classId = VariationUtils.getClassId(someCls);
+      JsonNode obj = existingItem.get(classId);
+      if (!obj.isObject()) {
+        throw new VariationException("Variation object (" + classId + ") is not an object?");
+      }
+      
+      ObjectNode currentClsNode = (ObjectNode) obj;
+      JsonNode itemTree = asTree(item, someCls);
+      boolean isShared = !classId.startsWith(variationId + "-");
+      
+      Iterator<Entry<String, JsonNode>> fields = itemTree.fields();
+      while (fields.hasNext()) {
+        Entry<String, JsonNode> field = fields.next();
+        String k = field.getKey();
+        JsonNode fieldNode = field.getValue();
+
+        // Should not store bits we already stored in other parts of the hierarchy:
+        if (finishedKeys.containsKey(k) && fieldNode.equals(finishedKeys.get(k))) {
+          continue;
         }
-      } else if (commonTree.has(k)) {
-        addOrMergeVariation(existingCommonTree, k, variation, fieldNode);
-      } else {
-        variationNode.put(k, fieldNode);
+        finishedKeys.put(k, fieldNode);
+        
+        /* For each property, there are 3 possibilities:
+         * a) it is a prefixed (^ or _) property, which should always be the same among all variations
+         *    and is used for identifying different objects, their version, etc.
+         * b) it is shared between different variations (project/VRE/whatever)
+         * c) it is specific to a single variation (project/VRE/whatever)
+         */
+        if (k.startsWith("^") || k.startsWith("_")) {
+          // Either this is a new object and we need to add the property, or it is an existing one in which
+          // case we should check for an exact match:
+          if (!existingItem.has(k)) {
+            existingItem.put(k, fieldNode);
+          } else if (!fieldNode.equals(existingItem.get(k))) {
+            throw new VariationException("Inducing object into wrong object; fields " + k + " are not equal (" +
+                                         fieldNode.toString() + " vs. " + existingItem.get(k).toString() + "!");
+          }
+        } else if (isShared) {
+          addOrMergeVariation(currentClsNode, k, variationId, fieldNode);
+        } else {
+          currentClsNode.put(k, fieldNode);
+        }
       }
     }
     return existingItem;
