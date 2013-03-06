@@ -84,11 +84,11 @@ public class DocumentIndexer<T extends Document> {
    * found using the ID of the entity you pass.
    * 
    * @param entity
-   *          the <code>Document</code> to update.
+   *          the <code>Document</code> and it's subtypes to update.
    * @throws RepositoryException
    *           if adding the document fails for some reason.
    */
-  public <Q extends T> void modify(Q entity) throws RepositoryException {
+  public <Q extends T> void modify(Q... entity) throws RepositoryException {
     try {
       localSolrServer.update(core, getSolrInputDocument(entity));
     } catch (IndexException e) {
@@ -105,7 +105,7 @@ public class DocumentIndexer<T extends Document> {
    * @throws RepositoryException
    *           if removing the document fails for some reason.
    */
-  public <Q extends T> void remove(Q entity) throws RepositoryException {
+  public void remove(T entity) throws RepositoryException {
     try {
       localSolrServer.delete(core, getSolrInputDocument(entity));
     } catch (IndexException e) {
