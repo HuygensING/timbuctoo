@@ -22,6 +22,7 @@ import com.google.inject.Inject;
 import nl.knaw.huygens.repository.events.Events.IndexChangedEvent;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.index.ModelIterator;
+import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Search;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.pubsub.Hub;
@@ -178,9 +179,9 @@ public class FacettedSearchManager {
 
   private Map<String, Boolean> getFieldFiltersFromModel(String core) {
     if (!facetFieldFilterCache.containsKey(core)) {
-      Class<?> responseTypeCls = docTypeRegistry.getClassFromTypeString(core);
+      Class<? extends Document> responseTypeCls = docTypeRegistry.getClassFromTypeString(core);
       FieldMapper mapper = new FieldMapper();
-      modelIterator.processMethods(mapper, responseTypeCls.getMethods());
+      modelIterator.processClass(mapper, responseTypeCls);
       facetFieldFilterCache.put(core, mapper.getResult());
     }
     return facetFieldFilterCache.get(core);
