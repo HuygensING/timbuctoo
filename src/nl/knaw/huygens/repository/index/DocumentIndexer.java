@@ -57,7 +57,6 @@ public class DocumentIndexer<T extends Document> {
   public DocumentIndexer(Class<T> entity, ModelIterator iterator, LocalSolrServer server, Hub hub) {
     this.localSolrServer = server;
     this.modelIterator = iterator;
-    // FIXME in the repository world, this is no longer sufficient:
     this.core = entity.getSimpleName().toLowerCase();
     this.hub = hub;
   }
