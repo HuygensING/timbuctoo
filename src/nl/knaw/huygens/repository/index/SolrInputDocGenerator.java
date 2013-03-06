@@ -27,6 +27,11 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
     this.doc = new SolrInputDocument();
     this.instance = instance;
   }
+  
+  public SolrInputDocGenerator(Document instance, SolrInputDocument solrDoc) {
+    this.doc = solrDoc;
+    this.instance = instance;
+  }
 
   @Override
   public void process(Method m, IndexAnnotation annotation) {
