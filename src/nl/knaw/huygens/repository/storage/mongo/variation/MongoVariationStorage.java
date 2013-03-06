@@ -107,10 +107,8 @@ public abstract class MongoVariationStorage implements Storage {
   @Override
   public <T extends Document> StorageIterator<T> getAllByType(Class<T> cls) {
     DBCollection col = getVariationCollection(cls);
-    // FIXME this is totally incorrect.
-    String t = MongoUtils.getCollectionName(cls);
-    DBObject query = new BasicDBObject("^type", t);
-    return new MongoDBVariationIteratorWrapper<T>(col.find(query), reducer, cls);
+    // FIXME now returns all the data from the collection, find a way to filter on type.
+    return new MongoDBVariationIteratorWrapper<T>(col.find(), reducer, cls);
   }
 
   @Override
