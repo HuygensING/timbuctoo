@@ -42,7 +42,7 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
     Map<String, Set<Object>> valuesToReplace = Maps.newHashMap();
     for (String f : doc.getFieldNames()) {
       Set<Object> vals = Sets.newHashSet(doc.getFieldValues(f));
-      // These aren't multivalued. Truncate the set:
+      // These aren't multivalued. Make sure they only contain one item.
       if (!vals.isEmpty() && (f.equals("id") || f.startsWith("facet_sort_"))) {
         Object o = vals.iterator().next();
         doc.removeField(f);
