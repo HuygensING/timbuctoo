@@ -36,4 +36,10 @@ public interface Storage {
   public <T extends Document> List<String> getIdsForQuery(Class<T> cls, List<String> accessors, String[] id);
 
   public void ensureIndex(Class<? extends Document> cls, List<List<String>> accessorList);
+
+  /**
+   * NB: this is technically a variation-storage specific API, only I (Gijs) was too lazy to
+   * refactor everything for just one method. Oops.
+   */
+  public <T extends Document> List<T> getAllVariations(String id, Class<T> cls) throws IOException;
 }

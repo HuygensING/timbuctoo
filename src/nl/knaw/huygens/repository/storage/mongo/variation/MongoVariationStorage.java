@@ -94,7 +94,7 @@ public abstract class MongoVariationStorage implements Storage {
     collectionCache = Maps.newHashMap();
     counterCol = JacksonDBCollection.wrap(db.getCollection(COUNTER_COLLECTION_NAME), Counter.class, String.class);
     documentCollections = conf.getDocumentTypes();
-    reducer = new VariationReducer();
+    reducer = new VariationReducer(docTypeRegistry);
   }
 
   @Override
@@ -102,6 +102,14 @@ public abstract class MongoVariationStorage implements Storage {
     DBCollection col = getVariationCollection(cls);
     DBObject query = new BasicDBObject("_id", id);
     return reducer.reduceDBObject(col.findOne(query), cls);
+  }
+  
+  @Override
+  public <T extends Document> List<T> getAllVariations(String id, Class<T> cls) throws VariationException, IOException {
+    DBCollection col = getVariationCollection(cls);
+    DBObject query = new BasicDBObject("_id", id);
+    DBObject item = col.findOne(query);
+    return reducer.getAllForDBObject(item, cls);
   }
 
   @Override

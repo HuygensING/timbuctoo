@@ -16,17 +16,21 @@ import com.google.common.collect.Lists;
 import com.mongodb.DBObject;
 
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.mongo.variation.DBJsonNode;
 
 public class VariationReducer {
   private ObjectMapper mapper;
+  private final DocumentTypeRegister docTypeRegistry;
 
-  public VariationReducer() {
+  public VariationReducer(DocumentTypeRegister docTypeRegistry) {
+    this.docTypeRegistry = docTypeRegistry;
     mapper = new ObjectMapper();
   }
   
-  public VariationReducer(ObjectMapper mapper) {
+  public VariationReducer(ObjectMapper mapper, DocumentTypeRegister docTypeRegistry) {
     this.mapper = mapper;
+    this.docTypeRegistry = docTypeRegistry;
   }
   
   
@@ -139,11 +143,16 @@ public class VariationReducer {
   }
   
 
-  @SuppressWarnings("unchecked")
   public <T extends Document> T reduceDBObject(DBObject obj, Class<T> cls) throws VariationException, JsonProcessingException, IOException {
     if (obj == null) {
       return null;
     }
+    JsonNode tree = convertToTree(obj);
+    return reduce(tree, cls);
+  }
+
+  @SuppressWarnings("unchecked")
+  private JsonNode convertToTree(DBObject obj) throws IOException {
     JsonNode tree;
     if (obj instanceof JacksonDBObject) {
       tree = ((JacksonDBObject<JsonNode>) obj).getObject();
@@ -152,6 +161,24 @@ public class VariationReducer {
     } else {
       throw new IOException("Huh? DB didn't generate the right type of object out of the data stream...");
     }
-    return reduce(tree, cls);
+    return tree;
+  }
+
+  public <T extends Document> List<T> getAllForDBObject(DBObject item, Class<T> cls) throws IOException {
+    JsonNode jsonNode = convertToTree(item);
+    Iterator<String> fieldNames = jsonNode.fieldNames();
+    List<T> rv = Lists.newArrayList();
+    while (fieldNames.hasNext()) {
+      String f = fieldNames.next();
+      if (!f.startsWith("^") && !f.startsWith("_")) {
+        JsonNode subNode = jsonNode.get(f);
+        if (subNode != null && subNode.isObject()) {
+          @SuppressWarnings("unchecked")
+          Class<? extends T> indicatedClass = (Class<? extends T>) docTypeRegistry.getClassFromTypeString(f);
+          rv.add(reduce(jsonNode, indicatedClass));
+        }
+      }
+    }
+    return rv;
   }
 }

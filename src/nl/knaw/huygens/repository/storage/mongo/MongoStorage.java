@@ -82,7 +82,16 @@ public abstract class MongoStorage implements Storage {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
     return col.findOneById(id);
   }
-
+  
+  @Override
+  public <T extends Document> List<T> getAllVariations(String id, Class<T> cls) {
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
+    T item = col.findOneById(id);
+    List<T> rv = Lists.newArrayListWithCapacity(1);
+    rv.add(item);
+    return rv;
+  }
+  
   @Override
   public <T extends Document> StorageIterator<T> getAllByType(Class<T> cls) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);

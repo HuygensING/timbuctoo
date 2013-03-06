@@ -1,0 +1,437 @@
+<?xml version="1.0"?>
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="repository" default="setup">
+
+	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+	<!-- ~~~ Build file for the Repository project ~~~~~~~~~~~~~~~~~~~ -->
+	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+	<!-- Load properties from file, if it exists -->
+	<property file="build.properties" />
+
+
+	<property name="project.name" value="repository"/>
+	<property name="project.version" value="0.1-SNAPSHOT"/>
+	<property name="project.name-ver" value="${project.name}-${project.version}"/>
+
+	<property name="build.dir" location="build" />
+	<property name="dist.dir" location="${build.dir}/dist" />
+	<property name="assembly.dir" location="${build.dir}/assembly" />
+
+	<property name="main.src.dir" location="src/main" />
+	<property name="java.src.dir" location="src/main/java" />
+	<property name="resource.src.dir" location="src/main/resources" />
+	<property name="tools.src.dir" location="src/main/tools" />
+	<property name="main.bin.dir" location="${build.dir}/main/classes" />
+
+	<property name="test.src.dir" location="src/test/java" />
+	<property name="test.resources.src.dir" location="src/test/resources" />
+	<property name="test.bin.dir" location="${build.dir}/test/classes" />
+	<property name="test.data.dir" location="${build.dir}/test/data" />
+	<property name="test.reports.dir" location="${build.dir}/test/reports" />
+
+	<property name="server.stage.address" value="hi14hingtest.huygens.knaw.nl" />
+	<property name="server.stage.path" value="/usr/share/tomcat6/webapps" />
+	<property name="server.stage.user" value="repository" />
+	<property name="server.stage.datapath" value="/data/repository/" />
+	<property name="server.stage.datafullpath" value="/data/repository/repository/" />
+	<property name="server.stage.key" value="${user.home}/.ssh/repository_dsa" />
+
+	<property name="server.live.address" value="hi2.huygens.knaw.nl" />
+	<property name="server.live.path" value="/usr/share/tomcat6/webapps" />
+	<property name="server.live.user" value="repository" />
+	<property name="server.live.datapath" value="/data/repository/" />
+	<property name="server.live.datafullpath" value="/data/repository/repository/" />
+	<property name="server.live.key" value="${user.home}/.ssh/repository_dsa" />
+
+	<property name="target.jar" location="${dist.dir}/tools.jar" />
+	<property name="target.pom" location="${dist.dir}/${project.name-ver}.pom" />
+
+	<!--  <property name="local.tomcat.dir" location="/usr/local/bin/apache-tomcat-7.0.6/webapps" />-->
+	<property name="local.dir" location="${user.home}/repository" />
+	<property name="config.src" location="config" />
+	<property name="website.src" location="website" />
+	<property name="solr.src" location="solr" />
+
+
+	<tstamp>
+		<format property="timestamp.isoformat" pattern="yyyy-mm-dd'T'HH:mm:ss" locale="en" />
+	</tstamp>
+
+
+	<!-- ~~~ Ivy tasks ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+	<property name="ivy.jar.version" value="2.2.0"/>
+	<property name="ivy.jar.name" value="ivy-${ivy.jar.version}.jar" />
+	<property name="ivy.home" value="${user.home}/.ivy2" />
+	<available property="ivy.installed" file="${ivy.home}/${ivy.jar.name}" />
+
+	<!-- Auto-installs the ivy jar into ~/.ivy2 if not present -->
+	<target name="ivy-install" unless="ivy.installed">
+		<mkdir dir="${ivy.home}"/>
+		<get src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.jar.version}/${ivy.jar.name}" dest="${ivy.home}/${ivy.jar.name}"/>
+	</target>
+
+	<!-- Initializes ivy -->
+	<target name="ivy-init" depends="ivy-install,init">
+		<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpath="${ivy.home}/${ivy.jar.name}"/>
+		<!-- Override if you want another repository -->
+		<property name="publish.repo" value="${user.home}/.m2/repository"/>
+		<ivy:resolve/>
+	</target>
+
+	<!-- Called by the user to download jars -->
+	<target name="ivy-retrieve" depends="ivy-init" description="downloads jars for the project">
+		<ivy:retrieve pattern="${ivy.lib.dir}/[conf]/[artifact]-[type]-[revision].[ext]" conf="*" type="*"/>
+	</target>
+
+	<target name="pom" depends="ivy-init">
+		<ivy:makepom ivyfile="ivy.xml" pomfile="${target.pom}">
+			<!--
+        Mapping confs to scopes is important, otherwise
+        unmapped confs are included as optional. If you
+        have private confs, the best option seems to
+        be marking them as provided or system. See
+        IVY-1201 for an ehancement request.
+      -->
+			<mapping conf="main" scope="compile"/>
+			<mapping conf="test" scope="provided"/>
+		</ivy:makepom>
+	</target>
+
+	<target name="ivy-report" depends="ivy-retrieve">
+		<ivy:report todir="${build.dir}/ivy/report" />
+	</target>
+
+	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+	<target name="init">
+		<mkdir dir="${main.bin.dir}" />
+		<mkdir dir="${test.bin.dir}" />
+		<mkdir dir="${dist.dir}" />
+		<property name="ivy.lib.dir" location="build/ivy/lib"/>
+	</target>
+
+	<target name="clean" description="Deletes all files generated by the build." depends="init">
+		<delete includeEmptyDirs="true" failonerror="false">
+			<fileset dir="${main.bin.dir}"/>
+			<fileset dir="${test.bin.dir}"/>
+			<fileset dir="${test.data.dir}"/>
+			<fileset dir="${test.reports.dir}"/>
+			<fileset dir="${dist.dir}"/>
+			<fileset dir="${ivy.lib.dir}"/>
+		</delete>
+	</target>
+
+	<target name="classpaths" depends="ivy-report">
+		<path id="main.compile.classpath">
+			<fileset dir="${ivy.lib.dir}/main" includes="*.jar" />
+			<fileset dir="${ivy.lib.dir}/build" includes="*.jar" />
+		</path>
+		<path id="test.compile.classpath">
+			<fileset dir="${ivy.lib.dir}/test" includes="*.jar" excludes="*ant-*"/>
+			<pathelement location="${main.bin.dir}" />
+		</path>
+		<path id="test.classpath">
+			<path refid="test.compile.classpath" />
+			<pathelement location="${test.bin.dir}" />
+		</path>
+		<taskdef resource="net/sf/antcontrib/antlib.xml" classpath="${ivy.lib.dir}/build/ant-contrib-jar-1.0b3.jar"/>
+	</target>
+
+	<target name="main-compile" depends="classpaths">
+		<javac srcdir="${main.src.dir}" destdir="${main.bin.dir}" debug="true" includeantruntime="false">
+			<classpath refid="main.compile.classpath"/>
+		</javac>
+		<copy todir="${main.bin.dir}">
+			<fileset dir="${java.src.dir}" includes="**/*.properties" />
+			<fileset dir="${resource.src.dir}">
+				<include name="**/*.properties"/>
+				<include name="**/*.ftl"/>
+			</fileset>
+			<fileset dir="${config.src}">
+				<include name="**/*.xml"/>
+				<include name="**/*.properties"/>
+			</fileset>
+		</copy>
+		<copy todir="${main.bin.dir}">
+			<fileset dir="${java.src.dir}" includes="**/*.properties" />
+			<fileset dir="${resource.src.dir}">
+				<include name="**/*.properties"/>
+				<include name="**/*.ftl"/>
+			</fileset>
+			<fileset dir="${config.src}">
+				<include name="**/*.xml"/>
+				<include name="**/*.properties"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="test-compile" depends="main-compile">
+		<javac srcdir="${test.src.dir}" destdir="${test.bin.dir}" includeantruntime="false">
+			<classpath refid="test.compile.classpath"/>
+		</javac>
+		<copy todir="${test.bin.dir}">
+			<fileset dir="${test.resources.src.dir}"/>
+		</copy>
+	</target>
+
+	<target name="unit-tests" depends="test-compile">
+		<mkdir dir="${test.data.dir}"/>
+		<mkdir dir="${test.reports.dir}"/>
+		<!-- Run tests in their own JVM -->
+		<junit fork="true" forkmode="once" printsummary="false"
+           errorProperty="test.failed" failureProperty="test.failed">
+			<classpath refid="test.classpath"/>
+			<formatter type="brief" usefile="false"/>
+			<formatter type="xml"/>
+			<batchtest todir="${test.data.dir}">
+				<fileset dir="${test.bin.dir}">
+					<include name="**/*Test.class"/>
+				</fileset>
+			</batchtest>
+		</junit>
+		<!--<junitreport todir="${test.data.dir}">
+			<fileset dir="${test.data.dir}">
+				<include name="TEST-*.xml"/>
+			</fileset>
+			<report format="frames" todir="${test.reports.dir}"/>
+		</junitreport> -->
+		<fail if="test.failed">
+      Test failed. Check ${test.reports.dir}.
+    </fail>
+	</target>
+
+	<target name="war" depends="unit-tests">
+		<antcall target="website-prep"/>
+		<war destfile="${project.name}.war" webxml="src/main/webapp/WEB-INF/web.xml">
+			<classes dir="${main.bin.dir}" />
+			<lib dir="${ivy.lib.dir}/main" />
+			<webinf dir="${config.src}">
+				<include name="**/*.xml"/>
+				<include name="**/*.properties"/>
+			</webinf>
+			<zipfileset dir="${dist.dir}/website" prefix="website" />
+		</war>
+		<copy file="${project.name}.war" todir="${dist.dir}" />
+		<delete file="${project.name}.war" />
+	</target>
+
+	<target name="setup" description="Setup Repository to run locally." depends="classpaths">
+		<mkdir dir="${local.dir}/config"/>
+		<copy todir="${local.dir}/config">
+			<fileset dir="${config.src}"/>
+		</copy>
+		<mkdir dir="${local.dir}/solr"/>
+		<copy todir="${local.dir}/solr">
+			<fileset dir="${solr.src}"/>
+		</copy>
+		<antcall target="createsolr"/>
+	</target>
+
+	<target name="createsolr" description="Create relevant solr configuration files.">
+		<xpath-query query="string(/config/settings/indexeddoctypes)" xmlfile="${config.src}/config.xml"
+					 addproperty="doctypes"/>
+		<var name="solrconf" value="&lt;?xml version=&quot;1.0&quot;?&gt;&lt;solr persistent=&quot;true&quot; sharedLib=&quot;lib&quot;&gt;&lt;cores adminPath=&quot;/admin/cores&quot;&gt;"/>
+		<for list="${doctypes}" param="doctype">
+			<sequential>
+				<copy file="${local.dir}/solr/conf/schema-tmpl.xml" tofile="${local.dir}/solr/conf/schema-@{doctype}.xml"/>
+				<var name="solrconf" value="${solrconf} &lt;core name=&quot;@{doctype}&quot; schema=&quot;schema-@{doctype}.xml&quot; instanceDir=&quot;.&quot; dataDir=&quot;@{doctype}&quot;/&gt;"/>
+			</sequential>
+		</for>
+		<var name="solrconf" value="${solrconf} &lt;/cores&gt;&lt;/solr&gt;"/>
+		<echo message="${solrconf}" file="${local.dir}/solr/conf/solr.xml"/>
+	</target>
+
+	<scriptdef name="xpath-query" language="javascript">
+		<attribute name="query"/>
+		<attribute name="xmlfile"/>
+		<attribute name="addproperty"/>
+
+		<![CDATA[
+            importClass(java.io.FileInputStream);
+            importClass(javax.xml.xpath.XPath);
+            importClass(javax.xml.xpath.XPathConstants);
+            importClass(javax.xml.xpath.XPathFactory);
+            importClass(org.xml.sax.InputSource);
+
+            var exp = attributes.get("query");
+            var filename = attributes.get("xmlfile");
+            var input = new InputSource(new FileInputStream(filename));
+            var xpath = XPathFactory.newInstance().newXPath();
+            var value = xpath.evaluate(exp, input, XPathConstants.STRING);
+
+            self.project.setProperty( attributes.get("addproperty"), value );
+
+        ]]>
+
+	</scriptdef>
+
+
+	<!--
+	<target name="local" depends="war" description="Deploys Repository to local tomcat.">
+		<copy todir="${${user.home}/repository}">
+			<fileset dir="${dist.dir}"/>
+		</copy>
+	</target>
+
+-->
+	<target name="stage-test" depends="setup,war" description="Deploys Repository to tomcat on test server.">
+		<sshexec host="${server.stage.address}" username="${server.stage.user}" keyfile="${server.stage.key}"
+      command="mkdir -p ${server.stage.datafullpath}/config"/>
+		<scp todir="${server.stage.user}@${server.stage.address}:${server.stage.datafullpath}/config" keyfile="${server.stage.key}">
+			<fileset dir="${config.src}"/>
+		</scp>
+
+		<!-- <antcall target="sync-solr"/> -->
+
+		<scp file="${dist.dir}/${project.name}.war" todir="${server.stage.user}@${server.stage.address}:${server.stage.datapath}" keyfile="${server.stage.key}"/>
+		<sshexec host="${server.stage.address}" username="${server.stage.user}" keyfile="${server.stage.key}"
+      command="mv ${server.stage.datapath}/${project.name}.war ${server.stage.path}"/>
+	</target>
+
+	<target name="stage-live" depends="setup,war" description="Deploys Repository to tomcat on live server.">
+		<sshexec host="${server.live.address}" username="${server.live.user}" keyfile="${server.live.key}"
+      command="mkdir -p ${server.live.datafullpath}/config"/>
+		<scp todir="${server.live.user}@${server.live.address}:${server.live.datafullpath}/config" keyfile="${server.live.key}">
+			<fileset dir="${config.src}"/>
+		</scp>
+
+		<!-- <antcall target="sync-solr-live"/> -->
+
+		<scp file="${dist.dir}/${project.name}.war" todir="${server.live.user}@${server.live.address}:${server.live.datapath}" keyfile="${server.live.key}"/>
+		<sshexec host="${server.live.address}" username="${server.live.user}" keyfile="${server.live.key}"
+      command="mv ${server.live.datapath}/${project.name}.war ${server.live.path}"/>
+	</target>
+
+	<target name="sync-solr">
+		<!-- Because a recursive copy only copies the files (rather than replacing the directory and thus removing old files,
+		 	 we remove the old files manually. -->
+		<sshexec host="${server.stage.address}" username="${server.stage.user}" keyfile="${server.stage.key}"
+			command="rm -rf ${server.stage.datafullpath}/solr &amp;&amp; mkdir ${server.stage.datafullpath}/solr"/>
+		<scp todir="${server.stage.user}@${server.stage.address}:${server.stage.datafullpath}/solr" keyfile="${server.stage.key}">
+			<fileset dir="${local.dir}/solr">
+			</fileset>
+		</scp>
+		<sshexec host="${server.stage.address}" username="${server.stage.user}" keyfile="${server.stage.key}"
+			command="chmod --recursive g+w ${server.stage.datafullpath}/solr &amp;&amp; chgrp --recursive tomcat ${server.stage.datafullpath}/solr"/>
+	</target>
+
+	<target name="sync-solr-live">
+		<!-- Because a recursive copy only copies the files (rather than replacing the directory and thus removing old files,
+		 	 we remove the old files manually. -->
+		<sshexec host="hi5bia.huygens.knaw.nl" username="repository"
+      keyfile="${user.home}/.ssh/repository_dsa"
+			command="rm -rf /data/repository/repository/solr &amp;&amp; mkdir
+      /data/repository/repository/solr"/>
+		<scp todir="repository@hi5bia.huygens.knaw.nl:repository/solr" keyfile="${user.home}/.ssh/repository_dsa">
+			<fileset dir="${local.dir}/solr">
+			</fileset>
+		</scp>
+		<sshexec host="hi5bia.huygens.knaw.nl" username="repository"
+      keyfile="${user.home}/.ssh/repository_dsa"
+			command="chmod --recursive g+w /data/repository/repository/solr &amp;&amp; chgrp --recursive tomcat /data/repository/repository/solr"/>
+	</target>
+
+	<!-- TOOLS-->
+	<target name="jar" depends="unit-tests" >
+		<property name="manifest.mf" location="${build.dir}/manifest.mf"/>
+		<manifest file="${manifest.mf}" >
+			<attribute name="Built-By" value="${user.name}" />
+			<attribute name="Sealed" value="true" />
+			<attribute name="Built-On" value="${timestamp.isoformat}"/>
+		</manifest>
+		<jar destfile="${target.jar}" duplicate="preserve" manifest="${manifest.mf}">
+			<fileset dir="${main.bin.dir}"/>
+		</jar>
+	</target>
+
+	<target name="tools" depends="jar" description="Generates assembled instance of the tools for the repository.">
+		<mkdir dir="${assembly.dir}" />
+		<copy todir="${assembly.dir}/data">
+			<fileset dir="data"/>
+		</copy>
+		<copy todir="${assembly.dir}/scripts">
+			<fileset dir="scripts" />
+		</copy>
+		<copy todir="${assembly.dir}/main">
+			<fileset dir="${dist.dir}"/>
+		</copy>
+		<copy todir="${assembly.dir}/lib">
+			<fileset dir="${ivy.lib.dir}/main"/>
+		</copy>
+		<zip destfile="${build.dir}/repository-tools.zip" basedir="${assembly.dir}" />
+	</target>
+
+	<target name="website-prep">
+		<copy todir="${dist.dir}/website">
+			<fileset dir="${website.src}"/>
+		</copy>
+		<property name="deployment-type" value="test"/>
+	  <echo message="Creating website settings for ${deployment-type} deployment."/>
+		<copy overwrite="true" tofile="${dist.dir}/website/js/settings.js"
+        file="${website.src}/js/${deployment-type}server-settings.js"/>
+		<antcall target="website-compress"/>
+	</target>
+
+	<target name="website-compress" depends="classpaths" description="Compresses and combines the website files, for internal use.">
+		<loadfile property="indexhtml" srcfile="${dist.dir}/website/index.html"/>
+		<script language="javascript">
+			<![CDATA[
+			var indexText = "" + project.getProperty("indexhtml");
+			var matchRE = /<script .*?src="([^"]*)"[^>]*/g
+			var scripts = indexText.match(matchRE);
+			var i = scripts.length;
+			while (i--) {
+				var url = scripts[i].replace(matchRE, '$1');
+				if (url.indexOf("//") == 0 ||
+					url.indexOf("http") == 0 ||
+					url.indexOf('.min.js') > -1) {
+					scripts.splice(i, 1);
+				} else {
+					scripts[i] = url.replace(/^\/static\//i, "");
+				}
+			}
+			project.setProperty("scriptfilestoconcat", scripts.join(','));
+			for (var i = 0; i < scripts.length - 1; i++) {
+				indexText = indexText.replace(new RegExp("^.*" + scripts[i] + ".*$", "mg"), '');
+			}
+			indexText = indexText.replace(new RegExp("^.*" + scripts[scripts.length - 1] + ".*$", "gm"), '<script src="/static/js/all.js"></script>');
+			project.setProperty("newindexhtml", indexText);
+		]]>
+		</script>
+		<echo file="${dist.dir}/website/index.html" message="${newindexhtml}"/>
+
+		<!-- Check that all these files exist. See: http://stackoverflow.com/questions/9161986/how-to-make-concat-task-fail-on-error -->
+		<filelist id="filestoconcat" dir="${dist.dir}/website/" files="${scriptfilestoconcat}" />
+		<fileset id="filesthatexist" dir="${dist.dir}/website/" includes="${scriptfilestoconcat}" />
+		<difference id="missingfiles">
+			<resources refid="filestoconcat"/>
+			<resources refid="filesthatexist"/>
+		</difference>
+		<resourcecount refid="missingfiles" property="missingfiles.size" />
+
+		<!-- If there are files that don't exist, abort: -->
+		<fail message="Missing files for concat: ${ant.refid:missing}">
+			<condition>
+				<not>
+					<equals arg1="${missingfiles.size}" arg2="0" />
+				</not>
+			</condition>
+		</fail>
+
+		<!-- Otherwise, concat: -->
+		<concat destfile="${dist.dir}/website/js/all-uncompressed.js" >
+			<filelist dir="${dist.dir}/website/" files="${scriptfilestoconcat}"/>
+		</concat>
+
+		<java failonerror="true" classname="com.google.javascript.jscomp.CommandLineRunner">
+			<arg value="--compilation_level"/>
+			<arg value="SIMPLE_OPTIMIZATIONS"/>
+			<arg value="--js"/>
+			<arg value="${dist.dir}/website/js/all-uncompressed.js" />
+			<arg value="--js_output_file" />
+			<arg value="${dist.dir}/website/js/all.js" />
+			<classpath refid="main.compile.classpath" />
+		</java>
+	</target>
+</project>

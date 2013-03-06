@@ -94,9 +94,9 @@ public class LocalSolrServer {
     }
   }
 
-  public void delete(String core, SolrInputDocument doc) throws IndexException {
+  public void delete(String core, String id) throws IndexException {
     try {
-      solrServers.get(core).deleteById(doc.getFieldValue(ID_FIELD).toString());
+      solrServers.get(core).deleteById(id);
       modifiedCores.add(core);
     } catch (Exception e) {
       throw new IndexException(e.getMessage());

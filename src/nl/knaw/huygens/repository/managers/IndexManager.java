@@ -18,8 +18,8 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.pubsub.Subscribe;
-import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.util.Configuration;
+import nl.knaw.huygens.repository.variation.VariationUtils;
 
 /**
  * This manager is responsible for dealing with listening for document changes and
@@ -92,7 +92,7 @@ public class IndexManager {
 
   @Subscribe
   public <T extends Document> void onDocumentAdd(DocumentAddEvent<T> evt) {
-    T doc = evt.getDocument();
+    List<T> doc = evt.getDocuments();
     Class<T> cls = evt.getCls();
     if (indexedTypes.contains(cls)) {
       DocumentIndexer<T> indexer = indexFactory.getIndexForType(cls);
@@ -103,21 +103,18 @@ public class IndexManager {
 
   @Subscribe
   public <T extends Document> void onDocumentEdit(DocumentEditEvent<T> evt) {
-    T doc = evt.getDocument();
+    List<T> docs = evt.getDocuments();
     Class<T> cls = evt.getCls();
     if (indexedTypes.contains(cls)) {
       DocumentIndexer<T> indexer = indexFactory.getIndexForType(cls);
-      indexer.modify(doc);
-      handleRelatedEdit(cls, doc, false);
+      indexer.modify(docs);
       indexFactory.flushIndices();
-    } else {
-      handleRelatedEdit(cls, doc, true);
     }
   }
 
   @Subscribe
   public <T extends Document> void onDocumentDelete(DocumentDeleteEvent<T> evt) {
-    T doc = evt.getDocument();
+    List<T> doc = evt.getDocuments();
     Class<T> cls = evt.getCls();
     if (indexedTypes.contains(cls)) {
       DocumentIndexer<T> indexer = indexFactory.getIndexForType(cls);
@@ -126,6 +123,13 @@ public class IndexManager {
     }
   }
 
+  /**
+   * This (and the code below) was used for handling edits of related documents. It's currenty disabled and will need to be reviewed.
+   * @param referredCls
+   * @param referredDoc
+   * @param flush
+   */
+  @SuppressWarnings("unused")
   private <T extends Document> void handleRelatedEdit(Class<T> referredCls, T referredDoc, boolean flush) {
     Map<Class<? extends Document>, Set<String>> docsToIndex = getAllReferringDocIds(referredCls, referredDoc.getId());
     modifyAllDocs(docsToIndex);
@@ -230,16 +234,19 @@ public class IndexManager {
    * @param docIds The document ids.
    */
   private <T extends Document> void modifyAllDocsByType(Class<T> cls, Set<String> docIds) {
-    StorageIterator<T> docs = storageManager.getByMultipleIds(Lists.newArrayList(docIds), cls);
-    DocumentIndexer<T> indexer = indexFactory.getIndexForType(cls);
-    try {
-      while (docs.hasNext()) {
-        T referringDoc = docs.next();
+    Class<? extends Document> baseCls = VariationUtils.getBaseClass(cls);
+    doReIndex(docIds, baseCls);
+  }
+
+  private <T extends Document> void doReIndex(Set<String> docIds, Class<T> baseCls) {
+    DocumentIndexer<T> indexer = indexFactory.getIndexForType(baseCls);
+
+    for (String id : docIds) {
+      List<T> docs = storageManager.getAllVariations(id, baseCls);
+      for (T referringDoc : docs) {
         referringDoc.fetchAll(storageManager.getStorage());
-        indexer.modify(referringDoc);
       }
-    } finally {
-      docs.close();
+      indexer.modify(docs);
     }
   }
 
