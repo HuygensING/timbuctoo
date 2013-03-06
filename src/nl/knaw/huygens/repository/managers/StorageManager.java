@@ -13,9 +13,7 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import nl.knaw.huygens.repository.events.Events.DocumentAddEvent;
-import nl.knaw.huygens.repository.events.Events.DocumentChangeEvent;
-import nl.knaw.huygens.repository.events.Events.DocumentDeleteEvent;
+import nl.knaw.huygens.repository.events.Events;
 import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
@@ -27,6 +25,7 @@ import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.generic.StorageUtils;
+import nl.knaw.huygens.repository.variation.VariationUtils;
 
 @Singleton
 public class StorageManager {
@@ -80,6 +79,18 @@ public class StorageManager {
       return null;
     }
   }
+  
+
+  public <T extends Document> List<T> getAllVariations(String id, Class<T> baseCls) {
+    List<T> rv;
+    try {
+      rv = storage.getAllVariations(id, baseCls);
+    } catch (IOException e) {
+      e.printStackTrace();
+      rv = null;
+    }
+    return rv;
+  }
 
   public <T extends Document> StorageIterator<T> getAll(Class<T> entityCls) {
     return storage.getAllByType(entityCls);
@@ -91,36 +102,33 @@ public class StorageManager {
 
   public <T extends Document> void addDocument(T doc, Class<T> entityCls) throws IOException {
     storage.addItem(doc, entityCls);
-    try {
-      doc.fetchAll(storage);
-      hub.publish(added(doc, entityCls));
-    } catch (Exception ex) {
-      throw new IOException(ex);
-    }
-  }
+    doThrowEvent(doc.getId(), VariationUtils.getBaseClass(entityCls), Events.DocumentAddEvent.class);
 
+  }
 
   public <T extends Document> void modifyDocument(T doc, Class<T> entityCls) throws IOException {
     String id = doc.getId();
     storage.updateItem(id, doc, entityCls);
-
-    try {
-      doc.fetchAll(storage);
-      hub.publish(modified(doc, entityCls));
-    } catch (Exception ex) {
-      throw new IOException(ex);
-    }
+    doThrowEvent(doc.getId(), VariationUtils.getBaseClass(entityCls), DocumentEditEvent.class);
   }
 
   public <T extends Document> void removeDocument(T doc, Class<T> entityCls) throws IOException {
     storage.deleteItem(doc.getId(), entityCls, doc.getLastChange());
+    doThrowEvent(doc.getId(), VariationUtils.getBaseClass(entityCls), Events.DocumentDeleteEvent.class);
+  }
+  
+  private <X extends Document> void doThrowEvent(String id, Class<X> baseCls, @SuppressWarnings("rawtypes") Class<? extends Events.DocumentChangeEvent> t) throws IOException {
+    List<X> docs = storage.getAllVariations(id, baseCls);
+    for (X doc : docs) {
+      doc.fetchAll(storage);
+    }
     try {
-      hub.publish(removed(doc, entityCls));
+      hub.publish(t.getConstructor(Class.class, List.class).newInstance(baseCls, docs));
     } catch (Exception ex) {
       throw new IOException(ex);
     }
   }
-
+  
   public <T extends Document> StorageIterator<T> getByMultipleIds(List<String> ids, Class<T> entityCls) {
     return storage.getByMultipleIds(ids, entityCls);
   }
@@ -215,18 +223,6 @@ public class StorageManager {
 
   public Storage getStorage() {
     return storage;
-  }
-
-  private <T extends Document> DocumentChangeEvent<T> added(T doc, Class<T> cls) {
-    return new DocumentAddEvent<T>(doc, cls);
-  }
-
-  private <T extends Document> DocumentChangeEvent<T> modified(T doc, Class<T> cls) {
-    return new DocumentEditEvent<T>(doc, cls);
-  }
-
-  private <T extends Document> DocumentChangeEvent<T> removed(T doc, Class<T> cls) {
-    return new DocumentDeleteEvent<T>(doc, cls);
   }
 
   public void close() {

@@ -6,11 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import nl.knaw.huygens.repository.indexdata.CustomIndexer;
-import nl.knaw.huygens.repository.indexdata.CustomIndexer.NoopIndexer;
-import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
-import nl.knaw.huygens.repository.model.Document;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
@@ -18,6 +13,11 @@ import org.apache.solr.common.SolrInputDocument;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import nl.knaw.huygens.repository.indexdata.CustomIndexer;
+import nl.knaw.huygens.repository.indexdata.CustomIndexer.NoopIndexer;
+import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
+import nl.knaw.huygens.repository.model.Document;
 
 public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
   private SolrInputDocument doc;
@@ -42,11 +42,24 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
     Map<String, Set<Object>> valuesToReplace = Maps.newHashMap();
     for (String f : doc.getFieldNames()) {
       Set<Object> vals = Sets.newHashSet(doc.getFieldValues(f));
+      // These aren't multivalued. Truncate the set:
+      if (!vals.isEmpty() && (f.equals("id") || f.startsWith("facet_sort_"))) {
+        Object o = vals.iterator().next();
+        doc.removeField(f);
+        doc.addField(f, o);
+      }
+      /* So in some cases we will index multiple items which generate a list of indexed values that looks like this:
+       *  - a
+       *  - b
+       *  - (empty)
+       * Obviously, we don't want the (empty) bit because it's not really empty. This is why we remove it.
+       */
       if (vals.size() > 1) {
         vals.remove("(empty)");
         valuesToReplace.put(f, vals);
       }
     }
+    // ... and then we get to re-add everything because solr is dumb.
     for (Map.Entry<String, Set<Object>> entry : valuesToReplace.entrySet()) {
       doc.removeField(entry.getKey());
       for (Object o : entry.getValue()) {

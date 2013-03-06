@@ -2,6 +2,7 @@ package nl.knaw.huygens.repository.index;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -70,7 +71,7 @@ public class DocumentIndexer<T extends Document> {
    * @throws RepositoryException
    *           if adding the document fails for some reason.
    */
-  public <Q extends T> void add(Q... entities) throws RepositoryException {
+  public <Q extends T> void add(List<Q> entities) throws RepositoryException {
     try {
       localSolrServer.add(core, getSolrInputDocument(entities));
     } catch (IndexException e) {
@@ -88,7 +89,7 @@ public class DocumentIndexer<T extends Document> {
    * @throws RepositoryException
    *           if adding the document fails for some reason.
    */
-  public <Q extends T> void modify(Q... entity) throws RepositoryException {
+  public <Q extends T> void modify(List<Q> entity) throws RepositoryException {
     try {
       localSolrServer.update(core, getSolrInputDocument(entity));
     } catch (IndexException e) {
@@ -105,9 +106,12 @@ public class DocumentIndexer<T extends Document> {
    * @throws RepositoryException
    *           if removing the document fails for some reason.
    */
-  public void remove(T entity) throws RepositoryException {
+  public void remove(List<T> docs) throws RepositoryException {
+    if (docs.isEmpty()) {
+      return;
+    }
     try {
-      localSolrServer.delete(core, getSolrInputDocument(entity));
+      localSolrServer.delete(core, docs.get(0).getId());
     } catch (IndexException e) {
       throw new RepositoryException(e);
     }
@@ -137,7 +141,7 @@ public class DocumentIndexer<T extends Document> {
    *          for.
    * @return the corresponding SolrInputDocument
    */
-  protected <Q extends T> SolrInputDocument getSolrInputDocument(Q... entities) {
+  protected <Q extends T> SolrInputDocument getSolrInputDocument(List<Q> entities) {
     SolrInputDocument inputDocument = null;
     SolrInputDocGenerator indexer = null;
     for (Q entity : entities) {

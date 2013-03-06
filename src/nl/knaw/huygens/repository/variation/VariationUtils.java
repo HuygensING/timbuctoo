@@ -16,6 +16,11 @@ public class VariationUtils {
     return packageName.substring(packageName.lastIndexOf('.') + 1);
   }
   
+  public static <T extends Document> Class<? extends Document> getBaseClass(Class<? extends T> cls) {
+    List<Class<? extends Document>> allClasses = getAllClasses(cls);
+    return allClasses.get(allClasses.size() - 1);
+  }
+  
   @SuppressWarnings("unchecked")
   public static List<Class<? extends Document>> getAllClasses(Class<? extends Document> cls) {
     List<Class<? extends Document>> rv = Lists.newArrayList();

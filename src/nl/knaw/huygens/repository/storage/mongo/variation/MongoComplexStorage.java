@@ -64,6 +64,11 @@ public class MongoComplexStorage implements Storage {
   public <T extends Document> T getItem(String id, Class<T> cls) throws IOException {
     return getStorageForType(cls).getItem(id, cls);
   }
+  
+  @Override
+  public <T extends Document> List<T> getAllVariations(String id, Class<T> cls) throws IOException {
+    return getStorageForType(cls).getAllVariations(id, cls);
+  }
 
   @Override
   public <T extends Document> StorageIterator<T> getAllByType(Class<T> cls) {
@@ -135,5 +140,4 @@ public class MongoComplexStorage implements Storage {
   public void ensureIndex(Class<? extends Document> cls, List<List<String>> accessorList) {
     getStorageForType(cls).ensureIndex(cls, accessorList);
   }
-
 }

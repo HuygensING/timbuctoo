@@ -8,7 +8,7 @@ public class Subscriber {
   private Class<?> cls;
   private Class<?> eventClass;
 
-  public Subscriber(Object subObj, String methodName, Class<?> eventClass) {
+  Subscriber(Object subObj, String methodName, Class<?> eventClass) {
     super();
     if (subObj == null) {
       throw new RuntimeException("Null object passed to subscriber constructor");
@@ -38,6 +38,9 @@ public class Subscriber {
     }
   }
 
+  /**
+   * So that we can use .indexOf in lists of Subscribers:
+   */
   @Override
   public boolean equals(Object obj) {
     return obj != null &&

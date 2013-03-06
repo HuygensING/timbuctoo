@@ -411,7 +411,7 @@
 
    <!-- persistent id for item -->
    <field name="id" type="string" indexed="true" stored="true" required="true"/>
-   <field name="desc" type="string" indexed="true" stored="true"/>
+   <field name="desc" type="string" indexed="true" stored="true" multiValued="true"/>
    <dynamicField name="facet_sort_*" type="string" indexed="true" stored="false" multiValued="false"/>
    <dynamicField name="facet_s_*" type="string" indexed="true" stored="true" multiValued="true"/>
    <dynamicField name="facet_t_*" type="textgen" indexed="true" stored="true" multiValued="true"/>

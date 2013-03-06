@@ -45,10 +45,13 @@ public class DocumentTypeRegister {
   }
 
   public Class<? extends Document> getClassFromTypeString(String id) {
-    if (stringToTypeMap.containsKey(id)) {
-      return stringToTypeMap.get(id);
+    // NB: in the DB, package names will be prefixed to class names with a dash (-) suffix.
+    // These need to be removed in order to find the classes again:
+    String normalizedId = id.replaceFirst("[a-z]*-", "");
+    if (stringToTypeMap.containsKey(normalizedId)) {
+      return stringToTypeMap.get(normalizedId);
     }
-    String className = StringUtils.capitalize(id);
+    String className = StringUtils.capitalize(normalizedId);
     for (String packageName : unreadablePackages) {
       try {
         @SuppressWarnings("unchecked")

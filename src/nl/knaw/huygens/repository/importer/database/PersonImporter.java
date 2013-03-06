@@ -22,6 +22,8 @@ public class PersonImporter {
     Configuration conf = new Configuration("config.xml");
     Hub hub = new Hub();
     DocumentTypeRegister docTypeRegistry = new DocumentTypeRegister();
+    docTypeRegistry.registerPackageFromClass(DWCPerson.class);
+    docTypeRegistry.registerPackageFromClass(RAAPerson.class);
 
     StorageConfiguration storageConfiguration = new StorageConfiguration(conf);
     Storage storage = StorageFactory.getInstance(storageConfiguration, docTypeRegistry);
@@ -31,7 +33,7 @@ public class PersonImporter {
     GenericImporter importer = new GenericImporter();
 
     importer.importData("resources/DWCPersonMapping.properties", storageManager, DWCPerson.class);
-    importer.importData("resources/RAAPersonMapping.properties", storageManager, RAAPerson.class);
+    //importer.importData("resources/RAAPersonMapping.properties", storageManager, RAAPerson.class);
 
     storageManager.ensureIndices();
   }

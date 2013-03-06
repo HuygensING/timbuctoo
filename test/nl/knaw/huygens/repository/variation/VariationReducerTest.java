@@ -10,6 +10,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.mongo.MongoDiff;
 import nl.knaw.huygens.repository.variation.model.projectb.TestDoc;
 
@@ -20,7 +21,7 @@ public class VariationReducerTest {
   @Before
   public void setUp() {
     m = new ObjectMapper();
-    reducer = new VariationReducer();
+    reducer = new VariationReducer(new DocumentTypeRegister());
   }
   
   @Test

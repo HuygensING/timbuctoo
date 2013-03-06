@@ -1,5 +1,7 @@
 package nl.knaw.huygens.repository.importer;
 
+import java.util.List;
+
 import org.apache.commons.configuration.ConfigurationException;
 
 import nl.knaw.huygens.repository.index.DocumentIndexer;
@@ -7,6 +9,8 @@ import nl.knaw.huygens.repository.index.IndexFactory;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.index.ModelIterator;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.dwcbia.DWCPerson;
+import nl.knaw.huygens.repository.model.raa.RAAPerson;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.storage.Storage;
@@ -33,6 +37,8 @@ public class SolrIndexer {
 
   public static void main(String[] args) {
     DocumentTypeRegister docTypeRegistry = new DocumentTypeRegister();
+    docTypeRegistry.registerPackageFromClass(DWCPerson.class);
+    docTypeRegistry.registerPackageFromClass(RAAPerson.class);
     storage = StorageFactory.getInstance(new StorageConfiguration(conf), docTypeRegistry);
 
 
@@ -63,6 +69,7 @@ public class SolrIndexer {
     DocumentIndexer<T> indexer = indices.getIndexForType(cls);
     StorageIterator<T> list;
     try {
+      // FIXME: this should just fetch a list of IDs that we can use later.
       list = storage.getAllByType(cls);
     } catch (Exception ex) {
       ex.printStackTrace();
@@ -73,7 +80,7 @@ public class SolrIndexer {
     try {
       while (list.hasNext()) {
         T mainDoc = list.next();
-        mainDoc.fetchAll(storage);
+        List<T> allVariations = storage.getAllVariations(mainDoc.getId(), cls);
         System.out.print((i % 100 == 99) ? ".\n" : ".");
         i++;
         if (mainDoc.isDeleted()) {
@@ -81,7 +88,7 @@ public class SolrIndexer {
         }
         //System.out.println("id: " + mainDoc.getId());
         try {
-          indexer.add(mainDoc);
+          indexer.add(allVariations);
         } catch (RepositoryException e) {
           System.out.println("\nError while indexing publication " + mainDoc.getId());
           throw new Exception(e);
