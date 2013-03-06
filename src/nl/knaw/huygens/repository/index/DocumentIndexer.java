@@ -150,7 +150,7 @@ public class DocumentIndexer<T extends Document> {
       } else {
         indexer = new SolrInputDocGenerator(entity, inputDocument);
       }
-      modelIterator.processMethods(indexer, entity.getClass().getMethods());
+      modelIterator.processClass(indexer, entity.getClass());
       inputDocument = indexer.getResult();
     }
     return inputDocument;
