@@ -33,7 +33,7 @@ public class PersonImporter {
     GenericImporter importer = new GenericImporter();
 
     importer.importData("resources/DWCPersonMapping.properties", storageManager, DWCPerson.class);
-    //importer.importData("resources/RAAPersonMapping.properties", storageManager, RAAPerson.class);
+    importer.importData("resources/RAAPersonMapping.properties", storageManager, RAAPerson.class);
 
     storageManager.ensureIndices();
   }
