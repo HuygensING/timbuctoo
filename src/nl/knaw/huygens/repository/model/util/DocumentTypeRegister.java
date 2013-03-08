@@ -23,7 +23,8 @@ public class DocumentTypeRegister {
   private List<String> unreadablePackages;
   private ClassPath classPath = null;
   private Map<Class<? extends Document>, String> typeToCollectionIdMap;
-  
+
+  // TODO Make DocumentTypeRegister less dependent of MongoUtils.
   public DocumentTypeRegister() {
     stringToTypeMap = Maps.newHashMap();
     typeToStringMap = Maps.newHashMap();
@@ -45,7 +46,8 @@ public class DocumentTypeRegister {
   }
 
   public Class<? extends Document> getClassFromTypeString(String id) {
-    // NB: in the DB, package names will be prefixed to class names with a dash (-) suffix.
+    // NB: in the DB, package names will be prefixed to class names with a dash
+    // (-) suffix.
     // These need to be removed in order to find the classes again:
     String normalizedId = id.replaceFirst("[a-z]*-", "");
     if (stringToTypeMap.containsKey(normalizedId)) {
@@ -55,15 +57,15 @@ public class DocumentTypeRegister {
     for (String packageName : unreadablePackages) {
       try {
         @SuppressWarnings("unchecked")
-        Class<? extends Document> cls = (Class<? extends Document>) Class.forName(packageName + "." + className );
+        Class<? extends Document> cls = (Class<? extends Document>) Class.forName(packageName + "." + className);
         return cls;
       } catch (Exception ex) {
-        
+
       }
     }
     return null;
   }
-  
+
   public String getCollectionId(Class<? extends Document> docCls) {
     if (typeToCollectionIdMap.containsKey(docCls)) {
       return typeToCollectionIdMap.get(docCls);
@@ -72,11 +74,11 @@ public class DocumentTypeRegister {
     typeToCollectionIdMap.put(docCls, collectionId);
     return collectionId;
   }
-  
+
   public void registerPackageFromClass(Class<?> cls) {
     registerPackage(cls.getPackage().getName());
   }
-  
+
   @SuppressWarnings("unchecked")
   public void registerPackage(String packageId) {
     ImmutableSet<ClassInfo> classes = classPath.getTopLevelClasses(packageId);
@@ -101,7 +103,7 @@ public class DocumentTypeRegister {
       unreadablePackages.add(packageId);
     }
   }
-  
+
   @SuppressWarnings("unchecked")
   private Class<? extends Document> getBaseClass(Class<? extends Document> cls) {
     Class<? extends Document> lastCls = cls;
