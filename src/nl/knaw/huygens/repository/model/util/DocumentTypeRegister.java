@@ -1,6 +1,7 @@
 package nl.knaw.huygens.repository.model.util;
 
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 
@@ -85,7 +86,7 @@ public class DocumentTypeRegister {
     int classesDetected = 0;
     for (ClassInfo info : classes) {
       Class<?> cls = info.load();
-      if (Document.class.isAssignableFrom(cls)) {
+      if (Document.class.isAssignableFrom(cls) && !Modifier.isAbstract(cls.getModifiers())) {
         Class<? extends Document> docCls = (Class<? extends Document>) cls;
         String typeId = docCls.getSimpleName().toLowerCase();
         stringToTypeMap.put(typeId, docCls);
