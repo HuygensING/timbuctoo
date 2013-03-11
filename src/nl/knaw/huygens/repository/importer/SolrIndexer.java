@@ -36,7 +36,7 @@ public class SolrIndexer {
   }
 
   public static void main(String[] args) {
-    DocumentTypeRegister docTypeRegistry = new DocumentTypeRegister();
+    DocumentTypeRegister docTypeRegistry = new DocumentTypeRegister(conf.getSetting("model-packages"));
     docTypeRegistry.registerPackageFromClass(DWCPerson.class);
     docTypeRegistry.registerPackageFromClass(RAAPerson.class);
     storage = StorageFactory.getInstance(new StorageConfiguration(conf), docTypeRegistry);

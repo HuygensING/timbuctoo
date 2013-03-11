@@ -45,7 +45,7 @@ public class SetupDatabase {
 	  String vreId = "test-vre";
 	  String vreName = "Test VRE";
 
-	  DocumentTypeRegister docTypeRegistry = new DocumentTypeRegister();
+	  DocumentTypeRegister docTypeRegistry = new DocumentTypeRegister(conf.getSetting("model-packages"));
 	  StorageConfiguration storageConfiguration = new StorageConfiguration(conf);
     Storage storage = StorageFactory.getInstance(storageConfiguration, docTypeRegistry);
     storageManager = new StorageManager(storageConfiguration, storage , hub, docTypeRegistry);
