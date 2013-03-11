@@ -1,7 +1,6 @@
 package nl.knaw.huygens.repository.model.util;
 
 import java.io.IOException;
-import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +11,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.mongo.MongoUtils;
@@ -24,9 +25,14 @@ public class DocumentTypeRegister {
   private List<String> unreadablePackages;
   private ClassPath classPath = null;
   private Map<Class<? extends Document>, String> typeToCollectionIdMap;
+  
+  public DocumentTypeRegister(){
+    this(null);
+  }
 
   // TODO Make DocumentTypeRegister less dependent of MongoUtils.
-  public DocumentTypeRegister() {
+  @Inject
+  public DocumentTypeRegister(@Named("model-packages") String packageNames) {
     stringToTypeMap = Maps.newHashMap();
     typeToStringMap = Maps.newHashMap();
     typeToCollectionIdMap = Maps.newHashMap();
@@ -36,7 +42,13 @@ public class DocumentTypeRegister {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    registerPackageFromClass(Document.class);
+    if (packageNames != null) {
+      String[] packagesToImport = packageNames.split("\n");
+
+      for (String packageToImport : packagesToImport) {
+        registerPackage(packageToImport);
+      }
+    }
   }
 
   public String getTypeString(Class<? extends Document> docCls) {
@@ -86,7 +98,7 @@ public class DocumentTypeRegister {
     int classesDetected = 0;
     for (ClassInfo info : classes) {
       Class<?> cls = info.load();
-      if (Document.class.isAssignableFrom(cls) && !Modifier.isAbstract(cls.getModifiers())) {
+      if (Document.class.isAssignableFrom(cls)) {
         Class<? extends Document> docCls = (Class<? extends Document>) cls;
         String typeId = docCls.getSimpleName().toLowerCase();
         stringToTypeMap.put(typeId, docCls);

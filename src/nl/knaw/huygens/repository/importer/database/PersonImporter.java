@@ -21,7 +21,7 @@ public class PersonImporter {
   public static void main(String[] args) throws SQLException, ConfigurationException, IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException {
     Configuration conf = new Configuration("config.xml");
     Hub hub = new Hub();
-    DocumentTypeRegister docTypeRegistry = new DocumentTypeRegister();
+    DocumentTypeRegister docTypeRegistry = new DocumentTypeRegister(conf.getSetting("model-packages"));
     docTypeRegistry.registerPackageFromClass(DWCPerson.class);
     docTypeRegistry.registerPackageFromClass(RAAPerson.class);
 

@@ -4,14 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import nl.knaw.huygens.repository.model.Person;
-import nl.knaw.huygens.repository.model.Search;
-import nl.knaw.huygens.repository.model.Sitemap;
-import nl.knaw.huygens.repository.model.User;
 import nl.knaw.huygens.repository.variation.model.TestBaseDoc;
 import nl.knaw.huygens.repository.variation.model.TestExtraBaseDoc;
 import nl.knaw.huygens.repository.variation.model.projectb.TestDoc;
@@ -28,20 +23,17 @@ import nl.knaw.huygens.repository.variation.model.projectb.TestDoc;
  */
 public class DocumentTypeRegisterTest {
 
-  private DocumentTypeRegister registry;
+  @Test
+  public void testConstructModelToRegister() {
+    DocumentTypeRegister registry = new DocumentTypeRegister("nl.knaw.huygens.repository.variation.model");
+    Class<?> testExtraBaseDocClass = registry.getClassFromTypeString("testextrabasedoc");
 
-  @Before
-  public void setUp() throws Exception {
-    registry = new DocumentTypeRegister();
-  }
-
-  @After
-  public void tearDown() {
-    registry = null;
+    assertEquals(TestExtraBaseDoc.class, testExtraBaseDocClass);
   }
 
   @Test
   public void testGetClassFromTypeStringAllLowerCase() {
+    DocumentTypeRegister registry = new DocumentTypeRegister();
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
     Class<?> testExtraBaseDocClass = registry.getClassFromTypeString("testextrabasedoc");
 
@@ -50,6 +42,7 @@ public class DocumentTypeRegisterTest {
 
   @Test
   public void testGetClassFromTypeStringWithCapitals() {
+    DocumentTypeRegister registry = new DocumentTypeRegister();
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
     Class<?> testExtraBaseDocClass = registry.getClassFromTypeString("TestExtraBaseDoc");
 
@@ -58,6 +51,7 @@ public class DocumentTypeRegisterTest {
 
   @Test
   public void testGetClassFromTypeStringAllUppercase() {
+    DocumentTypeRegister registry = new DocumentTypeRegister();
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
     Class<?> testExtraBaseDocClass = registry.getClassFromTypeString("TESTEXTRABASEDOC");
 
@@ -66,6 +60,7 @@ public class DocumentTypeRegisterTest {
 
   @Test
   public void testGetClassFromTypeStringWithPackage() {
+    DocumentTypeRegister registry = new DocumentTypeRegister();
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
     Class<?> testExtraBaseDocClass = registry.getClassFromTypeString("model-testextrabasedoc");
 
@@ -74,6 +69,7 @@ public class DocumentTypeRegisterTest {
 
   @Test
   public void testGetCollectionIdFromCollectionBaseClass() {
+    DocumentTypeRegister registry = new DocumentTypeRegister();
     String actual = registry.getCollectionId(TestBaseDoc.class);
     String expected = "testbasedoc";
 
@@ -82,6 +78,7 @@ public class DocumentTypeRegisterTest {
 
   @Test
   public void testGetCollectionIdFromCollectionClass() {
+    DocumentTypeRegister registry = new DocumentTypeRegister();
     String actual = registry.getCollectionId(TestDoc.class);
     String expected = "testbasedoc";
 
@@ -89,27 +86,8 @@ public class DocumentTypeRegisterTest {
   }
 
   @Test
-  public void testConstructor() {
-    // By default all the concrete classes of the package of Document are
-    // loaded.
-    Class<?> personClass = registry.getClassFromTypeString("person");
-    Class<?> searchClass = registry.getClassFromTypeString("search");
-    Class<?> sitemapClass = registry.getClassFromTypeString("sitemap");
-    Class<?> userClass = registry.getClassFromTypeString("user");
-
-    Class<?> notInDocumentPackage = registry.getClassFromTypeString("notindocumentpackage");
-
-    assertEquals(Person.class, personClass);
-    assertEquals(Search.class, searchClass);
-    assertEquals(Sitemap.class, sitemapClass);
-    assertEquals(User.class, userClass);
-
-    assertNull(notInDocumentPackage);
-
-  }
-
-  @Test
   public void testRegisterPackageFromClassWithDocumentSubClass() {
+    DocumentTypeRegister registry = new DocumentTypeRegister();
     registry.registerPackageFromClass(TestBaseDoc.class);
 
     Class<?> testExtraBaseDocClass = registry.getClassFromTypeString("testextrabasedoc");
@@ -119,11 +97,13 @@ public class DocumentTypeRegisterTest {
 
   @Test(expected = NullPointerException.class)
   public void testRegisterPackageFromClassWithNull() {
+    DocumentTypeRegister registry = new DocumentTypeRegister();
     registry.registerPackageFromClass(null);
   }
 
   @Test
   public void testRegisterPackageReadablePackage() {
+    DocumentTypeRegister registry = new DocumentTypeRegister();
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
 
     Class<?> testExtraBaseDocClass = registry.getClassFromTypeString("testextrabasedoc");
@@ -132,14 +112,8 @@ public class DocumentTypeRegisterTest {
   }
 
   @Test
-  public void testRegisterPackageDoesNotRemoveDefaultPackage() {
-    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    Class<?> userClass = registry.getClassFromTypeString("user");
-    assertEquals(User.class, userClass);
-  }
-
-  @Test
   public void testRegisterPackageNonDocument() {
+    DocumentTypeRegister registry = new DocumentTypeRegister();
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
 
     Class<?> testNonDoc = registry.getClassFromTypeString("nonDoc");
@@ -148,6 +122,7 @@ public class DocumentTypeRegisterTest {
 
   @Test
   public void testRegisterPackageSubPackage() {
+    DocumentTypeRegister registry = new DocumentTypeRegister();
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
     Class<?> testDocClass = registry.getClassFromTypeString("testdoc");
 
@@ -156,19 +131,22 @@ public class DocumentTypeRegisterTest {
 
   @Test
   public void testRegisterPackageAbstractClass() {
+    DocumentTypeRegister registry = new DocumentTypeRegister();
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
 
     Class<?> testBaseDocClass = registry.getClassFromTypeString("testbasedoc");
 
-    assertNull(testBaseDocClass);
+    assertEquals(TestBaseDoc.class, testBaseDocClass);
   }
 
   @Test(expected = NullPointerException.class)
   public void testRegisterPackageNullPackage() {
+    DocumentTypeRegister registry = new DocumentTypeRegister();
     registry.registerPackage(null);
   }
 
   @Test
+  @Ignore
   public void testRegisterPackageUnReadablePackage() {
     fail("Yet to be implemented.");
   }
