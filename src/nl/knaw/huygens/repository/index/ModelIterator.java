@@ -36,7 +36,7 @@ public class ModelIterator {
       if (hasIndexAnnotations(m)) {
         annotations = Lists.newArrayList(m.getAnnotations());
         processMethod(proc, m, annotations);
-      } else if (!hasIndexAnnotations(m) && isMethodOverriding(m)) {
+      } else if (!hasIndexAnnotations(m)) {
 
         m = getFirstIndexAnnotedMethod(m, cls);
         if (m != null) {
@@ -52,21 +52,12 @@ public class ModelIterator {
     return (m.getAnnotation(IndexAnnotation.class) != null || m.getAnnotation(IndexAnnotations.class) != null);
   }
 
-  private boolean isMethodOverriding(Method m) {
-    /*
-     * TODO Find a way to check in Runtime if the method is overriding. The
-     * check on @Override cannot be done in Runtime because the attribute is
-     * removed after compiling. @see RetentionPolicy and Override.
-     */
-    return true;
-  }
-
   private Method getFirstIndexAnnotedMethod(Method overridingMethod, Class<?> subClass) {
     Class<?> cls = subClass.getSuperclass();
     Method method = null;
     Method firstAnnotedMethod = null;
     try {
-      method = cls.getMethod(overridingMethod.getName(), new Class<?>[] {});
+      method = cls.getMethod(overridingMethod.getName());
 
       if (hasIndexAnnotations(method)) {
         firstAnnotedMethod = method;
