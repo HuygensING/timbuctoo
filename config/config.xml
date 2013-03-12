@@ -15,6 +15,11 @@
 			<user>test</user>
 			<password>test</password>
 		</database>
+		<model-packages>
+			nl.knaw.huygens.repository.model
+			nl.knaw.huygens.repository.model.dwcbia
+			nl.knaw.huygens.repository.model.raa
+		</model-packages>
 		<solr>
 			<config>solrconfig.xml</config>
 		</solr>
