@@ -113,7 +113,7 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
   }
 
   private byte[] encodeDocTitle(Document doc) throws UnsupportedEncodingException {
-   String t = StringEscapeUtils.escapeHtml(doc.getDescription());
+   String t = StringEscapeUtils.escapeHtml(doc.getDescription() != null ? doc.getDescription() : "");
    return t.getBytes("UTF-8");
   }
 

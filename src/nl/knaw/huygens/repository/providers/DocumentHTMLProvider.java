@@ -81,7 +81,7 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
   }
 
   private byte[] encodeTitle(Document doc) throws UnsupportedEncodingException {
-    String t = StringEscapeUtils.escapeHtml(doc.getDescription());
+    String t = StringEscapeUtils.escapeHtml(doc.getDescription() != null ? doc.getDescription() : "");
     return t.getBytes("UTF-8");
   }
 }
