@@ -2,8 +2,8 @@ package nl.knaw.huygens.repository.index;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -11,7 +11,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import nl.knaw.huygens.repository.indexdata.CustomIndexer;
@@ -39,33 +38,30 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
   }
 
   public SolrInputDocument getResult() {
-    Map<String, Set<Object>> valuesToReplace = Maps.newHashMap();
-    for (String f : doc.getFieldNames()) {
-      Set<Object> vals = Sets.newHashSet(doc.getFieldValues(f));
-      // These aren't multivalued. Make sure they only contain one item.
-      if (!vals.isEmpty() && (f.equals("id") || f.startsWith("facet_sort_"))) {
-        Object o = vals.iterator().next();
-        doc.removeField(f);
-        doc.addField(f, o);
+    Collection<String> fieldNames = doc.getFieldNames();
+    Collection<Object> values = null;
+    Set<Object> nonDuplicateValues = null;
+    
+    for(String fieldName : fieldNames){
+      values = doc.getFieldValues(fieldName);
+      
+      nonDuplicateValues = Sets.newHashSet(values);
+      
+      if(values.size() > nonDuplicateValues.size()){
+        doc.setField(fieldName, nonDuplicateValues);
       }
-      /* So in some cases we will index multiple items which generate a list of indexed values that looks like this:
-       *  - a
-       *  - b
-       *  - (empty)
-       * Obviously, we don't want the (empty) bit because it's not really empty. This is why we remove it.
-       */
-      if (vals.size() > 1) {
-        vals.remove("(empty)");
-        valuesToReplace.put(f, vals);
+      
+      if(nonDuplicateValues.size() >= 2 && nonDuplicateValues.contains("(empty)")){
+        nonDuplicateValues.remove("(empty)");
+        doc.setField(fieldName, nonDuplicateValues);
       }
-    }
-    // ... and then we get to re-add everything because solr is dumb.
-    for (Map.Entry<String, Set<Object>> entry : valuesToReplace.entrySet()) {
-      doc.removeField(entry.getKey());
-      for (Object o : entry.getValue()) {
-        doc.addField(entry.getKey(), o);
+      
+      if(fieldName.startsWith("facet_sort_")){
+        Object o = values.iterator().next();
+        doc.setField(fieldName, o);
       }
     }
+    
     return doc;
   }
 
