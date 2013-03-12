@@ -46,7 +46,7 @@ public class DocumentTypeRegister {
       String[] packagesToImport = packageNames.split("\n");
 
       for (String packageToImport : packagesToImport) {
-        registerPackage(packageToImport);
+        registerPackage(packageToImport.trim());
       }
     }
   }
