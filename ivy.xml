@@ -81,6 +81,9 @@
   	<dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="2.1.1" conf="main->default" />
   	<dependency org="com.fasterxml.jackson.jaxrs" name="jackson-jaxrs-json-provider" rev="2.1.1" conf="main->default" />
   	
+  	<!-- Handle persistancy service client -->
+  	<dependency org="handle.net" name="handle-client" rev="7.1"/>
+  	
   	<!-- Mongo support -->
   	<dependency org="org.mongodb" name="mongo-java-driver" rev="2.9.1" conf="main->default" />
   	
