@@ -18,6 +18,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 
 public class MongoUtils {
@@ -28,14 +29,6 @@ public class MongoUtils {
     dbWriter = mapper.writerWithView(JsonViews.DBView.class);
   }
 
-
-  public static String getVersioningCollectionName(Class<?> cls) {
-    return getCollectionName(cls) + "-versions";
-  }
-
-  public static String getCollectionName(Class<?> cls) {
-    return cls.getSimpleName().toLowerCase();
-  }
 
   public static DBObject getObjectForDoc(Object doc) throws IOException {
     if (doc == null) {
@@ -48,12 +41,12 @@ public class MongoUtils {
   
 
   public static <T extends Document> JacksonDBCollection<T, String> getCollection(DB db, Class<T> cls) {
-    DBCollection col = db.getCollection(getCollectionName(cls));
+    DBCollection col = db.getCollection(DocumentTypeRegister.getCollectionName(cls));
     return JacksonDBCollection.wrap(col, cls, String.class, JsonViews.DBView.class);
   }
 
   public static <T extends Document> JacksonDBCollection<MongoChanges<T>, String> getVersioningCollection(DB db, Class<T> cls) {
-    DBCollection col = db.getCollection(getVersioningCollectionName(cls));
+    DBCollection col = db.getCollection(DocumentTypeRegister.getVersioningCollectionName(cls));
     JavaType someType = TypeFactory.defaultInstance().constructParametricType(MongoChanges.class, cls);
     return RepoJacksonDBCollection.wrap(col, someType, JsonViews.DBView.class);
   }

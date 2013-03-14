@@ -14,17 +14,18 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.mongo.MongoDiffTest.Foo;
 
 public class MongoUtilsTest {
   @Test
   public void testGetVersioningCollectionName() {
-    assertEquals("foo-versions", MongoUtils.getVersioningCollectionName(Foo.class));
+    assertEquals("foo-versions", DocumentTypeRegister.getVersioningCollectionName(Foo.class));
   }
   
   @Test
   public void testGetCollectionName() {
-    assertEquals("foo", MongoUtils.getCollectionName(Foo.class));
+    assertEquals("foo", DocumentTypeRegister.getCollectionName(Foo.class));
   }
   
   @Test
