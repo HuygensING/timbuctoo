@@ -2,18 +2,22 @@ package nl.knaw.huygens.repository.index;
 
 import java.util.Map;
 
+import com.google.common.collect.Maps;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.util.RepositoryException;
 
-import com.google.common.collect.Maps;
-
+@Singleton
 public class IndexFactory {
   private final LocalSolrServer server;
   private final ModelIterator modelIterator;
   private Map<Class<? extends Document>, DocumentIndexer<? extends Document>> indexerCache;
   private final Hub hub;
 
+  @Inject
   public IndexFactory(ModelIterator modelIterator, LocalSolrServer server, Hub hub) {
     this.server = server;
     this.modelIterator = modelIterator;

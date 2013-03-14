@@ -29,7 +29,13 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
+import nl.knaw.huygens.repository.util.Paths;
+
+@Singleton
 public class LocalSolrServer {
 
   private static final String DESC_FIELD = "desc";
@@ -52,10 +58,12 @@ public class LocalSolrServer {
 
   private CoreContainer container = null;
 
-  public LocalSolrServer(String solrDir, String... coreNames) {
+  @Inject
+  public LocalSolrServer(@Named("paths.solr") String solrDir, @Named("indexeddoctypes") String coreNameList) {
+    String[] coreNames = coreNameList.split(",");
 
     try {
-      SOLR_DIRECTORY = solrDir;
+      SOLR_DIRECTORY = Paths.pathInUserHome(solrDir);
       File configFile = new File(new File(SOLR_DIRECTORY, "conf"), "solr.xml");
       container = new CoreContainer(SOLR_DIRECTORY, configFile);
       solrServers = new HashMap<String, SolrServer>(coreNames.length);
@@ -63,7 +71,14 @@ public class LocalSolrServer {
         solrServers.put(coreName, new EmbeddedSolrServer(container, coreName));
       }
     } catch (Exception e) {
-      throw new RuntimeException(e.getMessage());
+      if (container != null) {
+        try {
+          container.shutdown();
+        } catch (Exception e2) {
+          // Do nothing;
+        }
+      }
+      throw new RuntimeException(e);
     }
   }
 
