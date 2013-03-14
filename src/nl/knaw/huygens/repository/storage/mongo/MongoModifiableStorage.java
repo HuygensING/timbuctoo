@@ -63,7 +63,7 @@ public class MongoModifiableStorage extends MongoStorage implements Storage {
     }
 
     // Update the counter object.
-    DBObject counterQuery = new BasicDBObject("_id", MongoUtils.getCollectionName(cls));
+    DBObject counterQuery = new BasicDBObject("_id", DocumentTypeRegister.getCollectionName(cls));
     Counter counter = counterCol.findOne(counterQuery);
     if (counter == null || counter.next <= lastId) {
       // Make sure we fail if the counter changes inbetween the findOne above
@@ -125,7 +125,7 @@ public class MongoModifiableStorage extends MongoStorage implements Storage {
   }
 
   private <T extends Document> void setNextId(Class<T> cls, T item) {
-    BasicDBObject idFinder = new BasicDBObject("_id", MongoUtils.getCollectionName(cls));
+    BasicDBObject idFinder = new BasicDBObject("_id", DocumentTypeRegister.getCollectionName(cls));
     BasicDBObject counterIncrement = new BasicDBObject("$inc", new BasicDBObject("next", 1));
 
     // Find by id, return all fields, use default sort, increment the counter,

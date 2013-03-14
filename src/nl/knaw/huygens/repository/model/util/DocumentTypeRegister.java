@@ -16,7 +16,6 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.storage.mongo.MongoUtils;
 
 @Singleton
 public class DocumentTypeRegister {
@@ -30,7 +29,6 @@ public class DocumentTypeRegister {
     this(null);
   }
 
-  // TODO Make DocumentTypeRegister less dependent of MongoUtils.
   @Inject
   public DocumentTypeRegister(@Named("model-packages") String packageNames) {
     stringToTypeMap = Maps.newHashMap();
@@ -55,7 +53,7 @@ public class DocumentTypeRegister {
     if (typeToStringMap.containsKey(docCls)) {
       return typeToStringMap.get(docCls);
     }
-    return MongoUtils.getCollectionName(docCls);
+    return DocumentTypeRegister.getCollectionName(docCls);
   }
 
   public Class<? extends Document> getClassFromTypeString(String id) {
@@ -83,7 +81,7 @@ public class DocumentTypeRegister {
     if (typeToCollectionIdMap.containsKey(docCls)) {
       return typeToCollectionIdMap.get(docCls);
     }
-    String collectionId = MongoUtils.getCollectionName(getBaseClass(docCls));
+    String collectionId = DocumentTypeRegister.getCollectionName(getBaseClass(docCls));
     typeToCollectionIdMap.put(docCls, collectionId);
     return collectionId;
   }
@@ -104,7 +102,7 @@ public class DocumentTypeRegister {
         stringToTypeMap.put(typeId, docCls);
         typeToStringMap.put(docCls, typeId);
         Class<? extends Document> baseCls = getBaseClass(docCls);
-        String baseTypeId = MongoUtils.getCollectionName(baseCls);
+        String baseTypeId = DocumentTypeRegister.getCollectionName(baseCls);
         typeToCollectionIdMap.put(docCls, baseTypeId);
         classesDetected++;
       }
@@ -125,6 +123,14 @@ public class DocumentTypeRegister {
       cls = (Class<? extends Document>) cls.getSuperclass();
     }
     return lastCls;
+  }
+
+  public static String getVersioningCollectionName(Class<?> cls) {
+    return getCollectionName(cls) + "-versions";
+  }
+
+  public static String getCollectionName(Class<?> cls) {
+    return cls.getSimpleName().toLowerCase();
   }
 
 }
