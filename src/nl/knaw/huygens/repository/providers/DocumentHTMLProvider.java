@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Map;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -18,7 +19,11 @@ import org.apache.commons.lang.StringEscapeUtils;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.jaxrs.json.annotation.EndpointConfig;
+import com.fasterxml.jackson.jaxrs.json.util.AnnotationBundleKey;
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -31,7 +36,7 @@ import nl.knaw.huygens.repository.model.Document;
 @Singleton
 public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
   private static byte[] PREAMBLE;
-  private ObjectMapper mapper = new ObjectMapper();
+  private Map<AnnotationBundleKey, ObjectWriter> writers = Maps.newHashMap();
   private JsonFactory factory = new JsonFactory();
   
   @Inject
@@ -67,7 +72,6 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
   public void writeTo(Document doc, Class<?> type, Type genericType, Annotation[] annotations,
       MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
       throws IOException, WebApplicationException {
-    // FIXME: this should somehow pass/use the annotations to Jackson
     entityStream.write(PREAMBLE);
     entityStream.write("<title>".getBytes("UTF-8"));
     byte[] title = encodeTitle(doc);
@@ -76,7 +80,17 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
     entityStream.write(title);
     entityStream.write("</h1>".getBytes("UTF-8"));
     JsonGenerator jgen = new HTMLGenerator(factory.createGenerator(entityStream));
-    mapper.writeValue(jgen, doc);
+    
+    // Get the right object writer:
+    AnnotationBundleKey key = new AnnotationBundleKey(annotations);
+    ObjectWriter writer = writers.get(key);
+    if (writer == null) {
+      ObjectMapper mapper = new ObjectMapper();
+      EndpointConfig endpointConfig = EndpointConfig.forWriting(mapper, annotations, null);
+      writer = endpointConfig.getWriter();
+      writers.put(key, writer);
+    }
+    writer.writeValue(jgen, doc);
     entityStream.write("</body></html>".getBytes("UTF-8"));
   }
 
