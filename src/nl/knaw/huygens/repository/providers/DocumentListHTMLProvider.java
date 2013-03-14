@@ -7,6 +7,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -22,7 +23,11 @@ import sun.reflect.generics.reflectiveObjects.WildcardTypeImpl;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.jaxrs.json.annotation.EndpointConfig;
+import com.fasterxml.jackson.jaxrs.json.util.AnnotationBundleKey;
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -35,7 +40,7 @@ import nl.knaw.huygens.repository.model.Document;
 @Singleton
 public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extends Document>> {
   private static byte[] PREAMBLE;
-  private ObjectMapper mapper = new ObjectMapper();
+  private Map<AnnotationBundleKey, ObjectWriter> writers = Maps.newHashMap();
   private JsonFactory factory = new JsonFactory();
   
   @Inject
@@ -102,12 +107,22 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
     entityStream.write(title);
     entityStream.write("</h1>".getBytes("UTF-8"));
     JsonGenerator jgen = new HTMLGenerator(factory.createGenerator(entityStream));
+ 
+    // Get the right object writer:
+    AnnotationBundleKey key = new AnnotationBundleKey(annotations);
+    ObjectWriter writer = writers.get(key);
+    if (writer == null) {
+      ObjectMapper mapper = new ObjectMapper();
+      EndpointConfig endpointConfig = EndpointConfig.forWriting(mapper, annotations, null);
+      writer = endpointConfig.getWriter();
+      writers.put(key, writer);
+    }
     
     for (Document doc : docs) {
       entityStream.write("<h2>".getBytes("UTF-8"));
       entityStream.write(encodeDocTitle(doc));
       entityStream.write("</h2>".getBytes("UTF-8"));
-      mapper.writeValue(jgen, doc);
+      writer.writeValue(jgen, doc);
     }
     entityStream.write("</body></html>".getBytes("UTF-8"));
   }
