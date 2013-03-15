@@ -17,12 +17,35 @@ import nl.knaw.huygens.repository.persistence.PersistenceManager;
  * 
  */
 public class HandleManager implements PersistenceManager {
-  private final static String HUYGENS_PREFIX = "11151";
+  private String namingAuthority;
+  private String prefix;
+  private String baseUrl;
 
-  private HSAdapter hsAdapter;
+  private HSAdapterFactoryWrapper hsAdapterFactoryWrapper;
 
-  public HandleManager(HSAdapter hsAdapter) {
-    this.hsAdapter = hsAdapter;
+  public HandleManager(HSAdapterFactoryWrapper hsAdapterFactoryWrapper, String prefix, String namingAuthority, String baseURL) {
+    this.hsAdapterFactoryWrapper = hsAdapterFactoryWrapper;
+    this.prefix = prefix;
+    this.namingAuthority = namingAuthority;
+    this.baseUrl = baseURL;
+  }
+
+  @Override
+  public String getPersistentURL(String persistenceID) throws PersistenceException {
+    String url = null;
+    String handleName = createHandleName(persistenceID);
+
+    try {
+      HSAdapter hsAdapter = hsAdapterFactoryWrapper.createHSAdapter();
+      HandleValue[] values = hsAdapter.resolveHandle(handleName, new String[] { "URL" }, new int[] { 1 });
+      if (values != null) {
+        url = values[0].getDataAsString();
+      }
+    } catch (HandleException ex) {
+      throw new PersistenceException(ex);
+    }
+
+    return url;
   }
 
   @Override
@@ -37,6 +60,7 @@ public class HandleManager implements PersistenceManager {
 
     HandleValue adminValue = null;
     try {
+      HSAdapter hsAdapter = hsAdapterFactoryWrapper.createHSAdapter();
       adminValue = hsAdapter.createAdminValue(createAdminHandle(), 200, 100);
       HandleValue[] handleValues = { urlValue, adminValue };
       hsAdapter.createHandle(createHandleName(id), handleValues);
@@ -48,20 +72,23 @@ public class HandleManager implements PersistenceManager {
   }
 
   @Override
-  public String getPersistentURL(String persistenceID) throws PersistenceException {
-    String url = null;
-    String handleName = createHandleName(persistenceID);
+  public String persistObject(String objectId, String collectionId) throws PersistenceException {
+    String url = createUrl(objectId, collectionId);
+    return persistURL(url);
+  }
 
-    try {
-      HandleValue[] values = hsAdapter.resolveHandle(handleName, new String[] { "URL" }, new int[] { 1 });
-      if (values != null) {
-        url = values[0].getDataAsString();
-      }
-    } catch (HandleException ex) {
-      throw new PersistenceException(ex);
+  private String createUrl(String id, String collectionId) {
+
+    StringBuilder url = new StringBuilder(baseUrl);
+    if (!baseUrl.endsWith("/")) {
+      url.append("/");
     }
+    url.append("resources/");
+    url.append(collectionId);
+    url.append("/");
+    url.append(id);
 
-    return url;
+    return url.toString();
   }
 
   private String createID() {
@@ -69,11 +96,15 @@ public class HandleManager implements PersistenceManager {
   }
 
   private String createAdminHandle() {
-    return "0.NA/" + HUYGENS_PREFIX;
+    StringBuilder sb = new StringBuilder();
+    sb.append(namingAuthority);
+    sb.append("/");
+    sb.append(prefix);
+    return sb.toString();
   }
 
   private String createHandleName(String id) {
-    return HUYGENS_PREFIX + "/" + id;
+    return prefix + "/" + id;
   }
 
 }

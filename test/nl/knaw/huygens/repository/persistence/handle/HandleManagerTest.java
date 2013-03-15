@@ -27,15 +27,21 @@ import net.handle.hdllib.Util;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 
 public class HandleManagerTest {
+  private HSAdapterFactoryWrapper hsAdapterFactoryWrapper;
   private HSAdapter handleAdapter;
   private HandleManager handleManager;
   private HandleValue adminValue;
   private Map<String, HandleValue[]> handleMap;
+  private String prefix = "11151";
+  private String namingAuthority = "0.NA";
+  private String baseURL = "http://localhost/repository";
 
   @Before
   public void setUp() throws HandleException {
     handleAdapter = mock(HSAdapter.class);
-    handleManager = new HandleManager(handleAdapter);
+    hsAdapterFactoryWrapper = mock (HSAdapterFactoryWrapper.class);
+    when(hsAdapterFactoryWrapper.createHSAdapter()).thenReturn(handleAdapter);
+    handleManager = new HandleManager(hsAdapterFactoryWrapper, prefix, namingAuthority, baseURL);
     adminValue = mock(HandleValue.class);
     handleMap = Maps.newHashMap();
 
@@ -48,6 +54,14 @@ public class HandleManagerTest {
     handleAdapter = null;
     adminValue = null;
     handleMap = null;
+  }
+
+  private String createHandleName(String id) {
+    StringBuilder sb = new StringBuilder(prefix);
+    sb.append("/");
+    sb.append(id);
+
+    return sb.toString();
   }
 
   @Test
@@ -64,7 +78,7 @@ public class HandleManagerTest {
 
     String expectedURL = "www.huygens.knaw.nl";
     String id = handleManager.persistURL(expectedURL);
-    String handleName = "11151/" + id; // <prefix/id>
+    String handleName = createHandleName(id);
     String actualURL = null;
 
     HandleValue[] values = handleMap.get(handleName);
@@ -93,11 +107,60 @@ public class HandleManagerTest {
   }
 
   @Test
+  public void testPersistObjectSuccess() throws HandleException, PersistenceException {
+    doAnswer(new Answer<Object>() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws HandleException {
+        String key = (String) invocation.getArguments()[0];
+        HandleValue[] value = (HandleValue[]) invocation.getArguments()[1];
+        handleMap.put(key, value);
+        return null;
+      }
+    }).when(handleAdapter).createHandle(anyString(), any(HandleValue[].class));
+
+    String objectId = "test000001";
+    String collectionId = "document";
+
+    String id = handleManager.persistObject(objectId, collectionId);
+
+    String handleName = createHandleName(id);
+    String expectURL = baseURL + "/resources/document/" + objectId;
+    String actualURL = null;
+
+    HandleValue[] values = handleMap.get(handleName);
+
+    for (HandleValue value : values) {
+      if ("URL".equals(value.getTypeAsString())) {
+        actualURL = value.getDataAsString();
+      }
+    }
+
+    assertEquals(2, values.length);
+    assertEquals(expectURL, actualURL);
+
+  }
+
+  @Test(expected = PersistenceException.class)
+  public void testPersistObjectExceptionThrown() throws HandleException, PersistenceException {
+    doAnswer(new Answer<Object>() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws HandleException {
+        throw new HandleException(1);
+      }
+    }).when(handleAdapter).createHandle(anyString(), any(HandleValue[].class));
+
+    String objectId = "test000001";
+    String collectionId = "document";
+
+    handleManager.persistObject(objectId, collectionId);
+  }
+
+  @Test
   public void testGetPersistentURLExistingURL() throws HandleException, PersistenceException {
     String id = "test";
     String expectedURL = "www.huygens.knaw.nl";
     HandleValue handleValue = new HandleValue(1, Util.encodeString("URL"), Util.encodeString(expectedURL));
-    handleMap.put("11151/" + id, new HandleValue[] { handleValue });
+    handleMap.put(createHandleName(id), new HandleValue[] { handleValue });
 
     doAnswer(new Answer<HandleValue[]>() {
       @Override
