@@ -7,7 +7,8 @@
 
 	<!-- Load properties from file, if it exists -->
 	<property file="build.properties" />
-
+  <!-- Ant 1.8.2+ doesn't allow system properties to be overridden... -->
+  <property name="home" value="${user.home}"/>
 
 	<property name="project.name" value="repository"/>
 	<property name="project.version" value="0.1-SNAPSHOT"/>
@@ -34,20 +35,20 @@
 	<property name="server.stage.user" value="repository" />
 	<property name="server.stage.datapath" value="/data/repository/" />
 	<property name="server.stage.datafullpath" value="/data/repository/repository/" />
-	<property name="server.stage.key" value="${user.home}/.ssh/repository_dsa" />
+	<property name="server.stage.key" value="${home}/.ssh/repository_dsa" />
 
 	<property name="server.live.address" value="hi2.huygens.knaw.nl" />
 	<property name="server.live.path" value="/usr/share/tomcat6/webapps" />
 	<property name="server.live.user" value="repository" />
 	<property name="server.live.datapath" value="/data/repository/" />
 	<property name="server.live.datafullpath" value="/data/repository/repository/" />
-	<property name="server.live.key" value="${user.home}/.ssh/repository_dsa" />
+	<property name="server.live.key" value="${home}/.ssh/repository_dsa" />
 
 	<property name="target.jar" location="${dist.dir}/tools.jar" />
 	<property name="target.pom" location="${dist.dir}/${project.name-ver}.pom" />
 
 	<!--  <property name="local.tomcat.dir" location="/usr/local/bin/apache-tomcat-7.0.6/webapps" />-->
-	<property name="local.dir" location="${user.home}/repository" />
+	<property name="local.dir" location="${home}/repository" />
 	<property name="config.src" location="config" />
 	<property name="website.src" location="website" />
 	<property name="solr.src" location="solr" />
@@ -62,7 +63,7 @@
 
 	<property name="ivy.jar.version" value="2.2.0"/>
 	<property name="ivy.jar.name" value="ivy-${ivy.jar.version}.jar" />
-	<property name="ivy.home" value="${user.home}/.ivy2" />
+	<property name="ivy.home" value="${home}/.ivy2" />
 	<available property="ivy.installed" file="${ivy.home}/${ivy.jar.name}" />
 
 	<!-- Auto-installs the ivy jar into ~/.ivy2 if not present -->
@@ -75,7 +76,7 @@
 	<target name="ivy-init" depends="ivy-install,init">
 		<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpath="${ivy.home}/${ivy.jar.name}"/>
 		<!-- Override if you want another repository -->
-		<property name="publish.repo" value="${user.home}/.m2/repository"/>
+		<property name="publish.repo" value="${home}/.m2/repository"/>
 		<ivy:resolve/>
 	</target>
 
@@ -142,17 +143,6 @@
 		<javac srcdir="${main.src.dir}" destdir="${main.bin.dir}" debug="true" includeantruntime="false">
 			<classpath refid="main.compile.classpath"/>
 		</javac>
-		<copy todir="${main.bin.dir}">
-			<fileset dir="${java.src.dir}" includes="**/*.properties" />
-			<fileset dir="${resource.src.dir}">
-				<include name="**/*.properties"/>
-				<include name="**/*.ftl"/>
-			</fileset>
-			<fileset dir="${config.src}">
-				<include name="**/*.xml"/>
-				<include name="**/*.properties"/>
-			</fileset>
-		</copy>
 		<copy todir="${main.bin.dir}">
 			<fileset dir="${java.src.dir}" includes="**/*.properties" />
 			<fileset dir="${resource.src.dir}">
@@ -269,7 +259,7 @@
 
 	<!--
 	<target name="local" depends="war" description="Deploys Repository to local tomcat.">
-		<copy todir="${${user.home}/repository}">
+		<copy todir="${${home}/repository}">
 			<fileset dir="${dist.dir}"/>
 		</copy>
 	</target>
@@ -320,15 +310,15 @@
 		<!-- Because a recursive copy only copies the files (rather than replacing the directory and thus removing old files,
 		 	 we remove the old files manually. -->
 		<sshexec host="hi5bia.huygens.knaw.nl" username="repository"
-      keyfile="${user.home}/.ssh/repository_dsa"
+      keyfile="${home}/.ssh/repository_dsa"
 			command="rm -rf /data/repository/repository/solr &amp;&amp; mkdir
       /data/repository/repository/solr"/>
-		<scp todir="repository@hi5bia.huygens.knaw.nl:repository/solr" keyfile="${user.home}/.ssh/repository_dsa">
+		<scp todir="repository@hi5bia.huygens.knaw.nl:repository/solr" keyfile="${home}/.ssh/repository_dsa">
 			<fileset dir="${local.dir}/solr">
 			</fileset>
 		</scp>
 		<sshexec host="hi5bia.huygens.knaw.nl" username="repository"
-      keyfile="${user.home}/.ssh/repository_dsa"
+      keyfile="${home}/.ssh/repository_dsa"
 			command="chmod --recursive g+w /data/repository/repository/solr &amp;&amp; chgrp --recursive tomcat /data/repository/repository/solr"/>
 	</target>
 
