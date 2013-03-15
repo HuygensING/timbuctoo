@@ -4,8 +4,8 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
-import nl.knaw.huygens.repository.model.dwcbia.DWCPerson;
-import nl.knaw.huygens.repository.model.raa.RAAPerson;
+import nl.knaw.huygens.repository.model.dwcbia.DWCScientist;
+import nl.knaw.huygens.repository.model.raa.RAACivilServant;
 import nl.knaw.huygens.repository.modules.RepositoryBasicModule;
 
 public class PersonImporter {
@@ -17,8 +17,8 @@ public class PersonImporter {
 
     GenericImporter importer = new GenericImporter();
 
-    importer.importData("resources/DWCPersonMapping.properties", storageManager, DWCPerson.class);
-    importer.importData("resources/RAAPersonMapping.properties", storageManager, RAAPerson.class);
+    importer.importData("resources/DWCScientistMapping.properties", storageManager, DWCScientist.class);
+    importer.importData("resources/RAACivilServantMapping.properties", storageManager, RAACivilServant.class);
 
     storageManager.ensureIndices();
   }
