@@ -20,6 +20,8 @@ public interface Storage {
   public <T extends Document> void addItems(List<T> items, Class<T> cls) throws IOException;
 
   public <T extends Document> void updateItem(String id, T updatedItem, Class<T> cls) throws IOException;
+  
+  public <T extends Document> void setPID(Class<T> cls, String pid, String id);
 
   public <T extends Document> void deleteItem(String id, Class<T> cls, Change change) throws IOException;
 

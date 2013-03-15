@@ -94,6 +94,11 @@ public class MongoComplexStorage implements Storage {
   public <T extends Document> void updateItem(String id, T updatedItem, Class<T> cls) throws IOException {
     getStorageForType(cls).updateItem(id, updatedItem, cls);
   }
+  
+  @Override
+  public <T extends Document> void setPID(Class<T> cls, String pid, String id) {
+    getStorageForType(cls).setPID(cls, pid, id);
+  }
 
   @Override
   public <T extends Document> void deleteItem(String id, Class<T> cls, Change change) throws IOException {
