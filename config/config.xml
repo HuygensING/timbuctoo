@@ -15,6 +15,12 @@
 			<user>test</user>
 			<password>test</password>
 		</database>
+		<handle>
+			<cipher>G8jUp6Ha</cipher>
+			<naming_authority>0.NA</naming_authority>
+			<prefix>11151</prefix>
+			<private_key_file>resources/admpriv.bin</private_key_file>
+		</handle>
 		<model-packages>
 			nl.knaw.huygens.repository.model
 			nl.knaw.huygens.repository.model.dwcbia
@@ -28,7 +34,7 @@
 		<indexeddoctypes>person</indexeddoctypes>
 		<versioneddoctypes>person,user</versioneddoctypes>
 		<defaultdoctype>person</defaultdoctype>
-		<public_url>http://localhost:8088/repository/</public_url>
+		<public_url>http://localhost:8080/repository/</public_url>
 		<feed>
 			<title>Repository changes</title>
 		</feed>
