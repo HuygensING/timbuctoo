@@ -1,6 +1,5 @@
 package nl.knaw.huygens.repository.model;
 
-
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
@@ -12,10 +11,12 @@ import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.Storage;
 
 public abstract class Document {
-  
+
   @NotNull
   @Pattern(regexp = "[A-Z]{3}\\d{10}")
   private String id;
+
+  private String pid; // the persistent identifier.
 
   private int rev;
 
@@ -26,7 +27,7 @@ public abstract class Document {
   private boolean _deleted;
 
   @JsonProperty("_id")
-  @IndexAnnotation(fieldName="id")
+  @IndexAnnotation(fieldName = "id")
   public String getId() {
     return id;
   }
@@ -76,9 +77,20 @@ public abstract class Document {
     this._deleted = deleted;
   }
 
+  @JsonProperty("^pid")
+  public String getPid() {
+    return pid;
+  }
+
+  @JsonProperty("^pid")
+  public void setPid(String pid) {
+    this.pid = pid;
+  }
+
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
   public abstract String getDescription();
 
   public abstract void fetchAll(Storage storage);
+
 }
