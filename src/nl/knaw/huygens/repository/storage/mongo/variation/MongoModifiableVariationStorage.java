@@ -103,6 +103,15 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
     col.update(q, updatedDBObj);
     addVersion(cls, id, updatedDBObj);
   }
+  
+  @Override
+  public <T extends Document> void setPID(Class<T> cls, String pid, String id) {
+    BasicDBObject query = new BasicDBObject("_id", id);
+    BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
+    DBCollection col = getVariationCollection(cls);
+
+    col.update(query, update);    
+  }
 
   @Override
   public <T extends Document> void deleteItem(String id, Class<T> cls, Change change) throws IOException {

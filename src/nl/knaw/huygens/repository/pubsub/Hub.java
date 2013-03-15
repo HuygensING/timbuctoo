@@ -6,7 +6,9 @@ import java.util.Map;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.inject.Singleton;
 
+@Singleton
 public class Hub {
   private Map<Class<?>, List<Subscriber>> subscribers = Maps.newHashMap();
 

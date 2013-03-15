@@ -32,11 +32,11 @@ public class MongoModifiableStorage extends MongoStorage implements Storage {
   public MongoModifiableStorage(StorageConfiguration conf, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
     super(conf, docTypeRegistry);
   }
-  
-  public MongoModifiableStorage(StorageConfiguration conf, Mongo m, DB loanedDB, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+
+  public MongoModifiableStorage(StorageConfiguration conf, Mongo m, DB loanedDB, DocumentTypeRegister docTypeRegistry) throws UnknownHostException,
+      MongoException {
     super(conf, m, loanedDB, docTypeRegistry);
   }
-
 
   @Override
   public <T extends Document> void addItem(T newItem, Class<T> cls) throws IOException {
@@ -89,6 +89,15 @@ public class MongoModifiableStorage extends MongoStorage implements Storage {
   }
 
   @Override
+  public <T extends Document> void setPID(Class<T> cls, String pid, String id) {
+    BasicDBObject query = new BasicDBObject("_id", id);
+    BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
+
+    col.update(query, update);
+  }
+
+  @Override
   public <T extends Document> void deleteItem(String id, Class<T> cls, Change change) throws IOException {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
     // This needs to be updated once mongo-jackson-mapper fixes their wrapper:
@@ -119,7 +128,7 @@ public class MongoModifiableStorage extends MongoStorage implements Storage {
     mongo.dropDatabase(dbName);
     db = mongo.getDB(dbName);
   }
-  
+
   public void resetDB(DB db) {
     this.db = db;
   }
@@ -153,8 +162,10 @@ public class MongoModifiableStorage extends MongoStorage implements Storage {
         updateVersionCol(id, null, item, oldRev, cls);
       }
     } else {
-      // This is really evil, but it's very annoying to update only the fields you want
-      // (you can't ignore fields, only give an explicit list of everything you want)
+      // This is really evil, but it's very annoying to update only the fields
+      // you want
+      // (you can't ignore fields, only give an explicit list of everything you
+      // want)
       T oldItemWithCreation = col.findOneById(id, new BasicDBObject("^creation", true));
       if (oldItemWithCreation != null) {
         item.setCreation(oldItemWithCreation.getCreation());

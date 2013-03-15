@@ -17,6 +17,8 @@ import nl.knaw.huygens.repository.events.Events;
 import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
+import nl.knaw.huygens.repository.persistence.PersistenceException;
+import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.storage.RelatedDocument;
 import nl.knaw.huygens.repository.storage.RelatedDocuments;
@@ -33,16 +35,19 @@ public class StorageManager {
   private Storage storage;
   private Map<Class<? extends Document>, Map<Class<? extends Document>, List<List<String>>>> annotationCache;
   private Set<String> documentTypes;
-  
+
   private final Hub hub;
   private DocumentTypeRegister docTypeRegistry;
+  private PersistenceManager persistenceManager;
 
   @Inject
-  public StorageManager(StorageConfiguration storageConf, Storage storage, Hub hub, DocumentTypeRegister docTypeRegistry) {
+  public StorageManager(StorageConfiguration storageConf, Storage storage, Hub hub, DocumentTypeRegister docTypeRegistry,
+      PersistenceManager persistenceMananger) {
     this.hub = hub;
     this.docTypeRegistry = docTypeRegistry;
     documentTypes = storageConf.getDocumentTypes();
     this.storage = storage;
+    this.persistenceManager = persistenceMananger;
     fillAnnotationCache();
     ensureIndices();
   }
@@ -79,7 +84,6 @@ public class StorageManager {
       return null;
     }
   }
-  
 
   public <T extends Document> List<T> getAllVariations(String id, Class<T> baseCls) {
     List<T> rv;
@@ -102,13 +106,26 @@ public class StorageManager {
 
   public <T extends Document> void addDocument(T doc, Class<T> entityCls) throws IOException {
     storage.addItem(doc, entityCls);
+    persistDocumentVersion(doc, entityCls);
     doThrowEvent(doc.getId(), VariationUtils.getBaseClass(entityCls), Events.DocumentAddEvent.class);
+  }
 
+  private <T extends Document> void persistDocumentVersion(T doc, Class<T> entityClass) {
+    String pid = null;
+    try {
+      // TODO make persistent id dependent on version.
+      pid = persistenceManager.persistObject(doc.getId(), docTypeRegistry.getCollectionId(entityClass));
+    } catch (PersistenceException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    storage.setPID(entityClass, pid, doc.getId());
   }
 
   public <T extends Document> void modifyDocument(T doc, Class<T> entityCls) throws IOException {
     String id = doc.getId();
     storage.updateItem(id, doc, entityCls);
+    persistDocumentVersion(doc, entityCls);
     doThrowEvent(doc.getId(), VariationUtils.getBaseClass(entityCls), DocumentEditEvent.class);
   }
 
@@ -116,8 +133,9 @@ public class StorageManager {
     storage.deleteItem(doc.getId(), entityCls, doc.getLastChange());
     doThrowEvent(doc.getId(), VariationUtils.getBaseClass(entityCls), Events.DocumentDeleteEvent.class);
   }
-  
-  private <X extends Document> void doThrowEvent(String id, Class<X> baseCls, @SuppressWarnings("rawtypes") Class<? extends Events.DocumentChangeEvent> t) throws IOException {
+
+  private <X extends Document> void doThrowEvent(String id, Class<X> baseCls, @SuppressWarnings("rawtypes") Class<? extends Events.DocumentChangeEvent> t)
+      throws IOException {
     List<X> docs = storage.getAllVariations(id, baseCls);
     for (X doc : docs) {
       doc.fetchAll(storage);
@@ -128,7 +146,7 @@ public class StorageManager {
       throw new IOException(ex);
     }
   }
-  
+
   public <T extends Document> StorageIterator<T> getByMultipleIds(List<String> ids, Class<T> entityCls) {
     return storage.getByMultipleIds(ids, entityCls);
   }
@@ -138,17 +156,16 @@ public class StorageManager {
       return storage.getLastChanged(limit);
     } catch (IOException e) {
       e.printStackTrace();
-      return Collections.<Document>emptyList();
+      return Collections.<Document> emptyList();
     }
   }
 
   public <T extends Document> List<T> getAllLimited(Class<T> cls, int offset, int limit) {
     if (limit == 0) {
-      return Collections.<T>emptyList();
+      return Collections.<T> emptyList();
     }
     return StorageUtils.resolveIterator(storage.getAllByType(cls), offset, limit);
   }
-
 
   public <X extends Document, T extends Document> Map<List<String>, List<String>> getReferringDocs(Class<X> referringType, Class<T> referredType, String... referredIds) {
     Map<Class<? extends Document>, List<List<String>>> mappings = annotationCache.get(referringType);
@@ -200,7 +217,7 @@ public class StorageManager {
       if (ann.annotationType().equals(RelatedDocument.class)) {
         parseSingleAnnotation(rv, (RelatedDocument) ann);
 
-      // Multiple annotations:
+        // Multiple annotations:
       } else if (ann.annotationType().equals(RelatedDocuments.class)) {
         RelatedDocument[] relDocColl = ((RelatedDocuments) ann).value();
         for (RelatedDocument relDocAnnot : relDocColl) {
