@@ -115,11 +115,11 @@ public class StorageManager {
     try {
       // TODO make persistent id dependent on version.
       pid = persistenceManager.persistObject(doc.getId(), docTypeRegistry.getCollectionId(entityClass));
+      storage.setPID(entityClass, pid, doc.getId());
     } catch (PersistenceException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-    storage.setPID(entityClass, pid, doc.getId());
   }
 
   public <T extends Document> void modifyDocument(T doc, Class<T> entityCls) throws IOException {
