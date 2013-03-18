@@ -27,13 +27,12 @@ public class VariationReducer {
     this.docTypeRegistry = docTypeRegistry;
     mapper = new ObjectMapper();
   }
-  
+
   public VariationReducer(ObjectMapper mapper, DocumentTypeRegister docTypeRegistry) {
     this.mapper = mapper;
     this.docTypeRegistry = docTypeRegistry;
   }
-  
-  
+
   public <T extends Document> List<T> reduceDBObject(List<DBObject> nodes, Class<T> cls) throws IOException {
     List<T> rv = Lists.newArrayListWithCapacity(nodes.size());
     for (DBObject n : nodes) {
@@ -41,7 +40,7 @@ public class VariationReducer {
     }
     return rv;
   }
-  
+
   public <T extends Document> List<T> reduce(List<JsonNode> nodes, Class<T> cls) throws VariationException, JsonProcessingException {
     List<T> rv = Lists.newArrayListWithCapacity(nodes.size());
     for (JsonNode n : nodes) {
@@ -49,7 +48,7 @@ public class VariationReducer {
     }
     return rv;
   }
-  
+
   public <T extends Document> T reduce(JsonNode n, Class<T> cls) throws VariationException, JsonProcessingException {
     final String variationName = VariationUtils.getVariationName(cls);
     String idPrefix = variationName + "-";
@@ -85,7 +84,7 @@ public class VariationReducer {
   }
 
   private void processCommonData(final String variationName, JsonNode commonData, ObjectNode rv) throws VariationException {
-    Iterator<Entry<String, JsonNode>> fields = commonData.fields(); 
+    Iterator<Entry<String, JsonNode>> fields = commonData.fields();
     // Go through all common fields:
     while (fields.hasNext()) {
       Entry<String, JsonNode> f = fields.next();
@@ -102,6 +101,9 @@ public class VariationReducer {
   }
 
   private void fetchAndAssignMatchingValue(final String variationName, ObjectNode rv, String k, ArrayNode ary) throws VariationException {
+    // If the package is the base model package use the default-value for the
+    // object.
+    String agreedValue = variationName.equals(VariationUtils.BASE_MODEL_PACKAGE_VARIATION) ? VariationUtils.DEFAULT_VALUE : variationName;
     int i = 0;
     for (JsonNode elem : ary) {
       if (elem.isObject()) {
@@ -109,7 +111,7 @@ public class VariationReducer {
         JsonNode agreedValueNode = elem.get(VariationUtils.AGREED);
         if (agreedValueNode != null && agreedValueNode.isArray()) {
           ArrayNode agreedValues = (ArrayNode) agreedValueNode;
-          if (arrayContains(agreedValues, variationName)) {
+          if (arrayContains(agreedValues, agreedValue)) {
             rv.put(k, elem.get(VariationUtils.VALUE));
             return;
           }
@@ -141,7 +143,6 @@ public class VariationReducer {
   public void setMapper(ObjectMapper mapper) {
     this.mapper = mapper;
   }
-  
 
   public <T extends Document> T reduceDBObject(DBObject obj, Class<T> cls) throws VariationException, JsonProcessingException, IOException {
     if (obj == null) {
