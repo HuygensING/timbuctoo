@@ -50,7 +50,7 @@ public class VariationInducerTest {
   public void testInduceWithSubModels() throws IOException {
     String testStr = "{\"projecta-projectageneraltestdoc\": {\"projectAGeneralTestDocValue\": \"other stuff\"},"
                      + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"stuff\", \"a\":[\"projecta\",\"^default\"]}]},"
-                     + "\"testbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projecta\",\"^default\"]}]},"
+                     + "\"testconcretedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projecta\",\"^default\"]}]},"
                      + "\"_id\":null,\"^pid\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
     JsonNode t = m.readTree(testStr);
