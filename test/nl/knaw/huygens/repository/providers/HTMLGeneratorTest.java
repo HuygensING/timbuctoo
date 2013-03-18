@@ -53,6 +53,7 @@ public class HTMLGeneratorTest {
         "C;<br>\n" +
         "</td></tr>\n" +
         "<tr><th>Id</th><td>none</td></tr>\n" +
+        "<tr><th>Pid</th><td>none</td></tr>\n" +
         "<tr><th>Rev</th><td>0</td></tr>\n" +
         "<tr><th>Last Change</th><td>none</td></tr>\n" +
         "<tr><th>Creation</th><td>none</td></tr>\n" +
