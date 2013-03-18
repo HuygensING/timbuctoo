@@ -32,23 +32,23 @@ public class VariationInducer {
     setView(null);
     writerWithView = mapper.writerWithView(getView());
   }
-  
+
   public VariationInducer(ObjectMapper mapper) {
     this.mapper = mapper;
     this.setView(null);
     writerWithView = mapper.writerWithView(getView());
   }
-  
+
   public VariationInducer(ObjectMapper mapper, Class<?> view) {
     this.mapper = mapper;
     this.setView(view);
     writerWithView = mapper.writerWithView(view);
   }
-  
+
   public <T extends Document> JsonNode induce(T item, Class<T> cls) throws VariationException {
     return induce(item, cls, (ObjectNode) null);
   }
-  
+
   public <T extends Document> List<JsonNode> induce(List<T> items, Class<T> cls, Map<String, DBObject> existingItems) throws VariationException {
     List<JsonNode> rv = Lists.newArrayListWithCapacity(items.size());
     for (T item : items) {
@@ -56,7 +56,7 @@ public class VariationInducer {
     }
     return rv;
   }
-  
+
   @SuppressWarnings("unchecked")
   public <T extends Document> JsonNode induce(T item, Class<T> cls, DBObject existingItem) throws VariationException {
     ObjectNode o;
@@ -86,7 +86,6 @@ public class VariationInducer {
     return o;
   }
 
-  
   public <T extends Document> JsonNode induce(T item, Class<T> cls, ObjectNode existingItem) throws VariationException {
     if (cls == null || item == null) {
       throw new IllegalArgumentException();
@@ -96,7 +95,7 @@ public class VariationInducer {
     existingItem = createNode(existingItem, cls, allClasses);
     int size = allClasses.size();
     int i = size;
-    Map<String, Object> finishedKeys = Maps.newHashMap(); 
+    Map<String, Object> finishedKeys = Maps.newHashMap();
     while (i-- > 0) {
       Class<? extends Document> someCls = allClasses.get(i);
       String classId = VariationUtils.getClassId(someCls);
@@ -104,37 +103,40 @@ public class VariationInducer {
       if (!obj.isObject()) {
         throw new VariationException("Variation object (" + classId + ") is not an object?");
       }
-      
+
       ObjectNode currentClsNode = (ObjectNode) obj;
       JsonNode itemTree = asTree(item, someCls);
       boolean isShared = !classId.startsWith(variationId + "-");
-      
+
       Iterator<Entry<String, JsonNode>> fields = itemTree.fields();
       while (fields.hasNext()) {
         Entry<String, JsonNode> field = fields.next();
         String k = field.getKey();
         JsonNode fieldNode = field.getValue();
 
-        // Should not store bits we already stored in other parts of the hierarchy:
+        // Should not store bits we already stored in other parts of the
+        // hierarchy:
         if (finishedKeys.containsKey(k) && fieldNode.equals(finishedKeys.get(k))) {
           continue;
         }
         finishedKeys.put(k, fieldNode);
-        
-        /* For each property, there are 3 possibilities:
-         * a) it is a prefixed (^ or _) property, which should always be the same among all variations
-         *    and is used for identifying different objects, their version, etc.
-         * b) it is shared between different variations (project/VRE/whatever)
-         * c) it is specific to a single variation (project/VRE/whatever)
+
+        /*
+         * For each property, there are 3 possibilities: a) it is a prefixed (^
+         * or _) property, which should always be the same among all variations
+         * and is used for identifying different objects, their version, etc. b)
+         * it is shared between different variations (project/VRE/whatever) c)
+         * it is specific to a single variation (project/VRE/whatever)
          */
         if (k.startsWith("^") || k.startsWith("_")) {
-          // Either this is a new object and we need to add the property, or it is an existing one in which
+          // Either this is a new object and we need to add the property, or it
+          // is an existing one in which
           // case we should check for an exact match:
           if (!existingItem.has(k)) {
             existingItem.put(k, fieldNode);
           } else if (!fieldNode.equals(existingItem.get(k))) {
-            throw new VariationException("Inducing object into wrong object; fields " + k + " are not equal (" +
-                                         fieldNode.toString() + " vs. " + existingItem.get(k).toString() + "!");
+            throw new VariationException("Inducing object into wrong object; fields " + k + " are not equal (" + fieldNode.toString() + " vs. " +
+                                         existingItem.get(k).toString() + "!");
           }
         } else if (isShared) {
           addOrMergeVariation(currentClsNode, k, variationId, fieldNode);
@@ -145,15 +147,17 @@ public class VariationInducer {
     }
     return existingItem;
   }
-  
+
   private void addOrMergeVariation(ObjectNode existingCommonTree, String key, String variationId, JsonNode variationValue) throws VariationException {
-    // Find the right property variation array, create it if it does not exist yet:
+    // Find the right property variation array, create it if it does not exist
+    // yet:
     if (!existingCommonTree.has(key)) {
       addVariation(existingCommonTree, key);
     }
     ArrayNode existingValueAry = cautiousGetArray(existingCommonTree, key);
-    
-    // Look through the array and remove us from things we no longer agree with, add to the thing we do agree with:
+
+    // Look through the array and remove us from things we no longer agree with,
+    // add to the thing we do agree with:
     int i = 0;
     boolean foundValue = false;
     boolean foundKey = false;
@@ -175,10 +179,15 @@ public class VariationInducer {
         // ... while we shouldn't?
         if (!thisValueIsCorrect) {
           agreedValueAry.remove(agreedIndex);
-          
+
           // If nobody agrees with this value anymore; purge it:
-          if (agreedValueAry.size() == 0) {
+          if (agreedValueAry.size() == 0 || isOnlyDefaultValue(agreedValueAry)) {
             elements.remove();
+            //reset the default value to the first of the list
+            if(isOnlyDefaultValue(agreedValueAry)){
+              ArrayNode agreeListFirstItem = cautiousGetArray(existingValueAry.get(0), VariationUtils.AGREED);
+              agreeListFirstItem.add(VariationUtils.DEFAULT_VALUE);
+            }
           }
         }
         foundKey = true;
@@ -195,6 +204,18 @@ public class VariationInducer {
     if (!foundValue) {
       addVariationItem(existingValueAry, variationId, variationValue);
     }
+  }
+
+  private boolean isOnlyDefaultValue(ArrayNode agreedValueAry) {
+    boolean isOnlyDefaultValue = false;
+    if (agreedValueAry.size() == 1) {
+      JsonNode agreedValue = agreedValueAry.get(0);
+      if (agreedValue != null) {
+        isOnlyDefaultValue = agreedValue.asText().equals(VariationUtils.DEFAULT_VALUE);
+      }
+    }
+
+    return isOnlyDefaultValue;
   }
 
   private int arrayIndexOf(ArrayNode agreedValueAry, String variationId) {
@@ -221,6 +242,9 @@ public class VariationInducer {
     ObjectNode var = mapper.createObjectNode();
     ArrayNode agreedList = mapper.createArrayNode();
     agreedList.add(variationId);
+    if (existingValueAry.size() == 0) {
+      agreedList.add(VariationUtils.DEFAULT_VALUE);
+    }
     var.put(VariationUtils.AGREED, agreedList);
     var.put(VariationUtils.VALUE, variationValue);
     existingValueAry.add(var);
@@ -232,11 +256,15 @@ public class VariationInducer {
   }
 
   /**
-   * This is a modified copy of the built-in "valueAsTree" method on ObjectMapper.
-   * The modification includes being able to specify the view and the type used
-   * for serialization
-   * @param val Value to serialize
-   * @param cls Type to use for serializing the value (should be on the type chain of the value's runtime type)
+   * This is a modified copy of the built-in "valueAsTree" method on
+   * ObjectMapper. The modification includes being able to specify the view and
+   * the type used for serialization
+   * 
+   * @param val
+   *          Value to serialize
+   * @param cls
+   *          Type to use for serializing the value (should be on the type chain
+   *          of the value's runtime type)
    * @return a JSON tree representation of the object
    * @throws IllegalArgumentException
    */
