@@ -37,6 +37,7 @@ import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
 import nl.knaw.huygens.repository.storage.mongo.MongoUtils;
 import nl.knaw.huygens.repository.variation.VariationException;
 import nl.knaw.huygens.repository.variation.VariationReducer;
+import nl.knaw.huygens.repository.variation.VariationUtils;
 
 @Singleton
 public abstract class MongoVariationStorage implements Storage {
@@ -48,10 +49,10 @@ public abstract class MongoVariationStorage implements Storage {
   protected JacksonDBCollection<Counter, String> counterCol;
 
   private Set<String> documentCollections;
-  
+
   private VariationReducer reducer;
   protected MongoOptions options;
-  
+
   private ObjectMapper objectMapper;
   protected TreeEncoderFactory treeEncoderFactory;
   private TreeDecoderFactory treeDecoderFactory;
@@ -61,10 +62,10 @@ public abstract class MongoVariationStorage implements Storage {
     public String id;
     public int next;
   }
-  
+
   private Map<Class<? extends Document>, DBCollection> collectionCache;
   protected final DocumentTypeRegister docTypeRegistry;
-  
+
   public MongoVariationStorage(StorageConfiguration conf, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
     this.docTypeRegistry = docTypeRegistry;
     dbName = conf.getDbName();
@@ -77,8 +78,9 @@ public abstract class MongoVariationStorage implements Storage {
     }
     initializeVariationCollections(conf);
   }
-  
-  public MongoVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+
+  public MongoVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options, DocumentTypeRegister docTypeRegistry)
+      throws UnknownHostException, MongoException {
     this.options = options;
     this.docTypeRegistry = docTypeRegistry;
     dbName = conf.getDbName();
@@ -101,9 +103,12 @@ public abstract class MongoVariationStorage implements Storage {
   public <T extends Document> T getItem(String id, Class<T> cls) throws VariationException, IOException {
     DBCollection col = getVariationCollection(cls);
     DBObject query = new BasicDBObject("_id", id);
+    String classType = VariationUtils.getClassId(cls);
+    BasicDBObject notNull = new BasicDBObject("$ne", null);
+    query.put(classType, notNull);
     return reducer.reduceDBObject(col.findOne(query), cls);
   }
-  
+
   @Override
   public <T extends Document> List<T> getAllVariations(String id, Class<T> cls) throws VariationException, IOException {
     DBCollection col = getVariationCollection(cls);
@@ -115,8 +120,10 @@ public abstract class MongoVariationStorage implements Storage {
   @Override
   public <T extends Document> StorageIterator<T> getAllByType(Class<T> cls) {
     DBCollection col = getVariationCollection(cls);
-    // FIXME now returns all the data from the collection, find a way to filter on type.
-    return new MongoDBVariationIteratorWrapper<T>(col.find(), reducer, cls);
+    String classType = VariationUtils.getClassId(cls);
+    BasicDBObject notNull = new BasicDBObject("$ne", null);
+    BasicDBObject query = new BasicDBObject(classType, notNull);
+    return new MongoDBVariationIteratorWrapper<T>(col.find(query), reducer, cls);
   }
 
   @Override
@@ -131,7 +138,6 @@ public abstract class MongoVariationStorage implements Storage {
     System.err.println("Stopped Mongo.");
   }
 
-
   @Override
   public <T extends Document> StorageIterator<T> getByMultipleIds(Collection<String> ids, Class<T> entityCls) {
     DBCollection col = getVariationCollection(entityCls);
@@ -142,12 +148,12 @@ public abstract class MongoVariationStorage implements Storage {
   public List<Document> getLastChanged(int limit) throws IOException {
     List<DBObject> changedDocs = Lists.newArrayList();
     for (String colName : documentCollections) {
-      DBCollection col  = db.getCollection(colName);
+      DBCollection col = db.getCollection(colName);
       DBCursor docs = col.find().sort(new BasicDBObject("^lastChange.dateStamp", -1)).limit(limit);
       changedDocs.addAll(docs.toArray());
       docs.close();
     }
-    
+
     MongoUtils.sortDocumentsByLastChange(changedDocs);
     return reducer.reduceDBObject(changedDocs.subList(0, limit), Document.class);
   }
@@ -220,7 +226,6 @@ public abstract class MongoVariationStorage implements Storage {
     }
     return col;
   }
-  
 
   protected <T extends Document> DBCollection getRawVersionCollection(Class<T> cls) {
     DBCollection col = db.getCollection(docTypeRegistry.getCollectionId(cls) + "-versions");
