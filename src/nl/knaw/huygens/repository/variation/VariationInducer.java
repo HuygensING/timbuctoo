@@ -122,13 +122,18 @@ public class VariationInducer {
         finishedKeys.put(k, fieldNode);
 
         /*
-         * For each property, there are 3 possibilities: a) it is a prefixed (^
-         * or _) property, which should always be the same among all variations
-         * and is used for identifying different objects, their version, etc. b)
-         * it is shared between different variations (project/VRE/whatever) c)
-         * it is specific to a single variation (project/VRE/whatever)
+         * For each property, there are 4 possibilities: a) it is prefixed with
+         * an @, this means that it is only used in the application and should
+         * be removed when the object is saved in the database. b) it is a
+         * prefixed (^ or _) property, which should always be the same among all
+         * variations and is used for identifying different objects, their
+         * version, etc. c) it is shared between different variations
+         * (project/VRE/whatever) d) it is specific to a single variation
+         * (project/VRE/whatever)
          */
-        if (k.startsWith("^") || k.startsWith("_")) {
+        if (k.startsWith("@")) {
+          // ignore field. 
+        } else if (k.startsWith("^") || k.startsWith("_")) {
           // Either this is a new object and we need to add the property, or it
           // is an existing one in which
           // case we should check for an exact match:
@@ -183,8 +188,8 @@ public class VariationInducer {
           // If nobody agrees with this value anymore; purge it:
           if (agreedValueAry.size() == 0 || isOnlyDefaultValue(agreedValueAry)) {
             elements.remove();
-            //reset the default value to the first of the list
-            if(isOnlyDefaultValue(agreedValueAry)){
+            // reset the default value to the first of the list
+            if (isOnlyDefaultValue(agreedValueAry)) {
               ArrayNode agreeListFirstItem = cautiousGetArray(existingValueAry.get(0), VariationUtils.AGREED);
               agreeListFirstItem.add(VariationUtils.DEFAULT_VALUE);
             }
