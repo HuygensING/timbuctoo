@@ -1,10 +1,13 @@
 package nl.knaw.huygens.repository.model;
 
+import java.util.List;
+
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Lists;
 
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.util.Change;
@@ -16,8 +19,6 @@ public abstract class Document {
   @Pattern(regexp = "[A-Z]{3}\\d{10}")
   private String id;
 
-  private String pid; // the persistent identifier.
-
   private int rev;
 
   private Change lastChange;
@@ -25,6 +26,10 @@ public abstract class Document {
   private Change creation;
 
   private boolean _deleted;
+
+  private String pid; // the persistent identifier.
+
+  private List<String> variations = Lists.newArrayList();
 
   @JsonProperty("_id")
   @IndexAnnotation(fieldName = "id")
@@ -85,6 +90,16 @@ public abstract class Document {
   @JsonProperty("^pid")
   public void setPid(String pid) {
     this.pid = pid;
+  }
+
+  @JsonProperty("@variations")
+  public List<String> getVariations() {
+    return variations;
+  }
+
+  @JsonProperty("@variations")
+  public void setVariations(List<String> variations) {
+    this.variations = variations;
   }
 
   @JsonIgnore
