@@ -36,6 +36,10 @@ public class HTMLGeneratorTest {
     u.firstName = "Doe";
     u.lastName = "Flups";
     u.groups = Lists.newArrayList("A", "B", "C");
+    u.setId("USR0000000001");
+    
+    u.setVariations(Lists.newArrayList("User"));
+    
     try {
       mapper.writeValue(gen, u);
     } catch (Exception e) {
@@ -52,11 +56,12 @@ public class HTMLGeneratorTest {
         "B;<br>\n" +
         "C;<br>\n" +
         "</td></tr>\n" +
-        "<tr><th>Id</th><td>none</td></tr>\n" +
-        "<tr><th>Pid</th><td>none</td></tr>\n" +
+        "<tr><th>Id</th><td>USR0000000001</td></tr>\n" +
         "<tr><th>Rev</th><td>0</td></tr>\n" +
         "<tr><th>Last Change</th><td>none</td></tr>\n" +
         "<tr><th>Creation</th><td>none</td></tr>\n" +
+        "<tr><th>Pid</th><td>none</td></tr>\n" +
+        "<tr><th>Variations</th><td>User;<br>\n</td></tr>\n" +
         "<tr><th>Deleted</th><td>no</td></tr>\n" +
         "</table>\n", writtenHTML);
   }
