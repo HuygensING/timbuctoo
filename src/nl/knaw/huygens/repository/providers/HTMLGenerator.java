@@ -230,7 +230,7 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
 
   private String camelCaseUnescape(String fieldName) {
     // See: http://stackoverflow.com/a/2560017/713326
-    return StringUtils.capitalize(fieldName.replaceAll("[_^.-]", " ").trim()).replaceAll(
+    return StringUtils.capitalize(fieldName.replaceAll("[_^.-@]", " ").trim()).replaceAll(
         String.format("%s|%s|%s",
            "(?<=[A-Z])(?=[A-Z][a-z])",
            "(?<=[^A-Z])(?=[A-Z])",
