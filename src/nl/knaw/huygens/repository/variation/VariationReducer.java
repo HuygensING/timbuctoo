@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.variation;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.mongojack.internal.stream.JacksonDBObject;
@@ -49,14 +50,15 @@ public class VariationReducer {
     return rv;
   }
 
-  public <T extends Document> T reduce(JsonNode n, Class<T> cls) throws VariationException, JsonProcessingException {
+  public <T extends Document> T reduce(JsonNode node, Class<T> cls) throws VariationException, JsonProcessingException {
     final String variationName = VariationUtils.getVariationName(cls);
     String idPrefix = variationName + "-";
     List<JsonNode> specificData = Lists.newArrayListWithExpectedSize(1);
+    List<String> variations = getVariations(node);
     ObjectNode rv = mapper.createObjectNode();
     for (Class<? extends Document> someCls : VariationUtils.getAllClasses(cls)) {
       String id = VariationUtils.getClassId(someCls);
-      JsonNode data = n.get(id);
+      JsonNode data = node.get(id);
       if (data != null) {
         if (id.startsWith(idPrefix)) {
           specificData.add(data);
@@ -72,7 +74,7 @@ public class VariationReducer {
         throw new VariationException("Non-object variation data; this should never happen.");
       }
     }
-    Iterator<Entry<String, JsonNode>> nodeFields = n.fields();
+    Iterator<Entry<String, JsonNode>> nodeFields = node.fields();
     while (nodeFields.hasNext()) {
       Entry<String, JsonNode> entry = nodeFields.next();
       String key = entry.getKey();
@@ -80,7 +82,32 @@ public class VariationReducer {
         rv.put(key, entry.getValue());
       }
     }
-    return mapper.treeToValue(rv, cls);
+    T returnObject = mapper.treeToValue(rv, cls);
+    returnObject.setVariations(variations);
+    return returnObject;
+  }
+
+  private List<String> getVariations(JsonNode node) {
+    List<String> variations = Lists.newArrayList();
+    Iterator<Map.Entry<String, JsonNode>> fieldIterator = node.fields();
+
+    Map.Entry<String, JsonNode> fieldEntry = null;
+    String key = null;
+    while (fieldIterator.hasNext()) {
+      fieldEntry = fieldIterator.next();
+
+      if (fieldEntry.getValue() instanceof ObjectNode) {
+        key = fieldEntry.getKey();
+        
+        if(key.contains("-")){
+          key = key.substring(key.indexOf("-")+1);
+        }
+        
+        variations.add(key);
+      }
+    }
+
+    return variations;
   }
 
   private void processCommonData(final String variationName, JsonNode commonData, ObjectNode rv) throws VariationException {
