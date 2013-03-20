@@ -6,6 +6,7 @@
     for publishing local test builds to ~/.m2/repository.
   -->
   <property name="revision" value="0.1-SNAPSHOT" override="false"/>
+  <property name="jackson.version" value="2.1.1" />
   <property name="jersey.version" value="1.16" />
   <property name="slf4j.version" value="1.6.1" />
   <property name="solr.version" value="3.6.1" />
@@ -28,7 +29,7 @@
       we'll use maven's own .m2/repository.
     -->
     <ibiblio name="m2-local" m2compatible="true" root="file://${user.home}/.m2/repository" changingPattern=".*SNAPSHOT"/>
-	<ibiblio name="maven-restlet" m2compatible="true" root="http://maven.restlet.org" />
+    <ibiblio name="maven-restlet" m2compatible="true" root="http://maven.restlet.org" />
 
     <!--
       For publishing artifacts to a maven repository
@@ -43,7 +44,7 @@
       <resolver ref="mongojack"/>
       <resolver ref="sun-repo-2"/>
       <resolver ref="oracle"/>
-	  <resolver ref="maven-restlet"/>
+      <resolver ref="maven-restlet"/>
       <resolver ref="huygens"/>
       <!--
         Potential gotcha: you want your m2-local to be last, or at least
