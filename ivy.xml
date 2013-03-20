@@ -2,9 +2,9 @@
 
   <!--
     We set the revision to the revision property from ivysettings.xml,
-    which defaults to SNAPSHOT. This is overriden when publishing.
+    which defaults to SNAPSHOT. This is overridden when publishing.
   -->
-	<info organisation="nl.knaw.huygens" module="repository" revision="${revision}"/>
+  <info organisation="nl.knaw.huygens" module="repository" revision="${revision}"/>
 
   <configurations>
     <conf name="main" />
@@ -32,73 +32,73 @@
     <dependency org="com.sun.jersey" name="jersey-servlet" rev="${jersey.version}" conf="main->default"/>
 
     <dependency org="com.sun.jersey.contribs" name="jersey-guice" rev="${jersey.version}" conf="main->default"/>
-    
+
     <!-- Tomcat servlet API -->
     <!-- <dependency org="org.apache.tomcat" name="tomcat-servlet-api" rev="7.0.21" conf="build->default"/> -->
-	
-	<!-- Solr for indexing -->
-	<dependency org="org.apache.solr" name="solr-core" rev="${solr.version}" conf="main->default">
-		<exclude org="org.slf4j" />
-		<exclude org="org.apache.velocity"/>
-		<exclude org="commons-io" />
-		<exclude org="commons-digester" />
-		<exclude org="commons-logging" />
-		<exclude org="javax.servlet" />
-	</dependency>
-	<dependency org="org.apache.solr" name="solr-solrj" rev="${solr.version}" conf="main->default" >
-		<exclude org="org.slf4j" />
-		<exclude org="org.apache.velocity"/>
-		<exclude org="commons-io" />
-		<exclude org="commons-digester" />
-		<exclude org="commons-logging" />		
-	</dependency>
 
-	<!-- Apache commons. Should actually probably decide on either Guava or Commons... -->
+    <!-- Solr for indexing -->
+    <dependency org="org.apache.solr" name="solr-core" rev="${solr.version}" conf="main->default">
+      <exclude org="org.slf4j" />
+      <exclude org="org.apache.velocity"/>
+      <exclude org="commons-io" />
+      <exclude org="commons-digester" />
+      <exclude org="commons-logging" />
+      <exclude org="javax.servlet" />
+    </dependency>
+    <dependency org="org.apache.solr" name="solr-solrj" rev="${solr.version}" conf="main->default" >
+      <exclude org="org.slf4j" />
+      <exclude org="org.apache.velocity"/>
+      <exclude org="commons-io" />
+      <exclude org="commons-digester" />
+      <exclude org="commons-logging" />
+    </dependency>
+
+    <!-- Apache commons. Should actually probably decide on either Guava or Commons... -->
     <dependency org="commons-io" name="commons-io" rev="2.0.1" conf="main->default" />
-	<dependency org="commons-configuration" name="commons-configuration" rev="1.6" conf="main->default" />
-	
-	<!-- Log4J for logging. -->        
-	<dependency org="org.slf4j" name="slf4j-api" rev="${slf4j.version}" conf="main->default" /> 
-	<dependency org="org.slf4j" name="slf4j-log4j12" rev="${slf4j.version}" conf="main->default" /> 
-	<dependency org="log4j" name="log4j" rev="1.2.16" conf="main->default" />
+    <dependency org="commons-configuration" name="commons-configuration" rev="1.6" conf="main->default" />
 
-	<!-- Build/test stuff -->
-	<dependency org="ant-contrib" name="ant-contrib" rev="1.0b3" conf="build->default">
-	  <exclude org="ant"/>
-	</dependency>
-	<dependency org="junit" name="junit" rev="4.8.2" conf="test->default" />
+    <!-- Log4J for logging. -->
+    <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j.version}" conf="main->default" /> 
+    <dependency org="org.slf4j" name="slf4j-log4j12" rev="${slf4j.version}" conf="main->default" /> 
+    <dependency org="log4j" name="log4j" rev="1.2.16" conf="main->default" />
+
+    <!-- Build/test stuff -->
+    <dependency org="ant-contrib" name="ant-contrib" rev="1.0b3" conf="build->default">
+      <exclude org="ant"/>
+    </dependency>
+    <dependency org="junit" name="junit" rev="4.8.2" conf="test->default" />
     <dependency org="org.mockito" name="mockito-core" rev="1.9.0" conf="test->default" />
     <dependency org="org.mockito" name="mockito-all" rev="1.9.0" conf="test->default" />
     <dependency org="com.jcraft" name="jsch" rev="0.1.44-1" conf="build->default"/>
     <dependency org="com.google.javascript" name="closure-compiler" rev="r1459" conf="build->default" />
-	
-	<!-- Rome for Feed/XML stuff -->
-	<dependency org="rome" name="rome" rev="1.0" conf="main->default" />
-	
-	<!-- Jackson for JSON -->
-	<dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.1.1" conf="main->default" />
-  	<dependency org="com.fasterxml.jackson.core" name="jackson-core" rev="2.1.1" conf="main->default" />
-  	<dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="2.1.1" conf="main->default" />
-  	<dependency org="com.fasterxml.jackson.jaxrs" name="jackson-jaxrs-json-provider" rev="2.1.1" conf="main->default" />
-  	
-  	<!-- Handle persistancy service client -->
-  	<dependency org="handle.net" name="handle-client" rev="7.1"/>
-  	
-  	<!-- Mongo support -->
-  	<dependency org="org.mongodb" name="mongo-java-driver" rev="2.9.1" conf="main->default" />
-  	
-  	<!-- Databases for SQLImporters -->
-  	<dependency org="mysql" name="mysql-connector-java" rev="5.1.6"/>
-  	<dependency org="postgresql" name="postgresql" rev="9.1-901.jdbc4"/>
-  	
-  	<!-- Password stuff -->
-	<dependency org="org.mindrot" name="jbcrypt" rev="0.3m" conf="main->default" />
-	
-	<!-- Mongo with Jackson 2.0 -->
-	<dependency org="org.mongojack" name="mongojack" rev="2.0.0-RC1" conf="main->default" />
-	
-	<!-- Apache validation -->
-	<dependency org="javax.validation" name="validation-api" rev="1.0.0.GA"/>
-	<dependency org="org.apache.bval" name="org.apache.bval.bundle" rev="0.5"/>
-	</dependencies>
+
+    <!-- Rome for Feed/XML stuff -->
+    <dependency org="rome" name="rome" rev="1.0" conf="main->default" />
+
+    <!-- Jackson for JSON -->
+    <dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="${jackson.version}" conf="main->default" />
+    <dependency org="com.fasterxml.jackson.core" name="jackson-core" rev="${jackson.version}" conf="main->default" />
+    <dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="${jackson.version}" conf="main->default" />
+    <dependency org="com.fasterxml.jackson.jaxrs" name="jackson-jaxrs-json-provider" rev="${jackson.version}" conf="main->default" />
+
+    <!-- Handle persistancy service client -->
+    <dependency org="handle.net" name="handle-client" rev="7.1"/>
+
+    <!-- Mongo support -->
+    <dependency org="org.mongodb" name="mongo-java-driver" rev="2.9.1" conf="main->default" />
+
+    <!-- Databases for SQLImporters -->
+    <dependency org="mysql" name="mysql-connector-java" rev="5.1.6"/>
+    <dependency org="postgresql" name="postgresql" rev="9.1-901.jdbc4"/>
+
+    <!-- Password stuff -->
+    <dependency org="org.mindrot" name="jbcrypt" rev="0.3m" conf="main->default" />
+
+    <!-- Mongo with Jackson 2.0 -->
+    <dependency org="org.mongojack" name="mongojack" rev="2.0.0-RC1" conf="main->default" />
+
+    <!-- Apache validation -->
+    <dependency org="javax.validation" name="validation-api" rev="1.0.0.GA"/>
+    <dependency org="org.apache.bval" name="org.apache.bval.bundle" rev="0.5"/>
+  </dependencies>
 </ivy-module>
