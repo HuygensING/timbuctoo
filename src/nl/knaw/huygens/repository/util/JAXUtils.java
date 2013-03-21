@@ -24,7 +24,7 @@ public class JAXUtils {
     public List<String> mediaTypes;
     public List<String> requestTypes;
     public String desc;
-    
+
     public API(String path, List<String> requestTypes, List<String> mediaTypes, String desc) {
       this.path = path;
       this.mediaTypes = mediaTypes;
@@ -39,11 +39,13 @@ public class JAXUtils {
   }
 
   public static List<API> generateAPIs(Class<?> cls) {
+    List<API> list = Lists.newArrayList();
+
     String basePath = getPathValue(cls);
-    if (Strings.isNullOrEmpty(basePath)) {
-      return Collections.<API>emptyList();
+    if (basePath.isEmpty()) {
+      return list;
     }
-    List<API> rv = Lists.newArrayList();
+
     Method[] methods = cls.getMethods();
     for (Method m : methods) {
       List<String> reqs = Lists.newArrayList();
@@ -62,11 +64,11 @@ public class JAXUtils {
       if (reqs.isEmpty()) {
         continue;
       }
-      
+
       String subPath = getPathValue(m);
       String completePath = Strings.isNullOrEmpty(subPath) ? basePath : basePath + "/" + subPath;
       completePath = completePath.replaceAll("\\{([^:]*):[^}]*\\}", "{$1}");
-      
+
       List<String> returnTypes;
       Produces p = m.getAnnotation(Produces.class);
       if (p != null) {
@@ -74,18 +76,22 @@ public class JAXUtils {
       } else {
         returnTypes = Collections.emptyList();
       }
-      
+
       String desc = "";
       if (m.isAnnotationPresent(APIDesc.class)) {
         desc = m.getAnnotation(APIDesc.class).value();
       }
-      rv.add(new API(completePath, reqs, returnTypes, desc));
+      list.add(new API(completePath, reqs, returnTypes, desc));
     }
-    return rv;
+    return list;
   }
 
-  private static String getPathValue(AnnotatedElement cls) {
-    Path p = cls.getAnnotation(Path.class);
+  /**
+   * Returns the path of the annotated element,
+   * or an empty string if no annotation is present.
+   */
+  private static String getPathValue(AnnotatedElement element) {
+    Path p = element.getAnnotation(Path.class);
     if (p == null) {
       return "";
     }
