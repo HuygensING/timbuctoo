@@ -2,6 +2,8 @@ package nl.knaw.huygens.repository.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import nl.knaw.huygens.repository.model.util.IDPrefix;
 import nl.knaw.huygens.repository.storage.Storage;
 
@@ -12,6 +14,7 @@ public class Search extends Document {
   private String sort;
   private String date;
   private String searchType;
+  private String defaultVRE;
 
   public Search() {
 
@@ -76,5 +79,17 @@ public class Search extends Document {
   @Override
   public void fetchAll(Storage storage) {
     // No-op
+  }
+  
+  @Override
+  @JsonProperty("!defaultVRE")
+  public String getDefaultVRE() {
+    return defaultVRE;
+  }
+
+  @Override
+  @JsonProperty("!defaultVRE")
+  public void setDefaultVRE(String defaultVRE) {
+    this.defaultVRE = defaultVRE;
   }
 }

@@ -9,6 +9,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
 
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
@@ -54,7 +55,11 @@ public class SimpleDBTest {
       otherDoc.setRev(0);
       s.updateItem(docId, otherDoc, OtherDoc.class);
       TestDoc returnedItem = s.getItem(docId, TestDoc.class);
-      BasicDBObject expectedChange = new BasicDBObject("^rev", 1);
+      BasicDBObject expectedChange = new BasicDBObject();
+      expectedChange.append("^rev", 1);
+      //@variations are added by the VariationReducer
+      expectedChange.append("@variations", Lists.newArrayList("testdoc" , "testbasedoc" , "otherdoc"));
+      
       assertEquals(expectedChange, MongoDiff.diffDocuments(doc, returnedItem));
       
       TestDoc doc2 = new TestDoc();

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.repository.importer.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Document;
@@ -35,6 +36,20 @@ public class DocumentExtensionWithDatableField extends Document {
 
   public Datable getDatable() {
     return this.datable;
+  }
+
+  @Override
+  @JsonProperty("!defaultVRE")
+  public String getDefaultVRE() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  @JsonProperty("!defaultVRE")
+  public void setDefaultVRE(String defaultVRE) {
+    // TODO Auto-generated method stub
+    
   }
 
 }
