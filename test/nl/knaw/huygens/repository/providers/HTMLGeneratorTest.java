@@ -62,6 +62,7 @@ public class HTMLGeneratorTest {
         "<tr><th>Creation</th><td>none</td></tr>\n" +
         "<tr><th>Pid</th><td>none</td></tr>\n" +
         "<tr><th>Variations</th><td>User;<br>\n</td></tr>\n" +
+        "<tr><th>Default VRE</th><td>none</td></tr>\n" +
         "<tr><th>Deleted</th><td>no</td></tr>\n" +
         "</table>\n", writtenHTML);
   }

@@ -9,6 +9,7 @@ import org.bson.BSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -37,6 +38,20 @@ public class MongoDiffTest {
     @Override
     public void fetchAll(Storage storage) {
       // No-op
+    }
+
+    @Override
+    @JsonProperty("!defaultVRE")
+    public String getDefaultVRE() {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    @Override
+    @JsonProperty("!defaultVRE")
+    public void setDefaultVRE(String defaultVRE) {
+      // TODO Auto-generated method stub
+      
     }
     
   }

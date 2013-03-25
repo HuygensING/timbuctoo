@@ -119,20 +119,24 @@ public class VariationInducer {
         if (finishedKeys.containsKey(k) && fieldNode.equals(finishedKeys.get(k))) {
           continue;
         }
-        finishedKeys.put(k, fieldNode);
+        if (!k.startsWith("!")) {
+          finishedKeys.put(k, fieldNode);
+        }
 
         /*
-         * For each property, there are 4 possibilities: a) it is prefixed with
+         * For each property, there are 5 possibilities: a) it is prefixed with
          * an @, this means that it is only used in the application and should
          * be removed when the object is saved in the database. b) it is a
          * prefixed (^ or _) property, which should always be the same among all
          * variations and is used for identifying different objects, their
          * version, etc. c) it is shared between different variations
          * (project/VRE/whatever) d) it is specific to a single variation
-         * (project/VRE/whatever)
+         * (project/VRE/whatever) e) it is prefixed with a !, this means this
+         * property is present in multiple object and represents some default
+         * value.
          */
         if (k.startsWith("@")) {
-          // ignore field. 
+          // ignore field.
         } else if (k.startsWith("^") || k.startsWith("_")) {
           // Either this is a new object and we need to add the property, or it
           // is an existing one in which
@@ -143,9 +147,13 @@ public class VariationInducer {
             throw new VariationException("Inducing object into wrong object; fields " + k + " are not equal (" + fieldNode.toString() + " vs. " +
                                          existingItem.get(k).toString() + "!");
           }
+        } else if (k.equals("!defaultVRE") && isShared) { //only for shared classes a defaultVRE should be added.
+          if (existingItem.get(classId) != null && existingItem.get(classId).get(k) == null) {
+            currentClsNode.put(k, variationId);
+          }
         } else if (isShared) {
           addOrMergeVariation(currentClsNode, k, variationId, fieldNode);
-        } else {
+        } else if (!k.equals("!defaultVRE")) {
           currentClsNode.put(k, fieldNode);
         }
       }
@@ -186,13 +194,8 @@ public class VariationInducer {
           agreedValueAry.remove(agreedIndex);
 
           // If nobody agrees with this value anymore; purge it:
-          if (agreedValueAry.size() == 0 || isOnlyDefaultValue(agreedValueAry)) {
+          if (agreedValueAry.size() == 0) {
             elements.remove();
-            // reset the default value to the first of the list
-            if (isOnlyDefaultValue(agreedValueAry)) {
-              ArrayNode agreeListFirstItem = cautiousGetArray(existingValueAry.get(0), VariationUtils.AGREED);
-              agreeListFirstItem.add(VariationUtils.DEFAULT_VALUE);
-            }
           }
         }
         foundKey = true;
@@ -209,18 +212,6 @@ public class VariationInducer {
     if (!foundValue) {
       addVariationItem(existingValueAry, variationId, variationValue);
     }
-  }
-
-  private boolean isOnlyDefaultValue(ArrayNode agreedValueAry) {
-    boolean isOnlyDefaultValue = false;
-    if (agreedValueAry.size() == 1) {
-      JsonNode agreedValue = agreedValueAry.get(0);
-      if (agreedValue != null) {
-        isOnlyDefaultValue = agreedValue.asText().equals(VariationUtils.DEFAULT_VALUE);
-      }
-    }
-
-    return isOnlyDefaultValue;
   }
 
   private int arrayIndexOf(ArrayNode agreedValueAry, String variationId) {
@@ -247,9 +238,6 @@ public class VariationInducer {
     ObjectNode var = mapper.createObjectNode();
     ArrayNode agreedList = mapper.createArrayNode();
     agreedList.add(variationId);
-    if (existingValueAry.size() == 0) {
-      agreedList.add(VariationUtils.DEFAULT_VALUE);
-    }
     var.put(VariationUtils.AGREED, agreedList);
     var.put(VariationUtils.VALUE, variationValue);
     existingValueAry.add(var);

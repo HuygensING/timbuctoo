@@ -102,6 +102,12 @@ public abstract class Document {
     this.variations = variations;
   }
 
+  @JsonProperty("!defaultVRE")
+  public abstract String getDefaultVRE();
+
+  @JsonProperty("!defaultVRE")
+  public abstract void setDefaultVRE(String defaultVRE);
+
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
   public abstract String getDescription();

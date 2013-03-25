@@ -1,6 +1,7 @@
 package nl.knaw.huygens.repository.index;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Document;
@@ -20,6 +21,20 @@ public class ModelWithOverriddenIndexAnnotation extends Document {
   public void fetchAll(Storage storage) {
     // TODO Auto-generated method stub
 
+  }
+
+  @Override
+  @JsonProperty("!defaultVRE")
+  public String getDefaultVRE() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  @JsonProperty("!defaultVRE")
+  public void setDefaultVRE(String defaultVRE) {
+    // TODO Auto-generated method stub
+    
   }
 
 }

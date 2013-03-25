@@ -55,6 +55,17 @@ public class VariationReducer {
     String idPrefix = variationName + "-";
     List<JsonNode> specificData = Lists.newArrayListWithExpectedSize(1);
     List<String> variations = getVariations(node);
+    String requestedClassId = VariationUtils.getClassId(cls);
+    
+    String variationToGet = null;
+    JsonNode defaultVRENode = null;
+    
+    if (node.get(requestedClassId) != null) {
+      defaultVRENode = node.get(requestedClassId).get("!defaultVRE");
+    }
+    
+    variationToGet = defaultVRENode != null ? defaultVRENode.asText() : variationName;
+
     ObjectNode rv = mapper.createObjectNode();
     for (Class<? extends Document> someCls : VariationUtils.getAllClasses(cls)) {
       String id = VariationUtils.getClassId(someCls);
@@ -63,7 +74,7 @@ public class VariationReducer {
         if (id.startsWith(idPrefix)) {
           specificData.add(data);
         } else {
-          processCommonData(variationName, data, rv);
+          processCommonData(variationToGet, data, rv);
         }
       }
     }
@@ -84,6 +95,10 @@ public class VariationReducer {
     }
     T returnObject = mapper.treeToValue(rv, cls);
     returnObject.setVariations(variations);
+    if (defaultVRENode != null) {
+      returnObject.setDefaultVRE(variationToGet);
+    }
+
     return returnObject;
   }
 
@@ -98,11 +113,11 @@ public class VariationReducer {
 
       if (fieldEntry.getValue() instanceof ObjectNode) {
         key = fieldEntry.getKey();
-        
-        if(key.contains("-")){
-          key = key.substring(key.indexOf("-")+1);
+
+        if (key.contains("-")) {
+          key = key.substring(key.indexOf("-") + 1);
         }
-        
+
         variations.add(key);
       }
     }
@@ -121,6 +136,7 @@ public class VariationReducer {
       if (fV.isArray()) {
         ArrayNode ary = (ArrayNode) fV;
         fetchAndAssignMatchingValue(variationName, rv, k, ary);
+      } else if (k.startsWith("!")) {
       } else {
         throw new VariationException("Unknown variation value for key " + k);
       }
@@ -128,9 +144,6 @@ public class VariationReducer {
   }
 
   private void fetchAndAssignMatchingValue(final String variationName, ObjectNode rv, String k, ArrayNode ary) throws VariationException {
-    // If the package is the base model package use the default-value for the
-    // object.
-    String agreedValue = variationName.equals(VariationUtils.BASE_MODEL_PACKAGE_VARIATION) ? VariationUtils.DEFAULT_VALUE : variationName;
     int i = 0;
     for (JsonNode elem : ary) {
       if (elem.isObject()) {
@@ -138,7 +151,7 @@ public class VariationReducer {
         JsonNode agreedValueNode = elem.get(VariationUtils.AGREED);
         if (agreedValueNode != null && agreedValueNode.isArray()) {
           ArrayNode agreedValues = (ArrayNode) agreedValueNode;
-          if (arrayContains(agreedValues, agreedValue)) {
+          if (arrayContains(agreedValues, variationName)) {
             rv.put(k, elem.get(VariationUtils.VALUE));
             return;
           }
