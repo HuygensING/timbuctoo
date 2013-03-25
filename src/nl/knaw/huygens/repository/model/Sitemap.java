@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.ws.rs.core.Application;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
 import nl.knaw.huygens.repository.model.util.IDPrefix;
@@ -15,6 +16,7 @@ import nl.knaw.huygens.repository.util.JAXUtils.API;
 @IDPrefix("STM")
 public class Sitemap extends Document {
   public List<API> availableAPIList;
+  private String defaultVRE;
   
   public Sitemap(Application app) {
     setId(String.format("T%d", System.currentTimeMillis()));
@@ -37,5 +39,17 @@ public class Sitemap extends Document {
   @Override
   public void fetchAll(Storage storage) {
     // No-op;
+  }
+  
+  @Override
+  @JsonProperty("!defaultVRE")
+  public String getDefaultVRE() {
+    return defaultVRE;
+  }
+
+  @Override
+  @JsonProperty("!defaultVRE")
+  public void setDefaultVRE(String defaultVRE) {
+    this.defaultVRE = defaultVRE;
   }
 }

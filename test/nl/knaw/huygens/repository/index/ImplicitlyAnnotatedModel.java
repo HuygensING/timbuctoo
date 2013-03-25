@@ -1,5 +1,7 @@
 package nl.knaw.huygens.repository.index;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.Storage;
@@ -26,6 +28,20 @@ public class ImplicitlyAnnotatedModel extends Document {
   @IndexAnnotation
   public String getString() {
     return "";
+  }
+
+  @Override
+  @JsonProperty("!defaultVRE")
+  public String getDefaultVRE() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  @JsonProperty("!defaultVRE")
+  public void setDefaultVRE(String defaultVRE) {
+    // TODO Auto-generated method stub
+    
   }
 
 }
