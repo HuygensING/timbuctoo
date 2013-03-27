@@ -38,6 +38,11 @@ public class JAXUtils {
     return classes;
   }
 
+  /**
+   * Retutns an API description for each HTTP method in the specified
+   * class if it has a <code>Path</code> annotation, or an empty list
+   * if the <code>Path</code> annotation is missing.
+   */
   public static List<API> generateAPIs(Class<?> cls) {
     List<API> list = Lists.newArrayList();
 
