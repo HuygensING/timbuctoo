@@ -1,12 +1,14 @@
 package nl.knaw.huygens.repository.model.util;
 
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.repository.model.Document;
+
 import org.apache.commons.lang.StringUtils;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
@@ -15,36 +17,34 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import nl.knaw.huygens.repository.model.Document;
-
 @Singleton
 public class DocumentTypeRegister {
-  private Map<String, Class<? extends Document>> stringToTypeMap;
-  private Map<Class<? extends Document>, String> typeToStringMap;
-  private List<String> unreadablePackages;
-  private ClassPath classPath = null;
-  private Map<Class<? extends Document>, String> typeToCollectionIdMap;
-  
-  public DocumentTypeRegister(){
+
+  private final ClassPath classPath;
+  private final Map<String, Class<? extends Document>> stringToTypeMap;
+  private final Map<Class<? extends Document>, String> typeToStringMap;
+  private final Map<Class<? extends Document>, String> typeToCollectionIdMap;
+  private final List<String> unreadablePackages;
+
+  public DocumentTypeRegister() {
     this(null);
   }
 
   @Inject
   public DocumentTypeRegister(@Named("model-packages") String packageNames) {
+    try {
+      classPath = ClassPath.from(this.getClass().getClassLoader());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
     stringToTypeMap = Maps.newHashMap();
     typeToStringMap = Maps.newHashMap();
     typeToCollectionIdMap = Maps.newHashMap();
     unreadablePackages = Lists.newArrayList();
-    try {
-      classPath = ClassPath.from(this.getClass().getClassLoader());
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
     if (packageNames != null) {
-      String[] packagesToImport = packageNames.split("\n");
-
-      for (String packageToImport : packagesToImport) {
-        registerPackage(packageToImport.trim());
+      for (String packageName : StringUtils.split(packageNames)) {
+        registerPackage(packageName);
       }
     }
   }
@@ -92,11 +92,10 @@ public class DocumentTypeRegister {
 
   @SuppressWarnings("unchecked")
   public void registerPackage(String packageId) {
-    ImmutableSet<ClassInfo> classes = classPath.getTopLevelClasses(packageId);
     int classesDetected = 0;
-    for (ClassInfo info : classes) {
+    for (ClassInfo info : classPath.getTopLevelClasses(packageId)) {
       Class<?> cls = info.load();
-      if (Document.class.isAssignableFrom(cls)) {
+      if (isDocument(cls)) {
         Class<? extends Document> docCls = (Class<? extends Document>) cls;
         String typeId = docCls.getSimpleName().toLowerCase();
         stringToTypeMap.put(typeId, docCls);
@@ -104,15 +103,19 @@ public class DocumentTypeRegister {
         Class<? extends Document> baseCls = getBaseClass(docCls);
         String baseTypeId = DocumentTypeRegister.getCollectionName(baseCls);
         typeToCollectionIdMap.put(docCls, baseTypeId);
+        System.out.printf("Identified '%s' in package %s%n", typeId, packageId);
         classesDetected++;
       }
     }
-    if (classesDetected > 0) {
-      System.err.println("Dynamically identified " + classesDetected + " document types.");
-    } else {
-      System.err.println("No classes detected, adding package for runtime checking");
+    if (classesDetected == 0) {
+      System.out.printf("Package %s: no types - adding package for runtime checking%n", packageId);
       unreadablePackages.add(packageId);
     }
+  }
+
+  private boolean isDocument(Class<?> cls) {
+    // TODO decide whether abstract classes are acceptable
+    return Document.class.isAssignableFrom(cls) && !Modifier.isAbstract(cls.getModifiers());
   }
 
   @SuppressWarnings("unchecked")
