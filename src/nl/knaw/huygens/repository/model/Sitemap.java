@@ -1,7 +1,6 @@
 package nl.knaw.huygens.repository.model;
 
 import java.util.List;
-import java.util.Set;
 
 import javax.ws.rs.core.Application;
 
@@ -22,15 +21,11 @@ public class Sitemap extends Document {
 
   public Sitemap(Application app, DocumentTypeRegister registry) {
     setId(String.format("T%d", System.currentTimeMillis()));
-    List<API> rv = Lists.newArrayList();
-    Set<Class<?>> allResources = JAXUtils.getAllResources(app);
-    for (Class<?> cls : allResources) {
-      List<API> generatedAPIs = JAXUtils.generateAPIs(cls);
-      if (generatedAPIs != null) {
-        rv.addAll(generatedAPIs);
-      }
+
+    availableAPIList = Lists.newArrayList();
+    for (Class<?> cls : JAXUtils.getAllResources(app)) {
+      availableAPIList.addAll(JAXUtils.generateAPIs(cls));
     }
-    availableAPIList = rv;
   }
 
   @Override
