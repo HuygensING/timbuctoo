@@ -34,9 +34,9 @@ public class RESTAutoResource {
   private final DocumentTypeRegister docTypeRegistry;
 
   @Inject
-  public RESTAutoResource(final StorageManager manager, final DocumentTypeRegister docTypeRegistry) {
+  public RESTAutoResource(final StorageManager manager, final DocumentTypeRegister registry) {
     storageManager = manager;
-    this.docTypeRegistry = docTypeRegistry;
+    docTypeRegistry = registry;
   }
 
   @GET
