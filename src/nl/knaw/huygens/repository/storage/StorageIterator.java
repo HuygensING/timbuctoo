@@ -4,11 +4,13 @@ import java.util.Iterator;
 import java.util.List;
 
 public interface StorageIterator<T> extends Iterator<T> {
-  public void close();
 
-  public int size();
+  void close();
 
-  public void skip(int count);
+  int size();
 
-  public List<T> getSome(int count);
+  void skip(int count);
+
+  List<T> getSome(int count);
+
 }

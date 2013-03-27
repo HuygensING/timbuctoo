@@ -6,14 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.mongodb.DB;
-import com.mongodb.Mongo;
-import com.mongodb.MongoException;
-import com.mongodb.MongoOptions;
-import com.mongodb.ServerAddress;
-
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
@@ -24,16 +16,24 @@ import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.mongo.MongoModifiableStorage;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.mongodb.DB;
+import com.mongodb.Mongo;
+import com.mongodb.MongoException;
+import com.mongodb.MongoOptions;
+import com.mongodb.ServerAddress;
+
 @Singleton
 public class MongoComplexStorage implements Storage {
-  
+
   private String dbName;
   private MongoOptions options;
   private Mongo mongo;
   private DB db;
   private MongoModifiableStorage plainStorage;
   private MongoModifiableVariationStorage variationStorage;
-  
+
   private Set<String> variationDoctypes;
   private final DocumentTypeRegister docTypeRegistry;
 
@@ -52,8 +52,8 @@ public class MongoComplexStorage implements Storage {
     plainStorage = new MongoModifiableStorage(conf, mongo, db, docTypeRegistry);
     variationStorage = new MongoModifiableVariationStorage(conf, mongo, db, options, docTypeRegistry);
   }
-  
-  private Storage getStorageForType(Class<? extends Document > cls) {
+
+  private Storage getStorageForType(Class<? extends Document> cls) {
     if (variationDoctypes.contains(docTypeRegistry.getCollectionId(cls))) {
       return variationStorage;
     }
@@ -64,7 +64,7 @@ public class MongoComplexStorage implements Storage {
   public <T extends Document> T getItem(String id, Class<T> cls) throws IOException {
     return getStorageForType(cls).getItem(id, cls);
   }
-  
+
   @Override
   public <T extends Document> List<T> getAllVariations(String id, Class<T> cls) throws IOException {
     return getStorageForType(cls).getAllVariations(id, cls);
@@ -94,7 +94,7 @@ public class MongoComplexStorage implements Storage {
   public <T extends Document> void updateItem(String id, T updatedItem, Class<T> cls) throws IOException {
     getStorageForType(cls).updateItem(id, updatedItem, cls);
   }
-  
+
   @Override
   public <T extends Document> void setPID(Class<T> cls, String pid, String id) {
     getStorageForType(cls).setPID(cls, pid, id);
