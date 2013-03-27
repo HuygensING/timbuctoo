@@ -15,6 +15,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
@@ -26,6 +27,8 @@ import com.google.inject.Inject;
 
 @Path("resources/{entityType: [a-zA-Z]+}")
 public class RESTAutoResource {
+
+  public static final String ENTITY_PARAM = "entityType";
 
   private final StorageManager storageManager;
   private final DocumentTypeRegister docTypeRegistry;
@@ -40,10 +43,10 @@ public class RESTAutoResource {
   @Path("/all")
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
-  public List<? extends Document> getAllDocs(@PathParam("entityType") String entityType, @QueryParam("rows") @DefaultValue("200") int rows, @QueryParam("start") int start) {
+  public List<? extends Document> getAllDocs(@PathParam(ENTITY_PARAM) String entityType, @QueryParam("rows") @DefaultValue("200") int rows, @QueryParam("start") int start) {
     Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(entityType);
     if (cls == null) {
-      throw new WebApplicationException(404);
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
     List<? extends Document> allLimited = storageManager.getAllLimited(cls, start, rows);
     return allLimited;
@@ -54,10 +57,10 @@ public class RESTAutoResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/all")
   @JsonView(JsonViews.WebView.class)
-  public <T extends Document> void getAllDocs(@PathParam("entityType") String entityType, Document input) throws IOException {
+  public <T extends Document> void getAllDocs(@PathParam(ENTITY_PARAM) String entityType, Document input) throws IOException {
     Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(entityType);
     if (cls == null) {
-      throw new WebApplicationException(404);
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
     Class<T> typedCls;
     T typedDoc;
@@ -69,7 +72,7 @@ public class RESTAutoResource {
       T myTypedDoc = (T) input;
       typedDoc = myTypedDoc;
     } catch (ClassCastException ex) {
-      throw new WebApplicationException(404);
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
     storageManager.addDocument(typedDoc, typedCls);
   }
@@ -78,14 +81,14 @@ public class RESTAutoResource {
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}")
   @JsonView(JsonViews.WebView.class)
-  public Document getDoc(@PathParam("entityType") String entityType, @PathParam("id") String id) {
+  public Document getDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam("id") String id) {
     Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(entityType);
     if (cls == null) {
-      throw new WebApplicationException(404);
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
     Document doc = storageManager.getCompleteDocument(id, cls);
     if (doc == null) {
-      throw new WebApplicationException(404);
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
     return doc;
   }
@@ -95,10 +98,10 @@ public class RESTAutoResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}")
   @JsonView(JsonViews.WebView.class)
-  public <T extends Document> void putDoc(@PathParam("entityType") String entityType, @PathParam("id") String id, Document input) throws IOException {
+  public <T extends Document> void putDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam("id") String id, Document input) throws IOException {
     Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(entityType);
     if (cls == null) {
-      throw new WebApplicationException(404);
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
     Class<T> typedCls;
     T typedDoc;
@@ -110,7 +113,7 @@ public class RESTAutoResource {
       T myTypedDoc = (T) input;
       typedDoc = myTypedDoc;
     } catch (ClassCastException ex) {
-      throw new WebApplicationException(404);
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
     storageManager.modifyDocument(typedDoc, typedCls);
   }
@@ -119,10 +122,10 @@ public class RESTAutoResource {
   @DELETE
   @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}")
   @JsonView(JsonViews.WebView.class)
-  public <T extends Document> void putDoc(@PathParam("entityType") String entityType, @PathParam("id") String id) throws IOException {
+  public <T extends Document> void putDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam("id") String id) throws IOException {
     Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(entityType);
     if (cls == null) {
-      throw new WebApplicationException(404);
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
     Class<T> typedCls;
     T typedDoc;
@@ -132,8 +135,9 @@ public class RESTAutoResource {
       typedCls = myTypedCls;
       typedDoc = storageManager.getDocument(id, typedCls);
     } catch (ClassCastException ex) {
-      throw new WebApplicationException(404);
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
     storageManager.removeDocument(typedDoc, typedCls);
   }
+
 }
