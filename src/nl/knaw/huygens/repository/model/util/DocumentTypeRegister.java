@@ -48,11 +48,11 @@ public class DocumentTypeRegister {
     }
   }
 
-  public String getTypeString(Class<? extends Document> docCls) {
-    if (typeToStringMap.containsKey(docCls)) {
-      return typeToStringMap.get(docCls);
+  public String getTypeString(Class<? extends Document> type) {
+    if (typeToStringMap.containsKey(type)) {
+      return typeToStringMap.get(type);
     }
-    return DocumentTypeRegister.getCollectionName(docCls);
+    return getCollectionName(type);
   }
 
   public Class<? extends Document> getClassFromTypeString(String id) {
@@ -76,17 +76,13 @@ public class DocumentTypeRegister {
     return null;
   }
 
-  public String getCollectionId(Class<? extends Document> docCls) {
-    if (typeToCollectionIdMap.containsKey(docCls)) {
-      return typeToCollectionIdMap.get(docCls);
+  public String getCollectionId(Class<? extends Document> type) {
+    if (typeToCollectionIdMap.containsKey(type)) {
+      return typeToCollectionIdMap.get(type);
     }
-    String collectionId = DocumentTypeRegister.getCollectionName(getBaseClass(docCls));
-    typeToCollectionIdMap.put(docCls, collectionId);
+    String collectionId = getCollectionName(getBaseClass(type));
+    typeToCollectionIdMap.put(type, collectionId);
     return collectionId;
-  }
-
-  public void registerPackageFromClass(Class<?> cls) {
-    registerPackage(cls.getPackage().getName());
   }
 
   @SuppressWarnings("unchecked")
@@ -94,13 +90,13 @@ public class DocumentTypeRegister {
     int classesDetected = 0;
     for (ClassInfo info : classPath.getTopLevelClasses(packageId)) {
       Class<?> cls = info.load();
-      if (isDocument(cls)) {
+      if (isDocumentType(cls)) {
         Class<? extends Document> docCls = (Class<? extends Document>) cls;
         String typeId = docCls.getSimpleName().toLowerCase();
         stringToTypeMap.put(typeId, docCls);
         typeToStringMap.put(docCls, typeId);
         Class<? extends Document> baseCls = getBaseClass(docCls);
-        String baseTypeId = DocumentTypeRegister.getCollectionName(baseCls);
+        String baseTypeId = getCollectionName(baseCls);
         typeToCollectionIdMap.put(docCls, baseTypeId);
         System.out.printf("Identified '%s' in package %s%n", typeId, packageId);
         classesDetected++;
@@ -112,27 +108,27 @@ public class DocumentTypeRegister {
     }
   }
 
-  private boolean isDocument(Class<?> cls) {
+  private boolean isDocumentType(Class<?> type) {
     // TODO decide whether abstract classes are acceptable
-    return Document.class.isAssignableFrom(cls); // && !Modifier.isAbstract(cls.getModifiers());
+    return Document.class.isAssignableFrom(type); // && !Modifier.isAbstract(type.getModifiers());
   }
 
   @SuppressWarnings("unchecked")
-  private Class<? extends Document> getBaseClass(Class<? extends Document> cls) {
-    Class<? extends Document> lastCls = cls;
-    while (cls != null && !cls.equals(Document.class)) {
-      lastCls = cls;
-      cls = (Class<? extends Document>) cls.getSuperclass();
+  private Class<? extends Document> getBaseClass(Class<? extends Document> type) {
+    Class<? extends Document> lastType = type;
+    while (type != null && !type.equals(Document.class)) {
+      lastType = type;
+      type = (Class<? extends Document>) type.getSuperclass();
     }
-    return lastCls;
+    return lastType;
   }
 
-  public static String getVersioningCollectionName(Class<?> cls) {
-    return getCollectionName(cls) + "-versions";
+  public static String getVersioningCollectionName(Class<? extends Document> type) {
+    return getCollectionName(type) + "-versions";
   }
 
-  public static String getCollectionName(Class<?> cls) {
-    return cls.getSimpleName().toLowerCase();
+  public static String getCollectionName(Class<? extends Document> type) {
+    return type.getSimpleName().toLowerCase();
   }
 
 }
