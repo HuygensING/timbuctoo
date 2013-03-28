@@ -2,10 +2,6 @@ package nl.knaw.huygens.repository.importer;
 
 import java.util.List;
 
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-
 import nl.knaw.huygens.repository.index.DocumentIndexer;
 import nl.knaw.huygens.repository.index.IndexFactory;
 import nl.knaw.huygens.repository.model.Document;
@@ -16,13 +12,18 @@ import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.util.Configuration;
 import nl.knaw.huygens.repository.util.RepositoryException;
 
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+
 public class SolrIndexer {
+
   public static class SolrIndexerRunner {
     private final Storage storage;
     private final IndexFactory indices;
     private final Configuration conf;
     private final DocumentTypeRegister docTypeRegistry;
-    
+
     @Inject
     public SolrIndexerRunner(Configuration conf, IndexFactory indices, Storage storage, DocumentTypeRegister docTypeRegistry) {
       this.conf = conf;
@@ -30,7 +31,7 @@ public class SolrIndexer {
       this.storage = storage;
       this.docTypeRegistry = docTypeRegistry;
     }
-    
+
     public int run() {
       String[] doctypes = conf.getSetting("indexeddoctypes", "").split(",");
 
@@ -51,13 +52,13 @@ public class SolrIndexer {
       }
       return rv;
     }
-    
-    private <T extends Document> void indexAllDocuments(Class<T> cls) throws Exception {
-      DocumentIndexer<T> indexer = indices.getIndexForType(cls);
+
+    private <T extends Document> void indexAllDocuments(Class<T> type) throws Exception {
+      DocumentIndexer<T> indexer = indices.getIndexForType(type);
       StorageIterator<T> list;
       try {
         // FIXME: this should just fetch a list of IDs that we can use later.
-        list = storage.getAllByType(cls);
+        list = storage.getAllByType(type);
       } catch (Exception ex) {
         ex.printStackTrace();
         return;
@@ -67,7 +68,7 @@ public class SolrIndexer {
       try {
         while (list.hasNext()) {
           T mainDoc = list.next();
-          List<T> allVariations = storage.getAllVariations(mainDoc.getId(), cls);
+          List<T> allVariations = storage.getAllVariations(type, mainDoc.getId());
           System.out.print((i % 100 == 99) ? ".\n" : ".");
           i++;
           if (mainDoc.isDeleted()) {

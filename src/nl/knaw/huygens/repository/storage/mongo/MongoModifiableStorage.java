@@ -4,6 +4,13 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.List;
 
+import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.Change;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
+import nl.knaw.huygens.repository.model.util.IDPrefix;
+import nl.knaw.huygens.repository.storage.Storage;
+import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
+
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
 import org.mongojack.WriteResult;
@@ -18,13 +25,6 @@ import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.Change;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
-import nl.knaw.huygens.repository.model.util.IDPrefix;
-import nl.knaw.huygens.repository.storage.Storage;
-import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
-
 @Singleton
 public class MongoModifiableStorage extends MongoStorage implements Storage {
 
@@ -33,22 +33,21 @@ public class MongoModifiableStorage extends MongoStorage implements Storage {
     super(conf, docTypeRegistry);
   }
 
-  public MongoModifiableStorage(StorageConfiguration conf, Mongo m, DB loanedDB, DocumentTypeRegister docTypeRegistry) throws UnknownHostException,
-      MongoException {
+  public MongoModifiableStorage(StorageConfiguration conf, Mongo m, DB loanedDB, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
     super(conf, m, loanedDB, docTypeRegistry);
   }
 
   @Override
-  public <T extends Document> void addItem(T newItem, Class<T> cls) throws IOException {
-    if (newItem.getId() == null) {
-      setNextId(cls, newItem);
+  public <T extends Document> void addItem(Class<T> type, T item) throws IOException {
+    if (item.getId() == null) {
+      setNextId(type, item);
     }
-    addVersion(newItem.getId(), newItem, cls, true);
+    addVersion(item.getId(), item, type, true);
   }
 
   @Override
-  public <T extends Document> void addItems(List<T> items, Class<T> cls) throws IOException {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
+  public <T extends Document> void addItems(Class<T> type, List<T> items) throws IOException {
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     boolean shouldVersion = versionedDocumentTypes.contains(col.getName());
 
     // Create the changes objects for all these documents:
@@ -63,7 +62,7 @@ public class MongoModifiableStorage extends MongoStorage implements Storage {
     }
 
     // Update the counter object.
-    DBObject counterQuery = new BasicDBObject("_id", DocumentTypeRegister.getCollectionName(cls));
+    DBObject counterQuery = new BasicDBObject("_id", DocumentTypeRegister.getCollectionName(type));
     Counter counter = counterCol.findOne(counterQuery);
     if (counter == null || counter.next <= lastId) {
       // Make sure we fail if the counter changes inbetween the findOne above
@@ -78,28 +77,28 @@ public class MongoModifiableStorage extends MongoStorage implements Storage {
     col.insert(items);
     // Insert the changes:
     if (shouldVersion) {
-      MongoUtils.getVersioningCollection(db, cls).insert(changes);
+      MongoUtils.getVersioningCollection(db, type).insert(changes);
     }
   }
 
   @Override
-  public <T extends Document> void updateItem(String id, T updatedItem, Class<T> cls) throws IOException {
-    addVersion(id, updatedItem, cls);
-    updatedItem.setRev(updatedItem.getRev() + 1);
+  public <T extends Document> void updateItem(Class<T> type, String id, T item) throws IOException {
+    addVersion(id, item, type);
+    item.setRev(item.getRev() + 1);
   }
 
   @Override
-  public <T extends Document> void setPID(Class<T> cls, String pid, String id) {
+  public <T extends Document> void setPID(Class<T> type, String pid, String id) {
     BasicDBObject query = new BasicDBObject("_id", id);
     BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
 
     col.update(query, update);
   }
 
   @Override
-  public <T extends Document> void deleteItem(String id, Class<T> cls, Change change) throws IOException {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
+  public <T extends Document> void deleteItem(Class<T> type, String id, Change change) throws IOException {
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     // This needs to be updated once mongo-jackson-mapper fixes their wrapper:
     // Update the actual document first:
     BasicDBObject settings = new BasicDBObject("^deleted", true);
@@ -114,7 +113,7 @@ public class MongoModifiableStorage extends MongoStorage implements Storage {
     T item = col.findAndModify(DBQuery.is("_id", id), update);
 
     // Then update the versioning table:
-    JacksonDBCollection<MongoChanges<T>, String> versionCol = MongoUtils.getVersioningCollection(db, cls);
+    JacksonDBCollection<MongoChanges<T>, String> versionCol = MongoUtils.getVersioningCollection(db, type);
     int oldRev = item.getRev();
     item.setRev(oldRev + 1);
     item.setLastChange(change);
@@ -190,8 +189,7 @@ public class MongoModifiableStorage extends MongoStorage implements Storage {
     }
   }
 
-  private <T extends Document> void changeVersionObj(String id, int oldRev, JacksonDBCollection<MongoChanges<T>, String> versionCol, T item)
-      throws MongoException {
+  private <T extends Document> void changeVersionObj(String id, int oldRev, JacksonDBCollection<MongoChanges<T>, String> versionCol, T item) throws MongoException {
     MongoChanges<T> oldItem = versionCol.findOne(DBQuery.is("_id", id));
     oldItem.getRevisions().add(item);
     WriteResult<MongoChanges<T>, String> updateResult = versionCol.updateById(id, oldItem);

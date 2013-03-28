@@ -61,13 +61,13 @@ public class MongoComplexStorage implements Storage {
   }
 
   @Override
-  public <T extends Document> T getItem(String id, Class<T> cls) throws IOException {
-    return getStorageForType(cls).getItem(id, cls);
+  public <T extends Document> T getItem(Class<T> type, String id) throws IOException {
+    return getStorageForType(type).getItem(type, id);
   }
 
   @Override
-  public <T extends Document> List<T> getAllVariations(String id, Class<T> cls) throws IOException {
-    return getStorageForType(cls).getAllVariations(id, cls);
+  public <T extends Document> List<T> getAllVariations(Class<T> type, String id) throws IOException {
+    return getStorageForType(type).getAllVariations(type, id);
   }
 
   @Override
@@ -76,23 +76,23 @@ public class MongoComplexStorage implements Storage {
   }
 
   @Override
-  public <T extends Document> StorageIterator<T> getByMultipleIds(Collection<String> ids, Class<T> entityCls) {
-    return getStorageForType(entityCls).getAllByType(entityCls);
+  public <T extends Document> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
+    return getStorageForType(type).getAllByType(type);
   }
 
   @Override
-  public <T extends Document> void addItem(T newItem, Class<T> cls) throws IOException {
-    getStorageForType(cls).addItem(newItem, cls);
+  public <T extends Document> void addItem(Class<T> type, T item) throws IOException {
+    getStorageForType(type).addItem(type, item);
   }
 
   @Override
-  public <T extends Document> void addItems(List<T> items, Class<T> cls) throws IOException {
-    getStorageForType(cls).addItems(items, cls);
+  public <T extends Document> void addItems(Class<T> type, List<T> items) throws IOException {
+    getStorageForType(type).addItems(type, items);
   }
 
   @Override
-  public <T extends Document> void updateItem(String id, T updatedItem, Class<T> cls) throws IOException {
-    getStorageForType(cls).updateItem(id, updatedItem, cls);
+  public <T extends Document> void updateItem(Class<T> type, String id, T item) throws IOException {
+    getStorageForType(type).updateItem(type, id, item);
   }
 
   @Override
@@ -101,13 +101,13 @@ public class MongoComplexStorage implements Storage {
   }
 
   @Override
-  public <T extends Document> void deleteItem(String id, Class<T> cls, Change change) throws IOException {
-    getStorageForType(cls).deleteItem(id, cls, change);
+  public <T extends Document> void deleteItem(Class<T> type, String id, Change change) throws IOException {
+    getStorageForType(type).deleteItem(type, id, change);
   }
 
   @Override
-  public <T extends Document> RevisionChanges<T> getAllRevisions(String id, Class<T> baseCls) {
-    return getStorageForType(baseCls).getAllRevisions(id, baseCls);
+  public <T extends Document> RevisionChanges<T> getAllRevisions(Class<T> type, String id) {
+    return getStorageForType(type).getAllRevisions(type, id);
   }
 
   @Override
@@ -132,17 +132,18 @@ public class MongoComplexStorage implements Storage {
   }
 
   @Override
-  public <T extends Document> void fetchAll(List<GenericDBRef<T>> refs, Class<T> cls) {
-    getStorageForType(cls).fetchAll(refs, cls);
+  public <T extends Document> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs) {
+    getStorageForType(type).fetchAll(type, refs);
   }
 
   @Override
-  public <T extends Document> List<String> getIdsForQuery(Class<T> cls, List<String> accessors, String[] id) {
-    return getStorageForType(cls).getIdsForQuery(cls, accessors, id);
+  public <T extends Document> List<String> getIdsForQuery(Class<T> type, List<String> accessors, String[] id) {
+    return getStorageForType(type).getIdsForQuery(type, accessors, id);
   }
 
   @Override
-  public void ensureIndex(Class<? extends Document> cls, List<List<String>> accessorList) {
-    getStorageForType(cls).ensureIndex(cls, accessorList);
+  public <T extends Document> void ensureIndex(Class<T> type, List<List<String>> accessorList) {
+    getStorageForType(type).ensureIndex(type, accessorList);
   }
+
 }
