@@ -6,6 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
+import nl.knaw.huygens.repository.storage.Storage;
+import nl.knaw.huygens.repository.storage.StorageIterator;
+import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
+import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
+import nl.knaw.huygens.repository.storage.generic.StorageUtils;
+
 import org.mongojack.DBCursor;
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
@@ -24,16 +32,9 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
-import nl.knaw.huygens.repository.storage.Storage;
-import nl.knaw.huygens.repository.storage.StorageIterator;
-import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
-import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
-import nl.knaw.huygens.repository.storage.generic.StorageUtils;
-
 @Singleton
 public abstract class MongoStorage implements Storage {
+
   protected Mongo mongo;
   protected DB db;
   protected String dbName;
@@ -78,20 +79,20 @@ public abstract class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Document> T getItem(String id, Class<T> cls) {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
+  public <T extends Document> T getItem(Class<T> type, String id) {
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     return col.findOneById(id);
   }
-  
+
   @Override
-  public <T extends Document> List<T> getAllVariations(String id, Class<T> cls) {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
+  public <T extends Document> List<T> getAllVariations(Class<T> type, String id) {
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     T item = col.findOneById(id);
     List<T> rv = Lists.newArrayListWithCapacity(1);
     rv.add(item);
     return rv;
   }
-  
+
   @Override
   public <T extends Document> StorageIterator<T> getAllByType(Class<T> cls) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
@@ -99,8 +100,8 @@ public abstract class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Document> MongoChanges<T> getAllRevisions(String id, Class<T> baseCls) {
-    return MongoUtils.getVersioningCollection(db, baseCls).findOneById(id);
+  public <T extends Document> MongoChanges<T> getAllRevisions(Class<T> type, String id) {
+    return MongoUtils.getVersioningCollection(db, type).findOneById(id);
   }
 
   @Override
@@ -110,10 +111,9 @@ public abstract class MongoStorage implements Storage {
     System.err.println("Stopped Mongo.");
   }
 
-
   @Override
-  public <T extends Document> StorageIterator<T> getByMultipleIds(Collection<String> ids, Class<T> entityCls) {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, entityCls);
+  public <T extends Document> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     return new MongoDBIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)));
   }
 
@@ -124,18 +124,18 @@ public abstract class MongoStorage implements Storage {
       JacksonDBCollection<? extends Document, String> col = MongoUtils.getCollection(db, docTypeRegistry.getClassFromTypeString(colName));
       changedDocs.addAll(col.find().sort(new BasicDBObject("^lastChange.dateStamp", -1)).limit(limit).toArray());
     }
-    
+
     StorageUtils.sortDocumentsByLastChange(changedDocs);
     return changedDocs.subList(0, limit);
   }
 
   @Override
-  public <T extends Document> void fetchAll(List<GenericDBRef<T>> refs, Class<T> cls) {
+  public <T extends Document> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs) {
     Set<String> mongoRefs = Sets.newHashSetWithExpectedSize(refs.size());
     for (GenericDBRef<T> ref : refs) {
       mongoRefs.add(ref.id);
     }
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     Map<String, T> results = Maps.newHashMapWithExpectedSize(mongoRefs.size());
     DBCursor<T> resultCursor = col.find(DBQuery.in("_id", mongoRefs));
     try {
@@ -155,7 +155,7 @@ public abstract class MongoStorage implements Storage {
 
   @Override
   public <T extends Document> List<String> getIdsForQuery(Class<T> cls, List<String> accessors, String[] ids) {
-    JacksonDBCollection<T,String> collection = MongoUtils.getCollection(db, cls);
+    JacksonDBCollection<T, String> collection = MongoUtils.getCollection(db, cls);
     String queryStr = getQueryStr(accessors);
     DBObject query;
     if (ids.length == 1) {
@@ -176,8 +176,8 @@ public abstract class MongoStorage implements Storage {
   }
 
   @Override
-  public void ensureIndex(Class<? extends Document> cls, List<List<String>> accessorList) {
-    JacksonDBCollection<? extends Document, String> col = MongoUtils.getCollection(db, cls);
+  public <T extends Document> void ensureIndex(Class<T> cls, List<List<String>> accessorList) {
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
     for (List<String> accessors : accessorList) {
       col.ensureIndex(getQueryStr(accessors));
     }

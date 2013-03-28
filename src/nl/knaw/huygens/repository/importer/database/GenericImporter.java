@@ -21,15 +21,14 @@ public class GenericImporter {
   private String query;
   private Map<String, List<String>> objectMapping;
 
-  public <T extends Document> void importData(String configFile, StorageManager storageManager, Class<T> type) throws SQLException, IOException,
-      InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException {
+  public <T extends Document> void importData(String configFile, StorageManager storageManager, Class<T> type) throws SQLException, IOException, InstantiationException, IllegalAccessException,
+      NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException {
     this.readMapping(configFile);
     this.importPersons(this.connectionString, this.userName, this.password, this.query, this.objectMapping, storageManager, type);
   }
 
-  private <T extends Document> void importPersons(String mySQLURL, String mySQLUser, String mySQLPwd, String query, Map<String, List<String>> propertyMapping, StorageManager storageManager, Class<T> type)
-      throws SQLException, IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException,
-      IllegalArgumentException, InvocationTargetException {
+  private <T extends Document> void importPersons(String mySQLURL, String mySQLUser, String mySQLPwd, String query, Map<String, List<String>> propertyMapping, StorageManager storageManager,
+      Class<T> type) throws SQLException, IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException {
     GenericResultSetConverter<T> resultSetCoverter = new GenericResultSetConverter<T>(propertyMapping, type);
 
     SQLImporter importer = new SQLImporter(mySQLURL, mySQLUser, mySQLPwd);
@@ -67,12 +66,10 @@ public class GenericImporter {
 
   private List<String> getEntryValue(String value) {
     List<String> values = new ArrayList<String>();
-    String[] valueParts = value.split(",");
-
-    for (String valuePart : valueParts) {
+    for (String valuePart : value.split(",")) {
       values.add(valuePart.trim());
     }
-
     return values;
   }
+
 }

@@ -5,6 +5,14 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
 
+import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.Change;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
+import nl.knaw.huygens.repository.model.util.IDPrefix;
+import nl.knaw.huygens.repository.storage.generic.JsonViews;
+import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
+import nl.knaw.huygens.repository.variation.VariationInducer;
+
 import org.mongojack.internal.stream.JacksonDBObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,14 +29,6 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.Change;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
-import nl.knaw.huygens.repository.model.util.IDPrefix;
-import nl.knaw.huygens.repository.storage.generic.JsonViews;
-import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
-import nl.knaw.huygens.repository.variation.VariationInducer;
-
 @Singleton
 public class MongoModifiableVariationStorage extends MongoVariationStorage {
 
@@ -40,7 +40,7 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
     inducer = new VariationInducer();
     inducer.setView(JsonViews.DBView.class);
   }
-  
+
   public MongoModifiableVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
     super(conf, m, db, options, docTypeRegistry);
     inducer = new VariationInducer();
@@ -48,26 +48,26 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
   }
 
   @Override
-  public <T extends Document> void addItem(T newItem, Class<T> cls) throws IOException {
-    if (newItem.getId() == null) {
-      setNextId(cls, newItem);
+  public <T extends Document> void addItem(Class<T> type, T item) throws IOException {
+    if (item.getId() == null) {
+      setNextId(type, item);
     }
-    JsonNode jsonNode = inducer.induce(newItem, cls);
-    DBCollection col = getVariationCollection(cls);
+    JsonNode jsonNode = inducer.induce(item, type);
+    DBCollection col = getVariationCollection(type);
     JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
     col.insert(insertedItem);
-    addInitialVersion(cls, newItem.getId(), insertedItem);
+    addInitialVersion(type, item.getId(), insertedItem);
   }
 
   @Override
-  public <T extends Document> void addItems(List<T> items, Class<T> cls) throws IOException {
+  public <T extends Document> void addItems(Class<T> type, List<T> items) throws IOException {
     for (T item : items) {
       if (item.getId() == null) {
-        setNextId(cls, item);
+        setNextId(type, item);
       }
     }
-    List<JsonNode> jsonNodes = inducer.induce(items, cls, Collections.<String, DBObject>emptyMap());
-    DBCollection col = getVariationCollection(cls);
+    List<JsonNode> jsonNodes = inducer.induce(items, type, Collections.<String, DBObject> emptyMap());
+    DBCollection col = getVariationCollection(type);
     @SuppressWarnings("unchecked")
     JacksonDBObject<JsonNode>[] dbObjects = new JacksonDBObject[jsonNodes.size()];
     int i = 0;
@@ -84,38 +84,38 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
       } catch (Exception ex) {
         throw new IOException("Couldn't find an ID for this item: " + dbObjects[i].toString());
       }
-      addInitialVersion(cls, id, dbObjects[i]);
+      addInitialVersion(type, id, dbObjects[i]);
     }
   }
 
   @Override
-  public <T extends Document> void updateItem(String id, T updatedItem, Class<T> cls) throws IOException {
-    DBCollection col = getVariationCollection(cls);
+  public <T extends Document> void updateItem(Class<T> type, String id, T item) throws IOException {
+    DBCollection col = getVariationCollection(type);
     BasicDBObject q = new BasicDBObject("_id", id);
-    q.put("^rev", updatedItem.getRev());
+    q.put("^rev", item.getRev());
     DBObject existingNode = col.findOne(q);
     if (existingNode == null) {
-      throw new IOException("No document was found for ID " + id + " and revision " + String.valueOf(updatedItem.getRev()) + " !");
+      throw new IOException("No document was found for ID " + id + " and revision " + String.valueOf(item.getRev()) + " !");
     }
-    JsonNode updatedNode = inducer.induce(updatedItem, cls, existingNode);
-    ((ObjectNode) updatedNode).put("^rev", updatedItem.getRev() + 1);
+    JsonNode updatedNode = inducer.induce(item, type, existingNode);
+    ((ObjectNode) updatedNode).put("^rev", item.getRev() + 1);
     JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(updatedNode, JsonNode.class);
     col.update(q, updatedDBObj);
-    addVersion(cls, id, updatedDBObj);
+    addVersion(type, id, updatedDBObj);
   }
-  
+
   @Override
   public <T extends Document> void setPID(Class<T> cls, String pid, String id) {
     BasicDBObject query = new BasicDBObject("_id", id);
     BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
     DBCollection col = getVariationCollection(cls);
 
-    col.update(query, update);    
+    col.update(query, update);
   }
 
   @Override
-  public <T extends Document> void deleteItem(String id, Class<T> cls, Change change) throws IOException {
-    DBCollection col = getVariationCollection(cls);
+  public <T extends Document> void deleteItem(Class<T> type, String id, Change change) throws IOException {
+    DBCollection col = getVariationCollection(type);
     BasicDBObject q = new BasicDBObject("_id", id);
     DBObject existingNode = col.findOne(q);
     if (existingNode == null) {
@@ -139,42 +139,42 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
     q.put("^rev", rev);
     JacksonDBObject<JsonNode> updatedNode = new JacksonDBObject<JsonNode>(node, JsonNode.class);
     col.update(q, updatedNode);
-    addVersion(cls, id, updatedNode);
+    addVersion(type, id, updatedNode);
   }
 
   private ObjectMapper getMapper() {
     return treeEncoderFactory.getObjectMapper();
   }
-  
+
   private <T extends Document> void addInitialVersion(Class<T> cls, String id, JacksonDBObject<JsonNode> initialVersion) {
     DBCollection col = getRawVersionCollection(cls);
     JsonNode actualVersion = initialVersion.getObject();
-    
+
     ObjectMapper mapper = getMapper();
     ArrayNode versionsNode = mapper.createArrayNode();
     versionsNode.add(actualVersion);
-    
+
     ObjectNode itemNode = mapper.createObjectNode();
     itemNode.put("versions", versionsNode);
     itemNode.put("_id", id);
-    
+
     col.insert(new JacksonDBObject<JsonNode>(itemNode, JsonNode.class));
   }
-  
+
   private <T extends Document> void addVersion(Class<T> cls, String id, JacksonDBObject<JsonNode> newVersion) {
     DBCollection col = getRawVersionCollection(cls);
     JsonNode actualVersion = newVersion.getObject();
-    
+
     ObjectMapper mapper = getMapper();
     ObjectNode versionNode = mapper.createObjectNode();
     versionNode.put("versions", actualVersion);
-    
+
     ObjectNode update = mapper.createObjectNode();
     update.put("$push", versionNode);
-    
+
     col.update(new BasicDBObject("_id", id), new JacksonDBObject<JsonNode>(update, JsonNode.class));
   }
-  
+
   private <T extends Document> void setNextId(Class<T> cls, T item) {
     BasicDBObject idFinder = new BasicDBObject("_id", docTypeRegistry.getCollectionId(cls));
     BasicDBObject counterIncrement = new BasicDBObject("$inc", new BasicDBObject("next", 1));
@@ -205,7 +205,7 @@ public class MongoModifiableVariationStorage extends MongoVariationStorage {
     mongo.dropDatabase(dbName);
     db = mongo.getDB(dbName);
   }
-  
+
   public void resetDB(DB db) {
     this.db = db;
   }

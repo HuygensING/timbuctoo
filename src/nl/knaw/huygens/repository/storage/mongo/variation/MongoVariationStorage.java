@@ -7,6 +7,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
+import nl.knaw.huygens.repository.storage.Storage;
+import nl.knaw.huygens.repository.storage.StorageIterator;
+import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
+import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
+import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
+import nl.knaw.huygens.repository.storage.mongo.MongoUtils;
+import nl.knaw.huygens.repository.variation.VariationException;
+import nl.knaw.huygens.repository.variation.VariationReducer;
+import nl.knaw.huygens.repository.variation.VariationUtils;
+
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
 
@@ -27,20 +39,9 @@ import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
-import nl.knaw.huygens.repository.storage.Storage;
-import nl.knaw.huygens.repository.storage.StorageIterator;
-import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
-import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
-import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
-import nl.knaw.huygens.repository.storage.mongo.MongoUtils;
-import nl.knaw.huygens.repository.variation.VariationException;
-import nl.knaw.huygens.repository.variation.VariationReducer;
-import nl.knaw.huygens.repository.variation.VariationUtils;
-
 @Singleton
 public abstract class MongoVariationStorage implements Storage {
+
   protected Mongo mongo;
   protected DB db;
   protected String dbName;
@@ -79,8 +80,7 @@ public abstract class MongoVariationStorage implements Storage {
     initializeVariationCollections(conf);
   }
 
-  public MongoVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options, DocumentTypeRegister docTypeRegistry)
-      throws UnknownHostException, MongoException {
+  public MongoVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
     this.options = options;
     this.docTypeRegistry = docTypeRegistry;
     dbName = conf.getDbName();
@@ -100,21 +100,21 @@ public abstract class MongoVariationStorage implements Storage {
   }
 
   @Override
-  public <T extends Document> T getItem(String id, Class<T> cls) throws VariationException, IOException {
-    DBCollection col = getVariationCollection(cls);
+  public <T extends Document> T getItem(Class<T> type, String id) throws VariationException, IOException {
+    DBCollection col = getVariationCollection(type);
     DBObject query = new BasicDBObject("_id", id);
-    String classType = VariationUtils.getClassId(cls);
+    String classType = VariationUtils.getClassId(type);
     BasicDBObject notNull = new BasicDBObject("$ne", null);
     query.put(classType, notNull);
-    return reducer.reduceDBObject(col.findOne(query), cls);
+    return reducer.reduceDBObject(col.findOne(query), type);
   }
 
   @Override
-  public <T extends Document> List<T> getAllVariations(String id, Class<T> cls) throws VariationException, IOException {
-    DBCollection col = getVariationCollection(cls);
+  public <T extends Document> List<T> getAllVariations(Class<T> type, String id) throws VariationException, IOException {
+    DBCollection col = getVariationCollection(type);
     DBObject query = new BasicDBObject("_id", id);
     DBObject item = col.findOne(query);
-    return reducer.getAllForDBObject(item, cls);
+    return reducer.getAllForDBObject(item, type);
   }
 
   @Override
@@ -127,8 +127,8 @@ public abstract class MongoVariationStorage implements Storage {
   }
 
   @Override
-  public <T extends Document> MongoChanges<T> getAllRevisions(String id, Class<T> baseCls) {
-    return MongoUtils.getVersioningCollection(db, baseCls).findOneById(id);
+  public <T extends Document> MongoChanges<T> getAllRevisions(Class<T> type, String id) {
+    return MongoUtils.getVersioningCollection(db, type).findOneById(id);
   }
 
   @Override
@@ -139,9 +139,9 @@ public abstract class MongoVariationStorage implements Storage {
   }
 
   @Override
-  public <T extends Document> StorageIterator<T> getByMultipleIds(Collection<String> ids, Class<T> entityCls) {
-    DBCollection col = getVariationCollection(entityCls);
-    return new MongoDBVariationIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)), reducer, entityCls);
+  public <T extends Document> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
+    DBCollection col = getVariationCollection(type);
+    return new MongoDBVariationIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)), reducer, type);
   }
 
   @Override
@@ -159,15 +159,15 @@ public abstract class MongoVariationStorage implements Storage {
   }
 
   @Override
-  public <T extends Document> void fetchAll(List<GenericDBRef<T>> refs, Class<T> cls) {
+  public <T extends Document> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs) {
     Set<String> mongoRefs = Sets.newHashSetWithExpectedSize(refs.size());
     for (GenericDBRef<T> ref : refs) {
       mongoRefs.add(ref.id);
     }
-    DBCollection col = getVariationCollection(cls);
+    DBCollection col = getVariationCollection(type);
     Map<String, T> results = Maps.newHashMapWithExpectedSize(mongoRefs.size());
     DBCursor resultCursor = col.find(DBQuery.in("_id", mongoRefs));
-    MongoDBVariationIteratorWrapper<T> it = new MongoDBVariationIteratorWrapper<T>(resultCursor, reducer, cls);
+    MongoDBVariationIteratorWrapper<T> it = new MongoDBVariationIteratorWrapper<T>(resultCursor, reducer, type);
     while (it.hasNext()) {
       T doc = it.next();
       results.put(doc.getId(), doc);
@@ -203,8 +203,8 @@ public abstract class MongoVariationStorage implements Storage {
   }
 
   @Override
-  public void ensureIndex(Class<? extends Document> cls, List<List<String>> accessorList) {
-    DBCollection col = getVariationCollection(cls);
+  public <T extends Document> void ensureIndex(Class<T> type, List<List<String>> accessorList) {
+    DBCollection col = getVariationCollection(type);
     for (List<String> accessors : accessorList) {
       col.ensureIndex(getQueryStr(accessors));
     }
@@ -214,22 +214,23 @@ public abstract class MongoVariationStorage implements Storage {
     return Joiner.on(".").join(accessors) + ".id";
   }
 
-  protected DBCollection getVariationCollection(Class<? extends Document> cls) {
+  protected <T extends Document> DBCollection getVariationCollection(Class<T> type) {
     DBCollection col;
-    if (!collectionCache.containsKey(cls)) {
-      col = db.getCollection(docTypeRegistry.getCollectionId(cls));
+    if (!collectionCache.containsKey(type)) {
+      col = db.getCollection(docTypeRegistry.getCollectionId(type));
       col.setDBDecoderFactory(treeDecoderFactory);
       col.setDBEncoderFactory(treeEncoderFactory);
-      collectionCache.put(cls, col);
+      collectionCache.put(type, col);
     } else {
-      col = collectionCache.get(cls);
+      col = collectionCache.get(type);
     }
     return col;
   }
 
-  protected <T extends Document> DBCollection getRawVersionCollection(Class<T> cls) {
-    DBCollection col = db.getCollection(docTypeRegistry.getCollectionId(cls) + "-versions");
+  protected <T extends Document> DBCollection getRawVersionCollection(Class<T> type) {
+    DBCollection col = db.getCollection(docTypeRegistry.getCollectionId(type) + "-versions");
     col.setDBEncoderFactory(options.dbEncoderFactory);
     return col;
   }
+
 }
