@@ -17,8 +17,6 @@ import com.google.inject.Inject;
 @Path("api")
 public class SitemapResource {
 
-  private static Sitemap lastSitemap;
-
   private final DocumentTypeRegister docTypeRegistry;
 
   @Inject
@@ -29,12 +27,8 @@ public class SitemapResource {
   @GET
   @Produces({ MediaType.TEXT_HTML, MediaType.APPLICATION_JSON })
   @APIDesc("Generates a structured sitemap.")
-  public Sitemap getSitemap(@QueryParam("refresh") boolean shouldRefresh, @Context Application app) {
-    // TODO synchronize
-    if (shouldRefresh || lastSitemap == null) {
-      lastSitemap = new Sitemap(app, docTypeRegistry);
-    }
-    return lastSitemap;
+  public Sitemap getSitemap(@QueryParam("refresh") boolean ignored, @Context Application app) {
+    return new Sitemap(app, docTypeRegistry);
   }
 
 }
