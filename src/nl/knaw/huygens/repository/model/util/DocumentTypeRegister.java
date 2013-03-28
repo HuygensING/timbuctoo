@@ -2,7 +2,6 @@ package nl.knaw.huygens.repository.model.util;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,7 +10,6 @@ import nl.knaw.huygens.repository.model.Document;
 import org.apache.commons.lang.StringUtils;
 
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
@@ -26,7 +24,6 @@ public class DocumentTypeRegister {
   private final Map<String, Class<? extends Document>> stringToTypeMap;
   private final Map<Class<? extends Document>, String> typeToStringMap;
   private final Map<Class<? extends Document>, String> typeToCollectionIdMap;
-  private final List<String> unreadablePackages;
 
   public DocumentTypeRegister() {
     this(null);
@@ -43,7 +40,6 @@ public class DocumentTypeRegister {
     stringToTypeMap = Maps.newHashMap();
     typeToStringMap = Maps.newHashMap();
     typeToCollectionIdMap = Maps.newHashMap();
-    unreadablePackages = Lists.newArrayList();
     if (packageNames != null) {
       for (String packageName : StringUtils.split(packageNames)) {
         registerPackage(packageName);
@@ -66,24 +62,10 @@ public class DocumentTypeRegister {
   }
 
   public Class<? extends Document> getClassFromTypeString(String id) {
-    // NB: in the DB, package names will be prefixed to class names with a dash
-    // (-) suffix.
+    // NB: in the DB, package names will be prefixed to class names with a dash (-) suffix.
     // These need to be removed in order to find the classes again:
     String normalizedId = id.replaceFirst("[a-z]*-", "");
-    if (stringToTypeMap.containsKey(normalizedId)) {
-      return stringToTypeMap.get(normalizedId);
-    }
-    String className = StringUtils.capitalize(normalizedId);
-    for (String packageName : unreadablePackages) {
-      try {
-        @SuppressWarnings("unchecked")
-        Class<? extends Document> cls = (Class<? extends Document>) Class.forName(packageName + "." + className);
-        return cls;
-      } catch (Exception ex) {
-
-      }
-    }
-    return null;
+    return stringToTypeMap.get(normalizedId);
   }
 
   public String getCollectionId(Class<? extends Document> type) {
@@ -113,8 +95,7 @@ public class DocumentTypeRegister {
       }
     }
     if (classesDetected == 0) {
-      System.out.printf("Package %s: no types - adding package for runtime checking%n", packageId);
-      unreadablePackages.add(packageId);
+      System.out.printf("Package %s: no types%n", packageId);
     }
   }
 
