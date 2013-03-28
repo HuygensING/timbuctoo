@@ -6,6 +6,9 @@ import javax.validation.Validator;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.persistence.handle.HandleManager;
 import nl.knaw.huygens.repository.persistence.handle.HandleManagerFactory;
+import nl.knaw.huygens.repository.server.security.NoSecurityOAuthAuthorizationServerConnector;
+import nl.knaw.huygens.repository.server.security.OAuthAuthorizationServerConnector;
+import nl.knaw.huygens.repository.server.security.apis.ApisAuthorizationServerConnector;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.util.Configuration;
@@ -34,6 +37,11 @@ public class RepositoryBasicModule extends AbstractModule {
     Names.bindProperties(binder(), config.getAll());
     bind(Configuration.class).toInstance(config);
     bind(PersistenceManager.class).to(HandleManager.class);
+    if (config.getBooleanSetting("use-security")) {
+      bind(OAuthAuthorizationServerConnector.class).to(ApisAuthorizationServerConnector.class);
+    } else {
+      bind(OAuthAuthorizationServerConnector.class).to(NoSecurityOAuthAuthorizationServerConnector.class);
+    }
 
     Class<? extends Storage> cls = new StorageConfiguration(config).getType().getCls();
     bind(Storage.class).to(cls);
