@@ -1,6 +1,7 @@
 package nl.knaw.huygens.repository.model.util;
 
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -118,8 +119,7 @@ public class DocumentTypeRegister {
   }
 
   private boolean isDocumentType(Class<?> type) {
-    // TODO decide whether abstract classes are acceptable
-    return Document.class.isAssignableFrom(type); // && !Modifier.isAbstract(type.getModifiers());
+    return Document.class.isAssignableFrom(type) && !Modifier.isAbstract(type.getModifiers());
   }
 
   @SuppressWarnings("unchecked")
