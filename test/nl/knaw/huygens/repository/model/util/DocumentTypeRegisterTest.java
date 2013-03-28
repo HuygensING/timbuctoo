@@ -90,7 +90,7 @@ public class DocumentTypeRegisterTest {
   @Test
   public void testRegisterPackageAbstractClass() {
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertEquals(TestBaseDoc.class, registry.getClassFromTypeString("testbasedoc"));
+    assertNull(registry.getClassFromTypeString("testbasedoc"));
   }
 
   @Test(expected = NullPointerException.class)
