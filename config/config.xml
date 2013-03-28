@@ -15,6 +15,11 @@
 			<user>test</user>
 			<password>test</password>
 		</database>
+		<apis>
+			<key>university-foo</key>
+			<secret>58b749f7-acb3-44b7-a38c-53d5ad740cf6</secret>
+			<server>http://localhost:8086/v1/tokeninfo?access_token=%s</server>
+		</apis>
 		<handle>
 			<cipher>G8jUp6Ha</cipher>
 			<naming_authority>0.NA</naming_authority>
@@ -29,6 +34,7 @@
 		<solr>
 			<config>solrconfig.xml</config>
 		</solr>
+		<use-security>false</use-security>
 		<doctypes>person</doctypes>
 		<variationdoctypes>person</variationdoctypes>
 		<indexeddoctypes>person</indexeddoctypes>
