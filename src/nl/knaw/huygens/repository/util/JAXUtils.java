@@ -15,6 +15,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Application;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 public class JAXUtils {
@@ -27,9 +28,14 @@ public class JAXUtils {
 
     public API(String path, List<String> requestTypes, List<String> mediaTypes, String desc) {
       this.path = path;
-      this.mediaTypes = mediaTypes;
-      this.requestTypes = requestTypes;
+      this.mediaTypes = ImmutableList.copyOf(requestTypes);
+      this.requestTypes = ImmutableList.copyOf(mediaTypes);
       this.desc = desc;
+    }
+
+    public API modifyPath(String regex, String replacement) {
+      String newPath = path.replaceFirst(regex, replacement);
+      return new API(newPath, requestTypes, mediaTypes, desc);
     }
   }
 
