@@ -3,11 +3,13 @@ package nl.knaw.huygens.repository.model.util;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import nl.knaw.huygens.repository.model.Document;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
@@ -46,6 +48,13 @@ public class DocumentTypeRegister {
         registerPackage(packageName);
       }
     }
+  }
+
+  /**
+   * Returns the registered document types.
+   */
+  public Set<String> getTypeStrings() {
+    return ImmutableSortedSet.copyOf(stringToTypeMap.keySet());
   }
 
   public String getTypeString(Class<? extends Document> type) {
