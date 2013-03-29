@@ -6,7 +6,6 @@ import net.handle.api.HSAdapter;
 import net.handle.hdllib.HandleException;
 import net.handle.hdllib.HandleValue;
 import net.handle.hdllib.Util;
-
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
 
@@ -14,7 +13,6 @@ import nl.knaw.huygens.repository.persistence.PersistenceManager;
  * A class to persist and resolve objects on the HandleServer.
  * 
  * @author martijnm
- * 
  */
 public class HandleManager implements PersistenceManager {
   private String namingAuthority;
@@ -96,11 +94,7 @@ public class HandleManager implements PersistenceManager {
   }
 
   private String createAdminHandle() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(namingAuthority);
-    sb.append("/");
-    sb.append(prefix);
-    return sb.toString();
+    return namingAuthority + "/" + prefix;
   }
 
   private String createHandleName(String id) {
