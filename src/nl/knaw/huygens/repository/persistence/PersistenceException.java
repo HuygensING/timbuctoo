@@ -1,7 +1,7 @@
 package nl.knaw.huygens.repository.persistence;
 
 /**
- * Signals that an persistance error has occurred.
+ * Signals that a persistence error has occurred.
  */
 public class PersistenceException extends Exception {
 
