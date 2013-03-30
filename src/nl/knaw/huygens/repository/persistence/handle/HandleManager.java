@@ -70,7 +70,7 @@ public class HandleManager implements PersistenceManager {
   }
 
   @Override
-  public String persistObject(String objectId, String collectionId) throws PersistenceException {
+  public String persistObject(String collectionId, String objectId) throws PersistenceException {
     String url = createUrl(collectionId, objectId);
     return persistURL(url);
   }

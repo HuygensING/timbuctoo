@@ -5,7 +5,7 @@ import java.util.UUID;
 public class DefaultPersistenceManager implements PersistenceManager {
 
   @Override
-  public String persistObject(String objectId, String collectionId) throws PersistenceException {
+  public String persistObject(String collectionId, String objectId) throws PersistenceException {
     return createId();
   }
 

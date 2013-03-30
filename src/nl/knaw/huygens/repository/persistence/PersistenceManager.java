@@ -3,12 +3,12 @@ package nl.knaw.huygens.repository.persistence;
 public interface PersistenceManager {
 
   /**
-   * @param objectId
    * @param collectionId
+   * @param objectId
    * @return
    * @throws PersistenceException
    */
-  String persistObject(String objectId, String collectionId) throws PersistenceException;
+  String persistObject(String collectionId, String objectId) throws PersistenceException;
 
   /**
    * @param url

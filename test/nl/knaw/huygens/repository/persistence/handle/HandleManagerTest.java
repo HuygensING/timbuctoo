@@ -118,10 +118,10 @@ public class HandleManagerTest {
       }
     }).when(handleAdapter).createHandle(anyString(), any(HandleValue[].class));
 
-    String objectId = "test000001";
     String collectionId = "document";
+    String objectId = "test000001";
 
-    String id = handleManager.persistObject(objectId, collectionId);
+    String id = handleManager.persistObject(collectionId, objectId);
 
     String handleName = createHandleName(id);
     String expectURL = baseURL + "/resources/document/" + objectId;
@@ -149,10 +149,10 @@ public class HandleManagerTest {
       }
     }).when(handleAdapter).createHandle(anyString(), any(HandleValue[].class));
 
-    String objectId = "test000001";
     String collectionId = "document";
+    String objectId = "test000001";
 
-    handleManager.persistObject(objectId, collectionId);
+    handleManager.persistObject(collectionId, objectId);
   }
 
   @Test

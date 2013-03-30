@@ -93,7 +93,7 @@ public class RESTAutoResourceTest extends JerseyTest {
     TestConcreteDoc expectedDoc = new TestConcreteDoc();
     expectedDoc.setId(id);
 
-    when(storageManager.getCompleteDocument(id, TestConcreteDoc.class)).thenReturn(expectedDoc);
+    when(storageManager.getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
 
     doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
 
@@ -111,7 +111,7 @@ public class RESTAutoResourceTest extends JerseyTest {
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
     String id = "tst0000000001";
 
-    when(storageManager.getCompleteDocument(id, TestConcreteDoc.class)).thenReturn(null);
+    when(storageManager.getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(null);
 
     doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
 
@@ -212,7 +212,7 @@ public class RESTAutoResourceTest extends JerseyTest {
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
     String id = "tst0000000001";
 
-    when(storageManager.getCompleteDocument(id, TestConcreteDoc.class)).thenReturn(null);
+    when(storageManager.getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(null);
 
     doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
 

@@ -113,7 +113,7 @@ public class StorageManager {
     try {
       // TODO make persistent id dependent on version.
       String collectionId = docTypeRegistry.getCollectionId(type);
-      String pid = persistenceManager.persistObject(doc.getId(), collectionId);
+      String pid = persistenceManager.persistObject(collectionId, doc.getId());
       storage.setPID(type, pid, doc.getId());
     } catch (PersistenceException e) {
       e.printStackTrace();
