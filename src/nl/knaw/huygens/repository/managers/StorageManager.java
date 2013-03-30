@@ -61,10 +61,10 @@ public class StorageManager {
     ensureIndices();
   }
 
-  public <T extends Document> T getCompleteDocument(String pid, Class<T> type) {
+  public <T extends Document> T getCompleteDocument(Class<T> type, String id) {
     T rv;
     try {
-      rv = storage.getItem(type, pid);
+      rv = storage.getItem(type, id);
     } catch (IOException e) {
       e.printStackTrace();
       rv = null;
@@ -75,16 +75,16 @@ public class StorageManager {
     return rv;
   }
 
-  public <T extends Document> T getDocument(String pid, Class<T> type) {
+  public <T extends Document> T getDocument(Class<T> type, String id) {
     try {
-      return storage.getItem(type, pid);
+      return storage.getItem(type, id);
     } catch (IOException e) {
       e.printStackTrace();
       return null;
     }
   }
 
-  public <T extends Document> List<T> getAllVariations(String id, Class<T> type) {
+  public <T extends Document> List<T> getAllVariations(Class<T> type, String id) {
     List<T> rv;
     try {
       rv = storage.getAllVariations(type, id);
@@ -95,40 +95,38 @@ public class StorageManager {
     return rv;
   }
 
-  public <T extends Document> StorageIterator<T> getAll(Class<T> entityCls) {
-    return storage.getAllByType(entityCls);
+  public <T extends Document> StorageIterator<T> getAll(Class<T> type) {
+    return storage.getAllByType(type);
   }
 
-  public <T extends Document> RevisionChanges<T> getVersions(String id, Class<T> type) {
+  public <T extends Document> RevisionChanges<T> getVersions(Class<T> type, String id) {
     return storage.getAllRevisions(type, id);
   }
 
-  public <T extends Document> void addDocument(T doc, Class<T> type) throws IOException {
+  public <T extends Document> void addDocument(Class<T> type, T doc) throws IOException {
     storage.addItem(type, doc);
-    // persistDocumentVersion(doc, entityCls);
+    persistDocumentVersion(type, doc);
     doThrowEvent(VariationUtils.getBaseClass(type), doc.getId(), Events.DocumentAddEvent.class);
   }
 
-  private <T extends Document> void persistDocumentVersion(T doc, Class<T> entityClass) {
-    String pid = null;
+  private <T extends Document> void persistDocumentVersion(Class<T> type, T doc) {
     try {
       // TODO make persistent id dependent on version.
-      pid = persistenceManager.persistObject(doc.getId(), docTypeRegistry.getCollectionId(entityClass));
-      storage.setPID(entityClass, pid, doc.getId());
+      String collectionId = docTypeRegistry.getCollectionId(type);
+      String pid = persistenceManager.persistObject(doc.getId(), collectionId);
+      storage.setPID(type, pid, doc.getId());
     } catch (PersistenceException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
 
-  public <T extends Document> void modifyDocument(T doc, Class<T> type) throws IOException {
-    String id = doc.getId();
-    storage.updateItem(type, id, doc);
-    persistDocumentVersion(doc, type);
+  public <T extends Document> void modifyDocument(Class<T> type, T doc) throws IOException {
+    storage.updateItem(type, doc.getId(), doc);
+    persistDocumentVersion(type, doc);
     doThrowEvent(VariationUtils.getBaseClass(type), doc.getId(), DocumentEditEvent.class);
   }
 
-  public <T extends Document> void removeDocument(T doc, Class<T> type) throws IOException {
+  public <T extends Document> void removeDocument(Class<T> type, T doc) throws IOException {
     storage.deleteItem(type, doc.getId(), doc.getLastChange());
     doThrowEvent(VariationUtils.getBaseClass(type), doc.getId(), Events.DocumentDeleteEvent.class);
   }
@@ -140,12 +138,12 @@ public class StorageManager {
     }
     try {
       hub.publish(t.getConstructor(Class.class, List.class).newInstance(type, docs));
-    } catch (Exception ex) {
-      throw new IOException(ex);
+    } catch (Exception e) {
+      throw new IOException(e);
     }
   }
 
-  public <T extends Document> StorageIterator<T> getByMultipleIds(List<String> ids, Class<T> type) {
+  public <T extends Document> StorageIterator<T> getByMultipleIds(Class<T> type, List<String> ids) {
     return storage.getByMultipleIds(type, ids);
   }
 
@@ -158,11 +156,11 @@ public class StorageManager {
     }
   }
 
-  public <T extends Document> List<T> getAllLimited(Class<T> cls, int offset, int limit) {
+  public <T extends Document> List<T> getAllLimited(Class<T> type, int offset, int limit) {
     if (limit == 0) {
       return Collections.<T> emptyList();
     }
-    return StorageUtils.resolveIterator(storage.getAllByType(cls), offset, limit);
+    return StorageUtils.resolveIterator(storage.getAllByType(type), offset, limit);
   }
 
   public <X extends Document, T extends Document> Map<List<String>, List<String>> getReferringDocs(Class<X> referringType, Class<T> referredType, String... referredIds) {
@@ -243,9 +241,10 @@ public class StorageManager {
   public void close() {
     try {
       storage.destroy();
-    } catch (Exception ex) {
+    } catch (Exception e) {
       System.err.println("Failed to close storage!");
-      ex.printStackTrace();
+      e.printStackTrace();
     }
   }
+
 }
