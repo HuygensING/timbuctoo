@@ -36,7 +36,7 @@ public class GenericImporter {
 
     for (T object : objects) {
       System.out.println(object.getDescription());
-      storageManager.addDocument(object, type);
+      storageManager.addDocument(type, object);
     }
 
     System.out.println("persons.size(): " + objects.size());
