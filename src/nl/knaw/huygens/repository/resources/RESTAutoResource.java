@@ -46,8 +46,8 @@ public class RESTAutoResource {
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
   public List<? extends Document> getAllDocs(@PathParam(ENTITY_PARAM) String entityType, @QueryParam("rows") @DefaultValue("200") int rows, @QueryParam("start") int start) {
-    Class<? extends Document> cls = getDocType(entityType);
-    return storageManager.getAllLimited(cls, start, rows);
+    Class<? extends Document> type = getDocType(entityType);
+    return storageManager.getAllLimited(type, start, rows);
   }
 
   // TODO: test me
@@ -58,10 +58,10 @@ public class RESTAutoResource {
   public <T extends Document> void getAllDocs(@PathParam(ENTITY_PARAM) String entityType, Document input) throws IOException {
     try {
       @SuppressWarnings("unchecked")
-      Class<T> typedCls = (Class<T>) getDocType(entityType);
+      Class<T> type = (Class<T>) getDocType(entityType);
       @SuppressWarnings("unchecked")
       T typedDoc = (T) input;
-      storageManager.addDocument(typedCls, typedDoc);
+      storageManager.addDocument(type, typedDoc);
     } catch (ClassCastException ex) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
@@ -73,8 +73,8 @@ public class RESTAutoResource {
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
   public Document getDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam("id") String id) {
-    Class<? extends Document> cls = getDocType(entityType);
-    Document doc = storageManager.getCompleteDocument(cls, id);
+    Class<? extends Document> type = getDocType(entityType);
+    Document doc = storageManager.getCompleteDocument(type, id);
     if (doc == null) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
@@ -89,10 +89,10 @@ public class RESTAutoResource {
   public <T extends Document> void putDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam("id") String id, Document input) throws IOException {
     try {
       @SuppressWarnings("unchecked")
-      Class<T> typedCls = (Class<T>) getDocType(entityType);
+      Class<T> type = (Class<T>) getDocType(entityType);
       @SuppressWarnings("unchecked")
       T typedDoc = (T) input;
-      storageManager.modifyDocument(typedCls, typedDoc);
+      storageManager.modifyDocument(type, typedDoc);
     } catch (ClassCastException ex) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
@@ -105,20 +105,20 @@ public class RESTAutoResource {
   public <T extends Document> void putDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam("id") String id) throws IOException {
     try {
       @SuppressWarnings("unchecked")
-      Class<T> typedCls = (Class<T>) getDocType(entityType);
-      T typedDoc = storageManager.getDocument(typedCls, id);
-      storageManager.removeDocument(typedCls, typedDoc);
+      Class<T> type = (Class<T>) getDocType(entityType);
+      T typedDoc = storageManager.getDocument(type, id);
+      storageManager.removeDocument(type, typedDoc);
     } catch (ClassCastException ex) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
   }
 
   private Class<? extends Document> getDocType(String entityType) {
-    Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(entityType);
-    if (cls == null) {
+    Class<? extends Document> type = docTypeRegistry.getClassFromTypeString(entityType);
+    if (type == null) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
-    return cls;
+    return type;
   }
 
 }
