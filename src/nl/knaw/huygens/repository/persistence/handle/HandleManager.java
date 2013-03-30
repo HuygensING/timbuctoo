@@ -15,17 +15,17 @@ import nl.knaw.huygens.repository.persistence.PersistenceManager;
  * @author martijnm
  */
 public class HandleManager implements PersistenceManager {
-  private String namingAuthority;
-  private String prefix;
-  private String baseUrl;
 
-  private HSAdapterFactoryWrapper hsAdapterFactoryWrapper;
+  private final HSAdapterFactoryWrapper hsAdapterFactoryWrapper;
+  private final String namingAuthority;
+  private final String prefix;
+  private final String baseUrl;
 
-  public HandleManager(HSAdapterFactoryWrapper hsAdapterFactoryWrapper, String prefix, String namingAuthority, String baseURL) {
-    this.hsAdapterFactoryWrapper = hsAdapterFactoryWrapper;
+  public HandleManager(HSAdapterFactoryWrapper wrapper, String prefix, String namingAuthority, String baseURL) {
+    hsAdapterFactoryWrapper = wrapper;
     this.prefix = prefix;
     this.namingAuthority = namingAuthority;
-    this.baseUrl = baseURL;
+    this.baseUrl = baseURL.endsWith("/") ? baseURL : baseURL + "/";
   }
 
   @Override
@@ -71,22 +71,12 @@ public class HandleManager implements PersistenceManager {
 
   @Override
   public String persistObject(String objectId, String collectionId) throws PersistenceException {
-    String url = createUrl(objectId, collectionId);
+    String url = createUrl(collectionId, objectId);
     return persistURL(url);
   }
 
-  private String createUrl(String id, String collectionId) {
-
-    StringBuilder url = new StringBuilder(baseUrl);
-    if (!baseUrl.endsWith("/")) {
-      url.append("/");
-    }
-    url.append("resources/");
-    url.append(collectionId);
-    url.append("/");
-    url.append(id);
-
-    return url.toString();
+  private String createUrl(String collectionId, String id) {
+    return baseUrl + "resources/" + collectionId + "/" + id;
   }
 
   private String createID() {
