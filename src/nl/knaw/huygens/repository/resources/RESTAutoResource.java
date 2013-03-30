@@ -61,7 +61,7 @@ public class RESTAutoResource {
       Class<T> typedCls = (Class<T>) getDocType(entityType);
       @SuppressWarnings("unchecked")
       T typedDoc = (T) input;
-      storageManager.addDocument(typedDoc, typedCls);
+      storageManager.addDocument(typedCls, typedDoc);
     } catch (ClassCastException ex) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
@@ -74,7 +74,7 @@ public class RESTAutoResource {
   @RolesAllowed("USER")
   public Document getDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam("id") String id) {
     Class<? extends Document> cls = getDocType(entityType);
-    Document doc = storageManager.getCompleteDocument(id, cls);
+    Document doc = storageManager.getCompleteDocument(cls, id);
     if (doc == null) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
@@ -92,7 +92,7 @@ public class RESTAutoResource {
       Class<T> typedCls = (Class<T>) getDocType(entityType);
       @SuppressWarnings("unchecked")
       T typedDoc = (T) input;
-      storageManager.modifyDocument(typedDoc, typedCls);
+      storageManager.modifyDocument(typedCls, typedDoc);
     } catch (ClassCastException ex) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
@@ -106,8 +106,8 @@ public class RESTAutoResource {
     try {
       @SuppressWarnings("unchecked")
       Class<T> typedCls = (Class<T>) getDocType(entityType);
-      T typedDoc = storageManager.getDocument(id, typedCls);
-      storageManager.removeDocument(typedDoc, typedCls);
+      T typedDoc = storageManager.getDocument(typedCls, id);
+      storageManager.removeDocument(typedCls, typedDoc);
     } catch (ClassCastException ex) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
