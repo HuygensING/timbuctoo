@@ -47,10 +47,10 @@ public class HandleManager implements PersistenceManager {
   }
 
   @Override
-  public String persistURL(String urlToPersist) throws PersistenceException {
-    String id = createID();
+  public String persistURL(String url) throws PersistenceException {
+    String id = createId();
 
-    HandleValue urlValue = new HandleValue(1, Util.encodeString("URL"), Util.encodeString(urlToPersist));
+    HandleValue urlValue = new HandleValue(1, Util.encodeString("URL"), Util.encodeString(url));
     urlValue.setAdminCanRead(true);
     urlValue.setAdminCanWrite(true);
     urlValue.setAnyoneCanRead(true);
@@ -79,7 +79,7 @@ public class HandleManager implements PersistenceManager {
     return baseUrl + "resources/" + collectionId + "/" + id;
   }
 
-  private String createID() {
+  private String createId() {
     return UUID.randomUUID().toString();
   }
 
