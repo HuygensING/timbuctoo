@@ -1,5 +1,8 @@
 package nl.knaw.huygens.repository.persistence.handle;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.UUID;
 
 import net.handle.api.HSAdapter;
@@ -8,13 +11,58 @@ import net.handle.hdllib.HandleValue;
 import net.handle.hdllib.Util;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
+import nl.knaw.huygens.repository.util.Configuration;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * A class to persist and resolve objects on the HandleServer.
+ * A class to persist and resolve objects on the Handle Server.
  * 
  * @author martijnm
  */
 public class HandleManager implements PersistenceManager {
+
+  private static final Logger LOG = LoggerFactory.getLogger(HandleManager.class);
+
+  /**
+   * Returns a new <code>HandleManager</code>.
+   */
+  public static HandleManager newHandleManager(Configuration config) {
+    String url = config.getSetting("public_url");
+    String cipherString = config.getSetting("handle.cipher");
+    byte[] cipher = cipherString.getBytes();
+    String privateKeyURI = config.getSetting("handle.private_key_file");
+    byte[] privateKey = readPrivateKey(privateKeyURI);
+    String authority = config.getSetting("handle.naming_authority");
+    String prefix = config.getSetting("handle.prefix");
+    String adminHandle = getAdminHandle(authority, prefix);
+
+    HSAdapterFactoryWrapper hsAdapterFactoryWrapper = new HSAdapterFactoryWrapper(adminHandle, 300, privateKey, cipher);
+    return new HandleManager(hsAdapterFactoryWrapper, prefix, authority, url);
+  }
+
+  private static byte[] readPrivateKey(String privateKeyURI) {
+    FileInputStream inputStream = null;
+    try {
+      File file = new File(privateKeyURI);
+      LOG.info("Location of private key: {}", file.getAbsolutePath());
+      inputStream = new FileInputStream(file);
+      byte[] privateKey = new byte[(int) file.length()];
+      inputStream.read(privateKey);
+      inputStream.close();
+      return privateKey;
+    } catch (IOException e) {
+      LOG.error(e.getMessage());
+      return null;
+    }
+  }
+
+  private static String getAdminHandle(String namingAuthority, String prefix) {
+    return namingAuthority + "/" + prefix;
+  }
+
+  // -------------------------------------------------------------------
 
   private final HSAdapterFactoryWrapper hsAdapterFactoryWrapper;
   private final String namingAuthority;
