@@ -57,7 +57,7 @@ public class SimpleDBTest {
       BasicDBObject expectedChange = new BasicDBObject();
       expectedChange.append("^rev", 1);
       //@variations are added by the VariationReducer
-      expectedChange.append("@variations", Lists.newArrayList("testdoc", "testbasedoc", "otherdoc"));
+      expectedChange.append("@variations", Lists.newArrayList("projectb-testdoc", "testbasedoc", "projecta-otherdoc"));
 
       assertEquals(expectedChange, MongoDiff.diffDocuments(doc, returnedItem));
 
