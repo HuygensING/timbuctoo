@@ -10,6 +10,7 @@ import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 
 public class RepositoryServletModule extends JerseyServletModule {
+
   @Override
   protected void configureServlets() {
     Map<String, String> params = Maps.newHashMap();
@@ -20,4 +21,5 @@ public class RepositoryServletModule extends JerseyServletModule {
     params.put(ServletContainer.FEATURE_FILTER_FORWARD_ON_404, "true");
     filter("/*").through(GuiceContainer.class, params);
   }
+
 }

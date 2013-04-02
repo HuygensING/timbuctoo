@@ -34,6 +34,7 @@
 		<solr>
 			<config>solrconfig.xml</config>
 		</solr>
+		<use-handle-system>true</use-handle-system>
 		<use-security>false</use-security>
 		<doctypes>person</doctypes>
 		<variationdoctypes>person</variationdoctypes>
