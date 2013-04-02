@@ -4,7 +4,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
-import nl.knaw.huygens.repository.persistence.TheFactory;
+import nl.knaw.huygens.repository.persistence.PersistenceManagerFactory;
 import nl.knaw.huygens.repository.server.security.NoSecurityOAuthAuthorizationServerConnector;
 import nl.knaw.huygens.repository.server.security.OAuthAuthorizationServerConnector;
 import nl.knaw.huygens.repository.server.security.apis.ApisAuthorizationServerConnector;
@@ -49,7 +49,7 @@ public class RepositoryBasicModule extends AbstractModule {
   @Provides
   @Singleton
   PersistenceManager providePersistenceManager() {
-    return new TheFactory(config).createPersistenceManager();
+    return new PersistenceManagerFactory(config).newPersistenceManager();
   }
 
   @Provides
