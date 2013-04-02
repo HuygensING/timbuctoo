@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
+import nl.knaw.huygens.repository.storage.mongo.variation.DBJsonNode;
+
 import org.mongojack.internal.stream.JacksonDBObject;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,10 +19,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.mongodb.DBObject;
-
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
-import nl.knaw.huygens.repository.storage.mongo.variation.DBJsonNode;
 
 public class VariationReducer {
   private ObjectMapper mapper;
@@ -56,14 +56,14 @@ public class VariationReducer {
     List<JsonNode> specificData = Lists.newArrayListWithExpectedSize(1);
     List<String> variations = getVariations(node);
     String requestedClassId = VariationUtils.getClassId(cls);
-    
+
     String variationToGet = null;
     JsonNode defaultVRENode = null;
-    
+
     if (node.get(requestedClassId) != null) {
       defaultVRENode = node.get(requestedClassId).get("!defaultVRE");
     }
-    
+
     variationToGet = defaultVRENode != null ? defaultVRENode.asText() : variationName;
 
     ObjectNode rv = mapper.createObjectNode();
@@ -107,18 +107,11 @@ public class VariationReducer {
     Iterator<Map.Entry<String, JsonNode>> fieldIterator = node.fields();
 
     Map.Entry<String, JsonNode> fieldEntry = null;
-    String key = null;
+
     while (fieldIterator.hasNext()) {
       fieldEntry = fieldIterator.next();
-
       if (fieldEntry.getValue() instanceof ObjectNode) {
-        key = fieldEntry.getKey();
-
-        if (key.contains("-")) {
-          key = key.substring(key.indexOf("-") + 1);
-        }
-
-        variations.add(key);
+        variations.add(fieldEntry.getKey());
       }
     }
 
@@ -136,8 +129,7 @@ public class VariationReducer {
       if (fV.isArray()) {
         ArrayNode ary = (ArrayNode) fV;
         fetchAndAssignMatchingValue(variationName, rv, k, ary);
-      } else if (k.startsWith("!")) {
-      } else {
+      } else if (k.startsWith("!")) {} else {
         throw new VariationException("Unknown variation value for key " + k);
       }
     }
