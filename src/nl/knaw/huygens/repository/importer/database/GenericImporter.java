@@ -27,11 +27,11 @@ public class GenericImporter {
     this.importPersons(this.connectionString, this.userName, this.password, this.query, this.objectMapping, storageManager, type);
   }
 
-  private <T extends Document> void importPersons(String mySQLURL, String mySQLUser, String mySQLPwd, String query, Map<String, List<String>> propertyMapping, StorageManager storageManager,
+  private <T extends Document> void importPersons(String url, String user, String password, String query, Map<String, List<String>> propertyMapping, StorageManager storageManager,
       Class<T> type) throws SQLException, IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException {
     GenericResultSetConverter<T> resultSetCoverter = new GenericResultSetConverter<T>(propertyMapping, type);
 
-    SQLImporter importer = new SQLImporter(mySQLURL, mySQLUser, mySQLPwd);
+    SQLImporter importer = new SQLImporter(url, user, password);
     List<T> objects = importer.executeQuery(query, resultSetCoverter);
 
     for (T object : objects) {
