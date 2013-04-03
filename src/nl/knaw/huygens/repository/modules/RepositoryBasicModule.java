@@ -3,8 +3,9 @@ package nl.knaw.huygens.repository.modules;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
+import nl.knaw.huygens.repository.persistence.DefaultPersistenceManager;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
-import nl.knaw.huygens.repository.persistence.PersistenceManagerFactory;
+import nl.knaw.huygens.repository.persistence.handle.HandleManager;
 import nl.knaw.huygens.repository.server.security.NoSecurityOAuthAuthorizationServerConnector;
 import nl.knaw.huygens.repository.server.security.OAuthAuthorizationServerConnector;
 import nl.knaw.huygens.repository.server.security.apis.ApisAuthorizationServerConnector;
@@ -35,7 +36,6 @@ public class RepositoryBasicModule extends AbstractModule {
   protected void configure() {
     Names.bindProperties(binder(), config.getAll());
     bind(Configuration.class).toInstance(config);
-    // bind(PersistenceManager.class).to(HandleManager.class);
     if (config.getBooleanSetting("use-security")) {
       bind(OAuthAuthorizationServerConnector.class).to(ApisAuthorizationServerConnector.class);
     } else {
@@ -49,7 +49,11 @@ public class RepositoryBasicModule extends AbstractModule {
   @Provides
   @Singleton
   PersistenceManager providePersistenceManager() {
-    return new PersistenceManagerFactory(config).newPersistenceManager();
+    if (config.getBooleanSetting("use-handle-system", true)) {
+      return HandleManager.newHandleManager(config);
+    } else {
+      return new DefaultPersistenceManager();
+    }
   }
 
   @Provides

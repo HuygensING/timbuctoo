@@ -38,8 +38,8 @@ public class HandleManager implements PersistenceManager {
     String prefix = config.getSetting("handle.prefix");
     String adminHandle = getAdminHandle(authority, prefix);
 
-    HSAdapterFactoryWrapper hsAdapterFactoryWrapper = new HSAdapterFactoryWrapper(adminHandle, 300, privateKey, cipher);
-    return new HandleManager(hsAdapterFactoryWrapper, prefix, authority, url);
+    HSAdapterFactoryWrapper wrapper = new HSAdapterFactoryWrapper(adminHandle, 300, privateKey, cipher);
+    return new HandleManager(wrapper, prefix, authority, url);
   }
 
   private static byte[] readPrivateKey(String privateKeyURI) {
