@@ -20,11 +20,11 @@ public class Sitemap extends Document {
   public List<API> availableAPIList;
   private String defaultVRE;
 
-  public Sitemap(Application app, DocumentTypeRegister registry) {
+  public Sitemap(Application application, DocumentTypeRegister registry) {
     setId(String.format("T%d", System.currentTimeMillis()));
 
     availableAPIList = Lists.newArrayList();
-    for (Class<?> cls : JAXUtils.getAllResources(app)) {
+    for (Class<?> cls : application.getClasses()) {
       List<API> apis = JAXUtils.generateAPIs(cls);
       if (cls == RESTAutoResource.class) {
         for (String type : registry.getTypeStrings()) {
