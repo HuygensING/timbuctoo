@@ -19,7 +19,7 @@
   <property name="assembly.dir" location="${build.dir}/assembly" />
 
   <property name="main.src.dir" location="src/main" />
-  <property name="resource.src.dir" location="src/main/resources" />
+  <property name="resource.src.dir" location="resources" />
   <property name="tools.src.dir" location="src/main/tools" />
   <property name="main.bin.dir" location="${build.dir}/main/classes" />
 
@@ -209,6 +209,10 @@
     <copy todir="${local.dir}/config">
       <fileset dir="${config.src}"/>
     </copy>
+  	<mkdir dir="${local.dir}/resources"/>
+  	<copy todir="${local.dir}/resources">
+  		<fileset dir="${resource.src.dir}"/>
+  	</copy>
     <mkdir dir="${local.dir}/solr"/>
     <copy todir="${local.dir}/solr">
       <fileset dir="${solr.src}"/>

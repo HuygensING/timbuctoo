@@ -24,7 +24,7 @@
 			<cipher>G8jUp6Ha</cipher>
 			<naming_authority>0.NA</naming_authority>
 			<prefix>11151</prefix>
-			<private_key_file>resources/admpriv.bin</private_key_file>
+			<private_key_file>repository/resources/admpriv.bin</private_key_file>
 		</handle>
 		<model-packages>
 			nl.knaw.huygens.repository.model
