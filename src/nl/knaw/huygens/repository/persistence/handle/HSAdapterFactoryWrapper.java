@@ -10,13 +10,13 @@ import net.handle.hdllib.HandleException;
  * the HSAdaptorFactory when needed.
  * 
  * @author martijnm
- * 
  */
 public class HSAdapterFactoryWrapper {
-  private String adminHandle;
-  private int keyIndex;
-  private byte[] privateKey;
-  private byte[] cipher;
+
+  private final String adminHandle;
+  private final int keyIndex;
+  private final byte[] privateKey;
+  private final byte[] cipher;
 
   public HSAdapterFactoryWrapper(String adminHandle, int keyIndex, byte[] privateKey, byte[] cipher) {
     this.adminHandle = adminHandle;
@@ -28,4 +28,5 @@ public class HSAdapterFactoryWrapper {
   public HSAdapter createHSAdapter() throws HandleException {
     return HSAdapterFactory.newInstance(adminHandle, keyIndex, privateKey, cipher);
   }
+
 }
