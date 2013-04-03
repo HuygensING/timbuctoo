@@ -8,13 +8,15 @@ import java.util.Set;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Application;
 
-import com.google.common.base.Strings;
+import org.apache.commons.lang.StringUtils;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -22,14 +24,14 @@ public class JAXUtils {
 
   public static class API {
     public String path;
-    public List<String> mediaTypes;
     public List<String> requestTypes;
+    public List<String> mediaTypes;
     public String desc;
 
     public API(String path, List<String> requestTypes, List<String> mediaTypes, String desc) {
       this.path = path;
-      this.mediaTypes = ImmutableList.copyOf(requestTypes);
-      this.requestTypes = ImmutableList.copyOf(mediaTypes);
+      this.requestTypes = ImmutableList.copyOf(requestTypes);
+      this.mediaTypes = ImmutableList.copyOf(mediaTypes);
       this.desc = desc;
     }
 
@@ -52,48 +54,32 @@ public class JAXUtils {
   public static List<API> generateAPIs(Class<?> cls) {
     List<API> list = Lists.newArrayList();
 
-    String basePath = getPathValue(cls);
-    if (basePath.isEmpty()) {
-      return list;
+    String basePath = pathValueOf(cls);
+    if (!basePath.isEmpty()) {
+      for (Method method : cls.getMethods()) {
+        List<String> reqs = Lists.newArrayList();
+        if (method.isAnnotationPresent(GET.class)) {
+          reqs.add(HttpMethod.GET);
+        }
+        if (method.isAnnotationPresent(POST.class)) {
+          reqs.add(HttpMethod.POST);
+        }
+        if (method.isAnnotationPresent(PUT.class)) {
+          reqs.add(HttpMethod.PUT);
+        }
+        if (method.isAnnotationPresent(DELETE.class)) {
+          reqs.add(HttpMethod.DELETE);
+        }
+
+        if (!reqs.isEmpty()) {
+          String subPath = pathValueOf(method);
+          String fullPath = subPath.isEmpty() ? basePath : basePath + "/" + subPath;
+          fullPath = fullPath.replaceAll("\\{([^:]*):[^}]*\\}", "$1");
+          list.add(new API(fullPath, reqs, mediaTypesOf(method), descriptionOf(method)));
+        }
+      }
     }
 
-    Method[] methods = cls.getMethods();
-    for (Method m : methods) {
-      List<String> reqs = Lists.newArrayList();
-      if (m.isAnnotationPresent(GET.class)) {
-        reqs.add("GET");
-      }
-      if (m.isAnnotationPresent(POST.class)) {
-        reqs.add("POST");
-      }
-      if (m.isAnnotationPresent(PUT.class)) {
-        reqs.add("PUT");
-      }
-      if (m.isAnnotationPresent(DELETE.class)) {
-        reqs.add("DELETE");
-      }
-      if (reqs.isEmpty()) {
-        continue;
-      }
-
-      String subPath = getPathValue(m);
-      String completePath = Strings.isNullOrEmpty(subPath) ? basePath : basePath + "/" + subPath;
-      completePath = completePath.replaceAll("\\{([^:]*):[^}]*\\}", "$1");
-
-      List<String> returnTypes;
-      Produces p = m.getAnnotation(Produces.class);
-      if (p != null) {
-        returnTypes = Lists.newArrayList(p.value());
-      } else {
-        returnTypes = Collections.emptyList();
-      }
-
-      String desc = "";
-      if (m.isAnnotationPresent(APIDesc.class)) {
-        desc = m.getAnnotation(APIDesc.class).value();
-      }
-      list.add(new API(completePath, reqs, returnTypes, desc));
-    }
     return list;
   }
 
@@ -101,16 +87,24 @@ public class JAXUtils {
    * Returns the path of the annotated element,
    * or an empty string if no annotation is present.
    */
-  private static String getPathValue(AnnotatedElement element) {
-    Path p = element.getAnnotation(Path.class);
-    if (p == null) {
-      return "";
+  static String pathValueOf(AnnotatedElement element) {
+    Path annotation = element.getAnnotation(Path.class);
+    String value = (annotation != null) ? annotation.value() : "";
+    return StringUtils.removeStart(value, "/");
+  }
+
+  static List<String> mediaTypesOf(Method method) {
+    Produces annotation = method.getAnnotation(Produces.class);
+    if (annotation != null) {
+      return Lists.newArrayList(annotation.value());
+    } else {
+      return Collections.emptyList();
     }
-    String rv = p.value();
-    if (rv.charAt(0) == '/') {
-      return rv.substring(1);
-    }
-    return rv;
+  }
+
+  static String descriptionOf(Method method) {
+    APIDesc annotation = method.getAnnotation(APIDesc.class);
+    return (annotation != null) ? annotation.value() : "";
   }
 
 }
