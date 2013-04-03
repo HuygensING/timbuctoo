@@ -12,6 +12,7 @@ import net.handle.hdllib.Util;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.util.Configuration;
+import nl.knaw.huygens.repository.util.Paths;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,7 @@ public class HandleManager implements PersistenceManager {
   private static byte[] readPrivateKey(String privateKeyURI) {
     FileInputStream inputStream = null;
     try {
-      File file = new File(privateKeyURI);
+      File file = new File(Paths.pathInUserHome(privateKeyURI));
       LOG.info("Location of private key: {}", file.getAbsolutePath());
       inputStream = new FileInputStream(file);
       byte[] privateKey = new byte[(int) file.length()];
