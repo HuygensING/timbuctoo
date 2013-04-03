@@ -45,7 +45,7 @@ public class JAXUtils {
   }
 
   /**
-   * Retutns an API description for each HTTP method in the specified
+   * Returns an API description for each HTTP method in the specified
    * class if it has a <code>Path</code> annotation, or an empty list
    * if the <code>Path</code> annotation is missing.
    */
@@ -78,7 +78,7 @@ public class JAXUtils {
 
       String subPath = getPathValue(m);
       String completePath = Strings.isNullOrEmpty(subPath) ? basePath : basePath + "/" + subPath;
-      completePath = completePath.replaceAll("\\{([^:]*):[^}]*\\}", "{$1}");
+      completePath = completePath.replaceAll("\\{([^:]*):[^}]*\\}", "$1");
 
       List<String> returnTypes;
       Produces p = m.getAnnotation(Produces.class);
