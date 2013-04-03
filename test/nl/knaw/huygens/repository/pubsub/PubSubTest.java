@@ -25,7 +25,6 @@ public class PubSubTest {
 
   private static class BogusSub {
     @Subscribe
-    @SuppressWarnings("unused")
     public void onFoo(Object a, Object b) {
       // Nothing.
     }
@@ -34,11 +33,11 @@ public class PubSubTest {
   private static class Foo {
     private List<FooEvent> events = Lists.newArrayList();
     private final boolean doThrow;
+
     public Foo(boolean doThrow) {
       this.doThrow = doThrow;
     }
 
-    @SuppressWarnings("unused")
     @Subscribe
     public void onFooEvent(FooEvent x) {
       events.add(x);
@@ -96,7 +95,6 @@ public class PubSubTest {
 
   }
 
-
   @Test
   public void testException() {
     hub.subscribe(mockedFooThrower);
@@ -119,8 +117,7 @@ public class PubSubTest {
     hub.subscribe(mockedFooThrower);
     hub.safePublish(event);
     assertTrue("Should have been called", mockedFooThrower.verify(event));
-    assertTrue("Should have called the old one, too",
-               mockedFoo.verify(Lists.newArrayList(event, event)));
+    assertTrue("Should have called the old one, too", mockedFoo.verify(Lists.newArrayList(event, event)));
   }
 
   @Test
