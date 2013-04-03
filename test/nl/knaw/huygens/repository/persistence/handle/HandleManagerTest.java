@@ -11,6 +11,12 @@ import static org.mockito.Mockito.when;
 
 import java.util.Map;
 
+import net.handle.api.HSAdapter;
+import net.handle.hdllib.HandleException;
+import net.handle.hdllib.HandleValue;
+import net.handle.hdllib.Util;
+import nl.knaw.huygens.repository.persistence.PersistenceException;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,14 +25,8 @@ import org.mockito.stubbing.Answer;
 
 import com.google.common.collect.Maps;
 
-import net.handle.api.HSAdapter;
-import net.handle.hdllib.HandleException;
-import net.handle.hdllib.HandleValue;
-import net.handle.hdllib.Util;
-
-import nl.knaw.huygens.repository.persistence.PersistenceException;
-
 public class HandleManagerTest {
+
   private HSAdapterFactoryWrapper hsAdapterFactoryWrapper;
   private HSAdapter handleAdapter;
   private HandleManager handleManager;
@@ -39,7 +39,7 @@ public class HandleManagerTest {
   @Before
   public void setUp() throws HandleException {
     handleAdapter = mock(HSAdapter.class);
-    hsAdapterFactoryWrapper = mock (HSAdapterFactoryWrapper.class);
+    hsAdapterFactoryWrapper = mock(HSAdapterFactoryWrapper.class);
     when(hsAdapterFactoryWrapper.createHSAdapter()).thenReturn(handleAdapter);
     handleManager = new HandleManager(hsAdapterFactoryWrapper, prefix, namingAuthority, baseURL);
     adminValue = mock(HandleValue.class);
@@ -57,11 +57,7 @@ public class HandleManagerTest {
   }
 
   private String createHandleName(String id) {
-    StringBuilder sb = new StringBuilder(prefix);
-    sb.append("/");
-    sb.append(id);
-
-    return sb.toString();
+    return prefix + "/" + id;
   }
 
   @Test
@@ -137,7 +133,6 @@ public class HandleManagerTest {
 
     assertEquals(2, values.length);
     assertEquals(expectURL, actualURL);
-
   }
 
   @Test(expected = PersistenceException.class)
@@ -199,8 +194,7 @@ public class HandleManagerTest {
       }
     }).when(handleAdapter).resolveHandle(anyString(), any(String[].class), any(int[].class));
 
-    String id = "test";
-
-    handleManager.getPersistentURL(id);
+    handleManager.getPersistentURL("test");
   }
+
 }

@@ -49,6 +49,7 @@ public class RepositoryBasicModule extends AbstractModule {
   @Provides
   @Singleton
   PersistenceManager providePersistenceManager() {
+    // TODO improve by injecting configuration into HandleManager
     if (config.getBooleanSetting("use-handle-system", true)) {
       return HandleManager.newHandleManager(config);
     } else {
