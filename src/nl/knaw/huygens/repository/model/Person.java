@@ -1,11 +1,10 @@
 package nl.knaw.huygens.repository.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.util.Datable;
 import nl.knaw.huygens.repository.model.util.IDPrefix;
 import nl.knaw.huygens.repository.storage.Storage;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("PER")
 public class Person extends Document {
@@ -24,12 +23,17 @@ public class Person extends Document {
     // No references
   }
 
-  @IndexAnnotation(fieldName = "birthDate")
+  /*
+   * IndexAnnotation commented out, because the setupscript does not create a good Solr-schema for Person.
+   * The fields of birthDate and deathDate are missing. See http://suzanna.huygens.knaw.nl/issues/1397 for more information.
+   *
+   */
+  //@IndexAnnotation(fieldName = "birthDate")
   public Datable getBirthDate() {
     return this.birthDate;
   }
 
-  @IndexAnnotation(fieldName = "deathDate")
+  //@IndexAnnotation(fieldName = "deathDate")
   public Datable getDeathDate() {
     return this.deathDate;
   }
