@@ -31,6 +31,7 @@
     <dependency org="com.google.inject" name="guice" rev="3.0" conf="main->default" />
     <!-- Jersey -->
     <dependency org="com.sun.jersey" name="jersey-server" rev="${jersey.version}" conf="main->default"/>
+    <dependency org="com.sun.jersey" name="jersey-client" rev="${jersey.version}" conf="main->default"/>
     <dependency org="com.sun.jersey" name="jersey-core" rev="${jersey.version}" conf="main->default"/>
     <dependency org="com.sun.jersey" name="jersey-servlet" rev="${jersey.version}" conf="main->default"/>
     
@@ -98,9 +99,6 @@
 
     <!-- Password stuff -->
     <dependency org="org.mindrot" name="jbcrypt" rev="0.3m" conf="main->default" />
-
-    <!-- OAuth server -->
-    <dependency org="nl.surfnet.apis" name="apis-authorization-server" rev="1.1.0" conf="main->default" />
 
     <!-- Mongo with Jackson 2.0 -->
     <dependency org="org.mongojack" name="mongojack" rev="2.0.0-RC1" conf="main->default" />
