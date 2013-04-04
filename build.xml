@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project xmlns:ivy="antlib:org.apache.ivy.ant" name="repository" default="setup">
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="repository" default="war">
 
   <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
   <!-- ~~~ Build file for the Repository project ~~~~~~~~~~~~~~~~~~~ -->
@@ -18,13 +18,11 @@
   <property name="dist.dir" location="${build.dir}/dist" />
   <property name="assembly.dir" location="${build.dir}/assembly" />
 
-  <property name="main.src.dir" location="src/main" />
+  <property name="main.src.dir" location="src" />
   <property name="resource.src.dir" location="resources" />
-  <property name="tools.src.dir" location="src/main/tools" />
   <property name="main.bin.dir" location="${build.dir}/main/classes" />
 
-  <property name="test.src.dir" location="src/test/java" />
-  <property name="test.resources.src.dir" location="src/test/resources" />
+  <property name="test.src.dir" location="test" />
   <property name="test.bin.dir" location="${build.dir}/test/classes" />
   <property name="test.data.dir" location="${build.dir}/test/data" />
   <property name="test.reports.dir" location="${build.dir}/test/reports" />
@@ -138,7 +136,7 @@
   </target>
 
   <target name="main-compile" depends="classpaths">
-    <javac srcdir="${main.src.dir}" destdir="${main.bin.dir}" debug="true" includeantruntime="false">
+    <javac srcdir="${main.src.dir}" destdir="${main.bin.dir}" debug="true" deprecation="on" includeantruntime="false">
       <classpath refid="main.compile.classpath"/>
     </javac>
     <copy todir="${main.bin.dir}">
@@ -155,12 +153,10 @@
   </target>
 
   <target name="test-compile" depends="main-compile">
-    <javac srcdir="${test.src.dir}" destdir="${test.bin.dir}" includeantruntime="false">
+    <javac srcdir="${test.src.dir}" destdir="${test.bin.dir}" deprecation="on" includeantruntime="false">
       <classpath refid="test.compile.classpath"/>
+    	<compilerarg value="-Xlint:unchecked"/> <!-- TODO make more generic -->
     </javac>
-    <copy todir="${test.bin.dir}">
-      <fileset dir="${test.resources.src.dir}"/>
-    </copy>
   </target>
 
   <target name="unit-tests" depends="test-compile">
@@ -178,12 +174,12 @@
         </fileset>
       </batchtest>
     </junit>
-    <!--<junitreport todir="${test.data.dir}">
+    <junitreport todir="${test.data.dir}">
       <fileset dir="${test.data.dir}">
         <include name="TEST-*.xml"/>
       </fileset>
       <report format="frames" todir="${test.reports.dir}"/>
-    </junitreport> -->
+    </junitreport>
     <fail if="test.failed">
       Test failed. Check ${test.reports.dir}.
     </fail>
@@ -191,7 +187,8 @@
 
   <target name="war" depends="unit-tests">
     <antcall target="website-prep"/>
-    <war destfile="${project.name}.war" webxml="src/main/webapp/WEB-INF/web.xml">
+  	<!-- TODO parametrize -->
+    <war destfile="${project.name}.war" webxml="WebContent/WEB-INF/web.xml">
       <classes dir="${main.bin.dir}" />
       <lib dir="${ivy.lib.dir}/main" />
       <webinf dir="${config.src}">
@@ -357,11 +354,13 @@
     <copy todir="${dist.dir}/website">
       <fileset dir="${website.src}"/>
     </copy>
+  	<!--
     <property name="deployment-type" value="test"/>
     <echo message="Creating website settings for ${deployment-type} deployment."/>
     <copy overwrite="true" tofile="${dist.dir}/website/js/settings.js"
         file="${website.src}/js/${deployment-type}server-settings.js"/>
     <antcall target="website-compress"/>
+    -->
   </target>
 
   <target name="website-compress" depends="classpaths" description="Compresses and combines the website files, for internal use.">
