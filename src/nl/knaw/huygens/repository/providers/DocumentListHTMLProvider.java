@@ -16,6 +16,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
+import nl.knaw.huygens.repository.model.Document;
+
 import org.apache.commons.lang.StringEscapeUtils;
 
 import sun.reflect.generics.reflectiveObjects.WildcardTypeImpl;
@@ -32,8 +34,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import nl.knaw.huygens.repository.model.Document;
-
+//TODO remove WildcardTypeImpl! this is an internal class
 
 @Provider
 @Produces(MediaType.TEXT_HTML)
@@ -42,7 +43,7 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
   private static byte[] PREAMBLE;
   private Map<AnnotationBundleKey, ObjectWriter> writers = Maps.newHashMap();
   private JsonFactory factory = new JsonFactory();
-  
+
   @Inject
   public DocumentListHTMLProvider(@Named("html.defaultstylesheet") String stylesheetLink, @Named("public_url") String publicURL) {
     try {
@@ -55,17 +56,15 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
       e.printStackTrace();
     }
   }
-  
+
   @Override
-  public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
-      MediaType mediaType) {
+  public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
     if (!mediaType.toString().startsWith(MediaType.TEXT_HTML)) {
       return false;
     }
-    
+
     boolean isWritable;
-    if (List.class.isAssignableFrom(type)
-        && genericType instanceof ParameterizedType) {
+    if (List.class.isAssignableFrom(type) && genericType instanceof ParameterizedType) {
       ParameterizedType parameterizedType = (ParameterizedType) genericType;
       Type[] actualTypeArgs = (parameterizedType.getActualTypeArguments());
       isWritable = actualTypeArgs.length == 1;
@@ -85,20 +84,18 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
     } else {
       isWritable = false;
     }
-    
+
     return isWritable;
   }
 
   @Override
-  public long getSize(List<? extends Document> t, Class<?> type, Type genericType, Annotation[] annotations,
-      MediaType mediaType) {
+  public long getSize(List<? extends Document> t, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
     return -1;
   }
 
   @Override
-  public void writeTo(List<? extends Document> docs, Class<?> type, Type genericType, Annotation[] annotations,
-      MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
-      throws IOException, WebApplicationException {
+  public void writeTo(List<? extends Document> docs, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders,
+      OutputStream entityStream) throws IOException, WebApplicationException {
     entityStream.write(PREAMBLE);
     entityStream.write("<title>".getBytes("UTF-8"));
     byte[] title = encodeTitle(docs.isEmpty() ? null : docs.get(0), docs.size());
@@ -107,7 +104,7 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
     entityStream.write(title);
     entityStream.write("</h1>".getBytes("UTF-8"));
     JsonGenerator jgen = new HTMLGenerator(factory.createGenerator(entityStream));
- 
+
     // Get the right object writer:
     AnnotationBundleKey key = new AnnotationBundleKey(annotations);
     ObjectWriter writer = writers.get(key);
@@ -117,7 +114,7 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
       writer = endpointConfig.getWriter();
       writers.put(key, writer);
     }
-    
+
     for (Document doc : docs) {
       entityStream.write("<h2>".getBytes("UTF-8"));
       entityStream.write(encodeDocTitle(doc));
@@ -128,8 +125,8 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
   }
 
   private byte[] encodeDocTitle(Document doc) throws UnsupportedEncodingException {
-   String t = StringEscapeUtils.escapeHtml(doc.getDescription() != null ? doc.getDescription() : "");
-   return t.getBytes("UTF-8");
+    String t = StringEscapeUtils.escapeHtml(doc.getDescription() != null ? doc.getDescription() : "");
+    return t.getBytes("UTF-8");
   }
 
   private byte[] encodeTitle(Document exampleDoc, int size) throws UnsupportedEncodingException {
