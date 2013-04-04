@@ -6,7 +6,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
-import nl.knaw.huygens.repository.util.Configuration;
+import nl.knaw.huygens.repository.Configuration;
 
 public class StorageConfiguration {
   private String host;

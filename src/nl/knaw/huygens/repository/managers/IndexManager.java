@@ -9,6 +9,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
+import nl.knaw.huygens.repository.Configuration;
 import nl.knaw.huygens.repository.events.Events.DocumentAddEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentDeleteEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
@@ -18,7 +19,6 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.pubsub.Subscribe;
-import nl.knaw.huygens.repository.util.Configuration;
 import nl.knaw.huygens.repository.variation.VariationUtils;
 
 /**

@@ -16,11 +16,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
+import nl.knaw.huygens.repository.Configuration;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.User;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
-import nl.knaw.huygens.repository.util.Configuration;
 import nl.knaw.huygens.repository.util.CryptoUtils;
 
 public class DatabaseSetupper {
