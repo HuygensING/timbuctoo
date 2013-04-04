@@ -34,7 +34,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-//TODO remove WildcardTypeImpl! this is an internal class
+// TODO make unit test, replace WildcardTypeImpl by WildcardType
 
 @Provider
 @Produces(MediaType.TEXT_HTML)
