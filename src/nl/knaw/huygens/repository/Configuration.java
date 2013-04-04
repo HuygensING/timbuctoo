@@ -12,7 +12,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class Configuration {
-  private static final String DEFAULT_CONFIG_FILE = "../config.xml";
+
+  public static final String DEFAULT_CONFIG_FILE = "../config.xml";
+
   private static final String SETTINGS_PREFIX = "settings.";
   private XMLConfiguration xmlConfig;
 
@@ -58,7 +60,6 @@ public class Configuration {
   }
 
   public List<String> getSettingKeys(String prefix) {
-    @SuppressWarnings("unchecked")
     Iterator<String> it = xmlConfig.getKeys(SETTINGS_PREFIX + prefix);
     List<String> rv = Lists.newArrayList();
     while (it.hasNext()) {
@@ -76,7 +77,6 @@ public class Configuration {
   }
 
   public Map<String, String> getAll() {
-    @SuppressWarnings("unchecked")
     Iterator<String> it = xmlConfig.getKeys(SETTINGS_PREFIX);
     Map<String, String> rv = Maps.newHashMap();
     while (it.hasNext()) {
@@ -87,4 +87,5 @@ public class Configuration {
     }
     return rv;
   }
+
 }
