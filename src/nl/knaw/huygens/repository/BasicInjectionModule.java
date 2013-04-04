@@ -23,6 +23,10 @@ public class BasicInjectionModule extends AbstractModule {
 
   private final Configuration config;
 
+  public BasicInjectionModule(Configuration config) {
+    this.config = config;
+  }
+
   public BasicInjectionModule(String configPath) {
     try {
       config = new Configuration(configPath);
