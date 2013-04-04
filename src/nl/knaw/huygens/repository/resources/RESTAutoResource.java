@@ -29,6 +29,8 @@ import com.google.inject.Inject;
 @Path("resources/{entityType: [a-zA-Z]+}")
 public class RESTAutoResource {
 
+  private static final String ID_PARAM = "id";
+
   public static final String ENTITY_PARAM = "entityType";
 
   private final StorageManager storageManager;
@@ -72,7 +74,7 @@ public class RESTAutoResource {
   @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}")
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
-  public Document getDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam("id") String id) {
+  public Document getDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam(ID_PARAM) String id) {
     Class<? extends Document> type = getDocType(entityType);
     Document doc = storageManager.getCompleteDocument(type, id);
     if (doc == null) {
@@ -86,7 +88,7 @@ public class RESTAutoResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}")
   @JsonView(JsonViews.WebView.class)
-  public <T extends Document> void putDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam("id") String id, Document input) throws IOException {
+  public <T extends Document> void putDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam(ID_PARAM) String id, Document input) throws IOException {
     try {
       @SuppressWarnings("unchecked")
       Class<T> type = (Class<T>) getDocType(entityType);
@@ -102,7 +104,7 @@ public class RESTAutoResource {
   @DELETE
   @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}")
   @JsonView(JsonViews.WebView.class)
-  public <T extends Document> void putDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam("id") String id) throws IOException {
+  public <T extends Document> void putDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam(ID_PARAM) String id) throws IOException {
     try {
       @SuppressWarnings("unchecked")
       Class<T> type = (Class<T>) getDocType(entityType);
@@ -111,6 +113,19 @@ public class RESTAutoResource {
     } catch (ClassCastException ex) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
+  }
+
+  @GET
+  @JsonView(JsonViews.WebView.class)
+  @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}/{variation: \\w+}")
+  @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
+  public Document getDocWithOfVariation(@PathParam(ENTITY_PARAM) String entityType, @PathParam(ID_PARAM) String id, @PathParam("variation") String variation) {
+    Class<? extends Document> type = getDocType(entityType);
+    Document doc = storageManager.getCompleteDocument(type, id, variation);
+    if (doc == null) {
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
+    }
+    return doc;
   }
 
   private Class<? extends Document> getDocType(String entityType) {

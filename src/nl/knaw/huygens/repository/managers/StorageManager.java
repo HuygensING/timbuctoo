@@ -24,6 +24,8 @@ import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.generic.StorageUtils;
 import nl.knaw.huygens.repository.variation.VariationUtils;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -73,6 +75,11 @@ public class StorageManager {
       rv.fetchAll(storage);
     }
     return rv;
+  }
+
+  public <T extends Document> T getCompleteDocument(Class<T> type, String id, String variation) {
+    //TODO: implement this method see redmine issue #1371
+    throw new NotImplementedException("Yet to be implemented");
   }
 
   public <T extends Document> T getDocument(Class<T> type, String id) {
