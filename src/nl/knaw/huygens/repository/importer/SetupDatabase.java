@@ -7,11 +7,11 @@ import org.apache.commons.configuration.ConfigurationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-import nl.knaw.huygens.repository.RepositoryBasicModule;
+import nl.knaw.huygens.repository.BasicInjectionModule;
 
 public class SetupDatabase {
 	public static void main(String[] args) throws ConfigurationException, IOException {
-	  Injector injector = Guice.createInjector(new RepositoryBasicModule("config.xml"));
+	  Injector injector = Guice.createInjector(new BasicInjectionModule("config.xml"));
 	  // FIXME: this should be configurable, and for that we need a commandline parsing tool.
 	  String vreId = "test-vre";
 	  String vreName = "Test VRE";

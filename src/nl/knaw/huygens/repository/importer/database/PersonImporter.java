@@ -1,6 +1,6 @@
 package nl.knaw.huygens.repository.importer.database;
 
-import nl.knaw.huygens.repository.RepositoryBasicModule;
+import nl.knaw.huygens.repository.BasicInjectionModule;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.repository.model.raa.RAACivilServant;
@@ -11,7 +11,7 @@ import com.google.inject.Injector;
 public class PersonImporter {
 
   public static void main(String[] args) throws Exception {
-    Injector injector = Guice.createInjector(new RepositoryBasicModule("config.xml"));
+    Injector injector = Guice.createInjector(new BasicInjectionModule("config.xml"));
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     storageManager.getStorage().empty();
 
