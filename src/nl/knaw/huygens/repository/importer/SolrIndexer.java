@@ -3,11 +3,11 @@ package nl.knaw.huygens.repository.importer;
 import java.util.List;
 
 import nl.knaw.huygens.repository.Configuration;
+import nl.knaw.huygens.repository.RepositoryBasicModule;
 import nl.knaw.huygens.repository.index.DocumentIndexer;
 import nl.knaw.huygens.repository.index.IndexFactory;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
-import nl.knaw.huygens.repository.modules.RepositoryBasicModule;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.util.RepositoryException;

@@ -1,7 +1,5 @@
 package nl.knaw.huygens.repository;
 
-import nl.knaw.huygens.repository.modules.RepositoryBasicModule;
-import nl.knaw.huygens.repository.modules.RepositoryServletModule;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;

@@ -1,9 +1,9 @@
 package nl.knaw.huygens.repository.importer.database;
 
+import nl.knaw.huygens.repository.RepositoryBasicModule;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.repository.model.raa.RAACivilServant;
-import nl.knaw.huygens.repository.modules.RepositoryBasicModule;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
