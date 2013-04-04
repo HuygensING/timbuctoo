@@ -1,4 +1,7 @@
-<ivy-module version="2.0">
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
 
   <!--
     We set the revision to the revision property from ivysettings.xml,
@@ -31,10 +34,9 @@
     <dependency org="com.sun.jersey" name="jersey-core" rev="${jersey.version}" conf="main->default"/>
     <dependency org="com.sun.jersey" name="jersey-servlet" rev="${jersey.version}" conf="main->default"/>
     
-    <dependency org="com.sun.jersey.jersey-test-framework" name="jersey-test-framework-core" rev="${jersey.version}" conf="main->default" />
-    <dependency org="com.sun.jersey.jersey-test-framework" name="jersey-test-framework-inmemory" rev="${jersey.version}" conf="main->default" />
-    <dependency org="com.sun.jersey" name="jersey-client" rev="${jersey.version}" conf="main->default" />
-        
+    <dependency org="com.sun.jersey.jersey-test-framework" name="jersey-test-framework-core" rev="${jersey.version}" conf="test->default" />
+    <dependency org="com.sun.jersey.jersey-test-framework" name="jersey-test-framework-inmemory" rev="${jersey.version}" conf="test->default" />
+    <!--<dependency org="com.sun.jersey" name="jersey-client" rev="${jersey.version}" conf="main->default" />-->
 
     <dependency org="com.sun.jersey.contribs" name="jersey-guice" rev="${jersey.version}" conf="main->default"/>
 
@@ -58,9 +60,7 @@
       <exclude org="commons-logging" />
     </dependency>
 
-    <!-- Apache commons. Should actually probably decide on either Guava or Commons... -->
-    <dependency org="commons-io" name="commons-io" rev="2.0.1" conf="main->default" />
-    <dependency org="commons-configuration" name="commons-configuration" rev="1.6" conf="main->default" />
+    <dependency org="commons-configuration" name="commons-configuration" rev="1.9" conf="main->default" />
 
     <!-- Log4J for logging. -->
     <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j.version}" conf="main->default" /> 
@@ -71,7 +71,7 @@
     <dependency org="ant-contrib" name="ant-contrib" rev="1.0b3" conf="build->default">
       <exclude org="ant"/>
     </dependency>
-    <dependency org="junit" name="junit" rev="4.8.2" conf="test->default" />
+    <dependency org="junit" name="junit" rev="4.10" conf="test->default" />
     <dependency org="org.mockito" name="mockito-core" rev="1.9.0" conf="test->default" />
     <dependency org="org.mockito" name="mockito-all" rev="1.9.0" conf="test->default" />
     <dependency org="com.jcraft" name="jsch" rev="0.1.44-1" conf="build->default"/>
