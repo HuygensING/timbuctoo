@@ -3,7 +3,7 @@ package nl.knaw.huygens.repository.importer;
 import java.util.List;
 
 import nl.knaw.huygens.repository.Configuration;
-import nl.knaw.huygens.repository.RepositoryBasicModule;
+import nl.knaw.huygens.repository.BasicInjectionModule;
 import nl.knaw.huygens.repository.index.DocumentIndexer;
 import nl.knaw.huygens.repository.index.IndexFactory;
 import nl.knaw.huygens.repository.model.Document;
@@ -96,7 +96,7 @@ public class SolrIndexer {
   }
 
   public static void main(String[] args) {
-    Injector injector = Guice.createInjector(new RepositoryBasicModule("config.xml"));
+    Injector injector = Guice.createInjector(new BasicInjectionModule("config.xml"));
     SolrIndexerRunner runner = injector.getInstance(SolrIndexerRunner.class);
     System.exit(runner.run());
   }
