@@ -12,8 +12,8 @@ public class RepoContextListener extends GuiceServletContextListener {
 
   @Override
   protected Injector getInjector() {
-    Module baseModule = new RepositoryBasicModule(Configuration.DEFAULT_CONFIG_FILE);
-    Module servletModule = new RepositoryServletModule();
+    Module baseModule = new BasicInjectionModule(Configuration.DEFAULT_CONFIG_FILE);
+    Module servletModule = new ServletInjectionModule();
     return Guice.createInjector(baseModule, servletModule);
   }
 

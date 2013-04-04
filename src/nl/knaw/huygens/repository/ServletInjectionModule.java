@@ -9,7 +9,7 @@ import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 
-public class RepositoryServletModule extends JerseyServletModule {
+public class ServletInjectionModule extends JerseyServletModule {
 
   @Override
   protected void configureServlets() {
