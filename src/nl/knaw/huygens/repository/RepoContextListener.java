@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.server;
+package nl.knaw.huygens.repository;
 
 import nl.knaw.huygens.repository.modules.RepositoryBasicModule;
 import nl.knaw.huygens.repository.modules.RepositoryServletModule;
