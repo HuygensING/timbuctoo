@@ -1,5 +1,7 @@
 package nl.knaw.huygens.repository;
 
+import org.apache.commons.configuration.ConfigurationException;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -12,9 +14,18 @@ public class RepoContextListener extends GuiceServletContextListener {
 
   @Override
   protected Injector getInjector() {
-    Module baseModule = new BasicInjectionModule(Configuration.DEFAULT_CONFIG_FILE);
+    Configuration config = getConfiguration();
+    Module baseModule = new BasicInjectionModule(config);
     Module servletModule = new ServletInjectionModule();
     return Guice.createInjector(baseModule, servletModule);
+  }
+
+  private Configuration getConfiguration() {
+    try {
+      return new Configuration(Configuration.DEFAULT_CONFIG_FILE);
+    } catch (ConfigurationException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }
