@@ -6,10 +6,10 @@ import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 
+import nl.knaw.huygens.repository.Configuration;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.mongo.MongoDiff;
-import nl.knaw.huygens.repository.util.Configuration;
 import nl.knaw.huygens.repository.variation.model.projecta.OtherDoc;
 import nl.knaw.huygens.repository.variation.model.projectb.TestDoc;
 
