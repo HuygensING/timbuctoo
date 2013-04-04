@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.modules;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
+import nl.knaw.huygens.repository.Configuration;
 import nl.knaw.huygens.repository.persistence.DefaultPersistenceManager;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.persistence.handle.HandleManager;
@@ -11,7 +12,6 @@ import nl.knaw.huygens.repository.server.security.OAuthAuthorizationServerConnec
 import nl.knaw.huygens.repository.server.security.apis.ApisAuthorizationServerConnector;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
-import nl.knaw.huygens.repository.util.Configuration;
 
 import org.apache.commons.configuration.ConfigurationException;
 
