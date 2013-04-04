@@ -221,4 +221,47 @@ public class RESTAutoResourceTest extends JerseyTest {
 
     assertEquals(ClientResponse.Status.FORBIDDEN, clientResponse.getClientResponseStatus());
   }
+
+  // Variation tests
+
+  @Test
+  public void testGetDocWithVariation() {
+    this.setUserInRole(true);
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
+    String id = "tst0000000001";
+
+    TestConcreteDoc expectedDoc = new TestConcreteDoc();
+    expectedDoc.setId(id);
+
+    String variation = "projecta";
+    when(storageManager.getCompleteDocument(TestConcreteDoc.class, id, variation)).thenReturn(expectedDoc);
+
+    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
+
+    WebResource webResource = super.resource();
+    TestConcreteDoc actualDoc = webResource.path("/resources/testconcretedoc/" + id + "/" + variation).header("Authorization", "bearer 12333322abef").get(TestConcreteDoc.class);
+
+    assertNotNull(actualDoc);
+    assertEquals(expectedDoc.getId(), actualDoc.getId());
+  }
+
+  @Test
+  public void testGetDocWithVariationDocDoesNotExist() {
+    this.setUserInRole(true);
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
+    String id = "tst0000000002";
+
+    String variation = "projecta";
+    when(storageManager.getCompleteDocument(TestConcreteDoc.class, id, variation)).thenReturn(null);
+
+    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
+
+    WebResource webResource = super.resource();
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id + "/" + variation).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
+
+    assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
+  }
+
 }
