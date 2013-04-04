@@ -99,6 +99,7 @@ public class DBJsonNode implements DBObject {
   }
 
   @Override
+  @Deprecated
   public boolean containsKey(String s) {
     return containsField(s);
   }
