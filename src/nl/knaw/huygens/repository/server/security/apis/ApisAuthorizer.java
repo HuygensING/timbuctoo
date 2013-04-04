@@ -5,8 +5,6 @@ import java.util.Collection;
 
 import javax.ws.rs.core.SecurityContext;
 
-import org.surfnet.oaaas.auth.principal.AuthenticatedPrincipal;
-
 public class ApisAuthorizer implements SecurityContext {
   private AuthenticatedPrincipal principal;
   private Collection<String> roles;

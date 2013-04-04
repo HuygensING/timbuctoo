@@ -9,7 +9,6 @@ import javax.ws.rs.core.SecurityContext;
 import nl.knaw.huygens.repository.server.security.OAuthAuthorizationServerConnector;
 
 import org.apache.commons.codec.binary.Base64;
-import org.surfnet.oaaas.auth.principal.AuthenticatedPrincipal;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
