@@ -1,9 +1,8 @@
-package nl.knaw.huygens.repository.modules;
+package nl.knaw.huygens.repository;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
 
-import nl.knaw.huygens.repository.Configuration;
 import nl.knaw.huygens.repository.persistence.DefaultPersistenceManager;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.persistence.handle.HandleManager;

@@ -7,7 +7,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-import nl.knaw.huygens.repository.modules.RepositoryBasicModule;
+import nl.knaw.huygens.repository.RepositoryBasicModule;
 
 public class SetupDatabase {
 	public static void main(String[] args) throws ConfigurationException, IOException {
