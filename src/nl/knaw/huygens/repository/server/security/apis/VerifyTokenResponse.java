@@ -24,8 +24,6 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.surfnet.oaaas.auth.principal.AuthenticatedPrincipal;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
