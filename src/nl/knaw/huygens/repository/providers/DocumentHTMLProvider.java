@@ -14,6 +14,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
+import nl.knaw.huygens.repository.model.Document;
+
 import org.apache.commons.lang.StringEscapeUtils;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -28,60 +30,64 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import nl.knaw.huygens.repository.model.Document;
-
-
 @Provider
 @Produces(MediaType.TEXT_HTML)
 @Singleton
 public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
-  private static byte[] PREAMBLE;
-  private Map<AnnotationBundleKey, ObjectWriter> writers = Maps.newHashMap();
-  private JsonFactory factory = new JsonFactory();
-  
+
+  private final JsonFactory factory;
+  private final Map<AnnotationBundleKey, ObjectWriter> writers;
+  private final String preamble;
+
   @Inject
   public DocumentHTMLProvider(@Named("html.defaultstylesheet") String stylesheetLink, @Named("public_url") String publicURL) {
-    try {
-      String preambleString = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">";
-      if (!Strings.isNullOrEmpty(stylesheetLink)) {
-        preambleString += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + publicURL + stylesheetLink + "\"/>";
-      }
-      PREAMBLE = preambleString.getBytes("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
-    }
-  }
-  
-  @Override
-  public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
-      MediaType mediaType) {
-    if (!mediaType.toString().startsWith(MediaType.TEXT_HTML)) {
-      return false;
-    }
-    
-    return Document.class.isAssignableFrom(type);
+    factory = new JsonFactory();
+    writers = Maps.newHashMap();
+    preamble = getPreamble(stylesheetLink, publicURL);
   }
 
   @Override
-  public long getSize(Document t, Class<?> type, Type genericType, Annotation[] annotations,
-      MediaType mediaType) {
+  public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+    return Document.class.isAssignableFrom(type) && MediaType.TEXT_HTML_TYPE.equals(mediaType);
+  }
+
+  @Override
+  public long getSize(Document doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
     return -1;
   }
 
   @Override
-  public void writeTo(Document doc, Class<?> type, Type genericType, Annotation[] annotations,
-      MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
-      throws IOException, WebApplicationException {
-    entityStream.write(PREAMBLE);
-    entityStream.write("<title>".getBytes("UTF-8"));
-    byte[] title = encodeTitle(doc);
-    entityStream.write(title);
-    entityStream.write("</title></head><body><h1>".getBytes("UTF-8"));
-    entityStream.write(title);
-    entityStream.write("</h1>".getBytes("UTF-8"));
-    JsonGenerator jgen = new HTMLGenerator(factory.createGenerator(entityStream));
-    
-    // Get the right object writer:
+  public void writeTo(Document doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException,
+      WebApplicationException {
+    write(out, preamble);
+    write(out, String.format("<title>%1$s</title></head><body><h1>%1$s</h1>", getTitle(doc)));
+
+    JsonGenerator jgen = new HTMLGenerator(factory.createGenerator(out));
+    ObjectWriter writer = getObjectWriter(annotations);
+    writer.writeValue(jgen, doc);
+
+    write(out, "</body></html>");
+  }
+
+  private void write(OutputStream out, String text) throws IOException {
+    out.write(text.getBytes("UTF-8"));
+  }
+
+  private String getPreamble(String stylesheetLink, String publicURL) {
+    String value = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">";
+    if (!Strings.isNullOrEmpty(stylesheetLink)) {
+      value += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + publicURL + stylesheetLink + "\"/>";
+    }
+    return value;
+  }
+
+  private String getTitle(Document doc) throws UnsupportedEncodingException {
+    String description = doc.getDescription();
+    return (description != null) ? StringEscapeUtils.escapeHtml(description) : "";
+  }
+
+  // FIXME make thread safe
+  private ObjectWriter getObjectWriter(Annotation[] annotations) {
     AnnotationBundleKey key = new AnnotationBundleKey(annotations);
     ObjectWriter writer = writers.get(key);
     if (writer == null) {
@@ -90,12 +96,7 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
       writer = endpointConfig.getWriter();
       writers.put(key, writer);
     }
-    writer.writeValue(jgen, doc);
-    entityStream.write("</body></html>".getBytes("UTF-8"));
+    return writer;
   }
 
-  private byte[] encodeTitle(Document doc) throws UnsupportedEncodingException {
-    String t = StringEscapeUtils.escapeHtml(doc.getDescription() != null ? doc.getDescription() : "");
-    return t.getBytes("UTF-8");
-  }
 }
