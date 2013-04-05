@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
 import java.util.List;
 import java.util.Map;
 
@@ -19,8 +20,6 @@ import javax.ws.rs.ext.Provider;
 import nl.knaw.huygens.repository.model.Document;
 
 import org.apache.commons.lang.StringEscapeUtils;
-
-import sun.reflect.generics.reflectiveObjects.WildcardTypeImpl;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -72,8 +71,8 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
           return Document.class.isAssignableFrom((Class<?>) actualType);
         }
         Class<?> cls = null;
-        if (actualType instanceof WildcardTypeImpl) {
-          WildcardTypeImpl wildcard = (WildcardTypeImpl) actualType;
+        if (actualType instanceof WildcardType) {
+          WildcardType wildcard = (WildcardType) actualType;
           Type[] bounds = wildcard.getUpperBounds();
           if (bounds.length == 1 && bounds[0] instanceof Class<?>) {
             cls = (Class<?>) bounds[0];
