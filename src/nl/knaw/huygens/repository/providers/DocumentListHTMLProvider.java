@@ -34,8 +34,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-// TODO make unit test, replace WildcardTypeImpl by WildcardType
-
 @Provider
 @Produces(MediaType.TEXT_HTML)
 @Singleton
@@ -69,9 +67,13 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
       Type[] actualTypeArgs = (parameterizedType.getActualTypeArguments());
       isWritable = actualTypeArgs.length == 1;
       if (isWritable) {
+        Type actualType = actualTypeArgs[0];
+        if (actualType instanceof Class<?>) {
+          return Document.class.isAssignableFrom((Class<?>) actualType);
+        }
         Class<?> cls = null;
-        if (actualTypeArgs[0] instanceof WildcardTypeImpl) {
-          WildcardTypeImpl wildcard = (WildcardTypeImpl) actualTypeArgs[0];
+        if (actualType instanceof WildcardTypeImpl) {
+          WildcardTypeImpl wildcard = (WildcardTypeImpl) actualType;
           Type[] bounds = wildcard.getUpperBounds();
           if (bounds.length == 1 && bounds[0] instanceof Class<?>) {
             cls = (Class<?>) bounds[0];
@@ -89,7 +91,7 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
   }
 
   @Override
-  public long getSize(List<? extends Document> t, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+  public long getSize(List<? extends Document> doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
     return -1;
   }
 
