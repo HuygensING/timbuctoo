@@ -13,7 +13,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Sitemap;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
@@ -29,17 +29,19 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+// TODO combine with DocumentHTMLProvider
+
 @Provider
 @Produces(MediaType.TEXT_HTML)
 @Singleton
-public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
+public class SitemapHTMLProvider implements MessageBodyWriter<Sitemap> {
 
   private final JsonFactory factory;
   private final Map<AnnotationBundleKey, ObjectWriter> writers;
   private final String preamble;
 
   @Inject
-  public DocumentHTMLProvider(@Named("html.defaultstylesheet") String stylesheetLink, @Named("public_url") String publicURL) {
+  public SitemapHTMLProvider(@Named("html.defaultstylesheet") String stylesheetLink, @Named("public_url") String publicURL) {
     factory = new JsonFactory();
     writers = Maps.newHashMap();
     preamble = getPreamble(stylesheetLink, publicURL);
@@ -47,16 +49,16 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
 
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-    return Document.class.isAssignableFrom(type) && MediaType.TEXT_HTML_TYPE.equals(mediaType);
+    return Sitemap.class.isAssignableFrom(type) && MediaType.TEXT_HTML_TYPE.equals(mediaType);
   }
 
   @Override
-  public long getSize(Document doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+  public long getSize(Sitemap doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
     return -1;
   }
 
   @Override
-  public void writeTo(Document doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException,
+  public void writeTo(Sitemap doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException,
       WebApplicationException {
     write(out, preamble);
     write(out, String.format("<title>%1$s</title></head><body><h1>%1$s</h1>", getTitle(doc)));
@@ -80,9 +82,8 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
     return value;
   }
 
-  private String getTitle(Document doc) {
-    String description = doc.getDescription();
-    return (description != null) ? StringEscapeUtils.escapeHtml(description) : "";
+  private String getTitle(Sitemap doc) {
+    return StringEscapeUtils.escapeHtml(doc.description);
   }
 
   // FIXME make thread safe
