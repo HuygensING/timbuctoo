@@ -47,7 +47,15 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
 
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-    return Document.class.isAssignableFrom(type) && MediaType.TEXT_HTML_TYPE.equals(mediaType);
+    return accept(mediaType) && accept(type);
+  }
+
+  private boolean accept(MediaType mediaType) {
+    return MediaType.TEXT_HTML_TYPE.equals(mediaType);
+  }
+
+  private boolean accept(Class<?> type) {
+    return Document.class.isAssignableFrom(type);
   }
 
   @Override
@@ -59,7 +67,7 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
   public void writeTo(Document doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException,
       WebApplicationException {
     write(out, preamble);
-    write(out, String.format("<title>%1$s</title></head><body><h1>%1$s</h1>", getTitle(doc)));
+    write(out, String.format("<title>%1$s</title></head><body><h1>%1$s</h1>", getDocTitle(doc)));
 
     JsonGenerator jgen = new HTMLGenerator(factory.createGenerator(out));
     ObjectWriter writer = getObjectWriter(annotations);
@@ -80,7 +88,7 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
     return value;
   }
 
-  private String getTitle(Document doc) {
+  private String getDocTitle(Document doc) {
     String description = doc.getDescription();
     return (description != null) ? StringEscapeUtils.escapeHtml(description) : "";
   }
