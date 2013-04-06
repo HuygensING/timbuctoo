@@ -34,11 +34,7 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
 
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-    return helper.accept(mediaType) && accept(type);
-  }
-
-  private boolean accept(Class<?> type) {
-    return Document.class.isAssignableFrom(type);
+    return helper.accept(mediaType) && Document.class.isAssignableFrom(type);
   }
 
   @Override

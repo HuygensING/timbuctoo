@@ -56,7 +56,7 @@ public class HTMLProviderHelper {
   }
 
   /**
-   * Writes the title to the output stream.
+   * Writes the header to the output stream.
    */
   public void writeHeader(OutputStream out, String title) throws IOException {
     write(out, preamble);
