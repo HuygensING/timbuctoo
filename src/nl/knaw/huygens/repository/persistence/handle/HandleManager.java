@@ -3,11 +3,20 @@ package nl.knaw.huygens.repository.persistence.handle;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.PrivateKey;
 import java.util.UUID;
 
-import net.handle.api.HSAdapter;
+import net.handle.hdllib.AdminRecord;
+import net.handle.hdllib.AuthenticationInfo;
+import net.handle.hdllib.ClientSessionTracker;
+import net.handle.hdllib.Common;
+import net.handle.hdllib.CreateHandleRequest;
+import net.handle.hdllib.Encoder;
 import net.handle.hdllib.HandleException;
+import net.handle.hdllib.HandleResolver;
 import net.handle.hdllib.HandleValue;
+import net.handle.hdllib.PublicKeyAuthenticationInfo;
+import net.handle.hdllib.SessionSetupInfo;
 import net.handle.hdllib.Util;
 import nl.knaw.huygens.repository.Configuration;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
@@ -34,13 +43,34 @@ public class HandleManager implements PersistenceManager {
     String cipherString = config.getSetting("handle.cipher");
     byte[] cipher = cipherString.getBytes();
     String privateKeyURI = config.getSetting("handle.private_key_file");
-    byte[] privateKey = readPrivateKey(privateKeyURI);
+    byte[] privateKeyBytes = readPrivateKey(privateKeyURI);
     String authority = config.getSetting("handle.naming_authority");
     String prefix = config.getSetting("handle.prefix");
     String adminHandle = getAdminHandle(authority, prefix);
 
-    HSAdapterFactoryWrapper wrapper = new HSAdapterFactoryWrapper(adminHandle, 300, privateKey, cipher);
-    return new HandleManager(wrapper, prefix, authority, url);
+    PublicKeyAuthenticationInfo authenticationInfo = null;
+    SessionSetupInfo sessionSetupInfo = null;
+    ClientSessionTracker sessionTracker = new ClientSessionTracker();
+
+    try {
+      byte[] decryptedKeyBytes = Util.decrypt(privateKeyBytes, cipher);
+      PrivateKey privateKey = Util.getPrivateKeyFromBytes(decryptedKeyBytes, 0);
+      authenticationInfo = new PublicKeyAuthenticationInfo(Util.encodeString(adminHandle), 300, privateKey);
+      sessionSetupInfo = new SessionSetupInfo(authenticationInfo);
+    } catch (Exception ex) {
+      LOG.error(ex.getMessage());
+    }
+
+    sessionTracker.setSessionSetupInfo(sessionSetupInfo);
+    HandleResolver resolver = new HandleResolver();
+    resolver.setSessionTracker(sessionTracker);
+
+    net.handle.hdllib.Configuration configuration = resolver.getConfiguration();
+    //This seems to speed up the communication with the handle server.
+    //TODO: Check what this option is doing.
+    configuration.setResolutionMethod(net.handle.hdllib.Configuration.RM_WITH_CACHE);
+
+    return new HandleManager(resolver, prefix, authority, url);
   }
 
   private static byte[] readPrivateKey(String privateKeyURI) {
@@ -65,13 +95,13 @@ public class HandleManager implements PersistenceManager {
 
   // -------------------------------------------------------------------
 
-  private final HSAdapterFactoryWrapper hsAdapterFactoryWrapper;
+  private final HandleResolver handleResolver;
   private final String namingAuthority;
   private final String prefix;
   private final String baseUrl;
 
-  public HandleManager(HSAdapterFactoryWrapper wrapper, String prefix, String namingAuthority, String baseURL) {
-    hsAdapterFactoryWrapper = wrapper;
+  public HandleManager(HandleResolver resolver, String prefix, String namingAuthority, String baseURL) {
+    handleResolver = resolver;
     this.prefix = prefix;
     this.namingAuthority = namingAuthority;
     this.baseUrl = baseURL.endsWith("/") ? baseURL : baseURL + "/";
@@ -83,8 +113,7 @@ public class HandleManager implements PersistenceManager {
     String handleName = createHandleName(persistenceID);
 
     try {
-      HSAdapter hsAdapter = hsAdapterFactoryWrapper.createHSAdapter();
-      HandleValue[] values = hsAdapter.resolveHandle(handleName, new String[] { "URL" }, new int[] { 1 });
+      HandleValue[] values = handleResolver.resolveHandle(handleName, new String[] { "URL" }, new int[] { 1 });
       if (values != null) {
         url = values[0].getDataAsString();
       }
@@ -107,15 +136,27 @@ public class HandleManager implements PersistenceManager {
 
     HandleValue adminValue = null;
     try {
-      HSAdapter hsAdapter = hsAdapterFactoryWrapper.createHSAdapter();
-      adminValue = hsAdapter.createAdminValue(createAdminHandle(), 200, 100);
+      adminValue = createAdminValue(createAdminHandle(), 200, 100);
       HandleValue[] handleValues = { urlValue, adminValue };
-      hsAdapter.createHandle(createHandleName(id), handleValues);
+      String handleName = createHandleName(id);
+
+      ClientSessionTracker sessionTracker = handleResolver.getSessionTracker();
+      SessionSetupInfo sessionSetupInfo = sessionTracker.getSessionSetupInfo();
+      AuthenticationInfo authInfo = sessionSetupInfo.authInfo;
+      CreateHandleRequest createRequest = new CreateHandleRequest(Util.encodeString(handleName), handleValues, authInfo);
+
+      handleResolver.processRequest(createRequest);
+
     } catch (HandleException ex) {
       throw new PersistenceException(ex);
     }
 
     return id;
+  }
+
+  public HandleValue createAdminValue(final String adminHandle, final int keyIndex, int index) throws HandleException {
+    AdminRecord adminRecord = new AdminRecord(Util.encodeString(adminHandle), keyIndex, true, true, true, true, true, true, true, true, true, true, true, true);
+    return new HandleValue(index, Common.ADMIN_TYPE, Encoder.encodeAdminRecord(adminRecord), HandleValue.TTL_TYPE_RELATIVE, 86400, 0, null, true, true, true, false);
   }
 
   @Override
