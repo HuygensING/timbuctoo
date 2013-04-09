@@ -3,7 +3,6 @@ package nl.knaw.huygens.repository.persistence.handle;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -11,9 +10,13 @@ import static org.mockito.Mockito.when;
 
 import java.util.Map;
 
-import net.handle.api.HSAdapter;
+import net.handle.hdllib.AuthenticationInfo;
+import net.handle.hdllib.ClientSessionTracker;
+import net.handle.hdllib.CreateHandleRequest;
 import net.handle.hdllib.HandleException;
+import net.handle.hdllib.HandleResolver;
 import net.handle.hdllib.HandleValue;
+import net.handle.hdllib.SessionSetupInfo;
 import net.handle.hdllib.Util;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 
@@ -27,10 +30,11 @@ import com.google.common.collect.Maps;
 
 public class HandleManagerTest {
 
-  private HSAdapterFactoryWrapper hsAdapterFactoryWrapper;
-  private HSAdapter handleAdapter;
+  private AuthenticationInfo authenticationInfo;
+  private ClientSessionTracker clientSessionTracker;
+  private SessionSetupInfo sessionSetupInfo;
+  private HandleResolver handleResolver;
   private HandleManager handleManager;
-  private HandleValue adminValue;
   private Map<String, HandleValue[]> handleMap;
   private String prefix = "11151";
   private String namingAuthority = "0.NA";
@@ -38,21 +42,22 @@ public class HandleManagerTest {
 
   @Before
   public void setUp() throws HandleException {
-    handleAdapter = mock(HSAdapter.class);
-    hsAdapterFactoryWrapper = mock(HSAdapterFactoryWrapper.class);
-    when(hsAdapterFactoryWrapper.createHSAdapter()).thenReturn(handleAdapter);
-    handleManager = new HandleManager(hsAdapterFactoryWrapper, prefix, namingAuthority, baseURL);
-    adminValue = mock(HandleValue.class);
+    authenticationInfo = mock(AuthenticationInfo.class);
+    clientSessionTracker = mock(ClientSessionTracker.class);
+    sessionSetupInfo = mock(SessionSetupInfo.class);
+    sessionSetupInfo.authInfo = authenticationInfo;
+    handleResolver = mock(HandleResolver.class);
+    handleManager = new HandleManager(handleResolver, prefix, namingAuthority, baseURL);
     handleMap = Maps.newHashMap();
 
-    when(handleAdapter.createAdminValue(anyString(), anyInt(), anyInt())).thenReturn(adminValue);
+    when(handleResolver.getSessionTracker()).thenReturn(clientSessionTracker);
+    when(clientSessionTracker.getSessionSetupInfo()).thenReturn(sessionSetupInfo);
   }
 
   @After
   public void tearDown() {
     handleManager = null;
-    handleAdapter = null;
-    adminValue = null;
+    handleResolver = null;
     handleMap = null;
   }
 
@@ -65,12 +70,13 @@ public class HandleManagerTest {
     doAnswer(new Answer<Object>() {
       @Override
       public Object answer(InvocationOnMock invocation) throws HandleException {
-        String key = (String) invocation.getArguments()[0];
-        HandleValue[] value = (HandleValue[]) invocation.getArguments()[1];
-        handleMap.put(key, value);
+        CreateHandleRequest createRequest = (CreateHandleRequest) invocation.getArguments()[0];
+        String key = Util.decodeString(createRequest.handle);
+        HandleValue[] values = createRequest.values;
+        handleMap.put(key, values);
         return null;
       }
-    }).when(handleAdapter).createHandle(anyString(), any(HandleValue[].class));
+    }).when(handleResolver).processRequest(any(CreateHandleRequest.class));
 
     String expectedURL = "www.huygens.knaw.nl";
     String id = handleManager.persistURL(expectedURL);
@@ -96,7 +102,7 @@ public class HandleManagerTest {
       public Object answer(InvocationOnMock invocation) throws HandleException {
         throw new HandleException(1);
       }
-    }).when(handleAdapter).createHandle(anyString(), any(HandleValue[].class));
+    }).when(handleResolver).processRequest(any(CreateHandleRequest.class));
 
     String urlToPersist = "www.huygens.knaw.nl";
     handleManager.persistURL(urlToPersist);
@@ -107,12 +113,13 @@ public class HandleManagerTest {
     doAnswer(new Answer<Object>() {
       @Override
       public Object answer(InvocationOnMock invocation) throws HandleException {
-        String key = (String) invocation.getArguments()[0];
-        HandleValue[] value = (HandleValue[]) invocation.getArguments()[1];
-        handleMap.put(key, value);
+        CreateHandleRequest createRequest = (CreateHandleRequest) invocation.getArguments()[0];
+        String key = Util.decodeString(createRequest.handle);
+        HandleValue[] values = createRequest.values;
+        handleMap.put(key, values);
         return null;
       }
-    }).when(handleAdapter).createHandle(anyString(), any(HandleValue[].class));
+    }).when(handleResolver).processRequest(any(CreateHandleRequest.class));
 
     String collectionId = "document";
     String objectId = "test000001";
@@ -142,7 +149,7 @@ public class HandleManagerTest {
       public Object answer(InvocationOnMock invocation) throws HandleException {
         throw new HandleException(1);
       }
-    }).when(handleAdapter).createHandle(anyString(), any(HandleValue[].class));
+    }).when(handleResolver).processRequest(any(CreateHandleRequest.class));
 
     String collectionId = "document";
     String objectId = "test000001";
@@ -163,7 +170,7 @@ public class HandleManagerTest {
         String key = (String) invocation.getArguments()[0];
         return handleMap.get(key);
       }
-    }).when(handleAdapter).resolveHandle(anyString(), any(String[].class), any(int[].class));
+    }).when(handleResolver).resolveHandle(anyString(), any(String[].class), any(int[].class));
 
     String actualURL = handleManager.getPersistentURL(id);
 
@@ -177,7 +184,7 @@ public class HandleManagerTest {
       public HandleValue[] answer(InvocationOnMock invocation) throws HandleException {
         return null;
       }
-    }).when(handleAdapter).resolveHandle(anyString(), any(String[].class), any(int[].class));
+    }).when(handleResolver).resolveHandle(anyString(), any(String[].class), any(int[].class));
     String id = "test";
 
     String actualURL = handleManager.getPersistentURL(id);
@@ -192,7 +199,7 @@ public class HandleManagerTest {
       public HandleValue[] answer(InvocationOnMock invocation) throws HandleException {
         throw new HandleException(0);
       }
-    }).when(handleAdapter).resolveHandle(anyString(), any(String[].class), any(int[].class));
+    }).when(handleResolver).resolveHandle(anyString(), any(String[].class), any(int[].class));
 
     handleManager.getPersistentURL("test");
   }
