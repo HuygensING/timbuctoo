@@ -78,7 +78,7 @@ public class StorageManager {
   }
 
   public <T extends Document> T getCompleteDocument(Class<T> type, String id, String variation) {
-    //TODO: implement this method see redmine issue #1371
+    //TODO: implement this method see redmine issue #1304
     throw new NotImplementedException("Yet to be implemented");
   }
 
