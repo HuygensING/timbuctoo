@@ -2,10 +2,9 @@ package nl.knaw.huygens.repository.model;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import nl.knaw.huygens.repository.model.util.IDPrefix;
-import nl.knaw.huygens.repository.storage.Storage;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("QRY")
 public class Search extends Document {
@@ -27,7 +26,6 @@ public class Search extends Document {
     this.date = date;
     this.searchType = type;
   }
-
 
   public List<String> getIds() {
     return ids;
@@ -69,18 +67,11 @@ public class Search extends Document {
     this.searchType = type;
   }
 
-
   @Override
   public String getDescription() {
     return "Search " + getId();
   }
 
-
-  @Override
-  public void fetchAll(Storage storage) {
-    // No-op
-  }
-  
   @Override
   @JsonProperty("!defaultVRE")
   public String getDefaultVRE() {
