@@ -66,6 +66,11 @@ public class MongoComplexStorage implements Storage {
   }
 
   @Override
+  public <T extends Document> T getVariation(Class<T> type, String id, String variation) {
+    return getStorageForType(type).getVariation(type, id, variation);
+  }
+
+  @Override
   public <T extends Document> List<T> getAllVariations(Class<T> type, String id) throws IOException {
     return getStorageForType(type).getAllVariations(type, id);
   }

@@ -5,13 +5,12 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
+import nl.knaw.huygens.repository.model.util.Change;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
-
-import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
-import nl.knaw.huygens.repository.model.util.Change;
-import nl.knaw.huygens.repository.storage.Storage;
 
 public abstract class Document {
 
@@ -111,7 +110,5 @@ public abstract class Document {
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
   public abstract String getDescription();
-
-  public abstract void fetchAll(Storage storage);
 
 }

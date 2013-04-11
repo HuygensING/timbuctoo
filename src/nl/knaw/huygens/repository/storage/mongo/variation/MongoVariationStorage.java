@@ -19,6 +19,7 @@ import nl.knaw.huygens.repository.variation.VariationException;
 import nl.knaw.huygens.repository.variation.VariationReducer;
 import nl.knaw.huygens.repository.variation.VariationUtils;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
 
@@ -115,6 +116,11 @@ public abstract class MongoVariationStorage implements Storage {
     DBObject query = new BasicDBObject("_id", id);
     DBObject item = col.findOne(query);
     return reducer.getAllForDBObject(item, type);
+  }
+
+  @Override
+  public <T extends Document> T getVariation(Class<T> type, String id, String variation) {
+    throw new NotImplementedException("Yet to be implemented.");
   }
 
   @Override

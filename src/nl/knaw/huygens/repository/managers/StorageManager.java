@@ -24,8 +24,6 @@ import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.generic.StorageUtils;
 import nl.knaw.huygens.repository.variation.VariationUtils;
 
-import org.apache.commons.lang.NotImplementedException;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -71,15 +69,23 @@ public class StorageManager {
       e.printStackTrace();
       rv = null;
     }
-    if (rv != null) {
-      rv.fetchAll(storage);
-    }
+
     return rv;
   }
 
-  public <T extends Document> T getCompleteDocument(Class<T> type, String id, String variation) {
-    //TODO: implement this method see redmine issue #1304
-    throw new NotImplementedException("Yet to be implemented");
+  /**
+   * Get the latest document for a specific variation.
+   * @param type
+   * @param id
+   * @param variation
+   * @return
+   */
+  public <T extends Document> T getCompleteVariation(Class<T> type, String id, String variation) {
+    try {
+      return storage.getVariation(type, id, variation);
+    } catch (Exception ex) {
+      return null;
+    }
   }
 
   public <T extends Document> T getDocument(Class<T> type, String id) {
@@ -140,9 +146,7 @@ public class StorageManager {
 
   private <T extends Document> void doThrowEvent(Class<T> type, String id, @SuppressWarnings("rawtypes") Class<? extends Events.DocumentChangeEvent> t) throws IOException {
     List<T> docs = storage.getAllVariations(type, id);
-    for (T doc : docs) {
-      doc.fetchAll(storage);
-    }
+
     try {
       hub.publish(t.getConstructor(Class.class, List.class).newInstance(type, docs));
     } catch (Exception e) {

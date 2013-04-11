@@ -2,11 +2,10 @@ package nl.knaw.huygens.repository.model;
 
 import java.util.List;
 
+import nl.knaw.huygens.repository.model.util.IDPrefix;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import nl.knaw.huygens.repository.model.util.IDPrefix;
-import nl.knaw.huygens.repository.storage.Storage;
 
 @IDPrefix("USR")
 public class User extends Document {
@@ -23,11 +22,6 @@ public class User extends Document {
     return firstName + " " + lastName;
   }
 
-  @Override
-  public void fetchAll(Storage storage) {
-    // No references, so this is empty.
-  }
-  
   @Override
   @JsonProperty("!defaultVRE")
   public String getDefaultVRE() {

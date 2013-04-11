@@ -4,11 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.inject.Inject;
-
 import nl.knaw.huygens.repository.Configuration;
 import nl.knaw.huygens.repository.events.Events.DocumentAddEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentDeleteEvent;
@@ -20,6 +15,11 @@ import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.pubsub.Subscribe;
 import nl.knaw.huygens.repository.variation.VariationUtils;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.inject.Inject;
 
 /**
  * This manager is responsible for dealing with listening for document changes and
@@ -39,7 +39,7 @@ public class IndexManager {
   private Map<Class<? extends Document>, List<Class<? extends Document>>> indexRelations;
   private StorageManager storageManager;
   private final Hub hub;
-  
+
   @Inject
   private DocumentTypeRegister docTypeRegistry;
 
@@ -78,10 +78,10 @@ public class IndexManager {
     for (String docType : docTypes) {
       this.indexedTypes.add(docTypeRegistry.getClassFromTypeString(docType));
     }
-    this.indexRelations = indexRelations == null ? Maps.<Class<? extends Document>, List<Class<? extends Document>>>newHashMap() : indexRelations;
+    this.indexRelations = indexRelations == null ? Maps.<Class<? extends Document>, List<Class<? extends Document>>> newHashMap() : indexRelations;
     subscribeUs();
   }
-  
+
   public <T extends Document> Map<String, String> getAllByType(Class<T> cls) {
     return indexFactory.getIndexForType(cls).getAll();
   }
@@ -206,7 +206,8 @@ public class IndexManager {
     }
   }
 
-  private <T extends Document, X extends Document> void getReferringDocIdsOfTypeByMethod(Map<Class<? extends Document>, Map<List<String>, List<String>>> docAccumulator, Class<X> referringType, Class<T> referredType, String... referredId) {
+  private <T extends Document, X extends Document> void getReferringDocIdsOfTypeByMethod(Map<Class<? extends Document>, Map<List<String>, List<String>>> docAccumulator, Class<X> referringType,
+      Class<T> referredType, String... referredId) {
     Map<List<String>, List<String>> referringDocIds = storageManager.getReferringDocs(referringType, referredType, referredId);
     if (referringDocIds.isEmpty()) {
       return;
@@ -243,9 +244,7 @@ public class IndexManager {
 
     for (String id : docIds) {
       List<T> docs = storageManager.getAllVariations(baseCls, id);
-      for (T referringDoc : docs) {
-        referringDoc.fetchAll(storageManager.getStorage());
-      }
+
       indexer.modify(docs);
     }
   }
