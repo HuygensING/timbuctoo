@@ -2,7 +2,6 @@ package nl.knaw.huygens.repository.model;
 
 import nl.knaw.huygens.repository.model.util.Datable;
 import nl.knaw.huygens.repository.model.util.IDPrefix;
-import nl.knaw.huygens.repository.storage.Storage;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -16,11 +15,6 @@ public class Person extends Document {
   @Override
   public String getDescription() {
     return name;
-  }
-
-  @Override
-  public void fetchAll(Storage storage) {
-    // No references
   }
 
   /*

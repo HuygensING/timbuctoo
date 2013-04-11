@@ -235,7 +235,7 @@ public class RESTAutoResourceTest extends JerseyTest {
     expectedDoc.setId(id);
 
     String variation = "projecta";
-    when(storageManager.getCompleteDocument(TestConcreteDoc.class, id, variation)).thenReturn(expectedDoc);
+    when(storageManager.getCompleteVariation(TestConcreteDoc.class, id, variation)).thenReturn(expectedDoc);
 
     doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
 
@@ -254,7 +254,7 @@ public class RESTAutoResourceTest extends JerseyTest {
     String id = "tst0000000002";
 
     String variation = "projecta";
-    when(storageManager.getCompleteDocument(TestConcreteDoc.class, id, variation)).thenReturn(null);
+    when(storageManager.getCompleteVariation(TestConcreteDoc.class, id, variation)).thenReturn(null);
 
     doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
 

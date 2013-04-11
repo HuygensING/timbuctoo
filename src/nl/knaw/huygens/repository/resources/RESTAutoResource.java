@@ -121,7 +121,7 @@ public class RESTAutoResource {
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   public Document getDocWithOfVariation(@PathParam(ENTITY_PARAM) String entityType, @PathParam(ID_PARAM) String id, @PathParam("variation") String variation) {
     Class<? extends Document> type = getDocType(entityType);
-    Document doc = storageManager.getCompleteDocument(type, id, variation);
+    Document doc = storageManager.getCompleteVariation(type, id, variation);
     if (doc == null) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }

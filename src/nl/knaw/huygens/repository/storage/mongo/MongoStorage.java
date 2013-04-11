@@ -14,6 +14,7 @@ import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.generic.StorageUtils;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.mongojack.DBCursor;
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
@@ -82,6 +83,11 @@ public abstract class MongoStorage implements Storage {
   public <T extends Document> T getItem(Class<T> type, String id) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     return col.findOneById(id);
+  }
+
+  @Override
+  public <T extends Document> T getVariation(Class<T> type, String id, String variation) {
+    throw new NotImplementedException("Yet to be implemented.");
   }
 
   @Override

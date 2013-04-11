@@ -5,6 +5,8 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.util.List;
 
+import nl.knaw.huygens.repository.model.Document;
+
 import org.bson.BSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,30 +16,23 @@ import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.storage.Storage;
-
 public class MongoDiffTest {
-  
+
   public static class Foo extends Document {
     public static class Baz {
       public int x;
       public int y;
     }
+
     public String name;
     public List<String> bars;
     public Baz baz;
-    
+
     public int blah;
 
     @Override
     public String getDescription() {
       return name;
-    }
-
-    @Override
-    public void fetchAll(Storage storage) {
-      // No-op
     }
 
     @Override
@@ -51,9 +46,9 @@ public class MongoDiffTest {
     @JsonProperty("!defaultVRE")
     public void setDefaultVRE(String defaultVRE) {
       // TODO Auto-generated method stub
-      
+
     }
-    
+
   }
 
   @Before
