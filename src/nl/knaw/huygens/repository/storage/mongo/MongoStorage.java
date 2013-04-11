@@ -14,7 +14,6 @@ import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.generic.StorageUtils;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.mongojack.DBCursor;
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
@@ -87,7 +86,7 @@ public abstract class MongoStorage implements Storage {
 
   @Override
   public <T extends Document> T getVariation(Class<T> type, String id, String variation) {
-    throw new NotImplementedException("Yet to be implemented.");
+    throw new UnsupportedOperationException("Should not be called, see redmine #1417");
   }
 
   @Override
