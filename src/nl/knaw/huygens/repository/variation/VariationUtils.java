@@ -2,26 +2,25 @@ package nl.knaw.huygens.repository.variation;
 
 import java.util.List;
 
-import com.google.common.collect.Lists;
-
 import nl.knaw.huygens.repository.model.Document;
+
+import com.google.common.collect.Lists;
 
 public class VariationUtils {
   public static final String AGREED = "a";
   public static final String VALUE = "v";
   public static final String BASE_MODEL_PACKAGE_VARIATION = "model";
-  public static final String DEFAULT_VALUE= "^default";
 
   public static String getVariationName(Class<?> cls) {
     String packageName = cls.getPackage().getName();
     return packageName.substring(packageName.lastIndexOf('.') + 1);
   }
-  
+
   public static <T extends Document> Class<? extends Document> getBaseClass(Class<? extends T> cls) {
     List<Class<? extends Document>> allClasses = getAllClasses(cls);
     return allClasses.get(allClasses.size() - 1);
   }
-  
+
   @SuppressWarnings("unchecked")
   public static List<Class<? extends Document>> getAllClasses(Class<? extends Document> cls) {
     List<Class<? extends Document>> rv = Lists.newArrayList();
