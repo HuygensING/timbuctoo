@@ -10,6 +10,7 @@ public class VariationUtils {
   public static final String AGREED = "a";
   public static final String VALUE = "v";
   public static final String BASE_MODEL_PACKAGE_VARIATION = "model";
+  public static final String DEFAULT_VARIATION = "!defaultVRE";
 
   public static String getVariationName(Class<?> cls) {
     String packageName = cls.getPackage().getName();

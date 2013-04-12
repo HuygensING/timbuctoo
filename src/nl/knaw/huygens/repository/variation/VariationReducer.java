@@ -77,7 +77,7 @@ public class VariationReducer {
     JsonNode defaultVariationNode = null;
 
     if (node.get(requestedClassId) != null) {
-      defaultVariationNode = node.get(requestedClassId).get("!defaultVRE");
+      defaultVariationNode = node.get(requestedClassId).get(VariationUtils.DEFAULT_VARIATION);
     }
 
     variationToRetrieve = getVariationToRetrieve(classVariation, defaultVariationNode, requestedVariation, variations);
@@ -112,7 +112,7 @@ public class VariationReducer {
     T returnObject = mapper.treeToValue(rv, cls);
     returnObject.setVariations(variations);
     if (defaultVariationNode != null) {
-      returnObject.setCurrentVariation(defaultVariationNode.asText());
+      returnObject.setCurrentVariation(variationToRetrieve);
     }
 
     return returnObject;

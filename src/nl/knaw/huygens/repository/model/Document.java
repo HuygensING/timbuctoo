@@ -101,10 +101,10 @@ public abstract class Document {
     this.variations = variations;
   }
 
-  @JsonProperty("!defaultVRE")
+  @JsonProperty("!currentVariation")
   public abstract String getCurrentVariation();
 
-  @JsonProperty("!defaultVRE")
+  @JsonProperty("!currentVariation")
   public abstract void setCurrentVariation(String currentVariation);
 
   @JsonIgnore

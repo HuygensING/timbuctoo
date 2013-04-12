@@ -33,13 +33,13 @@ public class Person extends Document {
   }
 
   @Override
-  @JsonProperty("!defaultVRE")
+  @JsonProperty("!currentVariation")
   public String getCurrentVariation() {
     return currentVariation;
   }
 
   @Override
-  @JsonProperty("!defaultVRE")
+  @JsonProperty("!currentVariation")
   public void setCurrentVariation(String currentVariation) {
     this.currentVariation = currentVariation;
   }
