@@ -74,13 +74,13 @@ public class Search extends Document {
 
   @Override
   @JsonProperty("!defaultVRE")
-  public String getDefaultVRE() {
+  public String getCurrentVariation() {
     return defaultVRE;
   }
 
   @Override
   @JsonProperty("!defaultVRE")
-  public void setDefaultVRE(String defaultVRE) {
+  public void setCurrentVariation(String defaultVRE) {
     this.defaultVRE = defaultVRE;
   }
 }
