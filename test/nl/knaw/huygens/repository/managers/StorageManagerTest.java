@@ -35,7 +35,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testGetCompleteVariationDocumentFound() {
+  public void testGetCompleteVariationDocumentFound() throws IOException {
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     String id = "testId";
     String variation = "projecta";
@@ -53,7 +53,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testGetCompleteVariationDocumentNotFound() {
+  public void testGetCompleteVariationDocumentNotFound() throws IOException {
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     String id = "testId";
     String variation = "projecta";
@@ -68,7 +68,7 @@ public class StorageManagerTest {
 
   @SuppressWarnings("unchecked")
   @Test()
-  public void testGetCompleteVariationIOException() {
+  public void testGetCompleteVariationIOException() throws IOException {
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     String id = "testId";
     String variation = "projecta";

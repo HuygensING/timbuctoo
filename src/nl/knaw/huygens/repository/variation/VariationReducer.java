@@ -34,6 +34,18 @@ public class VariationReducer {
     this.docTypeRegistry = docTypeRegistry;
   }
 
+  public <T extends Document> T reduceDBObject(DBObject obj, Class<T> cls) throws IOException {
+    return reduceDBObject(obj, cls, null);
+  }
+
+  public <T extends Document> T reduceDBObject(DBObject obj, Class<T> cls, String variation) throws IOException {
+    if (obj == null) {
+      return null;
+    }
+    JsonNode tree = convertToTree(obj);
+    return reduce(tree, cls, variation);
+  }
+
   public <T extends Document> List<T> reduceDBObject(List<DBObject> nodes, Class<T> cls) throws IOException {
     List<T> rv = Lists.newArrayListWithCapacity(nodes.size());
     for (DBObject n : nodes) {
@@ -51,6 +63,10 @@ public class VariationReducer {
   }
 
   public <T extends Document> T reduce(JsonNode node, Class<T> cls) throws VariationException, JsonProcessingException {
+    return reduce(node, cls, null);
+  }
+
+  public <T extends Document> T reduce(JsonNode node, Class<T> cls, String requestedVariation) throws VariationException, JsonProcessingException {
     final String variationName = VariationUtils.getVariationName(cls);
     String idPrefix = variationName + "-";
     List<JsonNode> specificData = Lists.newArrayListWithExpectedSize(1);
@@ -64,7 +80,7 @@ public class VariationReducer {
       defaultVRENode = node.get(requestedClassId).get("!defaultVRE");
     }
 
-    variationToGet = defaultVRENode != null ? defaultVRENode.asText() : variationName;
+    variationToGet = getVariationToGet(variationName, defaultVRENode, requestedVariation);
 
     ObjectNode rv = mapper.createObjectNode();
     for (Class<? extends Document> someCls : VariationUtils.getAllClasses(cls)) {
@@ -96,10 +112,20 @@ public class VariationReducer {
     T returnObject = mapper.treeToValue(rv, cls);
     returnObject.setVariations(variations);
     if (defaultVRENode != null) {
-      returnObject.setDefaultVRE(variationToGet);
+      returnObject.setDefaultVRE(defaultVRENode.asText());
     }
 
     return returnObject;
+  }
+
+  private String getVariationToGet(final String variationName, JsonNode defaultVRENode, String requestedVariation) {
+    String variationToGet;
+    if (requestedVariation != null) {
+      variationToGet = requestedVariation;
+    } else {
+      variationToGet = defaultVRENode != null ? defaultVRENode.asText() : variationName;
+    }
+    return variationToGet;
   }
 
   private List<String> getVariations(JsonNode node) {
@@ -174,14 +200,6 @@ public class VariationReducer {
 
   public void setMapper(ObjectMapper mapper) {
     this.mapper = mapper;
-  }
-
-  public <T extends Document> T reduceDBObject(DBObject obj, Class<T> cls) throws VariationException, JsonProcessingException, IOException {
-    if (obj == null) {
-      return null;
-    }
-    JsonNode tree = convertToTree(obj);
-    return reduce(tree, cls);
   }
 
   @SuppressWarnings("unchecked")
