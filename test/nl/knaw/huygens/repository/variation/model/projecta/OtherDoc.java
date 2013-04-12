@@ -1,8 +1,8 @@
 package nl.knaw.huygens.repository.variation.model.projecta;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import nl.knaw.huygens.repository.variation.model.TestBaseDoc;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Another extension of the basic test doc.
@@ -12,13 +12,13 @@ public class OtherDoc extends TestBaseDoc {
   private String defaultVRE;
 
   @Override
-  @JsonProperty("!defaultVRE")
+  @JsonProperty("!currentVariation")
   public String getCurrentVariation() {
     return defaultVRE;
   }
 
   @Override
-  @JsonProperty("!defaultVRE")
+  @JsonProperty("!currentVariation")
   public void setCurrentVariation(String defaultVRE) {
     this.defaultVRE = defaultVRE;
   }

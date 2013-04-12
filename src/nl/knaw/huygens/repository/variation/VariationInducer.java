@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.storage.mongo.variation.DBJsonNode;
+
 import org.mongojack.internal.stream.JacksonDBObject;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -18,9 +21,6 @@ import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.DBObject;
-
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.storage.mongo.variation.DBJsonNode;
 
 public class VariationInducer {
   private ObjectMapper mapper;
@@ -144,16 +144,15 @@ public class VariationInducer {
           if (!existingItem.has(k)) {
             existingItem.put(k, fieldNode);
           } else if (!fieldNode.equals(existingItem.get(k))) {
-            throw new VariationException("Inducing object into wrong object; fields " + k + " are not equal (" + fieldNode.toString() + " vs. " +
-                                         existingItem.get(k).toString() + "!");
+            throw new VariationException("Inducing object into wrong object; fields " + k + " are not equal (" + fieldNode.toString() + " vs. " + existingItem.get(k).toString() + "!");
           }
-        } else if (k.equals("!defaultVRE") && isShared) { //only for shared classes a defaultVRE should be added.
-          if (existingItem.get(classId) != null && existingItem.get(classId).get(k) == null) {
-            currentClsNode.put(k, variationId);
+        } else if (k.equals("!currentVariation") && isShared) { //only for shared classes a defaultVRE should be added.
+          if (existingItem.get(classId) != null && existingItem.get(classId).get(VariationUtils.DEFAULT_VARIATION) == null) {
+            currentClsNode.put(VariationUtils.DEFAULT_VARIATION, variationId);
           }
         } else if (isShared) {
           addOrMergeVariation(currentClsNode, k, variationId, fieldNode);
-        } else if (!k.equals("!defaultVRE")) {
+        } else if (!k.equals("!currentVariation")) {
           currentClsNode.put(k, fieldNode);
         }
       }

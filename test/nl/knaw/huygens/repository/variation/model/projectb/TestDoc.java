@@ -1,8 +1,8 @@
 package nl.knaw.huygens.repository.variation.model.projectb;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import nl.knaw.huygens.repository.variation.model.TestBaseDoc;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TestDoc extends TestBaseDoc {
   private String defaultVRE;
@@ -14,13 +14,13 @@ public class TestDoc extends TestBaseDoc {
   public String blah;
 
   @Override
-  @JsonProperty("!defaultVRE")
+  @JsonProperty("!currentVariation")
   public String getCurrentVariation() {
     return defaultVRE;
   }
 
   @Override
-  @JsonProperty("!defaultVRE")
+  @JsonProperty("!currentVariation")
   public void setCurrentVariation(String defaultVRE) {
     this.defaultVRE = defaultVRE;
   }

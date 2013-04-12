@@ -24,14 +24,14 @@ public class ImplicitlyAnnotatedModel extends Document {
   }
 
   @Override
-  @JsonProperty("!defaultVRE")
+  @JsonProperty("!currentVariation")
   public String getCurrentVariation() {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  @JsonProperty("!defaultVRE")
+  @JsonProperty("!currentVariation")
   public void setCurrentVariation(String defaultVRE) {
     // TODO Auto-generated method stub
 
