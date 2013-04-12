@@ -111,6 +111,50 @@ public class VariationReducerTest {
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
 
+  @Test
+  public void testReduceCommonDataOnlyWithRequestedVariation() throws IOException {
+    String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}}";
+    JsonNode t = m.readTree(x);
+    TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class, "blub");
+    TestConcreteDoc testVal = new TestConcreteDoc();
+    testVal.name = "b";
+    testVal.setVariations(Lists.newArrayList("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
+    testVal.setDefaultVRE("projecta");
+    assertEquals(null, MongoDiff.diffDocuments(val, testVal));
+  }
+
+  //Tests with explicitly requested VRE.
+  @Test
+  public void testReduceCommonDataMultipleRolesWithRequestedVariation() throws IOException {
+    String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"projectb\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projectb\"},"
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}," + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"test\"}}";
+    JsonNode t = m.readTree(x);
+    TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class, "projecta");
+    TestConcreteDoc testVal = new TestConcreteDoc();
+    testVal.name = "a";
+    testVal.setVariations(Lists.newArrayList("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "projectb-projectbgeneraltestdoc"));
+    testVal.setDefaultVRE("projectb");
+    assertEquals(null, MongoDiff.diffDocuments(val, testVal));
+  }
+
+  @Test
+  public void testReduceRolDataAndCommonDataWithRequestedVariation() throws IOException {
+    String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"blub\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}}";
+    JsonNode t = m.readTree(x);
+    GeneralTestDoc val = reducer.reduce(t, GeneralTestDoc.class, "blub");
+    GeneralTestDoc testVal = new GeneralTestDoc();
+    testVal.name = "b";
+    testVal.generalTestDocValue = "b";
+    testVal.setVariations(Lists.newArrayList("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
+    testVal.setDefaultVRE("projecta");
+    assertEquals(null, MongoDiff.diffDocuments(val, testVal));
+  }
+
   @Test(expected = VariationException.class)
   public void testReduceVariationNonObject() throws IOException {
     String x = "{\"projectb-testdoc\": \"flups\"}";

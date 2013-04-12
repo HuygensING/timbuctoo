@@ -19,7 +19,6 @@ import nl.knaw.huygens.repository.variation.VariationException;
 import nl.knaw.huygens.repository.variation.VariationReducer;
 import nl.knaw.huygens.repository.variation.VariationUtils;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
 
@@ -104,10 +103,14 @@ public abstract class MongoVariationStorage implements Storage {
   public <T extends Document> T getItem(Class<T> type, String id) throws VariationException, IOException {
     DBCollection col = getVariationCollection(type);
     DBObject query = new BasicDBObject("_id", id);
+    addClassNotNull(type, query);
+    return reducer.reduceDBObject(col.findOne(query), type);
+  }
+
+  private <T extends Document> void addClassNotNull(Class<T> type, DBObject query) {
     String classType = VariationUtils.getClassId(type);
     BasicDBObject notNull = new BasicDBObject("$ne", null);
     query.put(classType, notNull);
-    return reducer.reduceDBObject(col.findOne(query), type);
   }
 
   @Override
@@ -119,8 +122,11 @@ public abstract class MongoVariationStorage implements Storage {
   }
 
   @Override
-  public <T extends Document> T getVariation(Class<T> type, String id, String variation) {
-    throw new NotImplementedException("Yet to be implemented.");
+  public <T extends Document> T getVariation(Class<T> type, String id, String variation) throws IOException {
+    DBCollection col = getVariationCollection(type);
+    DBObject query = new BasicDBObject("_id", id);
+    addClassNotNull(type, query);
+    return reducer.reduceDBObject(col.findOne(query), type, variation);
   }
 
   @Override
