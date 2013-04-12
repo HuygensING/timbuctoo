@@ -102,10 +102,10 @@ public abstract class Document {
   }
 
   @JsonProperty("!defaultVRE")
-  public abstract String getDefaultVRE();
+  public abstract String getCurrentVariation();
 
   @JsonProperty("!defaultVRE")
-  public abstract void setDefaultVRE(String defaultVRE);
+  public abstract void setCurrentVariation(String currentVariation);
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")

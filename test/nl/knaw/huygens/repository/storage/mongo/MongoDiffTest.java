@@ -37,14 +37,14 @@ public class MongoDiffTest {
 
     @Override
     @JsonProperty("!defaultVRE")
-    public String getDefaultVRE() {
+    public String getCurrentVariation() {
       // TODO Auto-generated method stub
       return null;
     }
 
     @Override
     @JsonProperty("!defaultVRE")
-    public void setDefaultVRE(String defaultVRE) {
+    public void setCurrentVariation(String defaultVRE) {
       // TODO Auto-generated method stub
 
     }

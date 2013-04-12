@@ -14,7 +14,7 @@ public class User extends Document {
   public String firstName;
   public String lastName;
   public List<String> groups;
-  private String defaultVRE;
+  private String currentVariation;
 
   @Override
   @JsonIgnore
@@ -24,13 +24,13 @@ public class User extends Document {
 
   @Override
   @JsonProperty("!defaultVRE")
-  public String getDefaultVRE() {
-    return defaultVRE;
+  public String getCurrentVariation() {
+    return currentVariation;
   }
 
   @Override
   @JsonProperty("!defaultVRE")
-  public void setDefaultVRE(String defaultVRE) {
-    this.defaultVRE = defaultVRE;
+  public void setCurrentVariation(String currentVariation) {
+    this.currentVariation = currentVariation;
   }
 }

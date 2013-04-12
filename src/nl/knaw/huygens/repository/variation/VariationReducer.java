@@ -112,7 +112,7 @@ public class VariationReducer {
     T returnObject = mapper.treeToValue(rv, cls);
     returnObject.setVariations(variations);
     if (defaultVRENode != null) {
-      returnObject.setDefaultVRE(defaultVRENode.asText());
+      returnObject.setCurrentVariation(defaultVRENode.asText());
     }
 
     return returnObject;
