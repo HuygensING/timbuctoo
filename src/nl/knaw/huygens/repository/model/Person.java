@@ -10,7 +10,7 @@ public class Person extends Document {
   public String name;
   public Datable birthDate;
   public Datable deathDate;
-  private String defaultVRE;
+  private String currentVariation;
 
   @Override
   public String getDescription() {
@@ -34,14 +34,14 @@ public class Person extends Document {
 
   @Override
   @JsonProperty("!defaultVRE")
-  public String getDefaultVRE() {
-    return defaultVRE;
+  public String getCurrentVariation() {
+    return currentVariation;
   }
 
   @Override
   @JsonProperty("!defaultVRE")
-  public void setDefaultVRE(String defaultVRE) {
-    this.defaultVRE = defaultVRE;
+  public void setCurrentVariation(String currentVariation) {
+    this.currentVariation = currentVariation;
   }
 
 }
