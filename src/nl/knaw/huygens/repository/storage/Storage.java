@@ -52,7 +52,8 @@ public interface Storage {
    * @param id
    * @param variation
    * @return
+   * @throws IOException 
    */
-  <T extends Document> T getVariation(Class<T> type, String id, String variation);
+  <T extends Document> T getVariation(Class<T> type, String id, String variation) throws IOException;
 
 }
