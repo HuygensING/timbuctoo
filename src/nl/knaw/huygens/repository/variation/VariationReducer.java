@@ -67,20 +67,20 @@ public class VariationReducer {
   }
 
   public <T extends Document> T reduce(JsonNode node, Class<T> cls, String requestedVariation) throws VariationException, JsonProcessingException {
-    final String variationName = VariationUtils.getVariationName(cls);
-    String idPrefix = variationName + "-";
+    final String classVariation = VariationUtils.getVariationName(cls);
+    String idPrefix = classVariation + "-";
     List<JsonNode> specificData = Lists.newArrayListWithExpectedSize(1);
     List<String> variations = getVariations(node);
     String requestedClassId = VariationUtils.getClassId(cls);
 
-    String variationToGet = null;
-    JsonNode defaultVRENode = null;
+    String variationToRetrieve = null;
+    JsonNode defaultVariationNode = null;
 
     if (node.get(requestedClassId) != null) {
-      defaultVRENode = node.get(requestedClassId).get("!defaultVRE");
+      defaultVariationNode = node.get(requestedClassId).get("!defaultVRE");
     }
 
-    variationToGet = getVariationToGet(variationName, defaultVRENode, requestedVariation);
+    variationToRetrieve = getVariationToRetrieve(classVariation, defaultVariationNode, requestedVariation, variations);
 
     ObjectNode rv = mapper.createObjectNode();
     for (Class<? extends Document> someCls : VariationUtils.getAllClasses(cls)) {
@@ -90,7 +90,7 @@ public class VariationReducer {
         if (id.startsWith(idPrefix)) {
           specificData.add(data);
         } else {
-          processCommonData(variationToGet, data, rv);
+          processCommonData(variationToRetrieve, data, rv);
         }
       }
     }
@@ -111,21 +111,34 @@ public class VariationReducer {
     }
     T returnObject = mapper.treeToValue(rv, cls);
     returnObject.setVariations(variations);
-    if (defaultVRENode != null) {
-      returnObject.setCurrentVariation(defaultVRENode.asText());
+    if (defaultVariationNode != null) {
+      returnObject.setCurrentVariation(defaultVariationNode.asText());
     }
 
     return returnObject;
   }
 
-  private String getVariationToGet(final String variationName, JsonNode defaultVRENode, String requestedVariation) {
-    String variationToGet;
-    if (requestedVariation != null) {
-      variationToGet = requestedVariation;
-    } else {
-      variationToGet = defaultVRENode != null ? defaultVRENode.asText() : variationName;
+  private String getVariationToRetrieve(final String classVariation, JsonNode defaultVariationNode, String requestedVariation, List<String> variations) throws VariationException {
+    String variationToGet = classVariation;
+    if (VariationUtils.BASE_MODEL_PACKAGE_VARIATION.equals(classVariation)) {
+      if (requestedVariation != null && isRequestedVariationAvailable(requestedVariation, variations)) {
+        variationToGet = requestedVariation;
+      } else {
+        variationToGet = defaultVariationNode != null ? defaultVariationNode.asText() : classVariation;
+      }
+    } else if (requestedVariation != null && !classVariation.contains(requestedVariation)) {
+      throw new VariationException("Variation does not exist for requested type.");
     }
     return variationToGet;
+  }
+
+  private boolean isRequestedVariationAvailable(String requestedVariation, List<String> projectVariations) {
+    for (String variation : projectVariations) {
+      if (variation.contains(requestedVariation)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private List<String> getVariations(JsonNode node) {
