@@ -68,7 +68,7 @@ public class JAXUtilsTest {
     List<API> list = JAXUtils.generateAPIs(ClassWithPath2.class);
     assertEquals(1, list.size());
     API api = list.get(0);
-    assertEquals(PATH + "/xx", api.path);
+    assertEquals(PATH + "/{xx}", api.path);
     assertEquals("description", api.desc);
     assertNotNull(api.mediaTypes);
     assertEquals(0, api.mediaTypes.size());
