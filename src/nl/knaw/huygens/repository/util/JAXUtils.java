@@ -67,7 +67,7 @@ public class JAXUtils {
         if (!reqs.isEmpty()) {
           String subPath = pathValueOf(method);
           String fullPath = subPath.isEmpty() ? basePath : basePath + "/" + subPath;
-          fullPath = fullPath.replaceAll("\\{([^:]*):[^}]*\\}", "$1");
+          fullPath = fullPath.replaceAll("\\{([^:]*):[^}]*\\}", "{$1}");
           list.add(new API(fullPath, reqs, mediaTypesOf(method), descriptionOf(method)));
         }
       }
