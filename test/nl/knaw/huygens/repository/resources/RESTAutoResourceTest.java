@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
@@ -20,6 +21,7 @@ import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.server.security.OAuthAuthorizationServerConnector;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -66,6 +68,12 @@ public class RESTAutoResourceTest extends JerseyTest {
     }).when(oAuthAuthorizationServerConnector).authenticate(anyString());
   }
 
+  @After
+  public void tearDownAuthorizationServerConnectorMock() {
+    securityContext = null;
+    oAuthAuthorizationServerConnector = null;
+  }
+
   public RESTAutoResourceTest() {
     super(new GuiceTestContainerFactory(injector));
   }
@@ -97,7 +105,7 @@ public class RESTAutoResourceTest extends JerseyTest {
     doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
 
     WebResource webResource = super.resource();
-    TestConcreteDoc actualDoc = webResource.path("/resources/testconcretedoc/" + id).header("Authorization", "bearer 12333322abef").get(TestConcreteDoc.class);
+    TestConcreteDoc actualDoc = webResource.path("/resources/testconcretedoc/" + id).get(TestConcreteDoc.class);
 
     assertNotNull(actualDoc);
     assertEquals(expectedDoc.getId(), actualDoc.getId());
@@ -105,7 +113,6 @@ public class RESTAutoResourceTest extends JerseyTest {
 
   @Test
   public void testGetDocNonExistingInstance() {
-    this.setUserInRole(true);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
     String id = "tst0000000001";
@@ -115,28 +122,26 @@ public class RESTAutoResourceTest extends JerseyTest {
     doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
 
     WebResource webResource = super.resource();
-    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).get(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
   }
 
   @Test
   public void testGetDocNonExistingClass() {
-    this.setUserInRole(true);
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
     String id = "tst0000000001";
 
     doReturn(null).when(documentTypeRegister).getClassFromTypeString(anyString());
 
     WebResource webResource = super.resource();
-    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).get(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
   }
 
   @Test
   public void testGetAllDocs() {
-    this.setUserInRole(true);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
 
@@ -164,7 +169,6 @@ public class RESTAutoResourceTest extends JerseyTest {
 
   @Test
   public void testGetAllDocsNonFound() {
-    this.setUserInRole(true);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
 
@@ -176,9 +180,51 @@ public class RESTAutoResourceTest extends JerseyTest {
     WebResource webResource = super.resource();
 
     GenericType<List<TestConcreteDoc>> genericType = new GenericType<List<TestConcreteDoc>>() {};
-    List<TestConcreteDoc> actualList = webResource.path("/resources/testconcretedoc/all").header("Authorization", "bearer 12333322abef").get(genericType);
+    List<TestConcreteDoc> actualList = webResource.path("/resources/testconcretedoc/all").get(genericType);
 
     assertEquals(expectedList.size(), actualList.size());
+  }
+
+  @Test
+  public void testPutDocExistingDocument() {
+    DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
+    this.setUserInRole(true);
+    String id = "tst0000000001";
+
+    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
+
+    WebResource webResource = super.resource();
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class);
+
+    assertEquals(ClientResponse.Status.NO_CONTENT, clientResponse.getClientResponseStatus());
+  }
+
+  @Test
+  public void testPutDocNonExistingDocument() {
+    DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
+    this.setUserInRole(true);
+    String id = "NonExistingID";
+
+    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
+
+    WebResource webResource = super.resource();
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class);
+
+    assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
+  }
+
+  @Test
+  public void testPutDocNonExistingType() {
+    DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
+    this.setUserInRole(true);
+    String id = "tst0000000001";
+
+    doReturn(null).when(documentTypeRegister).getClassFromTypeString(anyString());
+
+    WebResource webResource = super.resource();
+    ClientResponse clientResponse = webResource.path("/resources/unknownDoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class);
+
+    assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
   }
 
   // Security tests
@@ -219,6 +265,45 @@ public class RESTAutoResourceTest extends JerseyTest {
     ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).get(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.OK, clientResponse.getClientResponseStatus());
+  }
+
+  @Test
+  public void testPutDocUserNotLoggedIn() {
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
+    String id = "tst0000000001";
+
+    TestConcreteDoc expectedDoc = new TestConcreteDoc();
+    expectedDoc.setId(id);
+
+    when(storageManager.getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
+
+    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
+
+    WebResource webResource = super.resource();
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class);
+
+    assertEquals(ClientResponse.Status.UNAUTHORIZED, clientResponse.getClientResponseStatus());
+  }
+
+  @Test
+  public void testPutDocNotInRole() {
+    this.setUserInRole(false);
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
+    String id = "tst0000000001";
+
+    TestConcreteDoc expectedDoc = new TestConcreteDoc();
+    expectedDoc.setId(id);
+
+    when(storageManager.getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
+
+    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
+
+    WebResource webResource = super.resource();
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class);
+
+    assertEquals(ClientResponse.Status.FORBIDDEN, clientResponse.getClientResponseStatus());
   }
 
   // Variation tests
