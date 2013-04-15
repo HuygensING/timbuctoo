@@ -3,7 +3,6 @@ package nl.knaw.huygens.repository.resources;
 import java.io.IOException;
 import java.util.List;
 
-import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -46,7 +45,6 @@ public class RESTAutoResource {
   @Path("/all")
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
-  @RolesAllowed("USER")
   public List<? extends Document> getAllDocs(@PathParam(ENTITY_PARAM) String entityType, @QueryParam("rows") @DefaultValue("200") int rows, @QueryParam("start") int start) {
     Class<? extends Document> type = getDocType(entityType);
     return storageManager.getAllLimited(type, start, rows);
@@ -73,7 +71,6 @@ public class RESTAutoResource {
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}")
   @JsonView(JsonViews.WebView.class)
-  @RolesAllowed("USER")
   public Document getDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam(ID_PARAM) String id) {
     Class<? extends Document> type = getDocType(entityType);
     Document doc = storageManager.getCompleteDocument(type, id);
