@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.resources;
 import java.io.IOException;
 import java.util.List;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -80,11 +81,11 @@ public class RESTAutoResource {
     return doc;
   }
 
-  // TODO: test this! :-)
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}")
   @JsonView(JsonViews.WebView.class)
+  @RolesAllowed("USER")
   public <T extends Document> void putDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam(ID_PARAM) String id, Document input) throws IOException {
     try {
       @SuppressWarnings("unchecked")
