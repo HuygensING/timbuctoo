@@ -90,7 +90,7 @@ public class RESTAutoResource {
       @SuppressWarnings("unchecked")
       Class<T> type = (Class<T>) getDocType(entityType);
       @SuppressWarnings("unchecked")
-      T typedDoc = (T) input;
+      T typedDoc = input;
       storageManager.modifyDocument(type, typedDoc);
     } catch (ClassCastException ex) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
