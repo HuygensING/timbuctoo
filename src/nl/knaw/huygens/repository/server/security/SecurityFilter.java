@@ -17,10 +17,14 @@ public class SecurityFilter implements ContainerRequestFilter {
   @Override
   public ContainerRequest filter(ContainerRequest request) {
 
-    String authorizationKey = request.getHeaderValue("Authorization");
+    //Only check the authentication when the method will modify.
+    if (!"GET".equals(request.getMethod())) {
 
-    SecurityContext securityContext = oAuthAuthorizationServerConnector.authenticate(authorizationKey);
-    request.setSecurityContext(securityContext);
+      String authorizationKey = request.getHeaderValue("Authorization");
+
+      SecurityContext securityContext = oAuthAuthorizationServerConnector.authenticate(authorizationKey);
+      request.setSecurityContext(securityContext);
+    }
 
     return request;
   }
