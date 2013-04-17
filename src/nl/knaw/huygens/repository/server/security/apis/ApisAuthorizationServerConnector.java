@@ -51,7 +51,7 @@ public class ApisAuthorizationServerConnector implements OAuthAuthorizationServe
     if (key == null) {
       throw new WebApplicationException(Response.Status.UNAUTHORIZED);
     }
-    returnKey = key.replace("bearer ", "");
+    returnKey = key.replaceAll("[bB][eE][aA][rR][eE][rR]", "");
     return returnKey.trim();
   }
 }
