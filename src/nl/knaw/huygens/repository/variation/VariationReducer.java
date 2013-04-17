@@ -109,6 +109,9 @@ public class VariationReducer {
         rv.put(key, entry.getValue());
       }
     }
+    //The @JsonTypeInfo on document expects the property @class everytime, the class is deserialized. 
+    rv.put("@class", cls.getName());
+
     T returnObject = mapper.treeToValue(rv, cls);
     returnObject.setVariations(variations);
     if (defaultVariationNode != null) {

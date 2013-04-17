@@ -5,6 +5,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
+import nl.knaw.huygens.repository.storage.generic.JsonViews;
+
 import org.mongojack.JacksonDBCollection;
 import org.mongojack.internal.object.BsonObjectGenerator;
 
@@ -17,10 +21,6 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
-import nl.knaw.huygens.repository.storage.generic.JsonViews;
-
 public class MongoUtils {
   private static ObjectWriter dbWriter;
   static {
@@ -29,16 +29,17 @@ public class MongoUtils {
     dbWriter = mapper.writerWithView(JsonViews.DBView.class);
   }
 
-
   public static DBObject getObjectForDoc(Object doc) throws IOException {
     if (doc == null) {
       return null;
     }
     BsonObjectGenerator generator = new BsonObjectGenerator();
     dbWriter.writeValue(generator, doc);
+    DBObject dbObject = generator.getDBObject();
+    dbObject.removeField("@class");
+
     return generator.getDBObject();
   }
-  
 
   public static <T extends Document> JacksonDBCollection<T, String> getCollection(DB db, Class<T> cls) {
     DBCollection col = db.getCollection(DocumentTypeRegister.getCollectionName(cls));
@@ -50,7 +51,7 @@ public class MongoUtils {
     JavaType someType = TypeFactory.defaultInstance().constructParametricType(MongoChanges.class, cls);
     return RepoJacksonDBCollection.wrap(col, someType, JsonViews.DBView.class);
   }
-  
+
   public static void sortDocumentsByLastChange(List<DBObject> docs) {
     Collections.sort(docs, new Comparator<DBObject>() {
       @Override
@@ -62,7 +63,7 @@ public class MongoUtils {
       }
 
       private long getDS(DBObject o1) {
-        Object o1s = o1 != null ? o1.get("^lastChange") : null; 
+        Object o1s = o1 != null ? o1.get("^lastChange") : null;
         o1s = (o1s != null && o1s instanceof DBObject) ? ((DBObject) o1s).get("^lastChange") : null;
         o1s = (o1s != null && o1s instanceof DBObject) ? ((DBObject) o1s).get("dateStamp") : null;
         return o1s != null ? (Long) o1s : -1;

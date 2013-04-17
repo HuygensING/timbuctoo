@@ -87,15 +87,25 @@ public class RESTAutoResource {
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
   public <T extends Document> void putDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam(ID_PARAM) String id, Document input) throws IOException {
+    @SuppressWarnings("unchecked")
+    Class<T> type = (Class<T>) getDocType(entityType);
+    Class<? extends Document> inputType = input.getClass();
+
+    //TODO: find a better way to test if input type is the same as the entity type.
+    //@see redmine issue #1419
+    if (!type.isAssignableFrom(inputType) || !inputType.isAssignableFrom(type)) {
+      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+    }
+
     try {
-      @SuppressWarnings("unchecked")
-      Class<T> type = (Class<T>) getDocType(entityType);
       @SuppressWarnings("unchecked")
       T typedDoc = (T) input;
       storageManager.modifyDocument(type, typedDoc);
-    } catch (ClassCastException ex) {
+    } catch (IOException ex) {
+      // only if the document version does not exist an IOException is thrown.
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
+
   }
 
   // TODO: test this! :-)
@@ -117,7 +127,7 @@ public class RESTAutoResource {
   @JsonView(JsonViews.WebView.class)
   @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}/{variation: \\w+}")
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
-  public Document getDocWithOfVariation(@PathParam(ENTITY_PARAM) String entityType, @PathParam(ID_PARAM) String id, @PathParam("variation") String variation) {
+  public Document getDocOfVariation(@PathParam(ENTITY_PARAM) String entityType, @PathParam(ID_PARAM) String id, @PathParam("variation") String variation) {
     Class<? extends Document> type = getDocType(entityType);
     Document doc = storageManager.getCompleteVariation(type, id, variation);
     if (doc == null) {
