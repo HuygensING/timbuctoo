@@ -10,8 +10,12 @@ import nl.knaw.huygens.repository.model.util.Change;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.Lists;
 
+// Annotation determines to which subclass the document has to be resolved.
+// @see: http://wiki.fasterxml.com/JacksonPolymorphicDeserialization
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public abstract class Document {
 
   @NotNull

@@ -47,10 +47,11 @@ public class HTMLGeneratorTest {
       fail("writeValue threw an exception");
     }
     String writtenHTML = writer.getBuffer().toString();
-    assertEquals("<table>\n" + "<tr><th>Pw Hash</th><td>none</td></tr>\n" + "<tr><th>Email</th><td>none</td></tr>\n" + "<tr><th>First Name</th><td>Doe</td></tr>\n"
-        + "<tr><th>Last Name</th><td>Flups</td></tr>\n" + "<tr><th>Groups</th><td>A;<br>\n" + "B;<br>\n" + "C;<br>\n" + "</td></tr>\n" + "<tr><th>Id</th><td>USR0000000001</td></tr>\n"
-        + "<tr><th>Rev</th><td>0</td></tr>\n" + "<tr><th>Last Change</th><td>none</td></tr>\n" + "<tr><th>Creation</th><td>none</td></tr>\n" + "<tr><th>Pid</th><td>none</td></tr>\n"
-        + "<tr><th>Variations</th><td>User;<br>\n</td></tr>\n" + "<tr><th>Current Variation</th><td>none</td></tr>\n" + "<tr><th>Deleted</th><td>no</td></tr>\n" + "</table>\n", writtenHTML);
+    assertEquals("<table>\n" + "<tr><th>Class</th><td>nl.knaw.huygens.repository.model.User</td></tr>\n<tr><th>Pw Hash</th><td>none</td></tr>\n" + "<tr><th>Email</th><td>none</td></tr>\n"
+        + "<tr><th>First Name</th><td>Doe</td></tr>\n" + "<tr><th>Last Name</th><td>Flups</td></tr>\n" + "<tr><th>Groups</th><td>A;<br>\n" + "B;<br>\n" + "C;<br>\n" + "</td></tr>\n"
+        + "<tr><th>Id</th><td>USR0000000001</td></tr>\n" + "<tr><th>Rev</th><td>0</td></tr>\n" + "<tr><th>Last Change</th><td>none</td></tr>\n" + "<tr><th>Creation</th><td>none</td></tr>\n"
+        + "<tr><th>Pid</th><td>none</td></tr>\n" + "<tr><th>Variations</th><td>User;<br>\n</td></tr>\n" + "<tr><th>Current Variation</th><td>none</td></tr>\n"
+        + "<tr><th>Deleted</th><td>no</td></tr>\n" + "</table>\n", writtenHTML);
   }
 
 }
