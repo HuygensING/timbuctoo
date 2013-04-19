@@ -17,9 +17,8 @@ public class ServletInjectionModule extends JerseyServletModule {
     params.put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.repository.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.repository.providers");
     params.put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, "com.sun.jersey.api.container.filter.LoggingFilter;nl.knaw.huygens.repository.server.security.SecurityFilter");
     params.put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES, "com.sun.jersey.api.container.filter.RolesAllowedResourceFilterFactory");
+    params.put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, "com.sun.jersey.api.container.filter.LoggingFilter");
     params.put(ServletContainer.PROPERTY_WEB_PAGE_CONTENT_REGEX, "/static.*");
-    params.put(ServletContainer.FEATURE_FILTER_FORWARD_ON_404, "true");
     filter("/*").through(GuiceContainer.class, params);
   }
-
 }
