@@ -18,24 +18,31 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-import com.google.inject.Inject;
-
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.google.inject.Inject;
+
 @Provider
-@Consumes(MediaType.APPLICATION_JSON) 
+@Consumes(MediaType.APPLICATION_JSON)
 public class DocumentReader implements MessageBodyReader<Document> {
   @Context
   private UriInfo uriInfo;
-  
-  @Inject
+
+  //@Inject
   private DocumentTypeRegister docTypeRegistry;
-  @Inject
+  //@Inject
   private JacksonJsonProvider jsonProvider;
-  @Inject
+  //@Inject
   private Validator validator;
+
+  @Inject
+  public DocumentReader(DocumentTypeRegister docTypeRegistry, JacksonJsonProvider jsonProvider, Validator validator) {
+    this.docTypeRegistry = docTypeRegistry;
+    this.jsonProvider = jsonProvider;
+    this.validator = validator;
+  }
 
   @Override
   public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
@@ -48,10 +55,25 @@ public class DocumentReader implements MessageBodyReader<Document> {
       throws IOException, WebApplicationException {
     String entityType = uriInfo.getPathParameters().getFirst("entityType");
     Class<?> cls = docTypeRegistry.getClassFromTypeString(entityType);
-    Document doc = (Document) jsonProvider.readFrom((Class<Object>) cls, cls, annotations, mediaType, httpHeaders, entityStream);
+    if (cls == null) {
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
+    }
+
+    Document doc = null;
+
+    try {
+      doc = (Document) jsonProvider.readFrom((Class<Object>) cls, cls, annotations, mediaType, httpHeaders, entityStream);
+    } catch (IllegalArgumentException ex) {
+      ex.printStackTrace();
+    }
+
+    if (doc == null) {
+      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+    }
+
     Set<ConstraintViolation<Document>> validationErrors = validator.validate(doc);
     if (!validationErrors.isEmpty()) {
-      throw new WebApplicationException(Response.status(400).entity(validationErrors).type(MediaType.APPLICATION_JSON_TYPE).build());
+      throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(validationErrors).type(MediaType.APPLICATION_JSON_TYPE).build());
     }
     return doc;
   }
