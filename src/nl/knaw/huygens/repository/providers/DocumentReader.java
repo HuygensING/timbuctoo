@@ -30,19 +30,12 @@ public class DocumentReader implements MessageBodyReader<Document> {
   @Context
   private UriInfo uriInfo;
 
-  //@Inject
-  private DocumentTypeRegister docTypeRegistry;
-  //@Inject
-  private JacksonJsonProvider jsonProvider;
-  //@Inject
-  private Validator validator;
-
   @Inject
-  public DocumentReader(DocumentTypeRegister docTypeRegistry, JacksonJsonProvider jsonProvider, Validator validator) {
-    this.docTypeRegistry = docTypeRegistry;
-    this.jsonProvider = jsonProvider;
-    this.validator = validator;
-  }
+  private DocumentTypeRegister docTypeRegistry;
+  @Inject
+  private JacksonJsonProvider jsonProvider;
+  @Inject
+  private Validator validator;
 
   @Override
   public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
