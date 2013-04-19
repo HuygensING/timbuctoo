@@ -15,8 +15,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
@@ -51,21 +53,30 @@ public class RESTAutoResource {
     return storageManager.getAllLimited(type, start, rows);
   }
 
-  // TODO: test me
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/all")
   @JsonView(JsonViews.WebView.class)
-  public <T extends Document> void getAllDocs(@PathParam(ENTITY_PARAM) String entityType, Document input) throws IOException {
-    try {
-      @SuppressWarnings("unchecked")
-      Class<T> type = (Class<T>) getDocType(entityType);
-      @SuppressWarnings("unchecked")
-      T typedDoc = (T) input;
-      storageManager.addDocument(type, typedDoc);
-    } catch (ClassCastException ex) {
-      throw new WebApplicationException(Response.Status.NOT_FOUND);
+  @RolesAllowed("USER")
+  public <T extends Document> Response getAllDocs(@PathParam(ENTITY_PARAM) String entityType, Document input, @Context UriInfo uriInfo) throws IOException {
+
+    @SuppressWarnings("unchecked")
+    Class<T> type = (Class<T>) getDocType(entityType);
+
+    Class<? extends Document> inputType = input.getClass();
+
+    //TODO: find a better way to test if input type is the same as the entity type.
+    //@see redmine issue #1419
+    if (!type.isAssignableFrom(inputType) || !inputType.isAssignableFrom(type)) {
+      throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
+
+    @SuppressWarnings("unchecked")
+    T typedDoc = (T) input;
+    storageManager.addDocument(type, typedDoc);
+
+    String location = uriInfo.getBaseUri().toString() + "resources/" + entityType + "/" + input.getId();
+    return Response.status(Response.Status.CREATED).header("Location", location).build();
   }
 
   @GET
