@@ -2,7 +2,6 @@ package nl.knaw.huygens.repository.model;
 
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
@@ -18,7 +17,6 @@ import com.google.common.collect.Lists;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public abstract class Document {
 
-  @NotNull
   @Pattern(regexp = "[A-Z]{3}\\d{10}")
   private String id;
 
