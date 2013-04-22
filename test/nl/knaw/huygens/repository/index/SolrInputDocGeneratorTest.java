@@ -10,15 +10,15 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
-import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.SolrInputField;
-import org.junit.Test;
-
 import nl.knaw.huygens.repository.indexdata.CustomIndexer;
 import nl.knaw.huygens.repository.indexdata.CustomIndexer.NoopIndexer;
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.variation.model.TestExtraBaseDoc;
+
+import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.SolrInputField;
+import org.junit.Test;
 
 public class SolrInputDocGeneratorTest {
   private int id = 0;
@@ -29,7 +29,6 @@ public class SolrInputDocGeneratorTest {
   }
 
   private Document createDocument(String description, String id) {
-
     TestExtraBaseDoc doc = mock(TestExtraBaseDoc.class);
     when(doc.getId()).thenReturn(id);
     when(doc.getDescription()).thenReturn(description);
@@ -52,8 +51,7 @@ public class SolrInputDocGeneratorTest {
     return indexAnnotation;
   }
 
-  private void processMethod(Document doc, SolrInputDocGenerator generator, String methodName, boolean fieldCanBeEmpty, String fieldName)
-      throws NoSuchMethodException {
+  private void processMethod(Document doc, SolrInputDocGenerator generator, String methodName, boolean fieldCanBeEmpty, String fieldName) throws NoSuchMethodException {
     Method method = doc.getClass().getMethod(methodName);
     IndexAnnotation annotation = this.createIndexAnnotation(fieldCanBeEmpty, fieldName);
     generator.process(method, annotation);
@@ -205,7 +203,7 @@ public class SolrInputDocGeneratorTest {
     assertEquals(1, actualValues.size());
     assertTrue(actualValues.contains(description));
   }
-  
+
   @Test
   public void testGetResultMultipleDocumentsIdField() throws NoSuchMethodException {
     String descriptionDoc1 = "doc1";
@@ -226,7 +224,7 @@ public class SolrInputDocGeneratorTest {
     assertEquals(1, actualIds.size());
     assertTrue(actualIds.contains(doc1.getId()));
   }
-  
+
   @Test
   public void testGetResultMultipleDocumentsSortingField() throws NoSuchMethodException {
     String descriptionDoc1 = "doc1";
@@ -247,5 +245,5 @@ public class SolrInputDocGeneratorTest {
     assertEquals(1, actualIds.size());
     assertTrue(actualIds.contains(doc1.getDescription()));
   }
-  
+
 }

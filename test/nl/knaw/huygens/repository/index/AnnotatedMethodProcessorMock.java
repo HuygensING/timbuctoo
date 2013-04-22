@@ -9,6 +9,7 @@ import java.util.Map;
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 
 public class AnnotatedMethodProcessorMock implements AnnotatedMethodProcessor {
+
   private int numberOfIndexAnnotatios;
   private Map<Method, List<IndexAnnotation>> methods;
 
@@ -25,7 +26,6 @@ public class AnnotatedMethodProcessorMock implements AnnotatedMethodProcessor {
     } else {
       List<IndexAnnotation> annotations = new ArrayList<IndexAnnotation>();
       annotations.add(annotation);
-
       methods.put(m, annotations);
     }
   }
@@ -33,8 +33,8 @@ public class AnnotatedMethodProcessorMock implements AnnotatedMethodProcessor {
   public int getNumberOfIndexAnnotations() {
     return numberOfIndexAnnotatios;
   }
-  
-  public List<IndexAnnotation> getIndexAnnotationsForMethod(Method m){
+
+  public List<IndexAnnotation> getIndexAnnotationsForMethod(Method m) {
     return methods.get(m);
   }
 
