@@ -1,11 +1,10 @@
-package nl.knaw.huygens.repository.index;
-
+package nl.knaw.huygens.repository.index.model;
 
 public class ImplicitlyAnnotatedModelWithIndexAnnotations extends ExplicitlyAnnotatedModelWithIndexAnnotations {
 
   @Override
   public String getString() {
-    // TODO Auto-generated method stub
     return super.getString();
   }
+
 }
