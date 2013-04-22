@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.index;
+package nl.knaw.huygens.repository.index.model;
 
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Document;
@@ -12,22 +12,17 @@ public class ModelWithOverriddenIndexAnnotation extends Document {
   @JsonIgnore
   @IndexAnnotation(fieldName = "description")
   public String getDescription() {
-    // TODO Auto-generated method stub
     return null;
   }
 
   @Override
   @JsonProperty("!currentVariation")
   public String getCurrentVariation() {
-    // TODO Auto-generated method stub
     return null;
   }
 
   @Override
   @JsonProperty("!currentVariation")
-  public void setCurrentVariation(String defaultVRE) {
-    // TODO Auto-generated method stub
-
-  }
+  public void setCurrentVariation(String defaultVRE) {}
 
 }
