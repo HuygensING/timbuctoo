@@ -42,6 +42,9 @@
     <!-- Tomcat servlet API -->
     <!-- <dependency org="org.apache.tomcat" name="tomcat-servlet-api" rev="7.0.21" conf="build->default"/> -->
 
+    <!-- Apache ActiveMQ -->
+    <dependency org="org.apache.activemq" name="activemq-all" rev="5.7.0"/>
+
     <!-- Solr for indexing -->
     <dependency org="org.apache.solr" name="solr-core" rev="${solr.version}" conf="main->default">
       <exclude org="org.slf4j" />
