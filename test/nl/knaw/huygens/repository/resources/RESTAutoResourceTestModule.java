@@ -7,7 +7,6 @@ import javax.validation.Validator;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
-import nl.knaw.huygens.repository.providers.DocumentReader;
 import nl.knaw.huygens.repository.server.security.OAuthAuthorizationServerConnector;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
@@ -26,7 +25,6 @@ class RESTAutoResourceTestModule extends JerseyServletModule {
   private StorageManager storageManager;
   private DocumentTypeRegister documentTypeRegister;
   private OAuthAuthorizationServerConnector oAuthAuthorizationServerConnector;
-  private DocumentReader documentReader;
   private JacksonJsonProvider jsonProvider;
 
   public RESTAutoResourceTestModule() {
@@ -34,7 +32,6 @@ class RESTAutoResourceTestModule extends JerseyServletModule {
     documentTypeRegister = mock(DocumentTypeRegister.class);
     oAuthAuthorizationServerConnector = mock(OAuthAuthorizationServerConnector.class);
     jsonProvider = mock(JacksonJsonProvider.class);
-    documentReader = new DocumentReader();
   }
 
   @Override
