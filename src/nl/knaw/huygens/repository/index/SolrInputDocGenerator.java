@@ -6,17 +6,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.indexdata.CustomIndexer;
+import nl.knaw.huygens.repository.indexdata.CustomIndexer.NoopIndexer;
+import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
+import nl.knaw.huygens.repository.model.Document;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
-import nl.knaw.huygens.repository.indexdata.CustomIndexer;
-import nl.knaw.huygens.repository.indexdata.CustomIndexer.NoopIndexer;
-import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
-import nl.knaw.huygens.repository.model.Document;
 
 public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
   private SolrInputDocument doc;
@@ -26,7 +26,7 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
     this.doc = new SolrInputDocument();
     this.instance = instance;
   }
-  
+
   public SolrInputDocGenerator(Document instance, SolrInputDocument solrDoc) {
     this.doc = solrDoc;
     this.instance = instance;
@@ -41,27 +41,27 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
     Collection<String> fieldNames = doc.getFieldNames();
     Collection<Object> values = null;
     Set<Object> nonDuplicateValues = null;
-    
-    for(String fieldName : fieldNames){
+
+    for (String fieldName : fieldNames) {
       values = doc.getFieldValues(fieldName);
-      
+
       nonDuplicateValues = Sets.newHashSet(values);
-      
-      if(values.size() > nonDuplicateValues.size()){
+
+      if (values.size() > nonDuplicateValues.size()) {
         doc.setField(fieldName, nonDuplicateValues);
       }
-      
-      if(nonDuplicateValues.size() >= 2 && nonDuplicateValues.contains("(empty)")){
+
+      if (nonDuplicateValues.size() >= 2 && nonDuplicateValues.contains("(empty)")) {
         nonDuplicateValues.remove("(empty)");
         doc.setField(fieldName, nonDuplicateValues);
       }
-      
-      if(fieldName.startsWith("facet_sort_")){
+
+      if (fieldName.startsWith("facet_sort_")) {
         Object o = values.iterator().next();
         doc.setField(fieldName, o);
       }
     }
-    
+
     return doc;
   }
 
@@ -76,7 +76,7 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
     if (indexClass.equals(NoopIndexer.class)) {
       name = argData.fieldName();
       if (name.length() == 0) {
-        name = DocumentIndexer.getFieldName(m);
+        name = Utils.getFieldName(m);
       }
       indexer = null;
     } else {
@@ -101,7 +101,6 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
     }
   }
 
-
   /**
    * Evil reflection stuff to deal with getting strings/stuff out of arrays of objects.
    * It will index the result of applying the array of methods on each of the objects.
@@ -120,7 +119,8 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
     }
   }
 
-  private void indexObject(SolrInputDocument doc, String fieldName, CustomIndexer indexer, Object o, boolean canBeEmpty, String[] methods) throws IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException, NoSuchFieldException {
+  private void indexObject(SolrInputDocument doc, String fieldName, CustomIndexer indexer, Object o, boolean canBeEmpty, String[] methods) throws IllegalArgumentException, SecurityException,
+      IllegalAccessException, InvocationTargetException, NoSuchFieldException {
     Object value = o;
     List<String> methodList = Lists.newArrayList(methods);
     // Pop off accessors (fields or methods) until:
@@ -153,7 +153,6 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
       }
     }
   }
-
 
   private Object transformValue(Object value, boolean canBeEmpty) {
     try {

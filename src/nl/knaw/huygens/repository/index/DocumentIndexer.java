@@ -1,18 +1,16 @@
 package nl.knaw.huygens.repository.index;
 
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.common.SolrInputDocument;
 
 import nl.knaw.huygens.repository.events.Events;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.util.RepositoryException;
+
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrInputDocument;
 
 /**
  * Used for talking to a specific index on the Solr Server that matches the
@@ -153,31 +151,6 @@ public class DocumentIndexer<T extends Document> {
       inputDocument = indexer.getResult();
     }
     return inputDocument;
-  }
-
-  /**
-   * Determines the index field name from the method name (only used if the
-   * annotation doesn't specify a fieldname).
-   * 
-   * @param m
-   *          the Method object for which a Solr field name should be generated.
-   * @return the field name
-   */
-  public static String getFieldName(Method m) {
-    String name = m.getName();
-    String type = m.getReturnType().getSimpleName();
-    String rv = name.startsWith("get") ? name.substring(3) : name; // eliminate
-                                                                   // 'get' part
-    String[] parts = StringUtils.splitByCharacterTypeCamelCase(rv);
-    type = type.replaceAll("\\[\\]", "");
-    if (type.equals("boolean")) {
-      type = "b";
-    } else if (type.equals("int") || type.equals("long")) {
-      type = "i";
-    } else {
-      type = "s";
-    }
-    return "facet_" + type + "_" + StringUtils.join(parts, "_").toLowerCase();
   }
 
   /**
