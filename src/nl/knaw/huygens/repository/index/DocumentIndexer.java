@@ -32,7 +32,7 @@ import org.apache.solr.common.SolrInputDocument;
  */
 public class DocumentIndexer<T extends Document> {
 
-  private final LocalSolrServer localSolrServer;
+  private final LocalSolrServer solrServer;
   private final String core;
   private final ModelIterator modelIterator;
   private final Hub hub;
@@ -53,7 +53,7 @@ public class DocumentIndexer<T extends Document> {
    *          the Hub to use for notifications.
    */
   public DocumentIndexer(Class<T> type, ModelIterator iterator, LocalSolrServer server, Hub hub) {
-    this.localSolrServer = server;
+    this.solrServer = server;
     this.modelIterator = iterator;
     this.hub = hub;
     core = Utils.coreForType(type);
@@ -70,7 +70,7 @@ public class DocumentIndexer<T extends Document> {
    */
   public <Q extends T> void add(List<Q> entities) throws RepositoryException {
     try {
-      localSolrServer.add(core, getSolrInputDocument(entities));
+      solrServer.add(core, getSolrInputDocument(entities));
     } catch (IndexException e) {
       throw new RepositoryException(e);
     }
@@ -88,7 +88,7 @@ public class DocumentIndexer<T extends Document> {
    */
   public <Q extends T> void modify(List<Q> entity) throws RepositoryException {
     try {
-      localSolrServer.update(core, getSolrInputDocument(entity));
+      solrServer.update(core, getSolrInputDocument(entity));
     } catch (IndexException e) {
       throw new RepositoryException(e);
     }
@@ -108,7 +108,7 @@ public class DocumentIndexer<T extends Document> {
       return;
     }
     try {
-      localSolrServer.delete(core, docs.get(0).getId());
+      solrServer.delete(core, docs.get(0).getId());
     } catch (IndexException e) {
       throw new RepositoryException(e);
     }
@@ -122,7 +122,7 @@ public class DocumentIndexer<T extends Document> {
    */
   public void flush() throws RepositoryException {
     try {
-      localSolrServer.commit(core);
+      solrServer.commit(core);
       hub.publish(new Events.IndexChangedEvent());
     } catch (Exception ex) {
       throw new RepositoryException(ex);
@@ -161,7 +161,7 @@ public class DocumentIndexer<T extends Document> {
    */
   public Map<String, String> getAll() {
     try {
-      return localSolrServer.getSimpleMap(core);
+      return solrServer.getSimpleMap(core);
     } catch (SolrServerException e) {
       e.printStackTrace();
       return Collections.emptyMap();
