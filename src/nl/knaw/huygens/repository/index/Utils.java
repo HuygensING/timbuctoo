@@ -2,6 +2,8 @@ package nl.knaw.huygens.repository.index;
 
 import java.lang.reflect.Method;
 
+import nl.knaw.huygens.repository.model.Document;
+
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -10,16 +12,23 @@ import org.apache.commons.lang.StringUtils;
 public class Utils {
 
   /**
+   * Returns the Solr core for the specified document type.
+   */
+  public static String coreForType(Class<? extends Document> type) {
+    return type.getSimpleName().toLowerCase();
+  }
+
+  /**
    * Determines the index field name from the method name (only used if the
    * annotation doesn't specify a fieldname).
    * 
-   * @param m
+   * @param method
    *          the Method object for which a Solr field name should be generated.
    * @return the field name
    */
-  public static String getFieldName(Method m) {
-    String name = m.getName();
-    String type = m.getReturnType().getSimpleName();
+  public static String getFieldName(Method method) {
+    String name = method.getName();
+    String type = method.getReturnType().getSimpleName();
     String rv = name.startsWith("get") ? name.substring(3) : name; // eliminate
                                                                    // 'get' part
     String[] parts = StringUtils.splitByCharacterTypeCamelCase(rv);

@@ -31,6 +31,7 @@ import org.apache.solr.common.SolrInputDocument;
  *          and (implicitly) which index to index them in.
  */
 public class DocumentIndexer<T extends Document> {
+
   private final LocalSolrServer localSolrServer;
   private final String core;
   private final ModelIterator modelIterator;
@@ -39,24 +40,23 @@ public class DocumentIndexer<T extends Document> {
   /**
    * Create a document indexer for this entity
    * 
-   * @param entity
+   * @param type
    *          POJO specifying what kind of objects will be created, and in which
    *          index they will be stored.
    * @param iterator
    *          a ModelIterator instance that will be used to generate
    *          {@link org.apache.solr.common.SolrInputDocument
-   *          <code>SolrInputDocument</code>}s for the POJOs passed to this
-   *          class.
+   *          <code>SolrInputDocument</code>}s for the POJOs passed to this class.
    * @param server
    *          the SolrServer to use for indexing
    * @param hub
    *          the Hub to use for notifications.
    */
-  public DocumentIndexer(Class<T> entity, ModelIterator iterator, LocalSolrServer server, Hub hub) {
+  public DocumentIndexer(Class<T> type, ModelIterator iterator, LocalSolrServer server, Hub hub) {
     this.localSolrServer = server;
     this.modelIterator = iterator;
-    this.core = entity.getSimpleName().toLowerCase();
     this.hub = hub;
+    core = Utils.coreForType(type);
   }
 
   /**
@@ -66,7 +66,7 @@ public class DocumentIndexer<T extends Document> {
    * @param entities
    *          the <code>Document</code> to add.
    * @throws RepositoryException
-   *           if adding the document fails for some reason.
+   *          if adding the document fails for some reason.
    */
   public <Q extends T> void add(List<Q> entities) throws RepositoryException {
     try {
@@ -84,7 +84,7 @@ public class DocumentIndexer<T extends Document> {
    * @param entity
    *          the <code>Document</code> and it's subtypes to update.
    * @throws RepositoryException
-   *           if adding the document fails for some reason.
+   *          if adding the document fails for some reason.
    */
   public <Q extends T> void modify(List<Q> entity) throws RepositoryException {
     try {
@@ -101,7 +101,7 @@ public class DocumentIndexer<T extends Document> {
    * @param entity
    *          the <code>Document</code> to remove.
    * @throws RepositoryException
-   *           if removing the document fails for some reason.
+   *          if removing the document fails for some reason.
    */
   public void remove(List<T> docs) throws RepositoryException {
     if (docs.isEmpty()) {
@@ -134,8 +134,7 @@ public class DocumentIndexer<T extends Document> {
    * <code>SolrInputDocument</code>} given the POJO object passed.
    * 
    * @param entities
-   *          the document and it's subtypes that you want a SolrInputDocument
-   *          for.
+   *          the document and it's subtypes that you want a SolrInputDocument for.
    * @return the corresponding SolrInputDocument
    */
   protected <Q extends T> SolrInputDocument getSolrInputDocument(List<Q> entities) {
@@ -168,4 +167,5 @@ public class DocumentIndexer<T extends Document> {
       return Collections.emptyMap();
     }
   }
+
 }
