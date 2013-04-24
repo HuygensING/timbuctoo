@@ -10,10 +10,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.List;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
@@ -32,12 +36,14 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.core.PackagesResourceConfig;
 import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.jersey.test.framework.AppDescriptor;
 import com.sun.jersey.test.framework.JerseyTest;
@@ -85,6 +91,7 @@ public class RESTAutoResourceTest extends JerseyTest {
   @Override
   protected AppDescriptor configure() {
     WebAppDescriptor webAppDescriptor = new WebAppDescriptor.Builder("nl.knaw.huygens.repository.resources").build();
+    webAppDescriptor.getInitParams().put(PackagesResourceConfig.PROPERTY_PACKAGES, "com.fasterxml.jackson.jaxrs.json,nl.knaw.huygens.repository.providers");
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, "nl.knaw.huygens.repository.server.security.SecurityFilter");
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES, "com.sun.jersey.api.container.filter.RolesAllowedResourceFilterFactory");
 
@@ -99,7 +106,7 @@ public class RESTAutoResourceTest extends JerseyTest {
   public void testGetDocExisting() {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
-    String id = "tst0000000001";
+    String id = "TST0000000001";
 
     TestConcreteDoc expectedDoc = new TestConcreteDoc();
     expectedDoc.setId(id);
@@ -119,7 +126,7 @@ public class RESTAutoResourceTest extends JerseyTest {
   public void testGetDocNonExistingInstance() {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
-    String id = "tst0000000001";
+    String id = "TST0000000001";
 
     when(storageManager.getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(null);
 
@@ -134,7 +141,7 @@ public class RESTAutoResourceTest extends JerseyTest {
   @Test
   public void testGetDocNonExistingClass() {
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
-    String id = "tst0000000001";
+    String id = "TST0000000001";
 
     doReturn(null).when(documentTypeRegister).getClassFromTypeString(anyString());
 
@@ -151,13 +158,13 @@ public class RESTAutoResourceTest extends JerseyTest {
 
     List<TestConcreteDoc> expectedList = Lists.newArrayList();
     TestConcreteDoc doc1 = new TestConcreteDoc();
-    doc1.setId("tst0000000001");
+    doc1.setId("TST0000000001");
     expectedList.add(doc1);
     TestConcreteDoc doc2 = new TestConcreteDoc();
-    doc2.setId("tst0000000002");
+    doc2.setId("TST0000000002");
     expectedList.add(doc2);
     TestConcreteDoc doc3 = new TestConcreteDoc();
-    doc3.setId("tst0000000001");
+    doc3.setId("TST0000000001");
     expectedList.add(doc3);
 
     when(storageManager.getAllLimited(TestConcreteDoc.class, 0, 200)).thenReturn(expectedList);
@@ -189,16 +196,20 @@ public class RESTAutoResourceTest extends JerseyTest {
     assertEquals(expectedList.size(), actualList.size());
   }
 
+  @SuppressWarnings("unchecked")
   @Test
-  public void testPutDocExistingDocument() {
-    DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
-    this.setUserInRole(true);
-    String id = "tst0000000001";
+  public void testPutDocExistingDocument() throws IOException {
+    setupDocumentTypeRegister();
 
-    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
+    this.setUserInRole(true);
+
+    String id = "TST0000000001";
 
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.setId(id);
+
+    JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
+    when(jsonProvider.readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
     WebResource webResource = super.resource();
     ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
@@ -207,16 +218,25 @@ public class RESTAutoResourceTest extends JerseyTest {
     assertEquals(ClientResponse.Status.NO_CONTENT, clientResponse.getClientResponseStatus());
   }
 
+  private void setupDocumentTypeRegister() {
+    DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
+    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
+  }
+
   @SuppressWarnings("unchecked")
   @Test
   public void testPutDocNonExistingDocument() throws IOException {
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
+    JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
+
     this.setUserInRole(true);
     String id = "NEI0000000001";
 
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.setId(id);
+
+    when(jsonProvider.readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
     doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
 
@@ -240,7 +260,7 @@ public class RESTAutoResourceTest extends JerseyTest {
   public void testPutDocNonExistingType() {
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
     this.setUserInRole(true);
-    String id = "tst0000000001";
+    String id = "TST0000000001";
 
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.setId(id);
@@ -257,7 +277,7 @@ public class RESTAutoResourceTest extends JerseyTest {
   public void testPutDocWrongType() {
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
     this.setUserInRole(true);
-    String id = "tst0000000001";
+    String id = "TST0000000001";
 
     doReturn(OtherDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
 
@@ -274,7 +294,7 @@ public class RESTAutoResourceTest extends JerseyTest {
   public void testPutOnSuperClass() {
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
     this.setUserInRole(true);
-    String id = "tst0000000001";
+    String id = "TST0000000001";
 
     doReturn(OtherDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
 
@@ -288,15 +308,19 @@ public class RESTAutoResourceTest extends JerseyTest {
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
 
+  @SuppressWarnings("unchecked")
   @Test
-  public void testPost() {
+  public void testPost() throws IOException {
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
+    JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
     this.setUserInRole(true);
 
     doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
 
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.name = "test";
+
+    when(jsonProvider.readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
     WebResource webResource = super.resource();
     ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
@@ -324,15 +348,19 @@ public class RESTAutoResourceTest extends JerseyTest {
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
   }
 
+  @SuppressWarnings("unchecked")
   @Test
-  public void testPostOnSuperType() {
+  public void testPostOnSuperType() throws IOException {
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
+    JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
     this.setUserInRole(true);
 
     doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
 
     GeneralTestDoc doc = new GeneralTestDoc();
     doc.name = "test";
+
+    when(jsonProvider.readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
     WebResource webResource = super.resource();
     ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
@@ -341,10 +369,14 @@ public class RESTAutoResourceTest extends JerseyTest {
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
 
+  @SuppressWarnings("unchecked")
   @Test
-  public void testPostWrongType() {
+  public void testPostWrongType() throws IOException {
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
+    JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
     this.setUserInRole(true);
+
+    when(jsonProvider.readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(null);
 
     doReturn(OtherDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
 
@@ -359,12 +391,9 @@ public class RESTAutoResourceTest extends JerseyTest {
 
   @Test
   public void testPostSpecificDocument() {
-    DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
     this.setUserInRole(true);
 
-    String id = "tst000000001";
-
-    doReturn(OtherDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
+    String id = "TST000000001";
 
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.name = "test";
@@ -382,7 +411,7 @@ public class RESTAutoResourceTest extends JerseyTest {
   public void testGetDocNotLoggedIn() {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
-    String id = "tst0000000001";
+    String id = "TST0000000001";
 
     TestConcreteDoc expectedDoc = new TestConcreteDoc();
     expectedDoc.setId(id);
@@ -401,7 +430,7 @@ public class RESTAutoResourceTest extends JerseyTest {
   public void testGetDocEmptyAuthorizationKey() {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
-    String id = "tst0000000001";
+    String id = "TST0000000001";
 
     TestConcreteDoc expectedDoc = new TestConcreteDoc();
     expectedDoc.setId(id);
@@ -420,7 +449,7 @@ public class RESTAutoResourceTest extends JerseyTest {
   public void testPutDocUserNotLoggedIn() {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
-    String id = "tst0000000001";
+    String id = "TST0000000001";
 
     TestConcreteDoc expectedDoc = new TestConcreteDoc();
     expectedDoc.setId(id);
@@ -433,25 +462,6 @@ public class RESTAutoResourceTest extends JerseyTest {
     ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.UNAUTHORIZED, clientResponse.getClientResponseStatus());
-  }
-
-  @Test
-  public void testPutDocNotInRole() {
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
-    DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
-    String id = "tst0000000001";
-
-    TestConcreteDoc expectedDoc = new TestConcreteDoc();
-    expectedDoc.setId(id);
-
-    when(storageManager.getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
-
-    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
-
-    WebResource webResource = super.resource();
-    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class);
-
-    assertEquals(ClientResponse.Status.FORBIDDEN, clientResponse.getClientResponseStatus());
   }
 
   @Test
@@ -473,9 +483,7 @@ public class RESTAutoResourceTest extends JerseyTest {
 
   @Test
   public void testPostUserNotLoggedIn() {
-    DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
-
-    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
+    setupDocumentTypeRegister();
 
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.name = "test";
@@ -493,7 +501,7 @@ public class RESTAutoResourceTest extends JerseyTest {
     this.setUserInRole(true);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
-    String id = "tst0000000001";
+    String id = "TST0000000001";
 
     TestConcreteDoc expectedDoc = new TestConcreteDoc();
     expectedDoc.setId(id);
@@ -515,7 +523,7 @@ public class RESTAutoResourceTest extends JerseyTest {
     this.setUserInRole(true);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
-    String id = "tst0000000002";
+    String id = "TST0000000002";
 
     String variation = "projecta";
     when(storageManager.getCompleteVariation(TestConcreteDoc.class, id, variation)).thenReturn(null);
