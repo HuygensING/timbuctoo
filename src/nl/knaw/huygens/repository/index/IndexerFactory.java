@@ -15,32 +15,31 @@ public class IndexerFactory {
 
   private final LocalSolrServer server;
   private final ModelIterator modelIterator;
-  private Map<Class<? extends Document>, DocumentIndexer<? extends Document>> indexers;
   private final Hub hub;
+  private final Map<Class<? extends Document>, DocumentIndexer<? extends Document>> indexers;
 
   @Inject
   public IndexerFactory(ModelIterator modelIterator, LocalSolrServer server, Hub hub) {
     this.server = server;
     this.modelIterator = modelIterator;
-    this.indexers = Maps.newHashMap();
     this.hub = hub;
+    indexers = Maps.newHashMap();
   }
 
-  @SuppressWarnings("unchecked")
-  public <T extends Document> DocumentIndexer<T> getIndexForType(Class<T> cls) {
-    if (indexers.containsKey(cls)) {
-      return (DocumentIndexer<T>) indexers.get(cls);
+  public synchronized <T extends Document> DocumentIndexer<T> getIndexForType(Class<T> type) {
+    @SuppressWarnings("unchecked")
+    DocumentIndexer<T> indexer = (DocumentIndexer<T>) indexers.get(type);
+    if (indexer == null) {
+      indexer = new DocumentIndexer<T>(type, modelIterator, server, hub);
+      indexers.put(type, indexer);
     }
-    DocumentIndexer<T> rv = new DocumentIndexer<T>(cls, modelIterator, server, hub);
-    indexers.put(cls, rv);
-    return rv;
+    return indexer;
   }
 
   public void flushIndices() throws RepositoryException {
     try {
       server.commitAllChanged();
     } catch (Exception e) {
-      e.printStackTrace();
       throw new RepositoryException(e);
     }
   }
@@ -48,9 +47,9 @@ public class IndexerFactory {
   public void close() {
     try {
       server.shutdown();
-    } catch (Exception ex) {
+    } catch (Exception e) {
       System.err.println("Failed to shut down solr server.");
-      ex.printStackTrace();
+      e.printStackTrace();
     }
   }
 
