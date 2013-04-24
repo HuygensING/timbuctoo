@@ -5,7 +5,7 @@ import java.util.List;
 import nl.knaw.huygens.repository.Configuration;
 import nl.knaw.huygens.repository.BasicInjectionModule;
 import nl.knaw.huygens.repository.index.DocumentIndexer;
-import nl.knaw.huygens.repository.index.IndexFactory;
+import nl.knaw.huygens.repository.index.IndexerFactory;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.Storage;
@@ -20,12 +20,12 @@ public class SolrIndexer {
 
   public static class SolrIndexerRunner {
     private final Storage storage;
-    private final IndexFactory indices;
+    private final IndexerFactory indices;
     private final Configuration conf;
     private final DocumentTypeRegister docTypeRegistry;
 
     @Inject
-    public SolrIndexerRunner(Configuration conf, IndexFactory indices, Storage storage, DocumentTypeRegister docTypeRegistry) {
+    public SolrIndexerRunner(Configuration conf, IndexerFactory indices, Storage storage, DocumentTypeRegister docTypeRegistry) {
       this.conf = conf;
       this.indices = indices;
       this.storage = storage;
