@@ -9,7 +9,7 @@ import nl.knaw.huygens.repository.events.Events.DocumentAddEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentDeleteEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.index.DocumentIndexer;
-import nl.knaw.huygens.repository.index.IndexFactory;
+import nl.knaw.huygens.repository.index.IndexerFactory;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.pubsub.Hub;
@@ -35,7 +35,7 @@ import com.google.inject.Inject;
 public class IndexManager {
 
   private Set<Class<? extends Document>> indexedTypes;
-  private IndexFactory indexFactory;
+  private IndexerFactory indexFactory;
   private Map<Class<? extends Document>, List<Class<? extends Document>>> indexRelations;
   private StorageManager storageManager;
   private final Hub hub;
@@ -43,7 +43,7 @@ public class IndexManager {
   @Inject
   private DocumentTypeRegister docTypeRegistry;
 
-  public IndexManager(Configuration conf, StorageManager storageManager, IndexFactory indexFactory, Hub hub) {
+  public IndexManager(Configuration conf, StorageManager storageManager, IndexerFactory indexFactory, Hub hub) {
     this.storageManager = storageManager;
     this.hub = hub;
     indexedTypes = Sets.newHashSet();
@@ -70,7 +70,7 @@ public class IndexManager {
     subscribeUs();
   }
 
-  protected IndexManager(IndexFactory factory, String indexedTypes, Map<Class<? extends Document>, List<Class<? extends Document>>> indexRelations, Hub hub) {
+  protected IndexManager(IndexerFactory factory, String indexedTypes, Map<Class<? extends Document>, List<Class<? extends Document>>> indexRelations, Hub hub) {
     this.indexFactory = factory;
     this.hub = hub;
     this.indexedTypes = Sets.newHashSet();
