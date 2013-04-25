@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("QRY")
 public class Search extends Document {
+
   private List<String> ids;
   private String term;
   private String sort;
@@ -15,9 +16,7 @@ public class Search extends Document {
   private String searchType;
   private String defaultVRE;
 
-  public Search() {
-
-  }
+  public Search() {}
 
   public Search(List<String> ids, String type, String term, String sort, String date) {
     this.ids = ids;
@@ -83,4 +82,5 @@ public class Search extends Document {
   public void setCurrentVariation(String defaultVRE) {
     this.defaultVRE = defaultVRE;
   }
+
 }
