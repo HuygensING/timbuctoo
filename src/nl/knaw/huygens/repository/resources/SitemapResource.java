@@ -1,6 +1,5 @@
 package nl.knaw.huygens.repository.resources;
 
-import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -27,7 +26,7 @@ public class SitemapResource {
   @GET
   @Produces({ MediaType.TEXT_HTML })
   @APIDesc("Generates a structured sitemap.")
-  @RolesAllowed("USER")
+  // @RolesAllowed("USER")
   public Sitemap getSitemap(@Context Application app) {
     return new Sitemap(app, registry);
   }

@@ -18,14 +18,19 @@ public class Person extends Document {
     return name;
   }
 
+  @IndexAnnotation(fieldName = "facet_t_name", isFaceted = true)
+  public String getName() {
+    return name;
+  }
+
   @IndexAnnotation(fieldName = "facet_s_birthDate", isFaceted = true, canBeEmpty = true)
   public Datable getBirthDate() {
-    return this.birthDate;
+    return birthDate;
   }
 
   @IndexAnnotation(fieldName = "facet_s_deathDate", isFaceted = true, canBeEmpty = true)
   public Datable getDeathDate() {
-    return this.deathDate;
+    return deathDate;
   }
 
   @Override
