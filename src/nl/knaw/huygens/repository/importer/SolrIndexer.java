@@ -18,11 +18,18 @@ import com.google.inject.Injector;
 
 public class SolrIndexer {
 
+  public static void main(String[] args) {
+    Injector injector = Guice.createInjector(new BasicInjectionModule("config.xml"));
+    SolrIndexerRunner runner = injector.getInstance(SolrIndexerRunner.class);
+    System.exit(runner.run());
+  }
+
   public static class SolrIndexerRunner {
     private final VariationStorage storage;
     private final IndexerFactory indices;
     private final Configuration conf;
     private final DocumentTypeRegister docTypeRegistry;
+    private int count;
 
     @Inject
     public SolrIndexerRunner(Configuration conf, IndexerFactory indices, VariationStorage storage, DocumentTypeRegister docTypeRegistry) {
@@ -30,6 +37,7 @@ public class SolrIndexer {
       this.indices = indices;
       this.storage = storage;
       this.docTypeRegistry = docTypeRegistry;
+      count = 0;
     }
 
     public int run() {
@@ -63,18 +71,14 @@ public class SolrIndexer {
         ex.printStackTrace();
         return;
       }
-      int count = list.size(), i = 0;
-      System.out.printf("Start indexing %d documents:\n", count);
       try {
         while (list.hasNext()) {
+          displayProgress();
           T mainDoc = list.next();
           List<T> allVariations = storage.getAllVariations(type, mainDoc.getId());
-          System.out.print((i % 100 == 99) ? ".\n" : ".");
-          i++;
           if (mainDoc.isDeleted()) {
             continue;
           }
-          //System.out.println("id: " + mainDoc.getId());
           try {
             indexer.add(allVariations);
           } catch (RepositoryException e) {
@@ -91,13 +95,19 @@ public class SolrIndexer {
         System.err.println("Error committing changes:" + ex.toString());
         ex.printStackTrace();
       }
+      System.out.printf("%n%05d%n", count);
       System.out.println("\nIndexing done!");
+    }
+
+    private void displayProgress() {
+      if (count % 10 == 0) {
+        if (count % 1000 == 0) {
+          System.out.printf("%n%05d ", count);
+        }
+        System.out.print(".");
+      }
+      count++;
     }
   }
 
-  public static void main(String[] args) {
-    Injector injector = Guice.createInjector(new BasicInjectionModule("config.xml"));
-    SolrIndexerRunner runner = injector.getInstance(SolrIndexerRunner.class);
-    System.exit(runner.run());
-  }
 }
