@@ -20,6 +20,7 @@ import nl.knaw.huygens.repository.storage.RelatedDocuments;
 import nl.knaw.huygens.repository.storage.RevisionChanges;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
+import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.generic.StorageUtils;
 import nl.knaw.huygens.repository.variation.VariationUtils;
@@ -32,7 +33,14 @@ import com.google.inject.Singleton;
 @Singleton
 public class StorageManager {
 
-  private Storage storage;
+  /*
+   * TODO: use 3 types of Storage and Remove the use of MongoComplexStorage
+   * - Storage
+   * - PersistentStorage
+   * - VariationStorage
+   */
+
+  private VariationStorage storage;
   private Map<Class<? extends Document>, Map<Class<? extends Document>, List<List<String>>>> annotationCache;
   private Set<String> documentTypes;
 
@@ -41,7 +49,7 @@ public class StorageManager {
   private PersistenceManager persistenceManager;
 
   @Inject
-  public StorageManager(StorageConfiguration storageConf, Storage storage, Hub hub, DocumentTypeRegister docTypeRegistry, PersistenceManager persistenceMananger) {
+  public StorageManager(StorageConfiguration storageConf, VariationStorage storage, Hub hub, DocumentTypeRegister docTypeRegistry, PersistenceManager persistenceMananger) {
     this.hub = hub;
     this.docTypeRegistry = docTypeRegistry;
     documentTypes = storageConf.getDocumentTypes();
@@ -52,7 +60,7 @@ public class StorageManager {
   }
 
   // Test-only!
-  protected StorageManager(Storage storage, Set<String> documentTypes, Hub hub, DocumentTypeRegister docTypeRegistry) {
+  protected StorageManager(VariationStorage storage, Set<String> documentTypes, Hub hub, DocumentTypeRegister docTypeRegistry) {
     this.storage = storage;
     this.docTypeRegistry = docTypeRegistry;
     this.documentTypes = documentTypes;
