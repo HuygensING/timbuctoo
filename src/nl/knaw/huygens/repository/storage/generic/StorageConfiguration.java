@@ -2,11 +2,11 @@ package nl.knaw.huygens.repository.storage.generic;
 
 import java.util.Set;
 
+import nl.knaw.huygens.repository.Configuration;
+
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-
-import nl.knaw.huygens.repository.Configuration;
 
 public class StorageConfiguration {
   private String host;
@@ -14,7 +14,6 @@ public class StorageConfiguration {
   private String dbName;
   private String user;
   private String password;
-  private String type;
   private String key;
   private Set<String> documentTypes;
   private Set<String> versionedTypes;
@@ -26,12 +25,10 @@ public class StorageConfiguration {
     this.dbName = dbName;
     this.user = user;
     this.password = password;
-    this.type = type;
   }
 
   @Inject
   public StorageConfiguration(Configuration conf) {
-    type = conf.getSetting("database.type", "unknown");
     host = conf.getSetting("database.host", "localhost");
     port = conf.getIntSetting("database.port", 27017);
     dbName = conf.getSetting("database.name", conf.getSetting("project.internalname", "data"));
@@ -43,7 +40,7 @@ public class StorageConfiguration {
     String versionedDocTypes = conf.getSetting("versioneddoctypes", docTypes);
     versionedTypes = Sets.newHashSet(versionedDocTypes.split(","));
     String variationDocTypes = conf.getSetting("variationdoctypes", docTypes);
-    variationTypes = Sets.newHashSet(variationDocTypes.split(",")); 
+    variationTypes = Sets.newHashSet(variationDocTypes.split(","));
   }
 
   public boolean requiresAuth() {
@@ -68,17 +65,6 @@ public class StorageConfiguration {
 
   public String getPassword() {
     return password;
-  }
-
-  public StorageType getType() {
-    StorageType t;
-    try {
-      t = StorageType.valueOf(type.toUpperCase());
-    } catch (Exception ex) {
-      System.err.println("Unknown storage type " + type);
-      throw new RuntimeException(ex);
-    }
-    return t;
   }
 
   public String getKey() {
