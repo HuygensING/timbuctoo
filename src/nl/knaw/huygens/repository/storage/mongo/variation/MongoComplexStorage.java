@@ -12,6 +12,7 @@ import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.RevisionChanges;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
+import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.mongo.MongoModifiableStorage;
@@ -25,7 +26,7 @@ import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
 @Singleton
-public class MongoComplexStorage implements Storage {
+public class MongoComplexStorage implements VariationStorage {
 
   private String dbName;
   private MongoOptions options;
@@ -67,12 +68,18 @@ public class MongoComplexStorage implements Storage {
 
   @Override
   public <T extends Document> T getVariation(Class<T> type, String id, String variation) throws IOException {
-    return getStorageForType(type).getVariation(type, id, variation);
+    if (variationDoctypes.contains(docTypeRegistry.getCollectionId(type))) {
+      return variationStorage.getVariation(type, id, variation);
+    }
+    throw new UnsupportedOperationException("Method not available for this type");
   }
 
   @Override
   public <T extends Document> List<T> getAllVariations(Class<T> type, String id) throws IOException {
-    return getStorageForType(type).getAllVariations(type, id);
+    if (variationDoctypes.contains(docTypeRegistry.getCollectionId(type))) {
+      return variationStorage.getAllVariations(type, id);
+    }
+    throw new UnsupportedOperationException("Method not available for this type");
   }
 
   @Override

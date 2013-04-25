@@ -85,20 +85,6 @@ public abstract class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Document> T getVariation(Class<T> type, String id, String variation) {
-    throw new UnsupportedOperationException("Should not be called, see redmine #1417");
-  }
-
-  @Override
-  public <T extends Document> List<T> getAllVariations(Class<T> type, String id) {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
-    T item = col.findOneById(id);
-    List<T> rv = Lists.newArrayListWithCapacity(1);
-    rv.add(item);
-    return rv;
-  }
-
-  @Override
   public <T extends Document> StorageIterator<T> getAllByType(Class<T> cls) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
     return new MongoDBIteratorWrapper<T>(col.find());

@@ -9,8 +9,8 @@ import java.util.Set;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
-import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
+import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
@@ -40,7 +40,7 @@ import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
 @Singleton
-public abstract class MongoVariationStorage implements Storage {
+public abstract class MongoVariationStorage implements VariationStorage {
 
   protected Mongo mongo;
   protected DB db;

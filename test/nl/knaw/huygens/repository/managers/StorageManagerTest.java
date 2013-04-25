@@ -12,7 +12,7 @@ import java.util.Set;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.pubsub.Hub;
-import nl.knaw.huygens.repository.storage.Storage;
+import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 
 import org.junit.Before;
@@ -20,14 +20,14 @@ import org.junit.Test;
 
 public class StorageManagerTest {
   private StorageManager instance;
-  private Storage storage;
+  private VariationStorage storage;
   private Set<String> documentTypes;
   private Hub hub;
   private DocumentTypeRegister docTypeRegistry;
 
   @Before
   public void SetUp() {
-    storage = mock(Storage.class);
+    storage = mock(VariationStorage.class);
     documentTypes = new HashSet<String>();
     hub = mock(Hub.class);
     docTypeRegistry = mock(DocumentTypeRegister.class);
