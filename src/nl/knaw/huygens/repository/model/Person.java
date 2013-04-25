@@ -1,5 +1,6 @@
 package nl.knaw.huygens.repository.model;
 
+import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.util.Datable;
 import nl.knaw.huygens.repository.model.util.IDPrefix;
 
@@ -17,17 +18,12 @@ public class Person extends Document {
     return name;
   }
 
-  /*
-   * IndexAnnotation commented out, because the setupscript does not create a good Solr-schema for Person.
-   * The fields of birthDate and deathDate are missing. See http://suzanna.huygens.knaw.nl/issues/1397 for more information.
-   *
-   */
-  //@IndexAnnotation(fieldName = "birthDate")
+  @IndexAnnotation(fieldName = "facet_d_birthDate", isFaceted = true)
   public Datable getBirthDate() {
     return this.birthDate;
   }
 
-  //@IndexAnnotation(fieldName = "deathDate")
+  @IndexAnnotation(fieldName = "facet_d_deathDate", isFaceted = true)
   public Datable getDeathDate() {
     return this.deathDate;
   }
