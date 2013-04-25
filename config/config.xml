@@ -8,7 +8,6 @@
 			<web>../web</web>
 		</paths>
 		<database>
-			<type>mongocombo</type>
 			<host>localhost</host>
 			<name>repository</name>
 			<port>27017</port>
@@ -34,7 +33,7 @@
 		<solr>
 			<config>solrconfig.xml</config>
 		</solr>
-		<use-handle-system>true</use-handle-system>
+		<use-handle-system>false</use-handle-system>
 		<use-security>false</use-security>
 		<doctypes>person</doctypes>
 		<variationdoctypes>person</variationdoctypes>
