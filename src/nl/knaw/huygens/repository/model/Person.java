@@ -18,12 +18,12 @@ public class Person extends Document {
     return name;
   }
 
-  @IndexAnnotation(fieldName = "facet_d_birthDate", isFaceted = true)
+  @IndexAnnotation(fieldName = "facet_s_birthDate", isFaceted = true, canBeEmpty = true)
   public Datable getBirthDate() {
     return this.birthDate;
   }
 
-  @IndexAnnotation(fieldName = "facet_d_deathDate", isFaceted = true)
+  @IndexAnnotation(fieldName = "facet_s_deathDate", isFaceted = true, canBeEmpty = true)
   public Datable getDeathDate() {
     return this.deathDate;
   }
