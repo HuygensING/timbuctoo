@@ -68,6 +68,8 @@ public class GenericResultSetConverter<T extends Document> {
       return getStringValue(resultSet, fieldNames);
     } else if (type == Datable.class) {
       return new Datable(resultSet.getString(fieldNames.get(0)));
+    } else if (type == Boolean.class || type == boolean.class) {
+      return resultSet.getBoolean(fieldNames.get(0));
     } else {
       throw new RuntimeException(type.getName() + " not supported yet.");
     }

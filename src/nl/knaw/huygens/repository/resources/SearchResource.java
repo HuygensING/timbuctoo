@@ -39,13 +39,15 @@ public class SearchResource {
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
   @APIDesc("Searches the Solr index.")
-  public List<? extends Document> handlePostJson(@QueryParam("q") String term, @QueryParam("core") String core, @QueryParam("sort") String sort) {
+  public List<? extends Document> handlePostJson(@QueryParam("q") String term, @QueryParam("type") String typeString, @QueryParam("sort") String sort) {
     System.err.println(" term = " + term);
-    System.err.println(" core = " + core);
+    System.err.println(" type = " + typeString);
     System.err.println(" sort = " + sort);
     try {
+      // TODO make sure typeString is valid
+      Class<? extends Document> type = docTypeRegistry.getClassFromTypeString(typeString);
+      String core = docTypeRegistry.getCollectionId(type);
       Search search = searchManager.search(term, sort, core);
-      Class<? extends Document> type = docTypeRegistry.getClassFromTypeString(core);
       return convert(type, search.getIds());
     } catch (SolrServerException e) {
       e.printStackTrace();
