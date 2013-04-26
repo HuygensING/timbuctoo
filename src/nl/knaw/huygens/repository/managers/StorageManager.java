@@ -207,7 +207,7 @@ public class StorageManager {
     annotationCache = Maps.newHashMap();
     for (String docType : documentTypes) {
       Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(docType);
-      annotationCache.put(cls, getAllAnnotations(cls));
+      annotationCache.put(cls, getAllRelatedDocumentAnnotations(cls));
     }
   }
 
@@ -223,7 +223,7 @@ public class StorageManager {
     }
   }
 
-  private Map<Class<? extends Document>, List<List<String>>> getAllAnnotations(Class<? extends Document> refDocType) {
+  private Map<Class<? extends Document>, List<List<String>>> getAllRelatedDocumentAnnotations(Class<? extends Document> refDocType) {
     Annotation[] annotations = refDocType.getAnnotations();
 
     Map<Class<? extends Document>, List<List<String>>> rv = Maps.newHashMap();
