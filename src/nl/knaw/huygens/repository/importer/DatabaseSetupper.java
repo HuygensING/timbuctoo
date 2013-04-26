@@ -12,10 +12,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
-import com.google.inject.Inject;
-
 import nl.knaw.huygens.repository.Configuration;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
@@ -23,7 +19,12 @@ import nl.knaw.huygens.repository.model.User;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.util.CryptoUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+
 public class DatabaseSetupper {
+
   private final String FILE_FILTER = ".tab";
   private File sourceDir;
   private File jsonDir;
@@ -43,17 +44,17 @@ public class DatabaseSetupper {
     this.importer = importer;
     initialize();
   }
-  
+
   public void setVREId(String vreId, String vreName) {
     this.vreId = vreId;
     this.vreName = vreName;
   }
-  
+
   public int run() throws IOException {
     System.out.println("Emptying the database...");
     storageManager.getStorage().empty();
     System.out.println("Emptied the database.");
-    
+
     if (conf.getBooleanSetting("dataNeedsCleaning", false)) {
       System.out.println("Cleaning input data...");
       importCleaner();
@@ -74,7 +75,7 @@ public class DatabaseSetupper {
     System.out.println("Done.");
     return 0;
   }
-  
+
   private void createAdminUser() throws IOException {
     User admin = new User();
     admin.setId(null); // Will be filled in by the storage implementation.
@@ -116,7 +117,7 @@ public class DatabaseSetupper {
       ObjectMapper mapper = new ObjectMapper();
 
       for (File importFile : sourceDir.listFiles(filter)) {
-        BufferedReader input =  new BufferedReader(new InputStreamReader(new FileInputStream(importFile), charsetToUse));
+        BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream(importFile), charsetToUse));
         File outputFile = new File(jsonDir.getCanonicalPath() + '/' + importFile.getName().replace(FILE_FILTER, "") + ".json");
         BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), charsetToUse));
         String line = null;
@@ -126,13 +127,13 @@ public class DatabaseSetupper {
         boolean noErrors = true;
         int counter = 0;
         while ((line = input.readLine()) != null) {
-          counter ++;
+          counter++;
           line = line.replace("\"{", "{");
           line = line.replace("}\"", "}");
           line = line.replace("\"\"", "\"");
           line = line.replace("\"###null###\"", "null");
           try {
-            Map<?,?> map = mapper.readValue(line, Map.class);
+            Map<?, ?> map = mapper.readValue(line, Map.class);
             output.write(line + "\n");
             System.out.print((counter % 10 == 9) ? map.get("^type") + " " + map.get("_id") + " |\n" : map.get("^type") + " " + map.get("_id") + " | ");
           } catch (Exception e) {
@@ -155,6 +156,5 @@ public class DatabaseSetupper {
       throw new RuntimeException();
     }
   }
-
 
 }
