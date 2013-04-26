@@ -1,12 +1,14 @@
 package nl.knaw.huygens.repository.managers;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -15,8 +17,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.managers.model.MultipleReferringDoc;
+import nl.knaw.huygens.repository.managers.model.ReferredDoc;
+import nl.knaw.huygens.repository.managers.model.ReferringDoc;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
@@ -26,6 +32,7 @@ import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
+import nl.knaw.huygens.repository.variation.model.projecta.OtherDoc;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +40,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class StorageManagerTest {
   private StorageManager instance;
@@ -498,8 +506,114 @@ public class StorageManagerTest {
     assertTrue(documentList.isEmpty());
   }
 
-  //TODO: add tests for getReferringDocs
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testGetReferringDocs() {
+    String referredDocId = "referreddoc";
+    String referringDocId = "referringdoc";
+    documentTypes.addAll(Sets.newHashSet(referringDocId, referredDocId));
 
-  //TODO: add tests for ensureIndices
+    Class<ReferringDoc> referringDocType = ReferringDoc.class;
+    Class<ReferredDoc> referredDocType = ReferredDoc.class;
+
+    doReturn(referredDocType).when(docTypeRegistry).getClassFromTypeString(referredDocId);
+    doReturn(referringDocType).when(docTypeRegistry).getClassFromTypeString(referringDocId);
+
+    when(variationStorage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.newArrayList("RFD000000001"));
+
+    instance = new StorageManager(variationStorage, documentTypes, hub, docTypeRegistry, persistenceManager);
+
+    Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(referringDocType, referredDocType, "RDD000000001");
+
+    assertFalse(referringDocs.isEmpty());
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testGetReferringDocsWithMultipleReferringDoc() {
+    String referredDocId = "referreddoc";
+    String referringDocId = "referringdoc";
+    String multipleReferringDocId = "multiplereferringdoc";
+
+    documentTypes.addAll(Sets.newHashSet(referringDocId, referredDocId, multipleReferringDocId));
+
+    Class<ReferringDoc> referringDocType = ReferringDoc.class;
+    Class<ReferredDoc> referredDocType = ReferredDoc.class;
+    Class<MultipleReferringDoc> multipleReferringDocType = MultipleReferringDoc.class;
+
+    doReturn(referredDocType).when(docTypeRegistry).getClassFromTypeString(referredDocId);
+    doReturn(referringDocType).when(docTypeRegistry).getClassFromTypeString(referringDocId);
+    doReturn(multipleReferringDocType).when(docTypeRegistry).getClassFromTypeString(multipleReferringDocId);
+
+    when(variationStorage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.newArrayList("RFD000000001", "RDD000000001"));
+
+    instance = new StorageManager(variationStorage, documentTypes, hub, docTypeRegistry, persistenceManager);
+
+    Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(multipleReferringDocType, referredDocType, "RDD000000001");
+
+    assertFalse(referringDocs.isEmpty());
+  }
+
+  @Test
+  public void testGetReferringDocsNoMappingsForReferringType() {
+    String referredDocId = "referreddoc";
+    String referringDocId = "referringdoc";
+    documentTypes.addAll(Sets.newHashSet(referredDocId, referringDocId));
+
+    Class<ReferringDoc> referringDocType = ReferringDoc.class;
+    Class<ReferredDoc> referredDocType = ReferredDoc.class;
+    Class<OtherDoc> otherDocType = OtherDoc.class;
+
+    doReturn(referredDocType).when(docTypeRegistry).getClassFromTypeString(referredDocId);
+    doReturn(referringDocType).when(docTypeRegistry).getClassFromTypeString(referringDocId);
+
+    instance = new StorageManager(variationStorage, documentTypes, hub, docTypeRegistry, persistenceManager);
+
+    Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(otherDocType, referredDocType, "RDD000000001");
+
+    assertTrue(referringDocs.isEmpty());
+  }
+
+  @Test
+  public void testGetReferringDocsNoMappingsForReferredType() {
+    String referredDocId = "referreddoc";
+    String referringDocId = "referringdoc";
+    documentTypes.addAll(Sets.newHashSet(referredDocId, referringDocId));
+
+    Class<ReferringDoc> referringDocType = ReferringDoc.class;
+    Class<ReferredDoc> referredDocType = ReferredDoc.class;
+    Class<OtherDoc> otherDocType = OtherDoc.class;
+
+    doReturn(referredDocType).when(docTypeRegistry).getClassFromTypeString(referredDocId);
+    doReturn(referringDocType).when(docTypeRegistry).getClassFromTypeString(referringDocId);
+
+    instance = new StorageManager(variationStorage, documentTypes, hub, docTypeRegistry, persistenceManager);
+
+    Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(referringDocType, otherDocType, "RDD000000001");
+
+    assertTrue(referringDocs.isEmpty());
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testGetReferringDocsReferringDocsNotFound() {
+    String referredDocId = "referreddoc";
+    String referringDocId = "referringdoc";
+    documentTypes.addAll(Sets.newHashSet(referringDocId, referredDocId));
+
+    Class<ReferringDoc> referringDocType = ReferringDoc.class;
+    Class<ReferredDoc> referredDocType = ReferredDoc.class;
+
+    doReturn(referredDocType).when(docTypeRegistry).getClassFromTypeString(referredDocId);
+    doReturn(referringDocType).when(docTypeRegistry).getClassFromTypeString(referringDocId);
+
+    when(variationStorage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.<ReferringDoc> newArrayList());
+
+    instance = new StorageManager(variationStorage, documentTypes, hub, docTypeRegistry, persistenceManager);
+
+    Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(referringDocType, referredDocType, "RDD000000001");
+
+    assertTrue(referringDocs.isEmpty());
+  }
 
 }
