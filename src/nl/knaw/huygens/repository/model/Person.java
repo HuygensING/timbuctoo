@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("PER")
 public class Person extends Document {
+
   public String name;
   public Datable birthDate;
   public Datable deathDate;
