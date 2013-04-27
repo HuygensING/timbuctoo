@@ -2,9 +2,6 @@ package nl.knaw.huygens.repository.index;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.List;
-
-import com.google.common.collect.Lists;
 
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.indexdata.IndexAnnotations;
@@ -16,34 +13,27 @@ public class ModelIterator {
    * Utility method to deal with either one or multiple annotations per
    * element...
    */
-  private void processMethod(AnnotatedMethodProcessor proc, Method m, List<? extends Annotation> annotations) {
+  private void processMethod(AnnotatedMethodProcessor proc, Method method, Annotation[] annotations) {
     for (Annotation annotation : annotations) {
       if (annotation instanceof IndexAnnotation) {
-        proc.process(m, (IndexAnnotation) annotation);
+        proc.process(method, (IndexAnnotation) annotation);
       } else if (annotation instanceof IndexAnnotations) {
         // Recursion alert! (Java's own fault for not allowing multiple
-        // identical annotations
-        // on a single element, of course)
-        processMethod(proc, m, Lists.newArrayList(((IndexAnnotations) annotation).value()));
+        // identical annotations on a single element, of course)
+        processMethod(proc, method, ((IndexAnnotations) annotation).value());
       }
     }
   }
 
   public void processClass(AnnotatedMethodProcessor proc, Class<? extends Document> cls) {
-    Method[] methods = cls.getMethods();
-    for (Method m : methods) {
-      List<Annotation> annotations = null;
-      if (hasIndexAnnotations(m)) {
-        annotations = Lists.newArrayList(m.getAnnotations());
-        processMethod(proc, m, annotations);
-      } else if (!hasIndexAnnotations(m)) {
-
-        m = getFirstIndexAnnotedMethod(m, cls);
-        if (m != null) {
-          annotations = Lists.newArrayList(m.getAnnotations());
-          processMethod(proc, m, annotations);
+    for (Method method : cls.getMethods()) {
+      if (hasIndexAnnotations(method)) {
+        processMethod(proc, method, method.getAnnotations());
+      } else if (!hasIndexAnnotations(method)) {
+        method = getFirstIndexAnnotedMethod(method, cls);
+        if (method != null) {
+          processMethod(proc, method, method.getAnnotations());
         }
-
       }
     }
   }
@@ -54,24 +44,18 @@ public class ModelIterator {
 
   private Method getFirstIndexAnnotedMethod(Method overridingMethod, Class<?> subClass) {
     Class<?> cls = subClass.getSuperclass();
-    Method method = null;
     Method firstAnnotedMethod = null;
     try {
-      method = cls.getMethod(overridingMethod.getName());
-
+      Method method = cls.getMethod(overridingMethod.getName());
       if (hasIndexAnnotations(method)) {
         firstAnnotedMethod = method;
       }
-
-    } catch (NoSuchMethodException e) {
-    } catch (SecurityException e) {
-    }
+    } catch (NoSuchMethodException e) {} catch (SecurityException e) {}
 
     if (firstAnnotedMethod == null && (cls != Document.class)) {
       firstAnnotedMethod = getFirstIndexAnnotedMethod(overridingMethod, cls);
     }
-
     return firstAnnotedMethod;
-
   }
+
 }
