@@ -1,8 +1,8 @@
 package nl.knaw.huygens.repository.resources;
 
-import java.io.IOException;
 import java.util.List;
 
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -39,22 +39,31 @@ public class SearchResource {
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
   @APIDesc("Searches the Solr index.")
-  public List<? extends Document> handlePostJson(@QueryParam("q") String term, @QueryParam("type") String typeString, @QueryParam("sort") String sort) {
-    System.err.println(" term = " + term);
-    System.err.println(" type = " + typeString);
-    System.err.println(" sort = " + sort);
+  // TODO decide: which request are made persistent? isn't all overkill?
+  public List<? extends Document> doSearch( //
+      @QueryParam("type") String typeString, //
+      @QueryParam("q") String q, //
+      @QueryParam("sort") @DefaultValue("id") String sort) //
+  {
+    if (typeString == null || q == null) {
+      // TODO decide: is throwing an exception the proper approach?
+      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+    }
+
+    Class<? extends Document> type = docTypeRegistry.getClassFromTypeString(typeString);
+    if (type == null) {
+      // TODO decide: is throwing an exception the proper approach?
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
+    }
+
     try {
-      // TODO make sure typeString is valid
-      Class<? extends Document> type = docTypeRegistry.getClassFromTypeString(typeString);
+      // TODO decide: the rule id --> core is implicit, is this what we want?
       String core = docTypeRegistry.getCollectionId(type);
-      Search search = searchManager.search(term, sort, core);
+      Search search = searchManager.search(core, q, sort);
       return convert(type, search.getIds());
     } catch (SolrServerException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
+      throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
     }
-    throw new WebApplicationException(Response.Status.NOT_FOUND);
   }
 
   private <T extends Document> List<T> convert(Class<T> type, List<String> ids) {

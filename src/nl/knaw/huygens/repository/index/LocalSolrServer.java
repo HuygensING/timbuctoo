@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.util.Paths;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
@@ -32,8 +34,6 @@ import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-
-import nl.knaw.huygens.repository.util.Paths;
 
 @Singleton
 public class LocalSolrServer {
@@ -136,7 +136,7 @@ public class LocalSolrServer {
     this.solrServers.put(core, solrServer);
   }
 
-  public QueryResponse getQueryResponse(String term, Collection<String> facetFieldNames, String sort, String core) throws SolrServerException, IOException {
+  public QueryResponse getQueryResponse(String term, Collection<String> facetFieldNames, String sort, String core) throws SolrServerException {
     SolrQuery query = new SolrQuery();
     query.setQuery(term);
     query.setFields(SOLR_DEFAULT_FIELD);
@@ -159,7 +159,7 @@ public class LocalSolrServer {
     SolrServer solrServer = solrServers.get(core);
     LukeRequest request = new LukeRequest();
     request.setNumTerms(0);
-    request.setFields(Collections.<String>emptyList());
+    request.setFields(Collections.<String> emptyList());
 
     NamedList<Object> namedList = solrServer.request(request);
 
