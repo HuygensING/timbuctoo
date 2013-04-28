@@ -35,10 +35,10 @@
 		</solr>
 		<use-handle-system>false</use-handle-system>
 		<use-security>false</use-security>
-		<doctypes>person</doctypes>
-		<variationdoctypes>person</variationdoctypes>
-		<indexeddoctypes>person</indexeddoctypes>
-		<versioneddoctypes>person,user</versioneddoctypes>
+		<doctypes>person,place</doctypes>
+		<variationdoctypes>person,place</variationdoctypes>
+		<indexeddoctypes>person,place</indexeddoctypes>
+		<versioneddoctypes>person,place,user</versioneddoctypes>
 		<defaultdoctype>person</defaultdoctype>
 		<public_url>http://localhost:8080/repository/</public_url>
 		<feed>
