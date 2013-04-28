@@ -10,7 +10,7 @@ import nl.knaw.huygens.repository.model.raa.RAACivilServant;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class PersonImporter {
+public class BulkImporter {
 
   public static void main(String[] args) throws Exception {
     Injector injector = Guice.createInjector(new BasicInjectionModule("config.xml"));
@@ -20,6 +20,7 @@ public class PersonImporter {
     GenericImporter importer = new GenericImporter();
 
     long beginTime = new Date().getTime();
+    // importer.importData("resources/DWCPlaceMapping.properties", storageManager, DWCPlace.class);
     importer.importData("resources/DWCScientistMapping.properties", storageManager, DWCScientist.class);
     importer.importData("resources/RAACivilServantMapping.properties", storageManager, RAACivilServant.class);
     long endTime = new Date().getTime();
@@ -28,4 +29,5 @@ public class PersonImporter {
 
     storageManager.ensureIndices();
   }
+
 }
