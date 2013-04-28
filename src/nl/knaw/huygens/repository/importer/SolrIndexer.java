@@ -10,6 +10,7 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.VariationStorage;
+import nl.knaw.huygens.repository.util.Progress;
 import nl.knaw.huygens.repository.util.RepositoryException;
 
 import com.google.inject.Guice;
@@ -29,7 +30,6 @@ public class SolrIndexer {
     private final IndexerFactory indices;
     private final Configuration conf;
     private final DocumentTypeRegister docTypeRegistry;
-    private int count;
 
     @Inject
     public SolrIndexerRunner(Configuration conf, IndexerFactory indices, VariationStorage storage, DocumentTypeRegister docTypeRegistry) {
@@ -37,7 +37,6 @@ public class SolrIndexer {
       this.indices = indices;
       this.storage = storage;
       this.docTypeRegistry = docTypeRegistry;
-      count = 0;
     }
 
     public int run() {
@@ -62,6 +61,8 @@ public class SolrIndexer {
     }
 
     private <T extends Document> void indexAllDocuments(Class<T> type) throws Exception {
+      System.out.printf("%n=== Indexing documents of type '%s'%n", type.getSimpleName());
+
       DocumentIndexer<T> indexer = indices.getIndexForType(type);
       StorageIterator<T> list;
       try {
@@ -71,9 +72,11 @@ public class SolrIndexer {
         ex.printStackTrace();
         return;
       }
+
+      Progress progress = new Progress();
       try {
         while (list.hasNext()) {
-          displayProgress();
+          progress.step();
           T mainDoc = list.next();
           List<T> allVariations = storage.getAllVariations(type, mainDoc.getId());
           if (mainDoc.isDeleted()) {
@@ -95,18 +98,8 @@ public class SolrIndexer {
         System.err.println("Error committing changes:" + ex.toString());
         ex.printStackTrace();
       }
-      System.out.printf("%n%05d%n", count);
+      progress.done();
       System.out.println("\nIndexing done!");
-    }
-
-    private void displayProgress() {
-      if (count % 10 == 0) {
-        if (count % 1000 == 0) {
-          System.out.printf("%n%05d ", count);
-        }
-        System.out.print(".");
-      }
-      count++;
     }
   }
 
