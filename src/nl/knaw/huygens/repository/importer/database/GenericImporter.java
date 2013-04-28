@@ -11,6 +11,7 @@ import java.util.Properties;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.util.Progress;
 
 public class GenericImporter {
   private String connectionString;
@@ -18,7 +19,6 @@ public class GenericImporter {
   private String password;
   private String query;
   private Map<String, List<String>> objectMapping;
-  private int count;
 
   public <T extends Document> void importData(String configFile, StorageManager storageManager, Class<T> type) throws Exception {
     System.out.printf("%n=== Import documents of type '%s'%n", type.getSimpleName());
@@ -28,13 +28,13 @@ public class GenericImporter {
     SQLImporter importer = new SQLImporter(connectionString, userName, password);
     List<T> objects = importer.executeQuery(query, converter);
 
-    count = 0;
+    Progress progress = new Progress();
     for (T object : objects) {
-      displayProgress();
+      progress.step();
       // System.out.println(object.getDescription());
       storageManager.addDocument(type, object);
     }
-    System.out.printf("%n%05d%n", count);
+    progress.done();
   }
 
   private void readMapping(String filePath) throws IOException {
@@ -65,16 +65,6 @@ public class GenericImporter {
       values.add(valuePart.trim());
     }
     return values;
-  }
-
-  private void displayProgress() {
-    if (count % 10 == 0) {
-      if (count % 1000 == 0) {
-        System.out.printf("%n%05d ", count);
-      }
-      System.out.print(".");
-    }
-    count++;
   }
 
 }
