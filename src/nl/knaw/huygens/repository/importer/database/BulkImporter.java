@@ -4,6 +4,7 @@ import java.util.Date;
 
 import nl.knaw.huygens.repository.BasicInjectionModule;
 import nl.knaw.huygens.repository.managers.StorageManager;
+import nl.knaw.huygens.repository.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.repository.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.repository.model.raa.RAACivilServant;
 
@@ -20,7 +21,7 @@ public class BulkImporter {
     GenericImporter importer = new GenericImporter();
 
     long beginTime = new Date().getTime();
-    // importer.importData("resources/DWCPlaceMapping.properties", storageManager, DWCPlace.class);
+    importer.importData("resources/DWCPlaceMapping.properties", storageManager, DWCPlace.class);
     importer.importData("resources/DWCScientistMapping.properties", storageManager, DWCScientist.class);
     importer.importData("resources/RAACivilServantMapping.properties", storageManager, RAACivilServant.class);
     long endTime = new Date().getTime();
