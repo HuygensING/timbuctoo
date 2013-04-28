@@ -2,8 +2,6 @@ package nl.knaw.huygens.repository.importer.database;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,46 +18,43 @@ public class GenericImporter {
   private String password;
   private String query;
   private Map<String, List<String>> objectMapping;
+  private int count;
 
-  public <T extends Document> void importData(String configFile, StorageManager storageManager, Class<T> type) throws SQLException, IOException, InstantiationException, IllegalAccessException,
-      NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException {
-    this.readMapping(configFile);
-    this.importPersons(this.connectionString, this.userName, this.password, this.query, this.objectMapping, storageManager, type);
-  }
+  public <T extends Document> void importData(String configFile, StorageManager storageManager, Class<T> type) throws Exception {
+    System.out.printf("%n=== Import documents of type '%s'%n", type.getSimpleName());
 
-  private <T extends Document> void importPersons(String url, String user, String password, String query, Map<String, List<String>> propertyMapping, StorageManager storageManager,
-      Class<T> type) throws SQLException, IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException {
-    GenericResultSetConverter<T> resultSetCoverter = new GenericResultSetConverter<T>(propertyMapping, type);
+    readMapping(configFile);
+    GenericResultSetConverter<T> converter = new GenericResultSetConverter<T>(objectMapping, type);
+    SQLImporter importer = new SQLImporter(connectionString, userName, password);
+    List<T> objects = importer.executeQuery(query, converter);
 
-    SQLImporter importer = new SQLImporter(url, user, password);
-    List<T> objects = importer.executeQuery(query, resultSetCoverter);
-
+    count = 0;
     for (T object : objects) {
-      System.out.println(object.getDescription());
+      displayProgress();
+      // System.out.println(object.getDescription());
       storageManager.addDocument(type, object);
     }
-
-    System.out.println("persons.size(): " + objects.size());
+    System.out.printf("%n%05d%n", count);
   }
 
   private void readMapping(String filePath) throws IOException {
     Properties mapping = new Properties();
     mapping.load(new FileInputStream(filePath));
 
-    this.objectMapping = new HashMap<String, List<String>>();
+    objectMapping = new HashMap<String, List<String>>();
     for (Entry<Object, Object> entry : mapping.entrySet()) {
       if ("connectionString".equals(entry.getKey())) {
-        this.connectionString = (String) entry.getValue();
+        connectionString = (String) entry.getValue();
       } else if ("userName".equals(entry.getKey())) {
-        this.userName = (String) entry.getValue();
+        userName = (String) entry.getValue();
       } else if ("password".equals(entry.getKey())) {
-        this.password = (String) entry.getValue();
+        password = (String) entry.getValue();
       } else if ("query".equals(entry.getKey())) {
-        this.query = (String) entry.getValue();
+        query = (String) entry.getValue();
       } else {
         String key = (String) entry.getKey();
         List<String> value = getEntryValue((String) entry.getValue());
-        this.objectMapping.put(key, value);
+        objectMapping.put(key, value);
       }
     }
   }
@@ -70,6 +65,16 @@ public class GenericImporter {
       values.add(valuePart.trim());
     }
     return values;
+  }
+
+  private void displayProgress() {
+    if (count % 10 == 0) {
+      if (count % 1000 == 0) {
+        System.out.printf("%n%05d ", count);
+      }
+      System.out.print(".");
+    }
+    count++;
   }
 
 }
