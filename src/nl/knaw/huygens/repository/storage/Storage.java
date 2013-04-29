@@ -40,4 +40,16 @@ public interface Storage {
 
   <T extends Document> void ensureIndex(Class<T> type, List<List<String>> accessorList);
 
+  <T extends Document> List<T> getAllVariations(Class<T> type, String id) throws IOException;
+
+  /**
+   * Get the given variation of a document.
+   * @param type
+   * @param id
+   * @param variation
+   * @return
+   * @throws IOException 
+   */
+  <T extends Document> T getVariation(Class<T> type, String id, String variation) throws IOException;
+
 }

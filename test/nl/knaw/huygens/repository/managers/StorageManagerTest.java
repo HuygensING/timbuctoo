@@ -27,8 +27,8 @@ import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.pubsub.Hub;
+import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
-import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.repository.variation.model.projecta.OtherDoc;
@@ -41,7 +41,7 @@ import com.google.common.collect.Sets;
 
 public class StorageManagerTest {
   private StorageManager instance;
-  private VariationStorage variationStorage;
+  private Storage storage;
   private Set<String> documentTypes;
   private Hub hub;
   private DocumentTypeRegister docTypeRegistry;
@@ -49,12 +49,12 @@ public class StorageManagerTest {
 
   @Before
   public void SetUp() {
-    variationStorage = mock(VariationStorage.class);
+    storage = mock(Storage.class);
     documentTypes = new HashSet<String>();
     hub = mock(Hub.class);
     docTypeRegistry = mock(DocumentTypeRegister.class);
     persistenceManager = mock(PersistenceManager.class);
-    instance = new StorageManager(variationStorage, documentTypes, hub, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, hub, docTypeRegistry, persistenceManager);
   }
 
   @Test
@@ -66,7 +66,7 @@ public class StorageManagerTest {
     when(doc.getId()).thenReturn(id);
     when(doc.getDescription()).thenReturn("test");
 
-    when(variationStorage.getItem(type, id)).thenReturn(doc);
+    when(storage.getItem(type, id)).thenReturn(doc);
 
     Document actualDoc = instance.getCompleteDocument(type, id);
 
@@ -79,7 +79,7 @@ public class StorageManagerTest {
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     String id = "testId";
 
-    when(variationStorage.getItem(type, id)).thenReturn(null);
+    when(storage.getItem(type, id)).thenReturn(null);
 
     Document actualDoc = instance.getCompleteDocument(type, id);
 
@@ -92,7 +92,7 @@ public class StorageManagerTest {
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     String id = "testId";
 
-    when(variationStorage.getItem(type, id)).thenThrow(IOException.class);
+    when(storage.getItem(type, id)).thenThrow(IOException.class);
 
     Document actualDoc = instance.getCompleteDocument(type, id);
 
@@ -108,7 +108,7 @@ public class StorageManagerTest {
     when(doc.getId()).thenReturn(id);
     when(doc.getDescription()).thenReturn("test");
 
-    when(variationStorage.getItem(type, id)).thenReturn(doc);
+    when(storage.getItem(type, id)).thenReturn(doc);
 
     Document actualDoc = instance.getDocument(type, id);
 
@@ -121,7 +121,7 @@ public class StorageManagerTest {
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     String id = "testId";
 
-    when(variationStorage.getItem(type, id)).thenReturn(null);
+    when(storage.getItem(type, id)).thenReturn(null);
 
     Document actualDoc = instance.getDocument(type, id);
 
@@ -134,7 +134,7 @@ public class StorageManagerTest {
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     String id = "testId";
 
-    when(variationStorage.getItem(type, id)).thenThrow(IOException.class);
+    when(storage.getItem(type, id)).thenThrow(IOException.class);
 
     Document actualDoc = instance.getDocument(type, id);
 
@@ -151,7 +151,7 @@ public class StorageManagerTest {
     when(doc.getId()).thenReturn(id);
     when(doc.getDescription()).thenReturn("test");
 
-    when(variationStorage.getVariation(type, id, variation)).thenReturn(doc);
+    when(storage.getVariation(type, id, variation)).thenReturn(doc);
 
     Document actualDoc = instance.getCompleteVariation(type, id, variation);
 
@@ -165,7 +165,7 @@ public class StorageManagerTest {
     String id = "testId";
     String variation = "projecta";
 
-    when(variationStorage.getVariation(type, id, variation)).thenReturn(null);
+    when(storage.getVariation(type, id, variation)).thenReturn(null);
 
     Document actualDoc = instance.getCompleteVariation(type, id, variation);
 
@@ -179,7 +179,7 @@ public class StorageManagerTest {
     String id = "testId";
     String variation = "projecta";
 
-    when(variationStorage.getVariation(type, id, variation)).thenThrow(IOException.class);
+    when(storage.getVariation(type, id, variation)).thenThrow(IOException.class);
 
     Document actualDoc = instance.getCompleteVariation(type, id, variation);
 
@@ -199,7 +199,7 @@ public class StorageManagerTest {
     when(doc.getId()).thenReturn(id);
     when(doc.getDescription()).thenReturn("test2");
 
-    when(variationStorage.getAllVariations(type, id)).thenReturn(Lists.newArrayList(doc, doc2));
+    when(storage.getAllVariations(type, id)).thenReturn(Lists.newArrayList(doc, doc2));
 
     List<GeneralTestDoc> actualDocs = instance.getAllVariations(type, id);
 
@@ -211,7 +211,7 @@ public class StorageManagerTest {
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     String id = "testId";
 
-    when(variationStorage.getAllVariations(type, id)).thenReturn(null);
+    when(storage.getAllVariations(type, id)).thenReturn(null);
 
     List<GeneralTestDoc> actualDoc = instance.getAllVariations(type, id);
 
@@ -224,7 +224,7 @@ public class StorageManagerTest {
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     String id = "testId";
 
-    when(variationStorage.getAllVariations(type, id)).thenThrow(IOException.class);
+    when(storage.getAllVariations(type, id)).thenThrow(IOException.class);
 
     List<GeneralTestDoc> actualDoc = instance.getAllVariations(type, id);
 
@@ -240,7 +240,7 @@ public class StorageManagerTest {
 
     instance.addDocument(type, doc);
 
-    verify(variationStorage).addItem(type, doc);
+    verify(storage).addItem(type, doc);
   }
 
   @Test(expected = IOException.class)
@@ -250,7 +250,7 @@ public class StorageManagerTest {
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
-    doThrow(IOException.class).when(variationStorage).addItem(type, doc);
+    doThrow(IOException.class).when(storage).addItem(type, doc);
 
     instance.addDocument(type, doc);
   }
@@ -266,7 +266,7 @@ public class StorageManagerTest {
 
     instance.addDocument(type, doc);
 
-    verify(variationStorage).addItem(type, doc);
+    verify(storage).addItem(type, doc);
 
   }
 
@@ -291,7 +291,7 @@ public class StorageManagerTest {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
     instance.modifyDocument(type, expectedDoc);
-    verify(variationStorage).updateItem(type, expectedDoc.getId(), expectedDoc);
+    verify(storage).updateItem(type, expectedDoc.getId(), expectedDoc);
 
   }
 
@@ -303,7 +303,7 @@ public class StorageManagerTest {
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
-    doThrow(IOException.class).when(variationStorage).updateItem(type, doc.getId(), doc);
+    doThrow(IOException.class).when(storage).updateItem(type, doc.getId(), doc);
 
     instance.modifyDocument(type, doc);
   }
@@ -318,7 +318,7 @@ public class StorageManagerTest {
 
     instance.modifyDocument(type, expectedDoc);
 
-    verify(variationStorage).updateItem(type, expectedDoc.getId(), expectedDoc);
+    verify(storage).updateItem(type, expectedDoc.getId(), expectedDoc);
 
   }
 
@@ -346,7 +346,7 @@ public class StorageManagerTest {
 
     instance.removeDocument(type, inputDoc);
 
-    verify(variationStorage).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
+    verify(storage).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
   }
 
   @Test(expected = IOException.class)
@@ -357,7 +357,7 @@ public class StorageManagerTest {
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
-    doThrow(IOException.class).when(variationStorage).deleteItem(type, doc.getId(), doc.getLastChange());
+    doThrow(IOException.class).when(storage).deleteItem(type, doc.getId(), doc.getLastChange());
 
     instance.removeDocument(type, doc);
   }
@@ -379,7 +379,7 @@ public class StorageManagerTest {
   public void testGetLastChanged() throws IOException {
     List<Document> lastChangeList = Lists.newArrayList(mock(Document.class), mock(Document.class), mock(Document.class));
 
-    when(variationStorage.getLastChanged(anyInt())).thenReturn(lastChangeList);
+    when(storage.getLastChanged(anyInt())).thenReturn(lastChangeList);
 
     List<Document> actualList = instance.getLastChanged(3);
 
@@ -391,7 +391,7 @@ public class StorageManagerTest {
   @Test()
   public void testGetLastChangedIOException() throws IOException {
 
-    when(variationStorage.getLastChanged(anyInt())).thenThrow(IOException.class);
+    when(storage.getLastChanged(anyInt())).thenThrow(IOException.class);
 
     List<Document> actualList = instance.getLastChanged(3);
 
@@ -408,7 +408,7 @@ public class StorageManagerTest {
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
-    when(variationStorage.getAllByType(type)).thenReturn(iterator);
+    when(storage.getAllByType(type)).thenReturn(iterator);
 
     List<TestConcreteDoc> actualList = instance.getAllLimited(type, 0, 3);
 
@@ -435,9 +435,9 @@ public class StorageManagerTest {
     doReturn(referredDocType).when(docTypeRegistry).getClassFromTypeString(referredDocId);
     doReturn(referringDocType).when(docTypeRegistry).getClassFromTypeString(referringDocId);
 
-    when(variationStorage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.newArrayList("RFD000000001"));
+    when(storage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.newArrayList("RFD000000001"));
 
-    instance = new StorageManager(variationStorage, documentTypes, hub, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, hub, docTypeRegistry, persistenceManager);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(referringDocType, referredDocType, "RDD000000001");
 
@@ -461,9 +461,9 @@ public class StorageManagerTest {
     doReturn(referringDocType).when(docTypeRegistry).getClassFromTypeString(referringDocId);
     doReturn(multipleReferringDocType).when(docTypeRegistry).getClassFromTypeString(multipleReferringDocId);
 
-    when(variationStorage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.newArrayList("RFD000000001", "RDD000000001"));
+    when(storage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.newArrayList("RFD000000001", "RDD000000001"));
 
-    instance = new StorageManager(variationStorage, documentTypes, hub, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, hub, docTypeRegistry, persistenceManager);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(multipleReferringDocType, referredDocType, "RDD000000001");
 
@@ -483,7 +483,7 @@ public class StorageManagerTest {
     doReturn(referredDocType).when(docTypeRegistry).getClassFromTypeString(referredDocId);
     doReturn(referringDocType).when(docTypeRegistry).getClassFromTypeString(referringDocId);
 
-    instance = new StorageManager(variationStorage, documentTypes, hub, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, hub, docTypeRegistry, persistenceManager);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(otherDocType, referredDocType, "RDD000000001");
 
@@ -503,7 +503,7 @@ public class StorageManagerTest {
     doReturn(referredDocType).when(docTypeRegistry).getClassFromTypeString(referredDocId);
     doReturn(referringDocType).when(docTypeRegistry).getClassFromTypeString(referringDocId);
 
-    instance = new StorageManager(variationStorage, documentTypes, hub, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, hub, docTypeRegistry, persistenceManager);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(referringDocType, otherDocType, "RDD000000001");
 
@@ -523,9 +523,9 @@ public class StorageManagerTest {
     doReturn(referredDocType).when(docTypeRegistry).getClassFromTypeString(referredDocId);
     doReturn(referringDocType).when(docTypeRegistry).getClassFromTypeString(referringDocId);
 
-    when(variationStorage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.<ReferringDoc> newArrayList());
+    when(storage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.<ReferringDoc> newArrayList());
 
-    instance = new StorageManager(variationStorage, documentTypes, hub, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, hub, docTypeRegistry, persistenceManager);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(referringDocType, referredDocType, "RDD000000001");
 
