@@ -7,7 +7,7 @@ import nl.knaw.huygens.repository.model.util.IDPrefix;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("PER")
-public class Person extends Document {
+public class Person extends VariationDocument {
 
   public String name;
   public Datable birthDate;

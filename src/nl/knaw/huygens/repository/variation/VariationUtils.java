@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.variation;
 import java.util.List;
 
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.VariationDocument;
 
 import com.google.common.collect.Lists;
 
@@ -26,7 +27,7 @@ public class VariationUtils {
   public static List<Class<? extends Document>> getAllClasses(Class<? extends Document> cls) {
     List<Class<? extends Document>> rv = Lists.newArrayList();
     Class<? extends Document> myCls = cls;
-    while (myCls != null && !myCls.equals(Document.class)) {
+    while (myCls != null && !myCls.equals(Document.class) && !myCls.equals(VariationDocument.class)) {
       rv.add(myCls);
       myCls = (Class<? extends Document>) myCls.getSuperclass();
     }
