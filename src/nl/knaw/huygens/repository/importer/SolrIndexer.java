@@ -26,24 +26,22 @@ public class SolrIndexer {
   }
 
   public static class SolrIndexerRunner {
-    private final VariationStorage storage;
+    private final Configuration config;
     private final IndexerFactory indices;
-    private final Configuration conf;
+    private final VariationStorage storage;
     private final DocumentTypeRegister docTypeRegistry;
 
     @Inject
-    public SolrIndexerRunner(Configuration conf, IndexerFactory indices, VariationStorage storage, DocumentTypeRegister docTypeRegistry) {
-      this.conf = conf;
+    public SolrIndexerRunner(Configuration config, IndexerFactory indices, VariationStorage storage, DocumentTypeRegister docTypeRegistry) {
+      this.config = config;
       this.indices = indices;
       this.storage = storage;
       this.docTypeRegistry = docTypeRegistry;
     }
 
     public int run() {
-      String[] doctypes = conf.getSetting("indexeddoctypes", "").split(",");
-
       int rv = 0;
-      for (String doctype : doctypes) {
+      for (String doctype : config.getSettings("indexeddoctypes")) {
         Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(doctype);
         if (cls == null) {
           System.err.println("Error: couldn't find class for configured doctype " + doctype + "! Are you sure your models are complete?");

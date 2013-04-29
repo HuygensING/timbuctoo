@@ -25,20 +25,21 @@ import com.google.inject.Inject;
 
 public class DatabaseSetupper {
 
-  private final String FILE_FILTER = ".tab";
+  private static final String FILE_FILTER = ".tab";
+
+  private final Configuration config;
   private File sourceDir;
   private File jsonDir;
   private BufferedWriter errors;
   private final StorageManager storageManager;
-  private final Configuration conf;
   private final DocumentTypeRegister docTypeRegistry;
   private String vreName;
   private String vreId;
   private final DbImporter importer;
 
   @Inject
-  public DatabaseSetupper(Configuration conf, StorageManager storageManager, DocumentTypeRegister docTypeRegistry, DbImporter importer) {
-    this.conf = conf;
+  public DatabaseSetupper(Configuration config, StorageManager storageManager, DocumentTypeRegister docTypeRegistry, DbImporter importer) {
+    this.config = config;
     this.storageManager = storageManager;
     this.docTypeRegistry = docTypeRegistry;
     this.importer = importer;
@@ -55,12 +56,11 @@ public class DatabaseSetupper {
     storageManager.getStorage().empty();
     System.out.println("Emptied the database.");
 
-    if (conf.getBooleanSetting("dataNeedsCleaning", false)) {
+    if (config.getBooleanSetting("dataNeedsCleaning", false)) {
       System.out.println("Cleaning input data...");
       importCleaner();
     }
-    String[] models = conf.getSetting("doctypes").split(",");
-    for (String model : models) {
+    for (String model : config.getSettings("doctypes")) {
       Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(model);
       if (cls == null) {
         System.err.println("Couldn't find a model for document type " + model + "! Are you sure you modeled everything correctly?");
@@ -90,21 +90,21 @@ public class DatabaseSetupper {
 
   protected void initialize() {
     try {
-      jsonDir = new File(conf.getSetting("paths.json", ""));
+      jsonDir = new File(config.getSetting("paths.json", ""));
       jsonDir.delete();
       jsonDir.mkdir();
 
       File errorReport = new File("import-report.txt");
       errors = new BufferedWriter(new FileWriter(errorReport));
 
-      sourceDir = new File(conf.getSetting("paths.source", ""));
+      sourceDir = new File(config.getSetting("paths.source", ""));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   private void importCleaner() {
-    String charsetToUse = conf.getSetting("importencoding", "UTF8");
+    String charsetToUse = config.getSetting("importencoding", "UTF8");
     try {
       System.out.println("Starting...");
       FilenameFilter filter = new FilenameFilter() {

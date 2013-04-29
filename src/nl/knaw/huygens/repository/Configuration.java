@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang.StringUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -35,28 +36,34 @@ public class Configuration {
     }
   }
 
-  public String getSetting(String setting) {
-    return xmlConfig.getString(SETTINGS_PREFIX + setting, "");
+  public String getSetting(String key) {
+    return xmlConfig.getString(SETTINGS_PREFIX + key, "");
   }
 
-  public String getSetting(String setting, String defaultValue) {
-    return xmlConfig.getString(SETTINGS_PREFIX + setting, defaultValue);
+  public String getSetting(String key, String defaultValue) {
+    return xmlConfig.getString(SETTINGS_PREFIX + key, defaultValue);
   }
 
-  public boolean getBooleanSetting(String setting) {
-    return getBooleanSetting(setting, false);
+  public String[] getSettings(String key) {
+    String value = getSetting(key, "");
+    // Use characters ',' and ' ' as item separators
+    return StringUtils.split(value, ", ");
   }
 
-  public boolean getBooleanSetting(String setting, boolean defaultValue) {
-    return xmlConfig.getBoolean(SETTINGS_PREFIX + setting, defaultValue);
+  public boolean getBooleanSetting(String key) {
+    return getBooleanSetting(key, false);
   }
 
-  public int getIntSetting(String setting) {
-    return getIntSetting(setting, 0);
+  public boolean getBooleanSetting(String key, boolean defaultValue) {
+    return xmlConfig.getBoolean(SETTINGS_PREFIX + key, defaultValue);
   }
 
-  public int getIntSetting(String setting, int defaultValue) {
-    return xmlConfig.getInt(SETTINGS_PREFIX + setting, defaultValue);
+  public int getIntSetting(String key) {
+    return getIntSetting(key, 0);
+  }
+
+  public int getIntSetting(String key, int defaultValue) {
+    return xmlConfig.getInt(SETTINGS_PREFIX + key, defaultValue);
   }
 
   public List<String> getSettingKeys(String prefix) {
