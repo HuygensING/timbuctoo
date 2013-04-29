@@ -27,7 +27,7 @@ public class DocumentTypeRegisterTest {
 
   @Before
   public void setup() {
-    registry = new DocTypeRegistry();
+    registry = new DocTypeRegistry(null);
   }
 
   @Test
