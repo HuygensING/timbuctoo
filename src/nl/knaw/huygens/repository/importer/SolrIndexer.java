@@ -46,8 +46,8 @@ public class SolrIndexer {
         Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(doctype);
         try {
           indexAllDocuments(cls);
-        } catch (Exception ex) {
-          ex.printStackTrace();
+        } catch (Exception e) {
+          e.printStackTrace();
           rv = 1;
           break;
         }
@@ -59,42 +59,33 @@ public class SolrIndexer {
       System.out.printf("%n=== Indexing documents of type '%s'%n", type.getSimpleName());
 
       DocumentIndexer<T> indexer = indices.getIndexForType(type);
-      StorageIterator<T> list;
-      try {
-        // FIXME: this should just fetch a list of IDs that we can use later.
-        list = storage.getAllByType(type);
-      } catch (Exception ex) {
-        ex.printStackTrace();
-        return;
-      }
+      StorageIterator<T> list = storage.getAllByType(type);
 
-      Progress progress = new Progress();
       try {
+        Progress progress = new Progress();
         while (list.hasNext()) {
           progress.step();
           T mainDoc = list.next();
           List<T> allVariations = storage.getAllVariations(type, mainDoc.getId());
-          if (mainDoc.isDeleted()) {
-            continue;
-          }
-          try {
-            indexer.add(allVariations);
-          } catch (RepositoryException e) {
-            System.out.println("\nError while indexing publication " + mainDoc.getId());
-            throw new Exception(e);
+          if (!mainDoc.isDeleted()) {
+            try {
+              indexer.add(allVariations);
+            } catch (RepositoryException e) {
+              System.out.println("\nError while indexing publication " + mainDoc.getId());
+              throw e;
+            }
           }
         }
+        progress.done();
       } finally {
         list.close();
       }
       try {
         indexer.flush();
-      } catch (Exception ex) {
-        System.err.println("Error committing changes:" + ex.toString());
-        ex.printStackTrace();
+      } catch (Exception e) {
+        System.err.println("Error committing changes: " + e.getMessage());
       }
-      progress.done();
-      System.out.println("\nIndexing done!");
+      System.out.printf("%nIndexing done!%n");
     }
   }
 
