@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository;
+package nl.knaw.huygens.repository.config;
 
 import java.io.InputStream;
 import java.util.Iterator;

@@ -1,5 +1,7 @@
 package nl.knaw.huygens.repository;
 
+import nl.knaw.huygens.repository.config.Configuration;
+
 import org.apache.commons.configuration.ConfigurationException;
 
 import com.google.inject.Guice;

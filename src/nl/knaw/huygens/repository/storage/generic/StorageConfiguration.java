@@ -2,7 +2,7 @@ package nl.knaw.huygens.repository.storage.generic;
 
 import java.util.Set;
 
-import nl.knaw.huygens.repository.Configuration;
+import nl.knaw.huygens.repository.config.Configuration;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;

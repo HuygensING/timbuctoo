@@ -18,7 +18,7 @@ import net.handle.hdllib.HandleValue;
 import net.handle.hdllib.PublicKeyAuthenticationInfo;
 import net.handle.hdllib.SessionSetupInfo;
 import net.handle.hdllib.Util;
-import nl.knaw.huygens.repository.Configuration;
+import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.util.Paths;
