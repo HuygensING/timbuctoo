@@ -12,7 +12,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Map;
 
-import nl.knaw.huygens.repository.Configuration;
+import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.User;

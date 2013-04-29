@@ -1,6 +1,5 @@
 package nl.knaw.huygens.repository.config;
 
-import nl.knaw.huygens.repository.Configuration;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 
 /**

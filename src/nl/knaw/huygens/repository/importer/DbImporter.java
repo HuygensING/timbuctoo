@@ -9,7 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.List;
 
-import nl.knaw.huygens.repository.Configuration;
+import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;

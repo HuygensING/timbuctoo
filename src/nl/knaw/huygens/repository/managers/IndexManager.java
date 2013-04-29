@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import nl.knaw.huygens.repository.Configuration;
+import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.events.Events.DocumentAddEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentDeleteEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
