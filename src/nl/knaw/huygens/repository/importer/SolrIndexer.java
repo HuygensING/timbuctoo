@@ -19,8 +19,9 @@ import com.google.inject.Injector;
 
 public class SolrIndexer {
 
-  public static void main(String[] args) {
-    Injector injector = Guice.createInjector(new BasicInjectionModule("config.xml"));
+  public static void main(String[] args) throws Exception {
+    Configuration config = new Configuration("config.xml");
+    Injector injector = Guice.createInjector(new BasicInjectionModule(config));
     SolrIndexerRunner runner = injector.getInstance(SolrIndexerRunner.class);
     System.exit(runner.run());
   }

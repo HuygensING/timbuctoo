@@ -1,17 +1,16 @@
 package nl.knaw.huygens.repository.importer;
 
-import java.io.IOException;
-
 import nl.knaw.huygens.repository.config.BasicInjectionModule;
-
-import org.apache.commons.configuration.ConfigurationException;
+import nl.knaw.huygens.repository.config.Configuration;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 public class SetupDatabase {
-  public static void main(String[] args) throws ConfigurationException, IOException {
-    Injector injector = Guice.createInjector(new BasicInjectionModule("config.xml"));
+
+  public static void main(String[] args) throws Exception {
+    Configuration config = new Configuration("config.xml");
+    Injector injector = Guice.createInjector(new BasicInjectionModule(config));
     // FIXME: this should be configurable, and for that we need a commandline parsing tool.
     String vreId = "test-vre";
     String vreName = "Test VRE";

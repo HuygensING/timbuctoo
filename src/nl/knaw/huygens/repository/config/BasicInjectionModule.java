@@ -12,8 +12,6 @@ import nl.knaw.huygens.repository.server.security.apis.ApisAuthorizationServerCo
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.mongo.variation.MongoStorageFacade;
 
-import org.apache.commons.configuration.ConfigurationException;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -22,20 +20,12 @@ import com.google.inject.name.Names;
 public class BasicInjectionModule extends AbstractModule {
 
   private final Configuration config;
-  private DocTypeRegistry registry;
+  private final DocTypeRegistry registry;
 
   public BasicInjectionModule(Configuration config) {
     this.config = config;
     registry = new DocTypeRegistry(config.getSetting("model-packages"));
-  }
-
-  public BasicInjectionModule(String configPath) {
-    try {
-      config = new Configuration(configPath);
-      registry = new DocTypeRegistry(config.getSetting("model-packages"));
-    } catch (ConfigurationException e) {
-      throw new RuntimeException(e);
-    }
+    new ConfigValidator(config, registry).validate();
   }
 
   @Override
@@ -49,9 +39,8 @@ public class BasicInjectionModule extends AbstractModule {
       bind(OAuthAuthorizationServerConnector.class).to(NoSecurityOAuthAuthorizationServerConnector.class);
     }
 
-    //TODO: Refactor to make Storage use MongoModifiableStorage and VariationStorage use MongoModifialbleVariationStorage. 
+    // TODO: Refactor to make Storage use MongoModifiableStorage and VariationStorage use MongoModifialbleVariationStorage. 
     bind(Storage.class).to(MongoStorageFacade.class);
-
   }
 
   @Provides
