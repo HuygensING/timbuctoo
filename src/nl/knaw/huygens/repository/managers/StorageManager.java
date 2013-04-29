@@ -11,6 +11,7 @@ import java.util.Set;
 import nl.knaw.huygens.repository.events.Events;
 import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.VariationDocument;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
@@ -89,7 +90,7 @@ public class StorageManager {
    * @param variation
    * @return
    */
-  public <T extends Document> T getCompleteVariation(Class<T> type, String id, String variation) {
+  public <T extends VariationDocument> T getCompleteVariation(Class<T> type, String id, String variation) {
     try {
       return variationStorage.getVariation(type, id, variation);
     } catch (Exception ex) {
@@ -106,7 +107,7 @@ public class StorageManager {
     }
   }
 
-  public <T extends Document> List<T> getAllVariations(Class<T> type, String id) {
+  public <T extends VariationDocument> List<T> getAllVariations(Class<T> type, String id) {
     List<T> rv;
     try {
       rv = variationStorage.getAllVariations(type, id);
@@ -154,13 +155,29 @@ public class StorageManager {
   }
 
   private <T extends Document> void doThrowEvent(Class<T> type, String id, @SuppressWarnings("rawtypes") Class<? extends Events.DocumentChangeEvent> t) throws IOException {
-    List<T> docs = variationStorage.getAllVariations(type, id);
+    List<T> docs = getFullDocument(type, id);
 
     try {
       hub.publish(t.getConstructor(Class.class, List.class).newInstance(type, docs));
     } catch (Exception e) {
       throw new IOException(e);
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T extends Document> List<T> getFullDocument(Class<T> type, String id) {
+    List<T> docs = null;
+    try {
+      if (VariationDocument.class.isAssignableFrom(type)) {
+        docs = (List<T>) variationStorage.getAllVariations((Class<? extends VariationDocument>) type, id);
+      } else {
+        docs = Lists.newArrayList(variationStorage.getItem(type, id));
+      }
+    } catch (IOException ex) {
+      ex.printStackTrace();
+    }
+
+    return docs;
   }
 
   public <T extends Document> StorageIterator<T> getByMultipleIds(Class<T> type, List<String> ids) {

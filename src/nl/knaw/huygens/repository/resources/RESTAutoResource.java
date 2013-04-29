@@ -22,6 +22,7 @@ import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.VariationDocument;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 
@@ -139,11 +140,16 @@ public class RESTAutoResource {
   @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}/{variation: \\w+}")
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   public Document getDocOfVariation(@PathParam(ENTITY_PARAM) String entityType, @PathParam(ID_PARAM) String id, @PathParam("variation") String variation) {
-    Class<? extends Document> type = getDocType(entityType);
-    Document doc = storageManager.getCompleteVariation(type, id, variation);
+    Document doc = null;
+
+    @SuppressWarnings("unchecked")
+    Class<? extends VariationDocument> type = (Class<? extends VariationDocument>) getDocType(entityType);
+    doc = storageManager.getCompleteVariation(type, id, variation);
+
     if (doc == null) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
+
     return doc;
   }
 

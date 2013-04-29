@@ -26,6 +26,7 @@ import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.server.security.OAuthAuthorizationServerConnector;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
+import nl.knaw.huygens.repository.variation.model.SimpleDocument;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.repository.variation.model.projecta.OtherDoc;
 
@@ -520,6 +521,20 @@ public class RESTAutoResourceTest extends JerseyTest {
 
     WebResource webResource = super.resource();
     ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id + "/" + variation).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
+
+    assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
+  }
+
+  @Test
+  public void testGetDocOfVariationOfNonVariationDoc() {
+    this.setUserInRole(true);
+    setupDocumentTypeRegister(SimpleDocument.class);
+    String id = "TST0000000002";
+
+    String variation = "projecta";
+
+    WebResource webResource = super.resource();
+    ClientResponse clientResponse = webResource.path("/resources/simpledocument/" + id + "/" + variation).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
   }

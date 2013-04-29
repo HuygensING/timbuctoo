@@ -6,7 +6,7 @@ import nl.knaw.huygens.repository.model.util.IDPrefix;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("PLA")
-public class Place extends Document {
+public class Place extends VariationDocument {
 
   public String name;
   public String latitude;
