@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.importer.database;
 import java.util.Date;
 
 import nl.knaw.huygens.repository.config.BasicInjectionModule;
+import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.repository.model.dwcbia.DWCScientist;
@@ -14,7 +15,8 @@ import com.google.inject.Injector;
 public class BulkImporter {
 
   public static void main(String[] args) throws Exception {
-    Injector injector = Guice.createInjector(new BasicInjectionModule("config.xml"));
+    Configuration config = new Configuration("config.xml");
+    Injector injector = Guice.createInjector(new BasicInjectionModule(config));
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     storageManager.getStorage().empty();
 
