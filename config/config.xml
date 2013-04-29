@@ -39,7 +39,6 @@
 		<variationdoctypes>person,place</variationdoctypes>
 		<indexeddoctypes>person,place</indexeddoctypes>
 		<versioneddoctypes>person,place,user</versioneddoctypes>
-		<defaultdoctype>person</defaultdoctype>
 		<public_url>http://localhost:8080/repository/</public_url>
 		<feed>
 			<title>Repository changes</title>
