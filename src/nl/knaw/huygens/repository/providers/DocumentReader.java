@@ -19,8 +19,8 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Inject;
@@ -28,13 +28,14 @@ import com.google.inject.Inject;
 @Provider
 @Consumes(MediaType.APPLICATION_JSON)
 public class DocumentReader implements MessageBodyReader<Document> {
+
   @Context
   private UriInfo uriInfo;
   @Context
   private Request request;
 
   @Inject
-  private DocumentTypeRegister docTypeRegistry;
+  private DocTypeRegistry docTypeRegistry;
   @Inject
   private JacksonJsonProvider jsonProvider;
   @Inject
@@ -45,8 +46,8 @@ public class DocumentReader implements MessageBodyReader<Document> {
     return type.equals(Document.class) && mediaType.isCompatible(MediaType.APPLICATION_JSON_TYPE);
   }
 
-  @SuppressWarnings("unchecked")
   @Override
+  @SuppressWarnings("unchecked")
   public Document readFrom(Class<Document> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
       throws IOException, WebApplicationException {
 

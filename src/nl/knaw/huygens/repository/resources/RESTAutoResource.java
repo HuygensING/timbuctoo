@@ -20,9 +20,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 
 import com.fasterxml.jackson.annotation.JsonView;
@@ -36,10 +36,10 @@ public class RESTAutoResource {
   public static final String ENTITY_PARAM = "entityType";
 
   private final StorageManager storageManager;
-  private final DocumentTypeRegister docTypeRegistry;
+  private final DocTypeRegistry docTypeRegistry;
 
   @Inject
-  public RESTAutoResource(final StorageManager manager, final DocumentTypeRegister registry) {
+  public RESTAutoResource(final StorageManager manager, final DocTypeRegistry registry) {
     storageManager = manager;
     docTypeRegistry = registry;
   }

@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.mongo.variation.DBJsonNode;
 
 import org.mongojack.internal.stream.JacksonDBObject;
@@ -21,15 +21,16 @@ import com.google.common.collect.Lists;
 import com.mongodb.DBObject;
 
 public class VariationReducer {
-  private ObjectMapper mapper;
-  private final DocumentTypeRegister docTypeRegistry;
 
-  public VariationReducer(DocumentTypeRegister docTypeRegistry) {
+  private ObjectMapper mapper;
+  private final DocTypeRegistry docTypeRegistry;
+
+  public VariationReducer(DocTypeRegistry docTypeRegistry) {
     this.docTypeRegistry = docTypeRegistry;
     mapper = new ObjectMapper();
   }
 
-  public VariationReducer(ObjectMapper mapper, DocumentTypeRegister docTypeRegistry) {
+  public VariationReducer(ObjectMapper mapper, DocTypeRegistry docTypeRegistry) {
     this.mapper = mapper;
     this.docTypeRegistry = docTypeRegistry;
   }

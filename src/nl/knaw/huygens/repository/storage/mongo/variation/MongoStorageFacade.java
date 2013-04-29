@@ -6,9 +6,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.RevisionChanges;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
@@ -34,10 +34,10 @@ public class MongoStorageFacade implements nl.knaw.huygens.repository.storage.St
   private MongoModifiableVariationStorage variationStorage;
 
   private Set<String> variationDoctypes;
-  private final DocumentTypeRegister docTypeRegistry;
+  private final DocTypeRegistry docTypeRegistry;
 
   @Inject
-  public MongoStorageFacade(StorageConfiguration conf, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+  public MongoStorageFacade(StorageConfiguration conf, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
     this.docTypeRegistry = docTypeRegistry;
     dbName = conf.getDbName();
     options = new MongoOptions();

@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.storage.mongo.MongoDiff;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
@@ -19,13 +19,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
 public class VariationReducerTest {
+
   private VariationReducer reducer;
   private ObjectMapper m;
 
   @Before
   public void setUp() {
     m = new ObjectMapper();
-    reducer = new VariationReducer(new DocumentTypeRegister());
+    reducer = new VariationReducer(new DocTypeRegistry());
   }
 
   @Test

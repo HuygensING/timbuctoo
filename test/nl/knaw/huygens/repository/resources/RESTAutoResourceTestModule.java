@@ -5,8 +5,8 @@ import static org.mockito.Mockito.mock;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.StorageManager;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.server.security.OAuthAuthorizationServerConnector;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
@@ -17,19 +17,18 @@ import com.sun.jersey.guice.JerseyServletModule;
 
 /**
  * This class mocks the ServletModel used in the webapplication.
- * @author martijnm
  *
+ * @author martijnm
  */
-
 class RESTAutoResourceTestModule extends JerseyServletModule {
   private StorageManager storageManager;
-  private DocumentTypeRegister documentTypeRegister;
+  private DocTypeRegistry documentTypeRegister;
   private OAuthAuthorizationServerConnector oAuthAuthorizationServerConnector;
   private JacksonJsonProvider jsonProvider;
 
   public RESTAutoResourceTestModule() {
     storageManager = mock(StorageManager.class);
-    documentTypeRegister = mock(DocumentTypeRegister.class);
+    documentTypeRegister = mock(DocTypeRegistry.class);
     oAuthAuthorizationServerConnector = mock(OAuthAuthorizationServerConnector.class);
     jsonProvider = mock(JacksonJsonProvider.class);
   }
@@ -46,7 +45,7 @@ class RESTAutoResourceTestModule extends JerseyServletModule {
   }
 
   @Provides
-  public DocumentTypeRegister providesDocumentTypeRegister() {
+  public DocTypeRegistry providesDocumentTypeRegister() {
     return this.documentTypeRegister;
   }
 

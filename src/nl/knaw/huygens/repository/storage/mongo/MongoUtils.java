@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 
 import org.mongojack.JacksonDBCollection;
@@ -42,12 +42,12 @@ public class MongoUtils {
   }
 
   public static <T extends Document> JacksonDBCollection<T, String> getCollection(DB db, Class<T> cls) {
-    DBCollection col = db.getCollection(DocumentTypeRegister.getCollectionName(cls));
+    DBCollection col = db.getCollection(DocTypeRegistry.getCollectionName(cls));
     return JacksonDBCollection.wrap(col, cls, String.class, JsonViews.DBView.class);
   }
 
   public static <T extends Document> JacksonDBCollection<MongoChanges<T>, String> getVersioningCollection(DB db, Class<T> cls) {
-    DBCollection col = db.getCollection(DocumentTypeRegister.getVersioningCollectionName(cls));
+    DBCollection col = db.getCollection(DocTypeRegistry.getVersioningCollectionName(cls));
     JavaType someType = TypeFactory.defaultInstance().constructParametricType(MongoChanges.class, cls);
     return RepoJacksonDBCollection.wrap(col, someType, JsonViews.DBView.class);
   }

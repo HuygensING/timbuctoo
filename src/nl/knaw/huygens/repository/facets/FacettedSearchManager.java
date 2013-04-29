@@ -8,6 +8,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
+import nl.knaw.huygens.repository.events.Events.IndexChangedEvent;
+import nl.knaw.huygens.repository.index.LocalSolrServer;
+import nl.knaw.huygens.repository.index.ModelIterator;
+import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Search;
+import nl.knaw.huygens.repository.pubsub.Hub;
+import nl.knaw.huygens.repository.pubsub.Subscribe;
+
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
@@ -19,31 +28,18 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
-import nl.knaw.huygens.repository.events.Events.IndexChangedEvent;
-import nl.knaw.huygens.repository.index.LocalSolrServer;
-import nl.knaw.huygens.repository.index.ModelIterator;
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.Search;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
-import nl.knaw.huygens.repository.pubsub.Hub;
-import nl.knaw.huygens.repository.pubsub.Subscribe;
-
 public class FacettedSearchManager {
 
   public static final String DOC_ID_FIELD = "id";
 
   private LocalSolrServer localSolrServer;
-
   private ModelIterator modelIterator;
-
   private Map<String, Map<String, Boolean>> facetFieldNameCache;
-
   private Map<String, Map<String, Boolean>> facetFieldFilterCache;
-
   private Map<String, Set<String>> solrFieldNameCache;
-  
+
   @Inject
-  private DocumentTypeRegister docTypeRegistry;
+  private DocTypeRegistry docTypeRegistry;
 
   public FacettedSearchManager(LocalSolrServer localSolrServer, ModelIterator modelIterator, Hub hub) {
     this.localSolrServer = localSolrServer;
@@ -84,7 +80,7 @@ public class FacettedSearchManager {
   private Collection<Facet> getFacets(QueryResponse response, String core, boolean linkItems) throws SolrServerException, IOException {
     Collection<Facet> facetFields = Lists.newArrayList();
     Map<String, Boolean> facetFieldComplexity = getFacetFieldNames(core);
-    for (Map.Entry<String, Boolean> facetEntry: facetFieldComplexity.entrySet()) {
+    for (Map.Entry<String, Boolean> facetEntry : facetFieldComplexity.entrySet()) {
       // Get the data from the structure into Facet instances:
       String fieldName = facetEntry.getKey();
       boolean facetIsComplex = facetEntry.getValue();
@@ -175,7 +171,6 @@ public class FacettedSearchManager {
   private Set<String> getRawIndexedFields(String core) throws SolrServerException, IOException {
     return localSolrServer.getAllFields(core);
   }
-
 
   private Map<String, Boolean> getFieldFiltersFromModel(String core) {
     if (!facetFieldFilterCache.containsKey(core)) {

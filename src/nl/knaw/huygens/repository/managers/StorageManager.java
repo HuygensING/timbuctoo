@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.events.Events;
 import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.pubsub.Hub;
@@ -44,11 +44,11 @@ public class StorageManager {
   private Set<String> documentTypes;
 
   private final Hub hub;
-  private DocumentTypeRegister docTypeRegistry;
+  private DocTypeRegistry docTypeRegistry;
   private PersistenceManager persistenceManager;
 
   @Inject
-  public StorageManager(StorageConfiguration storageConf, Storage storage, Hub hub, DocumentTypeRegister docTypeRegistry, PersistenceManager persistenceMananger) {
+  public StorageManager(StorageConfiguration storageConf, Storage storage, Hub hub, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceMananger) {
     this.hub = hub;
     this.docTypeRegistry = docTypeRegistry;
     documentTypes = storageConf.getDocumentTypes();
@@ -59,7 +59,7 @@ public class StorageManager {
   }
 
   // Test-only!
-  protected StorageManager(Storage storage, Set<String> documentTypes, Hub hub, DocumentTypeRegister docTypeRegistry, PersistenceManager persistenceManager) {
+  protected StorageManager(Storage storage, Set<String> documentTypes, Hub hub, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceManager) {
     this.storage = storage;
     this.docTypeRegistry = docTypeRegistry;
     this.documentTypes = documentTypes;

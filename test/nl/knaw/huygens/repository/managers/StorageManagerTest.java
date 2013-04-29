@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.model.MultipleReferringDoc;
 import nl.knaw.huygens.repository.managers.model.ReferredDoc;
 import nl.knaw.huygens.repository.managers.model.ReferringDoc;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.pubsub.Hub;
@@ -40,11 +40,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public class StorageManagerTest {
+
   private StorageManager instance;
   private Storage storage;
   private Set<String> documentTypes;
   private Hub hub;
-  private DocumentTypeRegister docTypeRegistry;
+  private DocTypeRegistry docTypeRegistry;
   private PersistenceManager persistenceManager;
 
   @Before
@@ -52,7 +53,7 @@ public class StorageManagerTest {
     storage = mock(Storage.class);
     documentTypes = new HashSet<String>();
     hub = mock(Hub.class);
-    docTypeRegistry = mock(DocumentTypeRegister.class);
+    docTypeRegistry = mock(DocTypeRegistry.class);
     persistenceManager = mock(PersistenceManager.class);
     instance = new StorageManager(storage, documentTypes, hub, docTypeRegistry, persistenceManager);
   }

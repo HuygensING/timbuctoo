@@ -5,13 +5,13 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.repository.config.Configuration;
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.events.Events.DocumentAddEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentDeleteEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.index.DocumentIndexer;
 import nl.knaw.huygens.repository.index.IndexerFactory;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.pubsub.Subscribe;
 import nl.knaw.huygens.repository.variation.VariationUtils;
@@ -30,7 +30,6 @@ import com.google.inject.Inject;
  * object which is the main index. This may have led to assumptions in designing it
  * which no longer hold when different datamodels are used. Caveat emptor.
  * @author gijs
- *
  */
 public class IndexManager {
 
@@ -41,7 +40,7 @@ public class IndexManager {
   private final Hub hub;
 
   @Inject
-  private DocumentTypeRegister docTypeRegistry;
+  private DocTypeRegistry docTypeRegistry;
 
   public IndexManager(Configuration conf, StorageManager storageManager, IndexerFactory indexFactory, Hub hub) {
     this.storageManager = storageManager;
@@ -258,4 +257,5 @@ public class IndexManager {
       ex.printStackTrace();
     }
   }
+
 }

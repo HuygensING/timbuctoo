@@ -5,9 +5,9 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.model.util.IDPrefix;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
@@ -35,13 +35,13 @@ public class MongoModifiableVariationStorage extends MongoVariationStorageImpl {
   private VariationInducer inducer;
 
   @Inject
-  public MongoModifiableVariationStorage(StorageConfiguration conf, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+  public MongoModifiableVariationStorage(StorageConfiguration conf, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
     super(conf, docTypeRegistry);
     inducer = new VariationInducer();
     inducer.setView(JsonViews.DBView.class);
   }
 
-  public MongoModifiableVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+  public MongoModifiableVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
     super(conf, m, db, options, docTypeRegistry);
     inducer = new VariationInducer();
     inducer.setView(JsonViews.DBView.class);
