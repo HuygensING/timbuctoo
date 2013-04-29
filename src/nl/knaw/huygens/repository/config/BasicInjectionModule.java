@@ -22,14 +22,17 @@ import com.google.inject.name.Names;
 public class BasicInjectionModule extends AbstractModule {
 
   private final Configuration config;
+  private DocTypeRegistry registry;
 
   public BasicInjectionModule(Configuration config) {
     this.config = config;
+    registry = new DocTypeRegistry(config.getSetting("model-packages"));
   }
 
   public BasicInjectionModule(String configPath) {
     try {
       config = new Configuration(configPath);
+      registry = new DocTypeRegistry(config.getSetting("model-packages"));
     } catch (ConfigurationException e) {
       throw new RuntimeException(e);
     }
@@ -39,6 +42,7 @@ public class BasicInjectionModule extends AbstractModule {
   protected void configure() {
     Names.bindProperties(binder(), config.getAll());
     bind(Configuration.class).toInstance(config);
+    bind(DocTypeRegistry.class).toInstance(registry);
     if (config.getBooleanSetting("use-security")) {
       bind(OAuthAuthorizationServerConnector.class).to(ApisAuthorizationServerConnector.class);
     } else {

@@ -39,7 +39,7 @@ public class RESTAutoResource {
   private final DocTypeRegistry docTypeRegistry;
 
   @Inject
-  public RESTAutoResource(final StorageManager manager, final DocTypeRegistry registry) {
+  public RESTAutoResource(StorageManager manager, DocTypeRegistry registry) {
     storageManager = manager;
     docTypeRegistry = registry;
   }
