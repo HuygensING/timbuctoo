@@ -1,6 +1,8 @@
 package nl.knaw.huygens.repository;
 
+import nl.knaw.huygens.repository.config.BasicInjectionModule;
 import nl.knaw.huygens.repository.config.Configuration;
+import nl.knaw.huygens.repository.config.ServletInjectionModule;
 
 import org.apache.commons.configuration.ConfigurationException;
 
