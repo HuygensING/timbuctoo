@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.VariationDocument;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.RevisionChanges;
@@ -68,13 +67,19 @@ public class MongoComplexStorage implements VariationStorage {
   }
 
   @Override
-  public <T extends VariationDocument> T getVariation(Class<T> type, String id, String variation) throws IOException {
-    return variationStorage.getVariation(type, id, variation);
+  public <T extends Document> T getVariation(Class<T> type, String id, String variation) throws IOException {
+    if (variationDoctypes.contains(docTypeRegistry.getCollectionId(type))) {
+      return variationStorage.getVariation(type, id, variation);
+    }
+    throw new UnsupportedOperationException("Method not available for this type");
   }
 
   @Override
-  public <T extends VariationDocument> List<T> getAllVariations(Class<T> type, String id) throws IOException {
-    return variationStorage.getAllVariations(type, id);
+  public <T extends Document> List<T> getAllVariations(Class<T> type, String id) throws IOException {
+    if (variationDoctypes.contains(docTypeRegistry.getCollectionId(type))) {
+      return variationStorage.getAllVariations(type, id);
+    }
+    throw new UnsupportedOperationException("Method not available for this type");
   }
 
   @Override
