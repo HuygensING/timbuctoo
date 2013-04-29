@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.VariationDocument;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.VariationStorage;
@@ -115,7 +114,7 @@ public abstract class MongoVariationStorage implements VariationStorage {
   }
 
   @Override
-  public <T extends VariationDocument> List<T> getAllVariations(Class<T> type, String id) throws VariationException, IOException {
+  public <T extends Document> List<T> getAllVariations(Class<T> type, String id) throws VariationException, IOException {
     DBCollection col = getVariationCollection(type);
     DBObject query = new BasicDBObject("_id", id);
     DBObject item = col.findOne(query);
@@ -123,7 +122,7 @@ public abstract class MongoVariationStorage implements VariationStorage {
   }
 
   @Override
-  public <T extends VariationDocument> T getVariation(Class<T> type, String id, String variation) throws IOException {
+  public <T extends Document> T getVariation(Class<T> type, String id, String variation) throws IOException {
     DBCollection col = getVariationCollection(type);
     DBObject query = new BasicDBObject("_id", id);
     addClassNotNull(type, query);
