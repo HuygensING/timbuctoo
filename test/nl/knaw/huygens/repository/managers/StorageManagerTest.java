@@ -7,14 +7,13 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -36,8 +35,6 @@ import nl.knaw.huygens.repository.variation.model.projecta.OtherDoc;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -239,28 +236,11 @@ public class StorageManagerTest {
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.name = "test";
 
-    final List<TestConcreteDoc> storedDocuments = new ArrayList<TestConcreteDoc>();
-
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
-    doAnswer(new Answer<Object>() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-
-        TestConcreteDoc addedDoc = (TestConcreteDoc) invocation.getArguments()[1];
-
-        storedDocuments.add(addedDoc);
-
-        return null;
-      }
-    }).when(variationStorage).addItem(type, doc);
 
     instance.addDocument(type, doc);
 
-    TestConcreteDoc actualDoc = storedDocuments.get(0);
-
-    assertEquals(doc.name, actualDoc.name);
-
+    verify(variationStorage).addItem(type, doc);
   }
 
   @Test(expected = IOException.class)
@@ -280,29 +260,14 @@ public class StorageManagerTest {
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.name = "test";
 
-    final List<TestConcreteDoc> storedDocuments = new ArrayList<TestConcreteDoc>();
-
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
-    doAnswer(new Answer<Object>() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-
-        TestConcreteDoc addedDoc = (TestConcreteDoc) invocation.getArguments()[1];
-
-        storedDocuments.add(addedDoc);
-
-        return null;
-      }
-    }).when(variationStorage).addItem(type, doc);
 
     doThrow(PersistenceException.class).when(persistenceManager).persistObject(anyString(), anyString());
 
     instance.addDocument(type, doc);
 
-    TestConcreteDoc actualDoc = storedDocuments.get(0);
+    verify(variationStorage).addItem(type, doc);
 
-    assertEquals(doc.name, actualDoc.name);
   }
 
   @Test(expected = IOException.class)
@@ -323,27 +288,10 @@ public class StorageManagerTest {
     expectedDoc.name = "test";
     expectedDoc.setId("TCD0000000001");
 
-    final TestConcreteDoc actualDoc = new TestConcreteDoc();
-    actualDoc.name = "dtu";
-    expectedDoc.setId("TCD0000000001");
-
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
-    doAnswer(new Answer<Object>() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-
-        TestConcreteDoc updatedDoc = (TestConcreteDoc) invocation.getArguments()[2];
-
-        actualDoc.name = updatedDoc.name;
-
-        return null;
-      }
-    }).when(variationStorage).updateItem(type, expectedDoc.getId(), expectedDoc);
-
     instance.modifyDocument(type, expectedDoc);
-
-    assertEquals(expectedDoc.name, actualDoc.name);
+    verify(variationStorage).updateItem(type, expectedDoc.getId(), expectedDoc);
 
   }
 
@@ -366,27 +314,11 @@ public class StorageManagerTest {
     expectedDoc.name = "test";
     expectedDoc.setId("TCD0000000001");
 
-    final TestConcreteDoc actualDoc = new TestConcreteDoc();
-    actualDoc.name = "dtu";
-    expectedDoc.setId("TCD0000000001");
-
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
-    doAnswer(new Answer<Object>() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-
-        TestConcreteDoc updatedDoc = (TestConcreteDoc) invocation.getArguments()[2];
-
-        actualDoc.name = updatedDoc.name;
-
-        return null;
-      }
-    }).when(variationStorage).updateItem(type, expectedDoc.getId(), expectedDoc);
 
     instance.modifyDocument(type, expectedDoc);
 
-    assertEquals(expectedDoc.name, actualDoc.name);
+    verify(variationStorage).updateItem(type, expectedDoc.getId(), expectedDoc);
 
   }
 
@@ -410,27 +342,11 @@ public class StorageManagerTest {
     inputDoc.setId("TCD0000000001");
     inputDoc.setDeleted(true);
 
-    final TestConcreteDoc actualDocument = new TestConcreteDoc();
-    actualDocument.name = "test";
-    actualDocument.setId("TCD0000000001");
-    actualDocument.setDeleted(false);
-
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
-    doAnswer(new Answer<Object>() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-
-        actualDocument.setDeleted(true);
-
-        return null;
-      }
-    }).when(variationStorage).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
 
     instance.removeDocument(type, inputDoc);
 
-    assertTrue(actualDocument.isDeleted());
-
+    verify(variationStorage).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
   }
 
   @Test(expected = IOException.class)
