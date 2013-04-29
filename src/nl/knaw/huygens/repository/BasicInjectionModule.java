@@ -10,8 +10,7 @@ import nl.knaw.huygens.repository.server.security.NoSecurityOAuthAuthorizationSe
 import nl.knaw.huygens.repository.server.security.OAuthAuthorizationServerConnector;
 import nl.knaw.huygens.repository.server.security.apis.ApisAuthorizationServerConnector;
 import nl.knaw.huygens.repository.storage.Storage;
-import nl.knaw.huygens.repository.storage.VariationStorage;
-import nl.knaw.huygens.repository.storage.mongo.variation.MongoComplexStorage;
+import nl.knaw.huygens.repository.storage.mongo.variation.MongoStorageFacade;
 
 import org.apache.commons.configuration.ConfigurationException;
 
@@ -47,8 +46,7 @@ public class BasicInjectionModule extends AbstractModule {
     }
 
     //TODO: Refactor to make Storage use MongoModifiableStorage and VariationStorage use MongoModifialbleVariationStorage. 
-    bind(Storage.class).to(MongoComplexStorage.class);
-    bind(VariationStorage.class).to(MongoComplexStorage.class);
+    bind(Storage.class).to(MongoStorageFacade.class);
 
   }
 

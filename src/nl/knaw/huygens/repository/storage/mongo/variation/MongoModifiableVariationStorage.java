@@ -30,7 +30,7 @@ import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 
 @Singleton
-public class MongoModifiableVariationStorage extends MongoVariationStorage {
+public class MongoModifiableVariationStorage extends MongoVariationStorageImpl {
 
   private VariationInducer inducer;
 
