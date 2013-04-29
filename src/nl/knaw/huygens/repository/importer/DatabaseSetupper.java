@@ -62,11 +62,7 @@ public class DatabaseSetupper {
     }
     for (String model : config.getSettings("doctypes")) {
       Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(model);
-      if (cls == null) {
-        System.err.println("Couldn't find a model for document type " + model + "! Are you sure you modeled everything correctly?");
-      } else {
-        importer.bulkImport(cls, true, vreId, vreName);
-      }
+      importer.bulkImport(cls, true, vreId, vreName);
     }
     System.out.println("Creating indices...");
     storageManager.ensureIndices();
