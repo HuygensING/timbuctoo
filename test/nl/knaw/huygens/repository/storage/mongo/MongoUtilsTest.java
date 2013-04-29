@@ -7,6 +7,9 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
+import nl.knaw.huygens.repository.storage.mongo.MongoDiffTest.Foo;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -14,20 +17,18 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
-import nl.knaw.huygens.repository.storage.mongo.MongoDiffTest.Foo;
-
 public class MongoUtilsTest {
+
   @Test
   public void testGetVersioningCollectionName() {
-    assertEquals("foo-versions", DocumentTypeRegister.getVersioningCollectionName(Foo.class));
+    assertEquals("foo-versions", DocTypeRegistry.getVersioningCollectionName(Foo.class));
   }
-  
+
   @Test
   public void testGetCollectionName() {
-    assertEquals("foo", DocumentTypeRegister.getCollectionName(Foo.class));
+    assertEquals("foo", DocTypeRegistry.getCollectionName(Foo.class));
   }
-  
+
   @Test
   public void testGetObjectForDoc() {
     Foo x = new Foo();
@@ -38,7 +39,7 @@ public class MongoUtilsTest {
       fail();
     }
   }
-  
+
   @Test
   public void testGetCollection() {
     DB db = Mockito.mock(DB.class);
@@ -57,5 +58,4 @@ public class MongoUtilsTest {
     verify(db).getCollection("foo-versions");
   }
 
-  
 }

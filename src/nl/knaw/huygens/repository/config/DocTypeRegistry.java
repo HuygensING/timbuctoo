@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.model.util;
+package nl.knaw.huygens.repository.config;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
@@ -18,19 +18,19 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 @Singleton
-public class DocumentTypeRegister {
+public class DocTypeRegistry {
 
   private final ClassPath classPath;
   private final Map<String, Class<? extends Document>> stringToTypeMap;
   private final Map<Class<? extends Document>, String> typeToStringMap;
   private final Map<Class<? extends Document>, String> typeToCollectionIdMap;
 
-  public DocumentTypeRegister() {
+  public DocTypeRegistry() {
     this(null);
   }
 
   @Inject
-  public DocumentTypeRegister(@Named("model-packages") String packageNames) {
+  public DocTypeRegistry(@Named("model-packages") String packageNames) {
     try {
       classPath = ClassPath.from(this.getClass().getClassLoader());
     } catch (IOException e) {

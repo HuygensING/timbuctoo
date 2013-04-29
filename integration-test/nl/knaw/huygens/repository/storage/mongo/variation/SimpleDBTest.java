@@ -7,13 +7,12 @@ import static org.mockito.Mockito.mock;
 import java.io.IOException;
 
 import nl.knaw.huygens.repository.config.Configuration;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.mongo.MongoDiff;
 import nl.knaw.huygens.repository.variation.model.projecta.OtherDoc;
 import nl.knaw.huygens.repository.variation.model.projectb.TestDoc;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -21,14 +20,11 @@ import com.mongodb.BasicDBObject;
 
 public class SimpleDBTest {
 
-  @Before
-  public void setUp() throws Exception {}
-
   @Test
   public void test() throws IOException {
     StorageConfiguration conf = new StorageConfiguration("127.0.0.1", 27017, "integrationtest", "test", "test", "mongo");
     Configuration config = mock(Configuration.class);
-    DocumentTypeRegister docTypeRegistry = new DocumentTypeRegister(config.getSetting("model-packages"));
+    DocTypeRegistry docTypeRegistry = new DocTypeRegistry(config.getSetting("model-packages"));
     MongoModifiableVariationStorage s = new MongoModifiableVariationStorage(conf, docTypeRegistry);
     s.db.getCollection("testbasedoc").drop();
     s.db.getCollection("testbasedoc-versions").drop();

@@ -13,10 +13,10 @@ import java.io.OutputStreamWriter;
 import java.util.Map;
 
 import nl.knaw.huygens.repository.config.Configuration;
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.User;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.util.CryptoUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,13 +32,13 @@ public class DatabaseSetupper {
   private File jsonDir;
   private BufferedWriter errors;
   private final StorageManager storageManager;
-  private final DocumentTypeRegister docTypeRegistry;
+  private final DocTypeRegistry docTypeRegistry;
   private String vreName;
   private String vreId;
   private final DbImporter importer;
 
   @Inject
-  public DatabaseSetupper(Configuration config, StorageManager storageManager, DocumentTypeRegister docTypeRegistry, DbImporter importer) {
+  public DatabaseSetupper(Configuration config, StorageManager storageManager, DocTypeRegistry docTypeRegistry, DbImporter importer) {
     this.config = config;
     this.storageManager = storageManager;
     this.docTypeRegistry = docTypeRegistry;
