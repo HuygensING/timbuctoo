@@ -7,14 +7,12 @@ import nl.knaw.huygens.repository.Configuration;
 import nl.knaw.huygens.repository.index.DocumentIndexer;
 import nl.knaw.huygens.repository.index.IndexerFactory;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.VariationDocument;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.util.Progress;
 import nl.knaw.huygens.repository.util.RepositoryException;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -60,7 +58,6 @@ public class SolrIndexer {
       return rv;
     }
 
-    @SuppressWarnings("unchecked")
     private <T extends Document> void indexAllDocuments(Class<T> type) throws Exception {
       System.out.printf("%n=== Indexing documents of type '%s'%n", type.getSimpleName());
 
@@ -79,12 +76,7 @@ public class SolrIndexer {
         while (list.hasNext()) {
           progress.step();
           T mainDoc = list.next();
-          List<T> allVariations = null;
-          if (mainDoc instanceof VariationDocument) {
-            allVariations = (List<T>) storage.getAllVariations((Class<? extends VariationDocument>) type, mainDoc.getId());
-          } else {
-            allVariations = Lists.<T> newArrayList(storage.getItem(type, mainDoc.getId()));
-          }
+          List<T> allVariations = storage.getAllVariations(type, mainDoc.getId());
           if (mainDoc.isDeleted()) {
             continue;
           }

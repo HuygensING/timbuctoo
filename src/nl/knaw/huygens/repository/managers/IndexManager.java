@@ -243,7 +243,7 @@ public class IndexManager {
     DocumentIndexer<T> indexer = indexFactory.getIndexForType(baseCls);
 
     for (String id : docIds) {
-      List<T> docs = storageManager.getFullDocument(baseCls, id);
+      List<T> docs = storageManager.getAllVariations(baseCls, id);
 
       indexer.modify(docs);
     }
