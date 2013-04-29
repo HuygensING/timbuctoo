@@ -2,7 +2,7 @@ package nl.knaw.huygens.repository.importer.database;
 
 import java.util.Date;
 
-import nl.knaw.huygens.repository.BasicInjectionModule;
+import nl.knaw.huygens.repository.config.BasicInjectionModule;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.repository.model.dwcbia.DWCScientist;

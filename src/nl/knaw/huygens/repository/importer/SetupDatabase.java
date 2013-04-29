@@ -2,7 +2,7 @@ package nl.knaw.huygens.repository.importer;
 
 import java.io.IOException;
 
-import nl.knaw.huygens.repository.BasicInjectionModule;
+import nl.knaw.huygens.repository.config.BasicInjectionModule;
 
 import org.apache.commons.configuration.ConfigurationException;
 
