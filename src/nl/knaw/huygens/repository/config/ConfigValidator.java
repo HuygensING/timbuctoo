@@ -21,10 +21,9 @@ public class ConfigValidator {
     validateDocTypes("indexeddoctypes");
     validateDocTypes("variationdoctypes");
     validateDocTypes("versioneddoctypes");
-    validateDocTypes("defaultdoctype");
 
     if (error) {
-      throw new RuntimeException("Configuration errors");
+      throw new RuntimeException("Configuration error(s)");
     }
   }
 
