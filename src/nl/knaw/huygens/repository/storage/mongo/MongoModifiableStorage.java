@@ -8,7 +8,6 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.model.util.IDPrefix;
-import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 
 import org.mongojack.DBQuery;
@@ -26,7 +25,7 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 
 @Singleton
-public class MongoModifiableStorage extends MongoStorage implements Storage {
+public class MongoModifiableStorage extends MongoStorageImpl {
 
   @Inject
   public MongoModifiableStorage(StorageConfiguration conf, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {

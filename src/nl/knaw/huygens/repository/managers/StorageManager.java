@@ -20,7 +20,6 @@ import nl.knaw.huygens.repository.storage.RelatedDocuments;
 import nl.knaw.huygens.repository.storage.RevisionChanges;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
-import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.generic.StorageUtils;
 import nl.knaw.huygens.repository.variation.VariationUtils;
@@ -40,7 +39,7 @@ public class StorageManager {
    * - VariationStorage
    */
 
-  private VariationStorage variationStorage;
+  private Storage storage;
   private Map<Class<? extends Document>, Map<Class<? extends Document>, List<List<String>>>> annotationCache;
   private Set<String> documentTypes;
 
@@ -49,19 +48,19 @@ public class StorageManager {
   private PersistenceManager persistenceManager;
 
   @Inject
-  public StorageManager(StorageConfiguration storageConf, VariationStorage variationStorage, Hub hub, DocumentTypeRegister docTypeRegistry, PersistenceManager persistenceMananger) {
+  public StorageManager(StorageConfiguration storageConf, Storage storage, Hub hub, DocumentTypeRegister docTypeRegistry, PersistenceManager persistenceMananger) {
     this.hub = hub;
     this.docTypeRegistry = docTypeRegistry;
     documentTypes = storageConf.getDocumentTypes();
-    this.variationStorage = variationStorage;
+    this.storage = storage;
     this.persistenceManager = persistenceMananger;
     fillAnnotationCache();
     ensureIndices();
   }
 
   // Test-only!
-  protected StorageManager(VariationStorage variationStorage, Set<String> documentTypes, Hub hub, DocumentTypeRegister docTypeRegistry, PersistenceManager persistenceManager) {
-    this.variationStorage = variationStorage;
+  protected StorageManager(Storage storage, Set<String> documentTypes, Hub hub, DocumentTypeRegister docTypeRegistry, PersistenceManager persistenceManager) {
+    this.storage = storage;
     this.docTypeRegistry = docTypeRegistry;
     this.documentTypes = documentTypes;
     this.hub = hub;
@@ -73,7 +72,7 @@ public class StorageManager {
   public <T extends Document> T getCompleteDocument(Class<T> type, String id) {
     T rv;
     try {
-      rv = variationStorage.getItem(type, id);
+      rv = storage.getItem(type, id);
     } catch (IOException e) {
       e.printStackTrace();
       rv = null;
@@ -91,7 +90,7 @@ public class StorageManager {
    */
   public <T extends Document> T getCompleteVariation(Class<T> type, String id, String variation) {
     try {
-      return variationStorage.getVariation(type, id, variation);
+      return storage.getVariation(type, id, variation);
     } catch (Exception ex) {
       return null;
     }
@@ -99,7 +98,7 @@ public class StorageManager {
 
   public <T extends Document> T getDocument(Class<T> type, String id) {
     try {
-      return variationStorage.getItem(type, id);
+      return storage.getItem(type, id);
     } catch (IOException e) {
       e.printStackTrace();
       return null;
@@ -109,7 +108,7 @@ public class StorageManager {
   public <T extends Document> List<T> getAllVariations(Class<T> type, String id) {
     List<T> rv;
     try {
-      rv = variationStorage.getAllVariations(type, id);
+      rv = storage.getAllVariations(type, id);
     } catch (IOException e) {
       e.printStackTrace();
       rv = null;
@@ -118,15 +117,15 @@ public class StorageManager {
   }
 
   public <T extends Document> StorageIterator<T> getAll(Class<T> type) {
-    return variationStorage.getAllByType(type);
+    return storage.getAllByType(type);
   }
 
   public <T extends Document> RevisionChanges<T> getVersions(Class<T> type, String id) {
-    return variationStorage.getAllRevisions(type, id);
+    return storage.getAllRevisions(type, id);
   }
 
   public <T extends Document> void addDocument(Class<T> type, T doc) throws IOException {
-    variationStorage.addItem(type, doc);
+    storage.addItem(type, doc);
     persistDocumentVersion(type, doc);
     doThrowEvent(VariationUtils.getBaseClass(type), doc.getId(), Events.DocumentAddEvent.class);
   }
@@ -136,25 +135,25 @@ public class StorageManager {
       // TODO make persistent id dependent on version.
       String collectionId = docTypeRegistry.getCollectionId(type);
       String pid = persistenceManager.persistObject(collectionId, doc.getId());
-      variationStorage.setPID(type, pid, doc.getId());
+      storage.setPID(type, pid, doc.getId());
     } catch (PersistenceException e) {
       e.printStackTrace();
     }
   }
 
   public <T extends Document> void modifyDocument(Class<T> type, T doc) throws IOException {
-    variationStorage.updateItem(type, doc.getId(), doc);
+    storage.updateItem(type, doc.getId(), doc);
     persistDocumentVersion(type, doc);
     doThrowEvent(VariationUtils.getBaseClass(type), doc.getId(), DocumentEditEvent.class);
   }
 
   public <T extends Document> void removeDocument(Class<T> type, T doc) throws IOException {
-    variationStorage.deleteItem(type, doc.getId(), doc.getLastChange());
+    storage.deleteItem(type, doc.getId(), doc.getLastChange());
     doThrowEvent(VariationUtils.getBaseClass(type), doc.getId(), Events.DocumentDeleteEvent.class);
   }
 
   private <T extends Document> void doThrowEvent(Class<T> type, String id, @SuppressWarnings("rawtypes") Class<? extends Events.DocumentChangeEvent> t) throws IOException {
-    List<T> docs = variationStorage.getAllVariations(type, id);
+    List<T> docs = storage.getAllVariations(type, id);
 
     try {
       hub.publish(t.getConstructor(Class.class, List.class).newInstance(type, docs));
@@ -164,12 +163,12 @@ public class StorageManager {
   }
 
   public <T extends Document> StorageIterator<T> getByMultipleIds(Class<T> type, List<String> ids) {
-    return variationStorage.getByMultipleIds(type, ids);
+    return storage.getByMultipleIds(type, ids);
   }
 
   public List<Document> getLastChanged(int limit) {
     try {
-      return variationStorage.getLastChanged(limit);
+      return storage.getLastChanged(limit);
     } catch (IOException e) {
       e.printStackTrace();
       return Collections.<Document> emptyList();
@@ -180,7 +179,7 @@ public class StorageManager {
     if (limit == 0) {
       return Collections.<T> emptyList();
     }
-    return StorageUtils.resolveIterator(variationStorage.getAllByType(type), offset, limit);
+    return StorageUtils.resolveIterator(storage.getAllByType(type), offset, limit);
   }
 
   public <X extends Document, T extends Document> Map<List<String>, List<String>> getReferringDocs(Class<X> referringType, Class<T> referredType, String... referredIds) {
@@ -195,7 +194,7 @@ public class StorageManager {
 
     Map<List<String>, List<String>> rv = Maps.newHashMap();
     for (List<String> accessDesc : docAccessDescList) {
-      List<String> referringDocIds = variationStorage.getIdsForQuery(referringType, accessDesc, referredIds);
+      List<String> referringDocIds = storage.getIdsForQuery(referringType, accessDesc, referredIds);
       if (referringDocIds != null && !referringDocIds.isEmpty()) {
         rv.put(accessDesc, referringDocIds);
       }
@@ -219,7 +218,7 @@ public class StorageManager {
       for (List<List<String>> accessorListItem : accessors) {
         accessorList.addAll(accessorListItem);
       }
-      variationStorage.ensureIndex(cls, accessorList);
+      storage.ensureIndex(cls, accessorList);
     }
   }
 
@@ -255,12 +254,12 @@ public class StorageManager {
   }
 
   public Storage getStorage() {
-    return variationStorage;
+    return storage;
   }
 
   public void close() {
     try {
-      variationStorage.destroy();
+      storage.destroy();
     } catch (Exception e) {
       System.err.println("Failed to close storage!");
       e.printStackTrace();
