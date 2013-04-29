@@ -1,9 +1,8 @@
-package nl.knaw.huygens.repository.model.util;
+package nl.knaw.huygens.repository.config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.variation.model.TestBaseDoc;
 import nl.knaw.huygens.repository.variation.model.TestExtraBaseDoc;
 import nl.knaw.huygens.repository.variation.model.projectb.TestDoc;
@@ -13,7 +12,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Tests for the DocumentTypeRegister. Watch-out the register is highly
+ * Tests for the DocTypeRegistry. Watch-out the register is highly
  * dependent on the getCollectionName method. When that
  * implementation changes, a lot of tests will fail.
  * 
@@ -21,7 +20,7 @@ import org.junit.Test;
  * 
  * @author martijnm
  */
-public class DocumentTypeRegisterTest {
+public class DocTypeRegistryTest {
 
   private DocTypeRegistry registry;
 
