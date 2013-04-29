@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.List;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.model.util.IDPrefix;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 
@@ -28,11 +28,11 @@ import com.mongodb.MongoException;
 public class MongoModifiableStorage extends MongoStorageImpl {
 
   @Inject
-  public MongoModifiableStorage(StorageConfiguration conf, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+  public MongoModifiableStorage(StorageConfiguration conf, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
     super(conf, docTypeRegistry);
   }
 
-  public MongoModifiableStorage(StorageConfiguration conf, Mongo m, DB loanedDB, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+  public MongoModifiableStorage(StorageConfiguration conf, Mongo m, DB loanedDB, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
     super(conf, m, loanedDB, docTypeRegistry);
   }
 
@@ -61,7 +61,7 @@ public class MongoModifiableStorage extends MongoStorageImpl {
     }
 
     // Update the counter object.
-    DBObject counterQuery = new BasicDBObject("_id", DocumentTypeRegister.getCollectionName(type));
+    DBObject counterQuery = new BasicDBObject("_id", DocTypeRegistry.getCollectionName(type));
     Counter counter = counterCol.findOne(counterQuery);
     if (counter == null || counter.next <= lastId) {
       // Make sure we fail if the counter changes inbetween the findOne above
@@ -132,7 +132,7 @@ public class MongoModifiableStorage extends MongoStorageImpl {
   }
 
   private <T extends Document> void setNextId(Class<T> cls, T item) {
-    BasicDBObject idFinder = new BasicDBObject("_id", DocumentTypeRegister.getCollectionName(cls));
+    BasicDBObject idFinder = new BasicDBObject("_id", DocTypeRegistry.getCollectionName(cls));
     BasicDBObject counterIncrement = new BasicDBObject("$inc", new BasicDBObject("next", 1));
 
     // Find by id, return all fields, use default sort, increment the counter,

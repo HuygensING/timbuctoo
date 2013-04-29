@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.ws.rs.core.Application;
 
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.resources.RESTAutoResource;
 import nl.knaw.huygens.repository.util.JAXUtils;
 import nl.knaw.huygens.repository.util.JAXUtils.API;
@@ -18,7 +18,7 @@ public class Sitemap {
 
   private static final String ENTITY_REGEXP = "\\{" + RESTAutoResource.ENTITY_PARAM + "\\}";
 
-  public Sitemap(Application application, DocumentTypeRegister registry) {
+  public Sitemap(Application application, DocTypeRegistry registry) {
     availableAPIList = Lists.newArrayList();
     for (Class<?> cls : application.getClasses()) {
       List<API> apis = JAXUtils.generateAPIs(cls);

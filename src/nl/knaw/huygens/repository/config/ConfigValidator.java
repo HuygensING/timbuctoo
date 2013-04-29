@@ -1,17 +1,15 @@
 package nl.knaw.huygens.repository.config;
 
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
-
 /**
  * Validates the Configuration of the Repository Project.
  */
 public class ConfigValidator {
 
   private final Configuration config;
-  private final DocumentTypeRegister registry;
+  private final DocTypeRegistry registry;
   private boolean error;
 
-  public ConfigValidator(Configuration config, DocumentTypeRegister registry) {
+  public ConfigValidator(Configuration config, DocTypeRegistry registry) {
     this.config = config;
     this.registry = registry;
   }

@@ -22,8 +22,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 import net.handle.hdllib.HandleException;
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.StorageManager;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.server.security.OAuthAuthorizationServerConnector;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
@@ -103,7 +103,7 @@ public class RESTAutoResourceTest extends JerseyTest {
   }
 
   private void setupDocumentTypeRegister(Class<?> type) {
-    DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
+    DocTypeRegistry documentTypeRegister = injector.getInstance(DocTypeRegistry.class);
     doReturn(type).when(documentTypeRegister).getClassFromTypeString(anyString());
   }
 
@@ -440,7 +440,7 @@ public class RESTAutoResourceTest extends JerseyTest {
   @Test
   public void testPutDocUserNotLoggedIn() {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
+    DocTypeRegistry documentTypeRegister = injector.getInstance(DocTypeRegistry.class);
     String id = "TST0000000001";
 
     TestConcreteDoc expectedDoc = new TestConcreteDoc();
@@ -458,7 +458,7 @@ public class RESTAutoResourceTest extends JerseyTest {
 
   @Test
   public void testPostUserNotInRole() {
-    DocumentTypeRegister documentTypeRegister = injector.getInstance(DocumentTypeRegister.class);
+    DocTypeRegistry documentTypeRegister = injector.getInstance(DocTypeRegistry.class);
     this.setUserInRole(false);
 
     doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());

@@ -7,8 +7,8 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Sitemap;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.util.APIDesc;
 
 import com.google.inject.Inject;
@@ -16,10 +16,10 @@ import com.google.inject.Inject;
 @Path("api")
 public class SitemapResource {
 
-  private final DocumentTypeRegister registry;
+  private final DocTypeRegistry registry;
 
   @Inject
-  public SitemapResource(DocumentTypeRegister registry) {
+  public SitemapResource(DocTypeRegistry registry) {
     this.registry = registry;
   }
 

@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.model.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.variation.model.TestBaseDoc;
 import nl.knaw.huygens.repository.variation.model.TestExtraBaseDoc;
 import nl.knaw.huygens.repository.variation.model.projectb.TestDoc;
@@ -22,11 +23,11 @@ import org.junit.Test;
  */
 public class DocumentTypeRegisterTest {
 
-  private DocumentTypeRegister registry;
+  private DocTypeRegistry registry;
 
   @Before
   public void setup() {
-    registry = new DocumentTypeRegister();
+    registry = new DocTypeRegistry();
   }
 
   @Test

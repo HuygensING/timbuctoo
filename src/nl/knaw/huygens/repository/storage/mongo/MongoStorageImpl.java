@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
@@ -43,7 +43,7 @@ public abstract class MongoStorageImpl implements MongoStorage {
 
   private Set<String> documentCollections;
   protected Set<String> versionedDocumentTypes;
-  private final DocumentTypeRegister docTypeRegistry;
+  private final DocTypeRegistry docTypeRegistry;
 
   static class Counter {
     @JsonProperty("_id")
@@ -52,7 +52,7 @@ public abstract class MongoStorageImpl implements MongoStorage {
   }
 
   @Inject
-  public MongoStorageImpl(StorageConfiguration conf, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+  public MongoStorageImpl(StorageConfiguration conf, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
     this.docTypeRegistry = docTypeRegistry;
     dbName = conf.getDbName();
     mongo = new Mongo(conf.getHost(), conf.getPort());
@@ -70,7 +70,7 @@ public abstract class MongoStorageImpl implements MongoStorage {
     versionedDocumentTypes = conf.getVersionedTypes();
   }
 
-  public MongoStorageImpl(StorageConfiguration conf, Mongo m, DB loanedDB, DocumentTypeRegister docTypeRegistry) {
+  public MongoStorageImpl(StorageConfiguration conf, Mongo m, DB loanedDB, DocTypeRegistry docTypeRegistry) {
     mongo = m;
     db = loanedDB;
     this.docTypeRegistry = docTypeRegistry;

@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.util.DocumentTypeRegister;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
@@ -64,9 +64,9 @@ public abstract class MongoVariationStorageImpl implements MongoVariationStorage
   }
 
   private Map<Class<? extends Document>, DBCollection> collectionCache;
-  protected final DocumentTypeRegister docTypeRegistry;
+  protected final DocTypeRegistry docTypeRegistry;
 
-  public MongoVariationStorageImpl(StorageConfiguration conf, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+  public MongoVariationStorageImpl(StorageConfiguration conf, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
     this.docTypeRegistry = docTypeRegistry;
     dbName = conf.getDbName();
     options = new MongoOptions();
@@ -79,7 +79,7 @@ public abstract class MongoVariationStorageImpl implements MongoVariationStorage
     initializeVariationCollections(conf);
   }
 
-  public MongoVariationStorageImpl(StorageConfiguration conf, Mongo m, DB db, MongoOptions options, DocumentTypeRegister docTypeRegistry) throws UnknownHostException, MongoException {
+  public MongoVariationStorageImpl(StorageConfiguration conf, Mongo m, DB db, MongoOptions options, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
     this.options = options;
     this.docTypeRegistry = docTypeRegistry;
     dbName = conf.getDbName();
