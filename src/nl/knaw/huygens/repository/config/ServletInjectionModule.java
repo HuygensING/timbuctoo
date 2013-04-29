@@ -21,4 +21,5 @@ public class ServletInjectionModule extends JerseyServletModule {
     params.put(ServletContainer.PROPERTY_WEB_PAGE_CONTENT_REGEX, "/static.*");
     filter("/*").through(GuiceContainer.class, params);
   }
+
 }

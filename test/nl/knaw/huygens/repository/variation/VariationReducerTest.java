@@ -26,7 +26,7 @@ public class VariationReducerTest {
   @Before
   public void setUp() {
     m = new ObjectMapper();
-    reducer = new VariationReducer(new DocTypeRegistry());
+    reducer = new VariationReducer(new DocTypeRegistry(null));
   }
 
   @Test

@@ -13,9 +13,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 
 @Singleton
 public class DocTypeRegistry {
@@ -25,12 +23,7 @@ public class DocTypeRegistry {
   private final Map<Class<? extends Document>, String> typeToStringMap;
   private final Map<Class<? extends Document>, String> typeToCollectionIdMap;
 
-  public DocTypeRegistry() {
-    this(null);
-  }
-
-  @Inject
-  public DocTypeRegistry(@Named("model-packages") String packageNames) {
+  public DocTypeRegistry(String packageNames) {
     try {
       classPath = ClassPath.from(this.getClass().getClassLoader());
     } catch (IOException e) {
