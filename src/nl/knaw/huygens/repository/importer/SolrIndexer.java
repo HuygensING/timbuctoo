@@ -44,16 +44,12 @@ public class SolrIndexer {
       int rv = 0;
       for (String doctype : config.getSettings("indexeddoctypes")) {
         Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(doctype);
-        if (cls == null) {
-          System.err.println("Error: couldn't find class for configured doctype " + doctype + "! Are you sure your models are complete?");
-        } else {
-          try {
-            indexAllDocuments(cls);
-          } catch (Exception ex) {
-            ex.printStackTrace();
-            rv = 1;
-            break;
-          }
+        try {
+          indexAllDocuments(cls);
+        } catch (Exception ex) {
+          ex.printStackTrace();
+          rv = 1;
+          break;
         }
       }
       return rv;
