@@ -2,7 +2,7 @@ package nl.knaw.huygens.repository.importer;
 
 import java.util.List;
 
-import nl.knaw.huygens.repository.BasicInjectionModule;
+import nl.knaw.huygens.repository.config.BasicInjectionModule;
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.index.DocumentIndexer;
 import nl.knaw.huygens.repository.index.IndexerFactory;
