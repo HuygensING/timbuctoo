@@ -65,13 +65,13 @@ public class SolrIndexer {
         Progress progress = new Progress();
         while (list.hasNext()) {
           progress.step();
-          T mainDoc = list.next();
-          List<T> allVariations = storage.getAllVariations(type, mainDoc.getId());
-          if (!mainDoc.isDeleted()) {
+          T doc = list.next();
+          List<T> allVariations = storage.getAllVariations(type, doc.getId());
+          if (!doc.isDeleted()) {
             try {
               indexer.add(allVariations);
             } catch (RepositoryException e) {
-              System.out.println("\nError while indexing publication " + mainDoc.getId());
+              System.out.println("\nError while indexing publication " + doc.getId());
               throw e;
             }
           }
