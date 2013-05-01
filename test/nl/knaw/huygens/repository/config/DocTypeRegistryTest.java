@@ -4,7 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import nl.knaw.huygens.repository.variation.model.TestBaseDoc;
+import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.repository.variation.model.TestExtraBaseDoc;
+import nl.knaw.huygens.repository.variation.model.TestInheritsFromTestBaseDoc;
 import nl.knaw.huygens.repository.variation.model.projectb.TestDoc;
 
 import org.junit.Before;
@@ -66,7 +68,18 @@ public class DocTypeRegistryTest {
 
   @Test
   public void testGetCollectionIdFromCollectionClass() {
-    assertEquals("testbasedoc", registry.getCollectionId(TestDoc.class));
+    assertEquals("testdoc", registry.getCollectionId(TestDoc.class));
+  }
+
+  @Test
+  public void testGetCollectionIdFromNonDirectDescendantOfDocument() {
+    assertEquals("testinheritsfromtestbasedoc", registry.getCollectionId(TestInheritsFromTestBaseDoc.class));
+  }
+
+  @Test
+  public void testGetCollectionIdForARegisteredClass() {
+    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
+    assertEquals("testconcretedoc", registry.getCollectionId(TestConcreteDoc.class));
   }
 
   @Test
