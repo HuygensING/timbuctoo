@@ -101,7 +101,7 @@ public class DocTypeRegistry {
   @SuppressWarnings("unchecked")
   private Class<? extends Document> getBaseClass(Class<? extends Document> type) {
     Class<? extends Document> lastType = type;
-    while (type != null && !type.equals(Document.class)) {
+    while (type != null && !Modifier.isAbstract(type.getModifiers())) {
       lastType = type;
       type = (Class<? extends Document>) type.getSuperclass();
     }
