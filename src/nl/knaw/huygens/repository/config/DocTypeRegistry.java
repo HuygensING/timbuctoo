@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.annotations.DocumentTypeName;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -77,7 +78,8 @@ public class DocTypeRegistry {
       Class<?> cls = info.load();
       if (isDocumentType(cls)) {
         Class<? extends Document> docCls = (Class<? extends Document>) cls;
-        String typeId = docCls.getSimpleName().toLowerCase();
+        // String typeId = docCls.getSimpleName().toLowerCase();
+        String typeId = determineTypeName(docCls);
         stringToTypeMap.put(typeId, docCls);
         typeToStringMap.put(docCls, typeId);
         Class<? extends Document> baseCls = getBaseClass(docCls);
@@ -112,6 +114,15 @@ public class DocTypeRegistry {
 
   public static String getCollectionName(Class<? extends Document> type) {
     return type.getSimpleName().toLowerCase();
+  }
+
+  public static String determineTypeName(Class<? extends Document> type) {
+    DocumentTypeName annotation = type.getAnnotation(DocumentTypeName.class);
+    if (annotation != null) {
+      return annotation.value();
+    } else {
+      return type.getSimpleName().toLowerCase() + "s";
+    }
   }
 
 }

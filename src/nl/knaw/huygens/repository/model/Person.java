@@ -1,12 +1,14 @@
 package nl.knaw.huygens.repository.model;
 
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
+import nl.knaw.huygens.repository.model.annotations.DocumentTypeName;
+import nl.knaw.huygens.repository.model.annotations.IDPrefix;
 import nl.knaw.huygens.repository.model.util.Datable;
-import nl.knaw.huygens.repository.model.util.IDPrefix;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("PER")
+@DocumentTypeName("person")
 public class Person extends Document {
 
   public String name;
