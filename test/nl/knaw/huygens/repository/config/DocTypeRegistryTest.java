@@ -32,13 +32,13 @@ public class DocTypeRegistryTest {
   @Test
   public void testConstructModelToRegister() {
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertEquals(TestExtraBaseDoc.class, registry.getClassFromTypeString("testextrabasedoc"));
+    assertEquals(TestExtraBaseDoc.class, registry.getClassFromTypeString("testextrabasedocs"));
   }
 
   @Test
   public void testGetClassFromTypeStringAllLowerCase() {
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertEquals(TestExtraBaseDoc.class, registry.getClassFromTypeString("testextrabasedoc"));
+    assertEquals(TestExtraBaseDoc.class, registry.getClassFromTypeString("testextrabasedocs"));
   }
 
   @Test
@@ -56,7 +56,7 @@ public class DocTypeRegistryTest {
   @Test
   public void testGetClassFromTypeStringWithPackage() {
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertEquals(TestExtraBaseDoc.class, registry.getClassFromTypeString("model-testextrabasedoc"));
+    assertEquals(TestExtraBaseDoc.class, registry.getClassFromTypeString("model-testextrabasedocs"));
   }
 
   @Test
@@ -72,7 +72,7 @@ public class DocTypeRegistryTest {
   @Test
   public void testRegisterPackageReadablePackage() {
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertEquals(TestExtraBaseDoc.class, registry.getClassFromTypeString("testextrabasedoc"));
+    assertEquals(TestExtraBaseDoc.class, registry.getClassFromTypeString("testextrabasedocs"));
   }
 
   @Test
