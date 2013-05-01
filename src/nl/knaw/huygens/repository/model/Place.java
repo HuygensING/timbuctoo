@@ -1,11 +1,13 @@
 package nl.knaw.huygens.repository.model;
 
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
-import nl.knaw.huygens.repository.model.util.IDPrefix;
+import nl.knaw.huygens.repository.model.annotations.DocumentTypeName;
+import nl.knaw.huygens.repository.model.annotations.IDPrefix;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("PLA")
+@DocumentTypeName("place")
 public class Place extends Document {
 
   public String name;

@@ -2,12 +2,14 @@ package nl.knaw.huygens.repository.model;
 
 import java.util.List;
 
-import nl.knaw.huygens.repository.model.util.IDPrefix;
+import nl.knaw.huygens.repository.model.annotations.DocumentTypeName;
+import nl.knaw.huygens.repository.model.annotations.IDPrefix;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("USR")
+@DocumentTypeName("user")
 public class User extends Document {
   public String pwHash;
   public String email;
