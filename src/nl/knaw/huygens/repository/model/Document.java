@@ -34,6 +34,11 @@ public abstract class Document {
 
   private List<String> variations = Lists.newArrayList();
 
+  @JsonIgnore
+  public String getTypeName() {
+    return getClass().getSimpleName();
+  }
+
   @JsonProperty("_id")
   @IndexAnnotation(fieldName = "id")
   public String getId() {

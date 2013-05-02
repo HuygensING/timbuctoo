@@ -88,8 +88,11 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
   }
 
   private String getTitle(List<? extends Document> docs) {
-    String name = docs.isEmpty() ? "?" : docs.get(0).getClass().getSimpleName();
-    return docs.size() + " instances of " + name;
+    if (docs.isEmpty()) {
+      return "No documents";
+    } else {
+      return String.format("%d instances of %s", docs.size(), docs.get(0).getTypeName());
+    }
   }
 
   private String getDocTitle(Document doc) {
