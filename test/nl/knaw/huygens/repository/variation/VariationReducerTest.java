@@ -104,11 +104,11 @@ public class VariationReducerTest {
 
   @Test
   public void testReduceMissingRole() throws IOException {
-    String x = "{\"testbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}],\"!defaultVRE\":\"blub\"}}";
+    String x = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}],\"!defaultVRE\":\"blub\"}}";
     JsonNode t = m.readTree(x);
     TestDoc val = reducer.reduce(t, TestDoc.class);
     TestDoc testVal = new TestDoc();
-    testVal.setVariations(Lists.newArrayList("testbasedoc"));
+    testVal.setVariations(Lists.newArrayList("testinheritsfromtestbasedoc"));
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
 
@@ -236,25 +236,25 @@ public class VariationReducerTest {
 
   @Test(expected = VariationException.class)
   public void testReduceMalformedCommonItem() throws IOException {
-    String x = "{\"testbasedoc\":{\"name\": 42}}";
+    String x = "{\"testconcretedoc\":{\"name\": 42}}";
     JsonNode t = m.readTree(x);
 
-    reducer.reduce(t, TestDoc.class); // This will throw
+    reducer.reduce(t, TestConcreteDoc.class); // This will throw
   }
 
   @Test(expected = VariationException.class)
   public void testReduceMalformedCommonValueArrayItem() throws IOException {
-    String x = "{\"testbasedoc\":{\"name\":[42]}}";
+    String x = "{\"testconcretedoc\":{\"name\":[42]}}";
     JsonNode t = m.readTree(x);
 
-    reducer.reduce(t, TestDoc.class); // This will throw
+    reducer.reduce(t, TestConcreteDoc.class); // This will throw
   }
 
   @Test(expected = VariationException.class)
   public void testReduceMalformedCommonValueArrayItemAgreed() throws IOException {
-    String x = "{\"testbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":42}]}}";
+    String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":42}]}}";
     JsonNode t = m.readTree(x);
 
-    reducer.reduce(t, TestDoc.class); // This will throw
+    reducer.reduce(t, TestConcreteDoc.class); // This will throw
   }
 }

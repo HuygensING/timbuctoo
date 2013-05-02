@@ -1,10 +1,10 @@
 package nl.knaw.huygens.repository.variation.model.projectb;
 
-import nl.knaw.huygens.repository.variation.model.TestBaseDoc;
+import nl.knaw.huygens.repository.variation.model.TestInheritsFromTestBaseDoc;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class TestDoc extends TestBaseDoc {
+public class TestDoc extends TestInheritsFromTestBaseDoc {
   private String defaultVRE;
 
   public TestDoc() {

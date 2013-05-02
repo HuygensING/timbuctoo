@@ -1,13 +1,13 @@
 package nl.knaw.huygens.repository.variation.model.projecta;
 
-import nl.knaw.huygens.repository.variation.model.TestBaseDoc;
+import nl.knaw.huygens.repository.variation.model.TestInheritsFromTestBaseDoc;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Another extension of the basic test doc.
  */
-public class OtherDoc extends TestBaseDoc {
+public class OtherDoc extends TestInheritsFromTestBaseDoc {
   public String otherThing;
   private String defaultVRE;
 
