@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("PER")
 @DocumentTypeName("person")
-public class Person extends Document {
+public class Person extends DomainDocument {
 
   public String name;
   public Datable birthDate;
