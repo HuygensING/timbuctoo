@@ -4,6 +4,9 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
+import nl.knaw.huygens.repository.variation.model.projecta.ProjectAGeneralTestDoc;
+import nl.knaw.huygens.repository.variation.model.projectb.TestDoc;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,9 +15,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-
-import nl.knaw.huygens.repository.variation.model.projecta.ProjectAGeneralTestDoc;
-import nl.knaw.huygens.repository.variation.model.projectb.TestDoc;
 
 public class VariationInducerTest {
 
@@ -35,9 +35,8 @@ public class VariationInducerTest {
 
   @Test
   public void testInduce() throws IOException {
-    String testStr = "{\"testbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projectb\"},"
-                     + "\"projectb-testdoc\": {\"blah\": \"stuff\"},\"_id\":null,\"^pid\":null,"
-                     + "\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
+    String testStr = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projectb\"},"
+        + "\"projectb-testdoc\": {\"blah\": \"stuff\"},\"_id\":null,\"^pid\":null," + "\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
     JsonNode t = m.readTree(testStr);
     TestDoc x = new TestDoc();
@@ -50,9 +49,9 @@ public class VariationInducerTest {
   @Test
   public void testInduceWithSubModels() throws IOException {
     String testStr = "{\"projecta-projectageneraltestdoc\": {\"projectAGeneralTestDocValue\": \"other stuff\"},"
-                     + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"stuff\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
-                     + "\"testconcretedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
-                     + "\"_id\":null,\"^pid\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"stuff\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"testconcretedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"_id\":null,\"^pid\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
     JsonNode t = m.readTree(testStr);
     ProjectAGeneralTestDoc x = new ProjectAGeneralTestDoc();
@@ -67,9 +66,9 @@ public class VariationInducerTest {
   @Test
   public void testInduceIgnoreVariationProperty() throws IOException {
     String testStr = "{\"projecta-projectageneraltestdoc\": {\"projectAGeneralTestDocValue\": \"other stuff\"},"
-                     + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"stuff\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
-                     + "\"testconcretedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
-                     + "\"_id\":null,\"^pid\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"stuff\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"testconcretedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"_id\":null,\"^pid\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
     JsonNode t = m.readTree(testStr);
     ProjectAGeneralTestDoc x = new ProjectAGeneralTestDoc();
@@ -84,14 +83,12 @@ public class VariationInducerTest {
 
   @Test
   public void testInduceExisting() throws IOException {
-    String inTree = "{\"testbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"other\"]}],\"!defaultVRE\":\"other\"}, "
-                    + "\"other\": {\"blub\": \"otherstuff\"},"
-                    + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
+    String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"other\"]}],\"!defaultVRE\":\"other\"}, " + "\"other\": {\"blub\": \"otherstuff\"},"
+        + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
-    String testStr = "{\"testbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"other\"]}, {\"v\":\"x\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"other\"}, "
-                     + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
-                     + "\"other\": {\"blub\": \"otherstuff\"},"
-                     + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
+    String testStr = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"other\"]}, {\"v\":\"x\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"other\"}, "
+        + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, " + "\"other\": {\"blub\": \"otherstuff\"},"
+        + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     JsonNode t = m.readTree(testStr);
@@ -104,11 +101,10 @@ public class VariationInducerTest {
 
   @Test
   public void testInduceAgreeWithExisting() throws IOException {
-    String inTree = "{\"testbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"other\"]}],\"!defaultVRE\":\"other\"}," + "\"other\": {\"blub\": \"otherstuff\"},"
-                    + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
-    String testStr = "{\"testbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"other\",\"projectb\"]}],\"!defaultVRE\":\"other\"}, "
-                     + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, " + "\"other\": {\"blub\": \"otherstuff\"},"
-                     + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
+    String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"other\"]}],\"!defaultVRE\":\"other\"}," + "\"other\": {\"blub\": \"otherstuff\"},"
+        + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
+    String testStr = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"other\",\"projectb\"]}],\"!defaultVRE\":\"other\"}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
+        + "\"other\": {\"blub\": \"otherstuff\"}," + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     JsonNode t = m.readTree(testStr);
@@ -122,16 +118,15 @@ public class VariationInducerTest {
   @Test
   public void testInduceExistingWithNewSubModel() throws IOException {
     String inTree = "{\"projectb-projectbotherconcretedoc\":{\"someOtherProp\":\"blah2\"},"
-                    + "\"otherconcretedoc\":{\"someProp\":[{\"v\":\"blah\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projectb\"},"
-                    + "\"testconcretedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projectb\",\"projecta\"]}],\"!defaultVRE\":\"projectb\"},"
-                    + "\"_id\":null,\"^pid\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
+        + "\"otherconcretedoc\":{\"someProp\":[{\"v\":\"blah\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projectb\"},"
+        + "\"testconcretedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projectb\",\"projecta\"]}],\"!defaultVRE\":\"projectb\"},"
+        + "\"_id\":null,\"^pid\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
     String testStr = "{\"projecta-projectageneraltestdoc\": {\"projectAGeneralTestDocValue\": \"other stuff\"},"
-                     + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"stuff\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
-                     + "\"projectb-projectbotherconcretedoc\":{\"someOtherProp\":\"blah2\"},"
-                     + "\"otherconcretedoc\":{\"someProp\":[{\"v\":\"blah\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projectb\"},"
-                     + "\"testconcretedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projectb\",\"projecta\"]}],\"!defaultVRE\":\"projectb\"},"
-                     + "\"_id\":null,\"^pid\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"stuff\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"projectb-projectbotherconcretedoc\":{\"someOtherProp\":\"blah2\"}," + "\"otherconcretedoc\":{\"someProp\":[{\"v\":\"blah\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projectb\"},"
+        + "\"testconcretedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projectb\",\"projecta\"]}],\"!defaultVRE\":\"projectb\"},"
+        + "\"_id\":null,\"^pid\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
 
@@ -147,13 +142,11 @@ public class VariationInducerTest {
 
   @Test
   public void testInduceNoopExisting() throws IOException {
-    String inTree = "{\"testbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projectb\",\"other\"]}],\"!defaultVRE\":\"projectb\"}, "
-                    + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, " + "\"other\": {\"blub\": \"otherstuff\"},"
-                    + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
+    String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projectb\",\"other\"]}],\"!defaultVRE\":\"projectb\"}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
+        + "\"other\": {\"blub\": \"otherstuff\"}," + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
-    String testStr = "{\"testbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projectb\",\"other\"]}],\"!defaultVRE\":\"projectb\"}, "
-                     + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, " + "\"other\": {\"blub\": \"otherstuff\"},"
-                     + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
+    String testStr = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projectb\",\"other\"]}],\"!defaultVRE\":\"projectb\"}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
+        + "\"other\": {\"blub\": \"otherstuff\"}," + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     JsonNode t = m.readTree(testStr);
@@ -166,15 +159,13 @@ public class VariationInducerTest {
 
   @Test
   public void testInduceSwitchToCorrectValueBeforeExisting() throws IOException {
-    String inTree = "{\"testbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"another\"]}, {\"v\":\"b\", \"a\":[\"projectb\", \"other\"]}],\"!defaultVRE\":\"another\"}, "
-                    + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
-                    + "\"other\": {\"blub\": \"otherstuff\"},"
-                    + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
+    String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"another\"]}, {\"v\":\"b\", \"a\":[\"projectb\", \"other\"]}],\"!defaultVRE\":\"another\"}, "
+        + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, " + "\"other\": {\"blub\": \"otherstuff\"},"
+        + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
-    String testStr = "{\"testbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"another\",\"projectb\"]}, {\"v\":\"b\", \"a\":[\"other\"]}],\"!defaultVRE\":\"another\"}, "
-                     + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
-                     + "\"other\": {\"blub\": \"otherstuff\"},"
-                     + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
+    String testStr = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"another\",\"projectb\"]}, {\"v\":\"b\", \"a\":[\"other\"]}],\"!defaultVRE\":\"another\"}, "
+        + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, " + "\"other\": {\"blub\": \"otherstuff\"},"
+        + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     JsonNode t = m.readTree(testStr);
@@ -187,15 +178,13 @@ public class VariationInducerTest {
 
   @Test
   public void testInduceSwitchToCorrectValueAfterExisting() throws IOException {
-    String inTree = "{\"testbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"projectb\",\"other\"]}, {\"v\":\"x\", \"a\":[\"another\"]}],\"!defaultVRE\":\"projectb\"}, "
-                    + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
-                    + "\"other\": {\"blub\": \"otherstuff\"},"
-                    + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
+    String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"projectb\",\"other\"]}, {\"v\":\"x\", \"a\":[\"another\"]}],\"!defaultVRE\":\"projectb\"}, "
+        + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, " + "\"other\": {\"blub\": \"otherstuff\"},"
+        + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
-    String testStr = "{\"testbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"other\"]}, {\"v\":\"x\", \"a\":[\"another\", \"projectb\"]}],\"!defaultVRE\":\"projectb\"}, "
-                     + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
-                     + "\"other\": {\"blub\": \"otherstuff\"},"
-                     + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
+    String testStr = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"other\"]}, {\"v\":\"x\", \"a\":[\"another\", \"projectb\"]}],\"!defaultVRE\":\"projectb\"}, "
+        + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, " + "\"other\": {\"blub\": \"otherstuff\"},"
+        + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     JsonNode t = m.readTree(testStr);
@@ -208,14 +197,12 @@ public class VariationInducerTest {
 
   @Test
   public void testInduceSwitchToCorrectValueAfterExistingWithRemove() throws IOException {
-    String inTree = "{\"testbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"projectb\"]}, {\"v\":\"x\", \"a\":[\"other\"]}],\"!defaultVRE\":\"projectb\"},"
-                    + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
-                    + "\"other\": {\"blub\": \"otherstuff\"},"
-                    + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
+    String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"projectb\"]}, {\"v\":\"x\", \"a\":[\"other\"]}],\"!defaultVRE\":\"projectb\"},"
+        + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, " + "\"other\": {\"blub\": \"otherstuff\"},"
+        + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
-    String testStr = "{\"testbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"other\", \"projectb\"]}],\"!defaultVRE\":\"projectb\"}, "
-                     + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, " + "\"other\": {\"blub\": \"otherstuff\"},"
-                     + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
+    String testStr = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"other\", \"projectb\"]}],\"!defaultVRE\":\"projectb\"}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
+        + "\"other\": {\"blub\": \"otherstuff\"}," + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     JsonNode t = m.readTree(testStr);
@@ -235,8 +222,8 @@ public class VariationInducerTest {
 
   @Test(expected = VariationException.class)
   public void testInduceIncorrectObject() throws IOException {
-    String inTree = "{\"testbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"projectb\"]}]}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
-                    + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
+    String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"projectb\"]}]}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
+        + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     TestDoc x = new TestDoc();
@@ -248,8 +235,8 @@ public class VariationInducerTest {
 
   @Test(expected = VariationException.class)
   public void testInduceIncorrectValuesNameIsInt() throws IOException {
-    String inTree = "{\"testbasedoc\":{\"name\": 42}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
-                    + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
+    String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\": 42}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
+        + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     TestDoc x = createTestDoc();
@@ -260,8 +247,8 @@ public class VariationInducerTest {
 
   @Test(expected = VariationException.class)
   public void testInduceIncorrectValuesNameIsArray() throws IOException {
-    String inTree = "{\"testbasedoc\":{\"name\":[42]}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
-                    + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
+    String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[42]}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
+        + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
 
@@ -273,8 +260,8 @@ public class VariationInducerTest {
 
   @Test(expected = VariationException.class)
   public void testInduceIncorrectValuesNameIsNullArray() throws IOException {
-    String inTree = "{\"testbasedoc\":{\"name\":[null]}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
-                    + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
+    String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[null]}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
+        + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     TestDoc x = createTestDoc();
@@ -285,8 +272,8 @@ public class VariationInducerTest {
 
   @Test(expected = VariationException.class)
   public void testInduceIncorrectValuesNameIsNull() throws IOException {
-    String inTree = "{\"testbasedoc\":{\"name\":null}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
-                    + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
+    String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":null}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
+        + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     TestDoc x = createTestDoc();
@@ -298,8 +285,8 @@ public class VariationInducerTest {
   @Test(expected = VariationException.class)
   public void testInduceIncorrectValuesBaseDocIsNotAnObject() throws IOException {
 
-    String inTree = "{\"testbasedoc\": 42, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
-                    + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
+    String inTree = "{\"testinheritsfromtestbasedoc\": 42, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
+        + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     TestDoc x = createTestDoc();
@@ -311,8 +298,8 @@ public class VariationInducerTest {
   @Test(expected = VariationException.class)
   public void testInduceIncorrectValuesTestDocIsNotAnObject() throws IOException {
 
-    String inTree = "{\"testbasedoc\":{\"name\":[{\"v\":\"a\", \"a\":[\"projectb\"]}]}, " + "\"projectb-testdoc\": 42, "
-                    + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
+    String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"a\", \"a\":[\"projectb\"]}]}, " + "\"projectb-testdoc\": 42, "
+        + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     TestDoc x = createTestDoc();
@@ -323,8 +310,8 @@ public class VariationInducerTest {
 
   @Test(expected = VariationException.class)
   public void testInduceIncorrectValuesNameIsNullArrayTestDocIsNull() throws IOException {
-    String inTree = "{\"testbasedoc\":{\"name\":[{\"v\":\"a\", \"a\":[\"projectb\"]}]}, " + "\"projectb-testdoc\": null, "
-                    + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
+    String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"a\", \"a\":[\"projectb\"]}]}, " + "\"projectb-testdoc\": null, "
+        + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     TestDoc x = createTestDoc();
@@ -336,8 +323,8 @@ public class VariationInducerTest {
   @Test(expected = VariationException.class)
   public void testInduceIncorrectValuesTestDocIsEmpty() throws IOException {
 
-    String inTree = "{\"testbasedoc\":{\"name\":[{\"v\":\"a\"}]}, " + "\"projectb-testdoc\": {}, "
-                    + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
+    String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"a\"}]}, " + "\"projectb-testdoc\": {}, "
+        + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
     ObjectNode existing = (ObjectNode) m.readTree(inTree);
     TestDoc x = createTestDoc();

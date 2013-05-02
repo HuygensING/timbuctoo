@@ -7,7 +7,6 @@ import nl.knaw.huygens.repository.variation.model.TestBaseDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.repository.variation.model.TestExtraBaseDoc;
 import nl.knaw.huygens.repository.variation.model.TestInheritsFromTestBaseDoc;
-import nl.knaw.huygens.repository.variation.model.projectb.TestDoc;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -68,7 +67,7 @@ public class DocTypeRegistryTest {
 
   @Test
   public void testGetCollectionIdFromCollectionClass() {
-    assertEquals("testdoc", registry.getCollectionId(TestDoc.class));
+    assertEquals("testconcretedoc", registry.getCollectionId(TestConcreteDoc.class));
   }
 
   @Test
