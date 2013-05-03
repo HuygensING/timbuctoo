@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("PLA")
 @DocumentTypeName("place")
-public class Place extends Document {
+public class Place extends DomainDocument {
 
   public String name;
   public String latitude;
