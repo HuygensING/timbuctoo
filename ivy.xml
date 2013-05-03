@@ -112,5 +112,8 @@
     <!-- Apache validation -->
     <dependency org="javax.validation" name="validation-api" rev="1.0.0.GA"/>
     <dependency org="org.apache.bval" name="org.apache.bval.bundle" rev="0.5"/>
+
+    <!-- CSV support -->
+    <dependency org="net.sf.opencsv" name="opencsv" rev="2.3"/>
   </dependencies>
 </ivy-module>
