@@ -78,7 +78,6 @@ public class DocTypeRegistry {
       Class<?> cls = info.load();
       if (isDocumentType(cls)) {
         Class<? extends Document> docCls = (Class<? extends Document>) cls;
-        // String typeId = docCls.getSimpleName().toLowerCase();
         String typeId = determineTypeName(docCls);
         stringToTypeMap.put(typeId, docCls);
         typeToStringMap.put(docCls, typeId);
