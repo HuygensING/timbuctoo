@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("USR")
 @DocumentTypeName("user")
-public class User extends Document {
+public class User extends SystemDocument {
   public String pwHash;
   public String email;
   public String firstName;
