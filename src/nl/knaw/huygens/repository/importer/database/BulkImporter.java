@@ -26,6 +26,8 @@ public class BulkImporter {
     importer.importData("resources/DWCPlaceMapping.properties", storageManager, DWCPlace.class);
     importer.importData("resources/DWCScientistMapping.properties", storageManager, DWCScientist.class);
     importer.importData("resources/RAACivilServantMapping.properties", storageManager, RAACivilServant.class);
+    CKCCPersonImporter csvImporter = new CKCCPersonImporter(storageManager);
+    csvImporter.handleFile("testdata/ckcc-persons.txt", 9, false);
     long endTime = new Date().getTime();
 
     System.out.println("Import duration: " + ((endTime - beginTime) / 1000) + " seconds");
