@@ -8,6 +8,7 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.DocumentIndexer;
 import nl.knaw.huygens.repository.index.IndexerFactory;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.util.Progress;
@@ -40,22 +41,26 @@ public class SolrIndexer {
       this.docTypeRegistry = docTypeRegistry;
     }
 
+    @SuppressWarnings("unchecked")
     public int run() {
       int rv = 0;
       for (String doctype : config.getSettings("indexeddoctypes")) {
         Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(doctype);
-        try {
-          indexAllDocuments(cls);
-        } catch (Exception e) {
-          e.printStackTrace();
-          rv = 1;
-          break;
+        // Only DomainDocuments should be indexed.
+        if (DomainDocument.class.isAssignableFrom(cls)) {
+          try {
+            indexAllDocuments((Class<DomainDocument>) cls);
+          } catch (Exception e) {
+            e.printStackTrace();
+            rv = 1;
+            break;
+          }
         }
       }
       return rv;
     }
 
-    private <T extends Document> void indexAllDocuments(Class<T> type) throws Exception {
+    private <T extends DomainDocument> void indexAllDocuments(Class<T> type) throws Exception {
       System.out.printf("%n=== Indexing documents of type '%s'%n", type.getSimpleName());
 
       DocumentIndexer<T> indexer = indices.getIndexForType(type);
