@@ -23,6 +23,7 @@ import javax.ws.rs.core.UriInfo;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 
 import com.fasterxml.jackson.annotation.JsonView;
@@ -138,9 +139,10 @@ public class RESTAutoResource {
   @JsonView(JsonViews.WebView.class)
   @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}/{variation: \\w+}")
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
-  public Document getDocOfVariation(@PathParam(ENTITY_PARAM) String entityType, @PathParam(ID_PARAM) String id, @PathParam("variation") String variation) {
-    Class<? extends Document> type = getDocType(entityType);
-    Document doc = storageManager.getCompleteVariation(type, id, variation);
+  public DomainDocument getDocOfVariation(@PathParam(ENTITY_PARAM) String entityType, @PathParam(ID_PARAM) String id, @PathParam("variation") String variation) {
+    @SuppressWarnings("unchecked")
+    Class<? extends DomainDocument> type = (Class<? extends DomainDocument>) getDocType(entityType);
+    DomainDocument doc = storageManager.getCompleteVariation(type, id, variation);
     if (doc == null) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }

@@ -1,12 +1,12 @@
 package nl.knaw.huygens.repository.variation.model;
 
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.DomainDocument;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class TestConcreteDoc extends Document {
+public class TestConcreteDoc extends DomainDocument {
   public String name;
   private String defaultVRE;
 
