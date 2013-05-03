@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.repository.config.Configuration;
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
@@ -33,8 +34,9 @@ public class DbImporter {
     ObjectMapper mapper = new ObjectMapper();
     MongoJacksonMapperModule.configure(mapper);
     try {
-      System.out.println("Importing " + type.getSimpleName());
-      BufferedReader input = createReader(type);
+      System.out.printf("=== Importing documents of type '%s'%n", type.getSimpleName());
+      String collectionName = DocTypeRegistry.getCollectionName(type);
+      BufferedReader input = createReader(collectionName);
       List<T> collection = Lists.newArrayList();
       String line = null;
       while ((line = input.readLine()) != null) {
@@ -61,12 +63,11 @@ public class DbImporter {
     }
   }
 
-  protected <T> BufferedReader createReader(Class<T> entityClass) throws UnsupportedEncodingException, FileNotFoundException {
-    File f = new File(conf.getSetting("paths.json", "") + '/' + entityClass.getSimpleName().toLowerCase() + ".json");
+  private <T> BufferedReader createReader(String collectionName) throws UnsupportedEncodingException, FileNotFoundException {
+    File file = new File(conf.getSetting("paths.json", "") + '/' + collectionName + ".json");
     // Because file reading shouldn't be easy:
-    String charsetForReading = conf.getSetting("importencoding", "UTF8");
-    BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream(f), charsetForReading));
-    return input;
+    String charset = conf.getSetting("importencoding", "UTF8");
+    return new BufferedReader(new InputStreamReader(new FileInputStream(file), charset));
   }
 
 }
