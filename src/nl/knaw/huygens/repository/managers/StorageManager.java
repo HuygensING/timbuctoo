@@ -12,6 +12,7 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.events.Events;
 import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.pubsub.Hub;
@@ -88,7 +89,7 @@ public class StorageManager {
    * @param variation
    * @return
    */
-  public <T extends Document> T getCompleteVariation(Class<T> type, String id, String variation) {
+  public <T extends DomainDocument> T getCompleteVariation(Class<T> type, String id, String variation) {
     try {
       return storage.getVariation(type, id, variation);
     } catch (Exception ex) {
