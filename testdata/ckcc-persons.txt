@@ -1,0 +1,22 @@
+-- Sample person data from CKCC project
+-- Format:
+-- prefix;firstname;infix;lastname;postfix;gender;birthdata;deathdate;mergeid
+--  0      1         2     3        4       5      6         7         8
+;Catharina;;Huygens;;f;1601;18-06-1618;?
+;Christiaan;;Huygens;;m;22-04-1551;07-02-1624;PER0000004740
+;Christiaan;;Huygens;;m;14-04-1629;08-07-1695;PER0000005353
+;Christiaan;;Huygens;;m;1634;?;?
+;Constance;;Huygens;;f;02-08-1602;01-12-1667;?
+;Constantijn;;Huygens;;m;04-09-1596;26-03-1687;PER0000005354
+;Constantijn;;Huygens;;m;04-09-1628;28-03-1697;PER0000004680
+;Constantijn;;Huygens;;m;1674;?;?
+;Geertruyd;;Huygens;;f;10-07-1599;04-06-1680;?
+;Hubertus;;Huygens;;m;03-12-1651;25-07-1705;PER0000004648
+;Lodewijk;;Huygens;;m;13-03-1631;30-06-1699;PER0000005301
+;Martha Maria;;Huygens;;f;1638;1683;?
+;Maurits;;Huygens;;m;1595;1642;?
+;Maurits;;Huygens;;m;1635;?;?
+;Philips;;Huygens;;m;12-10-1633;14-05-1657;PER0000004759
+;Rutger;;Huygens;;m;1592;1666;?
+;Susanna;;Huygens;;f;13-03-1637;24-08-1725;PER0000004644
+;Rutger;;Huyghens;;m;1586;1666;?
