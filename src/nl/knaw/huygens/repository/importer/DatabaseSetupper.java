@@ -137,7 +137,8 @@ public class DatabaseSetupper {
             System.out.print(e.getMessage() + " : " + line + "\n");
             errors.write(e.getMessage() + " : " + line + "\n");
           } finally {
-            output.flush();
+            input.close();
+            output.close();
             errors.flush();
           }
         }
