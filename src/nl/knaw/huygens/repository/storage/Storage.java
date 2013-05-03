@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 
@@ -50,6 +51,6 @@ public interface Storage {
    * @return
    * @throws IOException 
    */
-  <T extends Document> T getVariation(Class<T> type, String id, String variation) throws IOException;
+  <T extends DomainDocument> T getVariation(Class<T> type, String id, String variation) throws IOException;
 
 }

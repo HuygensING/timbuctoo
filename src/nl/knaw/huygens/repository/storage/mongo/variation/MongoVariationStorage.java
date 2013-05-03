@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.storage.mongo.MongoStorage;
 
 public interface MongoVariationStorage extends MongoStorage {
@@ -18,5 +19,5 @@ public interface MongoVariationStorage extends MongoStorage {
    * @return
    * @throws IOException 
    */
-  <T extends Document> T getVariation(Class<T> type, String id, String variation) throws IOException;
+  <T extends DomainDocument> T getVariation(Class<T> type, String id, String variation) throws IOException;
 }

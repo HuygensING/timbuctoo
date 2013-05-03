@@ -8,6 +8,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.RevisionChanges;
 import nl.knaw.huygens.repository.storage.StorageIterator;
@@ -65,11 +66,8 @@ public class MongoStorageFacade implements nl.knaw.huygens.repository.storage.St
   }
 
   @Override
-  public <T extends Document> T getVariation(Class<T> type, String id, String variation) throws IOException {
-    if (variationDoctypes.contains(docTypeRegistry.getCollectionId(type))) {
-      return variationStorage.getVariation(type, id, variation);
-    }
-    throw new UnsupportedOperationException("Method not available for this type");
+  public <T extends DomainDocument> T getVariation(Class<T> type, String id, String variation) throws IOException {
+    return variationStorage.getVariation(type, id, variation);
   }
 
   @Override
