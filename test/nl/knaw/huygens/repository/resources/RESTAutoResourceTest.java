@@ -90,8 +90,8 @@ public class RESTAutoResourceTest extends JerseyTest {
 
   @Override
   protected AppDescriptor configure() {
-    WebAppDescriptor webAppDescriptor = new WebAppDescriptor.Builder("nl.knaw.huygens.repository.resources").build();
-    webAppDescriptor.getInitParams().put(PackagesResourceConfig.PROPERTY_PACKAGES, "com.fasterxml.jackson.jaxrs.json,nl.knaw.huygens.repository.providers");
+    WebAppDescriptor webAppDescriptor = new WebAppDescriptor.Builder().build();
+    webAppDescriptor.getInitParams().put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.repository.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.repository.providers");
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, "nl.knaw.huygens.repository.server.security.SecurityFilter");
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES, "com.sun.jersey.api.container.filter.RolesAllowedResourceFilterFactory");
 
