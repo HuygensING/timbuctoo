@@ -171,7 +171,7 @@ public class RESTAutoResourceTest extends JerseyTest {
     WebResource webResource = super.resource();
 
     GenericType<List<TestConcreteDoc>> genericType = new GenericType<List<TestConcreteDoc>>() {};
-    List<TestConcreteDoc> actualList = webResource.path("/resources/testconcretedoc/all").header("Authorization", "bearer 12333322abef").get(genericType);
+    List<TestConcreteDoc> actualList = webResource.path("/resources/testconcretedoc/all").get(genericType);
 
     assertEquals(expectedList.size(), actualList.size());
   }
