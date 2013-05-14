@@ -312,6 +312,21 @@ public class RESTAutoResourceTest extends JerseyTest {
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
 
+  @Test
+  public void testPutOnCollection() {
+    setupDocumentTypeRegister(OtherDoc.class);
+    this.setUserInRole(true);
+    String id = "TST0000000001";
+
+    GeneralTestDoc doc = new GeneralTestDoc();
+    doc.setId(id);
+
+    WebResource webResource = super.resource();
+    ClientResponse clientResponse = webResource.path("/resources/otherdoc").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+
+    assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, clientResponse.getClientResponseStatus());
+  }
+
   @SuppressWarnings("unchecked")
   @Test
   public void testPost() throws IOException {
@@ -401,6 +416,72 @@ public class RESTAutoResourceTest extends JerseyTest {
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, clientResponse.getClientResponseStatus());
   }
 
+  @Test
+  public void testDelete() throws IOException {
+    setupDocumentTypeRegister(TestConcreteDoc.class);
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+
+    this.setUserInRole(true);
+
+    String id = "TST0000000001";
+
+    TestConcreteDoc doc = new TestConcreteDoc();
+    doc.setId(id);
+
+    when(storageManager.getDocument(TestConcreteDoc.class, id)).thenReturn(doc);
+
+    WebResource webResource = super.resource();
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
+        .delete(ClientResponse.class);
+
+    assertEquals(ClientResponse.Status.OK, clientResponse.getClientResponseStatus());
+  }
+
+  @Test
+  public void testDeleteDocumentDoesNotExist() {
+    setupDocumentTypeRegister(TestConcreteDoc.class);
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+
+    this.setUserInRole(true);
+
+    String id = "TST0000000001";
+
+    when(storageManager.getDocument(TestConcreteDoc.class, id)).thenReturn(null);
+
+    WebResource webResource = super.resource();
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
+        .delete(ClientResponse.class);
+
+    assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
+  }
+
+  @Test
+  public void testDeleteTypeDoesNotExist() {
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+
+    this.setUserInRole(true);
+
+    String id = "TST0000000001";
+
+    when(storageManager.getDocument(TestConcreteDoc.class, id)).thenReturn(null);
+
+    WebResource webResource = super.resource();
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
+        .delete(ClientResponse.class);
+
+    assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
+  }
+
+  @Test
+  public void testDeleteCollection() {
+    this.setUserInRole(true);
+
+    WebResource webResource = super.resource();
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
+
+    assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, clientResponse.getClientResponseStatus());
+  }
+
   // Security tests
 
   @Test
@@ -484,6 +565,29 @@ public class RESTAutoResourceTest extends JerseyTest {
     ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/all").type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, doc);
 
     assertEquals(ClientResponse.Status.UNAUTHORIZED, clientResponse.getClientResponseStatus());
+  }
+
+  @Test
+  public void testDeleteNotLoggedIn() {
+    String id = "TST0000000001";
+
+    WebResource webResource = super.resource();
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc").path(id).type(MediaType.APPLICATION_JSON_TYPE).delete(ClientResponse.class);
+
+    assertEquals(ClientResponse.Status.UNAUTHORIZED, clientResponse.getClientResponseStatus());
+  }
+
+  @Test
+  public void testDeleteUserNotInRole() {
+    this.setUserInRole(false);
+
+    String id = "TST0000000001";
+
+    WebResource webResource = super.resource();
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
+        .delete(ClientResponse.class);
+
+    assertEquals(ClientResponse.Status.FORBIDDEN, clientResponse.getClientResponseStatus());
   }
 
   // Variation tests

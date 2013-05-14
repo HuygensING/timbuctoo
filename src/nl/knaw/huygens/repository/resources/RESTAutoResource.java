@@ -59,7 +59,7 @@ public class RESTAutoResource {
   @Path("/all")
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
-  public <T extends Document> Response getAllDocs(@PathParam(ENTITY_PARAM) String entityType, Document input, @Context UriInfo uriInfo) throws IOException {
+  public <T extends Document> Response post(@PathParam(ENTITY_PARAM) String entityType, Document input, @Context UriInfo uriInfo) throws IOException {
 
     @SuppressWarnings("unchecked")
     Class<T> type = (Class<T>) getDocType(entityType);
@@ -120,19 +120,22 @@ public class RESTAutoResource {
 
   }
 
-  // TODO: test this! :-)
   @DELETE
   @Path("/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}")
   @JsonView(JsonViews.WebView.class)
-  public <T extends Document> void putDoc(@PathParam(ENTITY_PARAM) String entityType, @PathParam(ID_PARAM) String id) throws IOException {
-    try {
-      @SuppressWarnings("unchecked")
-      Class<T> type = (Class<T>) getDocType(entityType);
-      T typedDoc = storageManager.getDocument(type, id);
-      storageManager.removeDocument(type, typedDoc);
-    } catch (ClassCastException ex) {
+  @RolesAllowed("USER")
+  public <T extends Document> Response delete(@PathParam(ENTITY_PARAM) String entityType, @PathParam(ID_PARAM) String id) throws IOException {
+    @SuppressWarnings("unchecked")
+    Class<T> type = (Class<T>) getDocType(entityType);
+    T typedDoc = storageManager.getDocument(type, id);
+
+    if (typedDoc == null) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
+
+    storageManager.removeDocument(type, typedDoc);
+
+    return Response.status(Response.Status.OK).build();
   }
 
   @GET
