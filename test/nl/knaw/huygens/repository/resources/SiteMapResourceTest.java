@@ -11,44 +11,21 @@ import javax.ws.rs.core.SecurityContext;
 
 import nl.knaw.huygens.repository.server.security.OAuthAuthorizationServerConnector;
 
-import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.core.PackagesResourceConfig;
 import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.jersey.test.framework.AppDescriptor;
-import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
 
-public class SiteMapResourceTest extends JerseyTest {
-  private static Injector injector;
-  private SecurityContext securityContext;
-  private OAuthAuthorizationServerConnector oAuthAuthorizationServerConnector;
-
-  public SiteMapResourceTest() {
-    super(new GuiceTestContainerFactory(injector));
-  }
-
-  @BeforeClass
-  public static void setupClass() {
-    injector = Guice.createInjector(new RESTAutoResourceTestModule());
-  }
+public class SiteMapResourceTest extends WebServiceTest {
 
   @Before
   public void setUpAuthorizationServerConnectorMock() {
     oAuthAuthorizationServerConnector = injector.getInstance(OAuthAuthorizationServerConnector.class);
-  }
-
-  @After
-  public void tearDownAuthorizationServerConnectorMock() {
-    securityContext = null;
-    oAuthAuthorizationServerConnector = null;
   }
 
   public void setupSecurityContext(boolean isUserAllowed) {
