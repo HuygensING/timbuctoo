@@ -1,6 +1,7 @@
 package nl.knaw.huygens.repository.resources;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -31,6 +32,14 @@ class RESTAutoResourceTestModule extends JerseyServletModule {
     documentTypeRegister = mock(DocTypeRegistry.class);
     oAuthAuthorizationServerConnector = mock(OAuthAuthorizationServerConnector.class);
     jsonProvider = mock(JacksonJsonProvider.class);
+  }
+
+  // Method needed to make sure the mocks affecting only the intended tests.
+  public void cleanUpMocks() {
+    reset(storageManager);
+    reset(documentTypeRegister);
+    reset(oAuthAuthorizationServerConnector);
+    reset(jsonProvider);
   }
 
   @Override
