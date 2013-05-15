@@ -29,36 +29,18 @@ import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.repository.variation.model.projecta.OtherDoc;
 
-import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.common.collect.Lists;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.core.PackagesResourceConfig;
-import com.sun.jersey.api.core.ResourceConfig;
-import com.sun.jersey.test.framework.AppDescriptor;
-import com.sun.jersey.test.framework.JerseyTest;
-import com.sun.jersey.test.framework.WebAppDescriptor;
 
-public class RESTAutoResourceTest extends JerseyTest {
-  private static Injector injector;
-  private SecurityContext securityContext;
-  private OAuthAuthorizationServerConnector oAuthAuthorizationServerConnector;
-
-  @BeforeClass
-  public static void setUpClass() {
-    injector = Guice.createInjector(new RESTAutoResourceTestModule());
-  }
-
+public class RESTAutoResourceTest extends WebServiceTest {
   @Before
   public void setUpAuthorizationServerConnectorMock() {
     securityContext = mock(SecurityContext.class);
@@ -78,33 +60,13 @@ public class RESTAutoResourceTest extends JerseyTest {
     }).when(oAuthAuthorizationServerConnector).authenticate(anyString());
   }
 
-  @After
-  public void tearDownAuthorizationServerConnectorMock() {
-    securityContext = null;
-    oAuthAuthorizationServerConnector = null;
-  }
-
-  public RESTAutoResourceTest() {
-    super(new GuiceTestContainerFactory(injector));
-  }
-
-  @Override
-  protected AppDescriptor configure() {
-    WebAppDescriptor webAppDescriptor = new WebAppDescriptor.Builder().build();
-    webAppDescriptor.getInitParams().put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.repository.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.repository.providers");
-    webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
-        "nl.knaw.huygens.repository.server.security.AnnotatedSecurityFilterFactory;com.sun.jersey.api.container.filter.RolesAllowedResourceFilterFactory");
-
-    return webAppDescriptor;
+  private void setupDocumentTypeRegister(Class<?> type) {
+    DocTypeRegistry documentTypeRegister = injector.getInstance(DocTypeRegistry.class);
+    doReturn(type).when(documentTypeRegister).getClassFromTypeString(anyString());
   }
 
   private void setUserInRole(boolean userInRole) {
     when(securityContext.isUserInRole(anyString())).thenReturn(userInRole);
-  }
-
-  private void setupDocumentTypeRegister(Class<?> type) {
-    DocTypeRegistry documentTypeRegister = injector.getInstance(DocTypeRegistry.class);
-    doReturn(type).when(documentTypeRegister).getClassFromTypeString(anyString());
   }
 
   @Test
