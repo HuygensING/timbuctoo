@@ -40,7 +40,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 
-public class RESTAutoResourceTest extends WebServiceTest {
+public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Before
   public void setUpAuthorizationServerConnectorMock() {
     securityContext = mock(SecurityContext.class);

@@ -21,7 +21,7 @@ import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.jersey.test.framework.AppDescriptor;
 import com.sun.jersey.test.framework.WebAppDescriptor;
 
-public class SiteMapResourceTest extends WebServiceTest {
+public class SiteMapResourceTest extends WebServiceTestSetup {
 
   @Before
   public void setUpAuthorizationServerConnectorMock() {
