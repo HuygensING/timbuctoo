@@ -15,14 +15,14 @@ import com.sun.jersey.test.framework.AppDescriptor;
 import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
 
-public abstract class WebServiceTest extends JerseyTest {
+public abstract class WebServiceTestSetup extends JerseyTest {
 
   protected static Injector injector;
   private static RESTAutoResourceTestModule restAutoResourceTestModule;
   protected SecurityContext securityContext;
   protected OAuthAuthorizationServerConnector oAuthAuthorizationServerConnector;
 
-  public WebServiceTest() {
+  public WebServiceTestSetup() {
     super(new GuiceTestContainerFactory(injector));
   }
 
