@@ -33,7 +33,7 @@ public class BasicInjectionModule extends AbstractModule {
     Names.bindProperties(binder(), config.getAll());
     bind(Configuration.class).toInstance(config);
     bind(DocTypeRegistry.class).toInstance(registry);
-    if (config.getBooleanSetting("use-security")) {
+    if (config.getBooleanSetting("apis.enabled")) {
       bind(OAuthAuthorizationServerConnector.class).to(ApisAuthorizationServerConnector.class);
     } else {
       bind(OAuthAuthorizationServerConnector.class).to(NoSecurityOAuthAuthorizationServerConnector.class);
@@ -47,7 +47,7 @@ public class BasicInjectionModule extends AbstractModule {
   @Singleton
   PersistenceManager providePersistenceManager() {
     // TODO improve by injecting configuration into HandleManager
-    if (config.getBooleanSetting("use-handle-system", true)) {
+    if (config.getBooleanSetting("handle.enabled", true)) {
       return HandleManager.newHandleManager(config);
     } else {
       return new DefaultPersistenceManager();
