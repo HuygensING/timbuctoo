@@ -21,7 +21,7 @@
     </solr>
     <messages>
       <!-- ActiveMQ message broker -->
-      <broker_url>tcp://localhost:61616</broker_url>
+      <broker_url>vm://localhost</broker_url> <!-- embedded -->
     </messages>
     <apis>
       <!-- Apis security server -->
