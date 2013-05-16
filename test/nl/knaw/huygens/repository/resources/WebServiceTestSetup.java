@@ -15,6 +15,9 @@ import com.sun.jersey.test.framework.AppDescriptor;
 import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
 
+/* abstract class names should not end with Test, 
+ * because the build script tries to execute all the classes with a Test postfix. 
+ */
 public abstract class WebServiceTestSetup extends JerseyTest {
 
   protected static Injector injector;

@@ -34,7 +34,10 @@ class RESTAutoResourceTestModule extends JerseyServletModule {
     jsonProvider = mock(JacksonJsonProvider.class);
   }
 
-  // Method needed to make sure the mocks affecting only the intended tests.
+  /* Because the RestAutoResourceModule is used in a static way for multiple tests,
+   * there should be a way to make sure to the mocks are reset to their default behaviour.
+   * This method provides this functionality.
+   */
   public void cleanUpMocks() {
     reset(storageManager);
     reset(documentTypeRegister);
