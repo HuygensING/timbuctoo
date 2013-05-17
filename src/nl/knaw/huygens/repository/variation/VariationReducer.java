@@ -233,8 +233,10 @@ public class VariationReducer {
   }
 
   /*
-   * This method generates a list of objects containing all the variations of a certain class 
-   * of DBObject item.
+   * This method generates a list of all the types of a type hierarchy, that are found in the DBObject.
+   * Example1: if cls is Person.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
+   * Example2:  if cls is Scientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
+   * Example3:  if cls is ProjectAScientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
    */
   public <T extends Document> List<T> getAllForDBObject(DBObject item, Class<T> cls) throws IOException {
     JsonNode jsonNode = convertToTree(item);
