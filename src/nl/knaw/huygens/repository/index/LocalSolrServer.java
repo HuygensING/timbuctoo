@@ -27,7 +27,6 @@ import org.apache.solr.core.CoreContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -47,20 +46,19 @@ public class LocalSolrServer {
 
   private final Logger LOG = LoggerFactory.getLogger(LocalSolrServer.class);
 
-  private Set<String> modifiedCores = Sets.newHashSetWithExpectedSize(3);
-
   private CoreContainer container = null;
-  private Map<String, SolrServer> solrServers;
-  private final long commitWithin;
+  private final Map<String, SolrServer> solrServers;
+  private final Set<String> coreNames;
+  private final int commitWithin;
 
   @Inject
   public LocalSolrServer( //
       @Named("paths.solr") String solrDir, //
-      @Named("indexeddoctypes") String coreNames, //
+      @Named("indexeddoctypes") String coreNameList, //
       @Named("solr.commit_within") String commitWithinSpec //
   ) {
 
-    commitWithin = stringToLong(commitWithinSpec, 10 * 1000);
+    commitWithin = stringToInt(commitWithinSpec, 10 * 1000);
     LOG.info("Maximum time before a commit: {} seconds", commitWithin / 1000);
 
     try {
@@ -68,9 +66,10 @@ public class LocalSolrServer {
       File configFile = new File(new File(solrDirectory, "conf"), "solr.xml");
       container = new CoreContainer(solrDirectory, configFile);
       solrServers = Maps.newHashMap();
-      for (String coreName : coreNames.split(",")) {
+      for (String coreName : coreNameList.split(",")) {
         solrServers.put(coreName, new EmbeddedSolrServer(container, coreName));
       }
+      coreNames = Collections.unmodifiableSet(solrServers.keySet());
     } catch (Exception e) {
       if (container != null) {
         try {
@@ -83,52 +82,25 @@ public class LocalSolrServer {
     }
   }
 
-  public void add(String core, SolrInputDocument doc) throws IndexException {
-    try {
-      serverFor(core).add(doc);
-      modifiedCores.add(core);
-    } catch (Exception e) {
-      throw new IndexException(e.getMessage());
-    }
+  public void add(String core, SolrInputDocument doc) throws SolrServerException, IOException {
+    serverFor(core).add(doc);
   }
 
-  public void update(String core, SolrInputDocument doc) throws IndexException {
-    try {
-      // solrServers.get(core).deleteById(doc.getFieldValue(ID_FIELD).toString());
-      serverFor(core).add(doc);
-      modifiedCores.add(core);
-    } catch (Exception e) {
-      throw new IndexException(e.getMessage());
-    }
+  public void delete(String core, String id) throws SolrServerException, IOException {
+    serverFor(core).deleteById(id);
   }
 
-  public void delete(String core, String id) throws IndexException {
-    try {
-      serverFor(core).deleteById(id);
-      modifiedCores.add(core);
-    } catch (Exception e) {
-      throw new IndexException(e.getMessage());
-    }
-  }
-
-  public void deleteAll(String core) throws IndexException {
-    try {
-      serverFor(core).deleteByQuery("*:*");
-      modifiedCores.add(core);
-    } catch (Exception e) {
-      throw new IndexException(e.getMessage());
-    }
+  public void deleteAll(String core) throws SolrServerException, IOException {
+    serverFor(core).deleteByQuery("*:*");
   }
 
   public void commit(String core) throws SolrServerException, IOException {
     serverFor(core).commit();
-    modifiedCores.remove(core);
   }
 
-  public void commitAllChanged() throws SolrServerException, IOException {
-    Set<String> updatedCores = ImmutableSet.copyOf(modifiedCores);
-    for (String s : updatedCores) {
-      this.commit(s);
+  public void commitAll() throws SolrServerException, IOException {
+    for (String core : coreNames) {
+      serverFor(core).commit();
     }
   }
 
@@ -174,8 +146,8 @@ public class LocalSolrServer {
     }
   }
 
-  public Collection<String> getCoreNames() {
-    return solrServers.keySet();
+  public Set<String> getCoreNames() {
+    return coreNames;
   }
 
   /**
@@ -201,9 +173,9 @@ public class LocalSolrServer {
     return solrServers.get(core);
   }
 
-  private long stringToLong(String text, long defaulValue) {
+  private int stringToInt(String text, int defaulValue) {
     try {
-      return Long.parseLong(text);
+      return Integer.parseInt(text);
     } catch (NumberFormatException e) {
       return defaulValue;
     }

@@ -52,10 +52,9 @@ public class FacettedSearchManager {
 
   @Subscribe
   public void onIndexChangedEvent(IndexChangedEvent ev) {
-    Collection<String> cores = this.localSolrServer.getCoreNames();
-    for (String core : cores) {
+    for (String core : localSolrServer.getCoreNames()) {
       try {
-        this.facetFieldNameCache.put(core, getFacetFieldNamesFromSolr(core));
+        facetFieldNameCache.put(core, getFacetFieldNamesFromSolr(core));
       } catch (Exception e) {
         e.printStackTrace();
       }

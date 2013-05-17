@@ -38,7 +38,7 @@ public class IndexerFactory {
 
   public void flushIndices() throws RepositoryException {
     try {
-      server.commitAllChanged();
+      server.commitAll();
     } catch (Exception e) {
       throw new RepositoryException(e);
     }
