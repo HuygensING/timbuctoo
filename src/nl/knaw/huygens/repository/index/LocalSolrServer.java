@@ -83,15 +83,15 @@ public class LocalSolrServer {
   }
 
   public void add(String core, SolrInputDocument doc) throws SolrServerException, IOException {
-    serverFor(core).add(doc);
+    serverFor(core).add(doc, commitWithin);
   }
 
   public void delete(String core, String id) throws SolrServerException, IOException {
-    serverFor(core).deleteById(id);
+    serverFor(core).deleteById(id, commitWithin);
   }
 
   public void deleteAll(String core) throws SolrServerException, IOException {
-    serverFor(core).deleteByQuery("*:*");
+    serverFor(core).deleteByQuery("*:*", -1);
   }
 
   public void commit(String core) throws SolrServerException, IOException {
