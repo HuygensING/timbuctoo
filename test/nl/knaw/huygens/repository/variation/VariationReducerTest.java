@@ -1,32 +1,41 @@
 package nl.knaw.huygens.repository.variation;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
+import java.util.List;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.storage.mongo.MongoDiff;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.repository.variation.model.projecta.ProjectAGeneralTestDoc;
+import nl.knaw.huygens.repository.variation.model.projectb.ProjectBGeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.projectb.TestDoc;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mongojack.internal.stream.JacksonDBObject;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.mongodb.DBObject;
 
 public class VariationReducerTest {
 
   private VariationReducer reducer;
   private ObjectMapper m;
+  private DocTypeRegistry docTypeRegistry;
 
   @Before
   public void setUp() {
     m = new ObjectMapper();
-    reducer = new VariationReducer(new DocTypeRegistry(null));
+    docTypeRegistry = mock(DocTypeRegistry.class);
+    reducer = new VariationReducer(docTypeRegistry);
   }
 
   @Test
@@ -256,5 +265,72 @@ public class VariationReducerTest {
     JsonNode t = m.readTree(x);
 
     reducer.reduce(t, TestConcreteDoc.class); // This will throw
+  }
+
+  @Test
+  public void testGetAllForDBObjectRootClass() throws JsonProcessingException, IOException {
+    registerClasses();
+
+    String jsonString = "{\"testconcretedoc\":{\"name\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}}";
+    DBObject object = generateDBObject(jsonString);
+
+    List<TestConcreteDoc> variations = reducer.getAllForDBObject(object, TestConcreteDoc.class);
+
+    assertEquals(3, variations.size());
+  }
+
+  @Test
+  public void testGetAllForDBObjectSubClass() throws JsonProcessingException, IOException {
+    registerClasses();
+
+    String jsonString = "{\"testconcretedoc\":{\"name\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}}";
+    DBObject object = generateDBObject(jsonString);
+
+    List<GeneralTestDoc> variations = reducer.getAllForDBObject(object, GeneralTestDoc.class);
+
+    assertEquals(3, variations.size());
+  }
+
+  @Test
+  public void testGetAllForDBObjectRootClassWithMultipleProjects() throws JsonProcessingException, IOException {
+    registerClasses();
+
+    String jsonString = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"projectb\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"testb\"}}";
+    DBObject object = generateDBObject(jsonString);
+
+    List<TestConcreteDoc> variations = reducer.getAllForDBObject(object, TestConcreteDoc.class);
+
+    assertEquals(4, variations.size());
+  }
+
+  @Test
+  public void testGetAllForDBObjectNonExistingClass() throws JsonProcessingException, IOException {
+    registerClasses();
+
+    String jsonString = "{\"testconcretedoc\":{\"name\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}}";
+    DBObject object = generateDBObject(jsonString);
+
+    List<ProjectBGeneralTestDoc> variations = reducer.getAllForDBObject(object, ProjectBGeneralTestDoc.class);
+
+    assertEquals(3, variations.size());
+  }
+
+  private void registerClasses() {
+    doReturn(TestConcreteDoc.class).when(docTypeRegistry).getClassFromMongoTypeString("testconcretedoc");
+    doReturn(GeneralTestDoc.class).when(docTypeRegistry).getClassFromMongoTypeString("generaltestdoc");
+    doReturn(ProjectAGeneralTestDoc.class).when(docTypeRegistry).getClassFromMongoTypeString("projecta-projectageneraltestdoc");
+    doReturn(ProjectBGeneralTestDoc.class).when(docTypeRegistry).getClassFromMongoTypeString("projectb-projectbgeneraltestdoc");
+  }
+
+  private DBObject generateDBObject(String jsonString) throws JsonProcessingException, IOException {
+    return new JacksonDBObject<JsonNode>(m.readTree(jsonString), JsonNode.class);
   }
 }
