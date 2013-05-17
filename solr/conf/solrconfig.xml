@@ -291,10 +291,13 @@
                    triggering a new commit. 
     -->
 
-    <autoCommit> 
-      <maxDocs>100</maxDocs>
-      <maxTime>60000</maxTime> 
-    </autoCommit>
+    <!--
+      *** The Repository project uses the commitWithin feature ***
+      <autoCommit> 
+        <maxDocs>100</maxDocs>
+        <maxTime>60000</maxTime> 
+      </autoCommit>
+    -->
 
 
     <!-- Update Related Event Listeners

@@ -71,7 +71,7 @@ public class DocumentIndexer<T extends Document> {
   public <Q extends T> void add(List<Q> entities) throws RepositoryException {
     try {
       solrServer.add(core, getSolrInputDocument(entities));
-    } catch (IndexException e) {
+    } catch (Exception e) {
       throw new RepositoryException(e);
     }
   }
@@ -88,8 +88,8 @@ public class DocumentIndexer<T extends Document> {
    */
   public <Q extends T> void modify(List<Q> entity) throws RepositoryException {
     try {
-      solrServer.update(core, getSolrInputDocument(entity));
-    } catch (IndexException e) {
+      solrServer.add(core, getSolrInputDocument(entity));
+    } catch (Exception e) {
       throw new RepositoryException(e);
     }
   }
@@ -109,7 +109,7 @@ public class DocumentIndexer<T extends Document> {
     }
     try {
       solrServer.delete(core, docs.get(0).getId());
-    } catch (IndexException e) {
+    } catch (Exception e) {
       throw new RepositoryException(e);
     }
   }
@@ -123,7 +123,7 @@ public class DocumentIndexer<T extends Document> {
   public void removeAll() throws RepositoryException {
     try {
       solrServer.deleteAll(core);
-    } catch (IndexException e) {
+    } catch (Exception e) {
       throw new RepositoryException(e);
     }
   }
