@@ -50,7 +50,7 @@ public class SearchResource {
       throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
 
-    Class<? extends Document> type = docTypeRegistry.getClassFromTypeString(typeString);
+    Class<? extends Document> type = docTypeRegistry.getClassFromWebServiceTypeString(typeString);
     if (type == null) {
       // TODO decide: is throwing an exception the proper approach?
       throw new WebApplicationException(Response.Status.NOT_FOUND);

@@ -206,7 +206,7 @@ public class StorageManager {
   private void fillAnnotationCache() {
     annotationCache = Maps.newHashMap();
     for (String docType : documentTypes) {
-      Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(docType);
+      Class<? extends Document> cls = docTypeRegistry.getClassFromWebServiceTypeString(docType);
       annotationCache.put(cls, getAllRelatedDocumentAnnotations(cls));
     }
   }

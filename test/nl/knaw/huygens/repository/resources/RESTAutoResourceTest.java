@@ -62,7 +62,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
   private void setupDocumentTypeRegister(Class<?> type) {
     DocTypeRegistry documentTypeRegister = injector.getInstance(DocTypeRegistry.class);
-    doReturn(type).when(documentTypeRegister).getClassFromTypeString(anyString());
+    doReturn(type).when(documentTypeRegister).getClassFromWebServiceTypeString(anyString());
   }
 
   private void setUserInRole(boolean userInRole) {
@@ -491,7 +491,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
     when(storageManager.getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
 
-    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
+    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromWebServiceTypeString(anyString());
 
     WebResource webResource = super.resource();
     ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class);
@@ -504,7 +504,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     DocTypeRegistry documentTypeRegister = injector.getInstance(DocTypeRegistry.class);
     this.setUserInRole(false);
 
-    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromTypeString(anyString());
+    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromWebServiceTypeString(anyString());
 
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.name = "test";

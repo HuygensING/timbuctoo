@@ -2,7 +2,6 @@ package nl.knaw.huygens.repository.storage.mongo.variation;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -41,14 +40,7 @@ public class MongoModifiableVariationStorageTest {
     when(storageConfiguration.getUser()).thenReturn("test");
     when(storageConfiguration.getPassword()).thenReturn("test");
 
-    //docTypeRegistry = new DocTypeRegistry("nl.knaw.huygens.repository.variation.model");
-    docTypeRegistry = mock(DocTypeRegistry.class);
-    when(docTypeRegistry.getCollectionId(TestConcreteDoc.class)).thenReturn("testconcretedoc");
-    when(docTypeRegistry.getCollectionId(TestDocWithIDPrefix.class)).thenReturn("testconcretedoc");
-    when(docTypeRegistry.getCollectionId(GeneralTestDoc.class)).thenReturn("testconcretedoc");
-
-    doReturn(TestConcreteDoc.class).when(docTypeRegistry).getClassFromTypeString("testconcretedoc");
-    doReturn(GeneralTestDoc.class).when(docTypeRegistry).getClassFromTypeString("generaltestdoc");
+    docTypeRegistry = new DocTypeRegistry("nl.knaw.huygens.repository.variation.model");
 
     instance = new MongoModifiableVariationStorage(storageConfiguration, docTypeRegistry);
   }

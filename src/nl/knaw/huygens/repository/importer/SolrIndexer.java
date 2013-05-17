@@ -51,7 +51,7 @@ public class SolrIndexer {
     public int run() {
       int rv = 0;
       for (String doctype : config.getSettings("indexeddoctypes")) {
-        Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(doctype);
+        Class<? extends Document> cls = docTypeRegistry.getClassFromWebServiceTypeString(doctype);
         // Only DomainDocuments should be indexed.
         if (DomainDocument.class.isAssignableFrom(cls)) {
           try {

@@ -29,7 +29,7 @@ public class ConfigValidator {
 
   private void validateDocTypes(String configKey) {
     for (String type : config.getSettings(configKey)) {
-      if (registry.getClassFromTypeString(type) == null) {
+      if (registry.getClassFromWebServiceTypeString(type) == null) {
         System.err.printf("Configuration key '%s': '%s' is not a document type%n", configKey, type);
         error = true;
       }
