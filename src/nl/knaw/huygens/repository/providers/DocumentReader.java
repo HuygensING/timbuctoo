@@ -52,7 +52,7 @@ public class DocumentReader implements MessageBodyReader<Document> {
       throws IOException, WebApplicationException {
 
     String entityType = uriInfo.getPathParameters().getFirst("entityType");
-    Class<?> cls = docTypeRegistry.getClassFromTypeString(entityType);
+    Class<?> cls = docTypeRegistry.getClassFromWebServiceTypeString(entityType);
     if (cls == null) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }

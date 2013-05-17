@@ -111,7 +111,7 @@ public abstract class MongoStorageImpl implements MongoStorage {
   public List<Document> getLastChanged(int limit) {
     List<Document> changedDocs = Lists.newArrayList();
     for (String colName : documentCollections) {
-      JacksonDBCollection<? extends Document, String> col = MongoUtils.getCollection(db, docTypeRegistry.getClassFromTypeString(colName));
+      JacksonDBCollection<? extends Document, String> col = MongoUtils.getCollection(db, docTypeRegistry.getClassFromWebServiceTypeString(colName));
       changedDocs.addAll(col.find().sort(new BasicDBObject("^lastChange.dateStamp", -1)).limit(limit).toArray());
     }
 

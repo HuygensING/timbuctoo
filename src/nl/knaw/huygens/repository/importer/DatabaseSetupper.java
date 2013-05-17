@@ -61,7 +61,7 @@ public class DatabaseSetupper {
       importCleaner();
     }
     for (String model : config.getSettings("doctypes")) {
-      Class<? extends Document> cls = docTypeRegistry.getClassFromTypeString(model);
+      Class<? extends Document> cls = docTypeRegistry.getClassFromWebServiceTypeString(model);
       importer.bulkImport(cls, true, vreId, vreName);
     }
     System.out.println("Creating indices...");

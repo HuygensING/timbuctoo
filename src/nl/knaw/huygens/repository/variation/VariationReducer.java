@@ -246,7 +246,7 @@ public class VariationReducer {
         JsonNode subNode = jsonNode.get(f);
         if (subNode != null && subNode.isObject()) {
           @SuppressWarnings("unchecked")
-          Class<? extends T> indicatedClass = (Class<? extends T>) docTypeRegistry.getClassFromTypeString(f);
+          Class<? extends T> indicatedClass = (Class<? extends T>) docTypeRegistry.getClassFromMongoTypeString(f);
           rv.add(reduce(jsonNode, indicatedClass));
         }
       }

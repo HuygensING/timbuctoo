@@ -48,7 +48,7 @@ public class IndexManager {
     indexedTypes = Sets.newHashSet();
     String[] docTypes = conf.getSetting("indexeddoctypes").split(",");
     for (String docType : docTypes) {
-      indexedTypes.add(docTypeRegistry.getClassFromTypeString(docType));
+      indexedTypes.add(docTypeRegistry.getClassFromWebServiceTypeString(docType));
     }
     indexRelations = Maps.newHashMap();
     List<String> keys = conf.getSettingKeys("indexrelations.");
@@ -59,9 +59,9 @@ public class IndexManager {
         if (items.length > 0) {
           List<Class<? extends Document>> clsList = Lists.newArrayList();
           for (String item : items) {
-            clsList.add(docTypeRegistry.getClassFromTypeString(item));
+            clsList.add(docTypeRegistry.getClassFromWebServiceTypeString(item));
           }
-          indexRelations.put(docTypeRegistry.getClassFromTypeString(k), clsList);
+          indexRelations.put(docTypeRegistry.getClassFromWebServiceTypeString(k), clsList);
         }
       }
     }
@@ -75,7 +75,7 @@ public class IndexManager {
     this.indexedTypes = Sets.newHashSet();
     String[] docTypes = indexedTypes.split(",");
     for (String docType : docTypes) {
-      this.indexedTypes.add(docTypeRegistry.getClassFromTypeString(docType));
+      this.indexedTypes.add(docTypeRegistry.getClassFromWebServiceTypeString(docType));
     }
     this.indexRelations = indexRelations == null ? Maps.<Class<? extends Document>, List<Class<? extends Document>>> newHashMap() : indexRelations;
     subscribeUs();

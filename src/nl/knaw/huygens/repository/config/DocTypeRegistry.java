@@ -20,7 +20,8 @@ import com.google.inject.Singleton;
 public class DocTypeRegistry {
 
   private final ClassPath classPath;
-  private final Map<String, Class<? extends Document>> stringToTypeMap;
+  private final Map<String, Class<? extends Document>> mongoTypeStringToTypeMap;
+  private final Map<String, Class<? extends Document>> webServiceTypeStringToTypeMap;
   private final Map<Class<? extends Document>, String> typeToStringMap;
   private final Map<Class<? extends Document>, String> typeToCollectionIdMap;
 
@@ -31,7 +32,8 @@ public class DocTypeRegistry {
       throw new RuntimeException(e);
     }
 
-    stringToTypeMap = Maps.newHashMap();
+    mongoTypeStringToTypeMap = Maps.newHashMap();
+    webServiceTypeStringToTypeMap = Maps.newHashMap();
     typeToStringMap = Maps.newHashMap();
     typeToCollectionIdMap = Maps.newHashMap();
     if (packageNames != null) {
@@ -45,7 +47,7 @@ public class DocTypeRegistry {
    * Returns the registered document types.
    */
   public Set<String> getTypeStrings() {
-    return ImmutableSortedSet.copyOf(stringToTypeMap.keySet());
+    return ImmutableSortedSet.copyOf(webServiceTypeStringToTypeMap.keySet());
   }
 
   public String getTypeString(Class<? extends Document> type) {
@@ -55,11 +57,20 @@ public class DocTypeRegistry {
     return getCollectionName(type);
   }
 
-  public Class<? extends Document> getClassFromTypeString(String id) {
+  public Class<? extends Document> getClassFromWebServiceTypeString(String typeString) {
     // NB: in the DB, package names will be prefixed to class names with a dash (-) suffix.
     // These need to be removed in order to find the classes again:
-    String normalizedId = id.replaceFirst("[a-z]*-", "");
-    return stringToTypeMap.get(normalizedId);
+    String normalizedTypeString = normalizeTypeString(typeString);
+    return webServiceTypeStringToTypeMap.get(normalizedTypeString);
+  }
+
+  private String normalizeTypeString(String typeString) {
+    return typeString.replaceFirst("[a-z]*-", "");
+  }
+
+  public Class<? extends Document> getClassFromMongoTypeString(String typeString) {
+    String normalizedTypeString = normalizeTypeString(typeString);
+    return mongoTypeStringToTypeMap.get(normalizedTypeString);
   }
 
   public String getCollectionId(Class<? extends Document> type) {
@@ -79,7 +90,8 @@ public class DocTypeRegistry {
       if (isDocumentType(cls)) {
         Class<? extends Document> docCls = (Class<? extends Document>) cls;
         String typeId = determineTypeName(docCls);
-        stringToTypeMap.put(typeId, docCls);
+        webServiceTypeStringToTypeMap.put(typeId, docCls);
+        mongoTypeStringToTypeMap.put(docCls.getSimpleName().toLowerCase(), docCls);
         typeToStringMap.put(docCls, typeId);
         Class<? extends Document> baseCls = getBaseClass(docCls);
         String baseTypeId = getCollectionName(baseCls);
