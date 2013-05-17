@@ -33,31 +33,55 @@ public class DocTypeRegistryTest {
   @Test
   public void testConstructModelToRegister() {
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertEquals(TestExtraBaseDoc.class, registry.getClassFromTypeString("testextrabasedocs"));
+    assertEquals(TestExtraBaseDoc.class, registry.getClassFromWebServiceTypeString("testextrabasedocs"));
   }
 
   @Test
-  public void testGetClassFromTypeStringAllLowerCase() {
+  public void testGetClassFromWebServiceTypeStringeAllLowerCase() {
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertEquals(TestExtraBaseDoc.class, registry.getClassFromTypeString("testextrabasedocs"));
+    assertEquals(TestExtraBaseDoc.class, registry.getClassFromWebServiceTypeString("testextrabasedocs"));
   }
 
   @Test
-  public void testGetClassFromTypeStringWithCapitals() {
+  public void testGetClassFromWebServiceTypeStringWithCapitals() {
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertNull(registry.getClassFromTypeString("TestExtraBaseDoc"));
+    assertNull(registry.getClassFromWebServiceTypeString("TestExtraBaseDocs"));
   }
 
   @Test
-  public void testGetClassFromTypeStringAllUppercase() {
+  public void testGetClassFromWebServiceTypeStringAllUppercase() {
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertNull(registry.getClassFromTypeString("TESTEXTRABASEDOC"));
+    assertNull(registry.getClassFromWebServiceTypeString("TESTEXTRABASEDOCs"));
   }
 
   @Test
-  public void testGetClassFromTypeStringWithPackage() {
+  public void testGetClassFromWebServiceTypeStringWithPackage() {
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertEquals(TestExtraBaseDoc.class, registry.getClassFromTypeString("model-testextrabasedocs"));
+    assertEquals(TestExtraBaseDoc.class, registry.getClassFromWebServiceTypeString("model-testextrabasedocs"));
+  }
+
+  @Test
+  public void testGetClassFromMongoTypeStringeAllLowerCase() {
+    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
+    assertEquals(TestExtraBaseDoc.class, registry.getClassFromMongoTypeString("testextrabasedoc"));
+  }
+
+  @Test
+  public void testGetClassFromMongoTypeStringWithCapitals() {
+    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
+    assertNull(registry.getClassFromMongoTypeString("TestExtraBaseDocs"));
+  }
+
+  @Test
+  public void testGetClassFromMongoTypeStringAllUppercase() {
+    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
+    assertNull(registry.getClassFromMongoTypeString("TESTEXTRABASEDOCs"));
+  }
+
+  @Test
+  public void testGetClassFromMongoTypeStringWithPackage() {
+    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
+    assertEquals(TestExtraBaseDoc.class, registry.getClassFromMongoTypeString("model-testextrabasedoc"));
   }
 
   @Test
@@ -84,25 +108,25 @@ public class DocTypeRegistryTest {
   @Test
   public void testRegisterPackageReadablePackage() {
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertEquals(TestExtraBaseDoc.class, registry.getClassFromTypeString("testextrabasedocs"));
+    assertEquals(TestExtraBaseDoc.class, registry.getClassFromWebServiceTypeString("testextrabasedocs"));
   }
 
   @Test
   public void testRegisterPackageNonDocument() {
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertNull(registry.getClassFromTypeString("nonDoc"));
+    assertNull(registry.getClassFromWebServiceTypeString("nonDoc"));
   }
 
   @Test
   public void testRegisterPackageSubPackage() {
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertNull(registry.getClassFromTypeString("testdoc"));
+    assertNull(registry.getClassFromWebServiceTypeString("testdoc"));
   }
 
   @Test
   public void testRegisterPackageAbstractClass() {
     registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertNull(registry.getClassFromTypeString("testbasedoc"));
+    assertNull(registry.getClassFromWebServiceTypeString("testbasedoc"));
   }
 
   @Test(expected = NullPointerException.class)

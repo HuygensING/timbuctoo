@@ -153,7 +153,7 @@ public class RESTAutoResource {
   }
 
   private Class<? extends Document> getDocType(String entityType) {
-    Class<? extends Document> type = docTypeRegistry.getClassFromTypeString(entityType);
+    Class<? extends Document> type = docTypeRegistry.getClassFromWebServiceTypeString(entityType);
     if (type == null) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }

@@ -173,7 +173,7 @@ public class FacettedSearchManager {
 
   private Map<String, Boolean> getFieldFiltersFromModel(String core) {
     if (!facetFieldFilterCache.containsKey(core)) {
-      Class<? extends Document> responseTypeCls = docTypeRegistry.getClassFromTypeString(core);
+      Class<? extends Document> responseTypeCls = docTypeRegistry.getClassFromWebServiceTypeString(core);
       FieldMapper mapper = new FieldMapper();
       modelIterator.processClass(mapper, responseTypeCls);
       facetFieldFilterCache.put(core, mapper.getResult());
