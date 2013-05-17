@@ -118,6 +118,18 @@ public class LocalSolrServer {
     }
   }
 
+  /**
+   * Delete all items for the specified core.
+   */
+  public void deleteAll(String core) throws IndexException {
+    try {
+      solrServers.get(core).deleteByQuery("*:*");
+      modifiedCores.add(core);
+    } catch (Exception e) {
+      throw new IndexException(e.getMessage());
+    }
+  }
+
   public void commit(String core) throws SolrServerException, IOException {
     SolrServer server = solrServers.get(core);
     server.commit();
