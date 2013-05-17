@@ -232,6 +232,10 @@ public class VariationReducer {
     return tree;
   }
 
+  /*
+   * This method generates a list of objects containing all the variations of a certain class 
+   * of DBObject item.
+   */
   public <T extends Document> List<T> getAllForDBObject(DBObject item, Class<T> cls) throws IOException {
     JsonNode jsonNode = convertToTree(item);
     Iterator<String> fieldNames = jsonNode.fieldNames();
