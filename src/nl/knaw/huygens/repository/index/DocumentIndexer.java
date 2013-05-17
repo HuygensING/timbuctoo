@@ -115,6 +115,20 @@ public class DocumentIndexer<T extends Document> {
   }
 
   /**
+   * Remove all items from the index.
+   *
+   * @throws RepositoryException
+   *          if removing fails for some reason.
+   */
+  public void removeAll() throws RepositoryException {
+    try {
+      solrServer.deleteAll(core);
+    } catch (IndexException e) {
+      throw new RepositoryException(e);
+    }
+  }
+
+  /**
    * Commit all changes to the SolrServer, and notify the world that the index
    * has been changed. Use responsibly.
    * 

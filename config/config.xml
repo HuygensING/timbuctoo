@@ -18,6 +18,8 @@
     <solr>
       <!-- Solr server -->
       <config>solrconfig.xml</config>
+      <!-- Maximum time before a commit in ms -->
+      <commit_within>10000</commit_within>
     </solr>
     <messages>
       <!-- ActiveMQ message broker -->

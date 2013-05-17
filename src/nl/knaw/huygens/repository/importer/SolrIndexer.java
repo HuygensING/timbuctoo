@@ -18,6 +18,12 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
+/**
+ * Currently we using just one index for each indexed type.
+ * We may need to add indexes for each VRE.
+ *
+ * Because we index all items of a type, we clear the index first.
+ */
 public class SolrIndexer {
 
   public static void main(String[] args) throws Exception {
@@ -64,8 +70,9 @@ public class SolrIndexer {
       System.out.printf("%n=== Indexing documents of type '%s'%n", type.getSimpleName());
 
       DocumentIndexer<T> indexer = indices.getIndexForType(type);
-      StorageIterator<T> list = storage.getAllByType(type);
+      indexer.removeAll();
 
+      StorageIterator<T> list = storage.getAllByType(type);
       try {
         Progress progress = new Progress();
         while (list.hasNext()) {
