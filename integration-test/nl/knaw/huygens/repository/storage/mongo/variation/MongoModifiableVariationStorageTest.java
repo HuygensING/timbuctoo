@@ -2,7 +2,6 @@ package nl.knaw.huygens.repository.storage.mongo.variation;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -12,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.mongo.MongoDiff;
 import nl.knaw.huygens.repository.variation.VariationException;
@@ -23,7 +21,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.Lists;
 import com.mongodb.MongoException;
 
 public class MongoModifiableVariationStorageTest {
@@ -56,57 +53,49 @@ public class MongoModifiableVariationStorageTest {
 
   @Test
   public void testAddItem() throws IOException {
-    TestConcreteDoc expected = createTestDoc("test");
+    TestConcreteDoc input = createTestDoc("test");
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    instance.addItem(type, expected);
-    StorageIterator<TestConcreteDoc> iterator = instance.getAllByType(type);
+    instance.addItem(type, input);
 
-    assertEquals(1, iterator.size());
-    assertEquals(null, MongoDiff.diffDocuments(expected, iterator.next()));
-    assertVersionsEquals(1, "testconcretedoc");
+    verifyCollectionSize(1, "testconcretedoc");
+    verifyCollectionSize(1, "testconcretedoc-versions");
   }
 
   @Test
   public void testAddItemWithIDPrefix() throws IOException {
-    TestDocWithIDPrefix expected = new TestDocWithIDPrefix();
-    expected.name = "test";
-    expected.generalTestDocValue = "TestDocWithIDPrefix";
-    expected.setVariations(Lists.newArrayList("testdocwithidprefix", "generaltestdoc", "testconcretedoc"));
-    expected.setCurrentVariation("model");
+    TestDocWithIDPrefix input = new TestDocWithIDPrefix();
+    input.name = "test";
+    input.generalTestDocValue = "TestDocWithIDPrefix";
 
-    Class<TestDocWithIDPrefix> type = TestDocWithIDPrefix.class;
-    instance.addItem(type, expected);
-    StorageIterator<TestDocWithIDPrefix> iterator = instance.getAllByType(type);
+    instance.addItem(TestDocWithIDPrefix.class, input);
 
-    assertEquals(1, iterator.size());
-    assertEquals(null, MongoDiff.diffDocuments(expected, iterator.next()));
-    assertVersionsEquals(1, "testdocwithidprefix");
+    verifyCollectionSize(1, "testdocwithidprefix-versions");
+    verifyCollectionSize(1, "testdocwithidprefix-versions");
   }
 
   @Test
   public void testAddItemWithId() throws IOException {
     String id = "TCD000000001";
 
-    TestConcreteDoc expected = createTestDoc(id, "test");
+    TestConcreteDoc input = createTestDoc(id, "test");
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    instance.addItem(type, expected);
-    TestConcreteDoc actual = instance.getItem(type, id);
+    instance.addItem(type, input);
 
-    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
-    assertVersionsEquals(1, "testconcretedoc");
+    verifyCollectionSize(1, "testconcretedoc");
+    verifyCollectionSize(1, "testconcretedoc-versions");
   }
 
   @Test(expected = MongoException.class)
   public void testAddItemTwice() throws IOException {
     String id = "TCD000000001";
 
-    TestConcreteDoc expected = createTestDoc(id, "test");
+    TestConcreteDoc input = createTestDoc(id, "test");
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    instance.addItem(type, expected);
-    instance.addItem(type, expected);
+    instance.addItem(type, input);
+    instance.addItem(type, input);
   }
 
   @Test
@@ -116,8 +105,8 @@ public class MongoModifiableVariationStorageTest {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     instance.addItems(type, items);
 
-    assertEquals(3, instance.getAllByType(type).size());
-    assertVersionsEquals(3, "testconcretedoc");
+    verifyCollectionSize(3, "testconcretedoc");
+    verifyCollectionSize(3, "testconcretedoc-versions");
   }
 
   @Test
@@ -127,8 +116,8 @@ public class MongoModifiableVariationStorageTest {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     instance.addItems(type, items);
 
-    assertEquals(3, instance.getAllByType(type).size());
-    assertVersionsEquals(3, "testconcretedoc");
+    verifyCollectionSize(3, "testconcretedoc");
+    verifyCollectionSize(3, "testconcretedoc-versions");
   }
 
   @Test
@@ -141,14 +130,8 @@ public class MongoModifiableVariationStorageTest {
     input.name = "updated";
     instance.updateItem(type, input.getId(), input);
 
-    TestConcreteDoc expected = createTestDoc(input.getId(), input.name);
-    expected.setRev(1);
-
-    StorageIterator<TestConcreteDoc> iterator = instance.getAllByType(type);
-
-    assertEquals(1, iterator.size());
-    assertEquals(null, MongoDiff.diffDocuments(expected, iterator.next()));
-    assertVersionsEquals(1, "testconcretedoc");
+    verifyCollectionSize(1, "testconcretedoc-versions");
+    verifyCollectionSize(1, "testconcretedoc-versions");
   }
 
   @Test(expected = IOException.class)
@@ -163,26 +146,17 @@ public class MongoModifiableVariationStorageTest {
   }
 
   @Test
-  public void testGetItemNonExistent() throws VariationException, IOException {
-    TestConcreteDoc item = instance.getItem(TestConcreteDoc.class, "TCD000000001");
-    assertNull(item);
-  }
-
-  @Test
   public void testDeletetem() throws IOException {
-    TestConcreteDoc input = createTestDoc(null, "test");
+    String id = "TCD000000001";
+    TestConcreteDoc input = createTestDoc(id, "test");
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     instance.addItem(type, input);
 
-    input.name = "updated";
-    instance.deleteItem(type, input.getId(), null);
+    instance.deleteItem(type, id, null);
 
-    StorageIterator<TestConcreteDoc> iterator = instance.getAllByType(type);
-
-    assertEquals(1, iterator.size());
-    assertTrue(iterator.next().isDeleted());
-    assertVersionsEquals(1, "testconcretedoc");
+    verifyCollectionSize(1, "testconcretedoc");
+    verifyCollectionSize(1, "testconcretedoc-versions");
 
   }
 
@@ -195,8 +169,82 @@ public class MongoModifiableVariationStorageTest {
     instance.deleteItem(type, id, null);
   }
 
-  private void assertVersionsEquals(long expected, String collection) {
-    assertEquals(expected, instance.db.getCollection(collection + "-versions").getCount());
+  //MongoVariationStorageImpl tests
+  @Test
+  public void testGetItem() throws IOException {
+    String id = "TCD0000000001";
+    TestConcreteDoc expected = createTestDoc(id, "getItem");
+
+    Class<TestConcreteDoc> type = TestConcreteDoc.class;
+    instance.addItem(type, expected);
+
+    TestConcreteDoc actual = instance.getItem(type, id);
+
+    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+  }
+
+  @Test
+  public void testGetItemUpdatedItem() throws IOException {
+    String id = "TCD0000000001";
+    TestConcreteDoc input = createTestDoc(id, "getItem");
+
+    Class<TestConcreteDoc> type = TestConcreteDoc.class;
+    instance.addItem(type, input);
+
+    input.name = "getItem2";
+    instance.updateItem(type, id, input);
+
+    TestConcreteDoc expected = createTestDoc(id, "getItem2");
+    expected.setRev(1);
+
+    TestConcreteDoc actual = instance.getItem(type, id);
+
+    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+  }
+
+  @Test
+  public void testGetItemDeletedItem() throws IOException {
+    String id = "TCD0000000001";
+    TestConcreteDoc input = createTestDoc(id, "getItem");
+
+    Class<TestConcreteDoc> type = TestConcreteDoc.class;
+    instance.addItem(type, input);
+
+    instance.deleteItem(type, id, null);
+
+    TestConcreteDoc expected = createTestDoc(id, "getItem");
+    expected.setRev(1);
+    expected.setDeleted(true);
+
+    TestConcreteDoc actual = instance.getItem(type, id);
+
+    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+  }
+
+  @Test
+  public void testGetItemNonExistent() throws VariationException, IOException {
+    TestConcreteDoc item = instance.getItem(TestConcreteDoc.class, "TCD000000001");
+    assertNull(item);
+  }
+
+  //  @Test
+  //  public void testGetVersion() {
+  //    fail("Yet to be implemented");
+  //  }
+  //
+  //  @Test
+  //  public void testGetVersionNonExistent() {
+  //    fail("Yet to be implemented");
+  //  }
+  //
+  //  @Test
+  //  public void testGetVersionOfNonExistingItem() {
+  //    fail("Yet to be implemented");
+  //  }
+
+  //Helper methods
+  private void verifyCollectionSize(long expectedSize, String collectionName) {
+    assertEquals(expectedSize, instance.db.getCollection(collectionName).getCount());
   }
 
   private List<TestConcreteDoc> createTestDocListWithIds(String idBase, String... names) {
@@ -231,5 +279,4 @@ public class MongoModifiableVariationStorageTest {
     expected.getVariations().add("testconcretedoc");
     return expected;
   }
-
 }
