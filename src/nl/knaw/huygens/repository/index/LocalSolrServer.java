@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,36 +37,38 @@ import com.google.inject.name.Named;
 @Singleton
 public class LocalSolrServer {
 
-  private static final String DESC_FIELD = "desc";
-
-  private static final String ID_FIELD = "id";
-
-  private final Logger LOG = LoggerFactory.getLogger(LocalSolrServer.class);
-
-  private final String SOLR_DIRECTORY;
-
-  private Set<String> modifiedCores = Sets.newHashSetWithExpectedSize(3);
-
-  private static final String SOLR_DEFAULT_FIELD = ID_FIELD;
-
   // FIXME this is probably suboptimal:
   private static final int ROWS = 2000;
   private static final int FACET_LIMIT = 1000;
 
-  private Map<String, SolrServer> solrServers;
+  private static final String DESC_FIELD = "desc";
+  private static final String ID_FIELD = "id";
+  private static final String SOLR_DEFAULT_FIELD = ID_FIELD;
+
+  private final Logger LOG = LoggerFactory.getLogger(LocalSolrServer.class);
+
+  private Set<String> modifiedCores = Sets.newHashSetWithExpectedSize(3);
 
   private CoreContainer container = null;
+  private Map<String, SolrServer> solrServers;
+  private final long commitWithin;
 
   @Inject
-  public LocalSolrServer(@Named("paths.solr") String solrDir, @Named("indexeddoctypes") String coreNameList) {
-    String[] coreNames = coreNameList.split(",");
+  public LocalSolrServer( //
+      @Named("paths.solr") String solrDir, //
+      @Named("indexeddoctypes") String coreNames, //
+      @Named("solr.commit_within") String commitWithinSpec //
+  ) {
+
+    commitWithin = stringToLong(commitWithinSpec, 10 * 1000);
+    LOG.info("Maximum time before a commit: {} seconds", commitWithin / 1000);
 
     try {
-      SOLR_DIRECTORY = Paths.pathInUserHome(solrDir);
-      File configFile = new File(new File(SOLR_DIRECTORY, "conf"), "solr.xml");
-      container = new CoreContainer(SOLR_DIRECTORY, configFile);
-      solrServers = new HashMap<String, SolrServer>(coreNames.length);
-      for (String coreName : coreNames) {
+      String solrDirectory = Paths.pathInUserHome(solrDir);
+      File configFile = new File(new File(solrDirectory, "conf"), "solr.xml");
+      container = new CoreContainer(solrDirectory, configFile);
+      solrServers = Maps.newHashMap();
+      for (String coreName : coreNames.split(",")) {
         solrServers.put(coreName, new EmbeddedSolrServer(container, coreName));
       }
     } catch (Exception e) {
@@ -82,17 +83,9 @@ public class LocalSolrServer {
     }
   }
 
-  protected LocalSolrServer(SolrServer solrServer, String core) {
-    // Constructor for unit testing purposes:
-    SOLR_DIRECTORY = "";
-    container = new CoreContainer("");
-    solrServers = new HashMap<String, SolrServer>(1);
-    this.solrServers.put(core, solrServer);
-  }
-
   public void add(String core, SolrInputDocument doc) throws IndexException {
     try {
-      solrServers.get(core).add(doc);
+      serverFor(core).add(doc);
       modifiedCores.add(core);
     } catch (Exception e) {
       throw new IndexException(e.getMessage());
@@ -101,8 +94,8 @@ public class LocalSolrServer {
 
   public void update(String core, SolrInputDocument doc) throws IndexException {
     try {
-      solrServers.get(core).deleteById(doc.getFieldValue(ID_FIELD).toString());
-      solrServers.get(core).add(doc);
+      // solrServers.get(core).deleteById(doc.getFieldValue(ID_FIELD).toString());
+      serverFor(core).add(doc);
       modifiedCores.add(core);
     } catch (Exception e) {
       throw new IndexException(e.getMessage());
@@ -111,19 +104,16 @@ public class LocalSolrServer {
 
   public void delete(String core, String id) throws IndexException {
     try {
-      solrServers.get(core).deleteById(id);
+      serverFor(core).deleteById(id);
       modifiedCores.add(core);
     } catch (Exception e) {
       throw new IndexException(e.getMessage());
     }
   }
 
-  /**
-   * Delete all items for the specified core.
-   */
   public void deleteAll(String core) throws IndexException {
     try {
-      solrServers.get(core).deleteByQuery("*:*");
+      serverFor(core).deleteByQuery("*:*");
       modifiedCores.add(core);
     } catch (Exception e) {
       throw new IndexException(e.getMessage());
@@ -131,8 +121,7 @@ public class LocalSolrServer {
   }
 
   public void commit(String core) throws SolrServerException, IOException {
-    SolrServer server = solrServers.get(core);
-    server.commit();
+    serverFor(core).commit();
     modifiedCores.remove(core);
   }
 
@@ -141,11 +130,6 @@ public class LocalSolrServer {
     for (String s : updatedCores) {
       this.commit(s);
     }
-  }
-
-  public void setSolrServer(SolrServer solrServer, String core) {
-    System.out.println("setSolrServer: " + core);
-    this.solrServers.put(core, solrServer);
   }
 
   public QueryResponse getQueryResponse(String term, Collection<String> facetFieldNames, String sort, String core) throws SolrServerException {
@@ -159,8 +143,7 @@ public class LocalSolrServer {
     query.setFilterQueries("!cache=false");
     query.setSortField(sort, SolrQuery.ORDER.asc);
     LOG.info("{}", query);
-    SolrServer s = solrServers.get(core);
-    return s.query(query);
+    return serverFor(core).query(query);
   }
 
   public QueryResponse getByIds(List<String> ids, Collection<String> facetFieldNames, String sort, String core) throws SolrServerException, IOException {
@@ -213,4 +196,17 @@ public class LocalSolrServer {
     }
     return rv;
   }
+
+  private SolrServer serverFor(String core) {
+    return solrServers.get(core);
+  }
+
+  private long stringToLong(String text, long defaulValue) {
+    try {
+      return Long.parseLong(text);
+    } catch (NumberFormatException e) {
+      return defaulValue;
+    }
+  }
+
 }
