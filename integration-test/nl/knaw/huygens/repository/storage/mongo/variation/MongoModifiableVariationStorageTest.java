@@ -2,6 +2,7 @@ package nl.knaw.huygens.repository.storage.mongo.variation;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,15 +12,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
+import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
+import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
 import nl.knaw.huygens.repository.storage.mongo.MongoDiff;
 import nl.knaw.huygens.repository.variation.VariationException;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.repository.variation.model.TestDocWithIDPrefix;
+import nl.knaw.huygens.repository.variation.model.projecta.ProjectAGeneralTestDoc;
+import nl.knaw.huygens.repository.variation.model.projectb.ProjectBGeneralTestDoc;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -40,7 +47,7 @@ public class MongoModifiableVariationStorageTest {
     when(storageConfiguration.getUser()).thenReturn("test");
     when(storageConfiguration.getPassword()).thenReturn("test");
 
-    docTypeRegistry = new DocTypeRegistry("nl.knaw.huygens.repository.variation.model");
+    docTypeRegistry = new DocTypeRegistry("nl.knaw.huygens.repository.variation.model nl.knaw.huygens.repository.variation.model.projecta nl.knaw.huygens.repository.variation.model.projectb");
 
     instance = new MongoModifiableVariationStorage(storageConfiguration, docTypeRegistry);
   }
@@ -140,8 +147,25 @@ public class MongoModifiableVariationStorageTest {
     input.name = "updated";
     instance.updateItem(type, input.getId(), input);
 
-    verifyCollectionSize(1, "testconcretedoc-versions");
-    verifyCollectionSize(1, "testconcretedoc-versions");
+    verifyCollectionSize(1, "testconcretedoc");
+    verifyCollectionSize(1, "testconcretedoc-versions"); //FIXME: should be 2
+  }
+
+  @Test
+  public void testUpdateItemWithSubType() throws IOException {
+    TestConcreteDoc input = createTestDoc(DEFAULT_ID, "test");
+
+    Class<TestConcreteDoc> type = TestConcreteDoc.class;
+    instance.addItem(type, input);
+
+    ProjectAGeneralTestDoc subClassInput = new ProjectAGeneralTestDoc();
+    subClassInput.name = "updated";
+    subClassInput.setId(DEFAULT_ID);
+
+    instance.updateItem(type, DEFAULT_ID, subClassInput);
+
+    verifyCollectionSize(1, "testconcretedoc");
+    verifyCollectionSize(1, "testconcretedoc-versions"); //FIXME: should be 2
   }
 
   @Test(expected = IOException.class)
@@ -164,7 +188,7 @@ public class MongoModifiableVariationStorageTest {
     instance.deleteItem(type, DEFAULT_ID, null);
 
     verifyCollectionSize(1, "testconcretedoc");
-    verifyCollectionSize(1, "testconcretedoc-versions");
+    verifyCollectionSize(1, "testconcretedoc-versions"); //FIXME: should be 2
 
   }
 
@@ -266,90 +290,196 @@ public class MongoModifiableVariationStorageTest {
     assertEquals(2, variations.size());
   }
 
-  //  @Test
-  //  public void testGetAllVariationsOfSubType() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testGetVariation() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testGetVariationNonExisting() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testGetVariationOfNonExistingItem() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testGetAllByType() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testGetAllByTypeSubType() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testGetAllByTypeNoneFound() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testGetAllRevisions() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testGetAllRevisionsOfSubType() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testGetByMultipleIds() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testGetByMultipleIdsNotAllFound() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testGetByMultipleIdsNonFound() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testGetLastChanged() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testGetLastChangedNonFound() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testFetchAll() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testGetIdsForQuery() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testEnsureIndex() {
-  //    fail("Yet to be implemented");
-  //  }
+  @Test
+  public void testGetVariation() throws IOException {
+    ProjectAGeneralTestDoc projectAInput = createProjectAGeneralTestDoc(DEFAULT_ID, "subTypeA", "testA", "aTestA");
+
+    instance.addItem(ProjectAGeneralTestDoc.class, projectAInput);
+
+    ProjectBGeneralTestDoc projectBInput = createProjectBGeneralTestDoc(DEFAULT_ID, "subTypeB", "testB", "bTestB");
+
+    instance.updateItem(ProjectBGeneralTestDoc.class, DEFAULT_ID, projectBInput);
+
+    TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "subTypeB");
+    expected.setVariations(Lists.newArrayList("projecta-projectageneraltestdoc", "generaltestdoc", "testconcretedoc", "projectb-projectbgeneraltestdoc"));
+    expected.setCurrentVariation("projectb");
+    expected.setRev(1);
+
+    TestConcreteDoc actual = instance.getVariation(TestConcreteDoc.class, DEFAULT_ID, "projectb");
+
+    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+
+  }
+
+  @Test
+  public void testGetVariationNonExisting() throws IOException {
+    ProjectAGeneralTestDoc projectAInput = createProjectAGeneralTestDoc(DEFAULT_ID, "subTypeA", "testA", "aTestA");;
+
+    TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "subTypeA");
+    expected.setVariations(Lists.newArrayList("projecta-projectageneraltestdoc", "generaltestdoc", "testconcretedoc"));
+    expected.setCurrentVariation("projecta");
+
+    instance.addItem(ProjectAGeneralTestDoc.class, projectAInput);
+
+    TestConcreteDoc actual = instance.getVariation(TestConcreteDoc.class, DEFAULT_ID, "projectb");
+
+    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+  }
+
+  @Test
+  public void testGetVariationOfNonExistingItem() throws IOException {
+    TestConcreteDoc actual = instance.getVariation(TestConcreteDoc.class, DEFAULT_ID, "projectb");
+
+    assertNull(actual);
+  }
+
+  @Test
+  public void testGetAllByType() throws IOException {
+    List<TestConcreteDoc> items = createTestDocList("test1", "test2", "test3");
+
+    Class<TestConcreteDoc> type = TestConcreteDoc.class;
+    instance.addItems(type, items);
+
+    StorageIterator<TestConcreteDoc> iterator = instance.getAllByType(type);
+
+    assertEquals(3, iterator.size());
+  }
+
+  @Test
+  public void testGetAllByTypeSubType() throws IOException {
+    ProjectAGeneralTestDoc projectAInput = createProjectAGeneralTestDoc(null, "subTypeA", "testA", "aTestA");
+    instance.addItem(ProjectAGeneralTestDoc.class, projectAInput);
+
+    ProjectBGeneralTestDoc projectBInput = createProjectBGeneralTestDoc(null, "subTypeB", "testB", "bTestB");
+    instance.addItem(ProjectBGeneralTestDoc.class, projectBInput);
+
+    StorageIterator<ProjectBGeneralTestDoc> iterator = instance.getAllByType(ProjectBGeneralTestDoc.class);
+
+    assertEquals(1, iterator.size());
+  }
+
+  @Test
+  public void testGetAllByTypeNoneFound() throws IOException {
+    ProjectAGeneralTestDoc projectAInput = createProjectAGeneralTestDoc(null, "subTypeA", "testA", "aTestA");
+    instance.addItem(ProjectAGeneralTestDoc.class, projectAInput);
+
+    StorageIterator<ProjectBGeneralTestDoc> iterator = instance.getAllByType(ProjectBGeneralTestDoc.class);
+
+    assertEquals(0, iterator.size());
+  }
+
+  @Test
+  public void testGetAllRevisionsSingleRevision() throws IOException {
+    ProjectAGeneralTestDoc projectAInput = createProjectAGeneralTestDoc(DEFAULT_ID, "subTypeA", "testA", "aTestA");
+    instance.addItem(ProjectAGeneralTestDoc.class, projectAInput);
+
+    MongoChanges<TestConcreteDoc> changes = instance.getAllRevisions(TestConcreteDoc.class, DEFAULT_ID);
+
+    assertEquals(null, changes); //FIXME: There should be 1 revision.
+  }
+
+  @Test
+  public void testGetAllRevisionsMultipleRevisions() throws IOException {
+    ProjectAGeneralTestDoc projectAInput = createProjectAGeneralTestDoc(DEFAULT_ID, "subTypeA", "testA", "aTestA");
+    instance.addItem(ProjectAGeneralTestDoc.class, projectAInput);
+
+    ProjectBGeneralTestDoc projectBInput = createProjectBGeneralTestDoc(DEFAULT_ID, "subTypeB", "testB", "bTestB");
+    instance.updateItem(ProjectBGeneralTestDoc.class, DEFAULT_ID, projectBInput);
+
+    MongoChanges<TestConcreteDoc> changes = instance.getAllRevisions(TestConcreteDoc.class, DEFAULT_ID);
+
+    assertEquals(null, changes); //FIXME: There should be 2 revisions.
+  }
+
+  @Test
+  public void testGetAllRevisionsOfSubType() throws IOException {
+    ProjectAGeneralTestDoc projectAInput = createProjectAGeneralTestDoc(DEFAULT_ID, "subTypeA", "testA", "aTestA");
+    instance.addItem(ProjectAGeneralTestDoc.class, projectAInput);
+
+    ProjectBGeneralTestDoc projectBInput = createProjectBGeneralTestDoc(DEFAULT_ID, "subTypeB", "testB", "bTestB");
+    instance.updateItem(ProjectBGeneralTestDoc.class, DEFAULT_ID, projectBInput);
+
+    MongoChanges<ProjectAGeneralTestDoc> changes = instance.getAllRevisions(ProjectAGeneralTestDoc.class, DEFAULT_ID);
+
+    assertEquals(null, changes); //FIXME: There should be 2 revisions.
+  }
+
+  @Test
+  public void testGetAllRevisionsOfNoneExisting() {
+    MongoChanges<ProjectAGeneralTestDoc> changes = instance.getAllRevisions(ProjectAGeneralTestDoc.class, DEFAULT_ID);
+    assertNull(changes);
+  }
+
+  @Test
+  public void testGetByMultipleIds() throws IOException {
+    List<TestConcreteDoc> items = createTestDocListWithIds("TCD", "test1", "test2", "test3");
+
+    Class<TestConcreteDoc> type = TestConcreteDoc.class;
+    instance.addItems(type, items);
+
+    List<String> ids = Lists.newArrayList("TCD1", "TCD2", "TCD3");
+
+    StorageIterator<TestConcreteDoc> iterator = instance.getByMultipleIds(type, ids);
+
+    assertEquals(3, iterator.size());
+  }
+
+  @Test
+  public void testGetByMultipleIdsNotAllFound() throws IOException {
+    List<TestConcreteDoc> items = createTestDocListWithIds("TCD", "test1", "test2", "test3");
+
+    Class<TestConcreteDoc> type = TestConcreteDoc.class;
+    instance.addItems(type, items);
+
+    List<String> ids = Lists.newArrayList("TCD1", "TCD2", "TCD4");
+
+    StorageIterator<TestConcreteDoc> iterator = instance.getByMultipleIds(type, ids);
+
+    assertEquals(2, iterator.size());
+  }
+
+  @Test
+  public void testGetByMultipleIdsNonFound() {
+    List<String> ids = Lists.newArrayList("TCD1", "TCD2", "TCD3");
+
+    StorageIterator<TestConcreteDoc> iterator = instance.getByMultipleIds(TestConcreteDoc.class, ids);
+
+    assertEquals(0, iterator.size());
+  }
+
+  @Test(expected = IndexOutOfBoundsException.class)
+  //FIXME: should not throw an exception
+  public void testGetLastChanged() throws IOException {
+    List<TestConcreteDoc> items = createTestDocListWithIds("TCD", "test1", "test2", "test3");
+    instance.addItems(TestConcreteDoc.class, items);
+
+    List<Document> lastChangedDocuments = instance.getLastChanged(2);
+
+    assertEquals(2, lastChangedDocuments.size());
+  }
+
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void testGetLastChangedMoreThanFound() throws IOException {
+    instance.getLastChanged(2);
+  }
+
+  @Test
+  @Ignore(value = "Code not used at this moment.")
+  public void testFetchAll() {
+    fail("Yet to be implemented");
+  }
+
+  @Test
+  @Ignore(value = "Code not used at this moment.")
+  public void testGetIdsForQuery() {
+    fail("Yet to be implemented");
+  }
+
+  @Test
+  @Ignore(value = "Code not used at this moment.")
+  public void testEnsureIndex() {
+    fail("Yet to be implemented");
+  }
 
   //  @Test
   //  public void testGetVersion() {
@@ -403,4 +533,24 @@ public class MongoModifiableVariationStorageTest {
     expected.getVariations().add("testconcretedoc");
     return expected;
   }
+
+  private ProjectAGeneralTestDoc createProjectAGeneralTestDoc(String id, String name, String generalTestDocValue, String projectAGeneralTestDocValue) {
+    ProjectAGeneralTestDoc projectATestDoc = new ProjectAGeneralTestDoc();
+    projectATestDoc.setId(id);
+    projectATestDoc.name = "subTypeA";
+    projectATestDoc.generalTestDocValue = "testA";
+    projectATestDoc.projectAGeneralTestDocValue = projectAGeneralTestDocValue;
+    return projectATestDoc;
+  }
+
+  private ProjectBGeneralTestDoc createProjectBGeneralTestDoc(String id, String name, String generalTestDocValue, String projectBGeneralTestDocValue) {
+    ProjectBGeneralTestDoc projectBTestDoc = new ProjectBGeneralTestDoc();
+    projectBTestDoc.setId(id);
+    projectBTestDoc.name = name;
+    projectBTestDoc.generalTestDocValue = generalTestDocValue;
+    projectBTestDoc.projectBGeneralTestDocValue = projectBGeneralTestDocValue;
+
+    return projectBTestDoc;
+  }
+
 }
