@@ -44,6 +44,8 @@ public class LocalSolrServer {
   private static final String ID_FIELD = "id";
   private static final String SOLR_DEFAULT_FIELD = ID_FIELD;
 
+  private static final String ALL = "*:*";
+
   private final Logger LOG = LoggerFactory.getLogger(LocalSolrServer.class);
 
   private CoreContainer container = null;
@@ -91,17 +93,31 @@ public class LocalSolrServer {
   }
 
   public void deleteAll(String core) throws SolrServerException, IOException {
-    serverFor(core).deleteByQuery("*:*", -1);
+    serverFor(core).deleteByQuery(ALL, -1);
+  }
+
+  public void deleteAll() throws SolrServerException, IOException {
+    for (String core : coreNames) {
+      System.out.printf("... clearing %s index%n", core);
+      deleteAll(core);
+    }
   }
 
   public void commit(String core) throws SolrServerException, IOException {
     serverFor(core).commit();
+    System.out.printf("... %s index contains %d documents%n", core, count(core));
   }
 
   public void commitAll() throws SolrServerException, IOException {
     for (String core : coreNames) {
-      serverFor(core).commit();
+      commit(core);
     }
+  }
+
+  public long count(String core) throws SolrServerException {
+    SolrQuery params = new SolrQuery(ALL);
+    params.setRows(0); // don't actually request any data
+    return serverFor(core).query(params).getResults().getNumFound();
   }
 
   public QueryResponse getQueryResponse(String term, Collection<String> facetFieldNames, String sort, String core) throws SolrServerException {
