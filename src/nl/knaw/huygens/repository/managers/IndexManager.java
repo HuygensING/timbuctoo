@@ -12,7 +12,6 @@ import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.index.DocumentIndexer;
 import nl.knaw.huygens.repository.index.IndexerFactory;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.pubsub.Subscribe;
 import nl.knaw.huygens.repository.variation.VariationUtils;
 
@@ -20,6 +19,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 /**
  * This manager is responsible for dealing with listening for document changes and
@@ -30,27 +30,86 @@ import com.google.inject.Inject;
  * object which is the main index. This may have led to assumptions in designing it
  * which no longer hold when different datamodels are used. Caveat emptor.
  * @author gijs
+ * 
+ * Since we now use the commitWithin feature of Solr, there's no need for flushing
+ * indexes, except when closing down.
+ * Fixed: The old code registered an incomplete IndexManager instance with the Hub.
  */
+@Singleton
 public class IndexManager {
 
-  private Set<Class<? extends Document>> indexedTypes;
-  private IndexerFactory indexFactory;
-  private Map<Class<? extends Document>, List<Class<? extends Document>>> indexRelations;
-  private StorageManager storageManager;
-  private final Hub hub;
+  private final DocTypeRegistry docTypeRegistry;
+  private final StorageManager storageManager;
+  private final IndexerFactory indexFactory;
+  private final Set<Class<? extends Document>> indexedTypes;
+  private final Map<Class<? extends Document>, List<Class<? extends Document>>> indexRelations;
 
   @Inject
-  private DocTypeRegistry docTypeRegistry;
-
-  public IndexManager(Configuration conf, StorageManager storageManager, IndexerFactory indexFactory, Hub hub) {
+  public IndexManager(Configuration config, DocTypeRegistry docTypeRegistry, StorageManager storageManager, IndexerFactory indexFactory) {
+    this.docTypeRegistry = docTypeRegistry;
     this.storageManager = storageManager;
-    this.hub = hub;
-    indexedTypes = Sets.newHashSet();
-    String[] docTypes = conf.getSetting("indexeddoctypes").split(",");
-    for (String docType : docTypes) {
-      indexedTypes.add(docTypeRegistry.getClassFromWebServiceTypeString(docType));
+    this.indexFactory = indexFactory;
+    indexedTypes = setupIndexedTypes(config);
+    indexRelations = setupIndexRelations(config);
+  }
+
+  private Set<Class<? extends Document>> setupIndexedTypes(Configuration conf) {
+    Set<Class<? extends Document>> indexedTypes = Sets.newHashSet();
+    for (String typeString : conf.getSettings("indexeddoctypes")) {
+      Class<? extends Document> type = docTypeRegistry.getClassFromWebServiceTypeString(typeString);
+      // Better safe than sorry, this is also checked by the configuration validator...
+      if (type == null) {
+        throw new RuntimeException("Invalid index type: " + typeString);
+      }
+      indexedTypes.add(type);
     }
-    indexRelations = Maps.newHashMap();
+    return indexedTypes;
+  }
+
+  @Subscribe
+  public <T extends Document> void onDocumentAdd(DocumentAddEvent<T> event) {
+    Class<T> type = event.getCls();
+    if (indexedTypes.contains(type)) {
+      List<T> doc = event.getDocuments();
+      indexFactory.getIndexForType(type).add(doc);
+    }
+  }
+
+  @Subscribe
+  public <T extends Document> void onDocumentEdit(DocumentEditEvent<T> event) {
+    Class<T> type = event.getCls();
+    if (indexedTypes.contains(type)) {
+      List<T> docs = event.getDocuments();
+      indexFactory.getIndexForType(type).modify(docs);
+    }
+  }
+
+  @Subscribe
+  public <T extends Document> void onDocumentDelete(DocumentDeleteEvent<T> event) {
+    Class<T> type = event.getCls();
+    if (indexedTypes.contains(type)) {
+      List<T> doc = event.getDocuments();
+      indexFactory.getIndexForType(type).remove(doc);
+    }
+  }
+
+  public void clearIndexes() {
+    indexFactory.clearIndexes();
+  }
+
+  public void close() {
+    try {
+      indexFactory.close();
+    } catch (Exception e) {
+      System.err.println("Failed to shut down IndexerFactory");
+      e.printStackTrace();
+    }
+  }
+
+  // -------------------------------------------------------------------
+
+  private Map<Class<? extends Document>, List<Class<? extends Document>>> setupIndexRelations(Configuration conf) {
+    Map<Class<? extends Document>, List<Class<? extends Document>>> indexRelations = Maps.newHashMap();
     List<String> keys = conf.getSettingKeys("indexrelations.");
     for (String k : keys) {
       String values = conf.getSetting("indexrelations." + k, "");
@@ -65,61 +124,7 @@ public class IndexManager {
         }
       }
     }
-    this.indexFactory = indexFactory;
-    subscribeUs();
-  }
-
-  protected IndexManager(IndexerFactory factory, String indexedTypes, Map<Class<? extends Document>, List<Class<? extends Document>>> indexRelations, Hub hub) {
-    this.indexFactory = factory;
-    this.hub = hub;
-    this.indexedTypes = Sets.newHashSet();
-    String[] docTypes = indexedTypes.split(",");
-    for (String docType : docTypes) {
-      this.indexedTypes.add(docTypeRegistry.getClassFromWebServiceTypeString(docType));
-    }
-    this.indexRelations = indexRelations == null ? Maps.<Class<? extends Document>, List<Class<? extends Document>>> newHashMap() : indexRelations;
-    subscribeUs();
-  }
-
-  public <T extends Document> Map<String, String> getAllByType(Class<T> cls) {
-    return indexFactory.getIndexForType(cls).getAll();
-  }
-
-  private void subscribeUs() {
-    hub.subscribe(this);
-  }
-
-  @Subscribe
-  public <T extends Document> void onDocumentAdd(DocumentAddEvent<T> evt) {
-    List<T> doc = evt.getDocuments();
-    Class<T> cls = evt.getCls();
-    if (indexedTypes.contains(cls)) {
-      DocumentIndexer<T> indexer = indexFactory.getIndexForType(cls);
-      indexer.add(doc);
-      indexFactory.flushIndices();
-    }
-  }
-
-  @Subscribe
-  public <T extends Document> void onDocumentEdit(DocumentEditEvent<T> evt) {
-    List<T> docs = evt.getDocuments();
-    Class<T> cls = evt.getCls();
-    if (indexedTypes.contains(cls)) {
-      DocumentIndexer<T> indexer = indexFactory.getIndexForType(cls);
-      indexer.modify(docs);
-      indexFactory.flushIndices();
-    }
-  }
-
-  @Subscribe
-  public <T extends Document> void onDocumentDelete(DocumentDeleteEvent<T> evt) {
-    List<T> doc = evt.getDocuments();
-    Class<T> cls = evt.getCls();
-    if (indexedTypes.contains(cls)) {
-      DocumentIndexer<T> indexer = indexFactory.getIndexForType(cls);
-      indexer.remove(doc);
-      indexFactory.flushIndices();
-    }
+    return indexRelations;
   }
 
   /**
@@ -240,21 +245,9 @@ public class IndexManager {
 
   private <T extends Document> void doReIndex(Set<String> docIds, Class<T> baseCls) {
     DocumentIndexer<T> indexer = indexFactory.getIndexForType(baseCls);
-
     for (String id : docIds) {
       List<T> docs = storageManager.getAllVariations(baseCls, id);
-
       indexer.modify(docs);
-    }
-  }
-
-  public void close() {
-    try {
-      indexFactory.flushIndices();
-      indexFactory.close();
-    } catch (Exception ex) {
-      System.err.println("Failed to shut down indexing.");
-      ex.printStackTrace();
     }
   }
 
