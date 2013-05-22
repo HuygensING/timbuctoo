@@ -36,6 +36,14 @@ public class IndexerFactory {
     return indexer;
   }
 
+  public void clearIndexes() {
+    try {
+      server.deleteAll();
+    } catch (Exception e) {
+      throw new RepositoryException(e);
+    }
+  }
+
   public void flushIndices() throws RepositoryException {
     try {
       server.commitAll();
@@ -46,6 +54,7 @@ public class IndexerFactory {
 
   public void close() {
     try {
+      server.commitAll();
       server.shutdown();
     } catch (Exception e) {
       System.err.println("Failed to shut down solr server.");
