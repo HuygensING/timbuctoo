@@ -93,6 +93,17 @@
     <dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="${jackson.version}" conf="main->default" />
     <dependency org="com.fasterxml.jackson.jaxrs" name="jackson-jaxrs-json-provider" rev="${jackson.version}" conf="main->default" />
 
+	<!-- Apis authorization server communication -->
+	<dependency org="nl.surfnet.apis" name="apis-resource-server-library" rev="${apis.version}"/>
+	<!-- Dependencies needed for deserializing the VerifyTokenResponse -->
+	<dependency org="nl.surfnet.apis" name="apis-surfconext-authn" rev="${apis.version}">
+		<exclude org="com.ibm.websphere" />
+	</dependency>
+	<dependency org="org.apache.openjpa" name="openjpa" rev="2.2.2">
+		<exclude org="com.ibm.websphere" />
+	</dependency>
+	
+
     <!-- Handle persistancy service client -->
     <dependency org="handle.net" name="handle-client" rev="7.1"/>
 

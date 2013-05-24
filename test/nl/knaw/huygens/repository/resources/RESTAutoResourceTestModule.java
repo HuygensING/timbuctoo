@@ -3,12 +3,12 @@ package nl.knaw.huygens.repository.resources;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
-import javax.validation.Validation;
 import javax.validation.Validator;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.StorageManager;
-import nl.knaw.huygens.repository.server.security.OAuthAuthorizationServerConnector;
+
+import org.surfnet.oaaas.model.VerifyTokenResponse;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Provides;
@@ -24,14 +24,18 @@ import com.sun.jersey.guice.JerseyServletModule;
 class RESTAutoResourceTestModule extends JerseyServletModule {
   private StorageManager storageManager;
   private DocTypeRegistry documentTypeRegister;
-  private OAuthAuthorizationServerConnector oAuthAuthorizationServerConnector;
   private JacksonJsonProvider jsonProvider;
+  private MockApisAuthorizationServerResourceFilter mockApisAuthorizationServerResourceFilter;
+  private VerifyTokenResponse verifyTokenResponse;
+  private Validator validator;
 
   public RESTAutoResourceTestModule() {
     storageManager = mock(StorageManager.class);
     documentTypeRegister = mock(DocTypeRegistry.class);
-    oAuthAuthorizationServerConnector = mock(OAuthAuthorizationServerConnector.class);
     jsonProvider = mock(JacksonJsonProvider.class);
+    verifyTokenResponse = mock(VerifyTokenResponse.class);
+    mockApisAuthorizationServerResourceFilter = new MockApisAuthorizationServerResourceFilter();
+    validator = mock(Validator.class);
   }
 
   /* Because the RestAutoResourceModule is used in a static way for multiple tests,
@@ -41,8 +45,9 @@ class RESTAutoResourceTestModule extends JerseyServletModule {
   public void cleanUpMocks() {
     reset(storageManager);
     reset(documentTypeRegister);
-    reset(oAuthAuthorizationServerConnector);
     reset(jsonProvider);
+    reset(verifyTokenResponse);
+    reset(validator);
   }
 
   @Override
@@ -62,8 +67,8 @@ class RESTAutoResourceTestModule extends JerseyServletModule {
   }
 
   @Provides
-  public OAuthAuthorizationServerConnector providesAuthAuthorizationServerConnector() {
-    return this.oAuthAuthorizationServerConnector;
+  public MockApisAuthorizationServerResourceFilter provideMockApisAuthorizationServerResourceFilter() {
+    return this.mockApisAuthorizationServerResourceFilter;
   }
 
   @Singleton
@@ -87,7 +92,13 @@ class RESTAutoResourceTestModule extends JerseyServletModule {
   @Provides
   @Singleton
   Validator provideValidator() {
-    return Validation.buildDefaultValidatorFactory().getValidator();
+    return this.validator;
+  }
+
+  @Provides
+  @Named(value = "security.enabled")
+  public boolean provideSecurityEnabled() {
+    return true;
   }
 
 }
