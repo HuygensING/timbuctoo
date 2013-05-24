@@ -1,11 +1,14 @@
 package nl.knaw.huygens.repository.resources;
 
-import javax.ws.rs.core.SecurityContext;
-
-import nl.knaw.huygens.repository.server.security.OAuthAuthorizationServerConnector;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import nl.knaw.huygens.repository.server.security.apis.SecurityContextCreatorResourceFilterFactory;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.surfnet.oaaas.auth.principal.AuthenticatedPrincipal;
+import org.surfnet.oaaas.model.VerifyTokenResponse;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -22,8 +25,6 @@ public abstract class WebServiceTestSetup extends JerseyTest {
 
   protected static Injector injector;
   private static RESTAutoResourceTestModule restAutoResourceTestModule;
-  protected SecurityContext securityContext;
-  protected OAuthAuthorizationServerConnector oAuthAuthorizationServerConnector;
 
   public WebServiceTestSetup() {
     super(new GuiceTestContainerFactory(injector));
@@ -33,6 +34,16 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   public static void setUpClass() {
     restAutoResourceTestModule = new RESTAutoResourceTestModule();
     injector = Guice.createInjector(restAutoResourceTestModule);
+  }
+
+  @Before
+  public void setUpApisAuthorizationServerFilterMock() {
+    VerifyTokenResponse verifyTokenResponse = mock(VerifyTokenResponse.class);
+    AuthenticatedPrincipal authenticatedPrincipal = mock(AuthenticatedPrincipal.class);
+    when(verifyTokenResponse.getPrincipal()).thenReturn(authenticatedPrincipal);
+    when(verifyTokenResponse.getError()).thenReturn(null);
+    MockApisAuthorizationServerResourceFilter filter = injector.getInstance(MockApisAuthorizationServerResourceFilter.class);
+    filter.setVerifyTokenResponse(verifyTokenResponse);
   }
 
   @After
@@ -46,7 +57,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     WebAppDescriptor webAppDescriptor = new WebAppDescriptor.Builder().build();
     webAppDescriptor.getInitParams().put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.repository.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.repository.providers");
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
-        "nl.knaw.huygens.repository.server.security.AnnotatedSecurityFilterFactory;com.sun.jersey.api.container.filter.RolesAllowedResourceFilterFactory");
+        MockApisAuthorizationFilterFactory.class.getName() + ";" + SecurityContextCreatorResourceFilterFactory.class.getName() + ";" + SecurityContextCreatorResourceFilterFactory.class.getName());
 
     return webAppDescriptor;
   }

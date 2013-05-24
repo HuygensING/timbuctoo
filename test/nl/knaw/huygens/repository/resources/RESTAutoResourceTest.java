@@ -6,7 +6,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -15,58 +14,35 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
 
-import javax.ws.rs.WebApplicationException;
+import javax.validation.ConstraintViolation;
+import javax.validation.Path;
+import javax.validation.Validator;
+import javax.validation.metadata.ConstraintDescriptor;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 
-import net.handle.hdllib.HandleException;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.StorageManager;
-import nl.knaw.huygens.repository.server.security.OAuthAuthorizationServerConnector;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.repository.variation.model.projecta.OtherDoc;
 
-import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 
 public class RESTAutoResourceTest extends WebServiceTestSetup {
-  @Before
-  public void setUpAuthorizationServerConnectorMock() {
-    securityContext = mock(SecurityContext.class);
-    oAuthAuthorizationServerConnector = injector.getInstance(OAuthAuthorizationServerConnector.class);
-
-    doAnswer(new Answer<Object>() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws HandleException {
-        String authorizationString = (String) invocation.getArguments()[0];
-
-        if (authorizationString == null || authorizationString.trim().isEmpty()) {
-          throw new WebApplicationException(Response.Status.UNAUTHORIZED);
-        }
-
-        return securityContext;
-      }
-    }).when(oAuthAuthorizationServerConnector).authenticate(anyString());
-  }
-
   private void setupDocumentTypeRegister(Class<?> type) {
     DocTypeRegistry documentTypeRegister = injector.getInstance(DocTypeRegistry.class);
     doReturn(type).when(documentTypeRegister).getClassFromWebServiceTypeString(anyString());
-  }
-
-  private void setUserInRole(boolean userInRole) {
-    when(securityContext.isUserInRole(anyString())).thenReturn(userInRole);
   }
 
   @Test
@@ -160,8 +136,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testPutDocExistingDocument() throws IOException {
     setupDocumentTypeRegister(TestConcreteDoc.class);
 
-    this.setUserInRole(true);
-
     String id = "TST0000000001";
 
     TestConcreteDoc doc = new TestConcreteDoc();
@@ -178,21 +152,75 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   }
 
   @SuppressWarnings("unchecked")
-  @Test
+  @Test()
   public void testPutDocInvalidDocument() throws IOException {
     setupDocumentTypeRegister(TestConcreteDoc.class);
-
-    this.setUserInRole(true);
 
     String id = "TST0000000001";
 
     TestConcreteDoc doc = new TestConcreteDoc();
+    doc.setId(id);
 
     JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
     when(jsonProvider.readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
+    Validator validator = injector.getInstance(Validator.class);
+    // Mockito could not mock the ConstraintViolation, it entered an infinit loop.
+    ConstraintViolation<TestConcreteDoc> violation = new ConstraintViolation<TestConcreteDoc>() {
+
+      @Override
+      public String getMessage() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public String getMessageTemplate() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public TestConcreteDoc getRootBean() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public Class<TestConcreteDoc> getRootBeanClass() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public Object getLeafBean() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public Path getPropertyPath() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public Object getInvalidValue() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public ConstraintDescriptor<?> getConstraintDescriptor() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+    };
+
+    when(validator.validate(doc)).thenReturn(Sets.<ConstraintViolation<TestConcreteDoc>> newHashSet(violation));
+
     WebResource webResource = super.resource();
-    ClientResponse clientResponse = webResource.path("/resources/testconcretedocs/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .put(ClientResponse.class, doc);
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
@@ -205,7 +233,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
 
-    this.setUserInRole(true);
     String id = "NEI0000000001";
 
     TestConcreteDoc doc = new TestConcreteDoc();
@@ -232,7 +259,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testPutDocNonExistingType() {
     setupDocumentTypeRegister(null);
-    this.setUserInRole(true);
     String id = "TST0000000001";
 
     TestConcreteDoc doc = new TestConcreteDoc();
@@ -247,7 +273,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testPutDocWrongType() {
     setupDocumentTypeRegister(OtherDoc.class);
-    this.setUserInRole(true);
     String id = "TST0000000001";
 
     TestConcreteDoc doc = new TestConcreteDoc();
@@ -262,7 +287,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testPutOnSuperClass() {
     setupDocumentTypeRegister(OtherDoc.class);
-    this.setUserInRole(true);
     String id = "TST0000000001";
 
     GeneralTestDoc doc = new GeneralTestDoc();
@@ -277,7 +301,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testPutOnCollection() {
     setupDocumentTypeRegister(OtherDoc.class);
-    this.setUserInRole(true);
     String id = "TST0000000001";
 
     GeneralTestDoc doc = new GeneralTestDoc();
@@ -294,7 +317,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testPost() throws IOException {
     setupDocumentTypeRegister(TestConcreteDoc.class);
     JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
-    this.setUserInRole(true);
 
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.name = "test";
@@ -313,7 +335,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostNonExistingCollection() {
     setupDocumentTypeRegister(null);
-    this.setUserInRole(true);
 
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.name = "test";
@@ -330,7 +351,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testPostOnSuperType() throws IOException {
     setupDocumentTypeRegister(TestConcreteDoc.class);
     JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
-    this.setUserInRole(true);
 
     GeneralTestDoc doc = new GeneralTestDoc();
     doc.name = "test";
@@ -349,7 +369,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testPostWrongType() throws IOException {
     setupDocumentTypeRegister(OtherDoc.class);
     JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
-    this.setUserInRole(true);
 
     when(jsonProvider.readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(null);
 
@@ -364,8 +383,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostSpecificDocument() {
-    this.setUserInRole(true);
-
     String id = "TST000000001";
 
     TestConcreteDoc doc = new TestConcreteDoc();
@@ -382,8 +399,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testDelete() throws IOException {
     setupDocumentTypeRegister(TestConcreteDoc.class);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-
-    this.setUserInRole(true);
 
     String id = "TST0000000001";
 
@@ -404,8 +419,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     setupDocumentTypeRegister(TestConcreteDoc.class);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
-    this.setUserInRole(true);
-
     String id = "TST0000000001";
 
     when(storageManager.getDocument(TestConcreteDoc.class, id)).thenReturn(null);
@@ -421,8 +434,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testDeleteTypeDoesNotExist() {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
-    this.setUserInRole(true);
-
     String id = "TST0000000001";
 
     when(storageManager.getDocument(TestConcreteDoc.class, id)).thenReturn(null);
@@ -436,8 +447,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteCollection() {
-    this.setUserInRole(true);
-
     WebResource webResource = super.resource();
     ClientResponse clientResponse = webResource.path("/resources/testconcretedoc").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
 
@@ -480,48 +489,76 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     assertEquals(ClientResponse.Status.OK, clientResponse.getClientResponseStatus());
   }
 
+  @SuppressWarnings("unchecked")
   @Test
-  public void testPutDocUserNotLoggedIn() {
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
+  @Ignore("No role base security implemented yet.")
+  public void testPutDocUserNotInRole() throws IOException {
     DocTypeRegistry documentTypeRegister = injector.getInstance(DocTypeRegistry.class);
     String id = "TST0000000001";
 
-    TestConcreteDoc expectedDoc = new TestConcreteDoc();
-    expectedDoc.setId(id);
-
-    when(storageManager.getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
-
-    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromWebServiceTypeString(anyString());
-
-    WebResource webResource = super.resource();
-    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class);
-
-    assertEquals(ClientResponse.Status.UNAUTHORIZED, clientResponse.getClientResponseStatus());
-  }
-
-  @Test
-  public void testPostUserNotInRole() {
-    DocTypeRegistry documentTypeRegister = injector.getInstance(DocTypeRegistry.class);
-    this.setUserInRole(false);
-
-    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromWebServiceTypeString(anyString());
-
     TestConcreteDoc doc = new TestConcreteDoc();
-    doc.name = "test";
+    doc.setId(id);
+
+    JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
+    when(jsonProvider.readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
+
+    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromWebServiceTypeString(anyString());
 
     WebResource webResource = super.resource();
-    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
-        .post(ClientResponse.class, doc);
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
+        .put(ClientResponse.class, doc);
 
     assertEquals(ClientResponse.Status.FORBIDDEN, clientResponse.getClientResponseStatus());
   }
 
+  @SuppressWarnings("unchecked")
   @Test
-  public void testPostUserNotLoggedIn() {
+  public void testPutDocUserNotLoggedIn() throws IOException {
+    setupDocumentTypeRegister(TestConcreteDoc.class);
+    String id = "TST0000000001";
+
+    TestConcreteDoc doc = new TestConcreteDoc();
+    doc.setId(id);
+
+    JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
+    when(jsonProvider.readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
+
+    WebResource webResource = super.resource();
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, doc);
+
+    assertEquals(ClientResponse.Status.UNAUTHORIZED, clientResponse.getClientResponseStatus());
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  @Ignore("No role base security implemented yet.")
+  public void testPostUserNotInRole() throws IOException {
+
+    setupDocumentTypeRegister(TestConcreteDoc.class);
+    JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
+
+    TestConcreteDoc inputDoc = new TestConcreteDoc();
+    inputDoc.name = "test";
+
+    when(jsonProvider.readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(inputDoc);
+
+    WebResource webResource = super.resource();
+    ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
+        .post(ClientResponse.class, inputDoc);
+
+    assertEquals(ClientResponse.Status.FORBIDDEN, clientResponse.getClientResponseStatus());
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testPostUserNotLoggedIn() throws IOException {
     setupDocumentTypeRegister(TestConcreteDoc.class);
 
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.name = "test";
+
+    JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
+    when(jsonProvider.readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
     WebResource webResource = super.resource();
     ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/all").type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, doc);
@@ -540,10 +577,13 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   }
 
   @Test
+  @Ignore("No role base security implemented yet.")
   public void testDeleteUserNotInRole() {
-    this.setUserInRole(false);
+    setupDocumentTypeRegister(TestConcreteDoc.class);
 
     String id = "TST0000000001";
+    TestConcreteDoc doc = new TestConcreteDoc();
+    doc.setId(id);
 
     WebResource webResource = super.resource();
     ClientResponse clientResponse = webResource.path("/resources/testconcretedoc").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
@@ -556,7 +596,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetDocOfVariation() {
-    this.setUserInRole(true);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     setupDocumentTypeRegister(TestConcreteDoc.class);
     String id = "TST0000000001";
@@ -576,7 +615,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetDocOfVariationDocDoesNotExist() {
-    this.setUserInRole(true);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     setupDocumentTypeRegister(TestConcreteDoc.class);
     String id = "TST0000000002";
