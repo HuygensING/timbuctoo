@@ -6,9 +6,6 @@ import javax.validation.Validator;
 import nl.knaw.huygens.repository.persistence.DefaultPersistenceManager;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.persistence.handle.HandleManager;
-import nl.knaw.huygens.repository.server.security.NoSecurityOAuthAuthorizationServerConnector;
-import nl.knaw.huygens.repository.server.security.OAuthAuthorizationServerConnector;
-import nl.knaw.huygens.repository.server.security.apis.ApisAuthorizationServerConnector;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.mongo.variation.MongoStorageFacade;
 
@@ -33,13 +30,7 @@ public class BasicInjectionModule extends AbstractModule {
     Names.bindProperties(binder(), config.getAll());
     bind(Configuration.class).toInstance(config);
     bind(DocTypeRegistry.class).toInstance(registry);
-    if (config.getBooleanSetting("apis.enabled")) {
-      bind(OAuthAuthorizationServerConnector.class).to(ApisAuthorizationServerConnector.class);
-    } else {
-      bind(OAuthAuthorizationServerConnector.class).to(NoSecurityOAuthAuthorizationServerConnector.class);
-    }
 
-    // TODO: Refactor to make Storage use MongoModifiableStorage and VariationStorage use MongoModifialbleVariationStorage. 
     bind(Storage.class).to(MongoStorageFacade.class);
   }
 
