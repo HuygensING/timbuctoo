@@ -26,6 +26,11 @@ public abstract class AbstractRolesAllowedResourceFilterFactory implements Resou
     super();
   }
 
+  // Used for unit tests.
+  AbstractRolesAllowedResourceFilterFactory(boolean securityEnabled) {
+    this.securityEnabled = securityEnabled;
+  }
+
   protected abstract ResourceFilter createResourceFilter();
 
   /**
