@@ -16,7 +16,7 @@ public class IndexerFactory {
   private final LocalSolrServer server;
   private final ModelIterator modelIterator;
   private final Hub hub;
-  private final Map<Class<? extends Document>, DocumentIndexer<? extends Document>> indexers;
+  private final Map<Class<? extends Document>, SolrDocumentIndexer<? extends Document>> indexers;
 
   @Inject
   public IndexerFactory(ModelIterator modelIterator, LocalSolrServer server, Hub hub) {
@@ -26,11 +26,11 @@ public class IndexerFactory {
     indexers = Maps.newHashMap();
   }
 
-  public synchronized <T extends Document> DocumentIndexer<T> getIndexForType(Class<T> type) {
+  public synchronized <T extends Document> SolrDocumentIndexer<T> getIndexForType(Class<T> type) {
     @SuppressWarnings("unchecked")
-    DocumentIndexer<T> indexer = (DocumentIndexer<T>) indexers.get(type);
+    SolrDocumentIndexer<T> indexer = (SolrDocumentIndexer<T>) indexers.get(type);
     if (indexer == null) {
-      indexer = new DocumentIndexer<T>(type, modelIterator, server, hub);
+      indexer = new SolrDocumentIndexer<T>(type, modelIterator, server, hub);
       indexers.put(type, indexer);
     }
     return indexer;
