@@ -98,8 +98,9 @@
 	<!-- Dependencies needed for deserializing the VerifyTokenResponse -->
 	<dependency org="nl.surfnet.apis" name="apis-surfconext-authn" rev="${apis.version}">
 		<exclude org="com.ibm.websphere" />
+		<exclude org="org.hsqldb" />
 	</dependency>
-	<dependency org="org.apache.openjpa" name="openjpa" rev="2.2.2">
+	<dependency org="org.apache.openjpa" name="openjpa-kernel" rev="2.2.2">
 		<exclude org="com.ibm.websphere" />
 	</dependency>
 	
