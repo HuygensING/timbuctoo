@@ -21,7 +21,7 @@ import org.apache.solr.common.SolrInputDocument;
  * 
  * Note that whenever you update documents through this index, it is the
  * caller's responsibility to call
- * {@link nl.knaw.huygens.repository.index.DocumentIndexer#flush flush} to
+ * {@link nl.knaw.huygens.repository.index.SolrDocumentIndexer#flush flush} to
  * update the index and notify the world that this has happened.
  * 
  * @author Gijs
@@ -30,7 +30,7 @@ import org.apache.solr.common.SolrInputDocument;
  *          The generic parameter specifying what kind of POJO objects are used,
  *          and (implicitly) which index to index them in.
  */
-public class DocumentIndexer<T extends Document> {
+public class SolrDocumentIndexer<T extends Document> {
 
   private final LocalSolrServer solrServer;
   private final String core;
@@ -52,7 +52,7 @@ public class DocumentIndexer<T extends Document> {
    * @param hub
    *          the Hub to use for notifications.
    */
-  public DocumentIndexer(Class<T> type, ModelIterator iterator, LocalSolrServer server, Hub hub) {
+  public SolrDocumentIndexer(Class<T> type, ModelIterator iterator, LocalSolrServer server, Hub hub) {
     this.solrServer = server;
     this.modelIterator = iterator;
     this.hub = hub;
