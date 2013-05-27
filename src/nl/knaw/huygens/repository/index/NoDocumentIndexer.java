@@ -3,7 +3,6 @@ package nl.knaw.huygens.repository.index;
 import java.util.List;
 
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.util.RepositoryException;
 
 /**
  * DocumentIndexer that does nothing...
@@ -11,18 +10,18 @@ import nl.knaw.huygens.repository.util.RepositoryException;
 class NoDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
 
   @Override
-  public <U extends T> void add(List<U> entities) throws RepositoryException {}
+  public <U extends T> void add(List<U> entities) {}
 
   @Override
-  public <U extends T> void modify(List<U> entity) throws RepositoryException {}
+  public <U extends T> void modify(List<U> entity) {}
 
   @Override
-  public void remove(String id) throws RepositoryException {}
+  public void remove(String id) {}
 
   @Override
-  public void removeAll() throws RepositoryException {}
+  public void removeAll() {}
 
   @Override
-  public void flush() throws RepositoryException {}
+  public void flush() {}
 
 }

@@ -5,7 +5,6 @@ import java.util.List;
 import nl.knaw.huygens.repository.events.Events;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.pubsub.Hub;
-import nl.knaw.huygens.repository.util.RepositoryException;
 
 import org.apache.solr.common.SolrInputDocument;
 
@@ -75,15 +74,15 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
    * 
    * @param entities
    *          the <code>Document</code> to add.
-   * @throws RepositoryException
+   * @throws IndexException
    *          if adding the document fails for some reason.
    */
   @Override
-  public <U extends T> void add(List<U> entities) throws RepositoryException {
+  public <U extends T> void add(List<U> entities) throws IndexException {
     try {
       solrServer.add(core, getSolrInputDocument(entities));
     } catch (Exception e) {
-      throw new RepositoryException(e);
+      throw new IndexException(e);
     }
   }
 
@@ -94,15 +93,15 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
    * 
    * @param entity
    *          the <code>Document</code> and it's subtypes to update.
-   * @throws RepositoryException
+   * @throws IndexException
    *          if adding the document fails for some reason.
    */
   @Override
-  public <U extends T> void modify(List<U> entity) throws RepositoryException {
+  public <U extends T> void modify(List<U> entity) throws IndexException {
     try {
       solrServer.add(core, getSolrInputDocument(entity));
     } catch (Exception e) {
-      throw new RepositoryException(e);
+      throw new IndexException(e);
     }
   }
 
@@ -112,30 +111,30 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
    * 
    * @param id
    *          the id of the <code>Document</code> to remove.
-   * @throws RepositoryException
+   * @throws IndexException
    *          if removing the document fails for some reason.
    */
   @Override
-  public void remove(String id) throws RepositoryException {
+  public void remove(String id) throws IndexException {
     try {
       solrServer.delete(core, id);
     } catch (Exception e) {
-      throw new RepositoryException(e);
+      throw new IndexException(e);
     }
   }
 
   /**
    * Remove all items from the index.
    *
-   * @throws RepositoryException
+   * @throws IndexException
    *          if removing fails for some reason.
    */
   @Override
-  public void removeAll() throws RepositoryException {
+  public void removeAll() throws IndexException {
     try {
       solrServer.deleteAll(core);
     } catch (Exception e) {
-      throw new RepositoryException(e);
+      throw new IndexException(e);
     }
   }
 
@@ -143,15 +142,15 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
    * Commit all changes to the SolrServer, and notify the world that the index
    * has been changed. Use responsibly.
    * 
-   * @throws RepositoryException
+   * @throws IndexException
    */
   @Override
-  public void flush() throws RepositoryException {
+  public void flush() throws IndexException {
     try {
       solrServer.commit(core);
       hub.publish(new Events.IndexChangedEvent());
     } catch (Exception ex) {
-      throw new RepositoryException(ex);
+      throw new IndexException(ex);
     }
   }
 
