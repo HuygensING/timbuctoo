@@ -8,13 +8,16 @@ import nl.knaw.huygens.repository.util.RepositoryException;
 
 import com.google.common.collect.Maps;
 
+/**
+ * DocumentIndexer that does nothing...
+ */
 class NoDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
 
   @Override
-  public <Q extends T> void add(List<Q> entities) throws RepositoryException {}
+  public <U extends T> void add(List<U> entities) throws RepositoryException {}
 
   @Override
-  public <Q extends T> void modify(List<Q> entity) throws RepositoryException {}
+  public <U extends T> void modify(List<U> entity) throws RepositoryException {}
 
   @Override
   public void remove(List<T> docs) throws RepositoryException {}
