@@ -69,7 +69,7 @@ public class SolrIndexer {
     private <T extends DomainDocument> void indexAllDocuments(Class<T> type) throws Exception {
       System.out.printf("%n=== Indexing documents of type '%s'%n", type.getSimpleName());
 
-      DocumentIndexer<T> indexer = indices.getIndexForType(type);
+      DocumentIndexer<T> indexer = indices.indexerForType(type);
       indexer.removeAll();
 
       StorageIterator<T> list = storage.getAllByType(type);
