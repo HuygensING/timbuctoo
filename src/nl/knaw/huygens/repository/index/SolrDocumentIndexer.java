@@ -45,11 +45,10 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
   private final Hub hub;
 
   /**
-   * Create a document indexer for this entity
+   * Creates a document indexer for the specified type.
    * 
    * @param type
-   *          POJO specifying what kind of objects will be created, and in which
-   *          index they will be stored.
+   *          document type token
    * @param iterator
    *          a ModelIterator instance that will be used to generate
    *          {@link org.apache.solr.common.SolrInputDocument
@@ -59,11 +58,18 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
    * @param hub
    *          the Hub to use for notifications.
    */
-  public SolrDocumentIndexer(Class<T> type, ModelIterator iterator, LocalSolrServer server, Hub hub) {
+  private SolrDocumentIndexer(Class<T> type, ModelIterator iterator, LocalSolrServer server, Hub hub) {
     this.solrServer = server;
     this.modelIterator = iterator;
     this.hub = hub;
-    core = Utils.coreForType(type);
+    core = coreForType(type);
+  }
+
+  /**
+   * Returns the Solr core for the specified document type.
+   */
+  private String coreForType(Class<? extends Document> type) {
+    return type.getSimpleName().toLowerCase();
   }
 
   /**
