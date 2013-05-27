@@ -5,7 +5,6 @@ import java.util.Map;
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.util.RepositoryException;
 
@@ -20,15 +19,13 @@ public class IndexerFactory {
   private final Map<Class<? extends Document>, DocumentIndexer<? extends Document>> indexers;
 
   @Inject
-  public IndexerFactory(Configuration config, DocTypeRegistry docTypeRegistry, ModelIterator modelIterator, LocalSolrServer server, Hub hub) {
+  public IndexerFactory(Configuration config, DocTypeRegistry registry, ModelIterator modelIterator, LocalSolrServer server, Hub hub) {
     this.server = server;
 
     indexers = Maps.newHashMap();
     for (String doctype : config.getSettings("indexeddoctypes")) {
-      Class<? extends Document> type = docTypeRegistry.getClassFromWebServiceTypeString(doctype);
-      if (DomainDocument.class.isAssignableFrom(type)) {
-        indexers.put(type, SolrDocumentIndexer.newInstance(type, modelIterator, server, hub));
-      }
+      Class<? extends Document> type = registry.getClassFromWebServiceTypeString(doctype);
+      indexers.put(type, SolrDocumentIndexer.newInstance(type, modelIterator, server, hub));
     }
   }
 
@@ -59,7 +56,7 @@ public class IndexerFactory {
       server.commitAll();
       server.shutdown();
     } catch (Exception e) {
-      System.err.println("Failed to shut down solr server.");
+      System.err.println("Failed to shut down Solr server");
       e.printStackTrace();
     }
   }

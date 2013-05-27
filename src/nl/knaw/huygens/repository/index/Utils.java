@@ -2,21 +2,12 @@ package nl.knaw.huygens.repository.index;
 
 import java.lang.reflect.Method;
 
-import nl.knaw.huygens.repository.model.Document;
-
 import org.apache.commons.lang.StringUtils;
 
 /**
  * Contains various index-related utility methods.
  */
 public class Utils {
-
-  /**
-   * Returns the Solr core for the specified document type.
-   */
-  public static String coreForType(Class<? extends Document> type) {
-    return type.getSimpleName().toLowerCase();
-  }
 
   /**
    * Determines the index field name from the method name (only used if the
