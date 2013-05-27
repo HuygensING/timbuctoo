@@ -5,7 +5,7 @@ import java.util.List;
 import nl.knaw.huygens.repository.config.BasicInjectionModule;
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.index.SolrDocumentIndexer;
+import nl.knaw.huygens.repository.index.DocumentIndexer;
 import nl.knaw.huygens.repository.index.IndexerFactory;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
@@ -69,7 +69,7 @@ public class SolrIndexer {
     private <T extends DomainDocument> void indexAllDocuments(Class<T> type) throws Exception {
       System.out.printf("%n=== Indexing documents of type '%s'%n", type.getSimpleName());
 
-      SolrDocumentIndexer<T> indexer = indices.getIndexForType(type);
+      DocumentIndexer<T> indexer = indices.getIndexForType(type);
       indexer.removeAll();
 
       StorageIterator<T> list = storage.getAllByType(type);
