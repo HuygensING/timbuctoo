@@ -10,6 +10,7 @@ import nl.knaw.huygens.repository.events.Events.DocumentAddEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentDeleteEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.index.DocumentIndexer;
+import nl.knaw.huygens.repository.index.IndexException;
 import nl.knaw.huygens.repository.index.IndexerFactory;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.pubsub.Subscribe;
@@ -68,25 +69,37 @@ public class IndexManager {
 
   @Subscribe
   public <T extends Document> void onDocumentAdd(DocumentAddEvent<T> event) {
-    Class<T> type = event.getCls();
-    String id = event.getId();
-    List<T> docs = storageManager.getAllVariations(type, id);
-    indexFactory.indexerForType(type).add(docs);
+    try {
+      Class<T> type = event.getCls();
+      String id = event.getId();
+      List<T> docs = storageManager.getAllVariations(type, id);
+      indexFactory.indexerForType(type).add(docs);
+    } catch (IndexException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Subscribe
   public <T extends Document> void onDocumentEdit(DocumentEditEvent<T> event) {
-    Class<T> type = event.getCls();
-    String id = event.getId();
-    List<T> docs = storageManager.getAllVariations(type, id);
-    indexFactory.indexerForType(type).modify(docs);
+    try {
+      Class<T> type = event.getCls();
+      String id = event.getId();
+      List<T> docs = storageManager.getAllVariations(type, id);
+      indexFactory.indexerForType(type).modify(docs);
+    } catch (IndexException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Subscribe
   public <T extends Document> void onDocumentDelete(DocumentDeleteEvent<T> event) {
-    Class<T> type = event.getCls();
-    String id = event.getId();
-    indexFactory.indexerForType(type).remove(id);
+    try {
+      Class<T> type = event.getCls();
+      String id = event.getId();
+      indexFactory.indexerForType(type).remove(id);
+    } catch (IndexException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public void clearIndexes() {
@@ -240,11 +253,14 @@ public class IndexManager {
   }
 
   private <T extends Document> void doReIndex(Set<String> docIds, Class<T> baseCls) {
-    DocumentIndexer<T> indexer = indexFactory.indexerForType(baseCls);
-    for (String id : docIds) {
-      List<T> docs = storageManager.getAllVariations(baseCls, id);
-      indexer.modify(docs);
+    try {
+      DocumentIndexer<T> indexer = indexFactory.indexerForType(baseCls);
+      for (String id : docIds) {
+        List<T> docs = storageManager.getAllVariations(baseCls, id);
+        indexer.modify(docs);
+      }
+    } catch (IndexException e) {
+      throw new RuntimeException(e);
     }
   }
-
 }
