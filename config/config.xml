@@ -25,13 +25,16 @@
       <!-- ActiveMQ message broker -->
       <broker_url>vm://localhost</broker_url> <!-- embedded -->
     </messages>
-    <apis>
-      <!-- Apis security server -->
+    <security>
       <enabled>false</enabled>
-      <key>university-foo</key>
-      <secret>58b749f7-acb3-44b7-a38c-53d5ad740cf6</secret>
-      <server>http://localhost:8086/v1/tokeninfo?access_token=%s</server>
+      <apis>
+        <!-- Apis security server -->
+        <cache>true</cache>
+        <key>be69631f-bd25-4f93-9eaf-90853f6caace</key>
+        <secret>b8257bfc-ceb0-4ef5-a0d0-d643ba1ee3a6</secret>
+        <server>http://demo17.huygens.knaw.nl/apis-authorization-server/v1/tokeninfo</server>
     </apis>
+    </security>
     <handle>
       <!--  persistency server -->
       <enabled>false</enabled>
