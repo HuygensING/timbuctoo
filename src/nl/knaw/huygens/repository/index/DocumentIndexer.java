@@ -1,7 +1,6 @@
 package nl.knaw.huygens.repository.index;
 
 import java.util.List;
-import java.util.Map;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.util.RepositoryException;
@@ -17,7 +16,5 @@ public interface DocumentIndexer<T extends Document> {
   void removeAll() throws RepositoryException;
 
   void flush() throws RepositoryException;
-
-  Map<String, String> getAll();
 
 }

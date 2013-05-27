@@ -166,6 +166,7 @@ public class LocalSolrServer {
     return coreNames;
   }
 
+  // TODO decide whether this is useful
   /**
    * Obtain a simple mapping of IDs to descriptions of the document
    * @param core

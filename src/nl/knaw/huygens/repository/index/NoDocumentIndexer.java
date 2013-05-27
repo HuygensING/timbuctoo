@@ -1,12 +1,9 @@
 package nl.knaw.huygens.repository.index;
 
 import java.util.List;
-import java.util.Map;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.util.RepositoryException;
-
-import com.google.common.collect.Maps;
 
 /**
  * DocumentIndexer that does nothing...
@@ -27,10 +24,5 @@ class NoDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
 
   @Override
   public void flush() throws RepositoryException {}
-
-  @Override
-  public Map<String, String> getAll() {
-    return Maps.newHashMap();
-  }
 
 }
