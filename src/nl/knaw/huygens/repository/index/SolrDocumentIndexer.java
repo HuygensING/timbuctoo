@@ -32,6 +32,13 @@ import org.apache.solr.common.SolrInputDocument;
  */
 class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
 
+  /**
+   * Creates a new <code>SolrDocumentIndexer</code> instance.
+   */
+  public static <U extends Document> SolrDocumentIndexer<U> newInstance(Class<U> type, ModelIterator iterator, LocalSolrServer server, Hub hub) {
+    return new SolrDocumentIndexer<U>(type, iterator, server, hub);
+  }
+
   private final LocalSolrServer solrServer;
   private final String core;
   private final ModelIterator modelIterator;

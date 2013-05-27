@@ -69,28 +69,22 @@ public class IndexManager {
   @Subscribe
   public <T extends Document> void onDocumentAdd(DocumentAddEvent<T> event) {
     Class<T> type = event.getCls();
-    if (indexedTypes.contains(type)) {
-      List<T> doc = event.getDocuments();
-      indexFactory.getIndexForType(type).add(doc);
-    }
+    List<T> doc = event.getDocuments();
+    indexFactory.getIndexForType(type).add(doc);
   }
 
   @Subscribe
   public <T extends Document> void onDocumentEdit(DocumentEditEvent<T> event) {
     Class<T> type = event.getCls();
-    if (indexedTypes.contains(type)) {
-      List<T> docs = event.getDocuments();
-      indexFactory.getIndexForType(type).modify(docs);
-    }
+    List<T> docs = event.getDocuments();
+    indexFactory.getIndexForType(type).modify(docs);
   }
 
   @Subscribe
   public <T extends Document> void onDocumentDelete(DocumentDeleteEvent<T> event) {
     Class<T> type = event.getCls();
-    if (indexedTypes.contains(type)) {
-      List<T> doc = event.getDocuments();
-      indexFactory.getIndexForType(type).remove(doc);
-    }
+    List<T> doc = event.getDocuments();
+    indexFactory.getIndexForType(type).remove(doc);
   }
 
   public void clearIndexes() {
