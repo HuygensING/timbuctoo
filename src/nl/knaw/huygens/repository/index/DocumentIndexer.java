@@ -8,11 +8,11 @@ import nl.knaw.huygens.repository.util.RepositoryException;
 
 public interface DocumentIndexer<T extends Document> {
 
-  <Q extends T> void add(List<Q> entities) throws RepositoryException;
+  <U extends T> void add(List<U> entities) throws RepositoryException;
 
-  <Q extends T> void modify(List<Q> entity) throws RepositoryException;
+  <U extends T> void modify(List<U> entity) throws RepositoryException;
 
-  void remove(List<T> docs) throws RepositoryException;
+  void remove(String id) throws RepositoryException;
 
   void removeAll() throws RepositoryException;
 

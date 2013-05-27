@@ -113,19 +113,17 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
    * Remove a {@link nl.knaw.huygens.repository.model.Document
    * <code>Document</code>} from the index.
    * 
-   * @param entity
-   *          the <code>Document</code> to remove.
+   * @param id
+   *          the id of the <code>Document</code> to remove.
    * @throws RepositoryException
    *          if removing the document fails for some reason.
    */
   @Override
-  public void remove(List<T> docs) throws RepositoryException {
-    if (!docs.isEmpty()) {
-      try {
-        solrServer.delete(core, docs.get(0).getId());
-      } catch (Exception e) {
-        throw new RepositoryException(e);
-      }
+  public void remove(String id) throws RepositoryException {
+    try {
+      solrServer.delete(core, id);
+    } catch (Exception e) {
+      throw new RepositoryException(e);
     }
   }
 
