@@ -29,7 +29,7 @@ public class IndexerFactory {
     }
   }
 
-  public <T extends Document> DocumentIndexer<T> getIndexForType(Class<T> type) {
+  public <T extends Document> DocumentIndexer<T> indexerForType(Class<T> type) {
     @SuppressWarnings("unchecked")
     DocumentIndexer<T> indexer = (DocumentIndexer<T>) indexers.get(type);
     return (indexer != null) ? indexer : new NoDocumentIndexer<T>();

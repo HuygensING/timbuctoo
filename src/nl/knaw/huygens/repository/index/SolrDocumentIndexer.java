@@ -120,13 +120,12 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
    */
   @Override
   public void remove(List<T> docs) throws RepositoryException {
-    if (docs.isEmpty()) {
-      return;
-    }
-    try {
-      solrServer.delete(core, docs.get(0).getId());
-    } catch (Exception e) {
-      throw new RepositoryException(e);
+    if (!docs.isEmpty()) {
+      try {
+        solrServer.delete(core, docs.get(0).getId());
+      } catch (Exception e) {
+        throw new RepositoryException(e);
+      }
     }
   }
 

@@ -70,21 +70,21 @@ public class IndexManager {
   public <T extends Document> void onDocumentAdd(DocumentAddEvent<T> event) {
     Class<T> type = event.getCls();
     List<T> doc = event.getDocuments();
-    indexFactory.getIndexForType(type).add(doc);
+    indexFactory.indexerForType(type).add(doc);
   }
 
   @Subscribe
   public <T extends Document> void onDocumentEdit(DocumentEditEvent<T> event) {
     Class<T> type = event.getCls();
     List<T> docs = event.getDocuments();
-    indexFactory.getIndexForType(type).modify(docs);
+    indexFactory.indexerForType(type).modify(docs);
   }
 
   @Subscribe
   public <T extends Document> void onDocumentDelete(DocumentDeleteEvent<T> event) {
     Class<T> type = event.getCls();
     List<T> doc = event.getDocuments();
-    indexFactory.getIndexForType(type).remove(doc);
+    indexFactory.indexerForType(type).remove(doc);
   }
 
   public void clearIndexes() {
@@ -238,7 +238,7 @@ public class IndexManager {
   }
 
   private <T extends Document> void doReIndex(Set<String> docIds, Class<T> baseCls) {
-    DocumentIndexer<T> indexer = indexFactory.getIndexForType(baseCls);
+    DocumentIndexer<T> indexer = indexFactory.indexerForType(baseCls);
     for (String id : docIds) {
       List<T> docs = storageManager.getAllVariations(baseCls, id);
       indexer.modify(docs);
