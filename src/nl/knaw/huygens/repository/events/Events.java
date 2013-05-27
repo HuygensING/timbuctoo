@@ -1,47 +1,47 @@
 package nl.knaw.huygens.repository.events;
 
-import java.util.List;
-
 import nl.knaw.huygens.repository.model.Document;
 
 public class Events {
+
   public static class IndexChangedEvent {
 
   }
 
   public static class DocumentChangeEvent<T extends Document> {
-    private List<T> docs;
-    private Class<T> cls;
+    private final Class<T> cls;
+    private final String id;
 
-    public DocumentChangeEvent(Class<T> cls, List<T> docs) {
-      this.docs = docs;
+    public DocumentChangeEvent(Class<T> cls, String id) {
       this.cls = cls;
-    }
-
-    public List<T> getDocuments() {
-      return docs;
+      this.id = id;
     }
 
     public Class<T> getCls() {
       return cls;
     }
+
+    public String getId() {
+      return id;
+    }
   }
 
   public static class DocumentAddEvent<T extends Document> extends DocumentChangeEvent<T> {
-    public DocumentAddEvent(Class<T> cls, List<T> docs) {
-      super(cls, docs);
+    public DocumentAddEvent(Class<T> cls, String id) {
+      super(cls, id);
     }
   }
 
   public static class DocumentEditEvent<T extends Document> extends DocumentChangeEvent<T> {
-    public DocumentEditEvent(Class<T> cls, List<T> docs) {
-      super(cls, docs);
+    public DocumentEditEvent(Class<T> cls, String id) {
+      super(cls, id);
     }
   }
 
   public static class DocumentDeleteEvent<T extends Document> extends DocumentChangeEvent<T> {
-    public DocumentDeleteEvent(Class<T> cls, List<T> docs) {
-      super(cls, docs);
+    public DocumentDeleteEvent(Class<T> cls, String id) {
+      super(cls, id);
     }
   }
+
 }
