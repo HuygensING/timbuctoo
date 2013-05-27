@@ -86,8 +86,7 @@ public class IndexManager {
   public <T extends Document> void onDocumentDelete(DocumentDeleteEvent<T> event) {
     Class<T> type = event.getCls();
     String id = event.getId();
-    List<T> docs = storageManager.getAllVariations(type, id);
-    indexFactory.indexerForType(type).remove(docs);
+    indexFactory.indexerForType(type).remove(id);
   }
 
   public void clearIndexes() {

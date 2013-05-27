@@ -20,7 +20,7 @@ class NoDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
   public <U extends T> void modify(List<U> entity) throws RepositoryException {}
 
   @Override
-  public void remove(List<T> docs) throws RepositoryException {}
+  public void remove(String id) throws RepositoryException {}
 
   @Override
   public void removeAll() throws RepositoryException {}
