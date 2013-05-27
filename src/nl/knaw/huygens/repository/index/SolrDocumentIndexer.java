@@ -30,7 +30,7 @@ import org.apache.solr.common.SolrInputDocument;
  *          The generic parameter specifying what kind of POJO objects are used,
  *          and (implicitly) which index to index them in.
  */
-public class SolrDocumentIndexer<T extends Document> {
+class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
 
   private final LocalSolrServer solrServer;
   private final String core;
@@ -68,6 +68,7 @@ public class SolrDocumentIndexer<T extends Document> {
    * @throws RepositoryException
    *          if adding the document fails for some reason.
    */
+  @Override
   public <Q extends T> void add(List<Q> entities) throws RepositoryException {
     try {
       solrServer.add(core, getSolrInputDocument(entities));
@@ -86,6 +87,7 @@ public class SolrDocumentIndexer<T extends Document> {
    * @throws RepositoryException
    *          if adding the document fails for some reason.
    */
+  @Override
   public <Q extends T> void modify(List<Q> entity) throws RepositoryException {
     try {
       solrServer.add(core, getSolrInputDocument(entity));
@@ -103,6 +105,7 @@ public class SolrDocumentIndexer<T extends Document> {
    * @throws RepositoryException
    *          if removing the document fails for some reason.
    */
+  @Override
   public void remove(List<T> docs) throws RepositoryException {
     if (docs.isEmpty()) {
       return;
@@ -120,6 +123,7 @@ public class SolrDocumentIndexer<T extends Document> {
    * @throws RepositoryException
    *          if removing fails for some reason.
    */
+  @Override
   public void removeAll() throws RepositoryException {
     try {
       solrServer.deleteAll(core);
@@ -134,6 +138,7 @@ public class SolrDocumentIndexer<T extends Document> {
    * 
    * @throws RepositoryException
    */
+  @Override
   public void flush() throws RepositoryException {
     try {
       solrServer.commit(core);
@@ -151,7 +156,7 @@ public class SolrDocumentIndexer<T extends Document> {
    *          the document and it's subtypes that you want a SolrInputDocument for.
    * @return the corresponding SolrInputDocument
    */
-  protected <Q extends T> SolrInputDocument getSolrInputDocument(List<Q> entities) {
+  private <Q extends T> SolrInputDocument getSolrInputDocument(List<Q> entities) {
     SolrInputDocument inputDocument = null;
     SolrInputDocGenerator indexer = null;
     for (Q entity : entities) {
@@ -173,6 +178,7 @@ public class SolrDocumentIndexer<T extends Document> {
    * 
    * @return All document IDs and descriptions
    */
+  @Override
   public Map<String, String> getAll() {
     try {
       return solrServer.getSimpleMap(core);

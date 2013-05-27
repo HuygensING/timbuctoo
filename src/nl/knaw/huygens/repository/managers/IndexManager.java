@@ -9,7 +9,7 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.events.Events.DocumentAddEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentDeleteEvent;
 import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
-import nl.knaw.huygens.repository.index.SolrDocumentIndexer;
+import nl.knaw.huygens.repository.index.DocumentIndexer;
 import nl.knaw.huygens.repository.index.IndexerFactory;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.pubsub.Subscribe;
@@ -244,7 +244,7 @@ public class IndexManager {
   }
 
   private <T extends Document> void doReIndex(Set<String> docIds, Class<T> baseCls) {
-    SolrDocumentIndexer<T> indexer = indexFactory.getIndexForType(baseCls);
+    DocumentIndexer<T> indexer = indexFactory.getIndexForType(baseCls);
     for (String id : docIds) {
       List<T> docs = storageManager.getAllVariations(baseCls, id);
       indexer.modify(docs);
