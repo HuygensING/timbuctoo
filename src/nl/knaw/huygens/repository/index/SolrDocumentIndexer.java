@@ -1,15 +1,12 @@
 package nl.knaw.huygens.repository.index;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import nl.knaw.huygens.repository.events.Events;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.util.RepositoryException;
 
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
 
 /**
@@ -82,7 +79,7 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
    *          if adding the document fails for some reason.
    */
   @Override
-  public <Q extends T> void add(List<Q> entities) throws RepositoryException {
+  public <U extends T> void add(List<U> entities) throws RepositoryException {
     try {
       solrServer.add(core, getSolrInputDocument(entities));
     } catch (Exception e) {
@@ -101,7 +98,7 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
    *          if adding the document fails for some reason.
    */
   @Override
-  public <Q extends T> void modify(List<Q> entity) throws RepositoryException {
+  public <U extends T> void modify(List<U> entity) throws RepositoryException {
     try {
       solrServer.add(core, getSolrInputDocument(entity));
     } catch (Exception e) {
@@ -166,10 +163,10 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
    *          the document and it's subtypes that you want a SolrInputDocument for.
    * @return the corresponding SolrInputDocument
    */
-  private <Q extends T> SolrInputDocument getSolrInputDocument(List<Q> entities) {
+  private <U extends T> SolrInputDocument getSolrInputDocument(List<U> entities) {
     SolrInputDocument inputDocument = null;
     SolrInputDocGenerator indexer = null;
-    for (Q entity : entities) {
+    for (U entity : entities) {
       if (inputDocument == null) {
         indexer = new SolrInputDocGenerator(entity);
       } else {
@@ -179,23 +176,6 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
       inputDocument = indexer.getResult();
     }
     return inputDocument;
-  }
-
-  /**
-   * Obtain a map (of ID -> Description) of all items in this index. Useful for
-   * eg. autocomplete functionality. For the latter, may be useful to add the
-   * ability to specify a (prefix) query for the description.
-   * 
-   * @return All document IDs and descriptions
-   */
-  @Override
-  public Map<String, String> getAll() {
-    try {
-      return solrServer.getSimpleMap(core);
-    } catch (SolrServerException e) {
-      e.printStackTrace();
-      return Collections.emptyMap();
-    }
   }
 
 }
