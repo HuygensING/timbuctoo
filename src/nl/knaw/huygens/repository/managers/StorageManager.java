@@ -154,10 +154,8 @@ public class StorageManager {
   }
 
   private <T extends Document> void doThrowEvent(Class<T> type, String id, @SuppressWarnings("rawtypes") Class<? extends Events.DocumentChangeEvent> t) throws IOException {
-    List<T> docs = storage.getAllVariations(type, id);
-
     try {
-      hub.publish(t.getConstructor(Class.class, List.class).newInstance(type, docs));
+      hub.publish(t.getConstructor(Class.class, String.class).newInstance(type, id));
     } catch (Exception e) {
       throw new IOException(e);
     }
