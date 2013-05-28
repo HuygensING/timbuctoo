@@ -2,7 +2,7 @@ package nl.knaw.huygens.repository.importer.database;
 
 import nl.knaw.huygens.repository.config.BasicInjectionModule;
 import nl.knaw.huygens.repository.config.Configuration;
-import nl.knaw.huygens.repository.managers.IndexManager;
+import nl.knaw.huygens.repository.managers.OldIndexManager;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.repository.model.dwcbia.DWCScientist;
@@ -21,7 +21,7 @@ public class BulkImporter {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     storageManager.getStorage().empty();
 
-    IndexManager indexManager = injector.getInstance(IndexManager.class);
+    OldIndexManager indexManager = injector.getInstance(OldIndexManager.class);
     indexManager.clearIndexes();
     // TODO change to messaging implementation
     injector.getInstance(Hub.class).subscribe(indexManager);
