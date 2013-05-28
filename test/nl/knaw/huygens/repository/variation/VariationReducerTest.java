@@ -203,6 +203,24 @@ public class VariationReducerTest {
   }
 
   @Test
+  public void testReduceRevisionSuperClass() throws JsonProcessingException, IOException {
+    String jsonString = "{\"versions\":[{\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"projectATestDocValue\"},"
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"a\":[\"projecta\"], \"v\":\"testDocValue\"}],\"!defaultVRE\":\"projecta\"},"
+        + "\"testconcretedoc\":{\"name\":[{\"a\":[\"projecta\"],\"v\":\"test\"}],\"!defaultVRE\":\"projecta\"},"
+        + "\"_id\":\"TCD000000001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^pid\":null,\"^deleted\":false}],\"_id\":\"TCD000000001\"}";
+    DBObject node = generateDBObject(jsonString);
+    TestConcreteDoc actual = reducer.reduceRevision(TestConcreteDoc.class, node);
+
+    TestConcreteDoc expected = new TestConcreteDoc();
+    expected.setId("TCD000000001");
+    expected.name = "test";
+    expected.setCurrentVariation("projecta");
+    expected.setVariations(Lists.newArrayList("projecta-projectageneraltestdoc", "generaltestdoc", "testconcretedoc"));
+
+    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+  }
+
+  @Test
   public void testReduceRevisionNull() throws IOException {
     ProjectAGeneralTestDoc actual = reducer.reduceRevision(ProjectAGeneralTestDoc.class, null);
 
