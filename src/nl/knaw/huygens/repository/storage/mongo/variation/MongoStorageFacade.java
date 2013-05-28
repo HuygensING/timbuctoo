@@ -114,7 +114,7 @@ public class MongoStorageFacade implements nl.knaw.huygens.repository.storage.St
   }
 
   @Override
-  public <T extends Document> RevisionChanges<T> getAllRevisions(Class<T> type, String id) {
+  public <T extends Document> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
     return getStorageForType(type).getAllRevisions(type, id);
   }
 

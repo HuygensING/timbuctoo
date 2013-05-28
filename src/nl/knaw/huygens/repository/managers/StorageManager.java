@@ -122,7 +122,15 @@ public class StorageManager {
   }
 
   public <T extends Document> RevisionChanges<T> getVersions(Class<T> type, String id) {
-    return storage.getAllRevisions(type, id);
+    RevisionChanges<T> rv = null;
+
+    try {
+      rv = storage.getAllRevisions(type, id);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    return rv;
   }
 
   public <T extends Document> void addDocument(Class<T> type, T doc) throws IOException {
