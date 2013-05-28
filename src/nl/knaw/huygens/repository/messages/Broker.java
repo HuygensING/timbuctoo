@@ -1,6 +1,5 @@
 package nl.knaw.huygens.repository.messages;
 
-import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.MessageListener;
 
@@ -16,7 +15,9 @@ import com.google.inject.name.Named;
 @Singleton
 public class Broker {
 
-  private final ConnectionFactory factory;
+  public static final String INDEX_QUEUE = "index";
+
+  private final ActiveMQConnectionFactory factory;
 
   @Inject
   public Broker(@Named("messages.broker_url") String url) {
@@ -32,8 +33,12 @@ public class Broker {
     return new Consumer(factory, queue, listener);
   }
 
+  public Browser newBrowser(String queue) throws JMSException {
+    return new Browser(factory, queue);
+  }
+
   public void close() throws JMSException {
-    System.out.println("Closing broker");
+    System.out.println("... closing broker");
   }
 
 }
