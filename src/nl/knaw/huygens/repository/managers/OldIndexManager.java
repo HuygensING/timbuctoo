@@ -37,7 +37,7 @@ import com.google.inject.Singleton;
  * Fixed: The old code registered an incomplete IndexManager instance with the Hub.
  */
 @Singleton
-public class IndexManager {
+public class OldIndexManager {
 
   private final DocTypeRegistry docTypeRegistry;
   private final StorageManager storageManager;
@@ -46,7 +46,7 @@ public class IndexManager {
   private final Map<Class<? extends Document>, List<Class<? extends Document>>> indexRelations;
 
   @Inject
-  public IndexManager(Configuration config, DocTypeRegistry docTypeRegistry, StorageManager storageManager, IndexerFactory indexFactory) {
+  public OldIndexManager(Configuration config, DocTypeRegistry docTypeRegistry, StorageManager storageManager, IndexerFactory indexFactory) {
     this.docTypeRegistry = docTypeRegistry;
     this.storageManager = storageManager;
     this.indexFactory = indexFactory;
