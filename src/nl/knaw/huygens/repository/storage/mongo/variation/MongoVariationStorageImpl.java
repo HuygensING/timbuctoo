@@ -139,8 +139,21 @@ public abstract class MongoVariationStorageImpl implements MongoVariationStorage
   }
 
   @Override
-  public <T extends Document> MongoChanges<T> getAllRevisions(Class<T> type, String id) {
-    return MongoUtils.getVersioningCollection(db, type).findOneById(id);
+  public <T extends Document> MongoChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
+    DBCollection col = getRawVersionCollection(type);
+    DBObject query = new BasicDBObject("_id", id);
+
+    DBObject allRevisions = col.findOne(query);
+
+    return reducer.reduceMultipleRevisions(type, allRevisions);
+  }
+
+  @Override
+  public <T extends DomainDocument> T getRevision(Class<T> type, String id, int revisionId) throws IOException {
+    DBCollection col = getRawVersionCollection(type);
+    DBObject query = new BasicDBObject("_id", id);
+    query.put("versions.^rev", revisionId);
+    return reducer.reduceRevision(type, col.findOne(query));
   }
 
   @Override
@@ -241,7 +254,9 @@ public abstract class MongoVariationStorageImpl implements MongoVariationStorage
 
   protected <T extends Document> DBCollection getRawVersionCollection(Class<T> type) {
     DBCollection col = db.getCollection(docTypeRegistry.getCollectionId(type) + "-versions");
-    col.setDBEncoderFactory(options.dbEncoderFactory);
+    //col.setDBEncoderFactory(options.dbEncoderFactory);
+    col.setDBDecoderFactory(treeDecoderFactory);
+    col.setDBEncoderFactory(treeEncoderFactory);
     return col;
   }
 

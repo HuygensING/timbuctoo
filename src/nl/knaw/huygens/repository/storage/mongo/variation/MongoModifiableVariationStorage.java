@@ -77,13 +77,8 @@ public class MongoModifiableVariationStorage extends MongoVariationStorageImpl {
     }
     col.insert(dbObjects);
     for (i = 0; i < dbObjects.length; i++) {
-      Object idObj = dbObjects[i].get("_id");
-      String id = "";
-      try {
-        id = (String) idObj;
-      } catch (Exception ex) {
-        throw new IOException("Couldn't find an ID for this item: " + dbObjects[i].toString());
-      }
+      JsonNode node = dbObjects[i].getObject();
+      String id = node.get("_id").asText();
       addInitialVersion(type, id, dbObjects[i]);
     }
   }

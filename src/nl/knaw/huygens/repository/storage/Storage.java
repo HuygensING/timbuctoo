@@ -27,7 +27,7 @@ public interface Storage {
 
   <T extends Document> void deleteItem(Class<T> type, String id, Change change) throws IOException;
 
-  <T extends Document> RevisionChanges<T> getAllRevisions(Class<T> type, String id);
+  <T extends Document> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException;
 
   void destroy();
 

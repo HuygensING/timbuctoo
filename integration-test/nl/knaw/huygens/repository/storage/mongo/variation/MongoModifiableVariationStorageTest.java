@@ -148,7 +148,7 @@ public class MongoModifiableVariationStorageTest {
     instance.updateItem(type, input.getId(), input);
 
     verifyCollectionSize(1, "testconcretedoc");
-    verifyCollectionSize(1, "testconcretedoc-versions"); //FIXME: should be 2
+    verifyCollectionSize(1, "testconcretedoc-versions");
   }
 
   @Test
@@ -165,7 +165,7 @@ public class MongoModifiableVariationStorageTest {
     instance.updateItem(type, DEFAULT_ID, subClassInput);
 
     verifyCollectionSize(1, "testconcretedoc");
-    verifyCollectionSize(1, "testconcretedoc-versions"); //FIXME: should be 2
+    verifyCollectionSize(1, "testconcretedoc-versions");
   }
 
   @Test(expected = IOException.class)
@@ -188,7 +188,7 @@ public class MongoModifiableVariationStorageTest {
     instance.deleteItem(type, DEFAULT_ID, null);
 
     verifyCollectionSize(1, "testconcretedoc");
-    verifyCollectionSize(1, "testconcretedoc-versions"); //FIXME: should be 2
+    verifyCollectionSize(1, "testconcretedoc-versions");
 
   }
 
@@ -375,7 +375,7 @@ public class MongoModifiableVariationStorageTest {
 
     MongoChanges<TestConcreteDoc> changes = instance.getAllRevisions(TestConcreteDoc.class, DEFAULT_ID);
 
-    assertEquals(null, changes); //FIXME: There should be 1 revision.
+    assertEquals(1, changes.versions.size());
   }
 
   @Test
@@ -388,7 +388,7 @@ public class MongoModifiableVariationStorageTest {
 
     MongoChanges<TestConcreteDoc> changes = instance.getAllRevisions(TestConcreteDoc.class, DEFAULT_ID);
 
-    assertEquals(null, changes); //FIXME: There should be 2 revisions.
+    assertEquals(2, changes.versions.size());
   }
 
   @Test
@@ -401,11 +401,11 @@ public class MongoModifiableVariationStorageTest {
 
     MongoChanges<ProjectAGeneralTestDoc> changes = instance.getAllRevisions(ProjectAGeneralTestDoc.class, DEFAULT_ID);
 
-    assertEquals(null, changes); //FIXME: There should be 2 revisions.
+    assertEquals(2, changes.versions.size()); //FIXME: There should be 2 revisions.
   }
 
   @Test
-  public void testGetAllRevisionsOfNoneExisting() {
+  public void testGetAllRevisionsOfNoneExisting() throws IOException {
     MongoChanges<ProjectAGeneralTestDoc> changes = instance.getAllRevisions(ProjectAGeneralTestDoc.class, DEFAULT_ID);
     assertNull(changes);
   }
@@ -476,25 +476,80 @@ public class MongoModifiableVariationStorageTest {
   }
 
   @Test
-  @Ignore(value = "Code not used at this moment.")
-  public void testEnsureIndex() {
+  @Ignore("Related indexes are not used at the moment")
+  public void testEnsureIndex() throws IOException {
     fail("Yet to be implemented");
   }
 
-  //  @Test
-  //  public void testGetVersion() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testGetVersionNonExistent() {
-  //    fail("Yet to be implemented");
-  //  }
-  //
-  //  @Test
-  //  public void testGetVersionOfNonExistingItem() {
-  //    fail("Yet to be implemented");
-  //  }
+  @Test
+  @Ignore("Related indexes are not used at the moment")
+  public void testEnsureIndexNothingToIndex() {
+    fail("Yet to be implemented");
+  }
+
+  @Test
+  @Ignore("Related indexes are not used at the moment")
+  public void testEnsureIndexEmptyAccessorList() {
+    fail("Yet to be implemented");
+  }
+
+  @Test
+  @Ignore("Related indexes are not used at the moment")
+  public void testEnsureIndexAccessorListIsNull() {
+    fail("Yet to be implemented");
+  }
+
+  @Test
+  @Ignore("Related indexes are not used at the moment")
+  public void testEnsureIndexTypeIsNull() {
+    fail("Yet to be implemented");
+  }
+
+  @Test
+  @Ignore("Related indexes are not used at the moment")
+  public void testEnsureIndexDoesNotExist() {
+    fail("Yet to be implemented");
+  }
+
+  @Test
+  public void testGetRevision() throws IOException {
+    ProjectAGeneralTestDoc doc = createProjectAGeneralTestDoc(DEFAULT_ID, "test", "testDocValue", "projectATestDocValue");
+    doc.setVariations(Lists.newArrayList("projecta-projectageneraltestdoc", "generaltestdoc", "testconcretedoc"));
+    Class<ProjectAGeneralTestDoc> type = ProjectAGeneralTestDoc.class;
+    instance.addItem(type, doc);
+
+    ProjectAGeneralTestDoc revision = instance.getRevision(type, DEFAULT_ID, 0);
+
+    assertEquals(null, MongoDiff.diffDocuments(doc, revision));
+  }
+
+  @Test
+  public void testGetRevisionSuperType() throws IOException {
+    ProjectAGeneralTestDoc doc = createProjectAGeneralTestDoc(DEFAULT_ID, "test", "testDocValue", "projectATestDocValue");
+    instance.addItem(ProjectAGeneralTestDoc.class, doc);
+    TestConcreteDoc revision = instance.getRevision(TestConcreteDoc.class, DEFAULT_ID, 0);
+
+    TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "test");
+    expected.setCurrentVariation("projecta");
+    expected.setVariations(Lists.newArrayList("projecta-projectageneraltestdoc", "generaltestdoc", "testconcretedoc"));
+
+    assertEquals(null, MongoDiff.diffDocuments(expected, revision));
+  }
+
+  @Test
+  public void testGetRevisionNonExistent() throws IOException {
+    TestConcreteDoc doc = createTestDoc(DEFAULT_ID, "test");
+    Class<TestConcreteDoc> type = TestConcreteDoc.class;
+    instance.addItem(type, doc);
+    TestConcreteDoc revision = instance.getRevision(type, DEFAULT_ID, 1);
+    assertNull(revision);
+  }
+
+  @Test
+  public void testGetRevisionOfNonExistingItem() throws IOException {
+    TestConcreteDoc revision = instance.getRevision(TestConcreteDoc.class, DEFAULT_ID, 1);
+    assertNull(revision);
+  }
 
   //Helper methods
   private void verifyCollectionSize(long expectedSize, String collectionName) {
@@ -537,8 +592,8 @@ public class MongoModifiableVariationStorageTest {
   private ProjectAGeneralTestDoc createProjectAGeneralTestDoc(String id, String name, String generalTestDocValue, String projectAGeneralTestDocValue) {
     ProjectAGeneralTestDoc projectATestDoc = new ProjectAGeneralTestDoc();
     projectATestDoc.setId(id);
-    projectATestDoc.name = "subTypeA";
-    projectATestDoc.generalTestDocValue = "testA";
+    projectATestDoc.name = name;
+    projectATestDoc.generalTestDocValue = generalTestDocValue;
     projectATestDoc.projectAGeneralTestDocValue = projectAGeneralTestDocValue;
     return projectATestDoc;
   }

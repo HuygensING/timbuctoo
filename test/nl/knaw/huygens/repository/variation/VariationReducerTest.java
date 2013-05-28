@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.List;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
+import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
 import nl.knaw.huygens.repository.storage.mongo.MongoDiff;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
@@ -223,6 +224,43 @@ public class VariationReducerTest {
   @Test
   public void testReduceRevisionNull() throws IOException {
     ProjectAGeneralTestDoc actual = reducer.reduceRevision(ProjectAGeneralTestDoc.class, null);
+
+    assertNull(actual);
+  }
+
+  @Test
+  public void testReduceMultipleRevisionsOneRevision() throws JsonProcessingException, IOException {
+    String jsonString = "{\"versions\":[{\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"projectATestDocValue\"},"
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"a\":[\"projecta\"], \"v\":\"testDocValue\"}],\"!defaultVRE\":\"projecta\"},"
+        + "\"testconcretedoc\":{\"name\":[{\"a\":[\"projecta\"],\"v\":\"test\"}],\"!defaultVRE\":\"projecta\"},"
+        + "\"_id\":\"TCD000000001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^pid\":null,\"^deleted\":false}],\"_id\":\"TCD000000001\"}";
+    DBObject node = generateDBObject(jsonString);
+    MongoChanges<ProjectAGeneralTestDoc> actual = reducer.reduceMultipleRevisions(ProjectAGeneralTestDoc.class, node);
+
+    assertEquals("TCD000000001", actual.getId());
+    assertEquals(1, actual.getRevisions().size());
+  }
+
+  @Test
+  public void testReduceMultipleRevisionsMultipleRevisions() throws JsonProcessingException, IOException {
+    String jsonString = "{\"versions\":[{\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"projectATestDocValue\"},"
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"a\":[\"projecta\"], \"v\":\"testDocValue\"}],\"!defaultVRE\":\"projecta\"},"
+        + "\"testconcretedoc\":{\"name\":[{\"a\":[\"projecta\"],\"v\":\"test\"}],\"!defaultVRE\":\"projecta\"},"
+        + "\"_id\":\"TCD000000001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^pid\":null,\"^deleted\":false},"
+        + "{\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"projectATestDocValue\"},"
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"a\":[\"projecta\"], \"v\":\"testDocValue1\"}],\"!defaultVRE\":\"projecta\"},"
+        + "\"testconcretedoc\":{\"name\":[{\"a\":[\"projecta\"],\"v\":\"test\"}],\"!defaultVRE\":\"projecta\"},"
+        + "\"_id\":\"TCD000000001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^pid\":null,\"^deleted\":false}],\"_id\":\"TCD000000001\"}";
+    DBObject node = generateDBObject(jsonString);
+    MongoChanges<ProjectAGeneralTestDoc> actual = reducer.reduceMultipleRevisions(ProjectAGeneralTestDoc.class, node);
+
+    assertEquals("TCD000000001", actual.getId());
+    assertEquals(2, actual.getRevisions().size());
+  }
+
+  @Test
+  public void testReduceRevisionsNull() throws IOException {
+    MongoChanges<ProjectAGeneralTestDoc> actual = reducer.reduceMultipleRevisions(ProjectAGeneralTestDoc.class, null);
 
     assertNull(actual);
   }
