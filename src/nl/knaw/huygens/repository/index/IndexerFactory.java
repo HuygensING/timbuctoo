@@ -19,13 +19,13 @@ public class IndexerFactory {
   private final Map<Class<? extends Document>, DocumentIndexer<? extends Document>> indexers;
 
   @Inject
-  public IndexerFactory(Configuration config, DocTypeRegistry registry, ModelIterator modelIterator, LocalSolrServer server, Hub hub) {
+  public IndexerFactory(Configuration config, DocTypeRegistry registry, LocalSolrServer server, Hub hub) {
     this.server = server;
 
     indexers = Maps.newHashMap();
     for (String doctype : config.getSettings("indexeddoctypes")) {
       Class<? extends Document> type = registry.getClassFromWebServiceTypeString(doctype);
-      indexers.put(type, SolrDocumentIndexer.newInstance(type, modelIterator, server, hub));
+      indexers.put(type, SolrDocumentIndexer.newInstance(type, server, hub));
     }
   }
 
