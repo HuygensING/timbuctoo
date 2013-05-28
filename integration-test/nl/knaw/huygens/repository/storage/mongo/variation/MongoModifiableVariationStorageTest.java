@@ -401,7 +401,7 @@ public class MongoModifiableVariationStorageTest {
 
     MongoChanges<ProjectAGeneralTestDoc> changes = instance.getAllRevisions(ProjectAGeneralTestDoc.class, DEFAULT_ID);
 
-    assertEquals(2, changes.versions.size()); //FIXME: There should be 2 revisions.
+    assertEquals(2, changes.versions.size());
   }
 
   @Test
