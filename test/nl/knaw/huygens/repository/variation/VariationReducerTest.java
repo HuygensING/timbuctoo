@@ -1,6 +1,7 @@
 package nl.knaw.huygens.repository.variation;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -179,6 +180,33 @@ public class VariationReducerTest {
     testVal.setVariations(Lists.newArrayList("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
     testVal.setCurrentVariation(null);
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
+  }
+
+  // Reduce revision
+  @Test
+  public void testReduceRevision() throws JsonProcessingException, IOException {
+    String jsonString = "{\"versions\":[{\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"projectATestDocValue\"},"
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"a\":[\"projecta\"], \"v\":\"testDocValue\"}],\"!defaultVRE\":\"projecta\"},"
+        + "\"testconcretedoc\":{\"name\":[{\"a\":[\"projecta\"],\"v\":\"test\"}],\"!defaultVRE\":\"projecta\"},"
+        + "\"_id\":\"TCD000000001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^pid\":null,\"^deleted\":false}],\"_id\":\"TCD000000001\"}";
+    DBObject node = generateDBObject(jsonString);
+    ProjectAGeneralTestDoc actual = reducer.reduceRevision(ProjectAGeneralTestDoc.class, node);
+
+    ProjectAGeneralTestDoc expected = new ProjectAGeneralTestDoc();
+    expected.setId("TCD000000001");
+    expected.name = "test";
+    expected.generalTestDocValue = "testDocValue";
+    expected.projectAGeneralTestDocValue = "projectATestDocValue";
+    expected.setVariations(Lists.newArrayList("projecta-projectageneraltestdoc", "generaltestdoc", "testconcretedoc"));
+
+    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+  }
+
+  @Test
+  public void testReduceRevisionNull() throws IOException {
+    ProjectAGeneralTestDoc actual = reducer.reduceRevision(ProjectAGeneralTestDoc.class, null);
+
+    assertNull(actual);
   }
 
   //Tests with missing variation.
