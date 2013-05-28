@@ -22,6 +22,7 @@ import com.mongodb.DBObject;
 
 public class VariationReducer {
 
+  private static final String VERSIONS_FIELD = "versions";
   private ObjectMapper mapper;
   private final DocTypeRegistry docTypeRegistry;
 
@@ -33,6 +34,18 @@ public class VariationReducer {
   public VariationReducer(ObjectMapper mapper, DocTypeRegistry docTypeRegistry) {
     this.mapper = mapper;
     this.docTypeRegistry = docTypeRegistry;
+  }
+
+  public <T extends Document> T reduceRevision(Class<T> type, DBObject obj) throws IOException {
+    if (obj == null) {
+      return null;
+    }
+
+    JsonNode tree = convertToTree(obj);
+    ArrayNode versionsNode = (ArrayNode) tree.get(VERSIONS_FIELD);
+    JsonNode objectToReduce = versionsNode.get(0);
+
+    return reduce(objectToReduce, type);
   }
 
   public <T extends Document> T reduceDBObject(DBObject obj, Class<T> cls) throws IOException {
