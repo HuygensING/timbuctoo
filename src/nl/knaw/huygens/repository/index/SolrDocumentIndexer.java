@@ -31,8 +31,8 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
   /**
    * Creates a new <code>SolrDocumentIndexer</code> instance.
    */
-  public static <U extends Document> SolrDocumentIndexer<U> newInstance(Class<U> type, ModelIterator iterator, LocalSolrServer server, Hub hub) {
-    return new SolrDocumentIndexer<U>(type, iterator, server, hub);
+  public static <U extends Document> SolrDocumentIndexer<U> newInstance(Class<U> type, LocalSolrServer server, Hub hub) {
+    return new SolrDocumentIndexer<U>(type, server, hub);
   }
 
   private final LocalSolrServer solrServer;
@@ -45,18 +45,14 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
    * 
    * @param type
    *          document type token
-   * @param iterator
-   *          a ModelIterator instance that will be used to generate
-   *          {@link org.apache.solr.common.SolrInputDocument
-   *          <code>SolrInputDocument</code>}s for the POJOs passed to this class.
    * @param server
    *          the SolrServer to use for indexing
    * @param hub
    *          the Hub to use for notifications.
    */
-  private SolrDocumentIndexer(Class<T> type, ModelIterator iterator, LocalSolrServer server, Hub hub) {
+  private SolrDocumentIndexer(Class<T> type, LocalSolrServer server, Hub hub) {
     this.solrServer = server;
-    this.modelIterator = iterator;
+    this.modelIterator = new ModelIterator();
     this.hub = hub;
     core = coreForType(type);
   }
