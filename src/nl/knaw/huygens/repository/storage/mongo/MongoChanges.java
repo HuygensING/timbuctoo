@@ -2,14 +2,14 @@ package nl.knaw.huygens.repository.storage.mongo;
 
 import java.util.List;
 
+import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.storage.RevisionChanges;
+import nl.knaw.huygens.repository.storage.generic.JsonViews;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
-
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.storage.RevisionChanges;
-import nl.knaw.huygens.repository.storage.generic.JsonViews;
 
 public class MongoChanges<T extends Document> implements RevisionChanges<T> {
   public MongoChanges(String id, T item) {
@@ -17,7 +17,7 @@ public class MongoChanges<T extends Document> implements RevisionChanges<T> {
     this.versions = Lists.newArrayListWithExpectedSize(1);
     this.versions.add(item);
   }
-  
+
   protected MongoChanges() {
     // do nothing, used for Jackson
   }

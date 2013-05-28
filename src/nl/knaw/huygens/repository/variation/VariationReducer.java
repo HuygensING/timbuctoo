@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
 import nl.knaw.huygens.repository.storage.mongo.variation.DBJsonNode;
 
 import org.mongojack.internal.stream.JacksonDBObject;
@@ -34,6 +35,29 @@ public class VariationReducer {
   public VariationReducer(ObjectMapper mapper, DocTypeRegistry docTypeRegistry) {
     this.mapper = mapper;
     this.docTypeRegistry = docTypeRegistry;
+  }
+
+  public <T extends Document> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {
+    if (obj == null) {
+      return null;
+    }
+    JsonNode tree = convertToTree(obj);
+    ArrayNode versionsNode = (ArrayNode) tree.get(VERSIONS_FIELD);
+    MongoChanges<T> changes = null;
+
+    T item = null;
+    for (int i = 0; versionsNode.hasNonNull(i); i++) {
+      item = reduce(versionsNode.get(i), type);
+
+      if (i == 0) {
+
+        changes = new MongoChanges<T>(item.getId(), item);
+      } else {
+        changes.getRevisions().add(item);
+      }
+    }
+
+    return changes;
   }
 
   public <T extends Document> T reduceRevision(Class<T> type, DBObject obj) throws IOException {
