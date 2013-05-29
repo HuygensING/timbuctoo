@@ -8,10 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.jms.JMSException;
+
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.events.Events;
 import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.messages.Broker;
+import nl.knaw.huygens.repository.messages.Producer;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
@@ -46,14 +49,14 @@ public class StorageManager {
   private Set<String> documentTypes;
 
   private final Hub hub;
-  private final Broker broker;
+  private final Producer producer;
   private DocTypeRegistry docTypeRegistry;
   private PersistenceManager persistenceManager;
 
   @Inject
   public StorageManager(StorageConfiguration storageConf, Storage storage, Hub hub, Broker broker, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceMananger) {
     this.hub = hub;
-    this.broker = broker;
+    producer = setupProducer(broker);
     this.docTypeRegistry = docTypeRegistry;
     documentTypes = storageConf.getDocumentTypes();
     this.storage = storage;
@@ -65,7 +68,7 @@ public class StorageManager {
   // Test-only!
   protected StorageManager(Storage storage, Set<String> documentTypes, Hub hub, Broker broker, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceManager) {
     this.hub = hub;
-    this.broker = broker;
+    producer = null;
     this.storage = storage;
     this.docTypeRegistry = docTypeRegistry;
     this.documentTypes = documentTypes;
@@ -76,18 +79,33 @@ public class StorageManager {
 
   // -------------------------------------------------------------------
 
+  private Producer setupProducer(Broker broker) {
+    try {
+      return broker.newProducer(Broker.INDEX_QUEUE);
+    } catch (JMSException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void sendIndexMessage(String action, String type, String id) {
+    if (producer != null) {
+      try {
+        producer.send(action, type, id);
+      } catch (JMSException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
   // -------------------------------------------------------------------
 
   public <T extends Document> T getCompleteDocument(Class<T> type, String id) {
-    T rv;
     try {
-      rv = storage.getItem(type, id);
+      return storage.getItem(type, id);
     } catch (IOException e) {
       e.printStackTrace();
-      rv = null;
+      return null;
     }
-
-    return rv;
   }
 
   /**
@@ -115,14 +133,12 @@ public class StorageManager {
   }
 
   public <T extends Document> List<T> getAllVariations(Class<T> type, String id) {
-    List<T> rv;
     try {
-      rv = storage.getAllVariations(type, id);
+      return storage.getAllVariations(type, id);
     } catch (IOException e) {
       e.printStackTrace();
-      rv = null;
+      return null;
     }
-    return rv;
   }
 
   public <T extends Document> StorageIterator<T> getAll(Class<T> type) {
@@ -130,15 +146,12 @@ public class StorageManager {
   }
 
   public <T extends Document> RevisionChanges<T> getVersions(Class<T> type, String id) {
-    RevisionChanges<T> rv = null;
-
     try {
-      rv = storage.getAllRevisions(type, id);
+      return storage.getAllRevisions(type, id);
     } catch (IOException e) {
       e.printStackTrace();
+      return null;
     }
-
-    return rv;
   }
 
   public <T extends Document> void addDocument(Class<T> type, T doc) throws IOException {
