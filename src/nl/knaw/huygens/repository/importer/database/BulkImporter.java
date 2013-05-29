@@ -26,12 +26,12 @@ public class BulkImporter {
     // TODO change to messaging implementation
     injector.getInstance(Hub.class).subscribe(indexManager);
 
-    GenericImporter importer = new GenericImporter();
+    GenericImporter importer = new GenericImporter(storageManager);
 
     long start = System.currentTimeMillis();
-    importer.importData("resources/DWCPlaceMapping.properties", storageManager, DWCPlace.class);
-    importer.importData("resources/DWCScientistMapping.properties", storageManager, DWCScientist.class);
-    importer.importData("resources/RAACivilServantMapping.properties", storageManager, RAACivilServant.class);
+    importer.importData("resources/DWCPlaceMapping.properties", DWCPlace.class);
+    importer.importData("resources/DWCScientistMapping.properties", DWCScientist.class);
+    importer.importData("resources/RAACivilServantMapping.properties", RAACivilServant.class);
     CKCCPersonImporter csvImporter = new CKCCPersonImporter(storageManager);
     csvImporter.handleFile("testdata/ckcc-persons.txt", 9, false);
 
