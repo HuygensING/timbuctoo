@@ -23,6 +23,7 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.model.MultipleReferringDoc;
 import nl.knaw.huygens.repository.managers.model.ReferredDoc;
 import nl.knaw.huygens.repository.managers.model.ReferringDoc;
+import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
@@ -45,6 +46,7 @@ public class StorageManagerTest {
   private Storage storage;
   private Set<String> documentTypes;
   private Hub hub;
+  private Broker broker;
   private DocTypeRegistry docTypeRegistry;
   private PersistenceManager persistenceManager;
 
@@ -53,9 +55,10 @@ public class StorageManagerTest {
     storage = mock(Storage.class);
     documentTypes = new HashSet<String>();
     hub = mock(Hub.class);
+    broker = mock(Broker.class);
     docTypeRegistry = mock(DocTypeRegistry.class);
     persistenceManager = mock(PersistenceManager.class);
-    instance = new StorageManager(storage, documentTypes, hub, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, hub, broker, docTypeRegistry, persistenceManager);
   }
 
   @Test
@@ -438,7 +441,7 @@ public class StorageManagerTest {
 
     when(storage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.newArrayList("RFD000000001"));
 
-    instance = new StorageManager(storage, documentTypes, hub, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, hub, broker, docTypeRegistry, persistenceManager);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(referringDocType, referredDocType, "RDD000000001");
 
@@ -464,7 +467,7 @@ public class StorageManagerTest {
 
     when(storage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.newArrayList("RFD000000001", "RDD000000001"));
 
-    instance = new StorageManager(storage, documentTypes, hub, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, hub, broker, docTypeRegistry, persistenceManager);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(multipleReferringDocType, referredDocType, "RDD000000001");
 
@@ -484,7 +487,7 @@ public class StorageManagerTest {
     doReturn(referredDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referredDocId);
     doReturn(referringDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referringDocId);
 
-    instance = new StorageManager(storage, documentTypes, hub, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, hub, broker, docTypeRegistry, persistenceManager);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(otherDocType, referredDocType, "RDD000000001");
 
@@ -504,7 +507,7 @@ public class StorageManagerTest {
     doReturn(referredDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referredDocId);
     doReturn(referringDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referringDocId);
 
-    instance = new StorageManager(storage, documentTypes, hub, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, hub, broker, docTypeRegistry, persistenceManager);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(referringDocType, otherDocType, "RDD000000001");
 
@@ -526,7 +529,7 @@ public class StorageManagerTest {
 
     when(storage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.<ReferringDoc> newArrayList());
 
-    instance = new StorageManager(storage, documentTypes, hub, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, hub, broker, docTypeRegistry, persistenceManager);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(referringDocType, referredDocType, "RDD000000001");
 
