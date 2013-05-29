@@ -30,11 +30,11 @@ public class Producer {
     producer.send(message);
   }
 
-  public void send(String type, String id, String action) throws JMSException {
+  public void send(String action, String type, String id) throws JMSException {
     Message message = session.createMessage();
+    message.setStringProperty("action", action);
     message.setStringProperty("type", type);
     message.setStringProperty("id", id);
-    message.setStringProperty("action", action);
     producer.send(message);
   }
 

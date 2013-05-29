@@ -11,6 +11,7 @@ import java.util.Set;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.events.Events;
 import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
+import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
@@ -45,12 +46,14 @@ public class StorageManager {
   private Set<String> documentTypes;
 
   private final Hub hub;
+  private final Broker broker;
   private DocTypeRegistry docTypeRegistry;
   private PersistenceManager persistenceManager;
 
   @Inject
-  public StorageManager(StorageConfiguration storageConf, Storage storage, Hub hub, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceMananger) {
+  public StorageManager(StorageConfiguration storageConf, Storage storage, Hub hub, Broker broker, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceMananger) {
     this.hub = hub;
+    this.broker = broker;
     this.docTypeRegistry = docTypeRegistry;
     documentTypes = storageConf.getDocumentTypes();
     this.storage = storage;
@@ -60,15 +63,20 @@ public class StorageManager {
   }
 
   // Test-only!
-  protected StorageManager(Storage storage, Set<String> documentTypes, Hub hub, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceManager) {
+  protected StorageManager(Storage storage, Set<String> documentTypes, Hub hub, Broker broker, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceManager) {
+    this.hub = hub;
+    this.broker = broker;
     this.storage = storage;
     this.docTypeRegistry = docTypeRegistry;
     this.documentTypes = documentTypes;
-    this.hub = hub;
     this.persistenceManager = persistenceManager;
     fillAnnotationCache();
     ensureIndices();
   }
+
+  // -------------------------------------------------------------------
+
+  // -------------------------------------------------------------------
 
   public <T extends Document> T getCompleteDocument(Class<T> type, String id) {
     T rv;
