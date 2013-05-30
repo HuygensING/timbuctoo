@@ -12,6 +12,7 @@ import org.surfnet.oaaas.model.VerifyTokenResponse;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.sun.jersey.api.container.filter.RolesAllowedResourceFilterFactory;
 import com.sun.jersey.api.core.PackagesResourceConfig;
 import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.jersey.test.framework.AppDescriptor;
@@ -57,7 +58,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     WebAppDescriptor webAppDescriptor = new WebAppDescriptor.Builder().build();
     webAppDescriptor.getInitParams().put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.repository.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.repository.providers");
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
-        MockApisAuthorizationFilterFactory.class.getName() + ";" + SecurityContextCreatorResourceFilterFactory.class.getName() + ";" + SecurityContextCreatorResourceFilterFactory.class.getName());
+        MockApisAuthorizationFilterFactory.class.getName() + ";" + SecurityContextCreatorResourceFilterFactory.class.getName() + ";" + RolesAllowedResourceFilterFactory.class.getName());
 
     return webAppDescriptor;
   }
