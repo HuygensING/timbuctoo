@@ -108,6 +108,16 @@ public class StorageManager {
     }
   }
 
+  public <T extends Document> T searchDocument(Class<T> type, Map<String, String> searchProperties) {
+    try {
+      return storage.searchItem(type, searchProperties);
+    } catch (IOException e) {
+      e.printStackTrace();
+      return null;
+    }
+
+  }
+
   /**
    * Get the latest document for a specific variation.
    * @param type

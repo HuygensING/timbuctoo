@@ -53,6 +53,9 @@ public class MongoModifiableStorage extends MongoStorageImpl {
     List<MongoChanges<T>> changes = Lists.newArrayListWithCapacity(items.size());
     int lastId = 0;
     for (T item : items) {
+      if (item.getId() == null) {
+        setNextId(type, item);
+      }
       String itemId = item.getId();
       lastId = Math.max(lastId, Integer.parseInt(itemId.substring(3), 10));
       if (shouldVersion) {

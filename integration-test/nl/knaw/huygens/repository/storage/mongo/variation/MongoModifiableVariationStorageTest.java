@@ -3,8 +3,6 @@ package nl.knaw.huygens.repository.storage.mongo.variation;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -14,9 +12,9 @@ import java.util.List;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.StorageIterator;
-import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
 import nl.knaw.huygens.repository.storage.mongo.MongoDiff;
+import nl.knaw.huygens.repository.storage.mongo.MongoStorageTestBase;
 import nl.knaw.huygens.repository.variation.VariationException;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
@@ -26,29 +24,25 @@ import nl.knaw.huygens.repository.variation.model.projectb.ProjectBGeneralTestDo
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
 import com.mongodb.MongoException;
 
-public class MongoModifiableVariationStorageTest {
+public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
   private static final String DEFAULT_ID = "TCD000000001";
-  private static final String DB_NAME = "test";
   private MongoModifiableVariationStorage instance;
-  private DocTypeRegistry docTypeRegistry;
+  private static DocTypeRegistry docTypeRegistry;
+
+  @BeforeClass
+  public static void setUpDocTypeRegistry() {
+    docTypeRegistry = new DocTypeRegistry("nl.knaw.huygens.repository.variation.model nl.knaw.huygens.repository.variation.model.projecta nl.knaw.huygens.repository.variation.model.projectb");
+  }
 
   @Before
   public void setUp() throws UnknownHostException, MongoException {
-    StorageConfiguration storageConfiguration = mock(StorageConfiguration.class);
-    when(storageConfiguration.getDbName()).thenReturn(DB_NAME);
-    when(storageConfiguration.getHost()).thenReturn("127.0.0.1");
-    when(storageConfiguration.getPort()).thenReturn(27017);
-    when(storageConfiguration.getUser()).thenReturn("test");
-    when(storageConfiguration.getPassword()).thenReturn("test");
-
-    docTypeRegistry = new DocTypeRegistry("nl.knaw.huygens.repository.variation.model nl.knaw.huygens.repository.variation.model.projecta nl.knaw.huygens.repository.variation.model.projectb");
-
     instance = new MongoModifiableVariationStorage(storageConfiguration, docTypeRegistry);
   }
 

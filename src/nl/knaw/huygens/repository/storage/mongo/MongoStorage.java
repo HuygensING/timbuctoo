@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.storage.mongo;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
@@ -13,6 +14,8 @@ import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 public interface MongoStorage {
 
   <T extends Document> T getItem(Class<T> type, String id) throws IOException;
+
+  <T extends Document> T searchItem(Class<T> type, Map<String, String> searchProperties) throws IOException;
 
   <T extends Document> StorageIterator<T> getAllByType(Class<T> type);
 
