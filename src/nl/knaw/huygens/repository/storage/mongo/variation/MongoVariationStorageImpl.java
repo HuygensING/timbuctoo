@@ -19,6 +19,7 @@ import nl.knaw.huygens.repository.variation.VariationException;
 import nl.knaw.huygens.repository.variation.VariationReducer;
 import nl.knaw.huygens.repository.variation.VariationUtils;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
 
@@ -105,6 +106,11 @@ public abstract class MongoVariationStorageImpl implements MongoVariationStorage
     DBObject query = new BasicDBObject("_id", id);
     addClassNotNull(type, query);
     return reducer.reduceDBObject(col.findOne(query), type);
+  }
+
+  @Override
+  public <T extends Document> T searchItem(Class<T> type, Map<String, String> searchProperties) throws IOException {
+    throw new NotImplementedException("This method is not intended to get used.");
   }
 
   private <T extends Document> void addClassNotNull(Class<T> type, DBObject query) {
