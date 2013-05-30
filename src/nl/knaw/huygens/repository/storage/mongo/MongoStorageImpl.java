@@ -1,5 +1,6 @@
 package nl.knaw.huygens.repository.storage.mongo;
 
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.List;
@@ -81,6 +82,20 @@ public abstract class MongoStorageImpl implements MongoStorage {
   public <T extends Document> T getItem(Class<T> type, String id) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     return col.findOneById(id);
+  }
+
+  @Override
+  public <T extends Document> T searchItem(Class<T> type, Map<String, String> searchProperties) throws IOException {
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
+    BasicDBObject query = new BasicDBObject();
+
+    Set<String> keys = searchProperties.keySet();
+
+    for (String key : keys) {
+      query.put(key, searchProperties.get(key));
+    }
+
+    return col.findOne(query);
   }
 
   @Override
