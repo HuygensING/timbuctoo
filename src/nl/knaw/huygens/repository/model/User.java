@@ -11,11 +11,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @IDPrefix("USR")
 @DocumentTypeName("user")
 public class User extends SystemDocument {
-  public String pwHash;
+  private String userId; // a unique id to identify the use.
+  private String VREId; // the name of the VRE.
   public String email;
   public String firstName;
   public String lastName;
   public List<String> groups;
+  private List<String> roles;
   private String currentVariation;
 
   @Override
@@ -34,5 +36,29 @@ public class User extends SystemDocument {
   @JsonProperty("!currentVariation")
   public void setCurrentVariation(String currentVariation) {
     this.currentVariation = currentVariation;
+  }
+
+  public String getUserId() {
+    return userId;
+  }
+
+  public void setUserId(String userId) {
+    this.userId = userId;
+  }
+
+  public String getVREId() {
+    return VREId;
+  }
+
+  public void setVREId(String vREId) {
+    VREId = vREId;
+  }
+
+  public List<String> getRoles() {
+    return roles;
+  }
+
+  public void setRoles(List<String> roles) {
+    this.roles = roles;
   }
 }

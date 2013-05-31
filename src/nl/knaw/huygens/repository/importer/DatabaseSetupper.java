@@ -17,7 +17,6 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.User;
-import nl.knaw.huygens.repository.util.CryptoUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
@@ -76,7 +75,6 @@ public class DatabaseSetupper {
     User admin = new User();
     admin.setId(null); // Will be filled in by the storage implementation.
     admin.email = "admin@example.com";
-    admin.pwHash = CryptoUtils.generatePwHash("password");
     admin.groups = Lists.newArrayList("administrator");
     admin.firstName = "Joe";
     admin.lastName = "Administrator";
