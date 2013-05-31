@@ -85,9 +85,11 @@ public abstract class MongoStorageImpl implements MongoStorage {
   }
 
   @Override
-  public <T extends Document> T searchItem(Class<T> type, Map<String, String> searchProperties) throws IOException {
+  public <T extends Document> T searchItem(Class<T> type, T example) throws IOException {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     BasicDBObject query = new BasicDBObject();
+
+    Map<String, String> searchProperties = new MongoObjectMapper().mapObject(type, example);
 
     Set<String> keys = searchProperties.keySet();
 

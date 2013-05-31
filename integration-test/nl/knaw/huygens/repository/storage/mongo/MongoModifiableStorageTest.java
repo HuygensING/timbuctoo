@@ -5,9 +5,7 @@ import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.storage.mongo.model.TestSystemDocument;
@@ -26,16 +24,18 @@ public class MongoModifiableStorageTest extends MongoStorageTestBase {
   private static DocTypeRegistry docTypeRegistry;
 
   private void setUpDatabase() throws IOException {
-    List<TestSystemDocument> docs = Lists.newArrayList(createTestSystemDocument("doc1", "testValue", "testValue2"), createTestSystemDocument("doc2", "testValue", "testValue2"),
-        createTestSystemDocument("doc3", "testValue", "testValue2"));
+    List<TestSystemDocument> docs = Lists.newArrayList(createTestSystemDocument("doc1", "testValue", "testValue2", "doc1", "doc1"),
+        createTestSystemDocument("doc2", "testValue", "testValue2", "doc2", "doc2"), createTestSystemDocument("doc3", "testValue", "testValue2", "doc3", "doc3"));
     instance.addItems(TestSystemDocument.class, docs);
   }
 
-  protected TestSystemDocument createTestSystemDocument(String name, String testValue1, String testValue2) {
+  protected TestSystemDocument createTestSystemDocument(String name, String testValue1, String testValue2, String annotatedProperty, String propWithAnnotatedAccessors) {
     TestSystemDocument doc = new TestSystemDocument();
     doc.setName(name);
     doc.setTestValue1(testValue1);
     doc.setTestValue2(testValue2);
+    doc.setAnnotatedProperty(annotatedProperty);
+    doc.setPropWithAnnotatedAccessors(propWithAnnotatedAccessors);
     return doc;
   }
 
@@ -60,10 +60,10 @@ public class MongoModifiableStorageTest extends MongoStorageTestBase {
   public void testSearchItemOneSearchProperty() throws IOException {
     setUpDatabase();
 
-    Map<String, String> searchProperties = new HashMap<String, String>();
-    searchProperties.put("name", "doc1");
+    TestSystemDocument example = new TestSystemDocument();
+    example.setName("doc1");
 
-    TestSystemDocument actual = instance.searchItem(TestSystemDocument.class, searchProperties);
+    TestSystemDocument actual = instance.searchItem(TestSystemDocument.class, example);
 
     assertEquals("doc1", actual.getName());
   }
@@ -72,11 +72,11 @@ public class MongoModifiableStorageTest extends MongoStorageTestBase {
   public void testSearchItemMultipleSearchProperties() throws IOException {
     setUpDatabase();
 
-    Map<String, String> searchProperties = new HashMap<String, String>();
-    searchProperties.put("name", "doc2");
-    searchProperties.put("testValue1", "testValue");
+    TestSystemDocument example = new TestSystemDocument();
+    example.setName("doc2");
+    example.setTestValue1("testValue");
 
-    TestSystemDocument actual = instance.searchItem(TestSystemDocument.class, searchProperties);
+    TestSystemDocument actual = instance.searchItem(TestSystemDocument.class, example);
 
     assertEquals("doc2", actual.getName());
     assertEquals("testValue", actual.getTestValue1());
@@ -86,10 +86,10 @@ public class MongoModifiableStorageTest extends MongoStorageTestBase {
   public void testSearchItemMultipleFound() throws IOException {
     setUpDatabase();
 
-    Map<String, String> searchProperties = new HashMap<String, String>();
-    searchProperties.put("testValue1", "testValue");
+    TestSystemDocument example = new TestSystemDocument();
+    example.setTestValue1("testValue");
 
-    TestSystemDocument actual = instance.searchItem(TestSystemDocument.class, searchProperties);
+    TestSystemDocument actual = instance.searchItem(TestSystemDocument.class, example);
 
     assertEquals("doc1", actual.getName());
     assertEquals("testValue", actual.getTestValue1());
@@ -99,10 +99,10 @@ public class MongoModifiableStorageTest extends MongoStorageTestBase {
   public void testSearchItemNothingFound() throws IOException {
     setUpDatabase();
 
-    Map<String, String> searchProperties = new HashMap<String, String>();
-    searchProperties.put("name", "nonexisting");
+    TestSystemDocument example = new TestSystemDocument();
+    example.setName("nonExisting");
 
-    TestSystemDocument actual = instance.searchItem(TestSystemDocument.class, searchProperties);
+    TestSystemDocument actual = instance.searchItem(TestSystemDocument.class, example);
 
     assertNull(actual);
   }
@@ -111,10 +111,10 @@ public class MongoModifiableStorageTest extends MongoStorageTestBase {
   public void testSearchItemUnknownCollection() throws IOException {
     setUpDatabase();
 
-    Map<String, String> searchProperties = new HashMap<String, String>();
-    searchProperties.put("name", "nonexisting");
+    TestConcreteDoc example = new TestConcreteDoc();
+    example.name = "nonExisting";
 
-    TestConcreteDoc actual = instance.searchItem(TestConcreteDoc.class, searchProperties);
+    TestConcreteDoc actual = instance.searchItem(TestConcreteDoc.class, example);
 
     assertNull(actual);
   }

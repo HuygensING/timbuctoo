@@ -109,7 +109,7 @@ public abstract class MongoVariationStorageImpl implements MongoVariationStorage
   }
 
   @Override
-  public <T extends Document> T searchItem(Class<T> type, Map<String, String> searchProperties) throws IOException {
+  public <T extends Document> T searchItem(Class<T> type, T example) throws IOException {
     throw new NotImplementedException("This method is not intended to get used.");
   }
 
