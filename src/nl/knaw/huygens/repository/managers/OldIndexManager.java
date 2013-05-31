@@ -37,6 +37,7 @@ import com.google.inject.Singleton;
  * Fixed: The old code registered an incomplete IndexManager instance with the Hub.
  */
 @Singleton
+@Deprecated
 public class OldIndexManager {
 
   private final DocTypeRegistry docTypeRegistry;

@@ -89,7 +89,7 @@ public class Configuration {
     while (it.hasNext()) {
       String k = it.next().replaceFirst(SETTINGS_PREFIX, "");
       String v = getSetting(k);
-      System.err.println(k + ": " + v);
+      // System.err.println(k + ": " + v);
       rv.put(k, v);
     }
     return rv;
