@@ -108,9 +108,9 @@ public class StorageManager {
     }
   }
 
-  public <T extends Document> T searchDocument(Class<T> type, Map<String, String> searchProperties) {
+  public <T extends Document> T searchDocument(Class<T> type, T example) {
     try {
-      return storage.searchItem(type, searchProperties);
+      return storage.searchItem(type, example);
     } catch (IOException e) {
       e.printStackTrace();
       return null;
