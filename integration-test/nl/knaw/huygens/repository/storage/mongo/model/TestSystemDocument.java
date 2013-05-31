@@ -12,6 +12,9 @@ public class TestSystemDocument extends SystemDocument {
   private String name;
   private String testValue1;
   private String testValue2;
+  @JsonProperty("propAnnotated")
+  private String annotatedProperty;
+  private String propWithAnnotatedAccessors;
 
   @Override
   @JsonProperty("!currentVariation")
@@ -56,6 +59,24 @@ public class TestSystemDocument extends SystemDocument {
 
   public void setTestValue2(String testValue2) {
     this.testValue2 = testValue2;
+  }
+
+  public String getAnnotatedProperty() {
+    return annotatedProperty;
+  }
+
+  public void setAnnotatedProperty(String annotatedProperty) {
+    this.annotatedProperty = annotatedProperty;
+  }
+
+  @JsonProperty("pwaa")
+  public String getPropWithAnnotatedAccessors() {
+    return propWithAnnotatedAccessors;
+  }
+
+  @JsonProperty("pwaa")
+  public void setPropWithAnnotatedAccessors(String propWithAnnotatedAccessors) {
+    this.propWithAnnotatedAccessors = propWithAnnotatedAccessors;
   }
 
 }

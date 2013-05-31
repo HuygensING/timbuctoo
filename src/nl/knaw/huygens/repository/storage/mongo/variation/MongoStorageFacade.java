@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
@@ -156,9 +155,9 @@ public class MongoStorageFacade implements nl.knaw.huygens.repository.storage.St
   }
 
   @Override
-  public <T extends Document> T searchItem(Class<T> type, Map<String, String> searchProperties) throws IOException {
+  public <T extends Document> T searchItem(Class<T> type, T example) throws IOException {
 
-    return getStorageForType(type).searchItem(type, searchProperties);
+    return getStorageForType(type).searchItem(type, example);
   }
 
 }

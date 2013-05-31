@@ -3,7 +3,6 @@ package nl.knaw.huygens.repository.storage;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
@@ -14,7 +13,14 @@ public interface Storage {
 
   <T extends Document> T getItem(Class<T> type, String id) throws IOException;
 
-  <T extends Document> T searchItem(Class<T> type, Map<String, String> searchProperties) throws IOException;
+  /**
+   * Searches on the non-null properties of the example object.
+   * @param type
+   * @param example
+   * @return
+   * @throws IOException
+   */
+  <T extends Document> T searchItem(Class<T> type, T example) throws IOException;
 
   <T extends Document> StorageIterator<T> getAllByType(Class<T> type);
 
