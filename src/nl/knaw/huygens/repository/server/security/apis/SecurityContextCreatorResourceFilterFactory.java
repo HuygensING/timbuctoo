@@ -4,11 +4,10 @@ import java.security.Principal;
 
 import javax.ws.rs.core.SecurityContext;
 
+import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.server.security.AbstractRolesAllowedResourceFilterFactory;
 
-import org.surfnet.oaaas.model.VerifyTokenResponse;
-
-import com.google.common.collect.Lists;
+import com.google.inject.Inject;
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerRequestFilter;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
@@ -20,40 +19,16 @@ import com.sun.jersey.spi.container.ResourceFilter;
  * @author martijnm
  */
 public class SecurityContextCreatorResourceFilterFactory extends AbstractRolesAllowedResourceFilterFactory {
+  private StorageManager storageManager;
+
+  @Inject
+  public SecurityContextCreatorResourceFilterFactory(StorageManager storageManager) {
+    this.storageManager = storageManager;
+  }
 
   @Override
   protected ResourceFilter createResourceFilter() {
-    return new Filter();
-  }
-
-  private static final class Filter implements ResourceFilter, ContainerRequestFilter {
-
-    private static final String VERIFY_TOKEN_RESPONSE = "VERIFY_TOKEN_RESPONSE";
-
-    @Override
-    public ContainerRequest filter(ContainerRequest request) {
-      VerifyTokenResponse verifyTokenResponse = (VerifyTokenResponse) request.getProperties().get(VERIFY_TOKEN_RESPONSE);
-
-      if (verifyTokenResponse != null) {
-        ApisAuthorizer securityContext = new ApisAuthorizer(verifyTokenResponse.getPrincipal());
-        securityContext.setRoles(Lists.newArrayList("USER"));
-        request.setSecurityContext(securityContext);
-      }
-
-      return request;
-    }
-
-    @Override
-    public ContainerRequestFilter getRequestFilter() {
-      return this;
-    }
-
-    @Override
-    public ContainerResponseFilter getResponseFilter() {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
+    return new SecurityContextCreatorResourceFilter(this.storageManager);
   }
 
   private static final class NoSecuritityFilter implements ResourceFilter, ContainerRequestFilter {

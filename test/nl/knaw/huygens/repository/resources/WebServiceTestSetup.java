@@ -1,7 +1,11 @@
 package nl.knaw.huygens.repository.resources;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import nl.knaw.huygens.repository.managers.StorageManager;
+import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.User;
 import nl.knaw.huygens.repository.server.security.apis.SecurityContextCreatorResourceFilterFactory;
 
 import org.junit.After;
@@ -10,6 +14,7 @@ import org.junit.BeforeClass;
 import org.surfnet.oaaas.auth.principal.AuthenticatedPrincipal;
 import org.surfnet.oaaas.model.VerifyTokenResponse;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.sun.jersey.api.container.filter.RolesAllowedResourceFilterFactory;
@@ -24,6 +29,8 @@ import com.sun.jersey.test.framework.WebAppDescriptor;
  */
 public abstract class WebServiceTestSetup extends JerseyTest {
 
+  private static final String USER_ID = "userId";
+  private static final String VRE_ID = "vreID";
   protected static Injector injector;
   private static RESTAutoResourceTestModule restAutoResourceTestModule;
 
@@ -40,11 +47,25 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   @Before
   public void setUpApisAuthorizationServerFilterMock() {
     VerifyTokenResponse verifyTokenResponse = mock(VerifyTokenResponse.class);
+    when(verifyTokenResponse.getAudience()).thenReturn(VRE_ID);
     AuthenticatedPrincipal authenticatedPrincipal = mock(AuthenticatedPrincipal.class);
+    when(authenticatedPrincipal.getName()).thenReturn(USER_ID);
     when(verifyTokenResponse.getPrincipal()).thenReturn(authenticatedPrincipal);
     when(verifyTokenResponse.getError()).thenReturn(null);
     MockApisAuthorizationServerResourceFilter filter = injector.getInstance(MockApisAuthorizationServerResourceFilter.class);
     filter.setVerifyTokenResponse(verifyTokenResponse);
+
+    setUpStorageManager();
+  }
+
+  @SuppressWarnings("unchecked")
+  protected void setUpStorageManager() {
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    User user = mock(User.class);
+    when(user.getUserId()).thenReturn(USER_ID);
+    when(user.getVREId()).thenReturn(VRE_ID);
+    when(user.getRoles()).thenReturn(Lists.newArrayList("USER"));
+    when(storageManager.searchDocument(any(Class.class), any(Document.class))).thenReturn(user);
   }
 
   @After
@@ -62,5 +83,4 @@ public abstract class WebServiceTestSetup extends JerseyTest {
 
     return webAppDescriptor;
   }
-
 }
