@@ -144,7 +144,9 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
   public void flush() throws IndexException {
     try {
       solrServer.commit(core);
-      hub.publish(new Events.IndexChangedEvent());
+      if (hub != null) {
+        hub.publish(new Events.IndexChangedEvent());
+      }
     } catch (Exception ex) {
       throw new IndexException(ex);
     }
