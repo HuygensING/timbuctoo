@@ -1,13 +1,17 @@
 package nl.knaw.huygens.repository.importer.database;
 
+import javax.jms.JMSException;
+
 import nl.knaw.huygens.repository.config.BasicInjectionModule;
 import nl.knaw.huygens.repository.config.Configuration;
-import nl.knaw.huygens.repository.managers.OldIndexManager;
+import nl.knaw.huygens.repository.index.IndexManager;
+import nl.knaw.huygens.repository.index.IndexService;
 import nl.knaw.huygens.repository.managers.StorageManager;
+import nl.knaw.huygens.repository.messages.Broker;
+import nl.knaw.huygens.repository.messages.Producer;
 import nl.knaw.huygens.repository.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.repository.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.repository.model.raa.RAACivilServant;
-import nl.knaw.huygens.repository.pubsub.Hub;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -21,10 +25,12 @@ public class BulkImporter {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     storageManager.getStorage().empty();
 
-    OldIndexManager indexManager = injector.getInstance(OldIndexManager.class);
-    indexManager.clearIndexes();
-    // TODO change to messaging implementation
-    injector.getInstance(Hub.class).subscribe(indexManager);
+    IndexManager indexManager = injector.getInstance(IndexManager.class);
+    indexManager.deleteAllDocuments();
+
+    IndexService service = injector.getInstance(IndexService.class);
+    Thread thread = new Thread(service);
+    thread.start();
 
     GenericImporter importer = new GenericImporter(storageManager);
 
@@ -36,10 +42,40 @@ public class BulkImporter {
     csvImporter.handleFile("testdata/ckcc-persons.txt", 9, false);
 
     storageManager.ensureIndices();
-    indexManager.close();
+
+    Broker broker = injector.getInstance(Broker.class);
+    sendEndOfDataMessage(broker);
 
     long time = (System.currentTimeMillis() - start) / 1000;
-    System.out.printf("%n=== Import took %d seconds", time);
+    System.out.printf("%n=== Used %d seconds%n%n", time);
+
+    waitForCompletion(thread, 5 * 60 * 1000);
+
+    // close resources
+    storageManager.close();
+    indexManager.close();
+
+    time = (System.currentTimeMillis() - start) / 1000;
+    System.out.printf("%n=== Used %d seconds%n", time);
+  }
+
+  private static void sendEndOfDataMessage(Broker broker) throws JMSException {
+    Producer producer = broker.newProducer(Broker.INDEX_QUEUE, BulkImporter.class.getSimpleName());
+    producer.send(Broker.INDEX_END, "", "");
+    producer.close();
+  }
+
+  private static void waitForCompletion(Thread thread, long patience) throws InterruptedException {
+    long targetTime = System.currentTimeMillis() + patience;
+    while (thread.isAlive()) {
+      System.out.println("... indexing");
+      thread.join(2000);
+      if (System.currentTimeMillis() > targetTime && thread.isAlive()) {
+        System.out.println("... tired of waiting!");
+        thread.interrupt();
+        thread.join();
+      }
+    }
   }
 
 }

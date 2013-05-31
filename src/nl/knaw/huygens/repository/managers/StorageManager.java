@@ -81,7 +81,7 @@ public class StorageManager {
 
   private Producer setupProducer(Broker broker) {
     try {
-      return broker.newProducer(Broker.INDEX_QUEUE);
+      return broker.newProducer(Broker.INDEX_QUEUE, getClass().getSimpleName());
     } catch (JMSException e) {
       throw new RuntimeException(e);
     }
@@ -168,6 +168,7 @@ public class StorageManager {
     storage.addItem(type, doc);
     persistDocumentVersion(type, doc);
     doThrowEvent(VariationUtils.getBaseClass(type), doc.getId(), Events.DocumentAddEvent.class);
+    sendIndexMessage(Broker.INDEX_ADD, VariationUtils.getBaseClass(type).getSimpleName(), doc.getId());
   }
 
   private <T extends Document> void persistDocumentVersion(Class<T> type, T doc) {
@@ -185,11 +186,13 @@ public class StorageManager {
     storage.updateItem(type, doc.getId(), doc);
     persistDocumentVersion(type, doc);
     doThrowEvent(VariationUtils.getBaseClass(type), doc.getId(), DocumentEditEvent.class);
+    sendIndexMessage(Broker.INDEX_MOD, VariationUtils.getBaseClass(type).getSimpleName(), doc.getId());
   }
 
   public <T extends Document> void removeDocument(Class<T> type, T doc) throws IOException {
     storage.deleteItem(type, doc.getId(), doc.getLastChange());
     doThrowEvent(VariationUtils.getBaseClass(type), doc.getId(), Events.DocumentDeleteEvent.class);
+    sendIndexMessage(Broker.INDEX_DEL, VariationUtils.getBaseClass(type).getSimpleName(), doc.getId());
   }
 
   private <T extends Document> void doThrowEvent(Class<T> type, String id, @SuppressWarnings("rawtypes") Class<? extends Events.DocumentChangeEvent> t) throws IOException {
@@ -296,11 +299,9 @@ public class StorageManager {
   }
 
   public void close() {
-    try {
-      storage.destroy();
-    } catch (Exception e) {
-      System.err.println("Failed to close storage!");
-      e.printStackTrace();
+    storage.destroy();
+    if (producer != null) {
+      producer.closeQuietly();
     }
   }
 

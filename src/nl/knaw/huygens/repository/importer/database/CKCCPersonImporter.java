@@ -22,7 +22,7 @@ public class CKCCPersonImporter extends CSVImporter {
   public CKCCPersonImporter(StorageManager storageManager) {
     super(new PrintWriter(System.err));
     this.storageManager = storageManager;
-    System.out.println("=== Importing documents of type 'CKCCPerson'");
+    System.out.println("%n=== Importing documents of type 'CKCCPerson'");
   }
 
   @Override
