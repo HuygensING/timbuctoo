@@ -64,7 +64,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     User user = mock(User.class);
     when(user.getUserId()).thenReturn(USER_ID);
-    when(user.getVREId()).thenReturn(VRE_ID);
+    when(user.getVreId()).thenReturn(VRE_ID);
     when(user.getRoles()).thenReturn(userRoles);
     when(storageManager.searchDocument(any(Class.class), any(Document.class))).thenReturn(user);
   }

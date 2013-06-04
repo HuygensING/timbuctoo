@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @DocumentTypeName("user")
 public class User extends SystemDocument {
   private String userId; // a unique id to identify the use.
-  private String VREId; // the name of the VRE.
+  private String vreId; // the name of the VRE.
   public String email;
   public String firstName;
   public String lastName;
@@ -46,12 +46,12 @@ public class User extends SystemDocument {
     this.userId = userId;
   }
 
-  public String getVREId() {
-    return VREId;
+  public String getVreId() {
+    return vreId;
   }
 
-  public void setVREId(String vREId) {
-    VREId = vREId;
+  public void setVreId(String vREId) {
+    this.vreId = vREId;
   }
 
   public List<String> getRoles() {

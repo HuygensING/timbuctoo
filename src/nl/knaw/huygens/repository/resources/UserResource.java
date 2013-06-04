@@ -27,6 +27,7 @@ import com.google.inject.Inject;
 
 @Path("resources/user")
 public class UserResource {
+  private static final String ADMIN_ROLE = "ADMIN";
   private static final String USER_PATH = "resources/user/";
   private static final String LOCATION_STRING = "location";
   private static final String ID_PARAM = "id";
@@ -40,7 +41,7 @@ public class UserResource {
   @GET
   @Path("/all")
   @Produces(MediaType.APPLICATION_JSON)
-  @RolesAllowed("ADMIN")
+  @RolesAllowed(ADMIN_ROLE)
   public List<User> getAll(@QueryParam("rows") @DefaultValue("200") int rows, @QueryParam("start") int start) {
     return storageManager.getAllLimited(User.class, start, rows);
   }
@@ -48,7 +49,7 @@ public class UserResource {
   @POST
   @Path("/all")
   @Consumes(MediaType.APPLICATION_JSON)
-  @RolesAllowed("ADMIN")
+  @RolesAllowed(ADMIN_ROLE)
   public Response create(User user, @Context UriInfo uriInfo) throws IOException {
 
     storageManager.addDocument(User.class, user);
@@ -60,7 +61,7 @@ public class UserResource {
   @GET
   @Path("/{id:USR\\d+}")
   @Produces(MediaType.APPLICATION_JSON)
-  @RolesAllowed("ADMIN")
+  @RolesAllowed(ADMIN_ROLE)
   public User get(@PathParam(ID_PARAM) String id) {
     User user = storageManager.getDocument(User.class, id);
 
@@ -74,7 +75,7 @@ public class UserResource {
   @PUT
   @Path("/{id:USR\\d+}")
   @Produces(MediaType.APPLICATION_JSON)
-  @RolesAllowed("ADMIN")
+  @RolesAllowed(ADMIN_ROLE)
   public Response put(@PathParam(ID_PARAM) String id) throws IOException {
     User user = storageManager.getDocument(User.class, id);
 
@@ -90,7 +91,7 @@ public class UserResource {
   @DELETE
   @Path("/{id:USR\\d+}")
   @Produces(MediaType.APPLICATION_JSON)
-  @RolesAllowed("ADMIN")
+  @RolesAllowed(ADMIN_ROLE)
   public Response delete(@PathParam(ID_PARAM) String id) throws IOException {
     User user = storageManager.getDocument(User.class, id);
 
