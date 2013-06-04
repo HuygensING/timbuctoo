@@ -21,7 +21,7 @@ import com.sun.jersey.guice.JerseyServletModule;
  *
  * @author martijnm
  */
-class RESTAutoResourceTestModule extends JerseyServletModule {
+class ResourceTestModule extends JerseyServletModule {
   private StorageManager storageManager;
   private DocTypeRegistry documentTypeRegister;
   private JacksonJsonProvider jsonProvider;
@@ -29,7 +29,7 @@ class RESTAutoResourceTestModule extends JerseyServletModule {
   private VerifyTokenResponse verifyTokenResponse;
   private Validator validator;
 
-  public RESTAutoResourceTestModule() {
+  public ResourceTestModule() {
     storageManager = mock(StorageManager.class);
     documentTypeRegister = mock(DocTypeRegistry.class);
     jsonProvider = mock(JacksonJsonProvider.class);
