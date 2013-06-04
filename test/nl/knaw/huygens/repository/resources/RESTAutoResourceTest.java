@@ -6,6 +6,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -23,11 +24,11 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.StorageManager;
+import nl.knaw.huygens.repository.model.User;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.repository.variation.model.projecta.OtherDoc;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -135,6 +136,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testPutDocExistingDocument() throws IOException {
     setupDocumentTypeRegister(TestConcreteDoc.class);
+    setUpUserRoles(Lists.newArrayList("USER"));
 
     String id = "TST0000000001";
 
@@ -155,6 +157,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test()
   public void testPutDocInvalidDocument() throws IOException {
     setupDocumentTypeRegister(TestConcreteDoc.class);
+    setUpUserRoles(Lists.newArrayList("USER"));
 
     String id = "TST0000000001";
 
@@ -230,6 +233,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testPutDocNonExistingDocument() throws IOException {
     setupDocumentTypeRegister(TestConcreteDoc.class);
+    setUpUserRoles(Lists.newArrayList("USER"));
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
 
@@ -259,6 +263,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testPutDocNonExistingType() {
     setupDocumentTypeRegister(null);
+    setUpUserRoles(Lists.newArrayList("USER"));
     String id = "TST0000000001";
 
     TestConcreteDoc doc = new TestConcreteDoc();
@@ -273,6 +278,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testPutDocWrongType() {
     setupDocumentTypeRegister(OtherDoc.class);
+    setUpUserRoles(Lists.newArrayList("USER"));
     String id = "TST0000000001";
 
     TestConcreteDoc doc = new TestConcreteDoc();
@@ -287,6 +293,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testPutOnSuperClass() {
     setupDocumentTypeRegister(OtherDoc.class);
+    setUpUserRoles(Lists.newArrayList("USER"));
     String id = "TST0000000001";
 
     GeneralTestDoc doc = new GeneralTestDoc();
@@ -316,6 +323,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testPost() throws IOException {
     setupDocumentTypeRegister(TestConcreteDoc.class);
+    setUpUserRoles(Lists.newArrayList("USER"));
     JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
 
     TestConcreteDoc doc = new TestConcreteDoc();
@@ -335,6 +343,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostNonExistingCollection() {
     setupDocumentTypeRegister(null);
+    setUpUserRoles(Lists.newArrayList("USER"));
 
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.name = "test";
@@ -350,6 +359,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostOnSuperType() throws IOException {
     setupDocumentTypeRegister(TestConcreteDoc.class);
+    setUpUserRoles(Lists.newArrayList("USER"));
     JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
 
     GeneralTestDoc doc = new GeneralTestDoc();
@@ -368,6 +378,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostWrongType() throws IOException {
     setupDocumentTypeRegister(OtherDoc.class);
+    setUpUserRoles(Lists.newArrayList("USER"));
     JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
 
     when(jsonProvider.readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(null);
@@ -398,6 +409,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testDelete() throws IOException {
     setupDocumentTypeRegister(TestConcreteDoc.class);
+    setUpUserRoles(Lists.newArrayList("USER"));
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
     String id = "TST0000000001";
@@ -417,6 +429,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testDeleteDocumentDoesNotExist() {
     setupDocumentTypeRegister(TestConcreteDoc.class);
+    setUpUserRoles(Lists.newArrayList("USER"));
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
     String id = "TST0000000001";
@@ -432,9 +445,12 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteTypeDoesNotExist() {
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
-
+    setUpUserRoles(null);
     String id = "TST0000000001";
+
+    setUpUserRoles(Lists.newArrayList("USER"));
+
+    StorageManager storageManager = mock(StorageManager.class);
 
     when(storageManager.getDocument(TestConcreteDoc.class, id)).thenReturn(null);
 
@@ -491,9 +507,9 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
   @SuppressWarnings("unchecked")
   @Test
-  @Ignore("No role base security implemented yet.")
   public void testPutDocUserNotInRole() throws IOException {
     DocTypeRegistry documentTypeRegister = injector.getInstance(DocTypeRegistry.class);
+    setUpUserRoles(null);
     String id = "TST0000000001";
 
     TestConcreteDoc doc = new TestConcreteDoc();
@@ -531,10 +547,9 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
   @SuppressWarnings("unchecked")
   @Test
-  @Ignore("No role base security implemented yet.")
   public void testPostUserNotInRole() throws IOException {
-
     setupDocumentTypeRegister(TestConcreteDoc.class);
+    setUpUserRoles(null);
     JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
 
     TestConcreteDoc inputDoc = new TestConcreteDoc();
@@ -577,9 +592,14 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  @Ignore("No role base security implemented yet.")
   public void testDeleteUserNotInRole() {
     setupDocumentTypeRegister(TestConcreteDoc.class);
+    setUpUserRoles(null);
+
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    User user = mock(User.class);
+    when(user.getRoles()).thenReturn(null);
+    when(storageManager.searchDocument(User.class, user)).thenReturn(user);
 
     String id = "TST0000000001";
     TestConcreteDoc doc = new TestConcreteDoc();
