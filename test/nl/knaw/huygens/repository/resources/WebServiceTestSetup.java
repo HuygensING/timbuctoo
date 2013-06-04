@@ -3,6 +3,9 @@ package nl.knaw.huygens.repository.resources;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.User;
@@ -14,7 +17,6 @@ import org.junit.BeforeClass;
 import org.surfnet.oaaas.auth.principal.AuthenticatedPrincipal;
 import org.surfnet.oaaas.model.VerifyTokenResponse;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.sun.jersey.api.container.filter.RolesAllowedResourceFilterFactory;
@@ -32,7 +34,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   private static final String USER_ID = "userId";
   private static final String VRE_ID = "vreID";
   protected static Injector injector;
-  private static RESTAutoResourceTestModule restAutoResourceTestModule;
+  private static ResourceTestModule restAutoResourceTestModule;
 
   public WebServiceTestSetup() {
     super(new GuiceTestContainerFactory(injector));
@@ -40,7 +42,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
 
   @BeforeClass
   public static void setUpClass() {
-    restAutoResourceTestModule = new RESTAutoResourceTestModule();
+    restAutoResourceTestModule = new ResourceTestModule();
     injector = Guice.createInjector(restAutoResourceTestModule);
   }
 
@@ -55,16 +57,15 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     MockApisAuthorizationServerResourceFilter filter = injector.getInstance(MockApisAuthorizationServerResourceFilter.class);
     filter.setVerifyTokenResponse(verifyTokenResponse);
 
-    setUpStorageManager();
   }
 
   @SuppressWarnings("unchecked")
-  protected void setUpStorageManager() {
+  protected void setUpUserRoles(ArrayList<String> userRoles) {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     User user = mock(User.class);
     when(user.getUserId()).thenReturn(USER_ID);
     when(user.getVREId()).thenReturn(VRE_ID);
-    when(user.getRoles()).thenReturn(Lists.newArrayList("USER"));
+    when(user.getRoles()).thenReturn(userRoles);
     when(storageManager.searchDocument(any(Class.class), any(Document.class))).thenReturn(user);
   }
 
