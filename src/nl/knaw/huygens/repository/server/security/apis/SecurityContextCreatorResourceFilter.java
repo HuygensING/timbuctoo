@@ -29,7 +29,7 @@ public class SecurityContextCreatorResourceFilter implements ResourceFilter, Con
       ApisAuthorizer securityContext = new ApisAuthorizer(verifyTokenResponse.getPrincipal());
 
       User example = new User();
-      example.setVREId(verifyTokenResponse.getAudience());
+      example.setVreId(verifyTokenResponse.getAudience());
       example.setUserId(verifyTokenResponse.getPrincipal().getName());
 
       User user = findUser(example);
