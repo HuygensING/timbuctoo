@@ -13,7 +13,7 @@ import nl.knaw.huygens.repository.events.Events.IndexChangedEvent;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.index.ModelIterator;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.Search;
+import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.pubsub.Subscribe;
 
@@ -66,7 +66,7 @@ public class FacettedSearchManager {
     return getFacets(response, core, true);
   }
 
-  public Collection<Facet> getFacets(Search search) throws SolrServerException, IOException {
+  public Collection<Facet> getFacets(SearchResult search) throws SolrServerException, IOException {
     List<String> ids = search.getIds();
     if (ids.size() == 0) {
       return null;
@@ -181,13 +181,13 @@ public class FacettedSearchManager {
     return facetFieldFilterCache.get(core);
   }
 
-  public Search search(String term, String sort, String core) throws SolrServerException, IOException {
+  public SearchResult search(String term, String sort, String core) throws SolrServerException, IOException {
     SolrDocumentList documents = localSolrServer.getQueryResponse(term, getFacetFieldNames(core).keySet(), sort, core).getResults();
     List<String> ids = Lists.newArrayList();
     for (SolrDocument document : documents) {
       ids.add(document.getFieldValue(DOC_ID_FIELD).toString());
     }
-    return new Search(ids, core, term, sort, new Date().toString());
+    return new SearchResult(ids, core, term, sort, new Date().toString());
   }
 
 }
