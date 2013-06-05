@@ -61,30 +61,6 @@ public class DocTypeRegistryTest {
   }
 
   @Test
-  public void testGetClassFromMongoTypeStringeAllLowerCase() {
-    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertEquals(TestExtraBaseDoc.class, registry.getClassFromMongoTypeString("testextrabasedoc"));
-  }
-
-  @Test
-  public void testGetClassFromMongoTypeStringWithCapitals() {
-    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertNull(registry.getClassFromMongoTypeString("TestExtraBaseDocs"));
-  }
-
-  @Test
-  public void testGetClassFromMongoTypeStringAllUppercase() {
-    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertNull(registry.getClassFromMongoTypeString("TESTEXTRABASEDOCs"));
-  }
-
-  @Test
-  public void testGetClassFromMongoTypeStringWithPackage() {
-    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
-    assertEquals(TestExtraBaseDoc.class, registry.getClassFromMongoTypeString("model-testextrabasedoc"));
-  }
-
-  @Test
   public void testGetCollectionIdFromCollectionBaseClass() {
     assertEquals("testbasedoc", registry.getCollectionId(TestBaseDoc.class));
   }
