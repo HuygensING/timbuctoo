@@ -21,7 +21,6 @@ import com.google.inject.Singleton;
 public class DocTypeRegistry {
 
   private final ClassPath classPath;
-  private final Map<String, Class<? extends Document>> mongoTypeStringToTypeMap;
   private final Map<String, Class<? extends Document>> webServiceTypeStringToTypeMap;
   private final Map<Class<? extends Document>, String> typeToStringMap;
   private final Map<Class<? extends Document>, String> typeToCollectionIdMap;
@@ -33,7 +32,6 @@ public class DocTypeRegistry {
       throw new RuntimeException(e);
     }
 
-    mongoTypeStringToTypeMap = Maps.newHashMap();
     webServiceTypeStringToTypeMap = Maps.newHashMap();
     typeToStringMap = Maps.newHashMap();
     typeToCollectionIdMap = Maps.newHashMap();
@@ -69,11 +67,6 @@ public class DocTypeRegistry {
     return typeString.replaceFirst("[a-z]*-", "");
   }
 
-  public Class<? extends Document> getClassFromMongoTypeString(String typeString) {
-    String normalizedTypeString = normalizeTypeString(typeString);
-    return mongoTypeStringToTypeMap.get(normalizedTypeString);
-  }
-
   public String getCollectionId(Class<? extends Document> type) {
     if (typeToCollectionIdMap.containsKey(type)) {
       return typeToCollectionIdMap.get(type);
@@ -92,7 +85,6 @@ public class DocTypeRegistry {
         Class<? extends Document> docCls = (Class<? extends Document>) cls;
         String typeId = determineTypeName(docCls);
         webServiceTypeStringToTypeMap.put(typeId, docCls);
-        mongoTypeStringToTypeMap.put(docCls.getSimpleName().toLowerCase(), docCls);
         typeToStringMap.put(docCls, typeId);
         Class<? extends Document> baseCls = getBaseClass(docCls);
         String baseTypeId = getCollectionName(baseCls);
