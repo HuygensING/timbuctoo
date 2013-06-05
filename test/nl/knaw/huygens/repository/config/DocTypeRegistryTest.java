@@ -2,14 +2,11 @@ package nl.knaw.huygens.repository.config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 import nl.knaw.huygens.repository.variation.model.TestBaseDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.repository.variation.model.TestExtraBaseDoc;
 import nl.knaw.huygens.repository.variation.model.TestInheritsFromTestBaseDoc;
 
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -23,97 +20,84 @@ import org.junit.Test;
  */
 public class DocTypeRegistryTest {
 
-  private DocTypeRegistry registry;
-
-  @Before
-  public void setup() {
-    registry = new DocTypeRegistry(null);
-  }
+  private static final String MODEL_PACKAGE = "nl.knaw.huygens.repository.variation.model";
 
   @Test
   public void testConstructModelToRegister() {
-    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
+    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
     assertEquals(TestExtraBaseDoc.class, registry.getClassFromWebServiceTypeString("testextrabasedocs"));
   }
 
   @Test
   public void testGetClassFromWebServiceTypeStringeAllLowerCase() {
-    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
+    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
     assertEquals(TestExtraBaseDoc.class, registry.getClassFromWebServiceTypeString("testextrabasedocs"));
   }
 
   @Test
   public void testGetClassFromWebServiceTypeStringWithCapitals() {
-    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
+    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
     assertNull(registry.getClassFromWebServiceTypeString("TestExtraBaseDocs"));
   }
 
   @Test
   public void testGetClassFromWebServiceTypeStringAllUppercase() {
-    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
+    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
     assertNull(registry.getClassFromWebServiceTypeString("TESTEXTRABASEDOCs"));
   }
 
   @Test
   public void testGetClassFromWebServiceTypeStringWithPackage() {
-    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
+    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
     assertEquals(TestExtraBaseDoc.class, registry.getClassFromWebServiceTypeString("model-testextrabasedocs"));
   }
 
   @Test
   public void testGetCollectionIdFromCollectionBaseClass() {
+    DocTypeRegistry registry = new DocTypeRegistry(null);
     assertEquals("testbasedoc", registry.getCollectionId(TestBaseDoc.class));
   }
 
   @Test
   public void testGetCollectionIdFromCollectionClass() {
+    DocTypeRegistry registry = new DocTypeRegistry(null);
     assertEquals("testconcretedoc", registry.getCollectionId(TestConcreteDoc.class));
   }
 
   @Test
   public void testGetCollectionIdFromNonDirectDescendantOfDocument() {
+    DocTypeRegistry registry = new DocTypeRegistry(null);
     assertEquals("testinheritsfromtestbasedoc", registry.getCollectionId(TestInheritsFromTestBaseDoc.class));
   }
 
   @Test
   public void testGetCollectionIdForARegisteredClass() {
-    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
+    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
     assertEquals("testconcretedoc", registry.getCollectionId(TestConcreteDoc.class));
   }
 
   @Test
   public void testRegisterPackageReadablePackage() {
-    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
+    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
     assertEquals(TestExtraBaseDoc.class, registry.getClassFromWebServiceTypeString("testextrabasedocs"));
   }
 
   @Test
   public void testRegisterPackageNonDocument() {
-    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
+    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
     assertNull(registry.getClassFromWebServiceTypeString("nonDoc"));
   }
 
   @Test
   public void testRegisterPackageSubPackage() {
-    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
+    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
     assertNull(registry.getClassFromWebServiceTypeString("testdoc"));
   }
 
   @Test
   public void testRegisterPackageAbstractClass() {
-    registry.registerPackage("nl.knaw.huygens.repository.variation.model");
+    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
     assertNull(registry.getClassFromWebServiceTypeString("testbasedoc"));
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void testRegisterPackageNullPackage() {
-    registry.registerPackage(null);
-  }
-
-  @Test
-  @Ignore
-  public void testRegisterPackageUnReadablePackage() {
-    fail("Yet to be implemented.");
   }
 
 }

@@ -83,7 +83,7 @@ public class DocTypeRegistry {
   }
 
   @SuppressWarnings("unchecked")
-  public void registerPackage(String packageId) {
+  private void registerPackage(String packageId) {
     int classesDetected = 0;
     for (ClassInfo info : classPath.getTopLevelClasses(packageId)) {
       Class<?> cls = info.load();
