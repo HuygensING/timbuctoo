@@ -2,6 +2,7 @@ package nl.knaw.huygens.repository.storage.mongo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -17,6 +18,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.mongodb.MongoException;
 
 public class MongoModifiableStorageTest extends MongoStorageTestBase {
@@ -46,6 +48,7 @@ public class MongoModifiableStorageTest extends MongoStorageTestBase {
 
   @Before
   public void setUp() throws UnknownHostException, MongoException {
+    when(storageConfiguration.getVersionedTypes()).thenReturn(Sets.newHashSet("testsystemdocument"));
     instance = new MongoModifiableStorage(storageConfiguration, docTypeRegistry);
   }
 
@@ -117,5 +120,130 @@ public class MongoModifiableStorageTest extends MongoStorageTestBase {
     TestConcreteDoc actual = instance.searchItem(TestConcreteDoc.class, example);
 
     assertNull(actual);
+  }
+
+  @Test
+  public void testUpdateItem() throws IOException {
+    TestSystemDocument doc = new TestSystemDocument();
+    String id = "TSD0000000001";
+    doc.setId(id);
+    doc.setTestValue1("test");
+
+    Class<TestSystemDocument> type = TestSystemDocument.class;
+    instance.addItem(type, doc);
+
+    doc.setTestValue1("testValue1");
+    instance.updateItem(type, id, doc);
+
+    verifyCollectionSize(1, "testsystemdocument", instance.db);
+  }
+
+  @Test(expected = IOException.class)
+  public void testUpdateItemNonExistent() throws IOException {
+    String id = "TSD0000000001";
+    TestSystemDocument expected = new TestSystemDocument();
+    expected.setId(id);
+    expected.setTestValue1("test");
+
+    Class<TestSystemDocument> type = TestSystemDocument.class;
+
+    instance.updateItem(type, id, expected);
+  }
+
+  @Test
+  public void testAddItem() throws IOException {
+    TestSystemDocument doc = new TestSystemDocument();
+    doc.setTestValue1("test");
+
+    Class<TestSystemDocument> type = TestSystemDocument.class;
+    instance.addItem(type, doc);
+
+    verifyCollectionSize(1, "testsystemdocument", instance.db);
+  }
+
+  @Test
+  public void testAddItemWithId() throws IOException {
+    TestSystemDocument doc = new TestSystemDocument();
+    String id = "TSD0000000001";
+    doc.setId(id);
+    doc.setTestValue1("test");
+
+    Class<TestSystemDocument> type = TestSystemDocument.class;
+    instance.addItem(type, doc);
+
+    verifyCollectionSize(1, "testsystemdocument", instance.db);
+  }
+
+  @Test(expected = MongoException.class)
+  public void testAddItemTwice() throws IOException {
+    TestSystemDocument doc = new TestSystemDocument();
+    String id = "TSD0000000001";
+    doc.setId(id);
+    doc.setTestValue1("test");
+
+    Class<TestSystemDocument> type = TestSystemDocument.class;
+    instance.addItem(type, doc);
+    instance.addItem(type, doc);
+  }
+
+  @Test
+  public void testGetItem() throws IOException {
+    TestSystemDocument expected = new TestSystemDocument();
+    String id = "TSD0000000001";
+    expected.setId(id);
+    expected.setTestValue1("test");
+
+    Class<TestSystemDocument> type = TestSystemDocument.class;
+    instance.addItem(type, expected);
+
+    TestSystemDocument actual = instance.getItem(type, id);
+
+    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+  }
+
+  @Test
+  public void testGetItemUpdatedItem() throws IOException {
+    TestSystemDocument expected = new TestSystemDocument();
+    String id = "TSD0000000001";
+    expected.setId(id);
+    expected.setTestValue1("test");
+
+    Class<TestSystemDocument> type = TestSystemDocument.class;
+    instance.addItem(type, expected);
+
+    expected.setName("name");
+
+    instance.updateItem(type, id, expected);
+
+    TestSystemDocument actual = instance.getItem(type, id);
+
+    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+  }
+
+  @Test
+  public void testGetItemNonExistent() {
+    TestSystemDocument doc = instance.getItem(TestSystemDocument.class, "TSD0000000001");
+
+    assertNull(doc);
+  }
+
+  @Test
+  public void testGetDeletedItem() throws IOException {
+    TestSystemDocument expected = new TestSystemDocument();
+    String id = "TSD0000000001";
+    expected.setId(id);
+    expected.setTestValue1("test");
+
+    Class<TestSystemDocument> type = TestSystemDocument.class;
+    instance.addItem(type, expected);
+
+    instance.deleteItem(type, id, null);
+
+    expected.setDeleted(true);
+    expected.setRev(1);
+
+    TestSystemDocument actual = instance.getItem(type, id);
+
+    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
   }
 }

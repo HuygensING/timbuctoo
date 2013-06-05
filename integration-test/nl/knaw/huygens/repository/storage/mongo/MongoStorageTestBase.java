@@ -1,10 +1,13 @@
 package nl.knaw.huygens.repository.storage.mongo;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 
 import org.junit.BeforeClass;
+
+import com.mongodb.DB;
 
 public class MongoStorageTestBase {
 
@@ -23,6 +26,10 @@ public class MongoStorageTestBase {
     when(storageConfiguration.getPort()).thenReturn(27017);
     when(storageConfiguration.getUser()).thenReturn("test");
     when(storageConfiguration.getPassword()).thenReturn("test");
+  }
+
+  protected void verifyCollectionSize(long expectedSize, String collectionName, DB db) {
+    assertEquals(expectedSize, db.getCollection(collectionName).getCount());
   }
 
 }
