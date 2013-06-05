@@ -2,8 +2,11 @@ package nl.knaw.huygens.repository.resources;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -12,6 +15,8 @@ import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.User;
 
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.google.common.collect.Lists;
 import com.sun.jersey.api.client.ClientResponse;
@@ -145,14 +150,21 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPutUserUserNotFound() {
+  public void testPutUserUserNotFound() throws IOException {
     setUpUserRoles(Lists.newArrayList(ADMIN_ROLE));
 
     User user = createUser("firstName", "lastName");
     user.setId(USER_ID);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(null);
+    doAnswer(new Answer<Object>() {
+
+      @Override
+      public Object answer(InvocationOnMock invocation) throws IOException {
+        // only if the document version does not exist an IOException is thrown.
+        throw new IOException();
+      }
+    }).when(storageManager).modifyDocument(any(Class.class), any(User.class));
 
     WebResource webResource = super.resource();
 
