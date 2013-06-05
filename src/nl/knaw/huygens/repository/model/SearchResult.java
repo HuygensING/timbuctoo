@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("QRY")
 @DocumentTypeName("search")
-public class Search extends PersistentDocument {
+public class SearchResult extends PersistentDocument {
 
   private List<String> ids;
   private String term;
@@ -18,9 +18,9 @@ public class Search extends PersistentDocument {
   private String searchType;
   private String defaultVRE;
 
-  public Search() {}
+  public SearchResult() {}
 
-  public Search(List<String> ids, String type, String term, String sort, String date) {
+  public SearchResult(List<String> ids, String type, String term, String sort, String date) {
     this.ids = ids;
     this.term = term;
     this.sort = sort;

@@ -15,7 +15,7 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.SearchManager;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.Search;
+import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 import nl.knaw.huygens.repository.util.APIDesc;
 
@@ -59,7 +59,7 @@ public class SearchResource {
     try {
       // TODO decide: the rule id --> core is implicit, is this what we want?
       String core = docTypeRegistry.getCollectionId(type);
-      Search search = searchManager.search(core, q, sort);
+      SearchResult search = searchManager.search(core, q, sort);
       return convert(type, search.getIds());
     } catch (SolrServerException e) {
       throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
