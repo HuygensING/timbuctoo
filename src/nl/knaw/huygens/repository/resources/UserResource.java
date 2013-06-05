@@ -18,6 +18,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
@@ -76,14 +77,16 @@ public class UserResource {
   @Path("/{id:USR\\d+}")
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
-  public Response put(@PathParam(ID_PARAM) String id) throws IOException {
-    User user = storageManager.getDocument(User.class, id);
-
+  public Response put(@PathParam(ID_PARAM) String id, User user) throws IOException {
     if (user == null) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
 
-    storageManager.modifyDocument(User.class, user);
+    try {
+      storageManager.modifyDocument(User.class, user);
+    } catch (IOException ex) {
+      throw new WebApplicationException(Status.NOT_FOUND);
+    }
 
     return Response.status(Response.Status.NO_CONTENT).build();
   }
