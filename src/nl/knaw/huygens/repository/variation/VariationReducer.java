@@ -24,17 +24,17 @@ import com.mongodb.DBObject;
 public class VariationReducer {
 
   private static final String VERSIONS_FIELD = "versions";
-  private ObjectMapper mapper;
-  private final DocTypeRegistry docTypeRegistry;
 
-  public VariationReducer(DocTypeRegistry docTypeRegistry) {
-    this.docTypeRegistry = docTypeRegistry;
-    mapper = new ObjectMapper();
+  private final DocTypeRegistry registry;
+  private final ObjectMapper mapper;
+
+  public VariationReducer(DocTypeRegistry registry, ObjectMapper mapper) {
+    this.registry = registry;
+    this.mapper = mapper;
   }
 
-  public VariationReducer(ObjectMapper mapper, DocTypeRegistry docTypeRegistry) {
-    this.mapper = mapper;
-    this.docTypeRegistry = docTypeRegistry;
+  public VariationReducer(DocTypeRegistry registry) {
+    this(registry, new ObjectMapper());
   }
 
   public <T extends Document> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {
@@ -252,10 +252,6 @@ public class VariationReducer {
     return false;
   }
 
-  public void setMapper(ObjectMapper mapper) {
-    this.mapper = mapper;
-  }
-
   @SuppressWarnings("unchecked")
   private JsonNode convertToTree(DBObject obj) throws IOException {
     JsonNode tree;
@@ -285,11 +281,13 @@ public class VariationReducer {
         JsonNode subNode = jsonNode.get(f);
         if (subNode != null && subNode.isObject()) {
           @SuppressWarnings("unchecked")
-          Class<? extends T> indicatedClass = (Class<? extends T>) docTypeRegistry.getClassFromMongoTypeString(f);
+          Class<? extends T> indicatedClass = (Class<? extends T>) registry.getClassFromMongoTypeString(f);
           rv.add(reduce(jsonNode, indicatedClass));
         }
       }
     }
     return rv;
   }
+  
 }
+
