@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.repository.index.LocalSolrServer;
-import nl.knaw.huygens.repository.model.Search;
+import nl.knaw.huygens.repository.model.SearchResult;
 
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
@@ -26,13 +26,13 @@ public class SearchManager {
     this.server = server;
   }
 
-  public Search search(String core, String q, String sort) throws SolrServerException {
+  public SearchResult search(String core, String q, String sort) throws SolrServerException {
     SolrDocumentList documents = server.getQueryResponse(q, getFacetFieldNames(), sort, core).getResults();
     List<String> ids = Lists.newArrayList();
     for (SolrDocument document : documents) {
       ids.add(document.getFieldValue("id").toString());
     }
-    return new Search(ids, core, q, sort, new Date().toString());
+    return new SearchResult(ids, core, q, sort, new Date().toString());
   }
 
   private Collection<String> getFacetFieldNames() {
