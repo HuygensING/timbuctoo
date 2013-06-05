@@ -2,6 +2,7 @@ package nl.knaw.huygens.repository.config;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -103,6 +104,13 @@ public class DocTypeRegistry {
     if (classesDetected == 0) {
       System.out.printf("Package %s: no types%n", packageId);
     }
+  }
+
+  /**
+   * Returns all registered document types.
+   */
+  public Set<Class<? extends Document>> getDocumentTypes() {
+    return Collections.unmodifiableSet(typeToStringMap.keySet());
   }
 
   private boolean isDocumentType(Class<?> type) {
