@@ -25,11 +25,11 @@ public class VariationReducer {
 
   private static final String VERSIONS_FIELD = "versions";
 
-  private final DocTypeRegistry registry;
+  private final TypeConverter converter;
   private final ObjectMapper mapper;
 
   public VariationReducer(DocTypeRegistry registry, ObjectMapper mapper) {
-    this.registry = registry;
+    converter = new TypeConverter(registry);
     this.mapper = mapper;
   }
 
@@ -276,18 +276,16 @@ public class VariationReducer {
     Iterator<String> fieldNames = jsonNode.fieldNames();
     List<T> rv = Lists.newArrayList();
     while (fieldNames.hasNext()) {
-      String f = fieldNames.next();
-      if (!f.startsWith("^") && !f.startsWith("_")) {
-        JsonNode subNode = jsonNode.get(f);
+      String name = fieldNames.next();
+      if (!name.startsWith("^") && !name.startsWith("_")) {
+        JsonNode subNode = jsonNode.get(name);
         if (subNode != null && subNode.isObject()) {
-          @SuppressWarnings("unchecked")
-          Class<? extends T> indicatedClass = (Class<? extends T>) registry.getClassFromMongoTypeString(f);
+          Class<? extends T> indicatedClass = converter.getClass(name);
           rv.add(reduce(jsonNode, indicatedClass));
         }
       }
     }
     return rv;
   }
-  
-}
 
+}
