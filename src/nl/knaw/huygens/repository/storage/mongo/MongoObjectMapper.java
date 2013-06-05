@@ -64,12 +64,13 @@ public class MongoObjectMapper {
 
   private Method getMethodOfField(Class<?> type, String fieldName) {
     Method method = null;
-    try {
-      method = type.getMethod(getMethodName(fieldName, MongoObjectMapper.GET_ACCESSOR));
-    } catch (NoSuchMethodException e) {
-      e.printStackTrace();
-    } catch (SecurityException e) {
-      e.printStackTrace();
+    String methodName = getMethodName(fieldName, MongoObjectMapper.GET_ACCESSOR);
+
+    for (Method m : type.getMethods()) {
+      if (m.getName().equals(methodName)) {
+        method = m;
+        break;
+      }
     }
 
     return method;

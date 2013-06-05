@@ -12,17 +12,17 @@ import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
-import org.mongojack.WriteResult;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mongodb.BasicDBObject;
-import com.mongodb.CommandResult;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
+import com.mongodb.util.JSON;
 
 @Singleton
 public class MongoModifiableStorage extends MongoStorageImpl {
@@ -38,10 +38,14 @@ public class MongoModifiableStorage extends MongoStorageImpl {
 
   @Override
   public <T extends Document> void addItem(Class<T> type, T item) throws IOException {
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
+
+    item.setCreation(item.getLastChange());
+    col.insert(item);
+
     if (item.getId() == null) {
       setNextId(type, item);
     }
-    addVersion(item.getId(), item, type, true);
   }
 
   @Override
@@ -85,8 +89,27 @@ public class MongoModifiableStorage extends MongoStorageImpl {
 
   @Override
   public <T extends Document> void updateItem(Class<T> type, String id, T item) throws IOException {
-    addVersion(id, item, type);
-    item.setRev(item.getRev() + 1);
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
+
+    int oldRev = item.getRev();
+    item.setRev(oldRev + 1);
+
+    BasicDBObject query = new BasicDBObject("_id", id);
+    query.put("^rev", oldRev);
+
+    T oldItemWithCreation = col.findOne(query);
+    if (oldItemWithCreation != null) {
+      item.setCreation(oldItemWithCreation.getCreation());
+    }
+
+    String objectString = new ObjectMapper().writeValueAsString(item);
+
+    DBObject newItem = (DBObject) JSON.parse(objectString);
+
+    T oldItem = col.findAndModify(DBQuery.is("_id", id).is("^rev", oldRev), newItem);
+    if (oldItem == null) {
+      throw new IOException("The document was modified since you loaded it!");
+    }
   }
 
   @Override
@@ -112,15 +135,7 @@ public class MongoModifiableStorage extends MongoStorageImpl {
     // NB: we don't check the rev prop here. This is because deletion will
     // always work;
     // we simply set the delete prop to true.
-    T item = col.findAndModify(DBQuery.is("_id", id), update);
-
-    // Then update the versioning table:
-    JacksonDBCollection<MongoChanges<T>, String> versionCol = MongoUtils.getVersioningCollection(db, type);
-    int oldRev = item.getRev();
-    item.setRev(oldRev + 1);
-    item.setLastChange(change);
-    item.setDeleted(true);
-    changeVersionObj(id, oldRev, versionCol, item);
+    col.findAndModify(DBQuery.is("_id", id), update);
   }
 
   @Override
@@ -145,61 +160,4 @@ public class MongoModifiableStorage extends MongoStorageImpl {
     String newId = cls.getAnnotation(IDPrefix.class).value() + String.format("%1$010d", newCounter.next);
     item.setId(newId);
   }
-
-  private <T extends Document> void addVersion(String id, T item, Class<T> cls) throws IOException {
-    addVersion(id, item, cls, false);
-  }
-
-  private <T extends Document> void addVersion(String id, T item, Class<T> cls, boolean doInsert) throws IOException {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
-    boolean shouldVersion = versionedDocumentTypes.contains(col.getName());
-
-    int oldRev = item.getRev();
-    item.setRev(oldRev + 1);
-    if (doInsert) {
-      item.setCreation(item.getLastChange());
-      col.insert(item);
-      if (shouldVersion) {
-        updateVersionCol(id, null, item, oldRev, cls);
-      }
-    } else {
-      // This is really evil, but it's very annoying to update only the fields
-      // you want
-      // (you can't ignore fields, only give an explicit list of everything you
-      // want)
-      T oldItemWithCreation = col.findOneById(id, new BasicDBObject("^creation", true));
-      if (oldItemWithCreation != null) {
-        item.setCreation(oldItemWithCreation.getCreation());
-      }
-      T oldItem = col.findAndModify(DBQuery.is("_id", id).is("^rev", oldRev), MongoUtils.getObjectForDoc(item));
-      if (oldItem == null) {
-        throw new IOException("The document was modified since you loaded it!");
-      }
-      if (shouldVersion) {
-        updateVersionCol(id, oldItem, item, oldRev, cls);
-      }
-    }
-  }
-
-  private <T extends Document> void updateVersionCol(String id, T oldItem, T item, int oldRev, Class<T> cls) throws MongoException, IOException {
-    JacksonDBCollection<MongoChanges<T>, String> versionCol = MongoUtils.getVersioningCollection(db, cls);
-    long count = versionCol.count(DBQuery.is("_id", id));
-    if (count != 0 && oldItem != null) {
-      changeVersionObj(id, oldRev, versionCol, item);
-    } else {
-      versionCol.insert(new MongoChanges<T>(id, item));
-    }
-  }
-
-  private <T extends Document> void changeVersionObj(String id, int oldRev, JacksonDBCollection<MongoChanges<T>, String> versionCol, T item) throws MongoException {
-    MongoChanges<T> oldItem = versionCol.findOne(DBQuery.is("_id", id));
-    oldItem.getRevisions().add(item);
-    WriteResult<MongoChanges<T>, String> updateResult = versionCol.updateById(id, oldItem);
-
-    CommandResult cachedLastError = updateResult.getCachedLastError();
-    if (!cachedLastError.ok() || updateResult.getN() != 1) {
-      throw new MongoException("Updating the version table failed!\n" + cachedLastError.getErrorMessage());
-    }
-  }
-
 }

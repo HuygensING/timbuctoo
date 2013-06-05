@@ -60,8 +60,8 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     instance.addItem(type, input);
 
-    verifyCollectionSize(1, "testconcretedoc");
-    verifyCollectionSize(1, "testconcretedoc-versions");
+    verifyCollectionSize(1, "testconcretedoc", instance.db);
+    verifyCollectionSize(1, "testconcretedoc-versions", instance.db);
   }
 
   @Test
@@ -72,8 +72,8 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
 
     instance.addItem(TestDocWithIDPrefix.class, input);
 
-    verifyCollectionSize(1, "testconcretedoc");
-    verifyCollectionSize(1, "testconcretedoc-versions");
+    verifyCollectionSize(1, "testconcretedoc", instance.db);
+    verifyCollectionSize(1, "testconcretedoc-versions", instance.db);
   }
 
   @Test
@@ -83,8 +83,8 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     instance.addItem(type, input);
 
-    verifyCollectionSize(1, "testconcretedoc");
-    verifyCollectionSize(1, "testconcretedoc-versions");
+    verifyCollectionSize(1, "testconcretedoc", instance.db);
+    verifyCollectionSize(1, "testconcretedoc-versions", instance.db);
   }
 
   @Test(expected = MongoException.class)
@@ -105,8 +105,8 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
 
     instance.addItem(GeneralTestDoc.class, input);
 
-    verifyCollectionSize(1, "testconcretedoc");
-    verifyCollectionSize(1, "testconcretedoc-versions");
+    verifyCollectionSize(1, "testconcretedoc", instance.db);
+    verifyCollectionSize(1, "testconcretedoc-versions", instance.db);
   }
 
   @Test
@@ -116,8 +116,8 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     instance.addItems(type, items);
 
-    verifyCollectionSize(3, "testconcretedoc");
-    verifyCollectionSize(3, "testconcretedoc-versions");
+    verifyCollectionSize(3, "testconcretedoc", instance.db);
+    verifyCollectionSize(3, "testconcretedoc-versions", instance.db);
   }
 
   @Test
@@ -127,8 +127,8 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     instance.addItems(type, items);
 
-    verifyCollectionSize(3, "testconcretedoc");
-    verifyCollectionSize(3, "testconcretedoc-versions");
+    verifyCollectionSize(3, "testconcretedoc", instance.db);
+    verifyCollectionSize(3, "testconcretedoc-versions", instance.db);
   }
 
   @Test
@@ -141,8 +141,8 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
     input.name = "updated";
     instance.updateItem(type, input.getId(), input);
 
-    verifyCollectionSize(1, "testconcretedoc");
-    verifyCollectionSize(1, "testconcretedoc-versions");
+    verifyCollectionSize(1, "testconcretedoc", instance.db);
+    verifyCollectionSize(1, "testconcretedoc-versions", instance.db);
   }
 
   @Test
@@ -158,8 +158,8 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
 
     instance.updateItem(type, DEFAULT_ID, subClassInput);
 
-    verifyCollectionSize(1, "testconcretedoc");
-    verifyCollectionSize(1, "testconcretedoc-versions");
+    verifyCollectionSize(1, "testconcretedoc", instance.db);
+    verifyCollectionSize(1, "testconcretedoc-versions", instance.db);
   }
 
   @Test(expected = IOException.class)
@@ -181,8 +181,8 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
 
     instance.deleteItem(type, DEFAULT_ID, null);
 
-    verifyCollectionSize(1, "testconcretedoc");
-    verifyCollectionSize(1, "testconcretedoc-versions");
+    verifyCollectionSize(1, "testconcretedoc", instance.db);
+    verifyCollectionSize(1, "testconcretedoc-versions", instance.db);
 
   }
 
@@ -543,11 +543,6 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
   public void testGetRevisionOfNonExistingItem() throws IOException {
     TestConcreteDoc revision = instance.getRevision(TestConcreteDoc.class, DEFAULT_ID, 1);
     assertNull(revision);
-  }
-
-  //Helper methods
-  private void verifyCollectionSize(long expectedSize, String collectionName) {
-    assertEquals(expectedSize, instance.db.getCollection(collectionName).getCount());
   }
 
   private List<TestConcreteDoc> createTestDocListWithIds(String idBase, String... names) {
