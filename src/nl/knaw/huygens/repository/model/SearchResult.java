@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("QRY")
 @DocumentTypeName("search")
-public class SearchResult extends PersistentDocument {
+public class SearchResult extends SystemDocument implements Persistent {
 
   private List<String> ids;
   private String term;
