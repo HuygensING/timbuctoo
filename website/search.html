@@ -18,7 +18,7 @@
   <td><input name="" type="text" id="searchtext"/></td>
 </tr>
 </table>
-<p><button id="search_post">Post</button></p>
+<p><a href="#" onclick="doPost()">Submit query</a></p>
 
 <h2>Browse results</h2>
 <table>
@@ -36,7 +36,7 @@
   <td><input name="" type="text" id="rows" value="10"/></td>
 </tr>
 </table>
-<p><button id="search_get">Get</button></p>
+<p><a href="#" onclick="doGet()">Show results</a></p>
 
 <div id="results">
 </div>
@@ -44,10 +44,46 @@
 
 <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
 <script>
-$(document).ready(function() {
-  $('#searchid').html('None');
-  $('#results').html('No results (yet)');
-});
+  var searchUrl = "http://localhost:8080/repository/search";
+
+  function doPost() {
+    var text = $('searchtext').val() || 'huygens';
+    jQuery.ajax({
+      url: searchUrl,
+      type: 'POST',
+      data: {'type': 'person', 'q': 'facet_t_person:'+$('searchtext').val(), 'sort': 'id'},
+      contentType: 'application/json; charset=utf-8',
+      success: function (data) {
+        var queryId = data.queryId || 'None';
+        $('#searchid').html(queryId);
+      }
+    });
+  }
+
+  function doGet() {
+    var id = $('#searchid').val();
+    var start = $('#start').val() || '0';
+    var rows = $('#rows').val() || '10';
+    jQuery.ajax({
+      url: searchUrl,
+      type: 'GET',
+      data: {'id': id, 'start': start, 'rows': rows},
+      contentType: 'application/json; charset=utf-8',
+      success: function (data) {
+        var html = '<table><tr><th>Id</th><th>Name</th></tr>';
+        $.each(data, function (i, item) {
+          html += '<tr><td>' + item._id + '</td><td>' + item.name + '</td></tr>';
+        });
+        html += '</table>';
+        $('#results').html(html);
+      }
+    });
+  }
+
+  $(document).ready(function() {
+    $('#searchid').html('None');
+    $('#results').html('No results (yet)');
+  });
 </script>
 </body>
 
