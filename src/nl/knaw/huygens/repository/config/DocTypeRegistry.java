@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.annotations.DoNotRegister;
 import nl.knaw.huygens.repository.model.annotations.DocumentTypeName;
 
 import org.apache.commons.lang.StringUtils;
@@ -81,7 +82,7 @@ public class DocTypeRegistry {
     int classesDetected = 0;
     for (ClassInfo info : classPath.getTopLevelClasses(packageId)) {
       Class<?> cls = info.load();
-      if (isDocumentType(cls)) {
+      if (isDocumentType(cls) && cls.getAnnotation(DoNotRegister.class) == null) {
         Class<? extends Document> docCls = (Class<? extends Document>) cls;
         String typeId = determineTypeName(docCls);
         webServiceTypeStringToTypeMap.put(typeId, docCls);
