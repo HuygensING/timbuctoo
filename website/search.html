@@ -20,16 +20,15 @@
 </table>
 <p><a href="#" onclick="doPost()">Submit query</a></p>
 
-<h2>Browse results</h2>
+<h2>Results</h2>
 <table>
 <tr>
   <td>Search id</td>
-  <td><span id="searchid"></span></td>
+  <td><input name="" type="text" id="searchid" disabled="disabled"/></td>
 </tr>
 <tr>
-  <td>Start</td><td>
-  <input name="" type="text" id="start" value="0"/>
-</td>
+  <td>Start</td>
+  <td><input name="" type="text" id="start" value="0"/></td>
 </tr>
 <tr>
   <td>Rows</td>
@@ -47,15 +46,15 @@
   var searchUrl = "http://localhost:8080/repository/search";
 
   function doPost() {
-    var text = $('searchtext').val() || 'huygens';
+    var query = 'facet_t_person:' + $('#searchtext').val();
     jQuery.ajax({
       url: searchUrl,
       type: 'POST',
-      data: {'type': 'person', 'q': 'facet_t_person:'+$('searchtext').val(), 'sort': 'id'},
-      contentType: 'application/json; charset=utf-8',
+      data: {'type': 'person', 'q': query, 'sort': 'id'},
+      contentType: 'application/x-www-form-urlencoded; charset=utf-8',
       success: function (data) {
         var queryId = data.queryId || 'None';
-        $('#searchid').html(queryId);
+        $('#searchid').val(queryId);
       }
     });
   }
@@ -81,7 +80,7 @@
   }
 
   $(document).ready(function() {
-    $('#searchid').html('None');
+    $('#searchid').val('QRY0000000001');
     $('#results').html('No results (yet)');
   });
 </script>

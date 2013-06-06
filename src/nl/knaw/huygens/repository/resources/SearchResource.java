@@ -2,7 +2,9 @@ package nl.knaw.huygens.repository.resources;
 
 import java.util.List;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -42,22 +44,24 @@ public class SearchResource {
 
   @POST
   @APIDesc("Searches the Solr index")
-  @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
+  //@Consumes(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  @Produces(MediaType.APPLICATION_JSON)
   @JsonView(JsonViews.WebView.class)
   public String step1( //
-      @QueryParam("type") @DefaultValue("person") String typeString, //
-      @QueryParam("q") String q, //
-      @QueryParam("sort") @DefaultValue("id") String sort //
+      @FormParam("type") @DefaultValue("person") String typeString, //
+      @FormParam("q") String q, //
+      @FormParam("sort") @DefaultValue("id") String sort //
   ) {
 
     // Validate input
     if (typeString == null || q == null) {
-      LOG.warn("POST - type: '{}', q: '{}'", typeString, q);
+      LOG.error("POST - type: '{}', q: '{}'", typeString, q);
       throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
     Class<? extends Document> type = docTypeRegistry.getClassFromWebServiceTypeString(typeString);
     if (type == null) {
-      LOG.warn("POST - no type '{}'");
+      LOG.error("POST - no type '{}'");
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
 
@@ -86,16 +90,19 @@ public class SearchResource {
 
     // Validate input
     if (queryId == null) {
+      LOG.error("GET - no query id");
       throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
 
     // Retrieve result
-    //    SearchResult result = storageManager.getDocument(SearchResult.class, queryId);
-    //    if (result == null) {
-    //      throw new WebApplicationException(Response.Status.NOT_FOUND);
-    //    }
+    SearchResult result = storageManager.getDocument(SearchResult.class, queryId);
+    if (result == null) {
+      LOG.error("GET - no results for id '{}'", queryId);
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
+    }
 
     // Process
+    System.out.println(">>>>> " + result.getTypeName());
     Class<? extends Document> type = Person.class;
     List<String> ids = Lists.newArrayList("PER0000005354", "PER0000005355", "PER0000005356");
     int lo = toRange(start, 0, ids.size());
