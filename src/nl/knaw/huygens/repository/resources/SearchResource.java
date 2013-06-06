@@ -18,7 +18,6 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.SearchManager;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 import nl.knaw.huygens.repository.util.APIDesc;
@@ -40,7 +39,7 @@ public class SearchResource {
   @Inject
   private StorageManager storageManager;
   @Inject
-  private DocTypeRegistry docTypeRegistry;
+  private DocTypeRegistry registry;
 
   @POST
   @APIDesc("Searches the Solr index")
@@ -59,7 +58,7 @@ public class SearchResource {
       LOG.error("POST - type: '{}', q: '{}'", typeString, q);
       throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
-    Class<? extends Document> type = docTypeRegistry.getClassFromWebServiceTypeString(typeString);
+    Class<? extends Document> type = registry.getClassFromWebServiceTypeString(typeString);
     if (type == null) {
       LOG.error("POST - no type '{}'");
       throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -67,10 +66,10 @@ public class SearchResource {
 
     // Process
     try {
-      String core = docTypeRegistry.getCollectionId(type);
-      SearchResult search = searchManager.search(core, q, sort);
-      storageManager.addDocument(SearchResult.class, search);
-      String queryId = search.getId();
+      String core = registry.getCollectionId(type);
+      SearchResult result = searchManager.search(core, q, sort);
+      storageManager.addDocument(SearchResult.class, result);
+      String queryId = result.getId();
       return String.format("{\"queryId\": \"%s\"}", queryId);
     } catch (Exception e) {
       LOG.warn("POST - {}", e.getMessage());
@@ -102,9 +101,12 @@ public class SearchResource {
     }
 
     // Process
-    System.out.println(">>>>> " + result.getTypeName());
-    Class<? extends Document> type = Person.class;
-    List<String> ids = Lists.newArrayList("PER0000005354", "PER0000005355", "PER0000005356");
+    Class<? extends Document> type = registry.getClassFromWebServiceTypeString(result.getSearchType());
+    if (type == null) {
+      LOG.error("GET - no document type for '{}'", result.getSearchType());
+      throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+    }
+    List<String> ids = result.getIds();
     int lo = toRange(start, 0, ids.size());
     int hi = toRange(lo + rows, 0, ids.size());
     return convert(type, ids, lo, hi);
