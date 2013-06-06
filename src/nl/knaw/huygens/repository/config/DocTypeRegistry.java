@@ -75,25 +75,27 @@ public class DocTypeRegistry {
   }
 
   @SuppressWarnings("unchecked")
-  private void registerPackage(String packageId) {
-    int classesDetected = 0;
-    for (ClassInfo info : classPath.getTopLevelClasses(packageId)) {
+  private void registerPackage(String packageName) {
+    for (ClassInfo info : classPath.getTopLevelClasses(packageName)) {
       Class<?> cls = info.load();
-      if (isDocumentType(cls) && cls.getAnnotation(DoNotRegister.class) == null) {
-        Class<? extends Document> docCls = (Class<? extends Document>) cls;
-        String typeId = determineTypeName(docCls);
-        webServiceTypeStringToTypeMap.put(typeId, docCls);
-        typeToStringMap.put(docCls, typeId);
-        Class<? extends Document> baseCls = getBaseClass(docCls);
-        String baseTypeId = getCollectionName(baseCls);
-        typeToCollectionIdMap.put(docCls, baseTypeId);
-        LOG.info("Identified '{}' in package {}", typeId, packageId);
-        classesDetected++;
+      if (doRegisterClass(cls)) {
+        registerClass(packageName, (Class<? extends Document>) cls);
       }
     }
-    if (classesDetected == 0) {
-      LOG.info("Package {}: no types", packageId);
-    }
+  }
+
+  private boolean doRegisterClass(Class<?> cls) {
+    return Document.class.isAssignableFrom(cls) && !Modifier.isAbstract(cls.getModifiers()) && !cls.isAnnotationPresent(DoNotRegister.class);
+  }
+
+  private void registerClass(String packageId, Class<? extends Document> type) {
+    String typeId = determineTypeName(type);
+    webServiceTypeStringToTypeMap.put(typeId, type);
+    typeToStringMap.put(type, typeId);
+    Class<? extends Document> baseCls = getBaseClass(type);
+    String baseTypeId = getCollectionName(baseCls);
+    typeToCollectionIdMap.put(type, baseTypeId);
+    LOG.info("Identified '{}' in package {}", typeId, packageId);
   }
 
   /**
@@ -101,10 +103,6 @@ public class DocTypeRegistry {
    */
   public Set<Class<? extends Document>> getDocumentTypes() {
     return Collections.unmodifiableSet(typeToStringMap.keySet());
-  }
-
-  private boolean isDocumentType(Class<?> type) {
-    return Document.class.isAssignableFrom(type) && !Modifier.isAbstract(type.getModifiers());
   }
 
   @SuppressWarnings("unchecked")
