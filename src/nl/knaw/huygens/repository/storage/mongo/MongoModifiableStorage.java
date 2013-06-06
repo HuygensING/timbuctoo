@@ -36,16 +36,14 @@ public class MongoModifiableStorage extends MongoStorageImpl {
     super(conf, m, loanedDB, docTypeRegistry);
   }
 
+  // TODO make unit test: add & retrieve
   @Override
   public <T extends Document> void addItem(Class<T> type, T item) throws IOException {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
-
     item.setCreation(item.getLastChange());
-    col.insert(item);
-
     if (item.getId() == null) {
       setNextId(type, item);
     }
+    MongoUtils.getCollection(db, type).insert(item);
   }
 
   @Override
