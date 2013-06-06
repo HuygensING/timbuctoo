@@ -54,6 +54,7 @@ public class DocTypeRegistry {
     return ImmutableSortedSet.copyOf(webServiceTypeStringToTypeMap.keySet());
   }
 
+  // FIXME all inits should be done at construction time!
   public String getTypeString(Class<? extends Document> type) {
     if (typeToStringMap.containsKey(type)) {
       return typeToStringMap.get(type);
@@ -65,6 +66,7 @@ public class DocTypeRegistry {
     return webServiceTypeStringToTypeMap.get(typeString);
   }
 
+  // FIXME all inits should be done at construction time!
   public String getCollectionId(Class<? extends Document> type) {
     if (typeToCollectionIdMap.containsKey(type)) {
       return typeToCollectionIdMap.get(type);
@@ -78,24 +80,26 @@ public class DocTypeRegistry {
   private void registerPackage(String packageName) {
     for (ClassInfo info : classPath.getTopLevelClasses(packageName)) {
       Class<?> cls = info.load();
-      if (doRegisterClass(cls)) {
+      if (shouldRegisterClass(cls)) {
         registerClass(packageName, (Class<? extends Document>) cls);
       }
     }
   }
 
-  private boolean doRegisterClass(Class<?> cls) {
-    return Document.class.isAssignableFrom(cls) && !Modifier.isAbstract(cls.getModifiers()) && !cls.isAnnotationPresent(DoNotRegister.class);
+  private boolean shouldRegisterClass(Class<?> cls) {
+    return Document.class.isAssignableFrom(cls) //
+        && !Modifier.isAbstract(cls.getModifiers()) //
+        && !cls.isAnnotationPresent(DoNotRegister.class);
   }
 
-  private void registerClass(String packageId, Class<? extends Document> type) {
+  private void registerClass(String packageName, Class<? extends Document> type) {
     String typeId = determineTypeName(type);
     webServiceTypeStringToTypeMap.put(typeId, type);
     typeToStringMap.put(type, typeId);
     Class<? extends Document> baseCls = getBaseClass(type);
     String baseTypeId = getCollectionName(baseCls);
     typeToCollectionIdMap.put(type, baseTypeId);
-    LOG.info("Identified '{}' in package {}", typeId, packageId);
+    LOG.info("Identified '{}' in package {}", typeId, packageName);
   }
 
   /**
