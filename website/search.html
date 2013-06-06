@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>Repository Search</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="css/static-html.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<h1>Repository Search</h1>
+<form id="formSearch" name="formSearch">
+
+<h2>Query</h2>
+<table>
+<tr>
+  <td>Text</td>
+  <td><input name="" type="text" id="searchtext"/></td>
+</tr>
+</table>
+<p><button id="search_post">Post</button></p>
+
+<h2>Browse results</h2>
+<table>
+<tr>
+  <td>Search id</td>
+  <td><span id="searchid"></span></td>
+</tr>
+<tr>
+  <td>Start</td><td>
+  <input name="" type="text" id="start" value="0"/>
+</td>
+</tr>
+<tr>
+  <td>Rows</td>
+  <td><input name="" type="text" id="rows" value="10"/></td>
+</tr>
+</table>
+<p><button id="search_get">Get</button></p>
+
+<div id="results">
+</div>
+</form>
+
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script>
+$(document).ready(function() {
+  $('#searchid').html('None');
+  $('#results').html('No results (yet)');
+});
+</script>
+</body>
+
+</html>
