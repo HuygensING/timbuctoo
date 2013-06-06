@@ -47,12 +47,6 @@ public class DocTypeRegistryTest {
   }
 
   @Test
-  public void testGetClassFromWebServiceTypeStringWithPackage() {
-    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
-    assertEquals(TestExtraBaseDoc.class, registry.getClassFromWebServiceTypeString("model-testextrabasedocs"));
-  }
-
-  @Test
   public void testGetCollectionIdFromCollectionBaseClass() {
     DocTypeRegistry registry = new DocTypeRegistry(null);
     assertEquals("testbasedoc", registry.getCollectionId(TestBaseDoc.class));

@@ -58,14 +58,7 @@ public class DocTypeRegistry {
   }
 
   public Class<? extends Document> getClassFromWebServiceTypeString(String typeString) {
-    // NB: in the DB, package names will be prefixed to class names with a dash (-) suffix.
-    // These need to be removed in order to find the classes again:
-    String normalizedTypeString = normalizeTypeString(typeString);
-    return webServiceTypeStringToTypeMap.get(normalizedTypeString);
-  }
-
-  private String normalizeTypeString(String typeString) {
-    return typeString.replaceFirst("[a-z]*-", "");
+    return webServiceTypeStringToTypeMap.get(typeString);
   }
 
   public String getCollectionId(Class<? extends Document> type) {
