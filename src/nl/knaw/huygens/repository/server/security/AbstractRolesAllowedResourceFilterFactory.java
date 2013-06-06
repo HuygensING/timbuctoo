@@ -1,5 +1,6 @@
 package nl.knaw.huygens.repository.server.security;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,7 +42,7 @@ public abstract class AbstractRolesAllowedResourceFilterFactory implements Resou
 
   @Override
   public final List<ResourceFilter> create(AbstractMethod am) {
-    if (!hasRolesAllowedAnnotation(am)) {
+    if (!hasAnnotation(am, RolesAllowed.class) && !hasAnnotation(am, RolesPartiallyAllowed.class)) {
       return null;
     }
     if (!securityEnabled) {
@@ -52,8 +53,8 @@ public abstract class AbstractRolesAllowedResourceFilterFactory implements Resou
 
   }
 
-  private boolean hasRolesAllowedAnnotation(AbstractMethod am) {
-    return am.getAnnotation(RolesAllowed.class) != null || am.getResource().getAnnotation(RolesAllowed.class) != null;
+  private boolean hasAnnotation(AbstractMethod am, Class<? extends Annotation> annotation) {
+    return am.getAnnotation(annotation) != null || am.getResource().getAnnotation(annotation) != null;
   }
 
 }
