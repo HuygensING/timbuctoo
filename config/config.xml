@@ -59,7 +59,7 @@
     <doctypes>person,place</doctypes>
     <variationdoctypes>person,place</variationdoctypes>
     <indexeddoctypes>person,place</indexeddoctypes>
-    <versioneddoctypes>person,place,user</versioneddoctypes>
+    <versioneddoctypes>person,place</versioneddoctypes>
     <public_url>http://localhost:8080/repository/</public_url>
     <feed>
       <title>Repository changes</title>
