@@ -83,6 +83,12 @@ public class DocTypeRegistryTest {
   }
 
   @Test
+  public void testRegisterPackageDontRegisterClass() {
+    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
+    assertNull(registry.getClassFromWebServiceTypeString("donotregistertests"));
+  }
+
+  @Test
   public void testRegisterPackageNonDocument() {
     DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
     assertNull(registry.getClassFromWebServiceTypeString("nonDoc"));
