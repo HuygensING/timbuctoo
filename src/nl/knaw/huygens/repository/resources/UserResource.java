@@ -78,10 +78,6 @@ public class UserResource {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
   public Response put(@PathParam(ID_PARAM) String id, User user) throws IOException {
-    if (user == null) {
-      throw new WebApplicationException(Response.Status.NOT_FOUND);
-    }
-
     try {
       storageManager.modifyDocument(User.class, user);
     } catch (IOException ex) {
