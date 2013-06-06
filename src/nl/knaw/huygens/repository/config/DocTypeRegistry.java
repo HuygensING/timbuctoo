@@ -11,6 +11,8 @@ import nl.knaw.huygens.repository.model.annotations.DoNotRegister;
 import nl.knaw.huygens.repository.model.annotations.DocumentTypeName;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
@@ -20,6 +22,8 @@ import com.google.inject.Singleton;
 
 @Singleton
 public class DocTypeRegistry {
+
+  private final Logger LOG = LoggerFactory.getLogger(DocTypeRegistry.class);
 
   private final ClassPath classPath;
   private final Map<String, Class<? extends Document>> webServiceTypeStringToTypeMap;
@@ -83,12 +87,12 @@ public class DocTypeRegistry {
         Class<? extends Document> baseCls = getBaseClass(docCls);
         String baseTypeId = getCollectionName(baseCls);
         typeToCollectionIdMap.put(docCls, baseTypeId);
-        System.out.printf("Identified '%s' in package %s%n", typeId, packageId);
+        LOG.info("Identified '{}' in package {}", typeId, packageId);
         classesDetected++;
       }
     }
     if (classesDetected == 0) {
-      System.out.printf("Package %s: no types%n", packageId);
+      LOG.info("Package {}: no types", packageId);
     }
   }
 
