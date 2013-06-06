@@ -43,10 +43,12 @@
 
 <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
 <script>
-  var searchUrl = "http://localhost:8080/repository/search";
+  var baseUrl = 'http://localhost:8080/repository/';
+  var searchUrl = baseUrl + 'search';
+  var personUrl = baseUrl + 'resources/person/';
 
   function doPost() {
-    var query = 'facet_t_person:' + $('#searchtext').val();
+    var query = 'facet_t_name:' + $('#searchtext').val();
     jQuery.ajax({
       url: searchUrl,
       type: 'POST',
@@ -71,7 +73,7 @@
       success: function (data) {
         var html = '<table><tr><th>Id</th><th>Name</th></tr>';
         $.each(data, function (i, item) {
-          html += '<tr><td>' + item._id + '</td><td>' + item.name + '</td></tr>';
+          html += '<tr><td><a href="' + personUrl + item._id + '">' + item._id + '</a></td><td>' + item.name + '</td></tr>';
         });
         html += '</table>';
         $('#results').html(html);
