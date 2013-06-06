@@ -14,6 +14,10 @@
 <h2>Query</h2>
 <table>
 <tr>
+  <td>Type</td>
+  <td><input name="" type="text" id="searchtype" disabled="disabled"/></td>
+</tr>
+<tr>
   <td>Text</td>
   <td><input name="" type="text" id="searchtext"/></td>
 </tr>
@@ -82,7 +86,9 @@
   }
 
   $(document).ready(function() {
-    $('#searchid').val('QRY0000000001');
+    $('#searchtype').val('person');
+    $('#searchtext').val('Huygens');
+    $('#searchid').val('');
     $('#results').html('No results (yet)');
   });
 </script>
