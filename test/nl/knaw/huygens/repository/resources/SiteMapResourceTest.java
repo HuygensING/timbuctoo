@@ -12,7 +12,7 @@ public class SiteMapResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetSitemap() {
-    setUpUserRoles(Lists.newArrayList("USER"));
+    setUpUserRoles(USER_ID, Lists.newArrayList("USER"));
     WebResource resource = super.resource();
 
     ClientResponse response = resource.path("/api").header("Authorization", "bearer 12333322abef").get(ClientResponse.class);

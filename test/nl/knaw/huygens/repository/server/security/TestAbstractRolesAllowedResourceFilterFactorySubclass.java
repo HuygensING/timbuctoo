@@ -1,5 +1,6 @@
 package nl.knaw.huygens.repository.server.security;
 
+import com.sun.jersey.api.model.AbstractMethod;
 import com.sun.jersey.spi.container.ContainerRequestFilter;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
 import com.sun.jersey.spi.container.ResourceFilter;
@@ -11,7 +12,7 @@ public class TestAbstractRolesAllowedResourceFilterFactorySubclass extends Abstr
   }
 
   @Override
-  protected ResourceFilter createResourceFilter() {
+  protected ResourceFilter createResourceFilter(AbstractMethod am) {
     return new SecurityFilter();
   }
 

@@ -7,8 +7,8 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
-import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.User;
+import nl.knaw.huygens.repository.server.security.RolesPartiallyAllowedResourceFilterFactory;
 import nl.knaw.huygens.repository.server.security.apis.SecurityContextCreatorResourceFilterFactory;
 
 import org.junit.After;
@@ -31,7 +31,7 @@ import com.sun.jersey.test.framework.WebAppDescriptor;
  */
 public abstract class WebServiceTestSetup extends JerseyTest {
 
-  private static final String USER_ID = "userId";
+  protected static final String USER_ID = "USR000000001";
   private static final String VRE_ID = "vreID";
   protected static Injector injector;
   private static ResourceTestModule restAutoResourceTestModule;
@@ -60,13 +60,14 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   }
 
   @SuppressWarnings("unchecked")
-  protected void setUpUserRoles(ArrayList<String> userRoles) {
+  protected void setUpUserRoles(String userId, ArrayList<String> userRoles) {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    User user = mock(User.class);
-    when(user.getUserId()).thenReturn(USER_ID);
-    when(user.getVreId()).thenReturn(VRE_ID);
-    when(user.getRoles()).thenReturn(userRoles);
-    when(storageManager.searchDocument(any(Class.class), any(Document.class))).thenReturn(user);
+    User user = new User();
+    user.setId(userId);
+    user.setRoles(userRoles);
+    user.setVreId(VRE_ID);
+
+    when(storageManager.searchDocument(any(Class.class), any(User.class))).thenReturn(user);
   }
 
   @After
@@ -79,8 +80,10 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   protected AppDescriptor configure() {
     WebAppDescriptor webAppDescriptor = new WebAppDescriptor.Builder().build();
     webAppDescriptor.getInitParams().put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.repository.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.repository.providers");
-    webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
-        MockApisAuthorizationFilterFactory.class.getName() + ";" + SecurityContextCreatorResourceFilterFactory.class.getName() + ";" + RolesAllowedResourceFilterFactory.class.getName());
+    webAppDescriptor.getInitParams().put(
+        ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
+        MockApisAuthorizationFilterFactory.class.getName() + ";" + SecurityContextCreatorResourceFilterFactory.class.getName() + ";" + RolesAllowedResourceFilterFactory.class.getName() + ";"
+            + RolesPartiallyAllowedResourceFilterFactory.class.getName());
 
     return webAppDescriptor;
   }
