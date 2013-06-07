@@ -1,12 +1,11 @@
 package nl.knaw.huygens.repository.server.security.apis;
 
 import nl.knaw.huygens.repository.server.security.AbstractRolesAllowedResourceFilterFactory;
+import nl.knaw.huygens.repository.server.security.BypassFilter;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.sun.jersey.spi.container.ContainerRequest;
-import com.sun.jersey.spi.container.ContainerRequestFilter;
-import com.sun.jersey.spi.container.ContainerResponseFilter;
+import com.sun.jersey.api.model.AbstractMethod;
 import com.sun.jersey.spi.container.ResourceFilter;
 
 public class ApisAuthorizationResourceFilterFactory extends AbstractRolesAllowedResourceFilterFactory {
@@ -26,31 +25,12 @@ public class ApisAuthorizationResourceFilterFactory extends AbstractRolesAllowed
   }
 
   @Override
-  protected ResourceFilter createResourceFilter() {
+  protected ResourceFilter createResourceFilter(AbstractMethod am) {
     return new ApisAuthorizationServerResourceFilter(resourceServerKey, resourceServerSecret, authorizationServerUrl, cacheEnabled);
   }
 
   @Override
   protected ResourceFilter createNoSecurityResourceFilter() {
-    return new NoSecurityFilter();
-  }
-
-  private static final class NoSecurityFilter implements ResourceFilter, ContainerRequestFilter {
-
-    @Override
-    public ContainerRequest filter(ContainerRequest request) {
-      return request;
-    }
-
-    @Override
-    public ContainerRequestFilter getRequestFilter() {
-      return this;
-    }
-
-    @Override
-    public ContainerResponseFilter getResponseFilter() {
-      return null;
-    }
-
+    return new BypassFilter();
   }
 }

@@ -24,12 +24,13 @@ import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 
 public class UserResourceTest extends WebServiceTestSetup {
-  private static final String USER_ID = "USR000000001";
+  private static final String OTHER_USER_ID = "otherUserId";
+  private static final String USER_ROLE = "USER";
   private static final String ADMIN_ROLE = "ADMIN";
 
   @Test
   public void testGetAllUsers() {
-    setUpUserRoles(Lists.newArrayList(ADMIN_ROLE));
+    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
     WebResource webResource = super.resource();
 
     List<User> expectedList = Lists.<User> newArrayList(createUser("test", "test"), createUser("test1", "test1"), createUser("test", "test"));
@@ -44,7 +45,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetAllUsersNonFound() {
-    setUpUserRoles(Lists.newArrayList(ADMIN_ROLE));
+    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
     WebResource webResource = super.resource();
 
     List<User> expectedList = Lists.<User> newArrayList();
@@ -59,7 +60,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetAllUsersNotInRole() {
-    setUpUserRoles(null);
+    setUpUserRoles(USER_ID, null);
     WebResource webResource = super.resource();
 
     ClientResponse clientResponse = webResource.path("/resources/user/all").header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
@@ -77,8 +78,25 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testGetUser() {
-    setUpUserRoles(Lists.newArrayList(ADMIN_ROLE));
+  public void testGetUserAsAdminGetOwnData() {
+    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    WebResource webResource = super.resource();
+
+    User expected = createUser("test", "test");
+    expected.setId(USER_ID);
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(expected);
+
+    User actual = webResource.path("/resources/user").path(USER_ID).header("Authorization", "bearer 12333322abef").get(User.class);
+
+    assertEquals(expected.getId(), actual.getId());
+    assertEquals(expected.firstName, actual.firstName);
+    assertEquals(expected.lastName, actual.lastName);
+  }
+
+  @Test
+  public void testGetUserAsAdminGetOtherData() {
+    setUpUserRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE));
     WebResource webResource = super.resource();
 
     User expected = createUser("test", "test");
@@ -95,7 +113,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetUserNotFound() {
-    setUpUserRoles(Lists.newArrayList(ADMIN_ROLE));
+    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
     WebResource webResource = super.resource();
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -107,8 +125,35 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
+  public void testGetUserAsUserGetOwnData() {
+    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    WebResource webResource = super.resource();
+
+    User expected = createUser("test", "test");
+    expected.setId(USER_ID);
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(expected);
+
+    User actual = webResource.path("/resources/user").path(USER_ID).header("Authorization", "bearer 12333322abef").get(User.class);
+
+    assertEquals(expected.getId(), actual.getId());
+    assertEquals(expected.firstName, actual.firstName);
+    assertEquals(expected.lastName, actual.lastName);
+  }
+
+  @Test
+  public void testGetUserAsUserGetOtherData() {
+    setUpUserRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE));
+    WebResource webResource = super.resource();
+
+    ClientResponse clientResponse = webResource.path("/resources/user").path(USER_ID).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
+
+    assertEquals(ClientResponse.Status.FORBIDDEN, clientResponse.getClientResponseStatus());
+  }
+
+  @Test
   public void testGetUserNotInRole() {
-    setUpUserRoles(null);
+    setUpUserRoles(USER_ID, null);
     WebResource webResource = super.resource();
 
     ClientResponse clientResponse = webResource.path("/resources/user").path(USER_ID).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
@@ -129,7 +174,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutUser() {
-    setUpUserRoles(Lists.newArrayList(ADMIN_ROLE));
+    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
 
     User user = createUser("firstName", "lastName");
     user.setId(USER_ID);
@@ -149,9 +194,10 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void testPutUserUserNotFound() throws IOException {
-    setUpUserRoles(Lists.newArrayList(ADMIN_ROLE));
+    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
 
     User user = createUser("firstName", "lastName");
     user.setId(USER_ID);
@@ -176,7 +222,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutUserNotInRole() {
-    setUpUserRoles(null);
+    setUpUserRoles(USER_ID, null);
 
     User user = createUser("firstName", "lastName");
     user.setId(USER_ID);
@@ -209,7 +255,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostUser() {
-    setUpUserRoles(Lists.newArrayList(ADMIN_ROLE));
+    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
     User user = createUser("firstName", "lastName");
 
     WebResource webResource = super.resource();
@@ -224,7 +270,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostUserNotInRole() {
-    setUpUserRoles(null);
+    setUpUserRoles(USER_ID, null);
     User user = createUser("firstName", "lastName");
 
     WebResource webResource = super.resource();
@@ -248,7 +294,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteUser() {
-    setUpUserRoles(Lists.newArrayList(ADMIN_ROLE));
+    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
     WebResource webResource = super.resource();
 
     User expected = createUser("test", "test");
@@ -263,7 +309,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteUserUserNotFound() {
-    setUpUserRoles(Lists.newArrayList(ADMIN_ROLE));
+    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
     WebResource webResource = super.resource();
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -276,7 +322,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteUserNotInRole() {
-    setUpUserRoles(null);
+    setUpUserRoles(USER_ID, null);
     WebResource webResource = super.resource();
 
     User expected = createUser("test", "test");

@@ -8,6 +8,7 @@ import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.server.security.AbstractRolesAllowedResourceFilterFactory;
 
 import com.google.inject.Inject;
+import com.sun.jersey.api.model.AbstractMethod;
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerRequestFilter;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
@@ -27,7 +28,7 @@ public class SecurityContextCreatorResourceFilterFactory extends AbstractRolesAl
   }
 
   @Override
-  protected ResourceFilter createResourceFilter() {
+  protected ResourceFilter createResourceFilter(AbstractMethod am) {
     return new SecurityContextCreatorResourceFilter(this.storageManager);
   }
 

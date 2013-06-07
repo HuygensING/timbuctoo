@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.User;
+import nl.knaw.huygens.repository.server.security.UserSecurityContext;
 
 import org.surfnet.oaaas.model.VerifyTokenResponse;
 
@@ -26,8 +27,6 @@ public class SecurityContextCreatorResourceFilter implements ResourceFilter, Con
     VerifyTokenResponse verifyTokenResponse = (VerifyTokenResponse) request.getProperties().get(VERIFY_TOKEN_RESPONSE);
 
     if (verifyTokenResponse != null) {
-      ApisAuthorizer securityContext = new ApisAuthorizer(verifyTokenResponse.getPrincipal());
-
       User example = new User();
       example.setVreId(verifyTokenResponse.getAudience());
       example.setUserId(verifyTokenResponse.getPrincipal().getName());
@@ -38,7 +37,15 @@ public class SecurityContextCreatorResourceFilter implements ResourceFilter, Con
         user = createUser(example);
       }
 
-      securityContext.setRoles(user.getRoles());
+      UserSecurityContext securityContext = new UserSecurityContext(verifyTokenResponse.getPrincipal(), user);
+
+      /*
+       * TODO: fill setSecure and setAuthenticationScheme
+       * ContainerRequest.isSecure wraps SecurityContext.isSecure 
+       * the same is true for 
+       * ContainerRequest.getAuthenticationScheme()
+       */
+
       request.setSecurityContext(securityContext);
     }
 
