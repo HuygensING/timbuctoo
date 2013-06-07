@@ -202,6 +202,19 @@ public class MongoModifiableStorageTest extends MongoStorageTestBase {
   }
 
   @Test
+  public void testGetItemCreatedWithoutId() throws IOException {
+    TestSystemDocument expected = new TestSystemDocument();
+    expected.setTestValue1("test");
+
+    Class<TestSystemDocument> type = TestSystemDocument.class;
+    instance.addItem(type, expected);
+
+    TestSystemDocument actual = instance.getItem(type, expected.getId());
+
+    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+  }
+
+  @Test
   public void testGetItemUpdatedItem() throws IOException {
     TestSystemDocument expected = new TestSystemDocument();
     String id = "TSD0000000001";
