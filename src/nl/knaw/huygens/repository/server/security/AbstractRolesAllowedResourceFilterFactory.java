@@ -1,13 +1,7 @@
 package nl.knaw.huygens.repository.server.security;
 
-import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.List;
-
 import javax.annotation.security.RolesAllowed;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import com.sun.jersey.api.model.AbstractMethod;
 import com.sun.jersey.spi.container.ResourceFilter;
 import com.sun.jersey.spi.container.ResourceFilterFactory;
@@ -17,11 +11,7 @@ import com.sun.jersey.spi.container.ResourceFilterFactory;
  * @author martijnm
  *
  */
-public abstract class AbstractRolesAllowedResourceFilterFactory implements ResourceFilterFactory {
-
-  @Inject
-  @Named("security.enabled")
-  private boolean securityEnabled;
+public abstract class AbstractRolesAllowedResourceFilterFactory extends AbstractSecurityAnnotationResourceFilterFactory implements ResourceFilterFactory {
 
   public AbstractRolesAllowedResourceFilterFactory() {
     super();
@@ -32,29 +22,18 @@ public abstract class AbstractRolesAllowedResourceFilterFactory implements Resou
     this.securityEnabled = securityEnabled;
   }
 
-  protected abstract ResourceFilter createResourceFilter();
+  @Override
+  protected abstract ResourceFilter createResourceFilter(AbstractMethod am);
 
   /**
    * A method needed to override security.
    * @return
    */
+  @Override
   protected abstract ResourceFilter createNoSecurityResourceFilter();
 
   @Override
-  public final List<ResourceFilter> create(AbstractMethod am) {
-    if (!hasAnnotation(am, RolesAllowed.class) && !hasAnnotation(am, RolesPartiallyAllowed.class)) {
-      return null;
-    }
-    if (!securityEnabled) {
-      return Collections.<ResourceFilter> singletonList(createNoSecurityResourceFilter());
-    }
-
-    return Collections.<ResourceFilter> singletonList(createResourceFilter());
-
+  protected boolean hasRightAnnotations(AbstractMethod am) {
+    return hasAnnotation(am, RolesAllowed.class) || hasAnnotation(am, RolesPartiallyAllowed.class);
   }
-
-  private boolean hasAnnotation(AbstractMethod am, Class<? extends Annotation> annotation) {
-    return am.getAnnotation(annotation) != null || am.getResource().getAnnotation(annotation) != null;
-  }
-
 }

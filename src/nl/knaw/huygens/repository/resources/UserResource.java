@@ -23,6 +23,7 @@ import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.User;
+import nl.knaw.huygens.repository.server.security.RolesPartiallyAllowed;
 
 import com.google.inject.Inject;
 
@@ -62,7 +63,7 @@ public class UserResource {
   @GET
   @Path("/{id:USR\\d+}")
   @Produces(MediaType.APPLICATION_JSON)
-  @RolesAllowed(ADMIN_ROLE)
+  @RolesPartiallyAllowed(fullyAllowed = "ADMIN", ownDataAllowed = "USER")
   public User get(@PathParam(ID_PARAM) String id) {
     User user = storageManager.getDocument(User.class, id);
 
