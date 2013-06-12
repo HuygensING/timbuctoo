@@ -16,6 +16,10 @@ import nl.knaw.huygens.repository.model.raa.RAACivilServant;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+/**
+ * Performs bulk import of test data.
+ * The data is both stored (Mongo) and indexed (Solr).
+ */
 public class BulkImporter {
 
   public static void main(String[] args) throws Exception {
@@ -59,7 +63,6 @@ public class BulkImporter {
       System.out.printf("%n=== Used %d seconds%n", time);
 
     } finally {
-
       // Close resources
       if (indexManager != null) {
         indexManager.close();
@@ -80,7 +83,7 @@ public class BulkImporter {
     long targetTime = System.currentTimeMillis() + patience;
     while (thread.isAlive()) {
       System.out.println("... indexing");
-      thread.join(2000);
+      thread.join(2500);
       if (System.currentTimeMillis() > targetTime && thread.isAlive()) {
         System.out.println("... tired of waiting!");
         thread.interrupt();
