@@ -22,41 +22,52 @@ public class BulkImporter {
     Configuration config = new Configuration("config.xml");
     Injector injector = Guice.createInjector(new BasicInjectionModule(config));
 
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
-    storageManager.getStorage().empty();
+    StorageManager storageManager = null;
+    IndexManager indexManager = null;
 
-    IndexManager indexManager = injector.getInstance(IndexManager.class);
-    indexManager.deleteAllDocuments();
+    try {
+      storageManager = injector.getInstance(StorageManager.class);
+      storageManager.getStorage().empty();
 
-    IndexService service = injector.getInstance(IndexService.class);
-    Thread thread = new Thread(service);
-    thread.start();
+      indexManager = injector.getInstance(IndexManager.class);
+      indexManager.deleteAllDocuments();
 
-    GenericImporter importer = new GenericImporter(storageManager);
+      IndexService service = injector.getInstance(IndexService.class);
+      Thread thread = new Thread(service);
+      thread.start();
 
-    long start = System.currentTimeMillis();
-    importer.importData("resources/DWCPlaceMapping.properties", DWCPlace.class);
-    importer.importData("resources/DWCScientistMapping.properties", DWCScientist.class);
-    importer.importData("resources/RAACivilServantMapping.properties", RAACivilServant.class);
-    CKCCPersonImporter csvImporter = new CKCCPersonImporter(storageManager);
-    csvImporter.handleFile("testdata/ckcc-persons.txt", 9, false);
+      GenericImporter importer = new GenericImporter(storageManager);
 
-    storageManager.ensureIndices();
+      long start = System.currentTimeMillis();
+      importer.importData("resources/DWCPlaceMapping.properties", DWCPlace.class);
+      importer.importData("resources/DWCScientistMapping.properties", DWCScientist.class);
+      importer.importData("resources/RAACivilServantMapping.properties", RAACivilServant.class);
+      CKCCPersonImporter csvImporter = new CKCCPersonImporter(storageManager);
+      csvImporter.handleFile("testdata/ckcc-persons.txt", 9, false);
 
-    Broker broker = injector.getInstance(Broker.class);
-    sendEndOfDataMessage(broker);
+      storageManager.ensureIndices();
 
-    long time = (System.currentTimeMillis() - start) / 1000;
-    System.out.printf("%n=== Used %d seconds%n%n", time);
+      Broker broker = injector.getInstance(Broker.class);
+      sendEndOfDataMessage(broker);
 
-    waitForCompletion(thread, 5 * 60 * 1000);
+      long time = (System.currentTimeMillis() - start) / 1000;
+      System.out.printf("%n=== Used %d seconds%n%n", time);
 
-    // close resources
-    storageManager.close();
-    indexManager.close();
+      waitForCompletion(thread, 5 * 60 * 1000);
 
-    time = (System.currentTimeMillis() - start) / 1000;
-    System.out.printf("%n=== Used %d seconds%n", time);
+      time = (System.currentTimeMillis() - start) / 1000;
+      System.out.printf("%n=== Used %d seconds%n", time);
+
+    } finally {
+
+      // Close resources
+      if (indexManager != null) {
+        indexManager.close();
+      }
+      if (storageManager != null) {
+        storageManager.close();
+      }
+    }
   }
 
   private static void sendEndOfDataMessage(Broker broker) throws JMSException {
