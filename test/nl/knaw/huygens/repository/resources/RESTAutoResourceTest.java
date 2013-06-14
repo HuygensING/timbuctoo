@@ -24,7 +24,6 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.StorageManager;
-import nl.knaw.huygens.repository.model.User;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.repository.variation.model.projecta.OtherDoc;
@@ -595,11 +594,6 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testDeleteUserNotInRole() {
     setupDocumentTypeRegister(TestConcreteDoc.class);
     setUpUserRoles(USER_ID, null);
-
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
-    User user = mock(User.class);
-    when(user.getRoles()).thenReturn(null);
-    when(storageManager.searchDocument(User.class, user)).thenReturn(user);
 
     String id = "TST0000000001";
     TestConcreteDoc doc = new TestConcreteDoc();

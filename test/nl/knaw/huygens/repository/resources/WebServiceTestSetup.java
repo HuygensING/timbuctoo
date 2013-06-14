@@ -8,7 +8,6 @@ import java.util.ArrayList;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.User;
-import nl.knaw.huygens.repository.server.security.RolesPartiallyAllowedResourceFilterFactory;
 import nl.knaw.huygens.repository.server.security.apis.SecurityContextCreatorResourceFilterFactory;
 
 import org.junit.After;
@@ -80,10 +79,8 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   protected AppDescriptor configure() {
     WebAppDescriptor webAppDescriptor = new WebAppDescriptor.Builder().build();
     webAppDescriptor.getInitParams().put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.repository.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.repository.providers");
-    webAppDescriptor.getInitParams().put(
-        ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
-        MockApisAuthorizationFilterFactory.class.getName() + ";" + SecurityContextCreatorResourceFilterFactory.class.getName() + ";" + RolesAllowedResourceFilterFactory.class.getName() + ";"
-            + RolesPartiallyAllowedResourceFilterFactory.class.getName());
+    webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
+        MockApisAuthorizationFilterFactory.class.getName() + ";" + SecurityContextCreatorResourceFilterFactory.class.getName() + ";" + RolesAllowedResourceFilterFactory.class.getName() + ";");
 
     return webAppDescriptor;
   }
