@@ -1,19 +1,23 @@
 package nl.knaw.huygens.repository.resources;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
+import nl.knaw.huygens.repository.mail.MailSender;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.User;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -78,24 +82,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testGetUserAsAdminGetOwnData() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
-    WebResource webResource = super.resource();
-
-    User expected = createUser("test", "test");
-    expected.setId(USER_ID);
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(expected);
-
-    User actual = webResource.path("/resources/user").path(USER_ID).header("Authorization", "bearer 12333322abef").get(User.class);
-
-    assertEquals(expected.getId(), actual.getId());
-    assertEquals(expected.firstName, actual.firstName);
-    assertEquals(expected.lastName, actual.lastName);
-  }
-
-  @Test
-  public void testGetUserAsAdminGetOtherData() {
+  public void testGetUserAsAdmin() {
     setUpUserRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE));
     WebResource webResource = super.resource();
 
@@ -125,7 +112,24 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testGetUserAsUserGetOwnData() {
+  public void testGetMyUserDataAsAdmin() {
+    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    WebResource webResource = super.resource();
+
+    User expected = createUser("test", "test");
+    expected.setId(USER_ID);
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(expected);
+
+    User actual = webResource.path("/resources/user/me").header("Authorization", "bearer 12333322abef").get(User.class);
+
+    assertEquals(expected.getId(), actual.getId());
+    assertEquals(expected.firstName, actual.firstName);
+    assertEquals(expected.lastName, actual.lastName);
+  }
+
+  @Test
+  public void testGetMyUserDataAsUser() {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
     WebResource webResource = super.resource();
 
@@ -134,32 +138,64 @@ public class UserResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getDocument(User.class, USER_ID)).thenReturn(expected);
 
-    User actual = webResource.path("/resources/user").path(USER_ID).header("Authorization", "bearer 12333322abef").get(User.class);
+    User actual = webResource.path("/resources/user/me").header("Authorization", "bearer 12333322abef").get(User.class);
 
     assertEquals(expected.getId(), actual.getId());
     assertEquals(expected.firstName, actual.firstName);
     assertEquals(expected.lastName, actual.lastName);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
-  public void testGetUserAsUserGetOtherData() {
+  public void testGetMyUserDataAsUnverifiedUser() throws IOException {
+    setUpUserRoles(USER_ID, Lists.newArrayList("UNVERIFIED_USER"));
+    WebResource webResource = super.resource();
+
+    MailSender mailSender = injector.getInstance(MailSender.class);
+
+    User expected = createUser("test", "test");
+    expected.setId(USER_ID);
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(expected);
+    when(storageManager.searchDocument(any(Class.class), any(User.class))).thenReturn(null);
+
+    final Map<String, User> createdUsers = new HashedMap();
+
+    doAnswer(new Answer<Object>() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        User user = (User) invocation.getArguments()[1];
+        user.setId(USER_ID);
+        createdUsers.put(USER_ID, user);
+        return null;
+      }
+    }).when(storageManager).addDocument(any(Class.class), any(User.class));
+
+    doAnswer(new Answer<User>() {
+      @Override
+      public User answer(InvocationOnMock invocation) throws Throwable {
+
+        return createdUsers.get(USER_ID);
+      }
+    }).when(storageManager).searchDocument(any(Class.class), any(User.class));
+
+    User actual = webResource.path("/resources/user/me").header("Authorization", "bearer 12333322abef").get(User.class);
+
+    assertEquals(expected.getId(), actual.getId());
+    assertEquals(expected.firstName, actual.firstName);
+    assertEquals(expected.lastName, actual.lastName);
+
+    verify(mailSender).sendMail(anyString(), anyString(), anyString());
+  }
+
+  @Test
+  public void testGetUserAsUser() {
     setUpUserRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE));
     WebResource webResource = super.resource();
 
     ClientResponse clientResponse = webResource.path("/resources/user").path(USER_ID).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.FORBIDDEN, clientResponse.getClientResponseStatus());
-  }
-
-  @Test
-  public void testGetUserNotInRole() {
-    setUpUserRoles(USER_ID, null);
-    WebResource webResource = super.resource();
-
-    ClientResponse clientResponse = webResource.path("/resources/user").path(USER_ID).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
-
-    assertEquals(ClientResponse.Status.FORBIDDEN, clientResponse.getClientResponseStatus());
-
   }
 
   @Test
@@ -175,6 +211,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   @Test
   public void testPutUser() {
     setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    MailSender sender = injector.getInstance(MailSender.class);
 
     User user = createUser("firstName", "lastName");
     user.setId(USER_ID);
@@ -192,6 +229,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
     assertEquals(ClientResponse.Status.NO_CONTENT, clientResponse.getClientResponseStatus());
 
+    verify(sender).sendMail(anyString(), anyString(), anyString());
   }
 
   @SuppressWarnings("unchecked")
@@ -249,45 +287,6 @@ public class UserResourceTest extends WebServiceTestSetup {
     WebResource webResource = super.resource();
 
     ClientResponse clientResponse = webResource.path("/resources/user").path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, user);
-
-    assertEquals(ClientResponse.Status.UNAUTHORIZED, clientResponse.getClientResponseStatus());
-  }
-
-  @Test
-  public void testPostUser() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
-    User user = createUser("firstName", "lastName");
-
-    WebResource webResource = super.resource();
-
-    ClientResponse clientResponse = webResource.path("/resources/user/all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, user);
-
-    assertEquals(ClientResponse.Status.CREATED, clientResponse.getClientResponseStatus());
-
-    assertNotNull(clientResponse.getHeaders().getFirst("Location"));
-
-  }
-
-  @Test
-  public void testPostUserNotInRole() {
-    setUpUserRoles(USER_ID, null);
-    User user = createUser("firstName", "lastName");
-
-    WebResource webResource = super.resource();
-
-    ClientResponse clientResponse = webResource.path("/resources/user/all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, user);
-
-    assertEquals(ClientResponse.Status.FORBIDDEN, clientResponse.getClientResponseStatus());
-
-  }
-
-  @Test
-  public void testPostUserNotLoggedIn() {
-    User user = createUser("firstName", "lastName");
-
-    WebResource webResource = super.resource();
-
-    ClientResponse clientResponse = webResource.path("/resources/user/all").type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, user);
 
     assertEquals(ClientResponse.Status.UNAUTHORIZED, clientResponse.getClientResponseStatus());
   }

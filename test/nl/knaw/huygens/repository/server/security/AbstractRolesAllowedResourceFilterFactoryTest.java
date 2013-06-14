@@ -63,33 +63,6 @@ public class AbstractRolesAllowedResourceFilterFactoryTest {
   }
 
   @Test
-  public void testCreateRolesPartiallyAllowedMethod() {
-    AbstractRolesAllowedResourceFilterFactory instance = createInstance(true);
-    RolesPartiallyAllowed rolesPartiallyAllowed = generateAnnotation(RolesPartiallyAllowed.class);
-    AbstractMethod method = generateAbstractMethod(RolesPartiallyAllowed.class, rolesPartiallyAllowed);
-    when(method.getResource()).thenReturn(mock(AbstractResource.class));
-
-    List<ResourceFilter> filters = instance.create(method);
-
-    checkList(1, TestAbstractRolesAllowedResourceFilterFactorySubclass.SecurityFilter.class, filters);
-
-  }
-
-  @Test
-  public void testCreateRolesPartiallyAllowedResource() {
-    AbstractRolesAllowedResourceFilterFactory instance = createInstance(true);
-    RolesPartiallyAllowed rolesPartiallyAllowed = generateAnnotation(RolesPartiallyAllowed.class);
-    AbstractResource abstractResource = generateAbstractResource(RolesPartiallyAllowed.class, rolesPartiallyAllowed);
-    AbstractMethod method = generateAbstractMethod(RolesPartiallyAllowed.class, rolesPartiallyAllowed);
-    when(method.getResource()).thenReturn(abstractResource);
-
-    List<ResourceFilter> filters = instance.create(method);
-
-    checkList(1, TestAbstractRolesAllowedResourceFilterFactorySubclass.SecurityFilter.class, filters);
-
-  }
-
-  @Test
   public void testCreateNoRolesAllowedAnnotation() {
     AbstractRolesAllowedResourceFilterFactory instance = createInstance(true);
     AbstractResource resource = mock(AbstractResource.class);

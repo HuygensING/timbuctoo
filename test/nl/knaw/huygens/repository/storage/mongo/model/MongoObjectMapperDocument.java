@@ -1,5 +1,7 @@
 package nl.knaw.huygens.repository.storage.mongo.model;
 
+import java.util.List;
+
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.SystemDocument;
 import nl.knaw.huygens.repository.model.annotations.IDPrefix;
@@ -15,6 +17,9 @@ public class MongoObjectMapperDocument extends SystemDocument {
   @JsonProperty("propAnnotated")
   private String annotatedProperty;
   private String propWithAnnotatedAccessors;
+
+  private List<String> primitiveTestCollection;
+  private List<? extends SystemDocument> nonPrimitiveTestCollection;
 
   @Override
   @JsonProperty("!currentVariation")
@@ -77,6 +82,22 @@ public class MongoObjectMapperDocument extends SystemDocument {
   @JsonProperty("pwaa")
   public void setPropWithAnnotatedAccessors(String propWithAnnotatedAccessors) {
     this.propWithAnnotatedAccessors = propWithAnnotatedAccessors;
+  }
+
+  public List<String> getPrimitiveTestCollection() {
+    return primitiveTestCollection;
+  }
+
+  public void setPrimitiveTestCollection(List<String> primitiveTestCollection) {
+    this.primitiveTestCollection = primitiveTestCollection;
+  }
+
+  public List<? extends SystemDocument> getNonPrimitiveTestCollection() {
+    return nonPrimitiveTestCollection;
+  }
+
+  public void setNonPrimitiveTestCollection(List<? extends SystemDocument> nonPrimitiveTestCollection) {
+    this.nonPrimitiveTestCollection = nonPrimitiveTestCollection;
   }
 
 }

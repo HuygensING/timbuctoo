@@ -34,6 +34,6 @@ public abstract class AbstractRolesAllowedResourceFilterFactory extends Abstract
 
   @Override
   protected boolean hasRightAnnotations(AbstractMethod am) {
-    return hasAnnotation(am, RolesAllowed.class) || hasAnnotation(am, RolesPartiallyAllowed.class);
+    return hasAnnotation(am, RolesAllowed.class);
   }
 }

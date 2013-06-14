@@ -25,8 +25,16 @@
       <!-- ActiveMQ message broker -->
       <broker_url>vm://localhost</broker_url> <!-- embedded -->
     </messages>
+    <mail>
+      <!-- for sending emails to admins when a new user has logged on 
+        and sending messages users when their accounts is upgraded. -->
+      <enabled>true</enabled>
+      <from_address>noreply@huygens.knaw.nl</from_address>
+      <host>spinner.knaw.nl</host>
+      <port>25</port>
+    </mail>
     <security>
-      <enabled>false</enabled>
+      <enabled>true</enabled>
       <apis>
         <!-- Apis security server -->
         <cache>true</cache>

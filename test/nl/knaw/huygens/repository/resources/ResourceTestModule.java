@@ -6,9 +6,8 @@ import static org.mockito.Mockito.reset;
 import javax.validation.Validator;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
+import nl.knaw.huygens.repository.mail.MailSender;
 import nl.knaw.huygens.repository.managers.StorageManager;
-
-import org.surfnet.oaaas.model.VerifyTokenResponse;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Provides;
@@ -26,16 +25,16 @@ class ResourceTestModule extends JerseyServletModule {
   private DocTypeRegistry documentTypeRegister;
   private JacksonJsonProvider jsonProvider;
   private MockApisAuthorizationServerResourceFilter mockApisAuthorizationServerResourceFilter;
-  private VerifyTokenResponse verifyTokenResponse;
   private Validator validator;
+  private MailSender mailSender;
 
   public ResourceTestModule() {
     storageManager = mock(StorageManager.class);
     documentTypeRegister = mock(DocTypeRegistry.class);
     jsonProvider = mock(JacksonJsonProvider.class);
-    verifyTokenResponse = mock(VerifyTokenResponse.class);
     mockApisAuthorizationServerResourceFilter = new MockApisAuthorizationServerResourceFilter();
     validator = mock(Validator.class);
+    mailSender = mock(MailSender.class);
   }
 
   /* Because the RestAutoResourceModule is used in a static way for multiple tests,
@@ -43,11 +42,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(storageManager);
-    reset(documentTypeRegister);
-    reset(jsonProvider);
-    reset(verifyTokenResponse);
-    reset(validator);
+    reset(storageManager, documentTypeRegister, jsonProvider, validator, mailSender);
   }
 
   @Override
@@ -75,6 +70,11 @@ class ResourceTestModule extends JerseyServletModule {
   @Provides
   public JacksonJsonProvider providesJsonProvider() {
     return this.jsonProvider;
+  }
+
+  @Provides
+  public MailSender providesMailSender() {
+    return this.mailSender;
   }
 
   @Provides
