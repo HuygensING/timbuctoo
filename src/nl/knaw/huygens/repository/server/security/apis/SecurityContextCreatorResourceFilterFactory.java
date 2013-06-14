@@ -4,6 +4,7 @@ import java.security.Principal;
 
 import javax.ws.rs.core.SecurityContext;
 
+import nl.knaw.huygens.repository.mail.MailSender;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.server.security.AbstractRolesAllowedResourceFilterFactory;
 
@@ -21,15 +22,17 @@ import com.sun.jersey.spi.container.ResourceFilter;
  */
 public class SecurityContextCreatorResourceFilterFactory extends AbstractRolesAllowedResourceFilterFactory {
   private StorageManager storageManager;
+  private MailSender mailSender;
 
   @Inject
-  public SecurityContextCreatorResourceFilterFactory(StorageManager storageManager) {
+  public SecurityContextCreatorResourceFilterFactory(StorageManager storageManager, MailSender mailSender) {
     this.storageManager = storageManager;
+    this.mailSender = mailSender;
   }
 
   @Override
   protected ResourceFilter createResourceFilter(AbstractMethod am) {
-    return new SecurityContextCreatorResourceFilter(this.storageManager);
+    return new SecurityContextCreatorResourceFilter(this.storageManager, this.mailSender);
   }
 
   private static final class NoSecuritityFilter implements ResourceFilter, ContainerRequestFilter {
