@@ -19,7 +19,7 @@ public class MongoObjectMapper {
   private static final Class<JsonProperty> ANNOTATION_TO_RETRIEVE = JsonProperty.class;
   private static final String GET_ACCESSOR = "get";
 
-  public <T> Map<String, String> mapObject(Class<T> type, T example) {
+  public <T> Map<String, Object> mapObject(Class<T> type, T example) {
     if (type == null) {
       throw new IllegalArgumentException("'type' cannot be null.");
     }
@@ -28,7 +28,7 @@ public class MongoObjectMapper {
       throw new IllegalArgumentException("'example' cannot be null.");
     }
 
-    Map<String, String> objectMap = Maps.<String, String> newHashMap();
+    Map<String, Object> objectMap = Maps.<String, Object> newHashMap();
     Field[] fields = type.getDeclaredFields();
 
     try {
@@ -39,13 +39,13 @@ public class MongoObjectMapper {
           field.setAccessible(true);
           Object value = field.get(example);
           if (value != null) {
-            objectMap.put(getFieldName(type, field), String.valueOf(value));
+            objectMap.put(getFieldName(type, field), value);
           }
         } else if (Collection.class.isAssignableFrom(fieldType)) {
           field.setAccessible(true);
           Collection<?> value = (Collection<?>) field.get(example);
           if (isHumanReableCollection(value)) {
-            objectMap.put(getFieldName(type, field), getCollectionValue(value));
+            objectMap.put(getFieldName(type, field), value);
           }
         }
       }
@@ -54,24 +54,6 @@ public class MongoObjectMapper {
     }
 
     return objectMap;
-  }
-
-  private String getCollectionValue(Collection<?> value) {
-    StringBuilder stringBuilder = new StringBuilder();
-    boolean first = true;
-    stringBuilder.append("[");
-    for (Object object : value) {
-      if (!first) {
-        stringBuilder.append(",");
-      }
-      stringBuilder.append("\"");
-      stringBuilder.append(object);
-      stringBuilder.append("\"");
-      first = false;
-    }
-    stringBuilder.append("]");
-
-    return stringBuilder.toString();
   }
 
   private boolean isHumanReadable(Class<?> type) {
