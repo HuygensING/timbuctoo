@@ -127,5 +127,9 @@
 
     <!-- CSV support -->
     <dependency org="net.sf.opencsv" name="opencsv" rev="2.3"/>
+    
+    <!-- Email support -->
+    <dependency org="javax.mail" name="mail"  rev="1.4.7" />
+    
   </dependencies>
 </ivy-module>
