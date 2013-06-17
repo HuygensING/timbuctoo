@@ -19,22 +19,29 @@ $(document).ready(function(){
 	if(params[0] != ''){
 		var i = 0;
 		var table = $('#table');
-		var code;
+		var token;
+		var tokenType;
 		
 		for(i = 0; i < params.length; i++){
 			val = params[i].split('=');
 			
-			if(val[0] == 'code'){
-				code = val[1];
+			if(val[0] == 'access_token'){
+				token = val[1];
+			}
+			else if(val[0] == 'token_type'){
+				tokenType = val[1];
 			}
 			
 			var tr = '<tr><td>' + val[0] + '</td><td>' + val[1] + '</td></tr>'; 
 			table.append(tr);
 		}
-	
+		
 		table.show();
 		$('[name=login]').hide();
-				
+		
+		document.cookie = 'access_token='+tokenType +' ' + token+';';
+		window.location = './user_info.html'
+		
 	}
 	
 });
