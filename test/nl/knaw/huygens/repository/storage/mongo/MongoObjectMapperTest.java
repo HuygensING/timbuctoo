@@ -2,6 +2,7 @@ package nl.knaw.huygens.repository.storage.mongo;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.repository.storage.mongo.model.MongoObjectMapperDocument;
@@ -24,7 +25,7 @@ public class MongoObjectMapperTest {
   public void testMapObject() {
     MongoObjectMapperDocument testObject = createMongoObjectMapperDocument("name", "testValue1", "testValue2", "annotatedProperty", "propWithAnnotatedAccessors");
 
-    Map<String, String> mappedObject = instance.mapObject(TYPE, testObject);
+    Map<String, Object> mappedObject = instance.mapObject(TYPE, testObject);
 
     assertEquals(5, mappedObject.size());
     assertEquals("name", mappedObject.get("name"));
@@ -39,7 +40,7 @@ public class MongoObjectMapperTest {
   public void testMapObjectWithNullValues() {
     MongoObjectMapperDocument testObject = createMongoObjectMapperDocument("name", "testValue1", "testValue2", null, null);
 
-    Map<String, String> mappedObject = instance.mapObject(TYPE, testObject);
+    Map<String, Object> mappedObject = instance.mapObject(TYPE, testObject);
 
     assertEquals(3, mappedObject.size());
     assertEquals("name", mappedObject.get("name"));
@@ -52,7 +53,7 @@ public class MongoObjectMapperTest {
     MongoObjectMapperDocument testObject = createMongoObjectMapperDocument("name", "testValue1", "testValue2", "annotatedProperty", "propWithAnnotatedAccessors");
     testObject.setId("testID");
 
-    Map<String, String> mappedObject = instance.mapObject(TYPE, testObject);
+    Map<String, Object> mappedObject = instance.mapObject(TYPE, testObject);
 
     assertEquals(5, mappedObject.size());
     assertEquals("name", mappedObject.get("name"));
@@ -67,9 +68,10 @@ public class MongoObjectMapperTest {
   public void testMapObjectWithPrimitiveCollectionFields() {
     MongoObjectMapperDocument testObject = createMongoObjectMapperDocument("name", "testValue1", "testValue2", "annotatedProperty", "propWithAnnotatedAccessors");
     testObject.setId("testID");
-    testObject.setPrimitiveTestCollection(Lists.newArrayList("String1", "String2", "String3", "String4"));
+    List<String> primitiveList = Lists.newArrayList("String1", "String2", "String3", "String4");
+    testObject.setPrimitiveTestCollection(primitiveList);
 
-    Map<String, String> mappedObject = instance.mapObject(TYPE, testObject);
+    Map<String, Object> mappedObject = instance.mapObject(TYPE, testObject);
 
     assertEquals(6, mappedObject.size());
     assertEquals("name", mappedObject.get("name"));
@@ -77,7 +79,7 @@ public class MongoObjectMapperTest {
     assertEquals("testValue2", mappedObject.get("testValue2"));
     assertEquals("annotatedProperty", mappedObject.get("propAnnotated"));
     assertEquals("propWithAnnotatedAccessors", mappedObject.get("pwaa"));
-    assertEquals("[\"String1\",\"String2\",\"String3\",\"String4\"]", mappedObject.get("primitiveTestCollection"));
+    assertEquals(primitiveList, mappedObject.get("primitiveTestCollection"));
   }
 
   @Test
@@ -89,7 +91,7 @@ public class MongoObjectMapperTest {
     testObject.setId("testID");
     testObject.setNonPrimitiveTestCollection(Lists.newArrayList(testObject1, testObject2, testObject3));
 
-    Map<String, String> mappedObject = instance.mapObject(TYPE, testObject);
+    Map<String, Object> mappedObject = instance.mapObject(TYPE, testObject);
 
     assertEquals(5, mappedObject.size());
     assertEquals("name", mappedObject.get("name"));
