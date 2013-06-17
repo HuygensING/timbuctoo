@@ -89,7 +89,7 @@ public abstract class MongoStorageImpl implements MongoStorage {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     BasicDBObject query = new BasicDBObject();
 
-    Map<String, String> searchProperties = new MongoObjectMapper().mapObject(type, example);
+    Map<String, Object> searchProperties = new MongoObjectMapper().mapObject(type, example);
 
     Set<String> keys = searchProperties.keySet();
 
