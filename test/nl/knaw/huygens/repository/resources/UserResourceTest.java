@@ -157,7 +157,9 @@ public class UserResourceTest extends WebServiceTestSetup {
     expected.setId(USER_ID);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getDocument(User.class, USER_ID)).thenReturn(expected);
-    when(storageManager.searchDocument(any(Class.class), any(User.class))).thenReturn(null);
+
+    final User admin = createUser("admin", "admin");
+    admin.email = "admin@admin.com";
 
     final Map<String, User> createdUsers = new HashedMap();
 
@@ -174,6 +176,11 @@ public class UserResourceTest extends WebServiceTestSetup {
     doAnswer(new Answer<User>() {
       @Override
       public User answer(InvocationOnMock invocation) throws Throwable {
+
+        User user = (User) invocation.getArguments()[1];
+        if (user.getRoles() != null && user.getRoles().contains("ADMIN")) {
+          return admin;
+        }
 
         return createdUsers.get(USER_ID);
       }
@@ -214,9 +221,11 @@ public class UserResourceTest extends WebServiceTestSetup {
     MailSender sender = injector.getInstance(MailSender.class);
 
     User user = createUser("firstName", "lastName");
+    user.email = "test@test.com";
     user.setId(USER_ID);
 
     User original = createUser("test", "test");
+    original.email = "test@test.com";
     original.setId(USER_ID);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
