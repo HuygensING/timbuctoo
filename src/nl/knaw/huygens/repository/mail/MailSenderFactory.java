@@ -15,7 +15,7 @@ public class MailSenderFactory {
     enabled = config.getBooleanSetting("mail.enabled");
     host = config.getSetting("mail.host");
     port = config.getSetting("mail.port");
-    fromAddress = config.getSetting("mail.fromAddress");
+    fromAddress = config.getSetting("mail.from_address");
   }
 
   public MailSender create() {

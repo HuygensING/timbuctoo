@@ -7,6 +7,7 @@ import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.User;
 import nl.knaw.huygens.repository.server.security.UserSecurityContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.surfnet.oaaas.model.VerifyTokenResponse;
 
 import com.google.common.collect.Lists;
@@ -36,6 +37,7 @@ public class SecurityContextCreatorResourceFilter implements ResourceFilter, Con
       User example = new User();
       example.setVreId(verifyTokenResponse.getAudience());
       example.setUserId(verifyTokenResponse.getPrincipal().getName());
+      example.displayName = verifyTokenResponse.getPrincipal().getAttributes().get("DISPLAY_NAME");
 
       User user = findUser(example);
 
@@ -89,14 +91,14 @@ public class SecurityContextCreatorResourceFilter implements ResourceFilter, Con
     User admin = findUser(example);
 
     StringBuilder contentbuilder = new StringBuilder("Beste admin,\n");
-    contentbuilder.append(user.firstName);
-    contentbuilder.append(" ");
-    contentbuilder.append(user.lastName);
-    contentbuilder.append(" heeft interesse getoond voor je VRE.");
+    contentbuilder.append(user.displayName);
+    contentbuilder.append(" heeft interesse getoond voor je VRE.\n");
     contentbuilder.append("Met vriendelijke groet,\n");
     contentbuilder.append("De datarepository");
 
-    mailSender.sendMail(admin.email, "Nieuwe gebruiker", contentbuilder.toString());
+    if (!StringUtils.isBlank(admin.email)) {
+      mailSender.sendMail(admin.email, "Nieuwe gebruiker", contentbuilder.toString());
+    }
   }
 
   private User findUser(final User example) {

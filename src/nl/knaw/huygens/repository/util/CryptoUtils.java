@@ -130,8 +130,7 @@ public class CryptoUtils {
 
     public static String getInfoFromUser(User user) {
         Map<String, Object> userInfo = Maps.newHashMap();
-        userInfo.put("firstName", user.firstName);
-        userInfo.put("lastName", user.lastName);
+        userInfo.put("firstName", user.displayName);
         userInfo.put("_id", user.getId());
         userInfo.put("groups", user.groups);
         try {

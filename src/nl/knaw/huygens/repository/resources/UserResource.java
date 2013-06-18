@@ -21,6 +21,8 @@ import nl.knaw.huygens.repository.mail.MailSender;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.User;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.google.inject.Inject;
 
 @Path("resources/user")
@@ -96,7 +98,9 @@ public class UserResource {
     contentbuilder.append("De administrator van ");
     contentbuilder.append(vreId);
 
-    mailSender.sendMail(user.email, "U ben toegelaten tot de VRE.", contentbuilder.toString());
+    if (!StringUtils.isBlank(user.email)) {
+      mailSender.sendMail(user.email, "U ben toegelaten tot de VRE.", contentbuilder.toString());
+    }
   }
 
   @DELETE
