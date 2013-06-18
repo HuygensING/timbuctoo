@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Edit user</title>
+</head>
+<body>
+<form id="editForm" method="post">
+</form>
+<button id="save">Save</button>
+<p id="error">No user selected</p>
+<script src="http://code.jquery.com/jquery-1.9.1.js" type="text/javascript"></script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		var id = readUserId();		
+		if(id){
+			var accessToken = readCookie('access_token');
+			var form = $('#editForm')
+			var errorMessage = $('#error');
+			$.ajax({
+				//change ip with your own.
+				url: 'http://10.152.32.57:8080/repository/resources/user/'+id,
+				headers:{
+					Authorization: accessToken
+				},
+				error: function(data){
+					console.log(data);
+					form.hide();
+					errorMessage.text(data.statusText);
+					errorMessage.show();
+				},			
+				success:function(data){
+					errorMessage.hide();
+					form.show();
+					//console.log(data);
+					$.each(data, function(key, value){
+						var line = '<p>' + key + ': </p>';
+						if(typeof value =='boolean'){
+							if(value == false){
+								line += '<input name="'+ key +'" type="checkbox"/><br/>'
+							}
+							else {
+								line += '<input name="'+ key +'" checked type="checkbox"/><br/>'
+							}
+						}
+						else if(value !=null && typeof value == 'object'){
+							line += '<input name="'+ key +'Array" value="'+value+'"/><br/>';
+						}
+						else{
+							line += '<input name="'+ key +'" value="'+value+'"/><br/>';
+						}
+						form.append(line);
+					});
+				},
+				type: 'GET'
+			});
+		}
+		
+		function readCookie(name) {
+    		var nameEQ = name + "=";
+		    var ca = document.cookie.split(';');
+		    for(var i=0;i < ca.length;i++) {
+		        var c = ca[i];
+		        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+		        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+		    }
+		    return null;
+		}
+		
+		function readUserId(){
+			var id;
+			var params = window.location.search.substring(1).split('&');
+			$(params).each(function(index, value){
+				var keyAndValue = value.split('=');
+				if(keyAndValue[0] == 'id'){
+					id = keyAndValue[1];
+				}
+			});
+			return id;
+		}
+		
+		$('#save').click(function(){
+			var inputs = $('#editForm > input');
+			var userJson = {};
+			$(inputs).each(function(index, value){
+				var val = $(value).val();
+				var name = value.name;
+				if(name.match('.*[A-Za-z]+Array')){
+					val = val.split(",");
+					name = name.substring(0, name.length -5);
+				}
+				else if ($(value).attr('type') == 'checkbox'){
+					val = $(value).prop('checked');
+				}
+				else if(val == "null" || val == ""){
+					val = null;
+				}
+				
+				userJson[name] = val;
+			});
+					
+			var id = readUserId();
+			$.ajax({
+				url: 'http://10.152.32.57:8080/repository/resources/user/'+id,
+				headers:{
+					Authorization: readCookie('access_token')
+				},
+				type: 'PUT',
+				contentType:'application/json; charset=utf-8',
+				dataType:'json',
+				data: JSON.stringify(userJson),
+				success:function(){
+					window.location.reload();
+				},
+				error: function(data, status, errorThrown){
+					console.log("status: " + status);
+					console.log("error: " + errorThrown);
+				}
+			});
+		});
+	});
+</script>
+</body>
+</html>
