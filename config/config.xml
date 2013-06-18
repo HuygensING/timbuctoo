@@ -28,7 +28,7 @@
     <mail>
       <!-- for sending emails to admins when a new user has logged on 
         and sending messages users when their accounts is upgraded. -->
-      <enabled>true</enabled>
+      <enabled>false</enabled>
       <from_address>noreply@huygens.knaw.nl</from_address>
       <host>spinner.knaw.nl</host>
       <port>25</port>

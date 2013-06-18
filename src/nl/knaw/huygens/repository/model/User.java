@@ -24,6 +24,7 @@ public class User extends SystemDocument {
   public String email;
   public String firstName;
   public String lastName;
+  public String displayName;
   public List<String> groups;
   private List<String> roles;
   private String currentVariation;
