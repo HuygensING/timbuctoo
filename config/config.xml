@@ -23,7 +23,7 @@
     </solr>
     <messages>
       <!-- ActiveMQ message broker -->
-      <broker_url>vm://localhost</broker_url> <!-- embedded -->
+      <broker_url>vm://repo-broker?broker.persistent=false</broker_url>
     </messages>
     <mail>
       <!-- for sending emails to admins when a new user has logged on 
