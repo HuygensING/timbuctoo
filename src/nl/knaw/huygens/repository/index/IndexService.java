@@ -8,10 +8,15 @@ import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.messages.Consumer;
 import nl.knaw.huygens.repository.model.Document;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 
 // TODO handle exceptions properly
 public class IndexService implements Runnable {
+
+  private static final Logger LOG = LoggerFactory.getLogger(IndexService.class);
 
   private final IndexManager manager;
   private final Consumer consumer;
@@ -32,6 +37,7 @@ public class IndexService implements Runnable {
 
   @Override
   public void run() {
+    LOG.info("Started");
     running = true;
     while (running) {
       try {
@@ -57,8 +63,9 @@ public class IndexService implements Runnable {
         e.printStackTrace();
       }
     }
-    System.out.println("... closing index service");
+    LOG.info("Stopping ...");
     consumer.closeQuietly();
+    LOG.info("Stopped");
   }
 
 }

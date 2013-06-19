@@ -81,7 +81,7 @@ public class StorageManager {
     }
   }
 
-  public void sendIndexMessage(String action, String type, String id) {
+  private void sendIndexMessage(String action, String type, String id) {
     if (producer != null) {
       try {
         producer.send(action, type, id);
