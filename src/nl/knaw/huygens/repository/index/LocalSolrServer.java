@@ -27,6 +27,7 @@ import org.apache.solr.core.CoreContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -35,6 +36,8 @@ import com.google.inject.name.Named;
 
 @Singleton
 public class LocalSolrServer {
+
+  private static final Logger LOG = LoggerFactory.getLogger(LocalSolrServer.class);
 
   // FIXME this is probably suboptimal:
   private static final int ROWS = 2000;
@@ -46,8 +49,6 @@ public class LocalSolrServer {
 
   private static final String ALL = "*:*";
 
-  private final Logger LOG = LoggerFactory.getLogger(LocalSolrServer.class);
-
   private CoreContainer container = null;
   private final Map<String, SolrServer> solrServers;
   private final Set<String> coreNames;
@@ -55,18 +56,19 @@ public class LocalSolrServer {
 
   @Inject
   public LocalSolrServer( //
-      @Named("paths.solr") String solrDir, //
+      @Named("solr.directory") String configuredSolrDir, //
       @Named("indexeddoctypes") String coreNameList, //
       @Named("solr.commit_within") String commitWithinSpec //
   ) {
 
-    commitWithin = stringToInt(commitWithinSpec, 10 * 1000);
-    LOG.info("Maximum time before a commit: {} seconds", commitWithin / 1000);
-
     try {
-      String solrDirectory = Paths.pathInUserHome(solrDir);
-      File configFile = new File(new File(solrDirectory, "conf"), "solr.xml");
-      container = new CoreContainer(solrDirectory, configFile);
+      String solrDir = getSolrDir(configuredSolrDir);
+      LOG.info("Solr directory: {}", solrDir);
+      commitWithin = stringToInt(commitWithinSpec, 10 * 1000);
+      LOG.info("Maximum time before a commit: {} seconds", commitWithin / 1000);
+
+      File configFile = new File(new File(solrDir, "conf"), "solr.xml");
+      container = new CoreContainer(solrDir, configFile);
       solrServers = Maps.newHashMap();
       for (String coreName : coreNameList.split(",")) {
         solrServers.put(coreName, new EmbeddedSolrServer(container, coreName));
@@ -82,6 +84,10 @@ public class LocalSolrServer {
       }
       throw new RuntimeException(e);
     }
+  }
+
+  private String getSolrDir(String path) {
+    return Strings.isNullOrEmpty(path) ? Paths.pathInUserHome("repository/solr") : path;
   }
 
   public void add(String core, SolrInputDocument doc) throws SolrServerException, IOException {
