@@ -2,6 +2,7 @@ package nl.knaw.huygens.repository.config;
 
 import java.util.Map;
 
+import nl.knaw.huygens.repository.CORSFilter;
 import nl.knaw.huygens.repository.server.security.apis.ApisAuthorizationResourceFilterFactory;
 import nl.knaw.huygens.repository.server.security.apis.SecurityContextCreatorResourceFilterFactory;
 
@@ -23,7 +24,7 @@ public class ServletInjectionModule extends JerseyServletModule {
     params.put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, getClassNamesString(LoggingFilter.class));
     params.put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
         getClassNamesString(ApisAuthorizationResourceFilterFactory.class, SecurityContextCreatorResourceFilterFactory.class, RolesAllowedResourceFilterFactory.class));
-    params.put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, getClassNamesString(LoggingFilter.class));
+    params.put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, getClassNamesString(LoggingFilter.class, CORSFilter.class));
     params.put(ServletContainer.PROPERTY_WEB_PAGE_CONTENT_REGEX, "/static.*");
     filter("/*").through(GuiceContainer.class, params);
   }
