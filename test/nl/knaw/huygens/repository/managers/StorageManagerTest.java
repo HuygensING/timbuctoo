@@ -27,7 +27,6 @@ import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
-import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
@@ -45,7 +44,6 @@ public class StorageManagerTest {
   private StorageManager instance;
   private Storage storage;
   private Set<String> documentTypes;
-  private Hub hub;
   private Broker broker;
   private DocTypeRegistry docTypeRegistry;
   private PersistenceManager persistenceManager;
@@ -54,11 +52,10 @@ public class StorageManagerTest {
   public void SetUp() {
     storage = mock(Storage.class);
     documentTypes = new HashSet<String>();
-    hub = mock(Hub.class);
     broker = mock(Broker.class);
     docTypeRegistry = mock(DocTypeRegistry.class);
     persistenceManager = mock(PersistenceManager.class);
-    instance = new StorageManager(storage, documentTypes, hub, broker, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceManager);
   }
 
   @Test
@@ -85,9 +82,7 @@ public class StorageManagerTest {
 
     when(storage.getItem(type, id)).thenReturn(null);
 
-    Document actualDoc = instance.getCompleteDocument(type, id);
-
-    assertNull(actualDoc);
+    assertNull(instance.getCompleteDocument(type, id));
   }
 
   @SuppressWarnings("unchecked")
@@ -98,9 +93,7 @@ public class StorageManagerTest {
 
     when(storage.getItem(type, id)).thenThrow(IOException.class);
 
-    Document actualDoc = instance.getCompleteDocument(type, id);
-
-    assertNull(actualDoc);
+    assertNull(instance.getCompleteDocument(type, id));
   }
 
   @Test
@@ -127,9 +120,7 @@ public class StorageManagerTest {
 
     when(storage.getItem(type, id)).thenReturn(null);
 
-    Document actualDoc = instance.getDocument(type, id);
-
-    assertNull(actualDoc);
+    assertNull(instance.getDocument(type, id));
   }
 
   @SuppressWarnings("unchecked")
@@ -140,9 +131,7 @@ public class StorageManagerTest {
 
     when(storage.getItem(type, id)).thenThrow(IOException.class);
 
-    Document actualDoc = instance.getDocument(type, id);
-
-    assertNull(actualDoc);
+    assertNull(instance.getDocument(type, id));
   }
 
   @Test
@@ -171,9 +160,7 @@ public class StorageManagerTest {
 
     when(storage.getVariation(type, id, variation)).thenReturn(null);
 
-    Document actualDoc = instance.getCompleteVariation(type, id, variation);
-
-    assertNull(actualDoc);
+    assertNull(instance.getCompleteVariation(type, id, variation));
   }
 
   @SuppressWarnings("unchecked")
@@ -185,9 +172,7 @@ public class StorageManagerTest {
 
     when(storage.getVariation(type, id, variation)).thenThrow(IOException.class);
 
-    Document actualDoc = instance.getCompleteVariation(type, id, variation);
-
-    assertNull(actualDoc);
+    assertNull(instance.getCompleteVariation(type, id, variation));
   }
 
   @Test
@@ -217,9 +202,7 @@ public class StorageManagerTest {
 
     when(storage.getAllVariations(type, id)).thenReturn(null);
 
-    List<GeneralTestDoc> actualDoc = instance.getAllVariations(type, id);
-
-    assertNull(actualDoc);
+    assertNull(instance.getAllVariations(type, id));
   }
 
   @SuppressWarnings("unchecked")
@@ -230,9 +213,7 @@ public class StorageManagerTest {
 
     when(storage.getAllVariations(type, id)).thenThrow(IOException.class);
 
-    List<GeneralTestDoc> actualDoc = instance.getAllVariations(type, id);
-
-    assertNull(actualDoc);
+    assertNull(instance.getAllVariations(type, id));
   }
 
   @Test
@@ -253,7 +234,6 @@ public class StorageManagerTest {
     doc.name = "test";
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
     doThrow(IOException.class).when(storage).addItem(type, doc);
 
     instance.addDocument(type, doc);
@@ -265,25 +245,11 @@ public class StorageManagerTest {
     doc.name = "test";
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
     doThrow(PersistenceException.class).when(persistenceManager).persistObject(anyString(), anyString());
 
     instance.addDocument(type, doc);
 
     verify(storage).addItem(type, doc);
-
-  }
-
-  @Test(expected = IOException.class)
-  public void testAddDocumentPublishException() throws Exception {
-    TestConcreteDoc doc = new TestConcreteDoc();
-    doc.name = "test";
-
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
-    doThrow(Exception.class).when(hub).publish(any(Object.class));
-
-    instance.addDocument(type, doc);
   }
 
   @Test
@@ -296,7 +262,6 @@ public class StorageManagerTest {
 
     instance.modifyDocument(type, expectedDoc);
     verify(storage).updateItem(type, expectedDoc.getId(), expectedDoc);
-
   }
 
   @Test(expected = IOException.class)
@@ -306,7 +271,6 @@ public class StorageManagerTest {
     doc.setId("TCD0000000001");
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
     doThrow(IOException.class).when(storage).updateItem(type, doc.getId(), doc);
 
     instance.modifyDocument(type, doc);
@@ -321,22 +285,7 @@ public class StorageManagerTest {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
     instance.modifyDocument(type, expectedDoc);
-
     verify(storage).updateItem(type, expectedDoc.getId(), expectedDoc);
-
-  }
-
-  @Test(expected = IOException.class)
-  public void testModifyDocumentPublishException() throws Exception {
-    TestConcreteDoc doc = new TestConcreteDoc();
-    doc.name = "test";
-    doc.setId("TCD0000000001");
-
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
-    doThrow(Exception.class).when(hub).publish(any(Object.class));
-
-    instance.modifyDocument(type, doc);
   }
 
   @Test
@@ -349,7 +298,6 @@ public class StorageManagerTest {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
     instance.removeDocument(type, inputDoc);
-
     verify(storage).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
   }
 
@@ -360,21 +308,7 @@ public class StorageManagerTest {
     doc.setId("TCD0000000001");
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
     doThrow(IOException.class).when(storage).deleteItem(type, doc.getId(), doc.getLastChange());
-
-    instance.removeDocument(type, doc);
-  }
-
-  @Test(expected = IOException.class)
-  public void testRemoveDocumentPublishException() throws Exception {
-    TestConcreteDoc doc = new TestConcreteDoc();
-    doc.name = "test";
-    doc.setId("TCD0000000001");
-
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
-    doThrow(Exception.class).when(hub).publish(any(Object.class));
 
     instance.removeDocument(type, doc);
   }
@@ -386,19 +320,15 @@ public class StorageManagerTest {
     when(storage.getLastChanged(anyInt())).thenReturn(lastChangeList);
 
     List<Document> actualList = instance.getLastChanged(3);
-
     assertEquals(3, actualList.size());
-
   }
 
   @SuppressWarnings("unchecked")
   @Test()
   public void testGetLastChangedIOException() throws IOException {
-
     when(storage.getLastChanged(anyInt())).thenThrow(IOException.class);
 
     List<Document> actualList = instance.getLastChanged(3);
-
     assertTrue(actualList.isEmpty());
   }
 
@@ -441,7 +371,7 @@ public class StorageManagerTest {
 
     when(storage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.newArrayList("RFD000000001"));
 
-    instance = new StorageManager(storage, documentTypes, hub, broker, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceManager);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(referringDocType, referredDocType, "RDD000000001");
 
@@ -467,7 +397,7 @@ public class StorageManagerTest {
 
     when(storage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.newArrayList("RFD000000001", "RDD000000001"));
 
-    instance = new StorageManager(storage, documentTypes, hub, broker, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceManager);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(multipleReferringDocType, referredDocType, "RDD000000001");
 
@@ -487,7 +417,7 @@ public class StorageManagerTest {
     doReturn(referredDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referredDocId);
     doReturn(referringDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referringDocId);
 
-    instance = new StorageManager(storage, documentTypes, hub, broker, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceManager);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(otherDocType, referredDocType, "RDD000000001");
 
@@ -507,7 +437,7 @@ public class StorageManagerTest {
     doReturn(referredDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referredDocId);
     doReturn(referringDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referringDocId);
 
-    instance = new StorageManager(storage, documentTypes, hub, broker, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceManager);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(referringDocType, otherDocType, "RDD000000001");
 
@@ -529,7 +459,7 @@ public class StorageManagerTest {
 
     when(storage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.<ReferringDoc> newArrayList());
 
-    instance = new StorageManager(storage, documentTypes, hub, broker, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceManager);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(referringDocType, referredDocType, "RDD000000001");
 
