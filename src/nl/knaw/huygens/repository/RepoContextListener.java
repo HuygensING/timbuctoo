@@ -19,6 +19,14 @@ import com.google.inject.servlet.GuiceServletContextListener;
  */
 public class RepoContextListener extends GuiceServletContextListener {
 
+  // ** Note **
+  // After stopping Tomcat one gets a message
+  // "SEVERE: The web application appears to have started a thread named [com.google.inject.internal.util.$Finalizer]
+  // but has failed to stop it. This is very likely to create a memory leak."
+  // According to the Guice project this is just the eager Tomcat detector warning about a potential leak based
+  // on it's internal introspection. Once new ThreadLocals are created the entry that causes this message is removed.
+  // See: http://code.google.com/p/google-guice/issues/detail?id=707
+
   private Injector injector;
 
   @Override
