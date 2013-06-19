@@ -104,14 +104,14 @@ public class LocalSolrServer {
 
   public void deleteAll() throws SolrServerException, IOException {
     for (String core : coreNames) {
-      System.out.printf("... clearing %s index%n", core);
+      LOG.info("Clearing {} index", core);
       deleteAll(core);
     }
   }
 
   public void commit(String core) throws SolrServerException, IOException {
     serverFor(core).commit();
-    System.out.printf("... %s index contains %d documents%n", core, count(core));
+    LOG.info("{} index: {} documents", core, count(core));
   }
 
   public void commitAll() throws SolrServerException, IOException {
