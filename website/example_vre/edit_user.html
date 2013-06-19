@@ -18,8 +18,7 @@
 			var form = $('#editForm')
 			var errorMessage = $('#error');
 			$.ajax({
-				//change ip with your own.
-				url: 'http://10.152.32.57:8080/repository/resources/user/'+id,
+				url: 'http://localhost:8080/repository/resources/user/'+id,
 				headers:{
 					Authorization: accessToken
 				},
@@ -101,7 +100,7 @@
 					
 			var id = readUserId();
 			$.ajax({
-				url: 'http://10.152.32.57:8080/repository/resources/user/'+id,
+				url: 'http://localhost:8080/repository/resources/user/'+id,
 				headers:{
 					Authorization: readCookie('access_token')
 				},
