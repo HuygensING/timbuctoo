@@ -11,15 +11,12 @@ import java.util.Set;
 import javax.jms.JMSException;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.events.Events;
-import nl.knaw.huygens.repository.events.Events.DocumentEditEvent;
 import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.messages.Producer;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
-import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.storage.RelatedDocument;
 import nl.knaw.huygens.repository.storage.RelatedDocuments;
 import nl.knaw.huygens.repository.storage.RevisionChanges;
@@ -48,14 +45,12 @@ public class StorageManager {
   private Map<Class<? extends Document>, Map<Class<? extends Document>, List<List<String>>>> annotationCache;
   private Set<String> documentTypes;
 
-  private final Hub hub;
   private final Producer producer;
   private DocTypeRegistry docTypeRegistry;
   private PersistenceManager persistenceManager;
 
   @Inject
-  public StorageManager(StorageConfiguration storageConf, Storage storage, Hub hub, Broker broker, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceMananger) {
-    this.hub = hub;
+  public StorageManager(StorageConfiguration storageConf, Storage storage, Broker broker, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceMananger) {
     producer = setupProducer(broker);
     this.docTypeRegistry = docTypeRegistry;
     documentTypes = storageConf.getDocumentTypes();
@@ -66,8 +61,7 @@ public class StorageManager {
   }
 
   // Test-only!
-  protected StorageManager(Storage storage, Set<String> documentTypes, Hub hub, Broker broker, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceManager) {
-    this.hub = hub;
+  protected StorageManager(Storage storage, Set<String> documentTypes, Broker broker, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceManager) {
     producer = null;
     this.storage = storage;
     this.docTypeRegistry = docTypeRegistry;
@@ -167,7 +161,6 @@ public class StorageManager {
   public <T extends Document> void addDocument(Class<T> type, T doc) throws IOException {
     storage.addItem(type, doc);
     persistDocumentVersion(type, doc);
-    doThrowEvent(VariationUtils.getBaseClass(type), doc.getId(), Events.DocumentAddEvent.class);
     sendIndexMessage(Broker.INDEX_ADD, VariationUtils.getBaseClass(type).getSimpleName(), doc.getId());
   }
 
@@ -185,22 +178,12 @@ public class StorageManager {
   public <T extends Document> void modifyDocument(Class<T> type, T doc) throws IOException {
     storage.updateItem(type, doc.getId(), doc);
     persistDocumentVersion(type, doc);
-    doThrowEvent(VariationUtils.getBaseClass(type), doc.getId(), DocumentEditEvent.class);
     sendIndexMessage(Broker.INDEX_MOD, VariationUtils.getBaseClass(type).getSimpleName(), doc.getId());
   }
 
   public <T extends Document> void removeDocument(Class<T> type, T doc) throws IOException {
     storage.deleteItem(type, doc.getId(), doc.getLastChange());
-    doThrowEvent(VariationUtils.getBaseClass(type), doc.getId(), Events.DocumentDeleteEvent.class);
     sendIndexMessage(Broker.INDEX_DEL, VariationUtils.getBaseClass(type).getSimpleName(), doc.getId());
-  }
-
-  private <T extends Document> void doThrowEvent(Class<T> type, String id, @SuppressWarnings("rawtypes") Class<? extends Events.DocumentChangeEvent> t) throws IOException {
-    try {
-      hub.publish(t.getConstructor(Class.class, String.class).newInstance(type, id));
-    } catch (Exception e) {
-      throw new IOException(e);
-    }
   }
 
   public <T extends Document> StorageIterator<T> getByMultipleIds(Class<T> type, List<String> ids) {
