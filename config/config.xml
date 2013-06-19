@@ -16,7 +16,9 @@
       <password>test</password>
     </database>
     <solr>
-      <!-- Solr server -->
+      <!-- Solr directory, default '${user.home}/repository/solr' -->
+      <directory></directory>
+      <!-- overkill? -->
       <config>solrconfig.xml</config>
       <!-- Maximum time before a commit in ms -->
       <commit_within>10000</commit_within>
@@ -52,8 +54,6 @@
       <private_key_file>repository/resources/admpriv.bin</private_key_file>
     </handle>
     <paths>
-      <!-- located inside user.home -->
-      <solr>repository/solr</solr>
       <source>data/source</source>
       <json>data/json</json>
       <web>../web</web>
