@@ -196,7 +196,7 @@
         <include name="**/*.xml" />
         <include name="**/*.properties" />
       </webinf>
-      <zipfileset dir="${dist.dir}/website" prefix="website" />
+      <zipfileset dir="${dist.dir}/website" prefix="static" />
     </war>
     <copy file="${project.name}.war" todir="${dist.dir}" />
     <delete file="${project.name}.war" />
