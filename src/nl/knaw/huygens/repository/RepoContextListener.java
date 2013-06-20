@@ -5,6 +5,7 @@ import javax.servlet.ServletContextEvent;
 import nl.knaw.huygens.repository.config.BasicInjectionModule;
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.ServletInjectionModule;
+import nl.knaw.huygens.repository.index.IndexService;
 import nl.knaw.huygens.repository.managers.StorageManager;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -28,6 +29,7 @@ public class RepoContextListener extends GuiceServletContextListener {
   // See: http://code.google.com/p/google-guice/issues/detail?id=707
 
   private Injector injector;
+  private Thread indexServiceThread;
 
   @Override
   protected Injector getInjector() {
@@ -43,7 +45,22 @@ public class RepoContextListener extends GuiceServletContextListener {
   }
 
   @Override
+  public void contextInitialized(ServletContextEvent event) {
+    super.contextInitialized(event);
+
+    IndexService service = injector.getInstance(IndexService.class);
+    Thread indexServiceThread = new Thread(service);
+    indexServiceThread.start();
+  }
+
+  @Override
   public void contextDestroyed(ServletContextEvent event) {
+    if (indexServiceThread != null) {
+      // signal it to stop first...
+      IndexService.waitForCompletion(indexServiceThread, 1 * 1000);
+      indexServiceThread = null;
+    }
+
     if (injector != null) {
       StorageManager storageManager = injector.getInstance(StorageManager.class);
       if (storageManager != null) {
@@ -51,6 +68,8 @@ public class RepoContextListener extends GuiceServletContextListener {
       }
       injector = null;
     }
+
+    super.contextDestroyed(event);
   }
 
 }

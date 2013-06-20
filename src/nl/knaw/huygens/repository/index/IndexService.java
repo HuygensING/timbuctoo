@@ -63,9 +63,26 @@ public class IndexService implements Runnable {
         e.printStackTrace();
       }
     }
-    LOG.info("Stopping ...");
     consumer.closeQuietly();
     LOG.info("Stopped");
+  }
+
+  public static void waitForCompletion(Thread thread, long patience) {
+    try {
+      long targetTime = System.currentTimeMillis() + patience;
+      while (thread.isAlive()) {
+        LOG.info("Indexing");
+        thread.join(2000);
+        if (System.currentTimeMillis() > targetTime && thread.isAlive()) {
+          LOG.info("Tired of waiting!");
+          thread.interrupt();
+          thread.join();
+        }
+      }
+    } catch (InterruptedException e) {
+      // Just log. Give other services a chance to close...
+      LOG.error(e.getMessage(), e);
+    }
   }
 
 }
