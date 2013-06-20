@@ -3,6 +3,8 @@ package nl.knaw.huygens.repository.messages;
 import javax.jms.JMSException;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -13,6 +15,8 @@ import com.google.inject.name.Named;
  */
 @Singleton
 public class Broker {
+
+  private static final Logger LOG = LoggerFactory.getLogger(Broker.class);
 
   public static final String INDEX_QUEUE = "index";
 
@@ -31,7 +35,7 @@ public class Broker {
 
   @Inject
   public Broker(@Named("messages.broker_url") String url) {
-    System.out.printf("Message broker URL: '%s'%n", url);
+    LOG.info("Message broker URL: '{}'", url);
     this.url = url;
   }
 
@@ -51,7 +55,7 @@ public class Broker {
   }
 
   public void close() throws JMSException {
-    System.out.println("... closing broker");
+    LOG.info("Closing");
   }
 
 }
