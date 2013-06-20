@@ -8,7 +8,12 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Consumer {
+
+  private static final Logger LOG = LoggerFactory.getLogger(Consumer.class);
 
   private final String name;
   private Connection connection;
@@ -22,6 +27,7 @@ public class Consumer {
     session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
     Destination destination = session.createQueue(queue);
     consumer = session.createConsumer(destination);
+    LOG.info("Opened consumer '{}'", name);
   }
 
   public Message receive() throws JMSException {
@@ -29,7 +35,7 @@ public class Consumer {
   }
 
   public void close() throws JMSException {
-    System.out.format("... closing message consumer '%s'%n", name);
+    LOG.info("Closing consumer '{}'", name);
     session.close();
     connection.close();
   }
@@ -38,7 +44,7 @@ public class Consumer {
     try {
       close();
     } catch (JMSException e) {
-      e.printStackTrace();
+      LOG.error("Error while closing", e);
     }
   }
 

@@ -29,6 +29,7 @@ public class RepoContextListener extends GuiceServletContextListener {
   // See: http://code.google.com/p/google-guice/issues/detail?id=707
 
   private Injector injector;
+  private IndexService service;
   private Thread indexServiceThread;
 
   @Override
@@ -48,15 +49,15 @@ public class RepoContextListener extends GuiceServletContextListener {
   public void contextInitialized(ServletContextEvent event) {
     super.contextInitialized(event);
 
-    IndexService service = injector.getInstance(IndexService.class);
-    Thread indexServiceThread = new Thread(service);
+    service = injector.getInstance(IndexService.class);
+    indexServiceThread = new Thread(service);
     indexServiceThread.start();
   }
 
   @Override
   public void contextDestroyed(ServletContextEvent event) {
     if (indexServiceThread != null) {
-      // signal it to stop first...
+      service.stop();
       IndexService.waitForCompletion(indexServiceThread, 1 * 1000);
       indexServiceThread = null;
     }
