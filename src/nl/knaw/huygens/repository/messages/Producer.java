@@ -9,7 +9,12 @@ import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Producer {
+
+  private static final Logger LOG = LoggerFactory.getLogger(Producer.class);
 
   private final String name;
   private Connection connection;
@@ -24,6 +29,7 @@ public class Producer {
     Destination destination = session.createQueue(queue);
     producer = session.createProducer(destination);
     producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+    LOG.info("Opened producer '{}'", name);
   }
 
   public void send(String action, String type, String id) throws JMSException {
@@ -35,7 +41,7 @@ public class Producer {
   }
 
   public void close() throws JMSException {
-    System.out.format("... closing message producer '%s'%n", name);
+    LOG.info("Closing producer '{}'", name);
     session.close();
     connection.close();
   }
@@ -44,7 +50,7 @@ public class Producer {
     try {
       close();
     } catch (JMSException e) {
-      e.printStackTrace();
+      LOG.error("Error while closing", e);
     }
   }
 

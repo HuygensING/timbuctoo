@@ -71,7 +71,7 @@ public class IndexService implements Runnable {
     try {
       long targetTime = System.currentTimeMillis() + patience;
       while (thread.isAlive()) {
-        LOG.info("Indexing");
+        LOG.info("Waiting...");
         thread.join(2000);
         if (System.currentTimeMillis() > targetTime && thread.isAlive()) {
           LOG.info("Tired of waiting!");
