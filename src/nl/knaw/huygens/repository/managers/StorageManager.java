@@ -161,7 +161,9 @@ public class StorageManager {
   public <T extends Document> void addDocument(Class<T> type, T doc) throws IOException {
     storage.addItem(type, doc);
     persistDocumentVersion(type, doc);
-    sendIndexMessage(Broker.INDEX_ADD, VariationUtils.getBaseClass(type).getSimpleName(), doc.getId());
+    if (DomainDocument.class.isAssignableFrom(type)) {
+      sendIndexMessage(Broker.INDEX_ADD, VariationUtils.getBaseClass(type).getSimpleName(), doc.getId());
+    }
   }
 
   private <T extends Document> void persistDocumentVersion(Class<T> type, T doc) {
@@ -178,12 +180,16 @@ public class StorageManager {
   public <T extends Document> void modifyDocument(Class<T> type, T doc) throws IOException {
     storage.updateItem(type, doc.getId(), doc);
     persistDocumentVersion(type, doc);
-    sendIndexMessage(Broker.INDEX_MOD, VariationUtils.getBaseClass(type).getSimpleName(), doc.getId());
+    if (DomainDocument.class.isAssignableFrom(type)) {
+      sendIndexMessage(Broker.INDEX_MOD, VariationUtils.getBaseClass(type).getSimpleName(), doc.getId());
+    }
   }
 
   public <T extends Document> void removeDocument(Class<T> type, T doc) throws IOException {
     storage.deleteItem(type, doc.getId(), doc.getLastChange());
-    sendIndexMessage(Broker.INDEX_DEL, VariationUtils.getBaseClass(type).getSimpleName(), doc.getId());
+    if (DomainDocument.class.isAssignableFrom(type)) {
+      sendIndexMessage(Broker.INDEX_DEL, VariationUtils.getBaseClass(type).getSimpleName(), doc.getId());
+    }
   }
 
   public <T extends Document> StorageIterator<T> getByMultipleIds(Class<T> type, List<String> ids) {
