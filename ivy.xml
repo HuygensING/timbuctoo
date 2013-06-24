@@ -100,7 +100,6 @@
 		<exclude org="com.ibm.websphere" />
 		<exclude org="org.hsqldb" />
 		<exclude org="org.surfnet.coin" name="coin-test"/>
-		<exclude org="nl.surfnet.apis" name="apis-authorization-server"/>
 	</dependency>
 	<dependency org="org.apache.openjpa" name="openjpa-kernel" rev="2.2.2">
 		<exclude org="com.ibm.websphere" />
