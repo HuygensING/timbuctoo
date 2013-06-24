@@ -12,6 +12,7 @@
 </table>
 
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script type="text/javascript" src="../config.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){
 	var searchString = window.location.hash.substring(1);
@@ -49,13 +50,11 @@ $(document).ready(function(){
 </script>
 <script type="text/javascript">
 $('[name="login"]').click(function(){
-	//Must be changed for you localh IP. 
-	//And register your client with the authorization server 
-	var redirectURL='http://10.152.32.57:8080/repository/static/example_vre/login.html';
+	//You must register your client with the authorization server 
+	var redirectURL = window.location;
 	//After you registered you client change the clientId to the registered one
 	var clientId = 'testvre'; 
-	var authorizationURL = 'http://demo17.huygens.knaw.nl/apis-authorization-server/oauth2/authorize?response_type=token&client_id='+clientId+'&redirect_uri='+redirectURL+'&scope=read&state=example';
-	//var authorizationURL = 'http://10.152.32.138:8080/apis-authorization-server/oauth2/authorize?response_type=token&client_id='+clientId+'&redirect_uri='+redirectURL+'&scope=read&state=example';
+	var authorizationURL = 'http://' + window.config.securityUri + '/apis-authorization-server/oauth2/authorize?response_type=token&client_id='+clientId+'&redirect_uri='+redirectURL+'&scope=read&state=example';
 	window.location = authorizationURL;
 });
 </script>
