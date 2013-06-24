@@ -1,5 +1,6 @@
 package nl.knaw.huygens.repository;
 
+import javax.jms.JMSException;
 import javax.servlet.ServletContextEvent;
 
 import nl.knaw.huygens.repository.config.BasicInjectionModule;
@@ -7,6 +8,7 @@ import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.ServletInjectionModule;
 import nl.knaw.huygens.repository.index.IndexService;
 import nl.knaw.huygens.repository.managers.StorageManager;
+import nl.knaw.huygens.repository.messages.Broker;
 
 import org.apache.commons.configuration.ConfigurationException;
 
@@ -29,6 +31,7 @@ public class RepoContextListener extends GuiceServletContextListener {
   // See: http://code.google.com/p/google-guice/issues/detail?id=707
 
   private Injector injector;
+  private Broker broker;
   private IndexService service;
   private Thread indexServiceThread;
 
@@ -49,6 +52,13 @@ public class RepoContextListener extends GuiceServletContextListener {
   public void contextInitialized(ServletContextEvent event) {
     super.contextInitialized(event);
 
+    try {
+      broker = injector.getInstance(Broker.class);
+      broker.start();
+    } catch (JMSException e) {
+      throw new RuntimeException(e);
+    }
+
     service = injector.getInstance(IndexService.class);
     indexServiceThread = new Thread(service);
     indexServiceThread.start();
@@ -68,6 +78,11 @@ public class RepoContextListener extends GuiceServletContextListener {
         storageManager.close();
       }
       injector = null;
+    }
+
+    if (broker != null) {
+      broker.close();
+      broker = null;
     }
 
     super.contextDestroyed(event);
