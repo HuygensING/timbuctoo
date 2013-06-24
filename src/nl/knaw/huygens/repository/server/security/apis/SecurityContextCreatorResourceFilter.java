@@ -96,7 +96,7 @@ public class SecurityContextCreatorResourceFilter implements ResourceFilter, Con
     contentbuilder.append("Met vriendelijke groet,\n");
     contentbuilder.append("De datarepository");
 
-    if (!StringUtils.isBlank(admin.email)) {
+    if (admin != null && !StringUtils.isBlank(admin.email)) {
       mailSender.sendMail(admin.email, "Nieuwe gebruiker", contentbuilder.toString());
     }
   }
