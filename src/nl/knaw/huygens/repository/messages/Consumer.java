@@ -22,12 +22,13 @@ public class Consumer {
 
   public Consumer(ConnectionFactory factory, String queue, String name) throws JMSException {
     this.name = name;
+    LOG.info("Creating '{}'", name);
     connection = factory.createConnection();
     connection.start();
     session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
     Destination destination = session.createQueue(queue);
     consumer = session.createConsumer(destination);
-    LOG.info("Opened consumer '{}'", name);
+    LOG.info("Created '{}'", name);
   }
 
   public Message receive() throws JMSException {
@@ -35,7 +36,7 @@ public class Consumer {
   }
 
   public void close() throws JMSException {
-    LOG.info("Closing consumer '{}'", name);
+    LOG.info("Closing '{}'", name);
     session.close();
     connection.close();
   }
