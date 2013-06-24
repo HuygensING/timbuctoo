@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 import java.util.List;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
+import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.mongo.model.TestSystemDocument;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 
@@ -259,4 +260,31 @@ public class MongoModifiableStorageTest extends MongoStorageTestBase {
 
     assertEquals(null, MongoDiff.diffDocuments(expected, actual));
   }
+
+  @Test
+  public void testGetAllByType() throws IOException {
+    this.setUpDatabase();
+
+    StorageIterator<TestSystemDocument> iterator = instance.getAllByType(TestSystemDocument.class);
+
+    assertEquals(3, iterator.size());
+  }
+
+  @Test
+  public void testGetAllByTypeNonFound() {
+    StorageIterator<TestSystemDocument> iterator = instance.getAllByType(TestSystemDocument.class);
+
+    assertEquals(0, iterator.size());
+  }
+
+  @Test
+  public void testEmpty() throws IOException {
+    this.setUpDatabase();
+    instance.empty();
+
+    StorageIterator<TestSystemDocument> iterator = instance.getAllByType(TestSystemDocument.class);
+
+    assertEquals(0, iterator.size());
+  }
+
 }
