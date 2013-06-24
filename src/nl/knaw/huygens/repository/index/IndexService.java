@@ -27,7 +27,7 @@ public class IndexService implements Runnable {
   @Inject
   public IndexService(IndexManager manager, Broker broker, DocTypeRegistry registry) throws JMSException {
     this.manager = manager;
-    this.consumer = broker.newConsumer(Broker.INDEX_QUEUE, IndexService.class.getSimpleName());
+    this.consumer = broker.newConsumer(Broker.INDEX_QUEUE, "IndexServiceConsumer");
     this.registry = registry;
   }
 

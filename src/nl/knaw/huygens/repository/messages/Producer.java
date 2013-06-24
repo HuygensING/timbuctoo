@@ -23,13 +23,14 @@ public class Producer {
 
   public Producer(ConnectionFactory factory, String queue, String name) throws JMSException {
     this.name = name;
+    LOG.info("Creating '{}'", name);
     connection = factory.createConnection();
     connection.start();
     session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
     Destination destination = session.createQueue(queue);
     producer = session.createProducer(destination);
     producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-    LOG.info("Opened producer '{}'", name);
+    LOG.info("Created '{}'", name);
   }
 
   public void send(String action, String type, String id) throws JMSException {
@@ -41,7 +42,7 @@ public class Producer {
   }
 
   public void close() throws JMSException {
-    LOG.info("Closing producer '{}'", name);
+    LOG.info("Closing '{}'", name);
     session.close();
     connection.close();
   }

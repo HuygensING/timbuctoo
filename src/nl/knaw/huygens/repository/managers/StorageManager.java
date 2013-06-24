@@ -75,7 +75,7 @@ public class StorageManager {
 
   private Producer setupProducer(Broker broker) {
     try {
-      return broker.newProducer(Broker.INDEX_QUEUE, getClass().getSimpleName());
+      return broker.newProducer(Broker.INDEX_QUEUE, "StorageManagerProducer");
     } catch (JMSException e) {
       throw new RuntimeException(e);
     }
