@@ -17,8 +17,17 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 /**
- * Performs bulk import of test data.
- * The data is both stored (Mongo) and indexed (Solr).
+ * Performs bulk import of test data, which is stored and indexed.
+ * <br/>
+ * There are three infrastructure components involved:<ul>
+ * <li>Mongo for storage of the documents;</li>
+ * <li>Solr for indexing of the documents;</li>
+ * <li>ActiveMQ for communicating that documents have been stored
+ * which need to be indexed.</li>
+ * </ul>
+ * Mongo depends on ActiveMQ, Solr depend on Mongo and ActiveMQ.
+ * These dependencies imply the order in which the components must be
+ * opened and closed.
  */
 public class BulkImporter {
 
@@ -26,10 +35,14 @@ public class BulkImporter {
     Configuration config = new Configuration("config.xml");
     Injector injector = Guice.createInjector(new BasicInjectionModule(config));
 
+    Broker broker = null;
     StorageManager storageManager = null;
     IndexManager indexManager = null;
 
     try {
+      broker = injector.getInstance(Broker.class);
+      broker.start();
+
       storageManager = injector.getInstance(StorageManager.class);
       storageManager.getStorage().empty();
 
@@ -51,7 +64,7 @@ public class BulkImporter {
 
       storageManager.ensureIndices();
 
-      Broker broker = injector.getInstance(Broker.class);
+      // Signal we're done
       sendEndOfDataMessage(broker);
 
       long time = (System.currentTimeMillis() - start) / 1000;
@@ -70,11 +83,14 @@ public class BulkImporter {
       if (storageManager != null) {
         storageManager.close();
       }
+      if (broker != null) {
+        broker.close();
+      }
     }
   }
 
   private static void sendEndOfDataMessage(Broker broker) throws JMSException {
-    Producer producer = broker.newProducer(Broker.INDEX_QUEUE, BulkImporter.class.getSimpleName());
+    Producer producer = broker.newProducer(Broker.INDEX_QUEUE, "BulkImporterProducer");
     producer.send(Broker.INDEX_END, "", "");
     producer.close();
   }

@@ -25,7 +25,13 @@
     </solr>
     <messages>
       <!-- ActiveMQ message broker -->
-      <broker_url>vm://repo-broker?broker.persistent=false</broker_url>
+      <enabled>true</enabled>
+      <persistent>false</persistent>
+      <system_usage>
+        <memory_mb>10</memory_mb>
+        <store_mb>100</store_mb>
+        <temp_mb>20</temp_mb>
+      </system_usage>
     </messages>
     <mail>
       <!-- for sending emails to admins when a new user has logged on 
