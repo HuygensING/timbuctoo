@@ -5,8 +5,6 @@ import java.util.List;
 import nl.knaw.huygens.repository.model.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.model.annotations.IDPrefix;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 @IDPrefix("QRY")
 @DocumentTypeName("search")
 public class SearchResult extends SystemDocument implements Persistent {
@@ -16,7 +14,6 @@ public class SearchResult extends SystemDocument implements Persistent {
   private String sort;
   private String date;
   private String searchType;
-  private String defaultVRE;
 
   public SearchResult() {}
 
@@ -71,18 +68,6 @@ public class SearchResult extends SystemDocument implements Persistent {
   @Override
   public String getDescription() {
     return "Search " + getId();
-  }
-
-  @Override
-  @JsonProperty("!currentVariation")
-  public String getCurrentVariation() {
-    return defaultVRE;
-  }
-
-  @Override
-  @JsonProperty("!currentVariation")
-  public void setCurrentVariation(String defaultVRE) {
-    this.defaultVRE = defaultVRE;
   }
 
 }
