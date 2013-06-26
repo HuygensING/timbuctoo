@@ -1,6 +1,6 @@
 package nl.knaw.huygens.repository.variation.model;
 
-import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
+import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.DomainDocument;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

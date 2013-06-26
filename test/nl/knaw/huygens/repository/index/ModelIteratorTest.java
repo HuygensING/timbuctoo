@@ -3,6 +3,8 @@ package nl.knaw.huygens.repository.index;
 import java.lang.reflect.Method;
 
 import junit.framework.Assert;
+import nl.knaw.huygens.repository.annotations.IndexAnnotation;
+import nl.knaw.huygens.repository.annotations.IndexAnnotations;
 import nl.knaw.huygens.repository.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.repository.index.model.ExplicitlyAnnotatedModelWithIndexAnnotations;
 import nl.knaw.huygens.repository.index.model.ImplicitlyAnnotatedModel;
@@ -11,8 +13,6 @@ import nl.knaw.huygens.repository.index.model.ModelWithOverriddenIndexAnnotation
 import nl.knaw.huygens.repository.index.model.ModelWithOverriddenIndexAnnotations;
 import nl.knaw.huygens.repository.index.model.SubModel;
 import nl.knaw.huygens.repository.index.model.SubModelWithIndexAnnotations;
-import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
-import nl.knaw.huygens.repository.indexdata.IndexAnnotations;
 import nl.knaw.huygens.repository.model.Document;
 
 import org.junit.Before;

@@ -3,11 +3,11 @@ package nl.knaw.huygens.repository.facets;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.index.AnnotatedMethodProcessor;
 import nl.knaw.huygens.repository.index.Utils;
 import nl.knaw.huygens.repository.indexdata.CustomIndexer;
 import nl.knaw.huygens.repository.indexdata.CustomIndexer.NoopIndexer;
-import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 
 import com.google.common.collect.Maps;
 

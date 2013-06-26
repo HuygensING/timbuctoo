@@ -6,9 +6,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.indexdata.CustomIndexer;
 import nl.knaw.huygens.repository.indexdata.CustomIndexer.NoopIndexer;
-import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Document;
 
 import org.apache.commons.lang.ArrayUtils;
