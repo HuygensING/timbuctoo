@@ -1,8 +1,8 @@
 package nl.knaw.huygens.repository.managers.model;
 
+import nl.knaw.huygens.repository.annotations.RelatedDocument;
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.storage.RelatedDocument;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

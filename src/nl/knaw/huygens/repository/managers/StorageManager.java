@@ -10,6 +10,8 @@ import java.util.Set;
 
 import javax.jms.JMSException;
 
+import nl.knaw.huygens.repository.annotations.RelatedDocument;
+import nl.knaw.huygens.repository.annotations.RelatedDocuments;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.messages.Producer;
@@ -17,8 +19,6 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
-import nl.knaw.huygens.repository.storage.RelatedDocument;
-import nl.knaw.huygens.repository.storage.RelatedDocuments;
 import nl.knaw.huygens.repository.storage.RevisionChanges;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
