@@ -5,7 +5,7 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
+import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.util.Change;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

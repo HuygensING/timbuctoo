@@ -10,9 +10,9 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
+import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.indexdata.CustomIndexer;
 import nl.knaw.huygens.repository.indexdata.CustomIndexer.NoopIndexer;
-import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.variation.model.TestExtraBaseDoc;
 

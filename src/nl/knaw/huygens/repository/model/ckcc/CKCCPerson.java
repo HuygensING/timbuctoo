@@ -1,7 +1,7 @@
 package nl.knaw.huygens.repository.model.ckcc;
 
 import nl.knaw.huygens.repository.annotations.DocumentTypeName;
-import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
+import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Person;
 
 @DocumentTypeName("ckccperson")
