@@ -2,9 +2,9 @@ package nl.knaw.huygens.repository.model;
 
 import java.util.List;
 
-import nl.knaw.huygens.repository.model.annotations.DoNotRegister;
-import nl.knaw.huygens.repository.model.annotations.DocumentTypeName;
-import nl.knaw.huygens.repository.model.annotations.IDPrefix;
+import nl.knaw.huygens.repository.annotations.DoNotRegister;
+import nl.knaw.huygens.repository.annotations.DocumentTypeName;
+import nl.knaw.huygens.repository.annotations.IDPrefix;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

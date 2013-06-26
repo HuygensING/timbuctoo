@@ -1,8 +1,8 @@
 package nl.knaw.huygens.repository.model.dwcbia;
 
+import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Person;
-import nl.knaw.huygens.repository.model.annotations.DocumentTypeName;
 
 @DocumentTypeName("dwcperson")
 public class DWCPerson extends Person {

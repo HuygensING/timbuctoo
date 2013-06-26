@@ -1,8 +1,8 @@
 package nl.knaw.huygens.repository.variation.model;
 
+import nl.knaw.huygens.repository.annotations.DoNotRegister;
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.SystemDocument;
-import nl.knaw.huygens.repository.model.annotations.DoNotRegister;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
