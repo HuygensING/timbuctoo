@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.indexdata;
+package nl.knaw.huygens.repository.annotations;
 
 import java.lang.annotation.*;
 
