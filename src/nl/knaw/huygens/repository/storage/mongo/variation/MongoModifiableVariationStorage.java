@@ -5,9 +5,9 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
 
+import nl.knaw.huygens.repository.annotations.IDPrefix;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.annotations.IDPrefix;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;

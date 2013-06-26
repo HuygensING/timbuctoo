@@ -1,8 +1,8 @@
 package nl.knaw.huygens.repository.storage.mongo.model;
 
+import nl.knaw.huygens.repository.annotations.IDPrefix;
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.SystemDocument;
-import nl.knaw.huygens.repository.model.annotations.IDPrefix;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -6,9 +6,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.annotations.DoNotRegister;
+import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.annotations.DoNotRegister;
-import nl.knaw.huygens.repository.model.annotations.DocumentTypeName;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
