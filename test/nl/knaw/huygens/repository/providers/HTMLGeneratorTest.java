@@ -1,6 +1,5 @@
 package nl.knaw.huygens.repository.providers;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -76,13 +75,19 @@ public class HTMLGeneratorTest {
     doc.setPid("pid");
 
     mapper.writeValue(gen, doc);
-    String expectedHTML = "<table>\n" + "<tr><th>Class</th><td>nl.knaw.huygens.repository.variation.model.TestConcreteDoc</td></tr>\n" + "<tr><th>Name</th><td>test</td></tr>\n"
-        + "<tr><th>Id</th><td>TCD0000000001</td></tr>\n" + "<tr><th>Rev</th><td>0</td></tr>\n" + "<tr><th>Last Change</th><td>none</td></tr>\n" + "<tr><th>Creation</th><td>none</td></tr>\n"
-        + "<tr><th>Pid</th><td>pid</td></tr>\n" + "<tr><th>Variations</th><td>projecta;<br>\n" + "projectb;<br>\n" + "</td></tr>\n" + "<tr><th>Current Variation</th><td>projecta</td></tr>\n"
-        + "<tr><th>Deleted</th><td>no</td></tr>\n" + "</table>\n";
-    String actualHTML = writer.getBuffer().toString();
 
-    assertEquals(expectedHTML, actualHTML);
+    String html = writer.getBuffer().toString();
+
+    assertContains(html, "Class", "nl.knaw.huygens.repository.variation.model.TestConcreteDoc");
+    assertContains(html, "Name", "test");
+    assertContains(html, "Id", "TCD0000000001");
+    assertContains(html, "Rev", "0");
+    assertContains(html, "Last Change", "none");
+    assertContains(html, "Creation", "none");
+    assertContains(html, "Pid", "pid");
+    assertContains(html, "Variations", "projecta;<br>\nprojectb;<br>\n");
+    assertContains(html, "Current Variation", "projecta");
+    assertContains(html, "Deleted", "no");
   }
 
   @Test
@@ -97,13 +102,19 @@ public class HTMLGeneratorTest {
 
     mapper.writeValue(gen, doc);
 
-    String expectedHTML = "<table>\n" + "<tr><th>Class</th><td>nl.knaw.huygens.repository.variation.model.GeneralTestDoc</td></tr>\n" + "<tr><th>Name</th><td>test</td></tr>\n"
-        + "<tr><th>General Test Doc Value</th><td>generalTestDocValue</td></tr>\n" + "<tr><th>Id</th><td>GTD0000000001</td></tr>\n" + "<tr><th>Rev</th><td>0</td></tr>\n"
-        + "<tr><th>Last Change</th><td>none</td></tr>\n" + "<tr><th>Creation</th><td>none</td></tr>\n" + "<tr><th>Pid</th><td>pid</td></tr>\n" + "<tr><th>Variations</th><td>projecta;<br>\n"
-        + "projectb;<br>\n" + "</td></tr>\n" + "<tr><th>Current Variation</th><td>projecta</td></tr>\n" + "<tr><th>Deleted</th><td>no</td></tr>\n" + "</table>\n";
-    String actualHTML = writer.getBuffer().toString();
+    String html = writer.getBuffer().toString();
 
-    assertEquals(expectedHTML, actualHTML);
+    assertContains(html, "Class", "nl.knaw.huygens.repository.variation.model.GeneralTestDoc");
+    assertContains(html, "Name", "test");
+    assertContains(html, "General Test Doc Value", "generalTestDocValue");
+    assertContains(html, "Id", "GTD0000000001");
+    assertContains(html, "Rev", "0");
+    assertContains(html, "Last Change", "none");
+    assertContains(html, "Creation", "none");
+    assertContains(html, "Pid", "pid");
+    assertContains(html, "Variations", "projecta;<br>\nprojectb;<br>\n");
+    assertContains(html, "Current Variation", "projecta");
+    assertContains(html, "Deleted", "no");
   }
 
   @Test
@@ -115,11 +126,18 @@ public class HTMLGeneratorTest {
     doc.setVariations(Lists.newArrayList("projecta-otherdoc", "testinheritsfromtestbasedoc"));
 
     mapper.writeValue(gen, doc);
-    String expectedHTML = "<table>\n" + "<tr><th>Class</th><td>nl.knaw.huygens.repository.variation.model.projecta.OtherDoc</td></tr>\n" + "<tr><th>Name</th><td>none</td></tr>\n"
-        + "<tr><th>Other Thing</th><td>test</td></tr>\n" + "<tr><th>Id</th><td>OTD0000000001</td></tr>\n" + "<tr><th>Rev</th><td>0</td></tr>\n" + "<tr><th>Last Change</th><td>none</td></tr>\n"
-        + "<tr><th>Creation</th><td>none</td></tr>\n" + "<tr><th>Pid</th><td>pid</td></tr>\n" + "<tr><th>Variations</th><td>projecta-otherdoc;<br>\n" + "testinheritsfromtestbasedoc;<br>\n"
-        + "</td></tr>\n" + "<tr><th>Current Variation</th><td>none</td></tr>\n" + "<tr><th>Deleted</th><td>no</td></tr>\n" + "</table>\n";
-    String actualHTML = writer.getBuffer().toString();
-    assertEquals(expectedHTML, actualHTML);
+    String html = writer.getBuffer().toString();
+
+    assertContains(html, "Class", "nl.knaw.huygens.repository.variation.model.projecta.OtherDoc");
+    assertContains(html, "Name", "none");
+    assertContains(html, "Other Thing", "test");
+    assertContains(html, "Id", "OTD0000000001");
+    assertContains(html, "Rev", "0");
+    assertContains(html, "Last Change", "none");
+    assertContains(html, "Creation", "none");
+    assertContains(html, "Pid", "pid");
+    assertContains(html, "Variations", "projecta-otherdoc;<br>\ntestinheritsfromtestbasedoc;<br>\n");
+    assertContains(html, "Current Variation", "none");
+    assertContains(html, "Deleted", "no");
   }
 }
