@@ -4,18 +4,16 @@ import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.model.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.model.annotations.IDPrefix;
+import nl.knaw.huygens.repository.model.util.Period;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("LEG")
 @DocumentTypeName("legislation")
 public class Legislation extends DomainDocument {
 
-  private String currentVariation;
-
-  private Dates dates;
   private Keyword[] keywords;
+  private Period period;
   private String _id;
   private String aantekeningen;
   private String contents;
@@ -38,26 +36,6 @@ public class Legislation extends DomainDocument {
   @IndexAnnotation(fieldName = "desc")
   public String getDescription() {
     return title;
-  }
-
-  @Override
-  @JsonProperty("!currentVariation")
-  public String getCurrentVariation() {
-    return currentVariation;
-  }
-
-  @Override
-  @JsonProperty("!currentVariation")
-  public void setCurrentVariation(String currentVariation) {
-    this.currentVariation = currentVariation;
-  }
-
-  public Dates getDates() {
-    return dates;
-  }
-
-  public void setDates(Dates dates) {
-    this.dates = dates;
   }
 
   public Keyword[] getKeywords() {
@@ -146,6 +124,14 @@ public class Legislation extends DomainDocument {
 
   public void setPages(String pages) {
     this.pages = pages;
+  }
+
+  public Period getPeriod() {
+    return period;
+  }
+
+  public void setPeriod(Period period) {
+    this.period = period;
   }
 
   @IndexAnnotation(fieldName = "facet_t_reference")

@@ -4,18 +4,16 @@ import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
 import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.model.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.model.annotations.IDPrefix;
+import nl.knaw.huygens.repository.model.util.Period;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("ARM")
 @DocumentTypeName("archivematerial")
 public class ArchiveMaterial extends DomainDocument {
 
-  private String currentVariation;
-
-  private Dates dates;
   private Keyword[] keywords;
+  private Period period;
   private String _id;
   private String aantekeningen;
   private String code_subfonds;
@@ -43,26 +41,6 @@ public class ArchiveMaterial extends DomainDocument {
   @IndexAnnotation(fieldName = "desc")
   public String getDescription() {
     return title;
-  }
-
-  @Override
-  @JsonProperty("!currentVariation")
-  public String getCurrentVariation() {
-    return currentVariation;
-  }
-
-  @Override
-  @JsonProperty("!currentVariation")
-  public void setCurrentVariation(String currentVariation) {
-    this.currentVariation = currentVariation;
-  }
-
-  public Dates getDates() {
-    return dates;
-  }
-
-  public void setDates(Dates dates) {
-    this.dates = dates;
   }
 
   public Keyword[] getKeywords() {
@@ -151,6 +129,14 @@ public class ArchiveMaterial extends DomainDocument {
 
   public void setOrig_filename(String orig_filename) {
     this.orig_filename = orig_filename;
+  }
+
+  public Period getPeriod() {
+    return period;
+  }
+
+  public void setPeriod(Period period) {
+    this.period = period;
   }
 
   public String getPeriod_description() {
