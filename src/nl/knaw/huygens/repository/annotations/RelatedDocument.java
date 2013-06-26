@@ -10,6 +10,9 @@ import nl.knaw.huygens.repository.model.Document;
 @Target(value = { ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RelatedDocument {
+
   Class<? extends Document> type();
+
   String[] accessors() default {};
+
 }
