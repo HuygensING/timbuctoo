@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.io.StringWriter;
 
+import nl.knaw.huygens.repository.VariationHelper;
 import nl.knaw.huygens.repository.storage.mongo.model.TestSystemDocument;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
@@ -18,7 +19,6 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 
 public class HTMLGeneratorTest {
 
@@ -70,7 +70,7 @@ public class HTMLGeneratorTest {
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.setId("TCD0000000001");
     doc.name = "test";
-    doc.setVariations(Lists.newArrayList("projecta", "projectb"));
+    doc.setVariations(VariationHelper.createVariations("projecta", "projectb"));
     doc.setCurrentVariation("projecta");
     doc.setPid("pid");
 
@@ -96,7 +96,7 @@ public class HTMLGeneratorTest {
     doc.setId("GTD0000000001");
     doc.generalTestDocValue = "generalTestDocValue";
     doc.name = "test";
-    doc.setVariations(Lists.newArrayList("projecta", "projectb"));
+    doc.setVariations(VariationHelper.createVariations("projecta", "projectb"));
     doc.setCurrentVariation("projecta");
     doc.setPid("pid");
 
@@ -123,7 +123,7 @@ public class HTMLGeneratorTest {
     doc.setId("OTD0000000001");
     doc.otherThing = "test";
     doc.setPid("pid");
-    doc.setVariations(Lists.newArrayList("projecta-otherdoc", "testinheritsfromtestbasedoc"));
+    doc.setVariations(VariationHelper.createVariations("projecta-otherdoc", "testinheritsfromtestbasedoc"));
 
     mapper.writeValue(gen, doc);
     String html = writer.getBuffer().toString();
