@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.VariationHelper;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
@@ -26,7 +27,6 @@ import org.mongojack.internal.stream.JacksonDBObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mongodb.DBObject;
 
@@ -60,7 +60,7 @@ public class VariationReducerTest {
     testVal.name = "a";
     testVal.generalTestDocValue = "a";
     testVal.projectAGeneralTestDocValue = "test";
-    testVal.setVariations(Lists.newArrayList("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
+    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
 
@@ -73,7 +73,7 @@ public class VariationReducerTest {
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class);
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "a";
-    testVal.setVariations(Lists.newArrayList("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
+    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -87,7 +87,7 @@ public class VariationReducerTest {
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class);
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "b";
-    testVal.setVariations(Lists.newArrayList("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "projectb-projectbgeneraltestdoc"));
+    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "projectb-projectbgeneraltestdoc"));
     testVal.setCurrentVariation("projectb");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -102,7 +102,7 @@ public class VariationReducerTest {
     GeneralTestDoc testVal = new GeneralTestDoc();
     testVal.name = "a";
     testVal.generalTestDocValue = "a";
-    testVal.setVariations(Lists.newArrayList("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
+    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -117,7 +117,7 @@ public class VariationReducerTest {
     GeneralTestDoc testVal = new GeneralTestDoc();
     testVal.name = "a";
     testVal.generalTestDocValue = "a";
-    testVal.setVariations(Lists.newArrayList("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "projectb-projectbgeneraltestdoc"));
+    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "projectb-projectbgeneraltestdoc"));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -128,7 +128,7 @@ public class VariationReducerTest {
     JsonNode t = m.readTree(x);
     TestDoc val = reducer.reduce(t, TestDoc.class);
     TestDoc testVal = new TestDoc();
-    testVal.setVariations(Lists.newArrayList("testinheritsfromtestbasedoc"));
+    testVal.setVariations(VariationHelper.createVariations("testinheritsfromtestbasedoc"));
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
 
@@ -142,7 +142,7 @@ public class VariationReducerTest {
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class, "blub");
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "b";
-    testVal.setVariations(Lists.newArrayList("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "blub-blubgeneraltestdoc"));
+    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "blub-blubgeneraltestdoc"));
     testVal.setCurrentVariation("blub");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -156,7 +156,7 @@ public class VariationReducerTest {
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class, "projecta");
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "a";
-    testVal.setVariations(Lists.newArrayList("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "projectb-projectbgeneraltestdoc"));
+    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "projectb-projectbgeneraltestdoc"));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -171,7 +171,7 @@ public class VariationReducerTest {
     GeneralTestDoc testVal = new GeneralTestDoc();
     testVal.name = "b";
     testVal.generalTestDocValue = "b";
-    testVal.setVariations(Lists.newArrayList("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "projectb-projectbgeneraltestdoc"));
+    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "projectb-projectbgeneraltestdoc"));
     testVal.setCurrentVariation("projectb");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -187,7 +187,7 @@ public class VariationReducerTest {
     testVal.name = "a";
     testVal.generalTestDocValue = "a";
     testVal.projectAGeneralTestDocValue = "test";
-    testVal.setVariations(Lists.newArrayList("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
+    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
     testVal.setCurrentVariation(null);
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -207,7 +207,7 @@ public class VariationReducerTest {
     expected.name = "test";
     expected.generalTestDocValue = "testDocValue";
     expected.projectAGeneralTestDocValue = "projectATestDocValue";
-    expected.setVariations(Lists.newArrayList("projecta-projectageneraltestdoc", "generaltestdoc", "testconcretedoc"));
+    expected.setVariations(VariationHelper.createVariations("projecta-projectageneraltestdoc", "generaltestdoc", "testconcretedoc"));
 
     assertEquals(null, MongoDiff.diffDocuments(expected, actual));
   }
@@ -225,7 +225,7 @@ public class VariationReducerTest {
     expected.setId("TCD000000001");
     expected.name = "test";
     expected.setCurrentVariation("projecta");
-    expected.setVariations(Lists.newArrayList("projecta-projectageneraltestdoc", "generaltestdoc", "testconcretedoc"));
+    expected.setVariations(VariationHelper.createVariations("projecta-projectageneraltestdoc", "generaltestdoc", "testconcretedoc"));
 
     assertEquals(null, MongoDiff.diffDocuments(expected, actual));
   }
@@ -285,7 +285,7 @@ public class VariationReducerTest {
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class, "blah");
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "a";
-    testVal.setVariations(Lists.newArrayList("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
+    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -299,7 +299,7 @@ public class VariationReducerTest {
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class, "blah");
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "b";
-    testVal.setVariations(Lists.newArrayList("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "projectb-projectbgeneraltestdoc"));
+    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "projectb-projectbgeneraltestdoc"));
     testVal.setCurrentVariation("projectb");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -314,7 +314,7 @@ public class VariationReducerTest {
     GeneralTestDoc testVal = new GeneralTestDoc();
     testVal.name = "a";
     testVal.generalTestDocValue = "a";
-    testVal.setVariations(Lists.newArrayList("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
+    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
