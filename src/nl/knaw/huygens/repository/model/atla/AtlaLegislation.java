@@ -1,16 +1,10 @@
 package nl.knaw.huygens.repository.model.atla;
 
 import nl.knaw.huygens.repository.indexdata.IndexAnnotation;
-import nl.knaw.huygens.repository.model.DomainDocument;
-import nl.knaw.huygens.repository.model.annotations.DocumentTypeName;
-import nl.knaw.huygens.repository.model.annotations.IDPrefix;
+import nl.knaw.huygens.repository.model.Legislation;
 import nl.knaw.huygens.repository.model.util.Period;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-@IDPrefix("LEG")
-@DocumentTypeName("legislation")
-public class Legislation extends DomainDocument {
+public class AtlaLegislation extends Legislation {
 
   private Keyword[] keywords;
   private Period period;
@@ -28,15 +22,7 @@ public class Legislation extends DomainDocument {
   private String scan;
   private String see_also;
   private String titel_eng;
-  private String title;
   private String[] related;
-
-  @Override
-  @JsonIgnore
-  @IndexAnnotation(fieldName = "desc")
-  public String getDescription() {
-    return title;
-  }
 
   public Keyword[] getKeywords() {
     return keywords;
@@ -177,15 +163,6 @@ public class Legislation extends DomainDocument {
 
   public void setTitel_eng(String titel_eng) {
     this.titel_eng = titel_eng;
-  }
-
-  @IndexAnnotation(fieldName = "facet_t_title")
-  public String getTitle() {
-    return title;
-  }
-
-  public void setTitle(String title) {
-    this.title = title;
   }
 
   public String[] getRelated() {
