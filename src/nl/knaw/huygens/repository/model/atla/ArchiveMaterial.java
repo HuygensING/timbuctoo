@@ -4,6 +4,7 @@ import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.annotations.IDPrefix;
 import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.model.Keyword;
 import nl.knaw.huygens.repository.model.util.Period;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
