@@ -13,6 +13,8 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import nl.knaw.huygens.repository.annotations.APIDesc;
+
 import org.apache.commons.lang.StringUtils;
 
 import com.google.common.collect.ImmutableList;

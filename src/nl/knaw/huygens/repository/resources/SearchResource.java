@@ -14,13 +14,13 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import nl.knaw.huygens.repository.annotations.APIDesc;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.SearchManager;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
-import nl.knaw.huygens.repository.util.APIDesc;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
