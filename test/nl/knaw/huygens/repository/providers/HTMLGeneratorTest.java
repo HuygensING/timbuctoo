@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 import nl.knaw.huygens.repository.VariationHelper;
+import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.mongo.model.TestSystemDocument;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
@@ -35,20 +36,24 @@ public class HTMLGeneratorTest {
     gen = new HTMLGenerator(realGen);
   }
 
+  private String generateHtml(Document doc) throws JsonGenerationException, JsonMappingException, IOException {
+    mapper.writeValue(gen, doc);
+    return writer.getBuffer().toString();
+  }
+
   private void assertContains(String html, String key, String value) {
     assertTrue(html.contains("<tr><th>" + key + "</th><td>" + value + "</td></tr>"));
   }
 
   @Test
-  public void testWriteValueSystemDocument() throws JsonGenerationException, JsonMappingException, IOException {
+  public void testSystemDocument() throws JsonGenerationException, JsonMappingException, IOException {
     TestSystemDocument doc = new TestSystemDocument();
     doc.setAnnotatedProperty("test");
     doc.setId("TSD0000000001");
     doc.setAnnotatedProperty("anonProp");
     doc.setPropWithAnnotatedAccessors("propWithAnnotatedAccessors");
 
-    mapper.writeValue(gen, doc);
-    String html = writer.getBuffer().toString();
+    String html = generateHtml(doc);
 
     assertContains(html, "Class", "nl.knaw.huygens.repository.storage.mongo.model.TestSystemDocument");
     assertContains(html, "Name", "none");
@@ -66,7 +71,7 @@ public class HTMLGeneratorTest {
   }
 
   @Test
-  public void testWriteValueDomainDocumentArchetype() throws JsonGenerationException, JsonMappingException, IOException {
+  public void testDomainDocumentArchetype() throws JsonGenerationException, JsonMappingException, IOException {
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.setId("TCD0000000001");
     doc.name = "test";
@@ -74,9 +79,7 @@ public class HTMLGeneratorTest {
     doc.setCurrentVariation("projecta");
     doc.setPid("pid");
 
-    mapper.writeValue(gen, doc);
-
-    String html = writer.getBuffer().toString();
+    String html = generateHtml(doc);
 
     assertContains(html, "Class", "nl.knaw.huygens.repository.variation.model.TestConcreteDoc");
     assertContains(html, "Name", "test");
@@ -91,7 +94,7 @@ public class HTMLGeneratorTest {
   }
 
   @Test
-  public void testWriteValueDomainDocumentSubtype() throws JsonGenerationException, JsonMappingException, IOException {
+  public void testDomainDocumentSubtype() throws JsonGenerationException, JsonMappingException, IOException {
     GeneralTestDoc doc = new GeneralTestDoc();
     doc.setId("GTD0000000001");
     doc.generalTestDocValue = "generalTestDocValue";
@@ -100,9 +103,7 @@ public class HTMLGeneratorTest {
     doc.setCurrentVariation("projecta");
     doc.setPid("pid");
 
-    mapper.writeValue(gen, doc);
-
-    String html = writer.getBuffer().toString();
+    String html = generateHtml(doc);
 
     assertContains(html, "Class", "nl.knaw.huygens.repository.variation.model.GeneralTestDoc");
     assertContains(html, "Name", "test");
@@ -118,15 +119,14 @@ public class HTMLGeneratorTest {
   }
 
   @Test
-  public void testWriteValueDomainDocumentProjectSubtype() throws JsonGenerationException, JsonMappingException, IOException {
+  public void testDomainDocumentProjectSubtype() throws JsonGenerationException, JsonMappingException, IOException {
     OtherDoc doc = new OtherDoc();
     doc.setId("OTD0000000001");
     doc.otherThing = "test";
     doc.setPid("pid");
     doc.setVariations(VariationHelper.createVariations("projecta-otherdoc", "testinheritsfromtestbasedoc"));
 
-    mapper.writeValue(gen, doc);
-    String html = writer.getBuffer().toString();
+    String html = generateHtml(doc);
 
     assertContains(html, "Class", "nl.knaw.huygens.repository.variation.model.projecta.OtherDoc");
     assertContains(html, "Name", "none");
@@ -140,4 +140,5 @@ public class HTMLGeneratorTest {
     assertContains(html, "Current Variation", "none");
     assertContains(html, "Deleted", "no");
   }
+
 }
