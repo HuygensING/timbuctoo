@@ -8,9 +8,9 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import nl.knaw.huygens.repository.annotations.APIDesc;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Sitemap;
-import nl.knaw.huygens.repository.util.APIDesc;
 
 import com.google.inject.Inject;
 
