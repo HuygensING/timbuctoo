@@ -13,6 +13,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import nl.knaw.huygens.repository.annotations.APIDesc;
 import nl.knaw.huygens.repository.util.JAXUtils.API;
 
 import org.junit.Test;
