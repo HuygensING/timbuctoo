@@ -25,4 +25,5 @@ public @interface DocumentTypeName {
    * Returns the document type name.
    */
   String value();
+
 }
