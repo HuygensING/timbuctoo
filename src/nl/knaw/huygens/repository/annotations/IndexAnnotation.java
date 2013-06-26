@@ -6,7 +6,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import nl.knaw.huygens.repository.indexdata.CustomIndexer;
-import nl.knaw.huygens.repository.indexdata.CustomIndexer.NoopIndexer;
 
 /**
  * Fields are indexed by Solr using a default schema.
