@@ -23,16 +23,12 @@ public abstract class Document {
   private String id;
 
   private int rev;
-
   private Change lastChange;
-
   private Change creation;
-
   private boolean _deleted;
-
   private String pid; // the persistent identifier.
-
   private List<String> variations = Lists.newArrayList();
+  private String currentVariation;
 
   @JsonIgnore
   public String getTypeName() {
@@ -111,10 +107,14 @@ public abstract class Document {
   }
 
   @JsonProperty("!currentVariation")
-  public abstract String getCurrentVariation();
+  public String getCurrentVariation() {
+    return currentVariation;
+  }
 
   @JsonProperty("!currentVariation")
-  public abstract void setCurrentVariation(String currentVariation);
+  public void setCurrentVariation(String currentVariation) {
+    this.currentVariation = currentVariation;
+  }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
