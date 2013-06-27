@@ -27,7 +27,7 @@ public abstract class Document {
   private Change creation;
   private boolean _deleted;
   private String pid; // the persistent identifier.
-  private List<Reference> variations = Lists.newArrayList();
+  private List<String> variations = Lists.newArrayList();
   private String currentVariation;
 
   @JsonIgnore
@@ -97,12 +97,12 @@ public abstract class Document {
   }
 
   @JsonProperty("@variations")
-  public List<Reference> getVariations() {
+  public List<String> getVariations() {
     return variations;
   }
 
   @JsonProperty("@variations")
-  public void setVariations(List<Reference> variations) {
+  public void setVariations(List<String> variations) {
     this.variations = variations;
   }
 
