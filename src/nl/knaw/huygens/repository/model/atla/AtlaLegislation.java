@@ -1,10 +1,12 @@
 package nl.knaw.huygens.repository.model.atla;
 
+import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Keyword;
 import nl.knaw.huygens.repository.model.Legislation;
 import nl.knaw.huygens.repository.model.util.Period;
 
+@DocumentTypeName("atlalegislation")
 public class AtlaLegislation extends Legislation {
 
   private Keyword[] keywords;
