@@ -4,23 +4,21 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.model.Document;
+
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
-import nl.knaw.huygens.repository.model.Document;
 
 public class MongoDiff {
   public static <T extends Document> BSONObject diffDocuments(T d1, T d2) throws IOException {
     return diff(MongoUtils.getObjectForDoc(d1), MongoUtils.getObjectForDoc(d2), false);
   }
-  
+
   public static BSONObject diffToNewObject(BSONObject oldObj, BSONObject newObj) {
     return diff(oldObj, newObj, true);
   }
-
 
   private static BSONObject diff(BSONObject oldObj, BSONObject newObj, boolean createNewObj) {
     BSONObject rv = createNewObj ? new BasicBSONObject() : newObj;
@@ -39,12 +37,12 @@ public class MongoDiff {
           } else {
             rv.removeField(k);
           }
-        // If they are lists, recurse:
+          // If they are lists, recurse:
         } else if (oldProp instanceof List) {
           @SuppressWarnings("unchecked")
           List<Object> oldList = (List<Object>) oldProp;
           @SuppressWarnings("unchecked")
-          List<Object> newList = Lists.newArrayList((List<Object>) newProp);
+          List<Object> newList = (List<Object>) newProp;
           if (oldList != null && newList != null && oldList.size() == newList.size()) {
             int listSize = oldList.size();
             boolean gotDiffs = false;
@@ -69,7 +67,7 @@ public class MongoDiff {
           } else {
             rv.put(k, newList);
           }
-        // Otherwise, remove if equal:
+          // Otherwise, remove if equal:
         } else if (oldProp.equals(newProp)) {
           rv.removeField(k);
         }
