@@ -1,7 +1,5 @@
 package nl.knaw.huygens.repository.providers;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.io.StringWriter;
 
@@ -12,6 +10,8 @@ import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.repository.variation.model.projecta.OtherDoc;
 
+import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,7 +42,7 @@ public class HTMLGeneratorTest {
   }
 
   private void assertContains(String html, String key, String value) {
-    assertTrue(html.contains("<tr><th>" + key + "</th><td>" + value + "</td></tr>"));
+    Assert.assertThat(html, Matchers.containsString("<tr><th>" + key + "</th><td>" + value + "</td></tr>"));
   }
 
   @Test
@@ -75,7 +75,7 @@ public class HTMLGeneratorTest {
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.setId("TCD0000000001");
     doc.name = "test";
-    doc.setVariations(VariationHelper.createVariations("projecta", "projectb"));
+    doc.setVariations(VariationHelper.createVariations("testconcretedoc (projecta)", "testconcretedoc (projectb)"));
     doc.setCurrentVariation("projecta");
     doc.setPid("pid");
 
@@ -88,7 +88,7 @@ public class HTMLGeneratorTest {
     assertContains(html, "Last Change", "none");
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
-    assertContains(html, "Variations", "projecta;<br>\nprojectb;<br>\n");
+    assertContains(html, "Variations", "testconcretedoc (projecta);<br>\ntestconcretedoc (projectb);<br>\n");
     assertContains(html, "Current Variation", "projecta");
     assertContains(html, "Deleted", "no");
   }
@@ -99,7 +99,7 @@ public class HTMLGeneratorTest {
     doc.setId("GTD0000000001");
     doc.generalTestDocValue = "generalTestDocValue";
     doc.name = "test";
-    doc.setVariations(VariationHelper.createVariations("projecta", "projectb"));
+    doc.setVariations(VariationHelper.createVariations("generaltestdoc (projecta)", "generaltestdoc (projectb)", "testconcretedoc (projecta)", "testconcretedoc (projectb)"));
     doc.setCurrentVariation("projecta");
     doc.setPid("pid");
 
@@ -113,7 +113,7 @@ public class HTMLGeneratorTest {
     assertContains(html, "Last Change", "none");
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
-    assertContains(html, "Variations", "projecta;<br>\nprojectb;<br>\n");
+    assertContains(html, "Variations", "generaltestdoc (projecta);<br>\ngeneraltestdoc (projectb);<br>\ntestconcretedoc (projecta);<br>\ntestconcretedoc (projectb);<br>\n");
     assertContains(html, "Current Variation", "projecta");
     assertContains(html, "Deleted", "no");
   }
@@ -124,7 +124,7 @@ public class HTMLGeneratorTest {
     doc.setId("OTD0000000001");
     doc.otherThing = "test";
     doc.setPid("pid");
-    doc.setVariations(VariationHelper.createVariations("projecta-otherdoc", "testinheritsfromtestbasedoc"));
+    doc.setVariations(VariationHelper.createVariations("projecta-otherdoc", "testinheritsfromtestbasedoc (projecta)"));
 
     String html = generateHtml(doc);
 
@@ -136,7 +136,7 @@ public class HTMLGeneratorTest {
     assertContains(html, "Last Change", "none");
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
-    assertContains(html, "Variations", "projecta-otherdoc;<br>\ntestinheritsfromtestbasedoc;<br>\n");
+    assertContains(html, "Variations", "projecta-otherdoc;<br>\ntestinheritsfromtestbasedoc (projecta);<br>\n");
     assertContains(html, "Current Variation", "none");
     assertContains(html, "Deleted", "no");
   }
