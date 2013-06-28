@@ -2,10 +2,24 @@ package nl.knaw.huygens.repository;
 
 import java.util.List;
 
+import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Reference;
+
 import com.google.common.collect.Lists;
 
 public class VariationHelper {
-  public static List<String> createVariations(String... variations) {
-    return Lists.newArrayList(variations);
+  public static List<Reference> createVariations(String... variations) {
+    return null;
+  }
+
+  public static List<Reference> createVariationsForType(Class<? extends Document> type, String id, String... variations) {
+    List<Reference> variationReferences = Lists.<Reference> newArrayList();
+
+    for (String variation : variations) {
+      variationReferences.add(new Reference(type, id, variation));
+    }
+
+    return variationReferences;
+
   }
 }

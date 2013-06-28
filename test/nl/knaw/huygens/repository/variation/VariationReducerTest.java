@@ -12,6 +12,7 @@ import java.util.Set;
 import nl.knaw.huygens.repository.VariationHelper;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Reference;
 import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
 import nl.knaw.huygens.repository.storage.mongo.MongoDiff;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
@@ -32,6 +33,7 @@ import com.mongodb.DBObject;
 
 public class VariationReducerTest {
 
+  private static final String TEST_ID = "id0000000001";
   private VariationReducer reducer;
   private ObjectMapper m;
 
@@ -53,14 +55,17 @@ public class VariationReducerTest {
   public void testReduce() throws IOException {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"blub\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}], \"!defaultVRE\":\"blub\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}}";
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
     ProjectAGeneralTestDoc val = reducer.reduce(t, ProjectAGeneralTestDoc.class);
     ProjectAGeneralTestDoc testVal = new ProjectAGeneralTestDoc();
     testVal.name = "a";
+    testVal.setId(TEST_ID);
     testVal.generalTestDocValue = "a";
     testVal.projectAGeneralTestDocValue = "test";
-    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
+    testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().add(new Reference(TestConcreteDoc.class, testVal.getId(), "projecta"));
+    testVal.getVariations().add(new Reference(GeneralTestDoc.class, testVal.getId(), "projecta"));
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
 
@@ -68,12 +73,15 @@ public class VariationReducerTest {
   public void testReduceCommonDataOnly() throws IOException {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}}";
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class);
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "a";
-    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
+    testVal.setId(TEST_ID);
+    testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().add(new Reference(TestConcreteDoc.class, testVal.getId(), "projecta"));
+    testVal.getVariations().add(new Reference(GeneralTestDoc.class, testVal.getId(), "projecta"));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -82,27 +90,36 @@ public class VariationReducerTest {
   public void testReduceCommonDataMultipleRoles() throws IOException {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"projectb\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projectb\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}," + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"test\"}}";
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},"
+        + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class);
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "b";
-    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "projectb-projectbgeneraltestdoc"));
+    testVal.setId(TEST_ID);
+    testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().add(new Reference(ProjectBGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", "projectb"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", "projectb"));
     testVal.setCurrentVariation("projectb");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
+
   }
 
   @Test
   public void testReduceRolDataAndCommonData() throws IOException {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}}";
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
     GeneralTestDoc val = reducer.reduce(t, GeneralTestDoc.class);
     GeneralTestDoc testVal = new GeneralTestDoc();
     testVal.name = "a";
+    testVal.setId(TEST_ID);
     testVal.generalTestDocValue = "a";
-    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
+    testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().add(new Reference(TestConcreteDoc.class, testVal.getId(), "projecta"));
+    testVal.getVariations().add(new Reference(GeneralTestDoc.class, testVal.getId(), "projecta"));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -111,39 +128,49 @@ public class VariationReducerTest {
   public void testReduceRoleDataAndCommonDataMultipleRoles() throws IOException {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"projectb\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projectb\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}," + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"test\"}}";
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},"
+        + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
     GeneralTestDoc val = reducer.reduce(t, GeneralTestDoc.class);
     GeneralTestDoc testVal = new GeneralTestDoc();
     testVal.name = "a";
+    testVal.setId(TEST_ID);
     testVal.generalTestDocValue = "a";
-    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "projectb-projectbgeneraltestdoc"));
+    testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().add(new Reference(ProjectBGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", "projectb"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", "projectb"));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
 
   @Test
   public void testReduceMissingRole() throws IOException {
-    String x = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}],\"!defaultVRE\":\"blub\"}}";
+    String x = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}],\"!defaultVRE\":\"blub\"},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
     TestDoc val = reducer.reduce(t, TestDoc.class);
     TestDoc testVal = new TestDoc();
-    testVal.setVariations(VariationHelper.createVariations("testinheritsfromtestbasedoc"));
+    testVal.setId(TEST_ID);
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
 
   //Tests with explicitly requested variation.
   @Test
   public void testReduceCommonDataOnlyWithRequestedVariation() throws IOException {
-    String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}," + "\"blub-blubgeneraltestdoc\":{\"blubGeneralTestDocValue\":\"blubtest\"}}";
+    String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"projectb\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\", \"projectb\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},"
+        + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"blubtest\"},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
-    TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class, "blub");
+    TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class, "projectb");
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "b";
-    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "blub-blubgeneraltestdoc"));
-    testVal.setCurrentVariation("blub");
+    testVal.setId("id0000000001");
+    testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().add(new Reference(ProjectBGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projectb", "projecta"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projectb", "projecta"));
+    testVal.setCurrentVariation("projectb");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
 
@@ -151,12 +178,17 @@ public class VariationReducerTest {
   public void testReduceCommonDataMultipleRolesWithRequestedVariation() throws IOException {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"projectb\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projectb\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}," + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"test\"}}";
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},"
+        + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class, "projecta");
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "a";
-    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "projectb-projectbgeneraltestdoc"));
+    testVal.setId(TEST_ID);
+    testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().add(new Reference(ProjectBGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", "projectb"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", "projectb"));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -165,13 +197,18 @@ public class VariationReducerTest {
   public void testReduceRolDataAndCommonDataWithRequestedVariation() throws IOException {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"projectb\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}," + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"test\"}}";
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},"
+        + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
     GeneralTestDoc val = reducer.reduce(t, GeneralTestDoc.class, "projectb");
     GeneralTestDoc testVal = new GeneralTestDoc();
     testVal.name = "b";
     testVal.generalTestDocValue = "b";
-    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "projectb-projectbgeneraltestdoc"));
+    testVal.setId(TEST_ID);
+    testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().add(new Reference(ProjectBGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", "projectb"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", "projectb"));
     testVal.setCurrentVariation("projectb");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -180,14 +217,17 @@ public class VariationReducerTest {
   public void testReduceProjectSpecificRoleWithRequestedVariation() throws IOException {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}}";
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
     ProjectAGeneralTestDoc val = reducer.reduce(t, ProjectAGeneralTestDoc.class, "projecta");
     ProjectAGeneralTestDoc testVal = new ProjectAGeneralTestDoc();
     testVal.name = "a";
+    testVal.setId(TEST_ID);
     testVal.generalTestDocValue = "a";
     testVal.projectAGeneralTestDocValue = "test";
-    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
+    testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().add(new Reference(TestConcreteDoc.class, testVal.getId(), "projecta"));
+    testVal.getVariations().add(new Reference(GeneralTestDoc.class, testVal.getId(), "projecta"));
     testVal.setCurrentVariation(null);
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -198,7 +238,7 @@ public class VariationReducerTest {
     String jsonString = "{\"versions\":[{\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"projectATestDocValue\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"a\":[\"projecta\"], \"v\":\"testDocValue\"}],\"!defaultVRE\":\"projecta\"},"
         + "\"testconcretedoc\":{\"name\":[{\"a\":[\"projecta\"],\"v\":\"test\"}],\"!defaultVRE\":\"projecta\"},"
-        + "\"_id\":\"TCD000000001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^pid\":null,\"^deleted\":false}],\"_id\":\"TCD000000001\"}";
+        + "\"_id\":\"TCD000000001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^pid\":null,\"^deleted\":false}],\"_id\":\"TCD000000001\",\"_id\":\"id0000000001\"}";
     DBObject node = generateDBObject(jsonString);
     ProjectAGeneralTestDoc actual = reducer.reduceRevision(ProjectAGeneralTestDoc.class, node);
 
@@ -207,7 +247,9 @@ public class VariationReducerTest {
     expected.name = "test";
     expected.generalTestDocValue = "testDocValue";
     expected.projectAGeneralTestDocValue = "projectATestDocValue";
-    expected.setVariations(VariationHelper.createVariations("projecta-projectageneraltestdoc", "generaltestdoc", "testconcretedoc"));
+    expected.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, expected.getId(), null));
+    expected.getVariations().add(new Reference(TestConcreteDoc.class, expected.getId(), "projecta"));
+    expected.getVariations().add(new Reference(GeneralTestDoc.class, expected.getId(), "projecta"));
 
     assertEquals(null, MongoDiff.diffDocuments(expected, actual));
   }
@@ -217,7 +259,7 @@ public class VariationReducerTest {
     String jsonString = "{\"versions\":[{\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"projectATestDocValue\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"a\":[\"projecta\"], \"v\":\"testDocValue\"}],\"!defaultVRE\":\"projecta\"},"
         + "\"testconcretedoc\":{\"name\":[{\"a\":[\"projecta\"],\"v\":\"test\"}],\"!defaultVRE\":\"projecta\"},"
-        + "\"_id\":\"TCD000000001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^pid\":null,\"^deleted\":false}],\"_id\":\"TCD000000001\"}";
+        + "\"_id\":\"TCD000000001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^pid\":null,\"^deleted\":false}],\"_id\":\"TCD000000001\",\"_id\":\"id0000000001\"}";
     DBObject node = generateDBObject(jsonString);
     TestConcreteDoc actual = reducer.reduceRevision(TestConcreteDoc.class, node);
 
@@ -225,7 +267,9 @@ public class VariationReducerTest {
     expected.setId("TCD000000001");
     expected.name = "test";
     expected.setCurrentVariation("projecta");
-    expected.setVariations(VariationHelper.createVariations("projecta-projectageneraltestdoc", "generaltestdoc", "testconcretedoc"));
+    expected.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, expected.getId(), null));
+    expected.getVariations().add(new Reference(GeneralTestDoc.class, expected.getId(), "projecta"));
+    expected.getVariations().add(new Reference(TestConcreteDoc.class, expected.getId(), "projecta"));
 
     assertEquals(null, MongoDiff.diffDocuments(expected, actual));
   }
@@ -242,7 +286,7 @@ public class VariationReducerTest {
     String jsonString = "{\"versions\":[{\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"projectATestDocValue\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"a\":[\"projecta\"], \"v\":\"testDocValue\"}],\"!defaultVRE\":\"projecta\"},"
         + "\"testconcretedoc\":{\"name\":[{\"a\":[\"projecta\"],\"v\":\"test\"}],\"!defaultVRE\":\"projecta\"},"
-        + "\"_id\":\"TCD000000001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^pid\":null,\"^deleted\":false}],\"_id\":\"TCD000000001\"}";
+        + "\"_id\":\"TCD000000001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^pid\":null,\"^deleted\":false}],\"_id\":\"TCD000000001\",\"_id\":\"id0000000001\"}";
     DBObject node = generateDBObject(jsonString);
     MongoChanges<ProjectAGeneralTestDoc> actual = reducer.reduceMultipleRevisions(ProjectAGeneralTestDoc.class, node);
 
@@ -259,7 +303,7 @@ public class VariationReducerTest {
         + "{\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"projectATestDocValue\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"a\":[\"projecta\"], \"v\":\"testDocValue1\"}],\"!defaultVRE\":\"projecta\"},"
         + "\"testconcretedoc\":{\"name\":[{\"a\":[\"projecta\"],\"v\":\"test\"}],\"!defaultVRE\":\"projecta\"},"
-        + "\"_id\":\"TCD000000001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^pid\":null,\"^deleted\":false}],\"_id\":\"TCD000000001\"}";
+        + "\"_id\":\"TCD000000001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^pid\":null,\"^deleted\":false}],\"_id\":\"TCD000000001\",\"_id\":\"id0000000001\"}";
     DBObject node = generateDBObject(jsonString);
     MongoChanges<ProjectAGeneralTestDoc> actual = reducer.reduceMultipleRevisions(ProjectAGeneralTestDoc.class, node);
 
@@ -280,12 +324,15 @@ public class VariationReducerTest {
   public void testReduceCommonDataOnlyWithMissingVariation() throws IOException {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}}";
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class, "blah");
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "a";
-    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
+    testVal.setId(TEST_ID);
+    testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().add(new Reference(TestConcreteDoc.class, testVal.getId(), "projecta"));
+    testVal.getVariations().add(new Reference(GeneralTestDoc.class, testVal.getId(), "projecta"));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -294,12 +341,17 @@ public class VariationReducerTest {
   public void testReduceCommonDataMultipleRolesWithMissingVariation() throws IOException {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"projectb\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projectb\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}," + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"test\"}}";
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},"
+        + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class, "blah");
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "b";
-    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc", "projectb-projectbgeneraltestdoc"));
+    testVal.setId(TEST_ID);
+    testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().add(new Reference(ProjectBGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", "projectb"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", "projectb"));
     testVal.setCurrentVariation("projectb");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -308,13 +360,16 @@ public class VariationReducerTest {
   public void testReduceRolDataAndCommonDataWithMissingVariation() throws IOException {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"blub\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}}";
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
     GeneralTestDoc val = reducer.reduce(t, GeneralTestDoc.class, "blah");
     GeneralTestDoc testVal = new GeneralTestDoc();
     testVal.name = "a";
+    testVal.setId(TEST_ID);
     testVal.generalTestDocValue = "a";
-    testVal.setVariations(VariationHelper.createVariations("testconcretedoc", "generaltestdoc", "projecta-projectageneraltestdoc"));
+    testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
+    testVal.getVariations().add(new Reference(TestConcreteDoc.class, testVal.getId(), "projecta"));
+    testVal.getVariations().add(new Reference(GeneralTestDoc.class, testVal.getId(), "projecta"));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -323,14 +378,14 @@ public class VariationReducerTest {
   public void testReduceProjectSpecificRoleWithWrongVaration() throws IOException {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}}";
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
     reducer.reduce(t, ProjectAGeneralTestDoc.class, "blub");
   }
 
   @Test(expected = VariationException.class)
   public void testReduceVariationNonObject() throws IOException {
-    String x = "{\"projectb-testdoc\": \"flups\"}";
+    String x = "{\"projectb-testdoc\": \"flups\",\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
 
     reducer.reduce(t, TestDoc.class); // This will throw
@@ -338,7 +393,7 @@ public class VariationReducerTest {
 
   @Test(expected = VariationException.class)
   public void testReduceMalformedCommonItem() throws IOException {
-    String x = "{\"testconcretedoc\":{\"name\": 42}}";
+    String x = "{\"testconcretedoc\":{\"name\": 42},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
 
     reducer.reduce(t, TestConcreteDoc.class); // This will throw
@@ -346,7 +401,7 @@ public class VariationReducerTest {
 
   @Test(expected = VariationException.class)
   public void testReduceMalformedCommonValueArrayItem() throws IOException {
-    String x = "{\"testconcretedoc\":{\"name\":[42]}}";
+    String x = "{\"testconcretedoc\":{\"name\":[42]},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
 
     reducer.reduce(t, TestConcreteDoc.class); // This will throw
@@ -354,7 +409,7 @@ public class VariationReducerTest {
 
   @Test(expected = VariationException.class)
   public void testReduceMalformedCommonValueArrayItemAgreed() throws IOException {
-    String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":42}]}}";
+    String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":42}]},\"_id\":\"id0000000001\"}";
     JsonNode t = m.readTree(x);
 
     reducer.reduce(t, TestConcreteDoc.class); // This will throw
@@ -364,7 +419,7 @@ public class VariationReducerTest {
   public void testGetAllForDBObjectRootClass() throws JsonProcessingException, IOException {
     String jsonString = "{\"testconcretedoc\":{\"name\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}}";
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
     DBObject object = generateDBObject(jsonString);
 
     List<TestConcreteDoc> variations = reducer.getAllForDBObject(object, TestConcreteDoc.class);
@@ -375,7 +430,7 @@ public class VariationReducerTest {
   public void testGetAllForDBObjectSubClass() throws JsonProcessingException, IOException {
     String jsonString = "{\"testconcretedoc\":{\"name\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}}";
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
     DBObject object = generateDBObject(jsonString);
 
     List<GeneralTestDoc> variations = reducer.getAllForDBObject(object, GeneralTestDoc.class);
@@ -386,7 +441,7 @@ public class VariationReducerTest {
   public void testGetAllForDBObjectRootClassWithMultipleProjects() throws JsonProcessingException, IOException {
     String jsonString = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"projectb\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"testb\"}}";
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"testb\"},\"_id\":\"id0000000001\"}";
     DBObject object = generateDBObject(jsonString);
 
     List<TestConcreteDoc> variations = reducer.getAllForDBObject(object, TestConcreteDoc.class);
@@ -397,7 +452,7 @@ public class VariationReducerTest {
   public void testGetAllForDBObjectNonExistingClass() throws JsonProcessingException, IOException {
     String jsonString = "{\"testconcretedoc\":{\"name\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
-        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"}}";
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
     DBObject object = generateDBObject(jsonString);
 
     List<ProjectBGeneralTestDoc> variations = reducer.getAllForDBObject(object, ProjectBGeneralTestDoc.class);

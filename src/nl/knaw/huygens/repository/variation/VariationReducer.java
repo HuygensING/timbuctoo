@@ -5,9 +5,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Reference;
 import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
 import nl.knaw.huygens.repository.storage.mongo.variation.DBJsonNode;
 
@@ -19,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.mongodb.DBObject;
 
 public class VariationReducer {
@@ -108,7 +111,7 @@ public class VariationReducer {
     final String classVariation = VariationUtils.getVariationName(cls);
     String idPrefix = classVariation + "-";
     List<JsonNode> specificData = Lists.newArrayListWithExpectedSize(1);
-    List<String> variations = getVariations(node);
+    List<String> types = getTypes(node);
     String requestedClassId = VariationUtils.getClassId(cls);
 
     String variationToRetrieve = null;
@@ -118,7 +121,7 @@ public class VariationReducer {
       defaultVariationNode = node.get(requestedClassId).get(VariationUtils.DEFAULT_VARIATION);
     }
 
-    variationToRetrieve = getVariationToRetrieve(classVariation, defaultVariationNode, requestedVariation, variations);
+    variationToRetrieve = getVariationToRetrieve(classVariation, defaultVariationNode, requestedVariation, types);
 
     ObjectNode rv = mapper.createObjectNode();
     for (Class<? extends Document> someCls : VariationUtils.getAllClasses(cls)) {
@@ -151,7 +154,7 @@ public class VariationReducer {
     rv.put("@class", cls.getName());
 
     T returnObject = mapper.treeToValue(rv, cls);
-    returnObject.setVariations(variations);
+    returnObject.setVariations(getVariations(types, returnObject.getId()));
     if (defaultVariationNode != null) {
       returnObject.setCurrentVariation(variationToRetrieve);
     }
@@ -159,15 +162,65 @@ public class VariationReducer {
     return returnObject;
   }
 
-  private String getVariationToRetrieve(final String classVariation, JsonNode defaultVariationNode, String requestedVariation, List<String> variations) throws VariationException {
-    String variationToGet = classVariation;
-    if (VariationUtils.BASE_MODEL_PACKAGE_VARIATION.equals(classVariation)) {
+  /**
+   * Create the references to all the possible variations.
+   * @param typeStrings
+   * @param id
+   * @return
+   */
+  private List<Reference> getVariations(List<String> typeStrings, String id) {
+    List<Reference> references = Lists.<Reference> newLinkedList();
+    Map<Class<? extends Document>, String> classVariationMap = Maps.<Class<? extends Document>, String> newHashMap();
+    List<Class<? extends Document>> baseModelClasses = Lists.<Class<? extends Document>> newLinkedList();
+    for (String typeString : typeStrings) {
+      Class<? extends Document> type = converter.getClass(typeString);
+      if (typeString.contains("-")) {
+        // project specific classes don't have any variation
+        references.add(new Reference(type, id, null));
+        // gather variation information of the project specific types.
+        classVariationMap.put(type, VariationUtils.getVariationName(type));
+      } else {
+        // These classes could contain variation
+        baseModelClasses.add(type);
+      }
+    }
+
+    references.addAll(getVariationsOfBaseClasses(id, baseModelClasses, classVariationMap));
+
+    return references;
+  }
+
+  private List<Reference> getVariationsOfBaseClasses(String id, List<Class<? extends Document>> baseClasses, Map<Class<? extends Document>, String> classVariationMapping) {
+    List<Reference> variationRefenrences = Lists.<Reference> newArrayList();
+
+    Set<Class<? extends Document>> variationClasses = classVariationMapping.keySet();
+
+    for (Class<? extends Document> type : baseClasses) {
+      for (Class<? extends Document> variationClass : variationClasses) {
+        if (type.isAssignableFrom(variationClass)) {
+          Reference reference = new Reference(type, id, classVariationMapping.get(variationClass));
+          if (!variationRefenrences.contains(reference)) {
+            variationRefenrences.add(reference);
+          }
+        }
+      }
+    }
+
+    return variationRefenrences;
+  }
+
+  private String getVariationToRetrieve(final String packageName, JsonNode defaultVariationNode, String requestedVariation, List<String> variations) throws VariationException {
+    String variationToGet = packageName;
+    if (VariationUtils.BASE_MODEL_PACKAGE_VARIATION.equals(packageName)) {
+      //if the package is equal to the base package, different variations may be available.
       if (requestedVariation != null && isRequestedVariationAvailable(requestedVariation, variations)) {
         variationToGet = requestedVariation;
       } else {
-        variationToGet = defaultVariationNode != null ? defaultVariationNode.asText() : classVariation;
+        // if the requested variation is not available return the default variation 
+        variationToGet = defaultVariationNode != null ? defaultVariationNode.asText() : packageName;
       }
-    } else if (requestedVariation != null && !classVariation.contains(requestedVariation)) {
+    } else if (requestedVariation != null && !packageName.contains(requestedVariation)) {
+      // The requested type is project specific and only available in the projects variation.
       throw new VariationException("Variation does not exist for requested type.");
     }
     return variationToGet;
@@ -182,7 +235,7 @@ public class VariationReducer {
     return false;
   }
 
-  private List<String> getVariations(JsonNode node) {
+  private List<String> getTypes(JsonNode node) {
     List<String> variations = Lists.newArrayList();
     Iterator<Map.Entry<String, JsonNode>> fieldIterator = node.fields();
 
