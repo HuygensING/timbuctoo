@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.List;
 
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Reference;
 
 import org.bson.BSONObject;
 import org.junit.Before;
@@ -140,7 +141,7 @@ public class MongoDiffTest {
   }
 
   @Test
-  public void testUnequalLists() throws IOException {
+  public void testLastListLonger() throws IOException {
     Foo x = new Foo();
     x.setId("foo");
     Foo y = new Foo();
@@ -150,6 +151,83 @@ public class MongoDiffTest {
     BSONObject diff = MongoDiff.diffDocuments(x, y);
     BSONObject testObj = new BasicDBObject();
     testObj.put("bars", Lists.newArrayList("a", "b", "c"));
+    assertEquals(testObj, diff);
+
+    DBObject xBSON = MongoUtils.getObjectForDoc(x);
+    DBObject yBSON = MongoUtils.getObjectForDoc(y);
+    diff = MongoDiff.diffToNewObject(xBSON, yBSON);
+    assertEquals(testObj, diff);
+  }
+
+  @Test
+  public void testFirstListLonger() throws IOException {
+    Foo x = new Foo();
+    x.setId("foo");
+    Foo y = new Foo();
+    y.setId("foo");
+    x.bars = Lists.newArrayList("a", "b", "c");
+    y.bars = Lists.newArrayList("a", "b");
+    BSONObject diff = MongoDiff.diffDocuments(x, y);
+    BSONObject testObj = new BasicDBObject();
+    testObj.put("bars", Lists.newArrayList("a", "b"));
+    assertEquals(testObj, diff);
+
+    DBObject xBSON = MongoUtils.getObjectForDoc(x);
+    DBObject yBSON = MongoUtils.getObjectForDoc(y);
+    diff = MongoDiff.diffToNewObject(xBSON, yBSON);
+    assertEquals(testObj, diff);
+  }
+
+  @Test
+  public void testListsInADifferentOrder() throws IOException {
+    Foo x = new Foo();
+    x.setId("foo");
+    Foo y = new Foo();
+    y.setId("foo");
+    x.bars = Lists.newArrayList("a", "c", "b");
+    y.bars = Lists.newArrayList("a", "b", "c");
+    BSONObject diff = MongoDiff.diffDocuments(x, y);
+    assertEquals(null, diff);
+
+    DBObject xBSON = MongoUtils.getObjectForDoc(x);
+    DBObject yBSON = MongoUtils.getObjectForDoc(y);
+    diff = MongoDiff.diffToNewObject(xBSON, yBSON);
+    assertEquals(null, diff);
+  }
+
+  @Test
+  public void testNewListIsNull() throws IOException {
+    Foo x = new Foo();
+    x.setId("foo");
+    Foo y = new Foo();
+    y.setId("foo");
+    x.bars = Lists.newArrayList("a", "b");
+    y.bars = null;
+    BSONObject diff = MongoDiff.diffDocuments(x, y);
+    BSONObject testObj = new BasicDBObject();
+    testObj.put("bars", null);
+    assertEquals(testObj, diff);
+
+    DBObject xBSON = MongoUtils.getObjectForDoc(x);
+    DBObject yBSON = MongoUtils.getObjectForDoc(y);
+    diff = MongoDiff.diffToNewObject(xBSON, yBSON);
+    assertEquals(testObj, diff);
+  }
+
+  @Test
+  public void testNewVariationsNull() throws IOException {
+    Foo x = new Foo();
+    x.setId("foo");
+    Foo y = new Foo();
+    y.setId("foo");
+    x.bars = Lists.newArrayList("a", "b");
+    x.setVariations(Lists.newArrayList(new Reference(Foo.class, "foo", null)));
+    y.bars = Lists.newArrayList("a", "b", "c");
+    y.setVariations(null);
+    BSONObject diff = MongoDiff.diffDocuments(x, y);
+    BSONObject testObj = new BasicDBObject();
+    testObj.put("bars", Lists.newArrayList("a", "b", "c"));
+    testObj.put("@variations", null);
     assertEquals(testObj, diff);
 
     DBObject xBSON = MongoUtils.getObjectForDoc(x);
