@@ -27,19 +27,20 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
   private final static String FIELD_POST = "</th>";
   private final static String FIELD_VAL_PRE = "<td>";
   private final static String FIELD_VAL_POST = "</td></tr>\n";
-  
+
   private final static String ARRAY_VAL_POST = ";<br>\n";
-  
+
   private final static String OBJ_START = "<table>\n";
   private final static String OBJ_END = "</table>\n";
-  
+
   private static final String NESTED_ARRAY_PRE = "<table><tr><td>";
   private static final String NESTED_ARRAY_POST = "</td></tr></table>";
-  
-  private enum NestingLevel { ARRAY, OBJECT }
-  
+
+  private enum NestingLevel {
+    ARRAY, OBJECT
+  }
+
   private Stack<NestingLevel> levels = new Stack<NestingLevel>();
-  
 
   @Override
   public void writeFieldName(String fieldName) throws IOException, JsonGenerationException {
@@ -47,8 +48,7 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
   }
 
   @Override
-  public void writeFieldName(SerializableString fieldName) throws IOException,
-      JsonGenerationException {
+  public void writeFieldName(SerializableString fieldName) throws IOException, JsonGenerationException {
     this.writeRaw(FIELD_PRE + camelCaseUnescape(fieldName.getValue()) + FIELD_POST);
   }
 
@@ -102,8 +102,7 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
   }
 
   @Override
-  public void writeString(char[] text, int offset, int len) throws IOException,
-      JsonGenerationException {
+  public void writeString(char[] text, int offset, int len) throws IOException, JsonGenerationException {
     writeFieldValue(htmlEscape(new String(text, offset, len)));
   }
 
@@ -113,16 +112,12 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
   }
 
   @Override
-  public void writeRawUTF8String(byte[] text, int offset, int length)
-      throws IOException, JsonGenerationException
-  {
+  public void writeRawUTF8String(byte[] text, int offset, int length) throws IOException, JsonGenerationException {
     writeFieldValue(htmlEscape(jsonUnescape(text, offset, length)));
   }
 
   @Override
-  public void writeUTF8String(byte[] text, int offset, int length)
-      throws IOException, JsonGenerationException
-  {
+  public void writeUTF8String(byte[] text, int offset, int length) throws IOException, JsonGenerationException {
     writeFieldValue(htmlEscape(text, offset, length));
   }
 
@@ -163,8 +158,7 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
   }
 
   @Override
-  public void writeNumber(String encodedValue) throws IOException, JsonGenerationException,
-      UnsupportedOperationException {
+  public void writeNumber(String encodedValue) throws IOException, JsonGenerationException, UnsupportedOperationException {
     throw new UnsupportedOperationException("WTF?");
   }
 
@@ -182,32 +176,30 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
     writeFieldValPost();
   }
 
-  
   private void writeNumberValue(long v) throws JsonGenerationException, IOException {
     writeFieldValPre();
     delegate.writeNumber(v);
     writeFieldValPost();
   }
-  
+
   private void writeNumberValue(double v) throws JsonGenerationException, IOException {
     writeFieldValPre();
     delegate.writeNumber(v);
     writeFieldValPost();
   }
-  
+
   private void writeNumberValue(BigDecimal v) throws JsonGenerationException, IOException {
     writeFieldValPre();
     delegate.writeNumber(v);
-    writeFieldValPost();    
+    writeFieldValPost();
   }
-  
+
   private void writeNumberValue(BigInteger v) throws JsonGenerationException, IOException {
     writeFieldValPre();
     delegate.writeNumber(v);
-    writeFieldValPost();    
+    writeFieldValPost();
   }
 
-  
   private void writeFieldValue(String text) throws JsonGenerationException, IOException {
     writeFieldValPre();
     writeRaw(text);
@@ -230,16 +222,10 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
 
   private String camelCaseUnescape(String fieldName) {
     // See: http://stackoverflow.com/a/2560017/713326
-    return StringUtils.capitalize(fieldName.replaceAll("[_^.-@!]", " ").trim()).replaceAll(
-        String.format("%s|%s|%s",
-           "(?<=[A-Z])(?=[A-Z][a-z])",
-           "(?<=[^A-Z])(?=[A-Z])",
-           "(?<=[A-Za-z])(?=[^A-Za-z])"
-        ),
-        " "
-    );
+    return StringUtils.capitalize(fieldName.replaceAll("[_^.-@!]", " ").trim()).replaceAll(String.format("%s|%s|%s", "(?<=[A-Z])(?=[A-Z][a-z])", "(?<=[^A-Z])(?=[A-Z])", "(?<=[A-Za-z])(?=[^A-Za-z])"),
+        " ");
   }
-  
+
   private String htmlEscape(byte[] text, int offset, int length) {
     return htmlEscape(new String(text, offset, length));
   }
