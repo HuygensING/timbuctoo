@@ -200,6 +200,7 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
   @Test
   public void testGetItem() throws IOException {
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "getItem");
+    expected.getVariations().add(new Reference(TestConcreteDoc.class, DEFAULT_ID, null));
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     instance.addItem(type, expected);
@@ -221,6 +222,7 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
 
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "getItem2");
     expected.setRev(1);
+    expected.getVariations().add(new Reference(TestConcreteDoc.class, DEFAULT_ID, null));
 
     TestConcreteDoc actual = instance.getItem(type, DEFAULT_ID);
 
@@ -239,6 +241,7 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "getItem");
     expected.setRev(1);
     expected.setDeleted(true);
+    expected.getVariations().add(new Reference(TestConcreteDoc.class, DEFAULT_ID, null));
 
     TestConcreteDoc actual = instance.getItem(type, DEFAULT_ID);
 
@@ -263,6 +266,8 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
     expected.name = "subType";
     expected.generalTestDocValue = "test";
     expected.setCurrentVariation("model");
+    expected.getVariations().add(new Reference(GeneralTestDoc.class, DEFAULT_ID, null));
+    expected.getVariations().add(new Reference(TestConcreteDoc.class, DEFAULT_ID, null));
 
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     instance.addItem(type, input);
@@ -298,8 +303,8 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "subTypeB");
     expected.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_ID, null));
     expected.getVariations().add(new Reference(ProjectBGeneralTestDoc.class, DEFAULT_ID, null));
-    expected.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, DEFAULT_ID, "projecta", "projectb"));
-    expected.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, DEFAULT_ID, "projecta", "projectb"));
+    expected.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, DEFAULT_ID, "projecta", "projectb", null));
+    expected.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, DEFAULT_ID, "projecta", "projectb", null));
     expected.setCurrentVariation("projectb");
     expected.setRev(1);
 
@@ -315,8 +320,8 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
 
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "subTypeA");
     expected.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_ID, null));
-    expected.getVariations().add(new Reference(GeneralTestDoc.class, DEFAULT_ID, "projecta"));
-    expected.getVariations().add(new Reference(TestConcreteDoc.class, DEFAULT_ID, "projecta"));
+    expected.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, DEFAULT_ID, "projecta", null));
+    expected.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, DEFAULT_ID, "projecta", null));
     expected.setCurrentVariation("projecta");
 
     instance.addItem(ProjectAGeneralTestDoc.class, projectAInput);
@@ -515,8 +520,8 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
   public void testGetRevision() throws IOException {
     ProjectAGeneralTestDoc doc = createProjectAGeneralTestDoc(DEFAULT_ID, "test", "testDocValue", "projectATestDocValue");
     doc.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_ID, null));
-    doc.getVariations().add(new Reference(GeneralTestDoc.class, DEFAULT_ID, "projecta"));
-    doc.getVariations().add(new Reference(TestConcreteDoc.class, DEFAULT_ID, "projecta"));
+    doc.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, DEFAULT_ID, "projecta", null));
+    doc.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, DEFAULT_ID, "projecta", null));
     Class<ProjectAGeneralTestDoc> type = ProjectAGeneralTestDoc.class;
     instance.addItem(type, doc);
 
@@ -534,8 +539,8 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "test");
     expected.setCurrentVariation("projecta");
     expected.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_ID, null));
-    expected.getVariations().add(new Reference(GeneralTestDoc.class, DEFAULT_ID, "projecta"));
-    expected.getVariations().add(new Reference(TestConcreteDoc.class, DEFAULT_ID, "projecta"));
+    expected.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, DEFAULT_ID, "projecta", null));
+    expected.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, DEFAULT_ID, "projecta", null));
 
     assertEquals(null, MongoDiff.diffDocuments(expected, revision));
   }

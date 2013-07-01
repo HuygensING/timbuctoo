@@ -17,6 +17,7 @@ import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
 import nl.knaw.huygens.repository.storage.mongo.MongoDiff;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
+import nl.knaw.huygens.repository.variation.model.TestInheritsFromTestBaseDoc;
 import nl.knaw.huygens.repository.variation.model.projecta.ProjectAGeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.projectb.ProjectBGeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.projectb.TestDoc;
@@ -42,6 +43,7 @@ public class VariationReducerTest {
     DocTypeRegistry registry = mock(DocTypeRegistry.class);
     Set<Class<? extends Document>> types = Sets.newHashSet();
     types.add(TestConcreteDoc.class);
+    types.add(TestInheritsFromTestBaseDoc.class);
     types.add(GeneralTestDoc.class);
     types.add(ProjectAGeneralTestDoc.class);
     types.add(ProjectBGeneralTestDoc.class);
@@ -64,8 +66,8 @@ public class VariationReducerTest {
     testVal.generalTestDocValue = "a";
     testVal.projectAGeneralTestDocValue = "test";
     testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
-    testVal.getVariations().add(new Reference(TestConcreteDoc.class, testVal.getId(), "projecta"));
-    testVal.getVariations().add(new Reference(GeneralTestDoc.class, testVal.getId(), "projecta"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", null));
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
 
@@ -80,8 +82,8 @@ public class VariationReducerTest {
     testVal.name = "a";
     testVal.setId(TEST_ID);
     testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
-    testVal.getVariations().add(new Reference(TestConcreteDoc.class, testVal.getId(), "projecta"));
-    testVal.getVariations().add(new Reference(GeneralTestDoc.class, testVal.getId(), "projecta"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", null));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -99,8 +101,8 @@ public class VariationReducerTest {
     testVal.setId(TEST_ID);
     testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
     testVal.getVariations().add(new Reference(ProjectBGeneralTestDoc.class, testVal.getId(), null));
-    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", "projectb"));
-    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", "projectb"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", "projectb", null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", "projectb", null));
     testVal.setCurrentVariation("projectb");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
 
@@ -118,8 +120,8 @@ public class VariationReducerTest {
     testVal.setId(TEST_ID);
     testVal.generalTestDocValue = "a";
     testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
-    testVal.getVariations().add(new Reference(TestConcreteDoc.class, testVal.getId(), "projecta"));
-    testVal.getVariations().add(new Reference(GeneralTestDoc.class, testVal.getId(), "projecta"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", null));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -138,8 +140,8 @@ public class VariationReducerTest {
     testVal.generalTestDocValue = "a";
     testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
     testVal.getVariations().add(new Reference(ProjectBGeneralTestDoc.class, testVal.getId(), null));
-    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", "projectb"));
-    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", "projectb"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", "projectb", null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", "projectb", null));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -151,6 +153,7 @@ public class VariationReducerTest {
     TestDoc val = reducer.reduce(t, TestDoc.class);
     TestDoc testVal = new TestDoc();
     testVal.setId(TEST_ID);
+    testVal.getVariations().add(new Reference(TestInheritsFromTestBaseDoc.class, TEST_ID, null));
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
 
@@ -168,8 +171,8 @@ public class VariationReducerTest {
     testVal.setId("id0000000001");
     testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
     testVal.getVariations().add(new Reference(ProjectBGeneralTestDoc.class, testVal.getId(), null));
-    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projectb", "projecta"));
-    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projectb", "projecta"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projectb", "projecta", null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projectb", "projecta", null));
     testVal.setCurrentVariation("projectb");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -187,8 +190,8 @@ public class VariationReducerTest {
     testVal.setId(TEST_ID);
     testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
     testVal.getVariations().add(new Reference(ProjectBGeneralTestDoc.class, testVal.getId(), null));
-    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", "projectb"));
-    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", "projectb"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", "projectb", null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", "projectb", null));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -207,8 +210,8 @@ public class VariationReducerTest {
     testVal.setId(TEST_ID);
     testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
     testVal.getVariations().add(new Reference(ProjectBGeneralTestDoc.class, testVal.getId(), null));
-    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", "projectb"));
-    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", "projectb"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", "projectb", null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", "projectb", null));
     testVal.setCurrentVariation("projectb");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -226,8 +229,8 @@ public class VariationReducerTest {
     testVal.generalTestDocValue = "a";
     testVal.projectAGeneralTestDocValue = "test";
     testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
-    testVal.getVariations().add(new Reference(TestConcreteDoc.class, testVal.getId(), "projecta"));
-    testVal.getVariations().add(new Reference(GeneralTestDoc.class, testVal.getId(), "projecta"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", null));
     testVal.setCurrentVariation(null);
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -248,8 +251,8 @@ public class VariationReducerTest {
     expected.generalTestDocValue = "testDocValue";
     expected.projectAGeneralTestDocValue = "projectATestDocValue";
     expected.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, expected.getId(), null));
-    expected.getVariations().add(new Reference(TestConcreteDoc.class, expected.getId(), "projecta"));
-    expected.getVariations().add(new Reference(GeneralTestDoc.class, expected.getId(), "projecta"));
+    expected.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, expected.getId(), "projecta", null));
+    expected.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, expected.getId(), "projecta", null));
 
     assertEquals(null, MongoDiff.diffDocuments(expected, actual));
   }
@@ -268,8 +271,8 @@ public class VariationReducerTest {
     expected.name = "test";
     expected.setCurrentVariation("projecta");
     expected.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, expected.getId(), null));
-    expected.getVariations().add(new Reference(GeneralTestDoc.class, expected.getId(), "projecta"));
-    expected.getVariations().add(new Reference(TestConcreteDoc.class, expected.getId(), "projecta"));
+    expected.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, expected.getId(), "projecta", null));
+    expected.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, expected.getId(), "projecta", null));
 
     assertEquals(null, MongoDiff.diffDocuments(expected, actual));
   }
@@ -331,8 +334,8 @@ public class VariationReducerTest {
     testVal.name = "a";
     testVal.setId(TEST_ID);
     testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
-    testVal.getVariations().add(new Reference(TestConcreteDoc.class, testVal.getId(), "projecta"));
-    testVal.getVariations().add(new Reference(GeneralTestDoc.class, testVal.getId(), "projecta"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", null));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -350,8 +353,8 @@ public class VariationReducerTest {
     testVal.setId(TEST_ID);
     testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
     testVal.getVariations().add(new Reference(ProjectBGeneralTestDoc.class, testVal.getId(), null));
-    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", "projectb"));
-    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", "projectb"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", "projectb", null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", "projectb", null));
     testVal.setCurrentVariation("projectb");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
@@ -368,8 +371,8 @@ public class VariationReducerTest {
     testVal.setId(TEST_ID);
     testVal.generalTestDocValue = "a";
     testVal.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, testVal.getId(), null));
-    testVal.getVariations().add(new Reference(TestConcreteDoc.class, testVal.getId(), "projecta"));
-    testVal.getVariations().add(new Reference(GeneralTestDoc.class, testVal.getId(), "projecta"));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, testVal.getId(), "projecta", null));
+    testVal.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, testVal.getId(), "projecta", null));
     testVal.setCurrentVariation("projecta");
     assertEquals(null, MongoDiff.diffDocuments(val, testVal));
   }
