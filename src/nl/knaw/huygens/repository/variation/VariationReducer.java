@@ -180,6 +180,7 @@ public class VariationReducer {
         // gather variation information of the project specific types.
         classVariationMap.put(type, VariationUtils.getVariationName(type));
       } else {
+        references.add(new Reference(type, id, null));
         // These classes could contain variation
         baseModelClasses.add(type);
       }
