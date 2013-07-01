@@ -31,6 +31,10 @@ public abstract class Document {
   private String currentVariation;
 
   @JsonIgnore
+  @IndexAnnotation(fieldName = "desc")
+  public abstract String getDescription();
+
+  @JsonIgnore
   public String getTypeName() {
     return getClass().getSimpleName();
   }
@@ -115,9 +119,5 @@ public abstract class Document {
   public void setCurrentVariation(String currentVariation) {
     this.currentVariation = currentVariation;
   }
-
-  @JsonIgnore
-  @IndexAnnotation(fieldName = "desc")
-  public abstract String getDescription();
 
 }

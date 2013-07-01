@@ -36,10 +36,10 @@ public class CKCCPersonImporter extends CSVImporter {
         exists = retrieved != null;
       }
       CKCCPerson person = new CKCCPerson();
-      person.name = buildName(items);
+      person.setName(buildName(items));
       person.setGender(items[5]);
-      person.birthDate = new Datable(items[6]);
-      person.deathDate = new Datable(items[7]);
+      person.setBirthDate(new Datable(items[6]));
+      person.setDeathDate(new Datable(items[7]));
       if (exists) {
         person.setId(retrieved.getId());
         person.setPid(retrieved.getPid());
