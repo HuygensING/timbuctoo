@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 public class HTMLGeneratorTest {
 
@@ -33,7 +34,10 @@ public class HTMLGeneratorTest {
 
   @Before
   public void setUp() throws Exception {
+    SimpleModule module = new SimpleModule();
+    module.addSerializer(new ReferenceSerializer());
     mapper = new ObjectMapper();
+    mapper.registerModule(module);
     writer = new StringWriter();
     JsonFactory factory = new JsonFactory();
     JsonGenerator realGen = factory.createGenerator(writer);
@@ -98,11 +102,9 @@ public class HTMLGeneratorTest {
     assertContains(
         html,
         "Variations",
-        "<table>\n<tr><th>Id</th><td>TCD0000000001</td></tr>\n<tr><th>Type</th><td>nl.knaw.huygens.repository.variation.model.projecta.ProjectAGeneralTestDoc</td></tr>\n<tr><th>Display Name</th><td>projectageneraltestdoc</td></tr>\n<tr><th>Variation</th><td>none</td></tr>\n</table>\n<table>\n<tr><th>Id</th><td>TCD0000000001</td></tr>\n<tr><th>Type</th><td>nl.knaw.huygens.repository.variation.model.projectb.ProjectBGeneralTestDoc</td></tr>\n<tr><th>Display Name</th><td>projectbgeneraltestdoc</td></tr>\n<tr><th>Variation</th><td>none</td></tr>\n</table>\n<table>\n<tr><th>Id</th><td>TCD0000000001</td></tr>\n<tr><th>Type</th><td>nl.knaw.huygens.repository.variation.model.GeneralTestDoc</td></tr>\n<tr><th>Display Name</th><td>generaltestdoc (projecta)</td></tr>\n<tr><th>Variation</th><td>projecta</td></tr>\n</table>\n<table>\n<tr><th>Id</th><td>TCD0000000001</td></tr>\n<tr><th>Type</th><td>nl.knaw.huygens.repository.variation.model.GeneralTestDoc</td></tr>\n<tr><th>Display Name</th><td>generaltestdoc (projectb)</td></tr>\n<tr><th>Variation</th><td>projectb</td></tr>\n</table>\n<table>\n<tr><th>Id</th><td>TCD0000000001</td></tr>\n<tr><th>Type</th><td>nl.knaw.huygens.repository.variation.model.TestConcreteDoc</td></tr>\n<tr><th>Display Name</th><td>testconcretedoc (projecta)</td></tr>\n<tr><th>Variation</th><td>projecta</td></tr>\n</table>\n<table>\n<tr><th>Id</th><td>TCD0000000001</td></tr>\n<tr><th>Type</th><td>nl.knaw.huygens.repository.variation.model.TestConcreteDoc</td></tr>\n<tr><th>Display Name</th><td>testconcretedoc (projectb)</td></tr>\n<tr><th>Variation</th><td>projectb</td></tr>\n</table>\n");
-    //    assertContains(html, "Variations",
-    //        "<a href=\"../projectageneraltestdoc/GTD0000000001\">projectageneraltestdoc</a>;<br>\n<a href=\"../projectbgeneraltestdoc/GTD0000000001/\">projectbgeneraltestdoc</a>;<br>\n"
-    //            + "<a href=\"../generaltestdoc/GTD0000000001/projecta\">generaltestdoc (projecta)</a>;<br>\n<a href=\"../generaltestdoc/GTD0000000001/projectb\">generaltestdoc (projectb)<a/>;<br>\n"
-    //            + "<a href=\"../testconcretedoc/GTD0000000001/projecta\">testconcretedoc (projecta)</a>;<br>\n<a href=\"../testconcretedoc/GTD0000000001/projectb\">testconcretedoc (projectb)</a>;<br>\n");
+        "<a href=\"projectageneraltestdoc/TCD0000000001\">projectageneraltestdoc</a>&#59;<br>\n<a href=\"projectbgeneraltestdoc/TCD0000000001\">projectbgeneraltestdoc</a>&#59;<br>\n"
+            + "<a href=\"generaltestdoc/TCD0000000001/projecta\">generaltestdoc (projecta)</a>&#59;<br>\n<a href=\"generaltestdoc/TCD0000000001/projectb\">generaltestdoc (projectb)</a>&#59;<br>\n"
+            + "<a href=\"testconcretedoc/TCD0000000001/projecta\">testconcretedoc (projecta)</a>&#59;<br>\n<a href=\"testconcretedoc/TCD0000000001/projectb\">testconcretedoc (projectb)</a>&#59;<br>\n");
     assertContains(html, "Current Variation", "projecta");
     assertContains(html, "Deleted", "no");
   }
@@ -133,11 +135,9 @@ public class HTMLGeneratorTest {
     assertContains(
         html,
         "Variations",
-        "<table>\n<tr><th>Id</th><td>GTD0000000001</td></tr>\n<tr><th>Type</th><td>nl.knaw.huygens.repository.variation.model.projecta.ProjectAGeneralTestDoc</td></tr>\n<tr><th>Display Name</th><td>projectageneraltestdoc</td></tr>\n<tr><th>Variation</th><td>none</td></tr>\n</table>\n<table>\n<tr><th>Id</th><td>GTD0000000001</td></tr>\n<tr><th>Type</th><td>nl.knaw.huygens.repository.variation.model.projectb.ProjectBGeneralTestDoc</td></tr>\n<tr><th>Display Name</th><td>projectbgeneraltestdoc</td></tr>\n<tr><th>Variation</th><td>none</td></tr>\n</table>\n<table>\n<tr><th>Id</th><td>GTD0000000001</td></tr>\n<tr><th>Type</th><td>nl.knaw.huygens.repository.variation.model.GeneralTestDoc</td></tr>\n<tr><th>Display Name</th><td>generaltestdoc (projecta)</td></tr>\n<tr><th>Variation</th><td>projecta</td></tr>\n</table>\n<table>\n<tr><th>Id</th><td>GTD0000000001</td></tr>\n<tr><th>Type</th><td>nl.knaw.huygens.repository.variation.model.GeneralTestDoc</td></tr>\n<tr><th>Display Name</th><td>generaltestdoc (projectb)</td></tr>\n<tr><th>Variation</th><td>projectb</td></tr>\n</table>\n<table>\n<tr><th>Id</th><td>GTD0000000001</td></tr>\n<tr><th>Type</th><td>nl.knaw.huygens.repository.variation.model.TestConcreteDoc</td></tr>\n<tr><th>Display Name</th><td>testconcretedoc (projecta)</td></tr>\n<tr><th>Variation</th><td>projecta</td></tr>\n</table>\n<table>\n<tr><th>Id</th><td>GTD0000000001</td></tr>\n<tr><th>Type</th><td>nl.knaw.huygens.repository.variation.model.TestConcreteDoc</td></tr>\n<tr><th>Display Name</th><td>testconcretedoc (projectb)</td></tr>\n<tr><th>Variation</th><td>projectb</td></tr>\n</table>\n");
-    //    assertContains(html, "Variations",
-    //        "<a href=\"../projectageneraltestdoc/GTD0000000001\">projectageneraltestdoc</a>;<br>\n<a href=\"../projectbgeneraltestdoc/GTD0000000001/\">projectbgeneraltestdoc</a>;<br>\n"
-    //            + "<a href=\"../generaltestdoc/GTD0000000001/projecta\">generaltestdoc (projecta)</a>;<br>\n<a href=\"../generaltestdoc/GTD0000000001/projectb\">generaltestdoc (projectb)<a/>;<br>\n"
-    //            + "<a href=\"../testconcretedoc/GTD0000000001/projecta\">testconcretedoc (projecta)</a>;<br>\n<a href=\"../testconcretedoc/GTD0000000001/projectb\">testconcretedoc (projectb)</a>;<br>\n");
+        "<a href=\"projectageneraltestdoc/GTD0000000001\">projectageneraltestdoc</a>&#59;<br>\n<a href=\"projectbgeneraltestdoc/GTD0000000001\">projectbgeneraltestdoc</a>&#59;<br>\n"
+            + "<a href=\"generaltestdoc/GTD0000000001/projecta\">generaltestdoc (projecta)</a>&#59;<br>\n<a href=\"generaltestdoc/GTD0000000001/projectb\">generaltestdoc (projectb)</a>&#59;<br>\n"
+            + "<a href=\"testconcretedoc/GTD0000000001/projecta\">testconcretedoc (projecta)</a>&#59;<br>\n<a href=\"testconcretedoc/GTD0000000001/projectb\">testconcretedoc (projectb)</a>&#59;<br>\n");
     assertContains(html, "Current Variation", "projecta");
     assertContains(html, "Deleted", "no");
   }
@@ -161,13 +161,14 @@ public class HTMLGeneratorTest {
     assertContains(html, "Last Change", "none");
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
-    assertContains(
-        html,
-        "Variations",
-        "<table>\n<tr><th>Id</th><td>OTD0000000001</td></tr>\n<tr><th>Type</th><td>nl.knaw.huygens.repository.variation.model.projecta.OtherDoc</td></tr>\n<tr><th>Display Name</th><td>otherdoc</td></tr>\n<tr><th>Variation</th><td>none</td></tr>\n</table>\n<table>\n<tr><th>Id</th><td>OTD0000000001</td></tr>\n<tr><th>Type</th><td>nl.knaw.huygens.repository.variation.model.TestInheritsFromTestBaseDoc</td></tr>\n<tr><th>Display Name</th><td>testinheritsfromtestbasedoc (projecta)</td></tr>\n<tr><th>Variation</th><td>projecta</td></tr>\n</table>\n");
-    //    assertContains(html, "Variations",
-    //        "<a href=\"../otherdoc/OTD0000000001\">projecta-otherdoc</a>;<br>\n<a href=\"../testinheritsfromtestbasedoc/OTD0000000001/projecta\">testinheritsfromtestbasedoc (projecta)</a>;<br>\n");
+    assertContains(html, "Variations",
+        "<a href=\"otherdoc/OTD0000000001\">otherdoc</a>&#59;<br>\n<a href=\"testinheritsfromtestbasedoc/OTD0000000001/projecta\">testinheritsfromtestbasedoc (projecta)</a>&#59;<br>\n");
     assertContains(html, "Current Variation", "none");
     assertContains(html, "Deleted", "no");
+  }
+
+  @Test
+  public void testDomainDocumentWithVariation() {
+
   }
 }

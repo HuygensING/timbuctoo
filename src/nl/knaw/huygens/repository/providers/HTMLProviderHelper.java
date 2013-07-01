@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.jaxrs.json.annotation.EndpointConfig;
 import com.fasterxml.jackson.jaxrs.json.util.AnnotationBundleKey;
 import com.google.common.base.Strings;
@@ -45,6 +46,8 @@ public class HTMLProviderHelper {
     if (!Strings.isNullOrEmpty(stylesheetLink)) {
       value += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + publicURL + stylesheetLink + "\"/>";
     }
+    //Makes it easier to redirect the links of the references.
+    value += "<base href=\"" + publicURL + "/resources/\">";
     return value;
   }
 
@@ -87,7 +90,11 @@ public class HTMLProviderHelper {
     AnnotationBundleKey key = new AnnotationBundleKey(annotations);
     ObjectWriter writer = writers.get(key);
     if (writer == null) {
+      //A quick hack to add custom serialization of the Reference type.
+      SimpleModule module = new SimpleModule();
+      module.addSerializer(new ReferenceSerializer());
       ObjectMapper mapper = new ObjectMapper();
+      mapper.registerModule(module);
       EndpointConfig endpointConfig = EndpointConfig.forWriting(mapper, annotations, null);
       writer = endpointConfig.getWriter();
       writers.put(key, writer);
