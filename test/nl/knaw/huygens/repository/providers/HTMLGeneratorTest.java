@@ -166,9 +166,4 @@ public class HTMLGeneratorTest {
     assertContains(html, "Current Variation", "none");
     assertContains(html, "Deleted", "no");
   }
-
-  @Test
-  public void testDomainDocumentWithVariation() {
-
-  }
 }
