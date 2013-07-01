@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import nl.knaw.huygens.repository.VariationHelper;
 import nl.knaw.huygens.repository.variation.model.projecta.ProjectAGeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.projectb.TestDoc;
 
@@ -75,7 +74,7 @@ public class VariationInducerTest {
     x.name = "x";
     x.generalTestDocValue = "stuff";
     x.projectAGeneralTestDocValue = "other stuff";
-    x.setVariations(VariationHelper.createVariations("projectageneraltestdoc", "generaltestdoc", "testconcretedoc"));
+    x.setVariations(null);
 
     JsonNode allVariations = inducer.induce(x, ProjectAGeneralTestDoc.class);
     assertEquals(t, allVariations);
