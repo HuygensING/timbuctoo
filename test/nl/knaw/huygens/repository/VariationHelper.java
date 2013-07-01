@@ -8,10 +8,6 @@ import nl.knaw.huygens.repository.model.Reference;
 import com.google.common.collect.Lists;
 
 public class VariationHelper {
-  public static List<Reference> createVariations(String... variations) {
-    return null;
-  }
-
   public static List<Reference> createVariationsForType(Class<? extends Document> type, String id, String... variations) {
     List<Reference> variationReferences = Lists.<Reference> newArrayList();
 
