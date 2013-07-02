@@ -145,6 +145,7 @@
       <fileset dir="${resource.src.dir}">
         <include name="**/*.properties" />
         <include name="**/*.ftl" />
+      	<include name="**/*.bin" />
       </fileset>
       <fileset dir="${config.src}">
         <include name="**/*.xml" />
