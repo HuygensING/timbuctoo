@@ -3,6 +3,8 @@ package nl.knaw.huygens.repository.model.util;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
+
 import org.apache.commons.collections.keyvalue.MultiKey;
 
 import com.google.common.collect.Maps;
@@ -20,16 +22,16 @@ public class PersonNameBuilder {
 
   private static Map<MultiKey, String> createSeparatorMap() {
     Map<MultiKey, String> map = Maps.newHashMap();
-    map.put(new MultiKey(PersonNameComponentType.SURNAME, PersonNameComponentType.FORENAME), COMMA);
-    map.put(new MultiKey(PersonNameComponentType.SURNAME, PersonNameComponentType.GEN_NAME), COMMA);
-    map.put(new MultiKey(PersonNameComponentType.SURNAME, PersonNameComponentType.ADD_NAME), COMMA);
-    map.put(new MultiKey(PersonNameComponentType.SURNAME, PersonNameComponentType.NAME_LINK), COMMA);
-    map.put(new MultiKey(PersonNameComponentType.FORENAME, PersonNameComponentType.ADD_NAME), COMMA);
-    map.put(new MultiKey(PersonNameComponentType.GEN_NAME, PersonNameComponentType.ADD_NAME), COMMA);
+    map.put(new MultiKey(Type.SURNAME, Type.FORENAME), COMMA);
+    map.put(new MultiKey(Type.SURNAME, Type.GEN_NAME), COMMA);
+    map.put(new MultiKey(Type.SURNAME, Type.ADD_NAME), COMMA);
+    map.put(new MultiKey(Type.SURNAME, Type.NAME_LINK), COMMA);
+    map.put(new MultiKey(Type.FORENAME, Type.ADD_NAME), COMMA);
+    map.put(new MultiKey(Type.GEN_NAME, Type.ADD_NAME), COMMA);
     return map;
   }
 
-  public static String separator(PersonNameComponentType type1, PersonNameComponentType type2) {
+  public static String separator(Type type1, Type type2) {
     if (type1 == null || type2 == null) {
       return EMPTY;
     } else {
@@ -43,7 +45,7 @@ public class PersonNameBuilder {
   private static final Pattern ELISIONS = Pattern.compile("\\b([dDlL]')\\s+");
 
   private final StringBuilder builder;
-  private PersonNameComponentType prev;
+  private Type prev;
 
   public PersonNameBuilder() {
     builder = new StringBuilder();
@@ -51,7 +53,7 @@ public class PersonNameBuilder {
   }
 
   public void addComponent(PersonNameComponent component) {
-    PersonNameComponentType type = component.getType();
+    Type type = component.getType();
     builder.append(separator(prev, type));
     builder.append(component.getValue());
     prev = type;

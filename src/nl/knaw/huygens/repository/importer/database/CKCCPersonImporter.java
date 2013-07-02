@@ -9,6 +9,8 @@ import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.ckcc.CKCCPerson;
 import nl.knaw.huygens.repository.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.repository.model.util.Datable;
+import nl.knaw.huygens.repository.model.util.PersonName;
+import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.util.CSVImporter;
 
@@ -52,17 +54,14 @@ public class CKCCPersonImporter extends CSVImporter {
     }
   }
 
-  private String buildName(String[] items) {
-    StringBuilder builder = new StringBuilder();
-    for (int i = 0; i < 5; i++) {
-      if (items[i].length() > 0) {
-        if (builder.length() > 0) {
-          builder.append(' ');
-        }
-        builder.append(items[i]);
-      }
-    }
-    return builder.toString();
+  private PersonName buildName(String[] items) {
+    PersonName name = new PersonName();
+    name.addNameComponent(Type.ROLE_NAME, items[0]);
+    name.addNameComponent(Type.FORENAME, items[1]);
+    name.addNameComponent(Type.NAME_LINK, items[2]);
+    name.addNameComponent(Type.SURNAME, items[3]);
+    name.addNameComponent(Type.ADD_NAME, items[4]);
+    return name;
   }
 
   @Override

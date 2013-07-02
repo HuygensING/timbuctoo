@@ -52,6 +52,16 @@
   var searchUrl = baseUrl + 'search';
   var personUrl = baseUrl + 'resources/person/';
 
+  /* Simply concatenates the components of a name */
+  function buildName(name) {
+    var components = name.components,
+        result = '';
+    for (var i in components) {
+      result += ' ' + components[i].value;
+    }
+    return result;
+  }
+
   function doPost() {
     var query = 'facet_t_name:' + $('#searchtext').val();
     jQuery.ajax({
@@ -78,7 +88,7 @@
       success: function (data) {
         var html = '<table><tr><th>Id</th><th>Name</th></tr>';
         $.each(data, function (i, item) {
-          html += '<tr><td><a href="' + personUrl + item._id + '">' + item._id + '</a></td><td>' + item.name + '</td></tr>';
+          html += '<tr><td><a href="' + personUrl + item._id + '">' + item._id + '</a></td><td>' + buildName(item.name) + '</td></tr>';
         });
         html += '</table>';
         $('#results').html(html);
