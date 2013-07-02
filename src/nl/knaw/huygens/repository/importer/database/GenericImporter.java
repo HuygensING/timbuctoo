@@ -8,6 +8,7 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.util.Progress;
 
 public class GenericImporter extends GenericDataHandler {
+
   protected StorageManager storageManager;
 
   public GenericImporter(StorageManager storageManager) {

@@ -4,6 +4,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
@@ -13,8 +15,8 @@ import com.google.common.collect.Lists;
  */
 public class PersonName {
 
-  private static final Set<PersonNameComponentType> ALL = EnumSet.allOf(PersonNameComponentType.class);
-  private static final Set<PersonNameComponentType> SHORT = EnumSet.of(PersonNameComponentType.FORENAME, PersonNameComponentType.SURNAME, PersonNameComponentType.NAME_LINK);
+  private static final Set<Type> ALL = EnumSet.allOf(Type.class);
+  private static final Set<Type> SHORT = EnumSet.of(Type.FORENAME, Type.SURNAME, Type.NAME_LINK);
 
   private List<PersonNameComponent> components;
 
@@ -30,8 +32,10 @@ public class PersonName {
     this.components = components;
   }
 
-  public void addNameComponent(PersonNameComponentType type, String value) {
-    components.add(new PersonNameComponent(type, value));
+  public void addNameComponent(Type type, String value) {
+    if (value != null && value.length() > 0) {
+      components.add(new PersonNameComponent(type, value));
+    }
   }
 
   @JsonIgnore
@@ -51,16 +55,16 @@ public class PersonName {
   @JsonIgnore
   public String getSortName() {
     PersonNameBuilder builder = new PersonNameBuilder();
-    int surnames = appendTo(builder, EnumSet.of(PersonNameComponentType.SURNAME));
+    int surnames = appendTo(builder, EnumSet.of(Type.SURNAME));
     appendForenames(builder);
-    appendTo(builder, EnumSet.of(PersonNameComponentType.NAME_LINK));
+    appendTo(builder, EnumSet.of(Type.NAME_LINK));
     if (surnames == 0) {
-      appendTo(builder, EnumSet.of(PersonNameComponentType.ADD_NAME));
+      appendTo(builder, EnumSet.of(Type.ADD_NAME));
     }
     return builder.getName();
   }
 
-  private int appendTo(PersonNameBuilder builder, Set<PersonNameComponentType> types) {
+  private int appendTo(PersonNameBuilder builder, Set<Type> types) {
     int count = 0;
     for (PersonNameComponent component : components) {
       if (types.contains(component.getType())) {
@@ -72,10 +76,10 @@ public class PersonName {
   }
 
   private void appendForenames(PersonNameBuilder builder) {
-    PersonNameComponentType prev = null;
+    Type prev = null;
     for (PersonNameComponent component : components) {
-      PersonNameComponentType type = component.getType();
-      if (type == PersonNameComponentType.FORENAME || (type == PersonNameComponentType.GEN_NAME && prev == PersonNameComponentType.FORENAME)) {
+      Type type = component.getType();
+      if (type == Type.FORENAME || (type == Type.GEN_NAME && prev == Type.FORENAME)) {
         builder.addComponent(component);
       }
       prev = type;

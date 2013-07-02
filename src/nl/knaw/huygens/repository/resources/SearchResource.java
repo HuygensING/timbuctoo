@@ -118,6 +118,7 @@ public class SearchResource {
 
   private <T extends Document> List<T> convert(Class<T> type, List<String> ids, int lo, int hi) {
     List<T> list = Lists.newArrayList();
+    // TODO get all at once
     for (int index = lo; index < hi; index++) {
       String id = ids.get(index);
       list.add(storageManager.getDocument(type, id));
