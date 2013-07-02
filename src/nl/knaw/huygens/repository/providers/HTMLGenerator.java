@@ -15,6 +15,9 @@ import com.fasterxml.jackson.core.util.JsonGeneratorDelegate;
 
 // Generate human-readable HTML instead of JSON
 public class HTMLGenerator extends JsonGeneratorDelegate {
+  public HTMLGenerator(JsonGenerator d) {
+    super(d);
+  }
 
   private final static String NULL_STR = "none";
   private final static String TRUE_STR = "yes";
@@ -24,12 +27,7 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
     ARRAY, OBJECT
   }
 
-  private final Stack<NestingLevel> levels;
-
-  public HTMLGenerator(JsonGenerator d) {
-    super(d);
-    levels = new Stack<NestingLevel>();
-  }
+  private Stack<NestingLevel> levels = new Stack<NestingLevel>();
 
   @Override
   public void writeFieldName(String fieldName) throws IOException, JsonGenerationException {
@@ -42,49 +40,59 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
   }
 
   /*
-   * **********************************************************
-   * Public API, write methods, structural
-   * **********************************************************
+   * /********************************************************** /* Public API,
+   * write methods, structural
+   * /**********************************************************
    */
 
   @Override
   public void writeStartArray() throws IOException, JsonGenerationException {
-    // if (NestingLevel.OBJECT.equals(levels.peek())) {
-    //   writeRaw("<td>");
-    // } else {
-    //   writeRaw("<table><tr><td>");
-    // }
-    writeRaw(levels.isEmpty() ? "<table>\n" : "<td><table>\n");
+    if (NestingLevel.OBJECT.equals(levels.peek())) {
+      writeRaw("<td>");
+    } else {
+      writeRaw("<table><tr><td>");
+    }
     levels.push(NestingLevel.ARRAY);
   }
 
   @Override
   public void writeEndArray() throws IOException, JsonGenerationException {
     levels.pop();
-    writeRaw(levels.isEmpty() ? "</table>\n" : "</table>\n</td></tr>");
-    // if (NestingLevel.OBJECT.equals(levels.peek())) {
-    //   writeRaw("</td></tr>\n");
-    // } else {
-    //   writeRaw("</td></tr></table>");
-    // }
+    if (NestingLevel.OBJECT.equals(levels.peek())) {
+      writeRaw("</td></tr>\n");
+    } else {
+      writeRaw("</td></tr></table>");
+    }
   }
 
   @Override
   public void writeStartObject() throws IOException, JsonGenerationException {
-    writeRaw(levels.isEmpty() ? "<table>\n" : "<td><table>\n");
+    if (levels.isEmpty()) {
+      writeRaw("<table>\n");
+    } else if (levels.peek().equals(NestingLevel.OBJECT)) {
+      writeRaw("<td><table>\n");
+    } else if (levels.peek().equals(NestingLevel.ARRAY)) {
+      writeRaw("<table>\n");
+    }
     levels.push(NestingLevel.OBJECT);
   }
 
   @Override
   public void writeEndObject() throws IOException, JsonGenerationException {
     levels.pop();
-    writeRaw(levels.isEmpty() ? "</table>\n" : "</table>\n</td></tr>");
+    if (levels.isEmpty()) {
+      writeRaw("</table>\n");
+    } else if (levels.peek().equals(NestingLevel.OBJECT)) {
+      writeRaw("</table></td></tr>\n");
+    } else if (levels.peek().equals(NestingLevel.ARRAY)) {
+      writeRaw("</table>\n");
+    }
   }
 
   /*
-   * **********************************************************
-   * Public API, write methods, text/String values
-   * **********************************************************
+   * /********************************************************** /* Public API,
+   * write methods, text/String values
+   * /**********************************************************
    */
 
   @Override
@@ -113,9 +121,9 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
   }
 
   /*
-   * **********************************************************
-   * Public API, write methods, other value types
-   * **********************************************************
+   * /********************************************************** /* Public API,
+   * write methods, other value types
+   * /**********************************************************
    */
 
   @Override
@@ -228,5 +236,4 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
   private String jsonUnescape(byte[] text, int offset, int length) {
     return StringEscapeUtils.unescapeJavaScript(new String(text, offset, length));
   }
-
 }
