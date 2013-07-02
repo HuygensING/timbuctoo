@@ -15,85 +15,76 @@ import com.fasterxml.jackson.core.util.JsonGeneratorDelegate;
 
 // Generate human-readable HTML instead of JSON
 public class HTMLGenerator extends JsonGeneratorDelegate {
-  public HTMLGenerator(JsonGenerator d) {
-    super(d);
-  }
 
   private final static String NULL_STR = "none";
   private final static String TRUE_STR = "yes";
   private final static String FALSE_STR = "no";
 
-  private final static String FIELD_PRE = "<tr><th>";
-  private final static String FIELD_POST = "</th>";
-  private final static String FIELD_VAL_PRE = "<td>";
-  private final static String FIELD_VAL_POST = "</td></tr>\n";
-
-  private final static String ARRAY_VAL_POST = ";<br>\n";
-
-  private final static String OBJ_START = "<table>\n";
-  private final static String OBJ_END = "</table>\n";
-
-  private static final String NESTED_ARRAY_PRE = "<table><tr><td>";
-  private static final String NESTED_ARRAY_POST = "</td></tr></table>";
-
   private enum NestingLevel {
     ARRAY, OBJECT
   }
 
-  private Stack<NestingLevel> levels = new Stack<NestingLevel>();
+  private final Stack<NestingLevel> levels;
+
+  public HTMLGenerator(JsonGenerator d) {
+    super(d);
+    levels = new Stack<NestingLevel>();
+  }
 
   @Override
   public void writeFieldName(String fieldName) throws IOException, JsonGenerationException {
-    this.writeRaw(FIELD_PRE + camelCaseUnescape(fieldName) + FIELD_POST);
+    this.writeRaw("<tr><th>" + camelCaseUnescape(fieldName) + "</th>");
   }
 
   @Override
   public void writeFieldName(SerializableString fieldName) throws IOException, JsonGenerationException {
-    this.writeRaw(FIELD_PRE + camelCaseUnescape(fieldName.getValue()) + FIELD_POST);
+    this.writeRaw("<tr><th>" + camelCaseUnescape(fieldName.getValue()) + "</th>");
   }
 
   /*
-   * /********************************************************** /* Public API,
-   * write methods, structural
-   * /**********************************************************
+   * **********************************************************
+   * Public API, write methods, structural
+   * **********************************************************
    */
 
   @Override
   public void writeStartArray() throws IOException, JsonGenerationException {
-    if (NestingLevel.OBJECT.equals(levels.peek())) {
-      writeRaw(FIELD_VAL_PRE);
-    } else {
-      writeRaw(NESTED_ARRAY_PRE);
-    }
+    // if (NestingLevel.OBJECT.equals(levels.peek())) {
+    //   writeRaw("<td>");
+    // } else {
+    //   writeRaw("<table><tr><td>");
+    // }
+    writeRaw(levels.isEmpty() ? "<table>\n" : "<td><table>\n");
     levels.push(NestingLevel.ARRAY);
   }
 
   @Override
   public void writeEndArray() throws IOException, JsonGenerationException {
     levels.pop();
-    if (NestingLevel.OBJECT.equals(levels.peek())) {
-      writeRaw(FIELD_VAL_POST);
-    } else {
-      writeRaw(NESTED_ARRAY_POST);
-    }
+    writeRaw(levels.isEmpty() ? "</table>\n" : "</table>\n</td></tr>");
+    // if (NestingLevel.OBJECT.equals(levels.peek())) {
+    //   writeRaw("</td></tr>\n");
+    // } else {
+    //   writeRaw("</td></tr></table>");
+    // }
   }
 
   @Override
   public void writeStartObject() throws IOException, JsonGenerationException {
+    writeRaw(levels.isEmpty() ? "<table>\n" : "<td><table>\n");
     levels.push(NestingLevel.OBJECT);
-    writeRaw(OBJ_START);
   }
 
   @Override
   public void writeEndObject() throws IOException, JsonGenerationException {
     levels.pop();
-    writeRaw(OBJ_END);
+    writeRaw(levels.isEmpty() ? "</table>\n" : "</table>\n</td></tr>");
   }
 
   /*
-   * /********************************************************** /* Public API,
-   * write methods, text/String values
-   * /**********************************************************
+   * **********************************************************
+   * Public API, write methods, text/String values
+   * **********************************************************
    */
 
   @Override
@@ -122,9 +113,9 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
   }
 
   /*
-   * /********************************************************** /* Public API,
-   * write methods, other value types
-   * /**********************************************************
+   * **********************************************************
+   * Public API, write methods, other value types
+   * **********************************************************
    */
 
   @Override
@@ -208,15 +199,15 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
 
   private void writeFieldValPre() throws JsonGenerationException, IOException {
     if (NestingLevel.OBJECT.equals(levels.peek())) {
-      writeRaw(FIELD_VAL_PRE);
+      writeRaw("<td>");
     }
   }
 
   private void writeFieldValPost() throws JsonGenerationException, IOException {
     if (NestingLevel.OBJECT.equals(levels.peek())) {
-      writeRaw(FIELD_VAL_POST);
+      writeRaw("</td></tr>\n");
     } else {
-      writeRaw(ARRAY_VAL_POST);
+      writeRaw(";<br>\n");
     }
   }
 
@@ -237,4 +228,5 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
   private String jsonUnescape(byte[] text, int offset, int length) {
     return StringEscapeUtils.unescapeJavaScript(new String(text, offset, length));
   }
+
 }
