@@ -418,6 +418,17 @@ public class VariationReducerTest {
     reducer.reduce(t, TestConcreteDoc.class); // This will throw
   }
 
+  @Test(expected = VariationException.class)
+  public void testReduceUnknownType() throws JsonProcessingException, IOException {
+    String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"blub\"]}],\"!defaultVRE\":\"projecta\"},"
+        + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"unknownType\" : {\"prop\":\"value\"},\"_id\":\"id0000000001\"}";
+
+    JsonNode t = m.readTree(x);
+    reducer.reduce(t, TestConcreteDoc.class);
+
+  }
+
   @Test
   public void testGetAllForDBObjectRootClass() throws JsonProcessingException, IOException {
     String jsonString = "{\"testconcretedoc\":{\"name\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"

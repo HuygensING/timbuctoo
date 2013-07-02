@@ -14,6 +14,8 @@ import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
 import nl.knaw.huygens.repository.storage.mongo.variation.DBJsonNode;
 
 import org.mongojack.internal.stream.JacksonDBObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,6 +32,7 @@ public class VariationReducer {
 
   private final TypeConverter converter;
   private final ObjectMapper mapper;
+  private static final Logger LOG = LoggerFactory.getLogger(VariationReducer.class);
 
   public VariationReducer(DocTypeRegistry registry, ObjectMapper mapper) {
     converter = new TypeConverter(registry);
@@ -167,8 +170,9 @@ public class VariationReducer {
    * @param typeStrings
    * @param id
    * @return
+   * @throws VariationException 
    */
-  private List<Reference> getVariations(List<String> typeStrings, String id) {
+  private List<Reference> getVariations(List<String> typeStrings, String id) throws VariationException {
     List<Reference> references = Lists.<Reference> newLinkedList();
     Map<Class<? extends Document>, String> classVariationMap = Maps.<Class<? extends Document>, String> newHashMap();
     List<Class<? extends Document>> baseModelClasses = Lists.<Class<? extends Document>> newLinkedList();
@@ -179,10 +183,13 @@ public class VariationReducer {
         references.add(new Reference(type, id, null));
         // gather variation information of the project specific types.
         classVariationMap.put(type, VariationUtils.getVariationName(type));
-      } else {
+      } else if (type != null) {
         references.add(new Reference(type, id, null));
         // These classes could contain variation
         baseModelClasses.add(type);
+      } else {
+        LOG.error("Variation " + typeString + " is not known.");
+        throw new VariationException("Variation " + typeString + " is not known.");
       }
     }
 
