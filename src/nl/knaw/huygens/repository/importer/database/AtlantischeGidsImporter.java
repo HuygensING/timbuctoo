@@ -2,7 +2,13 @@ package nl.knaw.huygens.repository.importer.database;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
+
+import nl.knaw.huygens.repository.managers.StorageManager;
+import nl.knaw.huygens.repository.model.atlg.ATLGPerson;
+import nl.knaw.huygens.repository.model.util.PersonName;
+import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
 
 import org.apache.commons.io.FileUtils;
 
@@ -10,6 +16,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class AtlantischeGidsImporter {
@@ -17,7 +24,7 @@ public class AtlantischeGidsImporter {
   private static final String[] JSON_EXTENSION = { "json" };
 
   public static void main(String[] args) throws JsonParseException, JsonMappingException, IOException {
-    AtlantischeGidsImporter importer = new AtlantischeGidsImporter("../AtlantischeGids/work/");
+    AtlantischeGidsImporter importer = new AtlantischeGidsImporter(null, "../AtlantischeGids/work/");
     importer.importKeywords();
     importer.importPersons();
     importer.importArchiefMats();
@@ -26,11 +33,13 @@ public class AtlantischeGidsImporter {
     System.out.printf("%n.. done%n");
   }
 
+  private final StorageManager storageManager;
   private final File baseDirectory;
   private final ObjectMapper mapper;
 
-  public AtlantischeGidsImporter(String directoryName) throws JsonProcessingException {
+  public AtlantischeGidsImporter(StorageManager storageManager, String directoryName) throws JsonProcessingException {
     System.out.println(".. Importing from " + directoryName);
+    this.storageManager = storageManager;
     baseDirectory = new File(directoryName);
     mapper = new ObjectMapper();
   }
@@ -54,19 +63,51 @@ public class AtlantischeGidsImporter {
 
   public void importPersons() throws JsonParseException, JsonMappingException, IOException {
     System.out.printf("%n.. Importing 'person's%n");
-    Set<String> ids = Sets.newTreeSet();
+    Map<String, String> ids = Maps.newHashMap();
     File directory = new File(baseDirectory, "keywords");
     File file = new File(directory, "persons.json");
     System.out.println(file.getName());
     Person[] entries = mapper.readValue(file, Person[].class);
     for (Person object : entries) {
-      if (ids.contains(object._id)) {
+      if (ids.containsKey(object._id)) {
         System.err.println("duplicate id " + object._id);
-      } else {
-        ids.add(object._id);
+      } else if (storageManager != null) {
+        ATLGPerson person = convertPerson(object);
+        storageManager.addDocument(ATLGPerson.class, person);
+        ids.put(object._id, person.getId());
+        System.out.printf("%s --> %s%n", object._id, person.getId());
       }
     }
     System.out.println("Number of entries = " + ids.size());
+  }
+
+  private ATLGPerson convertPerson(Person input) {
+    ATLGPerson person = new ATLGPerson();
+
+    PersonName name = new PersonName();
+    if (input.voorl != null) {
+      name.addNameComponent(Type.FORENAME, input.voorl);
+    }
+    if (input.tussenv != null) {
+      name.addNameComponent(Type.NAME_LINK, input.tussenv);
+    }
+    if (input.achternaam != null) {
+      name.addNameComponent(Type.SURNAME, input.achternaam);
+    }
+    if (input.toevoeging != null) {
+      name.addNameComponent(Type.ADD_NAME, input.toevoeging);
+    }
+    person.setName(name);
+
+    if (input.label != null) {
+      person.setLabel(input.label);
+    }
+
+    if (input.verwijzing != null) {
+      person.setReference(input.verwijzing);
+    }
+
+    return person;
   }
 
   public void importArchiefMats() throws JsonParseException, JsonMappingException, IOException {
