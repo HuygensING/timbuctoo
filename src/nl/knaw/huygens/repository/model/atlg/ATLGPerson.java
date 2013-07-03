@@ -3,8 +3,6 @@ package nl.knaw.huygens.repository.model.atlg;
 import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.model.Person;
 
-import org.apache.commons.lang.StringUtils;
-
 @DocumentTypeName("atlgperson")
 public class ATLGPerson extends Person {
 
@@ -24,20 +22,12 @@ public class ATLGPerson extends Person {
     this.label = label;
   }
 
-  public void setLabel(String[] labels) {
-    this.label = StringUtils.join(labels, "; ");
-  }
-
   public String getReference() {
     return reference;
   }
 
   public void setReference(String reference) {
     this.reference = reference;
-  }
-
-  public void setReference(String[] references) {
-    this.reference = StringUtils.join(references, "; ");
   }
 
 }
