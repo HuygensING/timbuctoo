@@ -13,7 +13,7 @@ public class Place extends DomainDocument {
   public String longitude;
 
   @Override
-  public String getDescription() {
+  public String getDisplayName() {
     return name;
   };
 

@@ -66,7 +66,7 @@ public class SearchResult extends SystemDocument implements Persistent {
   }
 
   @Override
-  public String getDescription() {
+  public String getDisplayName() {
     return "Search " + getId();
   }
 

@@ -18,7 +18,7 @@ public class ExplicitlyAnnotatedModelWithIndexAnnotations extends Document {
   @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
-  public String getDescription() {
+  public String getDisplayName() {
     return null;
   }
 

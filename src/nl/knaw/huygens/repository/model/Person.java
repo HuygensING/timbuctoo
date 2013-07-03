@@ -21,7 +21,7 @@ public class Person extends DomainDocument {
   }
 
   @Override
-  public String getDescription() {
+  public String getDisplayName() {
     return name.getShortName();
   }
 

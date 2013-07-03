@@ -38,7 +38,7 @@ public class MongoObjectMapperDocument extends SystemDocument {
   @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
-  public String getDescription() {
+  public String getDisplayName() {
     return name;
   }
 

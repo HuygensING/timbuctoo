@@ -11,7 +11,7 @@ public class ModelWithOverriddenIndexAnnotation extends Document {
   @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "description")
-  public String getDescription() {
+  public String getDisplayName() {
     return null;
   }
 

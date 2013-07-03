@@ -12,7 +12,7 @@ public class Keyword extends DomainDocument {
   private String value;
 
   @Override
-  public String getDescription() {
+  public String getDisplayName() {
     return value;
   };
 

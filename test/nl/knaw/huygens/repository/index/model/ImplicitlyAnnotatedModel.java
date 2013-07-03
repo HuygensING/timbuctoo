@@ -13,7 +13,7 @@ public class ImplicitlyAnnotatedModel extends Document {
   }
 
   @Override
-  public String getDescription() {
+  public String getDisplayName() {
     return null;
   }
 
