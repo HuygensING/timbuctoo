@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("TSD")
 public class TestSystemDocument extends SystemDocument {
+
   private String name;
   private String testValue1;
   private String testValue2;
@@ -19,16 +20,12 @@ public class TestSystemDocument extends SystemDocument {
   @Override
   @JsonProperty("!currentVariation")
   public String getCurrentVariation() {
-    // TODO Auto-generated method stub
     return null;
   }
 
   @Override
   @JsonProperty("!currentVariation")
-  public void setCurrentVariation(String currentVariation) {
-    // TODO Auto-generated method stub
-
-  }
+  public void setCurrentVariation(String currentVariation) {}
 
   @Override
   @JsonIgnore
