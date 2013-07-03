@@ -92,8 +92,8 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
   }
 
   private String getDocTitle(Document doc) {
-    String description = doc.getDescription();
-    return (description != null) ? StringEscapeUtils.escapeHtml(description) : "";
+    String name = doc.getDisplayName();
+    return (name != null) ? StringEscapeUtils.escapeHtml(name) : "";
   }
 
 }

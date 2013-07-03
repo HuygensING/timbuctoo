@@ -45,7 +45,7 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
   @Override
   public void writeTo(Document doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException,
       WebApplicationException {
-    helper.writeHeader(out, doc.getDescription());
+    helper.writeHeader(out, doc.getDisplayName());
 
     JsonGenerator jgen = helper.getGenerator(out);
     ObjectWriter writer = helper.getObjectWriter(annotations);

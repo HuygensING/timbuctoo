@@ -22,7 +22,7 @@ public class ExplicitlyAnnotatedModel extends Document {
   @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
-  public String getDescription() {
+  public String getDisplayName() {
     return "";
   }
 

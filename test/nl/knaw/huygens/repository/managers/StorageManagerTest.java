@@ -65,14 +65,14 @@ public class StorageManagerTest {
 
     GeneralTestDoc doc = mock(GeneralTestDoc.class);
     when(doc.getId()).thenReturn(id);
-    when(doc.getDescription()).thenReturn("test");
+    when(doc.getDisplayName()).thenReturn("test");
 
     when(storage.getItem(type, id)).thenReturn(doc);
 
     Document actualDoc = instance.getCompleteDocument(type, id);
 
     assertEquals(id, actualDoc.getId());
-    assertEquals("test", actualDoc.getDescription());
+    assertEquals("test", actualDoc.getDisplayName());
   }
 
   @Test
@@ -103,14 +103,14 @@ public class StorageManagerTest {
 
     GeneralTestDoc doc = mock(GeneralTestDoc.class);
     when(doc.getId()).thenReturn(id);
-    when(doc.getDescription()).thenReturn("test");
+    when(doc.getDisplayName()).thenReturn("test");
 
     when(storage.getItem(type, id)).thenReturn(doc);
 
     Document actualDoc = instance.getDocument(type, id);
 
     assertEquals(id, actualDoc.getId());
-    assertEquals("test", actualDoc.getDescription());
+    assertEquals("test", actualDoc.getDisplayName());
   }
 
   @Test
@@ -142,14 +142,14 @@ public class StorageManagerTest {
 
     GeneralTestDoc doc = mock(GeneralTestDoc.class);
     when(doc.getId()).thenReturn(id);
-    when(doc.getDescription()).thenReturn("test");
+    when(doc.getDisplayName()).thenReturn("test");
 
     when(storage.getVariation(type, id, variation)).thenReturn(doc);
 
     Document actualDoc = instance.getCompleteVariation(type, id, variation);
 
     assertEquals(id, actualDoc.getId());
-    assertEquals("test", actualDoc.getDescription());
+    assertEquals("test", actualDoc.getDisplayName());
   }
 
   @Test()
@@ -182,11 +182,11 @@ public class StorageManagerTest {
 
     GeneralTestDoc doc = mock(GeneralTestDoc.class);
     when(doc.getId()).thenReturn(id);
-    when(doc.getDescription()).thenReturn("test");
+    when(doc.getDisplayName()).thenReturn("test");
 
     GeneralTestDoc doc2 = mock(GeneralTestDoc.class);
     when(doc.getId()).thenReturn(id);
-    when(doc.getDescription()).thenReturn("test2");
+    when(doc.getDisplayName()).thenReturn("test2");
 
     when(storage.getAllVariations(type, id)).thenReturn(Lists.newArrayList(doc, doc2));
 

@@ -31,7 +31,7 @@ public class MultipleReferringDoc extends Document {
   @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
-  public String getDescription() {
+  public String getDisplayName() {
     // TODO Auto-generated method stub
     return null;
   }
