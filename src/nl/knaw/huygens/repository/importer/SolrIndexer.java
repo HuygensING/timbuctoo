@@ -19,10 +19,8 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 /**
- * Currently we using just one index for each indexed type.
- * We may need to add indexes for each VRE.
- *
- * Because we index all items of a type, we clear the index first.
+ * Currently this class is not used, because every object is indexed at the time it is stored in the database.
+ * This class could be the base of a process for (re)indexing all or a part of the data. 
  */
 public class SolrIndexer {
 
