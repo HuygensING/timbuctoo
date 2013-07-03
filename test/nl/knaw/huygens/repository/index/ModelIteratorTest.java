@@ -68,7 +68,7 @@ public class ModelIteratorTest {
   public void testProcessClassModelWithOverriddenIndexAnnotation() throws NoSuchMethodException, SecurityException {
     Class<? extends Document> cls = ModelWithOverriddenIndexAnnotation.class;
     instance.processClass(processor, cls);
-    Method method = cls.getMethod("getDescription", (Class[]) null);
+    Method method = cls.getMethod("getDisplayName", (Class[]) null);
     IndexAnnotation expectedAnnotation = method.getAnnotation(IndexAnnotation.class);
     IndexAnnotation actualAnnotation = this.processor.getIndexAnnotationsForMethod(method).get(0);
     Assert.assertEquals(expectedAnnotation.fieldName(), actualAnnotation.fieldName());

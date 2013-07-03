@@ -63,7 +63,7 @@ public class SolrInputDocGeneratorTest {
     Document doc = createDocument(expected);
     SolrInputDocGenerator generator = new SolrInputDocGenerator(doc);
 
-    processMethod(doc, generator, "getDescription", false, "desc");
+    processMethod(doc, generator, "getDisplayName", false, "desc");
 
     SolrInputDocument solrInputDocument = generator.getResult();
     SolrInputField field = solrInputDocument.getField("desc");
@@ -79,7 +79,7 @@ public class SolrInputDocGeneratorTest {
     Document doc = createDocument(description);
     SolrInputDocGenerator generator = new SolrInputDocGenerator(doc);
 
-    processMethod(doc, generator, "getDescription", false, "desc");
+    processMethod(doc, generator, "getDisplayName", false, "desc");
 
     SolrInputDocument solrInputDocument = generator.getResult();
     SolrInputField field = solrInputDocument.getField("desc");
@@ -93,7 +93,7 @@ public class SolrInputDocGeneratorTest {
     Document doc = createDocument(null);
     SolrInputDocGenerator generator = new SolrInputDocGenerator(doc);
 
-    processMethod(doc, generator, "getDescription", true, "desc");
+    processMethod(doc, generator, "getDisplayName", true, "desc");
 
     SolrInputDocument solrInputDocument = generator.getResult();
     SolrInputField descriptionField = solrInputDocument.getField("desc");
@@ -106,13 +106,13 @@ public class SolrInputDocGeneratorTest {
     String descriptionDoc1 = "doc1";
     Document doc1 = createDocument(descriptionDoc1);
     SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(doc1);
-    processMethod(doc1, doc1Generator, "getDescription", false, "desc");
+    processMethod(doc1, doc1Generator, "getDisplayName", false, "desc");
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
     String descriptionDoc2 = "doc2";
     Document doc2 = createDocument(descriptionDoc2, doc1.getId());
     SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(doc2, inputDoc1);
-    processMethod(doc2, doc2Generator, "getDescription", false, "desc");
+    processMethod(doc2, doc2Generator, "getDisplayName", false, "desc");
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("desc");
@@ -128,13 +128,13 @@ public class SolrInputDocGeneratorTest {
     String descriptionDoc1 = "doc1";
     Document doc1 = createDocument(descriptionDoc1);
     SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(doc1);
-    processMethod(doc1, doc1Generator, "getDescription", false, "desc");
+    processMethod(doc1, doc1Generator, "getDisplayName", false, "desc");
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
     String descriptionDoc2 = null;
     Document doc2 = createDocument(descriptionDoc2, doc1.getId());
     SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(doc2, inputDoc1);
-    processMethod(doc2, doc2Generator, "getDescription", false, "desc");
+    processMethod(doc2, doc2Generator, "getDisplayName", false, "desc");
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("desc");
@@ -149,13 +149,13 @@ public class SolrInputDocGeneratorTest {
     String descriptionDoc1 = null;
     Document doc1 = createDocument(descriptionDoc1);
     SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(doc1);
-    processMethod(doc1, doc1Generator, "getDescription", false, "desc");
+    processMethod(doc1, doc1Generator, "getDisplayName", false, "desc");
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
     String descriptionDoc2 = null;
     Document doc2 = createDocument(descriptionDoc2, doc1.getId());
     SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(doc2, inputDoc1);
-    processMethod(doc2, doc2Generator, "getDescription", false, "desc");
+    processMethod(doc2, doc2Generator, "getDisplayName", false, "desc");
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("desc");
@@ -170,13 +170,13 @@ public class SolrInputDocGeneratorTest {
     String descriptionDoc1 = null;
     Document doc1 = createDocument(descriptionDoc1);
     SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(doc1);
-    processMethod(doc1, doc1Generator, "getDescription", true, "desc");
+    processMethod(doc1, doc1Generator, "getDisplayName", true, "desc");
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
     String descriptionDoc2 = null;
     Document doc2 = createDocument(descriptionDoc2, doc1.getId());
     SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(doc2, inputDoc1);
-    processMethod(doc2, doc2Generator, "getDescription", true, "desc");
+    processMethod(doc2, doc2Generator, "getDisplayName", true, "desc");
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("desc");
@@ -189,12 +189,12 @@ public class SolrInputDocGeneratorTest {
     String description = "doc";
     Document doc1 = createDocument(description);
     SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(doc1);
-    processMethod(doc1, doc1Generator, "getDescription", false, "desc");
+    processMethod(doc1, doc1Generator, "getDisplayName", false, "desc");
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
     Document doc2 = createDocument(description, doc1.getId());
     SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(doc2, inputDoc1);
-    processMethod(doc2, doc2Generator, "getDescription", false, "desc");
+    processMethod(doc2, doc2Generator, "getDisplayName", false, "desc");
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("desc");
@@ -230,13 +230,13 @@ public class SolrInputDocGeneratorTest {
     String descriptionDoc1 = "doc1";
     Document doc1 = createDocument(descriptionDoc1);
     SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(doc1);
-    processMethod(doc1, doc1Generator, "getDescription", false, "facet_sort_desc");
+    processMethod(doc1, doc1Generator, "getDisplayName", false, "facet_sort_desc");
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
     String descriptionDoc2 = "doc2";
     Document doc2 = createDocument(descriptionDoc2, doc1.getId());
     SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(doc2, inputDoc1);
-    processMethod(doc2, doc2Generator, "getDescription", false, "facet_sort_desc");
+    processMethod(doc2, doc2Generator, "getDisplayName", false, "facet_sort_desc");
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("facet_sort_desc");
