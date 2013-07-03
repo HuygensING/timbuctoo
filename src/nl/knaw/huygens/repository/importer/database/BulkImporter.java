@@ -61,7 +61,8 @@ public class BulkImporter {
       importer.importData("resources/RAACivilServantMapping.properties", RAACivilServant.class);
       CKCCPersonImporter csvImporter = new CKCCPersonImporter(storageManager);
       csvImporter.handleFile("testdata/ckcc-persons.txt", 9, false);
-      // new AtlantischeGidsImporter().importData("../AtlantischeGids/work/", storageManager);
+
+      // new AtlantischeGidsImporter(storageManager, "../AtlantischeGids/work/").importAll();
 
       storageManager.ensureIndices();
 

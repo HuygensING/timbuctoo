@@ -27,7 +27,7 @@ public class Person extends DomainDocument {
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "facet_t_name", isFaceted = true)
-  public String getFullName() {
+  public String getIndexedName() {
     return name.getFullName();
   }
 

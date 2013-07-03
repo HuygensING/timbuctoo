@@ -7,6 +7,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.atlg.ATLGKeyword;
+import nl.knaw.huygens.repository.model.atlg.ATLGLegislation;
 import nl.knaw.huygens.repository.model.atlg.ATLGPerson;
 import nl.knaw.huygens.repository.model.util.PersonName;
 import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
@@ -59,7 +60,8 @@ public class AtlantischeGidsImporter {
     importCreators();
 
     System.out.printf("%n.. 'wetgeving' -- pass 1%n");
-    importWetgevings();
+    Map<String, String> wetgevingIdMap = importWetgevings();
+    System.out.printf("Number of entries = %d%n", wetgevingIdMap.size());
   }
 
   // -------------------------------------------------------------------
@@ -208,22 +210,38 @@ public class AtlantischeGidsImporter {
     System.out.println("Number of entries = " + ids.size());
   }
 
-  public void importWetgevings() throws JsonParseException, JsonMappingException, IOException {
-    Set<String> ids = Sets.newTreeSet();
-    File directory = new File(inputDir, "wetgeving");
+  // -------------------------------------------------------------------
+
+  private static final String WETGEVING_DIR = "wetgeving";
+
+  public Map<String, String> importWetgevings() throws Exception {
+    Map<String, String> ids = Maps.newHashMap();
+    File directory = new File(inputDir, WETGEVING_DIR);
     for (File file : FileUtils.listFiles(directory, JSON_EXTENSION, true)) {
-      System.out.println(file.getName());
-      WetgevingEntry[] entries = objectMapper.readValue(file, WetgevingEntry[].class);
-      for (WetgevingEntry entry : entries) {
+      for (WetgevingEntry entry : objectMapper.readValue(file, WetgevingEntry[].class)) {
         Wetgeving object = entry.wetgeving;
-        if (ids.contains(object._id)) {
-          System.err.println("duplicate id " + object._id);
+        String id = object._id;
+        if (ids.containsKey(id)) {
+          System.err.printf("## [%s] Duplicate id %s%n", file, id);
+        } else if (storageManager == null) {
+          ids.put(id, id);
         } else {
-          ids.add(object._id);
+          ATLGLegislation document = convert(object);
+          storageManager.addDocument(ATLGLegislation.class, document);
+          ids.put(id, document.getId());
         }
       }
     }
-    System.out.println("Number of entries = " + ids.size());
+    return ids;
+  }
+
+  public ATLGLegislation convert(Wetgeving object) {
+    ATLGLegislation document = new ATLGLegislation();
+    document.setTitle(object.titel);
+    document.setOrigFilename(object.orig_filename);
+    document.setReference(object.reference);
+    document.setPages(object.pages);
+    return document;
   }
 
   // -------------------------------------------------------------------
