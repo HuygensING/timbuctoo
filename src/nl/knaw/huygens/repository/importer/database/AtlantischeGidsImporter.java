@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
+import nl.knaw.huygens.repository.model.atlg.ATLGKeyword;
 import nl.knaw.huygens.repository.model.atlg.ATLGPerson;
 import nl.knaw.huygens.repository.model.util.PersonName;
 import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
@@ -42,22 +43,22 @@ public class AtlantischeGidsImporter {
   }
 
   public void importAll() throws Exception {
-    System.out.printf("%n.. 'keyword's%n");
+    System.out.printf("%n.. 'keyword'%n");
     Map<String, String> keywordIdMap = importKeywords();
     System.out.printf("Number of entries = %d%n", keywordIdMap.size());
 
-    System.out.printf("%n.. 'person's%n");
+    System.out.printf("%n.. 'person'%n");
     Map<String, String> personIdMap = importPersons();
     System.out.printf("Number of entries = %d%n", personIdMap.size());
 
-    System.out.printf("%n.. 'archiefmat's -- pass 1%n");
+    System.out.printf("%n.. 'archiefmat' -- pass 1%n");
     Map<String, String> archiefmatIdMap = importArchiefMats();
     System.out.printf("Number of entries = %d%n", archiefmatIdMap.size());
 
-    System.out.printf("%n.. 'creator's -- pass 1%n");
+    System.out.printf("%n.. 'creator' -- pass 1%n");
     importCreators();
 
-    System.out.printf("%n.. 'wetgeving's -- pass 1%n");
+    System.out.printf("%n.. 'wetgeving' -- pass 1%n");
     importWetgevings();
   }
 
@@ -66,21 +67,47 @@ public class AtlantischeGidsImporter {
   private static final String KEYWORD_DIR = "keywords";
   private static final String KEYWORD_FILE = "keywords.json";
 
-  public Map<String, String> importKeywords() throws Exception {
+  private Map<String, String> importKeywords() throws Exception {
     Map<String, String> ids = Maps.newHashMap();
     File file = new File(new File(inputDir, KEYWORD_DIR), KEYWORD_FILE);
     for (Keyword keyword : objectMapper.readValue(file, Keyword[].class)) {
+      // System.out.println(keyword);
       String id = keyword._id;
       if (ids.containsKey(id)) {
         System.err.printf("## [%s] Duplicate id %s%n", KEYWORD_FILE, id);
       } else if (storageManager == null) {
         ids.put(id, id);
       } else {
-        // convert and store
-        ids.put(id, id);
+        ATLGKeyword atlgKeyword = convert(keyword);
+        storageManager.addDocument(ATLGKeyword.class, atlgKeyword);
+        ids.put(id, atlgKeyword.getId());
       }
     }
     return ids;
+  }
+
+  private ATLGKeyword convert(Keyword input) {
+    ATLGKeyword keyword = new ATLGKeyword();
+
+    String type = input.type;
+    keyword.setType(type);
+
+    if (type == null) {
+      System.err.printf("Missing type");
+    } else if (type.equals("subject")) {
+      keyword.setValue(input.onderwerp);
+    } else if (type.equals("geography")) {
+      keyword.setValue(input.onderwerp);
+    } else {
+      System.err.printf("Missing type");
+      keyword.setValue("?");
+    }
+
+    if (input.label != null) {
+      keyword.setLabel(input.label);
+    }
+
+    return keyword;
   }
 
   // -------------------------------------------------------------------
@@ -98,7 +125,7 @@ public class AtlantischeGidsImporter {
       } else if (storageManager == null) {
         ids.put(id, id);
       } else {
-        ATLGPerson atlgPerson = convertPerson(person);
+        ATLGPerson atlgPerson = convert(person);
         storageManager.addDocument(ATLGPerson.class, atlgPerson);
         ids.put(id, atlgPerson.getId());
       }
@@ -106,7 +133,7 @@ public class AtlantischeGidsImporter {
     return ids;
   }
 
-  private ATLGPerson convertPerson(Person input) {
+  private ATLGPerson convert(Person input) {
     ATLGPerson person = new ATLGPerson();
 
     PersonName name = new PersonName();
@@ -204,11 +231,22 @@ public class AtlantischeGidsImporter {
   // -------------------------------------------------------------------
 
   public static class Keyword {
+
+    /** ### Assigned id (admin) */
     public String _id;
+
     public String type;
+
     public String label;
+
     public String onderwerp;
+
     public String regionaam;
+
+    @Override
+    public String toString() {
+      return String.format("%-5s %-10s %-40s %-30s %s", _id, type, onderwerp, regionaam, label);
+    }
   }
 
   // -------------------------------------------------------------------

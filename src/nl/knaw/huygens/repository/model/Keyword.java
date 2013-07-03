@@ -8,8 +8,8 @@ import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 @DocumentTypeName("keyword")
 public class Keyword extends DomainDocument {
 
-  public String type;
-  public String value;
+  private String type;
+  private String value;
 
   @Override
   public String getDescription() {
@@ -21,9 +21,17 @@ public class Keyword extends DomainDocument {
     return type;
   }
 
+  public void setType(String type) {
+    this.type = type;
+  }
+
   @IndexAnnotation(fieldName = "facet_t_value")
   public String getValue() {
     return value;
+  }
+
+  public void setValue(String value) {
+    this.value = value;
   }
 
 }
