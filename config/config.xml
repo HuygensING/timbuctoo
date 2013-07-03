@@ -67,10 +67,10 @@
     </paths>
     <model-packages>
       nl.knaw.huygens.repository.model
+      nl.knaw.huygens.repository.model.atlg
       nl.knaw.huygens.repository.model.ckcc
       nl.knaw.huygens.repository.model.dwcbia
       nl.knaw.huygens.repository.model.raa
-      nl.knaw.huygens.repository.model.atla
     </model-packages>
     <doctypes>person,place</doctypes>
     <variationdoctypes>person,place</variationdoctypes>
