@@ -12,7 +12,7 @@ public class CKCCPerson extends Person {
   private String gender;
 
   @Override
-  public String getDescription() {
+  public String getDisplayName() {
     return String.format("%s (%s-%s)", getName().getSortName(), year(getBirthDate()), year(getDeathDate()));
   }
 

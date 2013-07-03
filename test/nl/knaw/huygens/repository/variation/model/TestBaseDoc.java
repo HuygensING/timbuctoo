@@ -12,7 +12,7 @@ public abstract class TestBaseDoc extends Document {
   public String name;
 
   @Override
-  public String getDescription() {
+  public String getDisplayName() {
     return name;
   }
 

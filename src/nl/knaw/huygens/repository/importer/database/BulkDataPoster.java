@@ -74,7 +74,7 @@ public class BulkDataPoster {
       if (!ClientResponse.Status.CREATED.equals(response.getClientResponseStatus())) {
         System.out.println("uri: " + resource.getURI());
         System.out.println("response: " + response.getClientResponseStatus());
-        System.out.println("doc: " + document.getDescription());
+        System.out.println("doc: " + document.getDisplayName());
         break;
       }
     }

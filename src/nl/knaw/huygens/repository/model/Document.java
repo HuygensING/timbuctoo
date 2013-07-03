@@ -30,9 +30,12 @@ public abstract class Document {
   private List<Reference> variations = Lists.newArrayList();
   private String currentVariation;
 
+  /**
+   * Returns the name to be displayed for identification of this document.
+   */
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
-  public abstract String getDescription();
+  public abstract String getDisplayName();
 
   @JsonIgnore
   public String getTypeName() {

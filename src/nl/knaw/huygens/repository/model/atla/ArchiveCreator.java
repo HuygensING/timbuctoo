@@ -35,7 +35,7 @@ public class ArchiveCreator extends DomainDocument {
   @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
-  public String getDescription() {
+  public String getDisplayName() {
     return name;
   }
 

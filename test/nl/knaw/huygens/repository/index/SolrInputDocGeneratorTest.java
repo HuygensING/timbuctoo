@@ -21,18 +21,18 @@ import org.apache.solr.common.SolrInputField;
 import org.junit.Test;
 
 public class SolrInputDocGeneratorTest {
+
   private int id = 0;
 
-  private Document createDocument(String description) {
+  private Document createDocument(String displayName) {
     id++;
-    return createDocument(description, "" + id);
+    return createDocument(displayName, "" + id);
   }
 
-  private Document createDocument(String description, String id) {
+  private Document createDocument(String displayName, String id) {
     TestExtraBaseDoc doc = mock(TestExtraBaseDoc.class);
     when(doc.getId()).thenReturn(id);
-    when(doc.getDescription()).thenReturn(description);
-
+    when(doc.getDisplayName()).thenReturn(displayName);
     return doc;
   }
 
@@ -243,7 +243,7 @@ public class SolrInputDocGeneratorTest {
     Collection<Object> actualIds = descriptionField.getValues();
 
     assertEquals(1, actualIds.size());
-    assertTrue(actualIds.contains(doc1.getDescription()));
+    assertTrue(actualIds.contains(doc1.getDisplayName()));
   }
 
 }

@@ -30,7 +30,7 @@ public class User extends SystemDocument {
 
   @Override
   @JsonIgnore
-  public String getDescription() {
+  public String getDisplayName() {
     return firstName + " " + lastName;
   }
 

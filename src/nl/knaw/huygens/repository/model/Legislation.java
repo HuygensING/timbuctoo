@@ -10,7 +10,7 @@ public class Legislation extends DomainDocument {
   private String title;
 
   @Override
-  public String getDescription() {
+  public String getDisplayName() {
     return title;
   }
 

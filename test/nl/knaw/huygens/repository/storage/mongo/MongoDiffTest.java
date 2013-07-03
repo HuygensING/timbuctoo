@@ -32,7 +32,7 @@ public class MongoDiffTest {
     public int blah;
 
     @Override
-    public String getDescription() {
+    public String getDisplayName() {
       return name;
     }
 
