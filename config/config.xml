@@ -72,10 +72,10 @@
       nl.knaw.huygens.repository.model.dwcbia
       nl.knaw.huygens.repository.model.raa
     </model-packages>
-    <doctypes>person,place</doctypes>
-    <variationdoctypes>person,place</variationdoctypes>
-    <indexeddoctypes>person,place</indexeddoctypes>
-    <versioneddoctypes>person,place</versioneddoctypes>
+    <doctypes>keyword,person,place</doctypes>
+    <variationdoctypes>keyword,person,place</variationdoctypes>
+    <indexeddoctypes>keyword,person,place</indexeddoctypes>
+    <versioneddoctypes>keyword,person,place</versioneddoctypes>
     <public_url>http://localhost:8080/repository</public_url>
     <feed>
       <title>Repository changes</title>
