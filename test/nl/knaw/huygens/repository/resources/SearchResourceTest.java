@@ -33,12 +33,13 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class SearchResourceTest extends WebServiceTestSetup {
+  private static final String LOCATION_HEADER = "Location";
   private String typeString = "person";
   private String id = "QRY0000000001";
-  private String expected = "{\"queryId\": \"" + id + "\"}";
 
   @Test
   public void testPostSuccess() throws IOException, SolrServerException {
+
     SearchResult searchResult = createSearchResult();
 
     setupDocTypeRegistry();
@@ -51,11 +52,14 @@ public class SearchResourceTest extends WebServiceTestSetup {
     formData.add("sort", "id");
 
     WebResource resource = super.resource();
-    String actual = resource.path("search").type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(String.class, formData);
+    String expected = String.format("%ssearch/%s", resource.getURI().toString(), id);
+    ClientResponse response = resource.path("search").type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(ClientResponse.class, formData);
+    String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     verify(storageManager).addDocument(SearchResult.class, searchResult);
 
+    assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
     assertEquals(expected, actual);
   }
 
@@ -72,11 +76,14 @@ public class SearchResourceTest extends WebServiceTestSetup {
     formData.add("q", "facet_t_name:Huygens");
 
     WebResource resource = super.resource();
-    String actual = resource.path("search").type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(String.class, formData);
+    String expected = String.format("%ssearch/%s", resource.getURI().toString(), id);
+    ClientResponse response = resource.path("search").type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(ClientResponse.class, formData);
+    String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     verify(storageManager).addDocument(SearchResult.class, searchResult);
 
+    assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
     assertEquals(expected, actual);
   }
 
@@ -162,15 +169,57 @@ public class SearchResourceTest extends WebServiceTestSetup {
     when(result.getIds()).thenReturn(idList);
     when(storageManager.getDocument(SearchResult.class, id)).thenReturn(result);
 
+    setupDocTypeRegistry();
+
+    WebResource resource = super.resource();
+    List<Person> actual = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<List<Person>>() {});
+
+    assertEquals(10, actual.size());
+  }
+
+  public void testGetSuccessWithStartAndRows() {
+    List<String> idList = Lists.newArrayList();
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+
+    for (int i = 0; i < 100; i++) {
+      String personId = "" + i;
+      Person person = new Person();
+      person.setId(personId);
+
+      idList.add(personId);
+      when(storageManager.getDocument(Person.class, personId)).thenReturn(person);
+    }
+
+    SearchResult result = mock(SearchResult.class);
+    when(result.getId()).thenReturn(id);
+    when(result.getSearchType()).thenReturn("person");
+    when(result.getIds()).thenReturn(idList);
+    when(storageManager.getDocument(SearchResult.class, id)).thenReturn(result);
+
+    setupDocTypeRegistry();
+
     MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
-    queryParameters.add("id", id);
+    queryParameters.add("start", "10");
+    queryParameters.add("rows", "100");
+
+    WebResource resource = super.resource();
+    List<Person> actual = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<List<Person>>() {});
+
+    assertEquals(90, actual.size());
+  }
+
+  @Test
+  public void testGetNoResults() {
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+
+    when(storageManager.getDocument(SearchResult.class, id)).thenReturn(null);
 
     setupDocTypeRegistry();
 
     WebResource resource = super.resource();
-    List<Person> actual = resource.path("search").queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<List<Person>>() {});
+    ClientResponse response = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
-    assertEquals(10, actual.size());
+    assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
   @Test
@@ -178,7 +227,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     WebResource resource = super.resource();
     ClientResponse response = resource.path("search").type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
-    assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
+    assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
   }
 
   @Test
@@ -187,7 +236,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     when(storageManager.getDocument(SearchResult.class, "unknown")).thenReturn(null);
 
     WebResource resource = super.resource();
-    ClientResponse response = resource.path("search").queryParam("id", "unknown").type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+    ClientResponse response = resource.path("search").path("unknown").type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
@@ -206,7 +255,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     when(docTypeRegistry.getClassFromWebServiceTypeString(unknownType)).thenReturn(null);
 
     WebResource resource = super.resource();
-    ClientResponse response = resource.path("search").queryParam("id", id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+    ClientResponse response = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.INTERNAL_SERVER_ERROR, response.getClientResponseStatus());
   }

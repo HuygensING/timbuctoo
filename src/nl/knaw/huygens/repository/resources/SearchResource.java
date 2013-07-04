@@ -1,5 +1,6 @@
 package nl.knaw.huygens.repository.resources;
 
+import java.net.URI;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -8,11 +9,14 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.repository.annotations.APIDesc;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
@@ -47,10 +51,11 @@ public class SearchResource {
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   @Produces(MediaType.APPLICATION_JSON)
   @JsonView(JsonViews.WebView.class)
-  public String post( //
+  public Response post( //
       @FormParam("type") String typeString, //
       @FormParam("q") String q, //
-      @FormParam("sort") @DefaultValue("id") String sort //
+      @FormParam("sort") @DefaultValue("id") String sort, //
+      @Context UriInfo uriInfo //
   ) {
 
     // Validate input
@@ -70,8 +75,7 @@ public class SearchResource {
       SearchResult result = searchManager.search(core, q, sort);
       storageManager.addDocument(SearchResult.class, result);
       String queryId = result.getId();
-      // TODO: return a Response with a header Location. see: http://www.restapitutorial.com/lessons/httpmethods.html
-      return String.format("{\"queryId\": \"%s\"}", queryId);
+      return Response.created(new URI(queryId)).build();
     } catch (Exception e) {
       LOG.warn("POST - {}", e.getMessage());
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
@@ -79,20 +83,15 @@ public class SearchResource {
   }
 
   @GET
+  @Path("/{id: QRY\\d+}")
   @APIDesc("Returns (paged) search results")
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
   public List<? extends Document> get( //
-      @QueryParam("id") String queryId, //
+      @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") int start, //
       @QueryParam("rows") @DefaultValue("10") int rows //
   ) {
-
-    // Validate input
-    if (queryId == null) {
-      LOG.error("GET - no query id");
-      throw new WebApplicationException(Response.Status.BAD_REQUEST);
-    }
 
     // Retrieve result
     SearchResult result = storageManager.getDocument(SearchResult.class, queryId);
