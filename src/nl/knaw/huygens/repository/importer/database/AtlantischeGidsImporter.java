@@ -7,6 +7,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.DocumentRef;
+import nl.knaw.huygens.repository.model.atlg.ATLGArchive;
 import nl.knaw.huygens.repository.model.atlg.ATLGKeyword;
 import nl.knaw.huygens.repository.model.atlg.ATLGLegislation;
 import nl.knaw.huygens.repository.model.atlg.ATLGPerson;
@@ -40,6 +41,7 @@ public class AtlantischeGidsImporter {
   private Map<String, DocumentRef> keywordRefMap;
   private Map<String, DocumentRef> personRefMap;
   private Map<String, DocumentRef> wetgevingRefMap;
+  private Map<String, DocumentRef> archiefmatRefMap;
 
   public AtlantischeGidsImporter(StorageManager manager, String inputDirName) {
     System.out.printf("%n.. Importing from %s%n", inputDirName);
@@ -62,8 +64,8 @@ public class AtlantischeGidsImporter {
     System.out.printf("Number of entries = %d%n", wetgevingRefMap.size());
 
     System.out.printf("%n.. 'archiefmat' -- pass 1%n");
-    Map<String, String> archiefmatIdMap = importArchiefMats();
-    System.out.printf("Number of entries = %d%n", archiefmatIdMap.size());
+    archiefmatRefMap = importArchiefMats();
+    System.out.printf("Number of entries = %d%n", archiefmatRefMap.size());
 
     System.out.printf("%n.. 'creator' -- pass 1%n");
     importCreators();
@@ -78,7 +80,6 @@ public class AtlantischeGidsImporter {
     Map<String, DocumentRef> ids = Maps.newHashMap();
     File file = new File(new File(inputDir, KEYWORD_DIR), KEYWORD_FILE);
     for (XKeyword xkeyword : objectMapper.readValue(file, XKeyword[].class)) {
-      // System.out.println(xkeyword);
       String id = xkeyword._id;
       if (ids.containsKey(id)) {
         System.err.printf("## [%s] Duplicate id %s%n", KEYWORD_FILE, id);
@@ -247,24 +248,82 @@ public class AtlantischeGidsImporter {
 
   private static final String ARCHIEFMAT_DIR = "archiefmat";
 
-  public Map<String, String> importArchiefMats() throws Exception {
-    Map<String, String> ids = Maps.newHashMap();
+  public Map<String, DocumentRef> importArchiefMats() throws Exception {
+    Map<String, DocumentRef> refs = Maps.newHashMap();
     File directory = new File(inputDir, ARCHIEFMAT_DIR);
     for (File file : FileUtils.listFiles(directory, JSON_EXTENSION, true)) {
       for (ArchiefMatEntry entry : objectMapper.readValue(file, ArchiefMatEntry[].class)) {
         ArchiefMat object = entry.archiefmat;
         String id = object._id;
-        if (ids.containsKey(id)) {
+        if (refs.containsKey(id)) {
           System.err.printf("## [%s] Duplicate id %s%n", file.getName(), id);
-        } else if (storageManager == null) {
-          ids.put(id, id);
-        } else {
-          // convert and store
-          ids.put(id, id);
+        } else if (storageManager != null) {
+          ATLGArchive archive = convert(object);
+          storageManager.addDocument(ATLGArchive.class, archive);
+          refs.put(id, DocumentRef.newInstance(ATLGArchive.class, archive));
         }
       }
     }
-    return ids;
+    return refs;
+  }
+
+  public ATLGArchive convert(ArchiefMat archiefmat) {
+    ATLGArchive archive = new ATLGArchive();
+    archive.setOrigFilename(archiefmat.orig_filename);
+    if (archiefmat.countries != null) {
+      for (String country : archiefmat.countries) {
+        archive.addCountry(country);
+      }
+    }
+    archive.setRefCodeArchive(archiefmat.rf_archive);
+    archive.setRefCode(archiefmat.ref_code);
+    archive.setSubCode(archiefmat.code_subfonds);
+    archive.setSeries(archiefmat.series);
+    archive.setItemNo(archiefmat.itemno);
+    archive.setTitleNld(archiefmat.titel);
+    archive.setTitleEng(archiefmat.titel_eng);
+    // ### "Begin date" and "End date"
+    // public Period dates;
+    archive.setPeriodDescription(archiefmat.period_description);
+    archive.setExtent(archiefmat.extent);
+    if (archiefmat.overhead_titles != null) {
+      for (String title : archiefmat.overhead_titles) {
+        archive.addOverheadTitle(title);
+      }
+    }
+    archive.setFindingAid(archiefmat.finding_aid);
+    if (archiefmat.creators != null) {
+      for (String creator : archiefmat.creators) {
+        archive.addCreator(creator);
+      }
+    }
+    archive.setScope(archiefmat.scope);
+    archive.setRelation(archiefmat.relation);
+    archive.setEm(archiefmat.em);
+    if (archiefmat.link_law != null) {
+      archive.setLinkLegislation(wetgevingRefMap.get(archiefmat.link_law));
+    }
+    if (archiefmat.geography != null) {
+      for (String keyword : archiefmat.geography) {
+        archive.addPlaceKeyword(keywordRefMap.get(keyword));
+      }
+    }
+    if (archiefmat.keywords != null) {
+      for (String keyword : archiefmat.keywords) {
+        archive.addSubjectKeyword(keywordRefMap.get(keyword));
+      }
+    }
+    if (archiefmat.persons != null) {
+      for (String keyword : archiefmat.persons) {
+        archive.addPerson(personRefMap.get(keyword));
+      }
+    }
+    archive.setNotes(archiefmat.notes);
+    archive.setMadeBy(archiefmat.made_by);
+    archive.setReminders(archiefmat.Aantekeningen);
+    // "Binnenkomende relaties"
+    // public Related[] related;
+    return archive;
   }
 
   // -------------------------------------------------------------------
