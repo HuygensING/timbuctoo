@@ -174,6 +174,12 @@ public class ATLGLegislation extends Legislation {
     this.persons = persons;
   }
 
+  public void addPerson(DocumentRef person) {
+    if (person != null) {
+      persons.add(person);
+    }
+  }
+
   public String getContents() {
     return contents;
   }
@@ -204,12 +210,6 @@ public class ATLGLegislation extends Legislation {
 
   public void addOtherPublication(String publication) {
     otherPublications.add(publication);
-  }
-
-  public void addPerson(DocumentRef personRef) {
-    if (personRef != null) {
-      persons.add(personRef);
-    }
   }
 
   public String getOriginalArchivalSource() {
