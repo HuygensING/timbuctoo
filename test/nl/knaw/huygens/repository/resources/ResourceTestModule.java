@@ -6,7 +6,9 @@ import static org.mockito.Mockito.reset;
 import javax.validation.Validator;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
+import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.mail.MailSender;
+import nl.knaw.huygens.repository.managers.SearchManager;
 import nl.knaw.huygens.repository.managers.StorageManager;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
@@ -27,6 +29,8 @@ class ResourceTestModule extends JerseyServletModule {
   private MockApisAuthorizationServerResourceFilter mockApisAuthorizationServerResourceFilter;
   private Validator validator;
   private MailSender mailSender;
+  private SearchManager searchManager;
+  private LocalSolrServer localSolrServer;
 
   public ResourceTestModule() {
     storageManager = mock(StorageManager.class);
@@ -35,6 +39,8 @@ class ResourceTestModule extends JerseyServletModule {
     mockApisAuthorizationServerResourceFilter = new MockApisAuthorizationServerResourceFilter();
     validator = mock(Validator.class);
     mailSender = mock(MailSender.class);
+    searchManager = mock(SearchManager.class);
+    localSolrServer = mock(LocalSolrServer.class);
   }
 
   /* Because the RestAutoResourceModule is used in a static way for multiple tests,
@@ -42,7 +48,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(storageManager, documentTypeRegister, jsonProvider, validator, mailSender);
+    reset(storageManager, documentTypeRegister, jsonProvider, validator, mailSender, searchManager, localSolrServer);
   }
 
   @Override
@@ -99,6 +105,17 @@ class ResourceTestModule extends JerseyServletModule {
   @Named(value = "security.enabled")
   public boolean provideSecurityEnabled() {
     return true;
+  }
+
+  @Provides
+  public SearchManager provideSearchManager() {
+    return searchManager;
+  }
+
+  @Provides
+  public LocalSolrServer provideLocalSolrServer() {
+
+    return localSolrServer;
   }
 
 }
