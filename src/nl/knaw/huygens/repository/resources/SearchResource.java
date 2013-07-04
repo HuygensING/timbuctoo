@@ -47,8 +47,8 @@ public class SearchResource {
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   @Produces(MediaType.APPLICATION_JSON)
   @JsonView(JsonViews.WebView.class)
-  public String step1( //
-      @FormParam("type") @DefaultValue("person") String typeString, //
+  public String post( //
+      @FormParam("type") String typeString, //
       @FormParam("q") String q, //
       @FormParam("sort") @DefaultValue("id") String sort //
   ) {
@@ -70,6 +70,7 @@ public class SearchResource {
       SearchResult result = searchManager.search(core, q, sort);
       storageManager.addDocument(SearchResult.class, result);
       String queryId = result.getId();
+      // TODO: return a Response with a header Location. see: http://www.restapitutorial.com/lessons/httpmethods.html
       return String.format("{\"queryId\": \"%s\"}", queryId);
     } catch (Exception e) {
       LOG.warn("POST - {}", e.getMessage());
@@ -81,7 +82,7 @@ public class SearchResource {
   @APIDesc("Returns (paged) search results")
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
-  public List<? extends Document> step2( //
+  public List<? extends Document> get( //
       @QueryParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") int start, //
       @QueryParam("rows") @DefaultValue("10") int rows //
