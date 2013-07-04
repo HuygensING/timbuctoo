@@ -8,14 +8,13 @@ import nl.knaw.huygens.repository.model.Reference;
 import com.google.common.collect.Lists;
 
 public class VariationHelper {
+
   public static List<Reference> createVariationsForType(Class<? extends Document> type, String id, String... variations) {
-    List<Reference> variationReferences = Lists.<Reference> newArrayList();
-
+    List<Reference> references = Lists.newArrayList();
     for (String variation : variations) {
-      variationReferences.add(new Reference(type, id, variation));
+      references.add(new Reference(type, id, variation));
     }
-
-    return variationReferences;
-
+    return references;
   }
+
 }
