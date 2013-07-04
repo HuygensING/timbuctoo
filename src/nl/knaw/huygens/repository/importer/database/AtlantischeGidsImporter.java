@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
+import nl.knaw.huygens.repository.model.DocumentRef;
 import nl.knaw.huygens.repository.model.atlg.ATLGKeyword;
 import nl.knaw.huygens.repository.model.atlg.ATLGLegislation;
 import nl.knaw.huygens.repository.model.atlg.ATLGPerson;
@@ -36,6 +37,9 @@ public class AtlantischeGidsImporter {
   private final StorageManager storageManager;
   private final File inputDir;
 
+  private Map<String, DocumentRef> keywordRefMap;
+  private Map<String, DocumentRef> personRefMap;
+
   public AtlantischeGidsImporter(StorageManager manager, String inputDirName) {
     System.out.printf("%n.. Importing from %s%n", inputDirName);
     objectMapper = new ObjectMapper();
@@ -45,12 +49,12 @@ public class AtlantischeGidsImporter {
 
   public void importAll() throws Exception {
     System.out.printf("%n.. 'keyword'%n");
-    Map<String, String> keywordIdMap = importKeywords();
-    System.out.printf("Number of entries = %d%n", keywordIdMap.size());
+    keywordRefMap = importKeywords();
+    System.out.printf("Number of entries = %d%n", keywordRefMap.size());
 
     System.out.printf("%n.. 'person'%n");
-    Map<String, String> personIdMap = importPersons();
-    System.out.printf("Number of entries = %d%n", personIdMap.size());
+    personRefMap = importPersons();
+    System.out.printf("Number of entries = %d%n", personRefMap.size());
 
     System.out.printf("%n.. 'archiefmat' -- pass 1%n");
     Map<String, String> archiefmatIdMap = importArchiefMats();
@@ -69,44 +73,42 @@ public class AtlantischeGidsImporter {
   private static final String KEYWORD_DIR = "keywords";
   private static final String KEYWORD_FILE = "keywords.json";
 
-  private Map<String, String> importKeywords() throws Exception {
-    Map<String, String> ids = Maps.newHashMap();
+  private Map<String, DocumentRef> importKeywords() throws Exception {
+    Map<String, DocumentRef> ids = Maps.newHashMap();
     File file = new File(new File(inputDir, KEYWORD_DIR), KEYWORD_FILE);
-    for (Keyword keyword : objectMapper.readValue(file, Keyword[].class)) {
-      // System.out.println(keyword);
-      String id = keyword._id;
+    for (XKeyword xkeyword : objectMapper.readValue(file, XKeyword[].class)) {
+      // System.out.println(xkeyword);
+      String id = xkeyword._id;
       if (ids.containsKey(id)) {
         System.err.printf("## [%s] Duplicate id %s%n", KEYWORD_FILE, id);
-      } else if (storageManager == null) {
-        ids.put(id, id);
-      } else {
-        ATLGKeyword atlgKeyword = convert(keyword);
-        storageManager.addDocument(ATLGKeyword.class, atlgKeyword);
-        ids.put(id, atlgKeyword.getId());
+      } else if (storageManager != null) {
+        ATLGKeyword keyword = convert(xkeyword);
+        storageManager.addDocument(ATLGKeyword.class, keyword);
+        ids.put(id, DocumentRef.newInstance(ATLGKeyword.class, keyword));
       }
     }
     return ids;
   }
 
-  private ATLGKeyword convert(Keyword input) {
+  private ATLGKeyword convert(XKeyword xkeyword) {
     ATLGKeyword keyword = new ATLGKeyword();
 
-    String type = input.type;
+    String type = xkeyword.type;
     keyword.setType(type);
 
     if (type == null) {
-      System.err.printf("Missing type");
+      System.err.println("Missing type");
     } else if (type.equals("subject")) {
-      keyword.setValue(input.onderwerp);
+      keyword.setValue(xkeyword.onderwerp);
     } else if (type.equals("geography")) {
-      keyword.setValue(input.onderwerp);
+      keyword.setValue(xkeyword.regionaam);
     } else {
-      System.err.printf("Missing type");
+      System.err.println("Unknown type" + type);
       keyword.setValue("?");
     }
 
-    if (input.label != null) {
-      keyword.setLabel(input.label);
+    if (xkeyword.label != null) {
+      keyword.setLabel(xkeyword.label);
     }
 
     return keyword;
@@ -117,49 +119,47 @@ public class AtlantischeGidsImporter {
   private static final String PERSON_DIR = "keywords";
   private static final String PERSON_FILE = "persons.json";
 
-  private Map<String, String> importPersons() throws Exception {
-    Map<String, String> ids = Maps.newHashMap();
+  private Map<String, DocumentRef> importPersons() throws Exception {
+    Map<String, DocumentRef> refs = Maps.newHashMap();
     File file = new File(new File(inputDir, PERSON_DIR), PERSON_FILE);
-    for (Person person : objectMapper.readValue(file, Person[].class)) {
-      String id = person._id;
-      if (ids.containsKey(id)) {
+    for (XPerson xperson : objectMapper.readValue(file, XPerson[].class)) {
+      String id = xperson._id;
+      if (refs.containsKey(id)) {
         System.err.printf("## [%s] Duplicate id %s%n", PERSON_FILE, id);
-      } else if (storageManager == null) {
-        ids.put(id, id);
-      } else {
-        ATLGPerson atlgPerson = convert(person);
-        storageManager.addDocument(ATLGPerson.class, atlgPerson);
-        ids.put(id, atlgPerson.getId());
+      } else if (storageManager != null) {
+        ATLGPerson person = convert(xperson);
+        storageManager.addDocument(ATLGPerson.class, person);
+        refs.put(id, DocumentRef.newInstance(ATLGPerson.class, person));
       }
     }
-    return ids;
+    return refs;
   }
 
-  private ATLGPerson convert(Person input) {
+  private ATLGPerson convert(XPerson xperson) {
     ATLGPerson person = new ATLGPerson();
 
     PersonName name = new PersonName();
-    if (input.voorl != null) {
-      name.addNameComponent(Type.FORENAME, input.voorl);
+    if (xperson.voorl != null) {
+      name.addNameComponent(Type.FORENAME, xperson.voorl);
     }
-    if (input.tussenv != null) {
-      name.addNameComponent(Type.NAME_LINK, input.tussenv);
+    if (xperson.tussenv != null) {
+      name.addNameComponent(Type.NAME_LINK, xperson.tussenv);
     }
-    if (input.achternaam != null) {
-      name.addNameComponent(Type.SURNAME, input.achternaam);
+    if (xperson.achternaam != null) {
+      name.addNameComponent(Type.SURNAME, xperson.achternaam);
     }
-    if (input.toevoeging != null) {
-      name.addNameComponent(Type.ADD_NAME, input.toevoeging);
+    if (xperson.toevoeging != null) {
+      name.addNameComponent(Type.ADD_NAME, xperson.toevoeging);
     }
     person.setName(name);
 
-    if (input.label != null) {
-      String value = StringUtils.join(input.label, "; ");
+    if (xperson.label != null) {
+      String value = StringUtils.join(xperson.label, "; ");
       person.setLabel(value);
     }
 
-    if (input.verwijzing != null) {
-      String value = StringUtils.join(input.verwijzing, "; ");
+    if (xperson.verwijzing != null) {
+      String value = StringUtils.join(xperson.verwijzing, "; ");
       person.setReference(value);
     }
 
@@ -235,20 +235,46 @@ public class AtlantischeGidsImporter {
     return ids;
   }
 
-  public ATLGLegislation convert(Wetgeving object) {
-    ATLGLegislation document = new ATLGLegislation();
-    document.setTitle(object.titel);
-    document.setOrigFilename(object.orig_filename);
-    document.setReference(object.reference);
-    document.setPages(object.pages);
-    return document;
+  public ATLGLegislation convert(Wetgeving wetgeving) {
+    ATLGLegislation legislation = new ATLGLegislation();
+    legislation.setTitle(wetgeving.titel);
+    legislation.setOrigFilename(wetgeving.orig_filename);
+    legislation.setReference(wetgeving.reference);
+    legislation.setPages(wetgeving.pages);
+    if (wetgeving.geography != null) {
+      for (String keyword : wetgeving.geography) {
+        legislation.addPlaceKeyword(keywordRefMap.get(keyword));
+      }
+    }
+    if (wetgeving.keywords != null) {
+      for (String keyword : wetgeving.keywords) {
+        legislation.addGroupKeyword(keywordRefMap.get(keyword));
+      }
+    }
+    if (wetgeving.keywords_extra != null) {
+      for (String keyword : wetgeving.keywords_extra) {
+        legislation.addOtherKeyword(keywordRefMap.get(keyword));
+      }
+    }
+    if (wetgeving.persons != null) {
+      for (String keyword : wetgeving.persons) {
+        legislation.addPerson(personRefMap.get(keyword));
+      }
+    }
+    legislation.setOriginalArchivalSource(wetgeving.original_archival_source);
+    legislation.setLinkArchivalDBase(wetgeving.link_archival_dbase);
+    legislation.setRemarks(wetgeving.remarks);
+    legislation.setScan(wetgeving.scan);
+    legislation.setPartsToScan(wetgeving.partstoscan);
+    legislation.setMadeBy(wetgeving.made_by);
+    return legislation;
   }
 
   // -------------------------------------------------------------------
   // --- Data model defined in ING Forms -------------------------------
   // -------------------------------------------------------------------
 
-  public static class Keyword {
+  public static class XKeyword {
 
     /** ### Assigned id (admin) */
     public String _id;
@@ -269,7 +295,7 @@ public class AtlantischeGidsImporter {
 
   // -------------------------------------------------------------------
 
-  public static class Person {
+  public static class XPerson {
     public String _id;
     public String type;
     public String voorl;
@@ -447,16 +473,16 @@ public class AtlantischeGidsImporter {
     /** ### Assigned id (admin) */
     public String _id;
 
-    /** ### Name of source file (admin) */
+    /** v ### Name of source file (admin) */
     public String orig_filename;
 
-    /** "Reference" */
+    /** v "Reference" */
     public String reference;
 
-    /** "Pages" */
+    /** v "Pages" */
     public String pages;
 
-    /** "Short title" */
+    /** v "Short title" */
     public String titel;
 
     /** "English title" */
@@ -467,16 +493,16 @@ public class AtlantischeGidsImporter {
     /** ### "Date" and "Date 2" */
     public Dates dates;
 
-    /** "Keyword(s) geography" */
+    /** v "Keyword(s) geography" */
     public String[] geography;
 
-    /** "Keyword(s) Group classification" */
+    /** v "Keyword(s) Group classification" */
     public String[] keywords;
 
-    /** "Keyword(s) other subject" */
+    /** v "Keyword(s) other subject" */
     public String[] keywords_extra;
 
-    /** "Keyword(s) person" */
+    /** v "Keyword(s) person" */
     public String[] persons;
 
     /** "Summary of contents" */
