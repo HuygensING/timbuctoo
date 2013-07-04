@@ -7,19 +7,9 @@ import nl.knaw.huygens.repository.annotations.IDPrefix;
 @DocumentTypeName("legislation")
 public class Legislation extends DomainDocument {
 
-  private String title;
-
   @Override
   public String getDisplayName() {
-    return title;
-  }
-
-  public String getTitle() {
-    return title;
-  }
-
-  public void setTitle(String title) {
-    this.title = title;
+    return String.format("Legislation - %s", getId());
   }
 
 }
