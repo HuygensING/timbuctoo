@@ -29,9 +29,8 @@ public class ReferenceSerializer extends StdSerializer<Reference> {
       sb.append("/");
       sb.append(reference.getVariation());
     }
-    sb.append("\"");
-    sb.append(">");
-    sb.append(reference.getDisplayName());
+    sb.append("\">");
+    sb.append(reference.getLinkName());
     //&#59; is the escape character for ';'
     sb.append("</a>&#59;<br>\n");
 

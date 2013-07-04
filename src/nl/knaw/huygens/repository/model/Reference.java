@@ -6,14 +6,12 @@ import org.apache.commons.lang.StringUtils;
 /**
  * A class that represents a link to other objects.
  * @author martijnm
- *
  */
-
 public class Reference {
-  private String id;
   private Class<? extends Document> type;
-  private String displayName;
+  private String id;
   private String variation;
+  private String linkName;
 
   // default constructor for deserializing.
   public Reference() {}
@@ -22,15 +20,15 @@ public class Reference {
     this.type = type;
     this.id = id;
     this.variation = variation;
-    this.displayName = type.getSimpleName().toLowerCase() + (StringUtils.isBlank(variation) ? "" : " (" + variation + ")");
+    this.linkName = type.getSimpleName().toLowerCase() + (StringUtils.isBlank(variation) ? "" : " (" + variation + ")");
   }
 
-  public String getDisplayName() {
-    return displayName;
+  public String getLinkName() {
+    return linkName;
   }
 
-  public void setDisplayName(String displayName) {
-    this.displayName = displayName;
+  public void setLinkName(String displayName) {
+    this.linkName = displayName;
   }
 
   public Class<? extends Document> getType() {
@@ -65,11 +63,9 @@ public class Reference {
       boolean isEqual = ObjectUtils.equals(id, other.id);
       isEqual &= ObjectUtils.equals(variation, other.variation);
       isEqual &= ObjectUtils.equals(type, other.type);
-
       return isEqual;
     }
-
     return false;
-
   }
+
 }
