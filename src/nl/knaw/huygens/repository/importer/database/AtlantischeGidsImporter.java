@@ -39,6 +39,7 @@ public class AtlantischeGidsImporter {
 
   private Map<String, DocumentRef> keywordRefMap;
   private Map<String, DocumentRef> personRefMap;
+  private Map<String, DocumentRef> wetgevingRefMap;
 
   public AtlantischeGidsImporter(StorageManager manager, String inputDirName) {
     System.out.printf("%n.. Importing from %s%n", inputDirName);
@@ -56,16 +57,16 @@ public class AtlantischeGidsImporter {
     personRefMap = importPersons();
     System.out.printf("Number of entries = %d%n", personRefMap.size());
 
+    System.out.printf("%n.. 'wetgeving'%n");
+    wetgevingRefMap = importWetgevings();
+    System.out.printf("Number of entries = %d%n", wetgevingRefMap.size());
+
     System.out.printf("%n.. 'archiefmat' -- pass 1%n");
     Map<String, String> archiefmatIdMap = importArchiefMats();
     System.out.printf("Number of entries = %d%n", archiefmatIdMap.size());
 
     System.out.printf("%n.. 'creator' -- pass 1%n");
     importCreators();
-
-    System.out.printf("%n.. 'wetgeving' -- pass 1%n");
-    Map<String, String> wetgevingIdMap = importWetgevings();
-    System.out.printf("Number of entries = %d%n", wetgevingIdMap.size());
   }
 
   // -------------------------------------------------------------------
@@ -168,6 +169,82 @@ public class AtlantischeGidsImporter {
 
   // -------------------------------------------------------------------
 
+  private static final String WETGEVING_DIR = "wetgeving";
+
+  public Map<String, DocumentRef> importWetgevings() throws Exception {
+    Map<String, DocumentRef> refs = Maps.newHashMap();
+    File directory = new File(inputDir, WETGEVING_DIR);
+    for (File file : FileUtils.listFiles(directory, JSON_EXTENSION, true)) {
+      for (WetgevingEntry entry : objectMapper.readValue(file, WetgevingEntry[].class)) {
+        Wetgeving wetgeving = entry.wetgeving;
+        // System.out.println(wetgeving);
+        String id = wetgeving._id;
+        if (refs.containsKey(id)) {
+          System.err.printf("## [%s] Duplicate id %s%n", file, id);
+        } else if (storageManager != null) {
+          ATLGLegislation legislation = convert(wetgeving);
+          storageManager.addDocument(ATLGLegislation.class, legislation);
+          refs.put(id, DocumentRef.newInstance(ATLGLegislation.class, legislation));
+        }
+      }
+    }
+    return refs;
+  }
+
+  public ATLGLegislation convert(Wetgeving wetgeving) {
+    ATLGLegislation legislation = new ATLGLegislation();
+    legislation.setOrigFilename(wetgeving.orig_filename);
+    legislation.setReference(wetgeving.reference);
+    legislation.setPages(wetgeving.pages);
+    legislation.setTitleNld(wetgeving.titel);
+    legislation.setTitleEng(wetgeving.titel_eng);
+    if (wetgeving.dates != null) {
+      legislation.setDate1(wetgeving.dates.date1);
+      legislation.setDate2(wetgeving.dates.date2);
+    }
+    if (wetgeving.geography != null) {
+      for (String keyword : wetgeving.geography) {
+        legislation.addPlaceKeyword(keywordRefMap.get(keyword));
+      }
+    }
+    if (wetgeving.keywords != null) {
+      for (String keyword : wetgeving.keywords) {
+        legislation.addGroupKeyword(keywordRefMap.get(keyword));
+      }
+    }
+    if (wetgeving.keywords_extra != null) {
+      for (String keyword : wetgeving.keywords_extra) {
+        legislation.addOtherKeyword(keywordRefMap.get(keyword));
+      }
+    }
+    if (wetgeving.persons != null) {
+      for (String keyword : wetgeving.persons) {
+        legislation.addPerson(personRefMap.get(keyword));
+      }
+    }
+    legislation.setContents(wetgeving.contents);
+    if (wetgeving.see_also != null) {
+      for (SeeAlso item : wetgeving.see_also) {
+        legislation.addSeeAlso(item.toString());
+      }
+    }
+    if (wetgeving.other_publication != null) {
+      for (String publication : wetgeving.other_publication) {
+        legislation.addOtherPublication(publication);
+      }
+    }
+    legislation.setOriginalArchivalSource(wetgeving.original_archival_source);
+    legislation.setLinkArchivalDBase(wetgeving.link_archival_dbase);
+    legislation.setRemarks(wetgeving.remarks);
+    legislation.setScan(wetgeving.scan);
+    legislation.setPartsToScan(wetgeving.partstoscan);
+    legislation.setMadeBy(wetgeving.made_by);
+    legislation.setReminders(wetgeving.Aantekeningen);
+    return legislation;
+  }
+
+  // -------------------------------------------------------------------
+
   private static final String ARCHIEFMAT_DIR = "archiefmat";
 
   public Map<String, String> importArchiefMats() throws Exception {
@@ -211,71 +288,10 @@ public class AtlantischeGidsImporter {
   }
 
   // -------------------------------------------------------------------
-
-  private static final String WETGEVING_DIR = "wetgeving";
-
-  public Map<String, String> importWetgevings() throws Exception {
-    Map<String, String> ids = Maps.newHashMap();
-    File directory = new File(inputDir, WETGEVING_DIR);
-    for (File file : FileUtils.listFiles(directory, JSON_EXTENSION, true)) {
-      for (WetgevingEntry entry : objectMapper.readValue(file, WetgevingEntry[].class)) {
-        Wetgeving object = entry.wetgeving;
-        String id = object._id;
-        if (ids.containsKey(id)) {
-          System.err.printf("## [%s] Duplicate id %s%n", file, id);
-        } else if (storageManager == null) {
-          ids.put(id, id);
-        } else {
-          ATLGLegislation document = convert(object);
-          storageManager.addDocument(ATLGLegislation.class, document);
-          ids.put(id, document.getId());
-        }
-      }
-    }
-    return ids;
-  }
-
-  public ATLGLegislation convert(Wetgeving wetgeving) {
-    ATLGLegislation legislation = new ATLGLegislation();
-    legislation.setTitle(wetgeving.titel);
-    legislation.setOrigFilename(wetgeving.orig_filename);
-    legislation.setReference(wetgeving.reference);
-    legislation.setPages(wetgeving.pages);
-    if (wetgeving.geography != null) {
-      for (String keyword : wetgeving.geography) {
-        legislation.addPlaceKeyword(keywordRefMap.get(keyword));
-      }
-    }
-    if (wetgeving.keywords != null) {
-      for (String keyword : wetgeving.keywords) {
-        legislation.addGroupKeyword(keywordRefMap.get(keyword));
-      }
-    }
-    if (wetgeving.keywords_extra != null) {
-      for (String keyword : wetgeving.keywords_extra) {
-        legislation.addOtherKeyword(keywordRefMap.get(keyword));
-      }
-    }
-    if (wetgeving.persons != null) {
-      for (String keyword : wetgeving.persons) {
-        legislation.addPerson(personRefMap.get(keyword));
-      }
-    }
-    legislation.setOriginalArchivalSource(wetgeving.original_archival_source);
-    legislation.setLinkArchivalDBase(wetgeving.link_archival_dbase);
-    legislation.setRemarks(wetgeving.remarks);
-    legislation.setScan(wetgeving.scan);
-    legislation.setPartsToScan(wetgeving.partstoscan);
-    legislation.setMadeBy(wetgeving.made_by);
-    return legislation;
-  }
-
-  // -------------------------------------------------------------------
   // --- Data model defined in ING Forms -------------------------------
   // -------------------------------------------------------------------
 
   public static class XKeyword {
-
     /** ### Assigned id (admin) */
     public String _id;
 
@@ -296,20 +312,105 @@ public class AtlantischeGidsImporter {
   // -------------------------------------------------------------------
 
   public static class XPerson {
+    /** ### Assigned id (admin) */
     public String _id;
+
     public String type;
+
     public String voorl;
+
     public String tussenv;
+
     public String achternaam;
+
     public String toevoeging;
+
     public String[] verwijzing;
+
     public String[] label;
   }
 
   // -------------------------------------------------------------------
 
-  public static class ArchiefMat {
+  // TODO remove markup - various items contain paragraph tags
+  public static class Wetgeving {
+    /** ### Assigned id (admin) */
+    public String _id;
 
+    /** ### Name of source file (admin) */
+    public String orig_filename;
+
+    /** "Reference" */
+    public String reference;
+
+    /** "Pages" */
+    public String pages;
+
+    /** "Short title" */
+    public String titel;
+
+    /** "English title" */
+    public String titel_eng;
+
+    // TODO Provide more meaningful names
+    /** "Date" and "Date 2" */
+    public Dates dates;
+
+    /** "Keyword(s) geography" */
+    public String[] geography;
+
+    /** "Keyword(s) Group classification" */
+    public String[] keywords;
+
+    /** "Keyword(s) other subject" */
+    public String[] keywords_extra;
+
+    /** "Keyword(s) person" */
+    public String[] persons;
+
+    /** "Summary of contents" */
+    public String contents;
+
+    /** "See also" */
+    public SeeAlso[] see_also;
+
+    /** "Earlier/later publications" */
+    public String[] other_publication;
+
+    /** "Original archival source" */
+    public String original_archival_source;
+
+    /** "Link archival database" */
+    public String link_archival_dbase;
+
+    /** "Remarks" */
+    public String remarks;
+
+    /** "Scan" */
+    public String scan;
+
+    /** "Parts to scan" */
+    public String partstoscan;
+
+    /** "Record made by-" */
+    public String made_by;
+
+    // TODO Check: correct identification
+    /** "Reminders" */
+    public String Aantekeningen;
+
+    // TODO Check: never used
+    /** "Binnenkomende relaties" */
+    public Related[] related;
+  }
+
+  public static class WetgevingEntry {
+    public Wetgeving wetgeving;
+  }
+
+  // -------------------------------------------------------------------
+
+  public static class ArchiefMat {
     /** ### Assigned id (admin) */
     public String _id;
 
@@ -399,7 +500,6 @@ public class AtlantischeGidsImporter {
   // -------------------------------------------------------------------
 
   public static class Creator {
-
     /** ### Assigned id (admin) */
     public String _id;
 
@@ -464,87 +564,6 @@ public class AtlantischeGidsImporter {
 
   // -------------------------------------------------------------------
 
-  /**
-   * Data model defined in ING Forms.
-   * Modifications are marked by "###".
-   */
-  public static class Wetgeving {
-
-    /** ### Assigned id (admin) */
-    public String _id;
-
-    /** v ### Name of source file (admin) */
-    public String orig_filename;
-
-    /** v "Reference" */
-    public String reference;
-
-    /** v "Pages" */
-    public String pages;
-
-    /** v "Short title" */
-    public String titel;
-
-    /** "English title" */
-    public String titel_eng;
-
-    /** ### "Type of document" (missing)*/
-
-    /** ### "Date" and "Date 2" */
-    public Dates dates;
-
-    /** v "Keyword(s) geography" */
-    public String[] geography;
-
-    /** v "Keyword(s) Group classification" */
-    public String[] keywords;
-
-    /** v "Keyword(s) other subject" */
-    public String[] keywords_extra;
-
-    /** v "Keyword(s) person" */
-    public String[] persons;
-
-    /** "Summary of contents" */
-    public String contents;
-
-    /** "See also" */
-    public SeeAlso[] see_also;
-
-    /** "Earlier/later publications" */
-    public String[] other_publication;
-
-    /** "Original archival source" */
-    public String original_archival_source;
-
-    /** "Link archival database" */
-    public String link_archival_dbase;
-
-    /** "Remarks" */
-    public String remarks;
-
-    /** "Scan" */
-    public String scan;
-
-    /** "Parts to scan" */
-    public String partstoscan;
-
-    /** "Record made by-" */
-    public String made_by;
-
-    /** ### "Reminders" ??? */
-    public String Aantekeningen;
-
-    /** "Binnenkomende relaties" */
-    public Related[] related;
-  }
-
-  public static class WetgevingEntry {
-    public Wetgeving wetgeving;
-  }
-
-  // -------------------------------------------------------------------
-
   public static class Dates {
     public String date1;
     public String date2;
@@ -558,11 +577,21 @@ public class AtlantischeGidsImporter {
   public static class Related {
     public String type;
     public String[] ids;
+
+    @Override
+    public String toString() {
+      return String.format("%s: %s", type, StringUtils.join(ids, " ##"));
+    }
   }
 
   public static class SeeAlso {
     public String ref_id;
     public String text_line;
+
+    @Override
+    public String toString() {
+      return (ref_id == null) ? text_line : String.format("%s: %s", ref_id, text_line);
+    }
   }
 
 }

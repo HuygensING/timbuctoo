@@ -11,25 +11,61 @@ import com.google.common.collect.Lists;
 @DocumentTypeName("atlglegislation")
 public class ATLGLegislation extends Legislation {
 
+  /** Migration: Name of source file */
   private String origFilename;
+  /** ING Forms: "Reference" */
   private String reference;
+  /** ING Forms: "Pages" */
   private String pages;
+  /** ING Forms: "Short title" */
+  private String titleNld;
+  /** ING Forms: "English title" */
+  private String titleEng;
+  /** ING Forms: "Date" */
+  private String date1;
+  /** ING Forms: "Date 2" */
+  private String date2;
+  /** ING Forms: "Keyword(s) geography" */
   private List<DocumentRef> placeKeywords;
+  /** ING Forms: "Keyword(s) Group classification" */
   private List<DocumentRef> groupKeywords;
+  /** ING Forms: "Keyword(s) other subject" */
   private List<DocumentRef> otherKeywords;
+  /** ING Forms: "Keyword(s) person" */
   private List<DocumentRef> persons;
+  /** ING Forms: "Summary of contents" */
+  private String contents;
+  /** ING Forms: "See also" */
+  private List<String> seeAlso;
+  /** ING Forms: "Earlier/later publications" */
+  private List<String> otherPublications;
+  /** ING Forms: "Original archival source" */
   private String originalArchivalSource;
+  /** ING Forms: "Link archival database" */
   private String linkArchivalDBase;
+  /** ING Forms: "Remarks" */
   private String remarks;
+  /** ING Forms: "Scan" */
   private String scan;
+  /** ING Forms: "Parts to scan" */
   private String partsToScan;
+  /** ING Forms: "Record made by-" */
   private String madeBy;
+  /** ING Forms: "Reminders" */
+  private String reminders;
 
   public ATLGLegislation() {
     placeKeywords = Lists.newArrayList();
     groupKeywords = Lists.newArrayList();
     otherKeywords = Lists.newArrayList();
     persons = Lists.newArrayList();
+    seeAlso = Lists.newArrayList();
+    otherPublications = Lists.newArrayList();
+  }
+
+  @Override
+  public String getDisplayName() {
+    return getTitleNld();
   }
 
   public String getOrigFilename() {
@@ -54,6 +90,38 @@ public class ATLGLegislation extends Legislation {
 
   public void setPages(String pages) {
     this.pages = pages;
+  }
+
+  public String getTitleNld() {
+    return titleNld;
+  }
+
+  public void setTitleNld(String title) {
+    this.titleNld = title;
+  }
+
+  public String getTitleEng() {
+    return titleEng;
+  }
+
+  public void setTitleEng(String title) {
+    this.titleEng = title;
+  }
+
+  public String getDate1() {
+    return date1;
+  }
+
+  public void setDate1(String date1) {
+    this.date1 = date1;
+  }
+
+  public String getDate2() {
+    return date2;
+  }
+
+  public void setDate2(String date2) {
+    this.date2 = date2;
   }
 
   public List<DocumentRef> getPlaceKeywords() {
@@ -104,6 +172,38 @@ public class ATLGLegislation extends Legislation {
 
   public void setPersons(List<DocumentRef> persons) {
     this.persons = persons;
+  }
+
+  public String getContents() {
+    return contents;
+  }
+
+  public void setContents(String contents) {
+    this.contents = contents;
+  }
+
+  public List<String> getSeeAlso() {
+    return seeAlso;
+  }
+
+  public void setSeeAlsos(List<String> seeAlso) {
+    this.seeAlso = seeAlso;
+  }
+
+  public void addSeeAlso(String text) {
+    seeAlso.add(text);
+  }
+
+  public List<String> getOtherPublications() {
+    return otherPublications;
+  }
+
+  public void setOtherPublications(List<String> publications) {
+    otherPublications = publications;
+  }
+
+  public void addOtherPublication(String publication) {
+    otherPublications.add(publication);
   }
 
   public void addPerson(DocumentRef personRef) {
@@ -158,6 +258,14 @@ public class ATLGLegislation extends Legislation {
 
   public void setMadeBy(String madeBy) {
     this.madeBy = madeBy;
+  }
+
+  public String getReminders() {
+    return reminders;
+  }
+
+  public void setReminders(String reminders) {
+    this.reminders = reminders;
   }
 
 }
