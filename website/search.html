@@ -67,8 +67,8 @@
     jQuery.ajax({
       url: searchUrl,
       type: 'POST',
-      data: {'type': 'person', 'q': query, 'sort': 'id'},
-      contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+      data: JSON.stringify({'typeString': 'person', 'term': query, 'sort': 'id'}),
+      contentType: 'application/json; charset=utf-8',
       complete: function (xhr) {
         var queryURL = xhr.getResponseHeader('Location') || 'None';
         $('#searchid').val(queryURL);

@@ -21,6 +21,7 @@ import nl.knaw.huygens.repository.managers.SearchManager;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
+import nl.knaw.huygens.solr.FacetedSearchParameters;
 
 import org.apache.solr.client.solrj.SolrServerException;
 import org.junit.Ignore;
@@ -46,21 +47,18 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     setupSearchManager(searchResult);
 
-    MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-    formData.add("type", typeString);
-    formData.add("q", "facet_t_name:Huygens");
-    formData.add("sort", "id");
+    FacetedSearchParameters searchParameters = createSearchParameters(typeString, id, "facet_t_name:Huygens");
 
     WebResource resource = super.resource();
     String expected = String.format("%ssearch/%s", resource.getURI().toString(), id);
-    ClientResponse response = resource.path("search").type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(ClientResponse.class, formData);
+    ClientResponse response = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
     String actual = response.getHeaders().getFirst(LOCATION_HEADER);
-
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
-    verify(storageManager).addDocument(SearchResult.class, searchResult);
 
     assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
     assertEquals(expected, actual);
+
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    verify(storageManager).addDocument(SearchResult.class, searchResult);
   }
 
   @Test
@@ -71,13 +69,11 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     setupSearchManager(searchResult);
 
-    MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-    formData.add("type", typeString);
-    formData.add("q", "facet_t_name:Huygens");
+    FacetedSearchParameters searchParameters = createSearchParameters(typeString, null, "facet_t_name:Huygens");
 
     WebResource resource = super.resource();
     String expected = String.format("%ssearch/%s", resource.getURI().toString(), id);
-    ClientResponse response = resource.path("search").type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(ClientResponse.class, formData);
+    ClientResponse response = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
     String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -93,12 +89,10 @@ public class SearchResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
-    MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-    formData.add("type", "unknowntype");
-    formData.add("q", "facet_t_name:Huygens");
+    FacetedSearchParameters searchParameters = createSearchParameters("unknownType", null, "facet_t_name:Huygens");
 
     WebResource resource = super.resource();
-    ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(ClientResponse.class, formData);
+    ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addDocument(any(Class.class), any(SearchResult.class));
     verify(searchManager, never()).search(anyString(), anyString(), anyString());
@@ -112,11 +106,10 @@ public class SearchResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
-    MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-    formData.add("q", "facet_t_name:Huygens");
+    FacetedSearchParameters searchParameters = createSearchParameters(null, null, "facet_t_name:Huygens");
 
     WebResource resource = super.resource();
-    ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(ClientResponse.class, formData);
+    ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addDocument(any(Class.class), any(SearchResult.class));
     verify(searchManager, never()).search(anyString(), anyString(), anyString());
@@ -130,11 +123,10 @@ public class SearchResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
-    MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-    formData.add("type", "unknowntype");
+    FacetedSearchParameters searchParameters = createSearchParameters(typeString, null, null);
 
     WebResource resource = super.resource();
-    ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(ClientResponse.class, formData);
+    ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addDocument(any(Class.class), any(SearchResult.class));
     verify(searchManager, never()).search(anyString(), anyString(), anyString());
@@ -262,7 +254,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   private void setupSearchManager(SearchResult searchResult) throws SolrServerException {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    when(searchManager.search(anyString(), anyString(), anyString())).thenReturn(searchResult);
+    when(searchManager.search(anyString(), any(FacetedSearchParameters.class))).thenReturn(searchResult);
   }
 
   private void setupDocTypeRegistry() {
@@ -274,6 +266,14 @@ public class SearchResourceTest extends WebServiceTestSetup {
     SearchResult searchResult = mock(SearchResult.class);
     when(searchResult.getId()).thenReturn(id);
     return searchResult;
+  }
+
+  private FacetedSearchParameters createSearchParameters(String typeString, String sort, String term) {
+    FacetedSearchParameters searchParameters = new FacetedSearchParameters();
+    searchParameters.setTypeString(typeString);
+    searchParameters.setSort(sort);
+    searchParameters.setTerm(term);
+    return searchParameters;
   }
 
 }

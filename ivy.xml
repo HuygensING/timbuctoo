@@ -53,6 +53,7 @@
       <exclude org="commons-digester" />
       <exclude org="commons-logging" />
       <exclude org="javax.servlet" />
+      <exclude org="org.restlet.jee" />
     </dependency>
     <dependency org="org.apache.solr" name="solr-solrj" rev="${solr.version}" conf="main->default" >
       <exclude org="org.slf4j" />

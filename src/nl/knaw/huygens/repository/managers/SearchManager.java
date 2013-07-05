@@ -6,6 +6,7 @@ import java.util.List;
 
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.model.SearchResult;
+import nl.knaw.huygens.solr.FacetedSearchParameters;
 
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
@@ -24,6 +25,18 @@ public class SearchManager {
   @Inject
   public SearchManager(LocalSolrServer server) {
     this.server = server;
+  }
+
+  public SearchResult search(String core, FacetedSearchParameters searchParameters) throws SolrServerException {
+    SolrDocumentList documents = server.getQueryResponse(searchParameters.getTerm(), getFacetFieldNames(), searchParameters.getSort(), core).getResults();
+
+    List<String> ids = Lists.newArrayList();
+
+    for (SolrDocument document : documents) {
+      ids.add(document.getFieldValue("id").toString());
+    }
+
+    return new SearchResult(ids, core, searchParameters.getTerm(), searchParameters.getSort(), new Date().toString());
   }
 
   public SearchResult search(String core, String q, String sort) throws SolrServerException {
