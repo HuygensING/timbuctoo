@@ -13,6 +13,7 @@ import nl.knaw.huygens.repository.util.Paths;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
@@ -135,7 +136,7 @@ public class LocalSolrServer {
     query.setFacetMinCount(0);
     query.setFacetLimit(FACET_LIMIT);
     query.setFilterQueries("!cache=false");
-    query.setSortField(sort, SolrQuery.ORDER.asc);
+    query.setSort(new SortClause(sort, SolrQuery.ORDER.asc));
     LOG.info("{}", query);
     return serverFor(core).query(query);
   }
