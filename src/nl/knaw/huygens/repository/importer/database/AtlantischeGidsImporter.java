@@ -225,7 +225,7 @@ public class AtlantischeGidsImporter {
     }
     legislation.setContents(wetgeving.contents);
     if (wetgeving.see_also != null) {
-      for (SeeAlso item : wetgeving.see_also) {
+      for (XSeeAlso item : wetgeving.see_also) {
         legislation.addSeeAlso(item.toString());
       }
     }
@@ -255,6 +255,7 @@ public class AtlantischeGidsImporter {
       for (ArchiefMatEntry entry : objectMapper.readValue(file, ArchiefMatEntry[].class)) {
         ArchiefMat object = entry.archiefmat;
         String id = object._id;
+        System.out.println(object);
         if (refs.containsKey(id)) {
           System.err.printf("## [%s] Duplicate id %s%n", file.getName(), id);
         } else if (storageManager != null) {
@@ -282,8 +283,10 @@ public class AtlantischeGidsImporter {
     archive.setItemNo(archiefmat.itemno);
     archive.setTitleNld(archiefmat.titel);
     archive.setTitleEng(archiefmat.titel_eng);
-    // ### "Begin date" and "End date"
-    // public Period dates;
+    if (archiefmat.dates != null) {
+      archive.setBeginDate(archiefmat.dates.begin_date);
+      archive.setEndDate(archiefmat.dates.end_date);
+    }
     archive.setPeriodDescription(archiefmat.period_description);
     archive.setExtent(archiefmat.extent);
     if (archiefmat.overhead_titles != null) {
@@ -413,7 +416,7 @@ public class AtlantischeGidsImporter {
 
     // TODO Provide more meaningful names
     /** "Date" and "Date 2" */
-    public Dates dates;
+    public XDates dates;
 
     /** "Keyword(s) geography" */
     public String[] geography;
@@ -431,7 +434,7 @@ public class AtlantischeGidsImporter {
     public String contents;
 
     /** "See also" */
-    public SeeAlso[] see_also;
+    public XSeeAlso[] see_also;
 
     /** "Earlier/later publications" */
     public String[] other_publication;
@@ -460,7 +463,7 @@ public class AtlantischeGidsImporter {
 
     // TODO Check: never used
     /** "Binnenkomende relaties" */
-    public Related[] related;
+    public XRelated[] related;
   }
 
   public static class WetgevingEntry {
@@ -501,7 +504,7 @@ public class AtlantischeGidsImporter {
     public String titel_eng;
 
     /** ### "Begin date" and "End date" */
-    public Period dates;
+    public XPeriod dates;
 
     /** "Period description" */
     public String period_description;
@@ -527,6 +530,7 @@ public class AtlantischeGidsImporter {
     /** "Other related units of description" ??? */
     public String em;
 
+    // TODO Check: seems to be unsued
     /** "Link legislation" */
     public String link_law;
 
@@ -549,7 +553,19 @@ public class AtlantischeGidsImporter {
     public String Aantekeningen;
 
     /** "Binnenkomende relaties" ??? */
-    public Related[] related;
+    public XRelated[] related;
+
+    @Override
+    public String toString() {
+      StringBuilder builder = new StringBuilder();
+      builder.append(_id);
+      if (related != null) {
+        for (XRelated entry : related) {
+          builder.append(" ").append(entry.type);
+        }
+      }
+      return builder.toString();
+    }
   }
 
   public static class ArchiefMatEntry {
@@ -572,7 +588,7 @@ public class AtlantischeGidsImporter {
     public String name_english;
 
     /** ### "Begin date" and "End date" */
-    public Period dates;
+    public XPeriod dates;
 
     /** "Period description" */
     public String period_description;
@@ -611,7 +627,7 @@ public class AtlantischeGidsImporter {
     public String Aantekeningen;
 
     /** "Binnenkomende relaties" */
-    public Related[] related;
+    public XRelated[] related;
 
     /** ??? ("person", "family") */
     public String[] types;
@@ -623,17 +639,17 @@ public class AtlantischeGidsImporter {
 
   // -------------------------------------------------------------------
 
-  public static class Dates {
+  public static class XDates {
     public String date1;
     public String date2;
   }
 
-  public static class Period {
+  public static class XPeriod {
     public String begin_date;
     public String end_date;
   }
 
-  public static class Related {
+  public static class XRelated {
     public String type;
     public String[] ids;
 
@@ -643,7 +659,7 @@ public class AtlantischeGidsImporter {
     }
   }
 
-  public static class SeeAlso {
+  public static class XSeeAlso {
     public String ref_id;
     public String text_line;
 

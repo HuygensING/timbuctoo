@@ -3,8 +3,7 @@ package nl.knaw.huygens.repository.model.atlg;
 import java.util.List;
 
 import nl.knaw.huygens.repository.annotations.DocumentTypeName;
-import nl.knaw.huygens.repository.importer.database.AtlantischeGidsImporter.Period;
-import nl.knaw.huygens.repository.importer.database.AtlantischeGidsImporter.Related;
+import nl.knaw.huygens.repository.importer.database.AtlantischeGidsImporter.XRelated;
 import nl.knaw.huygens.repository.model.Archive;
 import nl.knaw.huygens.repository.model.DocumentRef;
 
@@ -31,8 +30,10 @@ public class ATLGArchive extends Archive {
   private String titleNld;
   /** ING Forms: "English title" */
   private String titleEng;
-  /** ING Forms: "Begin date" and "End date" */
-  private Period period;
+  /** ING Forms: "Begin date" */
+  private String beginDate;
+  /** ING Forms: "End date" */
+  private String endDate;
   /** ING Forms: "Period description" */
   private String periodDescription;
   /** ING Forms: "Extent" */
@@ -64,7 +65,7 @@ public class ATLGArchive extends Archive {
   /** ING Forms: "Reminders" ??? */
   private String reminders;
   /** ING Forms: "Binnenkomende relaties" ??? */
-  private List<Related> related;
+  private List<XRelated> related;
 
   public ATLGArchive() {
     countries = Lists.newArrayList();
@@ -157,12 +158,20 @@ public class ATLGArchive extends Archive {
     titleEng = title;
   }
 
-  public Period getPeriod() {
-    return period;
+  public String getBeginDate() {
+    return beginDate;
   }
 
-  public void setPeriod(Period period) {
-    this.period = period;
+  public void setBeginDate(String date) {
+    beginDate = date;
+  }
+
+  public String getEndDate() {
+    return endDate;
+  }
+
+  public void setEndDate(String date) {
+    endDate = date;
   }
 
   public String getPeriodDescription() {
@@ -311,15 +320,15 @@ public class ATLGArchive extends Archive {
     this.reminders = reminders;
   }
 
-  public List<Related> getRelated() {
+  public List<XRelated> getRelated() {
     return related;
   }
 
-  public void setRelated(List<Related> related) {
+  public void setRelated(List<XRelated> related) {
     this.related = related;
   }
 
-  public void addRelated(Related item) {
+  public void addRelated(XRelated item) {
     related.add(item);
   }
 
