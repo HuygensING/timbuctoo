@@ -3,11 +3,11 @@ package nl.knaw.huygens.repository.importer.database;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.DocumentRef;
 import nl.knaw.huygens.repository.model.atlg.ATLGArchive;
+import nl.knaw.huygens.repository.model.atlg.ATLGArchiver;
 import nl.knaw.huygens.repository.model.atlg.ATLGKeyword;
 import nl.knaw.huygens.repository.model.atlg.ATLGLegislation;
 import nl.knaw.huygens.repository.model.atlg.ATLGPerson;
@@ -21,7 +21,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public class AtlantischeGidsImporter {
 
@@ -42,6 +41,7 @@ public class AtlantischeGidsImporter {
   private Map<String, DocumentRef> personRefMap;
   private Map<String, DocumentRef> wetgevingRefMap;
   private Map<String, DocumentRef> archiefmatRefMap;
+  private Map<String, DocumentRef> creatormatRefMap;
 
   public AtlantischeGidsImporter(StorageManager manager, String inputDirName) {
     System.out.printf("%n.. Importing from %s%n", inputDirName);
@@ -68,7 +68,8 @@ public class AtlantischeGidsImporter {
     System.out.printf("Number of entries = %d%n", archiefmatRefMap.size());
 
     System.out.printf("%n.. 'creator' -- pass 1%n");
-    importCreators();
+    creatormatRefMap = importCreators();
+    System.out.printf("Number of entries = %d%n", creatormatRefMap.size());
   }
 
   // -------------------------------------------------------------------
@@ -77,19 +78,19 @@ public class AtlantischeGidsImporter {
   private static final String KEYWORD_FILE = "keywords.json";
 
   private Map<String, DocumentRef> importKeywords() throws Exception {
-    Map<String, DocumentRef> ids = Maps.newHashMap();
+    Map<String, DocumentRef> refs = Maps.newHashMap();
     File file = new File(new File(inputDir, KEYWORD_DIR), KEYWORD_FILE);
     for (XKeyword xkeyword : objectMapper.readValue(file, XKeyword[].class)) {
       String id = xkeyword._id;
-      if (ids.containsKey(id)) {
+      if (refs.containsKey(id)) {
         System.err.printf("## [%s] Duplicate id %s%n", KEYWORD_FILE, id);
       } else if (storageManager != null) {
         ATLGKeyword keyword = convert(xkeyword);
         storageManager.addDocument(ATLGKeyword.class, keyword);
-        ids.put(id, DocumentRef.newInstance(ATLGKeyword.class, keyword));
+        refs.put(id, DocumentRef.newInstance(ATLGKeyword.class, keyword));
       }
     }
-    return ids;
+    return refs;
   }
 
   private ATLGKeyword convert(XKeyword xkeyword) {
@@ -178,7 +179,6 @@ public class AtlantischeGidsImporter {
     for (File file : FileUtils.listFiles(directory, JSON_EXTENSION, true)) {
       for (WetgevingEntry entry : objectMapper.readValue(file, WetgevingEntry[].class)) {
         Wetgeving wetgeving = entry.wetgeving;
-        // System.out.println(wetgeving);
         String id = wetgeving._id;
         if (refs.containsKey(id)) {
           System.err.printf("## [%s] Duplicate id %s%n", file, id);
@@ -255,7 +255,6 @@ public class AtlantischeGidsImporter {
       for (ArchiefMatEntry entry : objectMapper.readValue(file, ArchiefMatEntry[].class)) {
         ArchiefMat object = entry.archiefmat;
         String id = object._id;
-        System.out.println(object);
         if (refs.containsKey(id)) {
           System.err.printf("## [%s] Duplicate id %s%n", file.getName(), id);
         } else if (storageManager != null) {
@@ -304,7 +303,7 @@ public class AtlantischeGidsImporter {
     archive.setRelation(archiefmat.relation);
     archive.setEm(archiefmat.em);
     if (archiefmat.link_law != null) {
-      archive.setLinkLegislation(wetgevingRefMap.get(archiefmat.link_law));
+      System.err.println("Ignoring 'link_law' " + archiefmat.link_law);
     }
     if (archiefmat.geography != null) {
       for (String keyword : archiefmat.geography) {
@@ -331,22 +330,31 @@ public class AtlantischeGidsImporter {
 
   // -------------------------------------------------------------------
 
-  public void importCreators() throws JsonParseException, JsonMappingException, IOException {
-    Set<String> ids = Sets.newTreeSet();
-    File directory = new File(inputDir, "creators");
+  private static final String CREATORS_DIR = "creators";
+
+  public Map<String, DocumentRef> importCreators() throws JsonParseException, JsonMappingException, IOException {
+    Map<String, DocumentRef> refs = Maps.newHashMap();
+    File directory = new File(inputDir, CREATORS_DIR);
     for (File file : FileUtils.listFiles(directory, JSON_EXTENSION, true)) {
-      System.out.println(file.getName());
       CreatorEntry[] entries = objectMapper.readValue(file, CreatorEntry[].class);
       for (CreatorEntry entry : entries) {
-        Creator object = entry.creator;
-        if (ids.contains(object._id)) {
-          System.err.println("duplicate id " + object._id);
-        } else {
-          ids.add(object._id);
+        Creator creator = entry.creator;
+        String id = creator._id;
+        if (refs.containsKey(id)) {
+          System.err.println("duplicate id " + id);
+        } else if (storageManager != null) {
+          ATLGArchiver archiver = convert(creator);
+          storageManager.addDocument(ATLGArchiver.class, archiver);
+          refs.put(id, DocumentRef.newInstance(ATLGArchiver.class, archiver));
         }
       }
     }
-    System.out.println("Number of entries = " + ids.size());
+    return refs;
+  }
+
+  private ATLGArchiver convert(Creator creator) {
+    ATLGArchiver archiver = new ATLGArchiver();
+    return archiver;
   }
 
   // -------------------------------------------------------------------
@@ -503,7 +511,7 @@ public class AtlantischeGidsImporter {
     /** "English title" */
     public String titel_eng;
 
-    /** ### "Begin date" and "End date" */
+    /** "Begin date" and "End date" */
     public XPeriod dates;
 
     /** "Period description" */
@@ -530,8 +538,7 @@ public class AtlantischeGidsImporter {
     /** "Other related units of description" ??? */
     public String em;
 
-    // TODO Check: seems to be unsued
-    /** "Link legislation" */
+    /** "Link legislation" ### should be unused, we'll ignore it */
     public String link_law;
 
     /** "Keyword(s) geography" */
@@ -602,7 +609,7 @@ public class AtlantischeGidsImporter {
     /** "Title(s) related creator(s)" */
     public String[] related_creators;
 
-    /** "Link legislation" */
+    /** "Link legislation" ### should be unused, we'll ignore it */
     public String link_law;
 
     /** "Keyword(s) geography" */
