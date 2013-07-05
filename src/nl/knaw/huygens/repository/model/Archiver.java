@@ -3,13 +3,13 @@ package nl.knaw.huygens.repository.model;
 import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.annotations.IDPrefix;
 
-@IDPrefix("AVE")
-@DocumentTypeName("archive")
-public class Archive extends DomainDocument {
+@IDPrefix("AVR")
+@DocumentTypeName("archiver")
+public class Archiver extends DomainDocument {
 
   @Override
   public String getDisplayName() {
-    return String.format("Archive - %s", getId());
+    return String.format("Archiver - %s", getId());
   }
 
 }
