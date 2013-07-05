@@ -50,8 +50,6 @@ public class ATLGArchive extends Archive {
   private String relation;
   /** ING Forms: "Other related units of description" ??? */
   private String em;
-  /** ING Forms: "Link legislation" */
-  private DocumentRef linkLegislation;
   /** ING Forms: "Keyword(s) geography" */
   private List<DocumentRef> placeKeywords;
   /** ING Forms: "Keyword(s) subject" */
@@ -244,14 +242,6 @@ public class ATLGArchive extends Archive {
 
   public void setEm(String em) {
     this.em = em;
-  }
-
-  public DocumentRef getLinkLegislation() {
-    return linkLegislation;
-  }
-
-  public void setLinkLegislation(DocumentRef link) {
-    linkLegislation = link;
   }
 
   public List<DocumentRef> getPlaceKeywords() {
