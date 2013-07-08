@@ -2,6 +2,7 @@ package nl.knaw.huygens.repository.resources;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
 @Path("search")
@@ -80,7 +82,7 @@ public class SearchResource {
   @APIDesc("Returns (paged) search results")
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
-  public List<? extends Document> get( //
+  public Map<String, Object> get( //
       @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") int start, //
       @QueryParam("rows") @DefaultValue("10") int rows //
@@ -102,7 +104,17 @@ public class SearchResource {
     List<String> ids = result.getIds();
     int lo = toRange(start, 0, ids.size());
     int hi = toRange(lo + rows, 0, ids.size());
-    return convert(type, ids, lo, hi);
+
+    Map<String, Object> returnValue = Maps.newConcurrentMap();
+    returnValue.put("term", result.getTerm());
+    returnValue.put("facets", result.getFacets());
+    returnValue.put("numFound", ids.size());
+    returnValue.put("ids", ids.subList(lo, hi));
+    returnValue.put("results", convert(type, ids, lo, hi));
+    returnValue.put("start", lo);
+    returnValue.put("rows", hi);
+
+    return returnValue;
   }
 
   private int toRange(int value, int minValue, int maxValue) {
