@@ -3,7 +3,6 @@ package nl.knaw.huygens.repository.model.atlg;
 import java.util.List;
 
 import nl.knaw.huygens.repository.annotations.DocumentTypeName;
-import nl.knaw.huygens.repository.importer.database.AtlantischeGidsImporter.XRelated;
 import nl.knaw.huygens.repository.model.Archive;
 import nl.knaw.huygens.repository.model.DocumentRef;
 
@@ -38,41 +37,40 @@ public class ATLGArchive extends Archive {
   private String periodDescription;
   /** ING Forms: "Extent" */
   private String extent;
-  /** ING Forms: "Title related overhead level of description" */
-  private List<String> overheadTitles;
   /** ING Forms: "Additional finding aid" */
   private String findingAid;
   /** ING Forms: "Name(s) of Creator(s)" */
   private List<String> creators;
   /** ING Forms: "Scope and content" */
   private String scope;
-  /** ING Forms: "Title(s) related underlying level(s) of description" ??? */
-  private String relation;
-  /** ING Forms: "Other related units of description" ??? */
-  private String em;
   /** ING Forms: "Keyword(s) geography" */
   private List<DocumentRef> placeKeywords;
   /** ING Forms: "Keyword(s) subject" */
   private List<DocumentRef> subjectKeywords;
   /** ING Forms: "Keyword(s) person" */
   private List<DocumentRef> persons;
-  /** ING Forms: "Remarks" ??? */
+  /** ING Forms: "Remarks" */
   private String notes;
   /** ING Forms: "Record made by-" */
   private String madeBy;
-  /** ING Forms: "Reminders" ??? */
+  /** ING Forms: "Reminders" */
   private String reminders;
-  /** ING Forms: "Binnenkomende relaties" ??? */
-  private List<XRelated> related;
+  /** ING Forms: "Title related overhead level of description" */
+  private List<DocumentRef> overheadArchives;
+  /** ING Forms: "Title(s) related underlying level(s) of description" */
+  private List<DocumentRef> underlyingArchives;
+  /** ING Forms: "Other related units of description" */
+  private List<DocumentRef> relatedUnitArchives;
 
   public ATLGArchive() {
     countries = Lists.newArrayList();
-    overheadTitles = Lists.newArrayList();
     creators = Lists.newArrayList();
     placeKeywords = Lists.newArrayList();
     subjectKeywords = Lists.newArrayList();
     persons = Lists.newArrayList();
-    related = Lists.newArrayList();
+    overheadArchives = Lists.newArrayList();
+    underlyingArchives = Lists.newArrayList();
+    relatedUnitArchives = Lists.newArrayList();
   }
 
   @Override
@@ -188,18 +186,6 @@ public class ATLGArchive extends Archive {
     this.extent = extent;
   }
 
-  public List<String> getOverheadTitles() {
-    return overheadTitles;
-  }
-
-  public void setOverheadTitles(List<String> titles) {
-    overheadTitles = titles;
-  }
-
-  public void addOverheadTitle(String title) {
-    overheadTitles.add(title);
-  }
-
   public String getFindingAid() {
     return findingAid;
   }
@@ -226,22 +212,6 @@ public class ATLGArchive extends Archive {
 
   public void setScope(String scope) {
     this.scope = scope;
-  }
-
-  public String getRelation() {
-    return relation;
-  }
-
-  public void setRelation(String relation) {
-    this.relation = relation;
-  }
-
-  public String getEm() {
-    return em;
-  }
-
-  public void setEm(String em) {
-    this.em = em;
   }
 
   public List<DocumentRef> getPlaceKeywords() {
@@ -310,16 +280,40 @@ public class ATLGArchive extends Archive {
     this.reminders = reminders;
   }
 
-  public List<XRelated> getRelated() {
-    return related;
+  public List<DocumentRef> getOverheadArchives() {
+    return overheadArchives;
   }
 
-  public void setRelated(List<XRelated> related) {
-    this.related = related;
+  public void setOverheadArchives(List<DocumentRef> archives) {
+    overheadArchives = archives;
   }
 
-  public void addRelated(XRelated item) {
-    related.add(item);
+  public void addOverheadArchive(DocumentRef archive) {
+    overheadArchives.add(archive);
+  }
+
+  public List<DocumentRef> getUnderlyingArchives() {
+    return underlyingArchives;
+  }
+
+  public void setUnderlyingArchives(List<DocumentRef> archives) {
+    underlyingArchives = archives;
+  }
+
+  public void addUnderlyingArchive(DocumentRef archive) {
+    underlyingArchives.add(archive);
+  }
+
+  public List<DocumentRef> getRelatedUnitArchives() {
+    return relatedUnitArchives;
+  }
+
+  public void setvUnitArchives(List<DocumentRef> archives) {
+    relatedUnitArchives = archives;
+  }
+
+  public void addRelatedUnitArchive(DocumentRef archive) {
+    relatedUnitArchives.add(archive);
   }
 
 }
