@@ -433,6 +433,63 @@ public class AtlantischeGidsImporter {
 
   private ATLGArchiver convert(Creator creator) {
     ATLGArchiver archiver = new ATLGArchiver();
+    archiver.setOrigFilename(creator.orig_filename);
+    archiver.setNameNld(creator.name);
+    archiver.setNameEng(creator.name_english);
+    if (creator.dates != null) {
+      archiver.setBeginDate(creator.dates.begin_date);
+      archiver.setEndDate(creator.dates.end_date);
+    }
+    archiver.setPeriodDescription(creator.period_description);
+    archiver.setHistory(creator.his_func);
+    if (creator.related_archives != null) {
+      handleError("Ignoring field 'related_archives'");
+    }
+    if (creator.related_creators != null) {
+      handleError("Ignoring field 'related_creators'");
+      // for (String id : creator.related_creators) {
+      //   archiver.addRelatedArchiver(new DocumentRef(ATLGArchiver.class, id, "pending..."));
+      // }
+    }
+    if (creator.geography != null) {
+      for (String keyword : creator.geography) {
+        archiver.addPlaceKeyword(keywordRefMap.get(keyword));
+      }
+    }
+    if (creator.keywords != null) {
+      for (String keyword : creator.keywords) {
+        archiver.addSubjectKeyword(keywordRefMap.get(keyword));
+      }
+    }
+    if (creator.persons != null) {
+      for (String keyword : creator.persons) {
+        archiver.addPerson(personRefMap.get(keyword));
+      }
+    }
+    archiver.setNotes(creator.notes);
+    archiver.setLiterature(creator.literatuur);
+    archiver.setMadeBy(creator.made_by);
+    archiver.setReminders(creator.Aantekeningen);
+    if (creator.related != null) {
+      for (XRelated item : creator.related) {
+        if ("archive".equals(item.type)) {
+          for (String id : item.ids) {
+            archiver.addRelatedArchive(new DocumentRef(ATLGArchive.class, id, "pending..."));
+          }
+        } else if ("creator".equals(item.type)) {
+          for (String id : item.ids) {
+            archiver.addRelatedArchiver(new DocumentRef(ATLGArchiver.class, id, "pending..."));
+          }
+        } else {
+          handleError("Ignoring field 'related' with type '%s'", item.type);
+        }
+      }
+    }
+    if (creator.types != null) {
+      for (String type : creator.types) {
+        archiver.addType(type);
+      }
+    }
     return archiver;
   }
 
