@@ -49,7 +49,7 @@ public class FacetCount {
     return options;
   }
 
-  static class Option {
+  public static class Option {
     private String name = "";
     private long count = 0;
 

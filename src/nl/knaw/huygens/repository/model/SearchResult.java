@@ -4,6 +4,7 @@ import java.util.List;
 
 import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.annotations.IDPrefix;
+import nl.knaw.huygens.solr.FacetCount;
 
 @IDPrefix("QRY")
 @DocumentTypeName("search")
@@ -14,6 +15,7 @@ public class SearchResult extends SystemDocument implements Persistent {
   private String sort;
   private String date;
   private String searchType;
+  private List<FacetCount> facets;
 
   public SearchResult() {}
 
@@ -68,6 +70,14 @@ public class SearchResult extends SystemDocument implements Persistent {
   @Override
   public String getDisplayName() {
     return "Search " + getId();
+  }
+
+  public List<FacetCount> getFacets() {
+    return facets;
+  }
+
+  public void setFacets(List<FacetCount> facets) {
+    this.facets = facets;
   }
 
 }
