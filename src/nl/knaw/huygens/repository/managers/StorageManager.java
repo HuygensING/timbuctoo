@@ -158,12 +158,16 @@ public class StorageManager {
     }
   }
 
-  public <T extends Document> void addDocument(Class<T> type, T doc) throws IOException {
+  public <T extends Document> void addDocument(Class<T> type, T doc, boolean isComplete) throws IOException {
     storage.addItem(type, doc);
     persistDocumentVersion(type, doc);
-    if (DomainDocument.class.isAssignableFrom(type)) {
+    if (DomainDocument.class.isAssignableFrom(type) && isComplete) {
       sendIndexMessage(Broker.INDEX_ADD, VariationUtils.getBaseClass(type).getSimpleName(), doc.getId());
     }
+  }
+
+  public <T extends Document> void addDocument(Class<T> type, T doc) throws IOException {
+    addDocument(type, doc, true);
   }
 
   private <T extends Document> void persistDocumentVersion(Class<T> type, T doc) {

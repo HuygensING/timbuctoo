@@ -308,7 +308,7 @@ public class ATLGArchive extends Archive {
     return relatedUnitArchives;
   }
 
-  public void setvUnitArchives(List<DocumentRef> archives) {
+  public void setRelatedUnitArchives(List<DocumentRef> archives) {
     relatedUnitArchives = archives;
   }
 
