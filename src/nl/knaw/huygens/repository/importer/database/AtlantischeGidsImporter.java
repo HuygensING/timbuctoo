@@ -288,11 +288,6 @@ public class AtlantischeGidsImporter {
     }
     archive.setPeriodDescription(archiefmat.period_description);
     archive.setExtent(archiefmat.extent);
-    if (archiefmat.overhead_titles != null) {
-      for (String title : archiefmat.overhead_titles) {
-        archive.addOverheadTitle(title);
-      }
-    }
     archive.setFindingAid(archiefmat.finding_aid);
     if (archiefmat.creators != null) {
       for (String creator : archiefmat.creators) {
@@ -300,11 +295,6 @@ public class AtlantischeGidsImporter {
       }
     }
     archive.setScope(archiefmat.scope);
-    archive.setRelation(archiefmat.relation);
-    archive.setEm(archiefmat.em);
-    if (archiefmat.link_law != null) {
-      System.err.println("Ignoring 'link_law' " + archiefmat.link_law);
-    }
     if (archiefmat.geography != null) {
       for (String keyword : archiefmat.geography) {
         archive.addPlaceKeyword(keywordRefMap.get(keyword));
@@ -323,8 +313,34 @@ public class AtlantischeGidsImporter {
     archive.setNotes(archiefmat.notes);
     archive.setMadeBy(archiefmat.made_by);
     archive.setReminders(archiefmat.Aantekeningen);
-    // "Binnenkomende relaties"
-    // public Related[] related;
+    if (archiefmat.related != null) {
+      for (XRelated item : archiefmat.related) {
+        if ("overhead_title".equals(item.type)) {
+          for (String id : item.ids) {
+            archive.addOverheadArchive(new DocumentRef(ATLGArchive.class, id, "pending..."));
+          }
+        } else if ("underlying_levels_titels".equals(item.type)) {
+          for (String id : item.ids) {
+            archive.addUnderlyingArchive(new DocumentRef(ATLGArchive.class, id, "pending..."));
+          }
+        } else if ("unit".equals(item.type)) {
+          for (String id : item.ids) {
+            archive.addRelatedUnitArchive(new DocumentRef(ATLGArchive.class, id, "pending..."));
+          }
+        } else {
+          System.err.printf("## Ignoring field 'related' with type '%s'%n", item.type);
+        }
+      }
+
+      // Ignored fields
+      if (archiefmat.relation != null) {
+        System.err.printf("## Ignoring field 'relation':'%s'%n", archiefmat.relation);
+      }
+      if (archiefmat.em != null) {
+        System.err.printf("## Ignoring field 'em':'%s'%n", archiefmat.em);
+      }
+    }
+
     return archive;
   }
 
@@ -520,9 +536,6 @@ public class AtlantischeGidsImporter {
     /** "Extent" */
     public String extent;
 
-    /** "Title related overhead level of description" */
-    public String[] overhead_titles;
-
     /** "Additional finding aid" */
     public String finding_aid;
 
@@ -537,9 +550,6 @@ public class AtlantischeGidsImporter {
 
     /** "Other related units of description" ??? */
     public String em;
-
-    /** "Link legislation" ### should be unused, we'll ignore it */
-    public String link_law;
 
     /** "Keyword(s) geography" */
     public String[] geography;
@@ -609,9 +619,6 @@ public class AtlantischeGidsImporter {
     /** "Title(s) related creator(s)" */
     public String[] related_creators;
 
-    /** "Link legislation" ### should be unused, we'll ignore it */
-    public String link_law;
-
     /** "Keyword(s) geography" */
     public String[] geography;
 
@@ -662,7 +669,7 @@ public class AtlantischeGidsImporter {
 
     @Override
     public String toString() {
-      return String.format("%s: %s", type, StringUtils.join(ids, " ##"));
+      return String.format("  %s: %s", type, StringUtils.join(ids, " ##"));
     }
   }
 
