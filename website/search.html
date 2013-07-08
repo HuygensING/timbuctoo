@@ -87,7 +87,7 @@
       contentType: 'application/json; charset=utf-8',
       success: function (data) {
         var html = '<table><tr><th>Id</th><th>Name</th></tr>';
-        $.each(data, function (i, item) {
+        $.each(data.results, function (i, item) {
           html += '<tr><td><a href="' + personUrl + item._id + '">' + item._id + '</a></td><td>' + buildName(item.name) + '</td></tr>';
         });
         html += '</table>';
