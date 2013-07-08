@@ -29,7 +29,7 @@ public class ATLGArchiver extends Archiver {
   /** ING Forms: "Title(s) related archive(s)" */
   private List<DocumentRef> relatedArchives;
   /** ING Forms: "Title(s) related creator(s)" */
-  private List<DocumentRef> relatedCreators;
+  private List<DocumentRef> relatedArchivers;
   /** ING Forms: "Keyword(s) geography" */
   private List<DocumentRef> placeKeywords;
   /** ING Forms: "Keyword(s) subject" */
@@ -39,7 +39,7 @@ public class ATLGArchiver extends Archiver {
   /** ING Forms: "Remarks" */
   private String notes;
   /** ING Forms: "Literature" */
-  private String literatuur;
+  private String literature;
   /** ING Forms: "Record made by-" */
   private String madeBy;
   /** ING Forms: "Reminders" ??? */
@@ -51,7 +51,7 @@ public class ATLGArchiver extends Archiver {
 
   public ATLGArchiver() {
     relatedArchives = Lists.newArrayList();
-    relatedCreators = Lists.newArrayList();
+    relatedArchivers = Lists.newArrayList();
     placeKeywords = Lists.newArrayList();
     subjectKeywords = Lists.newArrayList();
     persons = Lists.newArrayList();
@@ -123,16 +123,24 @@ public class ATLGArchiver extends Archiver {
     return relatedArchives;
   }
 
-  public void setRelatedArchives(List<DocumentRef> relatedArchives) {
-    this.relatedArchives = relatedArchives;
+  public void setRelatedArchives(List<DocumentRef> refs) {
+    relatedArchives = refs;
   }
 
-  public List<DocumentRef> getRelatedCreators() {
-    return relatedCreators;
+  public void addRelatedArchive(DocumentRef ref) {
+    relatedArchives.add(ref);
   }
 
-  public void setRelatedCreators(List<DocumentRef> relatedCreators) {
-    this.relatedCreators = relatedCreators;
+  public List<DocumentRef> getRelatedArchivers() {
+    return relatedArchivers;
+  }
+
+  public void setRelatedArchivers(List<DocumentRef> refs) {
+    relatedArchivers = refs;
+  }
+
+  public void addRelatedArchiver(DocumentRef ref) {
+    relatedArchivers.add(ref);
   }
 
   public List<DocumentRef> getPlaceKeywords() {
@@ -185,12 +193,12 @@ public class ATLGArchiver extends Archiver {
     this.notes = notes;
   }
 
-  public String getLiteratuur() {
-    return literatuur;
+  public String getLiterature() {
+    return literature;
   }
 
-  public void setLiteratuur(String literatuur) {
-    this.literatuur = literatuur;
+  public void setLiterature(String literature) {
+    this.literature = literature;
   }
 
   public String getMadeBy() {
