@@ -2,6 +2,7 @@ package nl.knaw.huygens.repository.importer.database;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.repository.managers.StorageManager;
@@ -20,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class AtlantischeGidsImporter {
@@ -42,12 +44,23 @@ public class AtlantischeGidsImporter {
   private Map<String, DocumentRef> wetgevingRefMap;
   private Map<String, DocumentRef> archiefmatRefMap;
   private Map<String, DocumentRef> creatormatRefMap;
+  private int errors;
 
   public AtlantischeGidsImporter(StorageManager manager, String inputDirName) {
     System.out.printf("%n.. Importing from %s%n", inputDirName);
     objectMapper = new ObjectMapper();
     storageManager = manager;
     inputDir = new File(inputDirName);
+    errors = 0;
+  }
+
+  private void handleError(String format, Object... args) {
+    errors++;
+    if (errors <= 100) {
+      System.err.print("## ");
+      System.err.printf(format, args);
+      System.err.println();
+    }
   }
 
   public void importAll() throws Exception {
@@ -67,9 +80,14 @@ public class AtlantischeGidsImporter {
     archiefmatRefMap = importArchiefMats();
     System.out.printf("Number of entries = %d%n", archiefmatRefMap.size());
 
+    System.out.printf("%n.. 'archiefmat' -- pass 2%n");
+    resolveATLGArchiveRefs(archiefmatRefMap);
+
     System.out.printf("%n.. 'creator' -- pass 1%n");
     creatormatRefMap = importCreators();
     System.out.printf("Number of entries = %d%n", creatormatRefMap.size());
+
+    System.err.println("## Error count = " + errors);
   }
 
   // -------------------------------------------------------------------
@@ -128,7 +146,7 @@ public class AtlantischeGidsImporter {
     for (XPerson xperson : objectMapper.readValue(file, XPerson[].class)) {
       String id = xperson._id;
       if (refs.containsKey(id)) {
-        System.err.printf("## [%s] Duplicate id %s%n", PERSON_FILE, id);
+        handleError("[%s] Duplicate id %s", PERSON_FILE, id);
       } else if (storageManager != null) {
         ATLGPerson person = convert(xperson);
         storageManager.addDocument(ATLGPerson.class, person);
@@ -181,7 +199,7 @@ public class AtlantischeGidsImporter {
         Wetgeving wetgeving = entry.wetgeving;
         String id = wetgeving._id;
         if (refs.containsKey(id)) {
-          System.err.printf("## [%s] Duplicate id %s%n", file, id);
+          handleError("[%s] Duplicate id %s", file.getName(), id);
         } else if (storageManager != null) {
           ATLGLegislation legislation = convert(wetgeving);
           storageManager.addDocument(ATLGLegislation.class, legislation);
@@ -256,10 +274,10 @@ public class AtlantischeGidsImporter {
         ArchiefMat object = entry.archiefmat;
         String id = object._id;
         if (refs.containsKey(id)) {
-          System.err.printf("## [%s] Duplicate id %s%n", file.getName(), id);
+          handleError("[%s] Duplicate id %s", file.getName(), id);
         } else if (storageManager != null) {
           ATLGArchive archive = convert(object);
-          storageManager.addDocument(ATLGArchive.class, archive);
+          storageManager.addDocument(ATLGArchive.class, archive, false);
           refs.put(id, DocumentRef.newInstance(ATLGArchive.class, archive));
         }
       }
@@ -267,7 +285,7 @@ public class AtlantischeGidsImporter {
     return refs;
   }
 
-  public ATLGArchive convert(ArchiefMat archiefmat) {
+  private ATLGArchive convert(ArchiefMat archiefmat) {
     ATLGArchive archive = new ATLGArchive();
     archive.setOrigFilename(archiefmat.orig_filename);
     if (archiefmat.countries != null) {
@@ -328,20 +346,65 @@ public class AtlantischeGidsImporter {
             archive.addRelatedUnitArchive(new DocumentRef(ATLGArchive.class, id, "pending..."));
           }
         } else {
-          System.err.printf("## Ignoring field 'related' with type '%s'%n", item.type);
+          handleError("Ignoring field 'related' with type '%s'", item.type);
         }
       }
 
       // Ignored fields
       if (archiefmat.relation != null) {
-        System.err.printf("## Ignoring field 'relation':'%s'%n", archiefmat.relation);
+        handleError("Ignoring field 'relation':'%s'", archiefmat.relation);
       }
       if (archiefmat.em != null) {
-        System.err.printf("## Ignoring field 'em':'%s'%n", archiefmat.em);
+        handleError("Ignoring field 'em':'%s'", archiefmat.em);
       }
     }
 
     return archive;
+  }
+
+  private void resolveATLGArchiveRefs(Map<String, DocumentRef> refMap) throws Exception {
+    if (storageManager != null) {
+      for (String archiveId : getArchiveIds(refMap)) {
+        ATLGArchive archive = storageManager.getDocument(ATLGArchive.class, archiveId);
+        List<DocumentRef> oldRefs = archive.getOverheadArchives();
+        if (oldRefs != null && oldRefs.size() != 0) {
+          List<DocumentRef> newRefs = resolveRefs(refMap, archive.getOrigFilename(), "overhead archive", oldRefs);
+          archive.setOverheadArchives(newRefs);
+        }
+        oldRefs = archive.getUnderlyingArchives();
+        if (oldRefs != null && oldRefs.size() != 0) {
+          List<DocumentRef> newRefs = resolveRefs(refMap, archive.getOrigFilename(), "underlying archive", oldRefs);
+          archive.setUnderlyingArchives(newRefs);
+        }
+        oldRefs = archive.getRelatedUnitArchives();
+        if (oldRefs != null && oldRefs.size() != 0) {
+          List<DocumentRef> newRefs = resolveRefs(refMap, archive.getOrigFilename(), "related unit archive", oldRefs);
+          archive.setRelatedUnitArchives(newRefs);
+        }
+        storageManager.modifyDocument(ATLGArchive.class, archive);
+      }
+    }
+  }
+
+  private List<String> getArchiveIds(Map<String, DocumentRef> refMap) {
+    List<String> ids = Lists.newArrayList();
+    for (Map.Entry<String, DocumentRef> entry : refMap.entrySet()) {
+      ids.add(entry.getValue().getId());
+    }
+    return ids;
+  }
+
+  private List<DocumentRef> resolveRefs(Map<String, DocumentRef> refMap, String filename, String type, List<DocumentRef> oldRefs) {
+    List<DocumentRef> newRefs = Lists.newArrayListWithCapacity(oldRefs.size());
+    for (DocumentRef oldRef : oldRefs) {
+      DocumentRef newRef = refMap.get(oldRef.getId());
+      if (newRef == null) {
+        handleError("[%s] No %s for id %s", filename, type, oldRef.getId());
+      } else {
+        newRefs.add(newRef);
+      }
+    }
+    return newRefs;
   }
 
   // -------------------------------------------------------------------

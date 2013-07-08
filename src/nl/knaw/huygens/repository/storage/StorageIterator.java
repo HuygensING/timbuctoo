@@ -3,6 +3,10 @@ package nl.knaw.huygens.repository.storage;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * WARNING The current implementation does not allow you to safely 
+ * update items while iterating.
+ */
 public interface StorageIterator<T> extends Iterator<T> {
 
   void close();
