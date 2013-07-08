@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -21,6 +22,7 @@ import nl.knaw.huygens.repository.managers.SearchManager;
 import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
+import nl.knaw.huygens.solr.FacetCount;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 
 import org.apache.solr.client.solrj.SolrServerException;
@@ -28,12 +30,14 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class SearchResourceTest extends WebServiceTestSetup {
+  private static final String TERM = "facet_t_name:Huygens";
   private static final String LOCATION_HEADER = "Location";
   private String typeString = "person";
   private String id = "QRY0000000001";
@@ -41,13 +45,13 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostSuccess() throws IOException, SolrServerException {
 
-    SearchResult searchResult = createSearchResult();
+    SearchResult searchResult = createPostSearchResult();
 
     setupDocTypeRegistry();
 
     setupSearchManager(searchResult);
 
-    FacetedSearchParameters searchParameters = createSearchParameters(typeString, id, "facet_t_name:Huygens");
+    FacetedSearchParameters searchParameters = createSearchParameters(typeString, id, TERM);
 
     WebResource resource = super.resource();
     String expected = String.format("%ssearch/%s", resource.getURI().toString(), id);
@@ -63,13 +67,13 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostSuccessWithoutSort() throws IOException, SolrServerException {
-    SearchResult searchResult = createSearchResult();
+    SearchResult searchResult = createPostSearchResult();
 
     setupDocTypeRegistry();
 
     setupSearchManager(searchResult);
 
-    FacetedSearchParameters searchParameters = createSearchParameters(typeString, null, "facet_t_name:Huygens");
+    FacetedSearchParameters searchParameters = createSearchParameters(typeString, null, TERM);
 
     WebResource resource = super.resource();
     String expected = String.format("%ssearch/%s", resource.getURI().toString(), id);
@@ -89,13 +93,13 @@ public class SearchResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
-    FacetedSearchParameters searchParameters = createSearchParameters("unknownType", null, "facet_t_name:Huygens");
+    FacetedSearchParameters searchParameters = createSearchParameters("unknownType", null, TERM);
 
     WebResource resource = super.resource();
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addDocument(any(Class.class), any(SearchResult.class));
-    verify(searchManager, never()).search(anyString(), anyString(), anyString());
+    verify(searchManager, never()).search(anyString(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
   }
@@ -106,13 +110,13 @@ public class SearchResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
-    FacetedSearchParameters searchParameters = createSearchParameters(null, null, "facet_t_name:Huygens");
+    FacetedSearchParameters searchParameters = createSearchParameters(null, null, TERM);
 
     WebResource resource = super.resource();
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addDocument(any(Class.class), any(SearchResult.class));
-    verify(searchManager, never()).search(anyString(), anyString(), anyString());
+    verify(searchManager, never()).search(anyString(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
@@ -129,7 +133,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addDocument(any(Class.class), any(SearchResult.class));
-    verify(searchManager, never()).search(anyString(), anyString(), anyString());
+    verify(searchManager, never()).search(anyString(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
@@ -140,53 +144,41 @@ public class SearchResourceTest extends WebServiceTestSetup {
     fail("Yet to be implemented");
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testGetSuccess() {
     List<String> idList = Lists.newArrayList();
+    List<Person> personList = Lists.newArrayList();
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
-    for (int i = 0; i < 100; i++) {
-      String personId = "" + i;
-      Person person = new Person();
-      person.setId(personId);
+    createSearchResult(idList, personList, storageManager);
 
-      idList.add(personId);
-      when(storageManager.getDocument(Person.class, personId)).thenReturn(person);
-    }
+    List<FacetCount> facets = createFacets();
 
-    SearchResult result = mock(SearchResult.class);
-    when(result.getId()).thenReturn(id);
-    when(result.getSearchType()).thenReturn("person");
-    when(result.getIds()).thenReturn(idList);
-    when(storageManager.getDocument(SearchResult.class, id)).thenReturn(result);
+    Map<String, Object> expected = createExpectedResult(idList, personList, facets, 0, 10);
+
+    setUpSearchResult(idList, storageManager, facets);
 
     setupDocTypeRegistry();
 
     WebResource resource = super.resource();
-    List<Person> actual = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<List<Person>>() {});
+    Map<String, Object> actual = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<Map<String, Object>>() {});
 
-    assertEquals(10, actual.size());
+    compareResults(expected, actual);
   }
 
+  @Test
   public void testGetSuccessWithStartAndRows() {
     List<String> idList = Lists.newArrayList();
+    List<Person> personList = Lists.newArrayList();
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
-    for (int i = 0; i < 100; i++) {
-      String personId = "" + i;
-      Person person = new Person();
-      person.setId(personId);
+    createSearchResult(idList, personList, storageManager);
 
-      idList.add(personId);
-      when(storageManager.getDocument(Person.class, personId)).thenReturn(person);
-    }
+    List<FacetCount> facets = createFacets();
 
-    SearchResult result = mock(SearchResult.class);
-    when(result.getId()).thenReturn(id);
-    when(result.getSearchType()).thenReturn("person");
-    when(result.getIds()).thenReturn(idList);
-    when(storageManager.getDocument(SearchResult.class, id)).thenReturn(result);
+    Map<String, Object> expected = createExpectedResult(idList, personList, facets, 10, 100);
+
+    setUpSearchResult(idList, storageManager, facets);
 
     setupDocTypeRegistry();
 
@@ -195,23 +187,26 @@ public class SearchResourceTest extends WebServiceTestSetup {
     queryParameters.add("rows", "100");
 
     WebResource resource = super.resource();
-    List<Person> actual = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<List<Person>>() {});
+    Map<String, Object> actual = resource.path("search").path(id).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE)
+        .get(new GenericType<Map<String, Object>>() {});
 
-    assertEquals(90, actual.size());
+    compareResults(expected, actual);
   }
 
   @Test
   public void testGetNoResults() {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
-    when(storageManager.getDocument(SearchResult.class, id)).thenReturn(null);
+    setUpSearchResult(Lists.<String> newArrayList(), storageManager, Lists.<FacetCount> newArrayList());
+
+    Map<String, Object> expected = createExpectedResult(Lists.<String> newArrayList(), Lists.<Person> newArrayList(), Lists.<FacetCount> newArrayList(), 0, 0);
 
     setupDocTypeRegistry();
 
     WebResource resource = super.resource();
-    ClientResponse response = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+    Map<String, Object> actual = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<Map<String, Object>>() {});
 
-    assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
+    compareResults(expected, actual);
   }
 
   @Test
@@ -262,7 +257,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     doReturn(Person.class).when(registry).getClassFromWebServiceTypeString(typeString);
   }
 
-  private SearchResult createSearchResult() {
+  private SearchResult createPostSearchResult() {
     SearchResult searchResult = mock(SearchResult.class);
     when(searchResult.getId()).thenReturn(id);
     return searchResult;
@@ -276,4 +271,62 @@ public class SearchResourceTest extends WebServiceTestSetup {
     return searchParameters;
   }
 
+  private Map<String, Object> createExpectedResult(List<String> idList, List<Person> personList, List<FacetCount> facets, int start, int rows) {
+    Map<String, Object> expectedResult = Maps.newHashMap();
+    expectedResult.put("results", personList.subList(start, rows));
+    expectedResult.put("start", start); // start index of the results
+    expectedResult.put("rows", rows); // number of results in the response
+    expectedResult.put("term", TERM); // search query
+    expectedResult.put("facets", facets); // all applying facets
+    expectedResult.put("numFound", idList.size()); // all found results
+    expectedResult.put("ids", idList.subList(start, rows)); //only the ids of the objects in the in response.
+
+    return expectedResult;
+  }
+
+  private List<FacetCount> createFacets() {
+    List<FacetCount> facets = Lists.newArrayList();
+    FacetCount.Option option1 = new FacetCount.Option().setCount(1).setName("17-5-1900");
+    FacetCount.Option option2 = new FacetCount.Option().setCount(2).setName("21-6");
+    FacetCount.Option option3 = new FacetCount.Option().setCount(97).setName("1780");
+    FacetCount facet = new FacetCount().setName("facet_s_birthDate").setTitle("birthdate");
+    facet.addOption(option1);
+    facet.addOption(option2);
+    facet.addOption(option3);
+    facets.add(facet);
+    return facets;
+  }
+
+  private void createSearchResult(final List<String> idList, final List<Person> personList, final StorageManager storageManager) {
+    for (int i = 0; i < 100; i++) {
+      String personId = "" + i;
+      Person person = new Person();
+      person.setId(personId);
+
+      personList.add(person);
+
+      idList.add(personId);
+      when(storageManager.getDocument(Person.class, personId)).thenReturn(person);
+    }
+  }
+
+  private void setUpSearchResult(List<String> idList, StorageManager storageManager, List<FacetCount> facets) {
+    SearchResult result = mock(SearchResult.class);
+    when(result.getTerm()).thenReturn(TERM);
+    when(result.getId()).thenReturn(id);
+    when(result.getSearchType()).thenReturn("person");
+    when(result.getIds()).thenReturn(idList);
+    when(result.getFacets()).thenReturn(facets);
+    when(storageManager.getDocument(SearchResult.class, id)).thenReturn(result);
+  }
+
+  @SuppressWarnings("unchecked")
+  private void compareResults(Map<String, Object> expected, Map<String, Object> actual) {
+    assertEquals(((List<Person>) expected.get("results")).size(), ((List<Person>) actual.get("results")).size());
+    assertEquals(expected.get("term"), actual.get("term"));
+    assertEquals(expected.get("numFound"), actual.get("numFound"));
+    assertEquals(expected.get("start"), actual.get("start"));
+    assertEquals(expected.get("rows"), actual.get("rows"));
+    assertEquals(((List<FacetCount>) expected.get("facets")).size(), ((List<FacetCount>) actual.get("facets")).size());
+  }
 }

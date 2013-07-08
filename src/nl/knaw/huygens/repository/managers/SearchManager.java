@@ -6,9 +6,13 @@ import java.util.List;
 
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.model.SearchResult;
+import nl.knaw.huygens.solr.FacetCount;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.FacetField;
+import org.apache.solr.client.solrj.response.FacetField.Count;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
@@ -28,7 +32,10 @@ public class SearchManager {
   }
 
   public SearchResult search(String core, FacetedSearchParameters searchParameters) throws SolrServerException {
-    SolrDocumentList documents = server.getQueryResponse(searchParameters.getTerm(), getFacetFieldNames(), searchParameters.getSort(), core).getResults();
+    QueryResponse response = server.getQueryResponse(searchParameters.getTerm(), getFacetFieldNames(), searchParameters.getSort(), core);
+    SolrDocumentList documents = response.getResults();
+
+    List<FacetCount> facets = getFacetCounts(response.getFacetFields());
 
     List<String> ids = Lists.newArrayList();
 
@@ -36,16 +43,29 @@ public class SearchManager {
       ids.add(document.getFieldValue("id").toString());
     }
 
-    return new SearchResult(ids, core, searchParameters.getTerm(), searchParameters.getSort(), new Date().toString());
+    SearchResult searchResult = new SearchResult(ids, core, searchParameters.getTerm(), searchParameters.getSort(), new Date().toString());
+    searchResult.setFacets(facets);
+
+    return searchResult;
   }
 
-  public SearchResult search(String core, String q, String sort) throws SolrServerException {
-    SolrDocumentList documents = server.getQueryResponse(q, getFacetFieldNames(), sort, core).getResults();
-    List<String> ids = Lists.newArrayList();
-    for (SolrDocument document : documents) {
-      ids.add(document.getFieldValue("id").toString());
+  private List<FacetCount> getFacetCounts(List<FacetField> facetFields) {
+    List<FacetCount> facets = Lists.newArrayList();
+    for (FacetField facetField : facetFields) {
+      FacetCount facet = new FacetCount();
+      facet.setName(facetField.getName());
+      facet.setTitle(facetField.getName());
+
+      for (Count count : facetField.getValues()) {
+        facet.addOption(new FacetCount.Option().setName(count.getName()).setCount(count.getCount()));
+      }
+
+      if (facet.getOptions().size() > 0) {
+        facets.add(facet);
+      }
     }
-    return new SearchResult(ids, core, q, sort, new Date().toString());
+
+    return facets;
   }
 
   private Collection<String> getFacetFieldNames() {
