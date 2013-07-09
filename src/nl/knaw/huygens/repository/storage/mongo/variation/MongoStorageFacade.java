@@ -9,13 +9,13 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.model.util.Change;
+import nl.knaw.huygens.repository.storage.BasicStorage;
 import nl.knaw.huygens.repository.storage.RevisionChanges;
-import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
+import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.mongo.MongoModifiableStorage;
-import nl.knaw.huygens.repository.storage.mongo.MongoStorage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +75,7 @@ public class MongoStorageFacade implements VariationStorage {
 
   // -------------------------------------------------------------------
 
-  private MongoStorage getStorageFor(Class<? extends Document> type) {
+  private BasicStorage getStorageFor(Class<? extends Document> type) {
     return DomainDocument.class.isAssignableFrom(type) ? variationStorage : plainStorage;
   }
 

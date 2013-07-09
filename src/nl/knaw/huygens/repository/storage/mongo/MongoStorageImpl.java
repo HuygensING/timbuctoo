@@ -9,6 +9,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.storage.BasicStorage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
@@ -33,7 +34,7 @@ import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 
 @Singleton
-public abstract class MongoStorageImpl implements MongoStorage {
+public abstract class MongoStorageImpl implements BasicStorage {
 
   protected Mongo mongo;
   protected DB db;
