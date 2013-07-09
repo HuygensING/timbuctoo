@@ -2,6 +2,10 @@ package nl.knaw.huygens.repository.persistence;
 
 import java.util.UUID;
 
+/**
+ * This PersistenceManager implementation simply creates a unique id.
+ * However, this id is not registered anywhere...
+ */
 public class DefaultPersistenceManager implements PersistenceManager {
 
   @Override
@@ -19,7 +23,7 @@ public class DefaultPersistenceManager implements PersistenceManager {
     return "URL";
   }
 
-  private String createId() {
+  protected String createId() {
     return UUID.randomUUID().toString();
   }
 

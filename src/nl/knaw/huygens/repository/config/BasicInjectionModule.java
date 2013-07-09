@@ -5,9 +5,8 @@ import javax.validation.Validator;
 
 import nl.knaw.huygens.repository.mail.MailSender;
 import nl.knaw.huygens.repository.mail.MailSenderFactory;
-import nl.knaw.huygens.repository.persistence.DefaultPersistenceManager;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
-import nl.knaw.huygens.repository.persistence.handle.HandleManager;
+import nl.knaw.huygens.repository.persistence.PersistenceManagerFactory;
 import nl.knaw.huygens.repository.storage.Storage;
 import nl.knaw.huygens.repository.storage.mongo.variation.MongoStorageFacade;
 
@@ -39,12 +38,7 @@ public class BasicInjectionModule extends AbstractModule {
   @Provides
   @Singleton
   PersistenceManager providePersistenceManager() {
-    // TODO improve by injecting configuration into HandleManager
-    if (config.getBooleanSetting("handle.enabled", true)) {
-      return HandleManager.newHandleManager(config);
-    } else {
-      return new DefaultPersistenceManager();
-    }
+    return PersistenceManagerFactory.newPersistenceManager(config);
   }
 
   @Provides
