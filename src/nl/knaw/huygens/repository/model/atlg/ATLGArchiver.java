@@ -60,7 +60,7 @@ public class ATLGArchiver extends Archiver {
 
   @Override
   public String getDisplayName() {
-    return getNameNld();
+    return getNameEng();
   }
 
   public String getOrigFilename() {
