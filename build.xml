@@ -216,6 +216,7 @@
     <copy todir="${local.dir}/solr">
       <fileset dir="${solr.src}" />
     </copy>
+    <mkdir dir="${local.dir}/solr/lib" />
     <antcall target="createsolr" />
   </target>
 
