@@ -42,7 +42,7 @@ import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
 @Singleton
-public abstract class MongoVariationStorageImpl implements VariationStorage {
+public abstract class MongoVariationStorage implements VariationStorage {
 
   protected Mongo mongo;
   protected DB db;
@@ -69,7 +69,7 @@ public abstract class MongoVariationStorageImpl implements VariationStorage {
   private Map<Class<? extends Document>, DBCollection> collectionCache;
   protected final DocTypeRegistry docTypeRegistry;
 
-  public MongoVariationStorageImpl(StorageConfiguration conf, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
+  public MongoVariationStorage(StorageConfiguration conf, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
     this.docTypeRegistry = docTypeRegistry;
     dbName = conf.getDbName();
     options = new MongoOptions();
@@ -82,7 +82,7 @@ public abstract class MongoVariationStorageImpl implements VariationStorage {
     initializeVariationCollections(conf);
   }
 
-  public MongoVariationStorageImpl(StorageConfiguration conf, Mongo m, DB db, MongoOptions options, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
+  public MongoVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
     this.options = options;
     this.docTypeRegistry = docTypeRegistry;
     dbName = conf.getDbName();
