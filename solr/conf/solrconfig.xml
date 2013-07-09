@@ -47,7 +47,7 @@
        that you fully re-index after changing this setting as it can
        affect both how text is indexed and queried.
     -->
-  <luceneMatchVersion>LUCENE_31</luceneMatchVersion>
+  <luceneMatchVersion>LUCENE_43</luceneMatchVersion>
 
   <!-- lib directives can be used to instruct Solr to load an Jars
        identified and use them to resolve any "plugins" specified in
@@ -67,27 +67,11 @@
        the classpath, this is useful for including all jars in a
        directory.
     -->
-  <lib dir="../../contrib/extraction/lib" />
-  <!-- When a regex is specified in addition to a directory, only the
-       files in that directory which completely match the regex
-       (anchored on both ends) will be included.
-    -->
-  <lib dir="../../dist/" regex="apache-solr-cell-\d.*\.jar" />
-  <lib dir="../../dist/" regex="apache-solr-clustering-\d.*\.jar" />
-  <lib dir="../../dist/" regex="apache-solr-dataimporthandler-\d.*\.jar" />
-
-  <!-- If a dir option (with or without a regex) is used and nothing
-       is found that matches, it will be ignored
-    -->
-  <lib dir="../../contrib/clustering/lib/" />
-  <lib dir="/total/crap/dir/ignored" /> 
-  <!-- an exact path can be used to specify a specific file.  This
-       will cause a serious error to be logged if it can't be loaded.
-    -->
   <!--
-  <lib path="../a-jar-that-does-not-exist.jar" /> 
-  -->
-  
+  <lib dir="../../contrib/extraction/lib" />
+    -->
+
+
   <!-- Data Directory
 
        Used to specify an alternate directory to hold all index data
@@ -774,7 +758,7 @@
        requires: -H 'Content-type:text/xml; charset=utf-8'
     -->
   <requestHandler name="/update" 
-                  class="solr.XmlUpdateRequestHandler">
+                  class="solr.UpdateRequestHandler">
     <!-- See below for information on defining 
          updateRequestProcessorChains that can be used by name 
          on each Update Request
@@ -789,7 +773,7 @@
        http://wiki.apache.org/solr/javabin
     -->
   <requestHandler name="/update/javabin" 
-                  class="solr.BinaryUpdateRequestHandler" />
+                  class="solr.UpdateRequestHandler" />
 
   <!-- CSV Update Request Handler
        http://wiki.apache.org/solr/UpdateCSV
