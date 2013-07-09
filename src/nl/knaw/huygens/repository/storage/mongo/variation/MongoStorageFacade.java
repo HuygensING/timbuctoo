@@ -85,19 +85,6 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public <T extends DomainDocument> T getVariation(Class<T> type, String id, String variation) throws IOException {
-    return variationStorage.getVariation(type, id, variation);
-  }
-
-  @Override
-  public <T extends Document> List<T> getAllVariations(Class<T> type, String id) throws IOException {
-    if (DomainDocument.class.isAssignableFrom(type)) {
-      return variationStorage.getAllVariations(type, id);
-    }
-    throw new UnsupportedOperationException("Method not available for this type");
-  }
-
-  @Override
   public <T extends Document> StorageIterator<T> getAllByType(Class<T> type) {
     return getStorageFor(type).getAllByType(type);
   }
@@ -160,6 +147,26 @@ public class MongoStorageFacade implements VariationStorage {
   @Override
   public <T extends Document> T searchItem(Class<T> type, T item) throws IOException {
     return getStorageFor(type).searchItem(type, item);
+  }
+
+  // -------------------------------------------------------------------
+
+  @Override
+  public <T extends DomainDocument> T getVariation(Class<T> type, String id, String variation) throws IOException {
+    return variationStorage.getVariation(type, id, variation);
+  }
+
+  @Override
+  public <T extends Document> List<T> getAllVariations(Class<T> type, String id) throws IOException {
+    if (DomainDocument.class.isAssignableFrom(type)) {
+      return variationStorage.getAllVariations(type, id);
+    }
+    throw new UnsupportedOperationException("Method not available for this type");
+  }
+
+  @Override
+  public <T extends DomainDocument> T getRevision(Class<T> type, String id, int revisionId) throws IOException {
+    throw new UnsupportedOperationException("Method not available for this type");
   }
 
 }

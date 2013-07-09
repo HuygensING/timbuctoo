@@ -11,6 +11,7 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.storage.StorageIterator;
+import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
@@ -41,7 +42,7 @@ import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
 @Singleton
-public abstract class MongoVariationStorageImpl implements MongoVariationStorage {
+public abstract class MongoVariationStorageImpl implements VariationStorage {
 
   protected Mongo mongo;
   protected DB db;
