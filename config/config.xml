@@ -73,7 +73,6 @@
       nl.knaw.huygens.repository.model.raa
     </model-packages>
     <doctypes>archive,archiver,keyword,legislation,person,place</doctypes>
-    <variationdoctypes>archive,archiver,keyword,legislation,person,place</variationdoctypes>
     <indexeddoctypes>archive,archiver,keyword,legislation,person,place</indexeddoctypes>
     <versioneddoctypes>archive,archiver,keyword,legislation,person,place</versioneddoctypes>
     <public_url>http://localhost:8080/repository</public_url>

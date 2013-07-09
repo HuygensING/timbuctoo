@@ -17,7 +17,6 @@ public class StorageConfiguration {
   private String key;
   private Set<String> documentTypes;
   private Set<String> versionedTypes;
-  private Set<String> variationTypes;
 
   public StorageConfiguration(String host, int port, String dbName, String user, String password, String type) {
     this.host = host;
@@ -39,8 +38,6 @@ public class StorageConfiguration {
     documentTypes = Sets.newHashSet(docTypes.split(","));
     String versionedDocTypes = conf.getSetting("versioneddoctypes", docTypes);
     versionedTypes = Sets.newHashSet(versionedDocTypes.split(","));
-    String variationDocTypes = conf.getSetting("variationdoctypes", docTypes);
-    variationTypes = Sets.newHashSet(variationDocTypes.split(","));
   }
 
   public boolean requiresAuth() {
@@ -79,7 +76,4 @@ public class StorageConfiguration {
     return versionedTypes;
   }
 
-  public Set<String> getVariationDocumentTypes() {
-    return variationTypes;
-  }
 }
