@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.persistence.handle;
+package nl.knaw.huygens.repository.persistence;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -18,7 +18,6 @@ import net.handle.hdllib.HandleResolver;
 import net.handle.hdllib.HandleValue;
 import net.handle.hdllib.SessionSetupInfo;
 import net.handle.hdllib.Util;
-import nl.knaw.huygens.repository.persistence.PersistenceException;
 
 import org.junit.After;
 import org.junit.Before;

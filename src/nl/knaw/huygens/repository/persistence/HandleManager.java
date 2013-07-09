@@ -1,10 +1,9 @@
-package nl.knaw.huygens.repository.persistence.handle;
+package nl.knaw.huygens.repository.persistence;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.PrivateKey;
-import java.util.UUID;
 
 import net.handle.hdllib.AdminRecord;
 import net.handle.hdllib.AuthenticationInfo;
@@ -19,8 +18,6 @@ import net.handle.hdllib.PublicKeyAuthenticationInfo;
 import net.handle.hdllib.SessionSetupInfo;
 import net.handle.hdllib.Util;
 import nl.knaw.huygens.repository.config.Configuration;
-import nl.knaw.huygens.repository.persistence.PersistenceException;
-import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.util.Paths;
 
 import org.slf4j.Logger;
@@ -31,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author martijnm
  */
-public class HandleManager implements PersistenceManager {
+public class HandleManager extends DefaultPersistenceManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(HandleManager.class);
 
@@ -167,10 +164,6 @@ public class HandleManager implements PersistenceManager {
 
   private String createUrl(String collectionId, String id) {
     return baseUrl + "resources/" + collectionId + "/" + id;
-  }
-
-  private String createId() {
-    return UUID.randomUUID().toString();
   }
 
   private String createAdminHandle() {
