@@ -7,7 +7,7 @@ import nl.knaw.huygens.repository.mail.MailSender;
 import nl.knaw.huygens.repository.mail.MailSenderFactory;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.persistence.PersistenceManagerFactory;
-import nl.knaw.huygens.repository.storage.Storage;
+import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.mongo.variation.MongoStorageFacade;
 
 import com.google.inject.AbstractModule;
@@ -32,7 +32,7 @@ public class BasicInjectionModule extends AbstractModule {
     bind(Configuration.class).toInstance(config);
     bind(DocTypeRegistry.class).toInstance(registry);
 
-    bind(Storage.class).to(MongoStorageFacade.class);
+    bind(VariationStorage.class).to(MongoStorageFacade.class);
   }
 
   @Provides

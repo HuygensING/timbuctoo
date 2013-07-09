@@ -10,7 +10,7 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.RevisionChanges;
-import nl.knaw.huygens.repository.storage.Storage;
+import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
@@ -33,7 +33,7 @@ import com.mongodb.ServerAddress;
  * Variation storage is used for all domain documents.
  */
 @Singleton
-public class MongoStorageFacade implements Storage {
+public class MongoStorageFacade implements VariationStorage {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoStorageFacade.class);
 
@@ -98,8 +98,8 @@ public class MongoStorageFacade implements Storage {
   }
 
   @Override
-  public <T extends Document> StorageIterator<T> getAllByType(Class<T> cls) {
-    return getStorageFor(cls).getAllByType(cls);
+  public <T extends Document> StorageIterator<T> getAllByType(Class<T> type) {
+    return getStorageFor(type).getAllByType(type);
   }
 
   @Override
@@ -153,14 +153,13 @@ public class MongoStorageFacade implements Storage {
   }
 
   @Override
-  public <T extends Document> void ensureIndex(Class<T> type, List<List<String>> accessorList) {
-    getStorageFor(type).ensureIndex(type, accessorList);
+  public <T extends Document> void ensureIndex(Class<T> type, List<List<String>> accessors) {
+    getStorageFor(type).ensureIndex(type, accessors);
   }
 
   @Override
-  public <T extends Document> T searchItem(Class<T> type, T example) throws IOException {
-
-    return getStorageFor(type).searchItem(type, example);
+  public <T extends Document> T searchItem(Class<T> type, T item) throws IOException {
+    return getStorageFor(type).searchItem(type, item);
   }
 
 }

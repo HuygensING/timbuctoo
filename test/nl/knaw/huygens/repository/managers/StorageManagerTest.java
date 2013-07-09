@@ -27,7 +27,7 @@ import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
-import nl.knaw.huygens.repository.storage.Storage;
+import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
@@ -42,7 +42,7 @@ import com.google.common.collect.Sets;
 public class StorageManagerTest {
 
   private StorageManager instance;
-  private Storage storage;
+  private VariationStorage storage;
   private Set<String> documentTypes;
   private Broker broker;
   private DocTypeRegistry docTypeRegistry;
@@ -50,7 +50,7 @@ public class StorageManagerTest {
 
   @Before
   public void SetUp() {
-    storage = mock(Storage.class);
+    storage = mock(VariationStorage.class);
     documentTypes = new HashSet<String>();
     broker = mock(Broker.class);
     docTypeRegistry = mock(DocTypeRegistry.class);
