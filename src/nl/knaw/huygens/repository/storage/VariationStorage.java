@@ -20,4 +20,6 @@ public interface VariationStorage extends BasicStorage {
    */
   <T extends DomainDocument> T getVariation(Class<T> type, String id, String variation) throws IOException;
 
+  <T extends DomainDocument> T getRevision(Class<T> type, String id, int revisionId) throws IOException;
+
 }
