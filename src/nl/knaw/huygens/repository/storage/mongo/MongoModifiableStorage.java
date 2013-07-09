@@ -25,7 +25,7 @@ import com.mongodb.MongoException;
 import com.mongodb.util.JSON;
 
 @Singleton
-public class MongoModifiableStorage extends MongoStorageImpl {
+public class MongoModifiableStorage extends MongoStorage {
 
   @Inject
   public MongoModifiableStorage(StorageConfiguration conf, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
