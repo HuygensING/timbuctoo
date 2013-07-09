@@ -20,7 +20,7 @@ import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.storage.RevisionChanges;
-import nl.knaw.huygens.repository.storage.Storage;
+import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.generic.StorageUtils;
@@ -41,7 +41,7 @@ public class StorageManager {
    * - VariationStorage
    */
 
-  private Storage storage;
+  private VariationStorage storage;
   private Map<Class<? extends Document>, Map<Class<? extends Document>, List<List<String>>>> annotationCache;
   private Set<String> documentTypes;
 
@@ -50,7 +50,7 @@ public class StorageManager {
   private PersistenceManager persistenceManager;
 
   @Inject
-  public StorageManager(StorageConfiguration storageConf, Storage storage, Broker broker, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceMananger) {
+  public StorageManager(StorageConfiguration storageConf, VariationStorage storage, Broker broker, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceMananger) {
     producer = setupProducer(broker);
     this.docTypeRegistry = docTypeRegistry;
     documentTypes = storageConf.getDocumentTypes();
@@ -61,7 +61,7 @@ public class StorageManager {
   }
 
   // Test-only!
-  protected StorageManager(Storage storage, Set<String> documentTypes, Broker broker, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceManager) {
+  protected StorageManager(VariationStorage storage, Set<String> documentTypes, Broker broker, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceManager) {
     producer = null;
     this.storage = storage;
     this.docTypeRegistry = docTypeRegistry;
@@ -287,7 +287,7 @@ public class StorageManager {
     rv.get(relatedType).add(accessorList);
   }
 
-  public Storage getStorage() {
+  public VariationStorage getStorage() {
     return storage;
   }
 
