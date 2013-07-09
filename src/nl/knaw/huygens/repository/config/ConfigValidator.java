@@ -19,7 +19,6 @@ public class ConfigValidator {
 
     validateDocTypes("doctypes");
     validateDocTypes("indexeddoctypes");
-    validateDocTypes("variationdoctypes");
     validateDocTypes("versioneddoctypes");
 
     if (error) {
