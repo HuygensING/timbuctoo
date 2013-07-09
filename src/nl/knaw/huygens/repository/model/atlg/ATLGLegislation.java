@@ -65,7 +65,7 @@ public class ATLGLegislation extends Legislation {
 
   @Override
   public String getDisplayName() {
-    return getTitleNld();
+    return getTitleEng();
   }
 
   public String getOrigFilename() {
