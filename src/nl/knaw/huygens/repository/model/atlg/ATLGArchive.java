@@ -75,7 +75,7 @@ public class ATLGArchive extends Archive {
 
   @Override
   public String getDisplayName() {
-    return getTitleNld();
+    return getTitleEng();
   }
 
   public String getOrigFilename() {
