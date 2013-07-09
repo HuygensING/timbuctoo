@@ -34,7 +34,7 @@ import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 
 @Singleton
-public abstract class MongoStorageImpl implements BasicStorage {
+public abstract class MongoStorage implements BasicStorage {
 
   protected Mongo mongo;
   protected DB db;
@@ -54,7 +54,7 @@ public abstract class MongoStorageImpl implements BasicStorage {
   }
 
   @Inject
-  public MongoStorageImpl(StorageConfiguration conf, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
+  public MongoStorage(StorageConfiguration conf, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
     this.docTypeRegistry = docTypeRegistry;
     dbName = conf.getDbName();
     mongo = new Mongo(conf.getHost(), conf.getPort());
@@ -72,7 +72,7 @@ public abstract class MongoStorageImpl implements BasicStorage {
     versionedDocumentTypes = conf.getVersionedTypes();
   }
 
-  public MongoStorageImpl(StorageConfiguration conf, Mongo m, DB loanedDB, DocTypeRegistry docTypeRegistry) {
+  public MongoStorage(StorageConfiguration conf, Mongo m, DB loanedDB, DocTypeRegistry docTypeRegistry) {
     mongo = m;
     db = loanedDB;
     this.docTypeRegistry = docTypeRegistry;
