@@ -56,7 +56,7 @@ public class AtlantischeGidsImporter {
 
   private void handleError(String format, Object... args) {
     errors++;
-    if (errors <= 100) {
+    if (errors <= 40) {
       System.err.print("## ");
       System.err.printf(format, args);
       System.err.println();
