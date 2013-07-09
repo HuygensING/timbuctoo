@@ -9,7 +9,7 @@ import nl.knaw.huygens.repository.index.DocumentIndexer;
 import nl.knaw.huygens.repository.index.IndexerFactory;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
-import nl.knaw.huygens.repository.storage.Storage;
+import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.util.Progress;
 import nl.knaw.huygens.repository.util.RepositoryException;
@@ -34,11 +34,11 @@ public class SolrIndexer {
   public static class SolrIndexerRunner {
     private final Configuration config;
     private final IndexerFactory indices;
-    private final Storage storage;
+    private final VariationStorage storage;
     private final DocTypeRegistry docTypeRegistry;
 
     @Inject
-    public SolrIndexerRunner(Configuration config, IndexerFactory indices, Storage storage, DocTypeRegistry docTypeRegistry) {
+    public SolrIndexerRunner(Configuration config, IndexerFactory indices, VariationStorage storage, DocTypeRegistry docTypeRegistry) {
       this.config = config;
       this.indices = indices;
       this.storage = storage;
