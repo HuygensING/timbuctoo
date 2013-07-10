@@ -25,12 +25,12 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   private static DocTypeRegistry docTypeRegistry;
 
-  private MongoStorage instance;
+  private MongoStorage storage;
 
   private void setUpDatabase() throws IOException {
     List<TestSystemDocument> docs = Lists.newArrayList(createTestSystemDocument("doc1", "testValue", "testValue2", "doc1", "doc1"),
         createTestSystemDocument("doc2", "testValue", "testValue2", "doc2", "doc2"), createTestSystemDocument("doc3", "testValue", "testValue2", "doc3", "doc3"));
-    instance.addItems(TestSystemDocument.class, docs);
+    storage.addItems(TestSystemDocument.class, docs);
   }
 
   protected TestSystemDocument createTestSystemDocument(String name, String testValue1, String testValue2, String annotatedProperty, String propWithAnnotatedAccessors) {
@@ -51,14 +51,14 @@ public class MongoStorageTest extends MongoStorageTestBase {
   @Before
   public void setUp() throws UnknownHostException, MongoException {
     when(storageConfiguration.getVersionedTypes()).thenReturn(Sets.newHashSet("testsystemdocument"));
-    instance = new MongoStorage(storageConfiguration, docTypeRegistry);
+    storage = new MongoStorage(storageConfiguration, docTypeRegistry);
   }
 
   @After
   public void tearDown() {
-    instance.db.dropDatabase();
-    instance.destroy();
-    instance = null;
+    storage.db.dropDatabase();
+    storage.close();
+    storage = null;
   }
 
   @Test
@@ -68,7 +68,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     TestSystemDocument example = new TestSystemDocument();
     example.setName("doc1");
 
-    TestSystemDocument actual = instance.searchItem(TestSystemDocument.class, example);
+    TestSystemDocument actual = storage.searchItem(TestSystemDocument.class, example);
 
     assertEquals("doc1", actual.getName());
   }
@@ -81,7 +81,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     example.setName("doc2");
     example.setTestValue1("testValue");
 
-    TestSystemDocument actual = instance.searchItem(TestSystemDocument.class, example);
+    TestSystemDocument actual = storage.searchItem(TestSystemDocument.class, example);
 
     assertEquals("doc2", actual.getName());
     assertEquals("testValue", actual.getTestValue1());
@@ -94,7 +94,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     TestSystemDocument example = new TestSystemDocument();
     example.setTestValue1("testValue");
 
-    TestSystemDocument actual = instance.searchItem(TestSystemDocument.class, example);
+    TestSystemDocument actual = storage.searchItem(TestSystemDocument.class, example);
 
     assertEquals("doc1", actual.getName());
     assertEquals("testValue", actual.getTestValue1());
@@ -107,7 +107,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     TestSystemDocument example = new TestSystemDocument();
     example.setName("nonExisting");
 
-    TestSystemDocument actual = instance.searchItem(TestSystemDocument.class, example);
+    TestSystemDocument actual = storage.searchItem(TestSystemDocument.class, example);
 
     assertNull(actual);
   }
@@ -119,7 +119,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     TestConcreteDoc example = new TestConcreteDoc();
     example.name = "nonExisting";
 
-    TestConcreteDoc actual = instance.searchItem(TestConcreteDoc.class, example);
+    TestConcreteDoc actual = storage.searchItem(TestConcreteDoc.class, example);
 
     assertNull(actual);
   }
@@ -132,12 +132,12 @@ public class MongoStorageTest extends MongoStorageTestBase {
     doc.setTestValue1("test");
 
     Class<TestSystemDocument> type = TestSystemDocument.class;
-    instance.addItem(type, doc);
+    storage.addItem(type, doc);
 
     doc.setTestValue1("testValue1");
-    instance.updateItem(type, id, doc);
+    storage.updateItem(type, id, doc);
 
-    verifyCollectionSize(1, "testsystemdocument", instance.db);
+    verifyCollectionSize(1, "testsystemdocument", storage.db);
   }
 
   @Test(expected = IOException.class)
@@ -149,7 +149,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     Class<TestSystemDocument> type = TestSystemDocument.class;
 
-    instance.updateItem(type, id, expected);
+    storage.updateItem(type, id, expected);
   }
 
   @Test
@@ -158,9 +158,9 @@ public class MongoStorageTest extends MongoStorageTestBase {
     doc.setTestValue1("test");
 
     Class<TestSystemDocument> type = TestSystemDocument.class;
-    instance.addItem(type, doc);
+    storage.addItem(type, doc);
 
-    verifyCollectionSize(1, "testsystemdocument", instance.db);
+    verifyCollectionSize(1, "testsystemdocument", storage.db);
   }
 
   @Test
@@ -171,9 +171,9 @@ public class MongoStorageTest extends MongoStorageTestBase {
     doc.setTestValue1("test");
 
     Class<TestSystemDocument> type = TestSystemDocument.class;
-    instance.addItem(type, doc);
+    storage.addItem(type, doc);
 
-    verifyCollectionSize(1, "testsystemdocument", instance.db);
+    verifyCollectionSize(1, "testsystemdocument", storage.db);
   }
 
   @Test(expected = MongoException.class)
@@ -184,8 +184,8 @@ public class MongoStorageTest extends MongoStorageTestBase {
     doc.setTestValue1("test");
 
     Class<TestSystemDocument> type = TestSystemDocument.class;
-    instance.addItem(type, doc);
-    instance.addItem(type, doc);
+    storage.addItem(type, doc);
+    storage.addItem(type, doc);
   }
 
   @Test
@@ -196,9 +196,9 @@ public class MongoStorageTest extends MongoStorageTestBase {
     expected.setTestValue1("test");
 
     Class<TestSystemDocument> type = TestSystemDocument.class;
-    instance.addItem(type, expected);
+    storage.addItem(type, expected);
 
-    TestSystemDocument actual = instance.getItem(type, id);
+    TestSystemDocument actual = storage.getItem(type, id);
 
     assertEquals(null, MongoDiff.diffDocuments(expected, actual));
   }
@@ -209,9 +209,9 @@ public class MongoStorageTest extends MongoStorageTestBase {
     expected.setTestValue1("test");
 
     Class<TestSystemDocument> type = TestSystemDocument.class;
-    instance.addItem(type, expected);
+    storage.addItem(type, expected);
 
-    TestSystemDocument actual = instance.getItem(type, expected.getId());
+    TestSystemDocument actual = storage.getItem(type, expected.getId());
 
     assertEquals(null, MongoDiff.diffDocuments(expected, actual));
   }
@@ -224,20 +224,20 @@ public class MongoStorageTest extends MongoStorageTestBase {
     expected.setTestValue1("test");
 
     Class<TestSystemDocument> type = TestSystemDocument.class;
-    instance.addItem(type, expected);
+    storage.addItem(type, expected);
 
     expected.setName("name");
 
-    instance.updateItem(type, id, expected);
+    storage.updateItem(type, id, expected);
 
-    TestSystemDocument actual = instance.getItem(type, id);
+    TestSystemDocument actual = storage.getItem(type, id);
 
     assertEquals(null, MongoDiff.diffDocuments(expected, actual));
   }
 
   @Test
   public void testGetItemNonExistent() {
-    TestSystemDocument doc = instance.getItem(TestSystemDocument.class, "TSD0000000001");
+    TestSystemDocument doc = storage.getItem(TestSystemDocument.class, "TSD0000000001");
 
     assertNull(doc);
   }
@@ -250,14 +250,14 @@ public class MongoStorageTest extends MongoStorageTestBase {
     expected.setTestValue1("test");
 
     Class<TestSystemDocument> type = TestSystemDocument.class;
-    instance.addItem(type, expected);
+    storage.addItem(type, expected);
 
-    instance.deleteItem(type, id, null);
+    storage.deleteItem(type, id, null);
 
     expected.setDeleted(true);
     expected.setRev(1);
 
-    TestSystemDocument actual = instance.getItem(type, id);
+    TestSystemDocument actual = storage.getItem(type, id);
 
     assertEquals(null, MongoDiff.diffDocuments(expected, actual));
   }
@@ -265,19 +265,19 @@ public class MongoStorageTest extends MongoStorageTestBase {
   @Test
   public void testGetAllByType() throws IOException {
     setUpDatabase();
-    assertEquals(3, instance.getAllByType(TestSystemDocument.class).size());
+    assertEquals(3, storage.getAllByType(TestSystemDocument.class).size());
   }
 
   @Test
   public void testGetAllByTypeNonFound() throws IOException {
-    assertEquals(0, instance.getAllByType(TestSystemDocument.class).size());
+    assertEquals(0, storage.getAllByType(TestSystemDocument.class).size());
   }
 
   @Test
   public void testEmpty() throws IOException {
     setUpDatabase();
-    instance.empty();
-    assertEquals(0, instance.getAllByType(TestSystemDocument.class).size());
+    storage.empty();
+    assertEquals(0, storage.getAllByType(TestSystemDocument.class).size());
   }
 
 }
