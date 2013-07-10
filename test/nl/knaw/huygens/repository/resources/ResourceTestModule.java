@@ -9,7 +9,7 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.mail.MailSender;
 import nl.knaw.huygens.repository.managers.SearchManager;
-import nl.knaw.huygens.repository.managers.StorageManager;
+import nl.knaw.huygens.repository.storage.StorageManager;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Provides;

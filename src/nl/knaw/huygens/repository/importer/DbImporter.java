@@ -11,9 +11,9 @@ import java.util.List;
 
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
+import nl.knaw.huygens.repository.storage.StorageManager;
 
 import org.mongojack.internal.MongoJacksonMapperModule;
 

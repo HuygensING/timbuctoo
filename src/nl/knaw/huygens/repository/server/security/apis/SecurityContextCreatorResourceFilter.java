@@ -3,9 +3,9 @@ package nl.knaw.huygens.repository.server.security.apis;
 import java.io.IOException;
 
 import nl.knaw.huygens.repository.mail.MailSender;
-import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.User;
 import nl.knaw.huygens.repository.server.security.UserSecurityContext;
+import nl.knaw.huygens.repository.storage.StorageManager;
 
 import org.apache.commons.lang.StringUtils;
 import org.surfnet.oaaas.model.VerifyTokenResponse;
