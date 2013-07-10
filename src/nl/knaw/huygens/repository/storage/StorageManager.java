@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.managers;
+package nl.knaw.huygens.repository.storage;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -19,9 +19,6 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
-import nl.knaw.huygens.repository.storage.RevisionChanges;
-import nl.knaw.huygens.repository.storage.VariationStorage;
-import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.generic.StorageUtils;
 import nl.knaw.huygens.repository.variation.VariationUtils;

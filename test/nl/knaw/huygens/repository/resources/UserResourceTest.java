@@ -14,8 +14,8 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.repository.mail.MailSender;
-import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.User;
+import nl.knaw.huygens.repository.storage.StorageManager;
 
 import org.apache.commons.collections.map.HashedMap;
 import org.junit.Test;

@@ -21,9 +21,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.storage.StorageManager;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 
 import com.fasterxml.jackson.annotation.JsonView;

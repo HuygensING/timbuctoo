@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.ckcc.CKCCPerson;
 import nl.knaw.huygens.repository.model.dwcbia.DWCScientist;
@@ -12,6 +11,7 @@ import nl.knaw.huygens.repository.model.util.Datable;
 import nl.knaw.huygens.repository.model.util.PersonName;
 import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.repository.storage.StorageIterator;
+import nl.knaw.huygens.repository.storage.StorageManager;
 import nl.knaw.huygens.repository.util.CSVImporter;
 
 /**
