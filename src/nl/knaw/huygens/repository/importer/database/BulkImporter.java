@@ -4,6 +4,7 @@ import javax.jms.JMSException;
 
 import nl.knaw.huygens.repository.config.BasicInjectionModule;
 import nl.knaw.huygens.repository.config.Configuration;
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.IndexManager;
 import nl.knaw.huygens.repository.index.IndexService;
 import nl.knaw.huygens.repository.messages.Broker;
@@ -62,7 +63,8 @@ public class BulkImporter {
       CKCCPersonImporter csvImporter = new CKCCPersonImporter(storageManager);
       csvImporter.handleFile("testdata/ckcc-persons.txt", 9, false);
 
-      // new AtlantischeGidsImporter(storageManager, "../AtlantischeGids/work/").importAll();
+      // DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
+      // new AtlantischeGidsImporter(registry, storageManager, "../AtlantischeGids/work/").importAll();
 
       storageManager.ensureIndices();
 
