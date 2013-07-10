@@ -29,8 +29,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
@@ -39,20 +37,19 @@ import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 import com.mongodb.util.JSON;
 
-@Singleton
 public class MongoStorage implements BasicStorage {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoStorage.class);
 
-  protected Mongo mongo;
+  private Mongo mongo;
   protected DB db;
-  protected String dbName;
+  private String dbName;
 
   private final String COUNTER_COLLECTION_NAME = "counters";
   protected JacksonDBCollection<Counter, String> counterCol;
 
   private Set<String> documentCollections;
-  protected Set<String> versionedDocumentTypes;
+  private Set<String> versionedDocumentTypes;
   private final DocTypeRegistry docTypeRegistry;
 
   static class Counter {
@@ -61,9 +58,8 @@ public class MongoStorage implements BasicStorage {
     public int next;
   }
 
-  @Inject
-  public MongoStorage(StorageConfiguration conf, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
-    this.docTypeRegistry = docTypeRegistry;
+  public MongoStorage(StorageConfiguration conf, DocTypeRegistry registry) throws UnknownHostException, MongoException {
+    docTypeRegistry = registry;
     dbName = conf.getDbName();
     mongo = new Mongo(conf.getHost(), conf.getPort());
     db = mongo.getDB(dbName);
@@ -74,17 +70,17 @@ public class MongoStorage implements BasicStorage {
     initializeDB(conf);
   }
 
+  public MongoStorage(StorageConfiguration conf, Mongo m, DB loanedDB, DocTypeRegistry registry) {
+    mongo = m;
+    db = loanedDB;
+    docTypeRegistry = registry;
+    initializeDB(conf);
+  }
+
   private void initializeDB(StorageConfiguration conf) {
     counterCol = JacksonDBCollection.wrap(db.getCollection(COUNTER_COLLECTION_NAME), Counter.class, String.class);
     documentCollections = conf.getDocumentTypes();
     versionedDocumentTypes = conf.getVersionedTypes();
-  }
-
-  public MongoStorage(StorageConfiguration conf, Mongo m, DB loanedDB, DocTypeRegistry docTypeRegistry) {
-    mongo = m;
-    db = loanedDB;
-    this.docTypeRegistry = docTypeRegistry;
-    initializeDB(conf);
   }
 
   public void resetDB(DB db) {
