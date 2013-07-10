@@ -12,7 +12,10 @@ public interface BasicStorage {
 
   void empty();
 
-  void destroy();
+  /**
+   * Closes the underlying storage.
+   */
+  void close();
 
   <T extends Document> T getItem(Class<T> type, String id) throws IOException;
 

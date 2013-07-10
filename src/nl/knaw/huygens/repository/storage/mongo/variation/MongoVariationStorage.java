@@ -123,10 +123,10 @@ public class MongoVariationStorage implements VariationStorage {
   }
 
   @Override
-  public void destroy() {
+  public void close() {
     db.cleanCursors(true);
     mongo.close();
-    LOG.info("Stopped");
+    LOG.info("Closed");
   }
 
   protected DB getDB() {

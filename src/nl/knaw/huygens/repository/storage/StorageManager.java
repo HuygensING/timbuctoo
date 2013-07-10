@@ -282,7 +282,7 @@ public class StorageManager {
   }
 
   public void close() {
-    storage.destroy();
+    storage.close();
     if (producer != null) {
       producer.closeQuietly();
     }
