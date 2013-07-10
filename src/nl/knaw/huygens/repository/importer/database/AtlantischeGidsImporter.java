@@ -17,7 +17,6 @@ import nl.knaw.huygens.repository.model.atlg.ATLGLegislation;
 import nl.knaw.huygens.repository.model.atlg.ATLGPerson;
 import nl.knaw.huygens.repository.model.util.PersonName;
 import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
-import nl.knaw.huygens.repository.storage.StorageManager;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -47,7 +46,7 @@ public class AtlantischeGidsImporter {
 
   private final ObjectMapper objectMapper;
   private final DocTypeRegistry docTypeRegistry;
-  private final StorageManager storageManager;
+  private final DataPoster dataPoster;
   private final File inputDir;
 
   private Map<String, DocumentRef> keywordRefMap;
@@ -57,23 +56,23 @@ public class AtlantischeGidsImporter {
   private Map<String, DocumentRef> creatormatRefMap;
   private int errors;
 
-  public AtlantischeGidsImporter(DocTypeRegistry registry, StorageManager manager, String inputDirName) {
+  public AtlantischeGidsImporter(DocTypeRegistry registry, DataPoster poster, String inputDirName) {
     System.out.printf("%n.. Importing from %s%n", inputDirName);
     objectMapper = new ObjectMapper();
     docTypeRegistry = registry;
-    storageManager = manager;
+    dataPoster = poster;
     inputDir = new File(inputDirName);
     errors = 0;
   }
 
-  private <T extends Document> DocumentRef newDocumentRef(Class<T> typeToken, T document) {
-    String type = docTypeRegistry.getTypeString(typeToken);
-    return new DocumentRef(type, document.getId(), document.getDisplayName());
+  private <T extends Document> DocumentRef newDocumentRef(Class<T> type, T document) {
+    String typeString = docTypeRegistry.getTypeString(type);
+    return new DocumentRef(typeString, document.getId(), document.getDisplayName());
   }
 
-  private <T extends Document> DocumentRef newDocumentRef(Class<T> typeToken, String id, String displayName) {
-    String type = docTypeRegistry.getTypeString(typeToken);
-    return new DocumentRef(type, id, displayName);
+  private <T extends Document> DocumentRef newDocumentRef(Class<T> type, String id, String displayName) {
+    String typeString = docTypeRegistry.getTypeString(type);
+    return new DocumentRef(typeString, id, displayName);
   }
 
   private void handleError(String format, Object... args) {
@@ -127,9 +126,9 @@ public class AtlantischeGidsImporter {
       String id = xkeyword._id;
       if (refs.containsKey(id)) {
         System.err.printf("## [%s] Duplicate id %s%n", KEYWORD_FILE, id);
-      } else if (storageManager != null) {
+      } else if (dataPoster != null) {
         ATLGKeyword keyword = convert(xkeyword);
-        storageManager.addDocument(ATLGKeyword.class, keyword);
+        dataPoster.addDocument(ATLGKeyword.class, keyword, true);
         refs.put(id, newDocumentRef(ATLGKeyword.class, keyword));
       }
     }
@@ -172,9 +171,9 @@ public class AtlantischeGidsImporter {
       String id = xperson._id;
       if (refs.containsKey(id)) {
         handleError("[%s] Duplicate id %s", PERSON_FILE, id);
-      } else if (storageManager != null) {
+      } else if (dataPoster != null) {
         ATLGPerson person = convert(xperson);
-        storageManager.addDocument(ATLGPerson.class, person);
+        dataPoster.addDocument(ATLGPerson.class, person, true);
         refs.put(id, newDocumentRef(ATLGPerson.class, person));
       }
     }
@@ -225,9 +224,9 @@ public class AtlantischeGidsImporter {
         String id = wetgeving._id;
         if (refs.containsKey(id)) {
           handleError("[%s] Duplicate id %s", file.getName(), id);
-        } else if (storageManager != null) {
+        } else if (dataPoster != null) {
           ATLGLegislation legislation = convert(wetgeving);
-          storageManager.addDocument(ATLGLegislation.class, legislation);
+          dataPoster.addDocument(ATLGLegislation.class, legislation, true);
           refs.put(id, newDocumentRef(ATLGLegislation.class, legislation));
         }
       }
@@ -300,9 +299,9 @@ public class AtlantischeGidsImporter {
         String id = object._id;
         if (refs.containsKey(id)) {
           handleError("[%s] Duplicate id %s", file.getName(), id);
-        } else if (storageManager != null) {
+        } else if (dataPoster != null) {
           ATLGArchive archive = convert(object);
-          storageManager.addDocument(ATLGArchive.class, archive, false);
+          dataPoster.addDocument(ATLGArchive.class, archive, false);
           refs.put(id, newDocumentRef(ATLGArchive.class, archive));
         }
       }
@@ -388,9 +387,9 @@ public class AtlantischeGidsImporter {
   }
 
   private void resolveATLGArchiveRefs() throws Exception {
-    if (storageManager != null) {
+    if (dataPoster != null) {
       for (String archiveId : getDocumentIds(archiefmatRefMap)) {
-        ATLGArchive archive = storageManager.getDocument(ATLGArchive.class, archiveId);
+        ATLGArchive archive = dataPoster.getDocument(ATLGArchive.class, archiveId);
         List<DocumentRef> oldRefs = archive.getOverheadArchives();
         if (oldRefs != null && oldRefs.size() != 0) {
           List<DocumentRef> newRefs = resolveRefs(archiefmatRefMap, archive.getOrigFilename(), "overhead archive", oldRefs);
@@ -406,7 +405,7 @@ public class AtlantischeGidsImporter {
           List<DocumentRef> newRefs = resolveRefs(archiefmatRefMap, archive.getOrigFilename(), "related unit archive", oldRefs);
           archive.setRelatedUnitArchives(newRefs);
         }
-        storageManager.modifyDocument(ATLGArchive.class, archive);
+        dataPoster.modDocument(ATLGArchive.class, archive);
       }
     }
   }
@@ -446,9 +445,9 @@ public class AtlantischeGidsImporter {
         String id = creator._id;
         if (refs.containsKey(id)) {
           System.err.println("duplicate id " + id);
-        } else if (storageManager != null) {
+        } else if (dataPoster != null) {
           ATLGArchiver archiver = convert(creator);
-          storageManager.addDocument(ATLGArchiver.class, archiver, false);
+          dataPoster.addDocument(ATLGArchiver.class, archiver, false);
           refs.put(id, newDocumentRef(ATLGArchiver.class, archiver));
         }
       }
@@ -519,9 +518,9 @@ public class AtlantischeGidsImporter {
   }
 
   private void resolveATLGArchiverRefs() throws Exception {
-    if (storageManager != null) {
+    if (dataPoster != null) {
       for (String id : getDocumentIds(creatormatRefMap)) {
-        ATLGArchiver archiver = storageManager.getDocument(ATLGArchiver.class, id);
+        ATLGArchiver archiver = dataPoster.getDocument(ATLGArchiver.class, id);
         List<DocumentRef> oldRefs = archiver.getRelatedArchives();
         if (oldRefs != null && oldRefs.size() != 0) {
           List<DocumentRef> newRefs = resolveRefs(archiefmatRefMap, archiver.getOrigFilename(), "related archives", oldRefs);
@@ -532,7 +531,7 @@ public class AtlantischeGidsImporter {
           List<DocumentRef> newRefs = resolveRefs(creatormatRefMap, archiver.getOrigFilename(), "related archivers", oldRefs);
           archiver.setRelatedArchivers(newRefs);
         }
-        storageManager.modifyDocument(ATLGArchiver.class, archiver);
+        dataPoster.modDocument(ATLGArchiver.class, archiver);
       }
     }
   }
@@ -645,7 +644,6 @@ public class AtlantischeGidsImporter {
     /** "Record made by-" */
     public String made_by;
 
-    // TODO Check: correct identification
     /** "Reminders" */
     public String Aantekeningen;
 
