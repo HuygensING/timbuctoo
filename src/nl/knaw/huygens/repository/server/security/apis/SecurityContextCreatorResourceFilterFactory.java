@@ -5,8 +5,8 @@ import java.security.Principal;
 import javax.ws.rs.core.SecurityContext;
 
 import nl.knaw.huygens.repository.mail.MailSender;
-import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.server.security.AbstractRolesAllowedResourceFilterFactory;
+import nl.knaw.huygens.repository.storage.StorageManager;
 
 import com.google.inject.Inject;
 import com.sun.jersey.api.model.AbstractMethod;

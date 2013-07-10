@@ -7,8 +7,8 @@ import nl.knaw.huygens.repository.config.BasicInjectionModule;
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.ServletInjectionModule;
 import nl.knaw.huygens.repository.index.IndexService;
-import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.messages.Broker;
+import nl.knaw.huygens.repository.storage.StorageManager;
 
 import org.apache.commons.configuration.ConfigurationException;
 

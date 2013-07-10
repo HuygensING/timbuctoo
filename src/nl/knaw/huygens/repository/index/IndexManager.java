@@ -7,8 +7,8 @@ import java.util.Set;
 
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.storage.StorageManager;
 
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;

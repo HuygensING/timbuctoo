@@ -6,9 +6,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 
-import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.User;
 import nl.knaw.huygens.repository.server.security.apis.SecurityContextCreatorResourceFilterFactory;
+import nl.knaw.huygens.repository.storage.StorageManager;
 
 import org.junit.After;
 import org.junit.Before;

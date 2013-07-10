@@ -19,9 +19,9 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.SearchManager;
-import nl.knaw.huygens.repository.managers.StorageManager;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
+import nl.knaw.huygens.repository.storage.StorageManager;
 import nl.knaw.huygens.solr.FacetCount;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 

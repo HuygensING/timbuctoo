@@ -14,6 +14,7 @@ import nl.knaw.huygens.repository.index.IndexException;
 import nl.knaw.huygens.repository.index.IndexerFactory;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.pubsub.Subscribe;
+import nl.knaw.huygens.repository.storage.StorageManager;
 import nl.knaw.huygens.repository.variation.VariationUtils;
 
 import com.google.common.collect.Lists;
