@@ -23,7 +23,8 @@ import com.google.common.collect.Sets;
 import com.mongodb.MongoException;
 
 public class MongoModifiableStorageTest extends MongoStorageTestBase {
-  private MongoModifiableStorage instance;
+
+  private MongoStorage instance;
   private static DocTypeRegistry docTypeRegistry;
 
   private void setUpDatabase() throws IOException {
@@ -50,7 +51,7 @@ public class MongoModifiableStorageTest extends MongoStorageTestBase {
   @Before
   public void setUp() throws UnknownHostException, MongoException {
     when(storageConfiguration.getVersionedTypes()).thenReturn(Sets.newHashSet("testsystemdocument"));
-    instance = new MongoModifiableStorage(storageConfiguration, docTypeRegistry);
+    instance = new MongoStorage(storageConfiguration, docTypeRegistry);
   }
 
   @After

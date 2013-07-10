@@ -15,7 +15,7 @@ import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
-import nl.knaw.huygens.repository.storage.mongo.MongoModifiableStorage;
+import nl.knaw.huygens.repository.storage.mongo.MongoStorage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,7 @@ public class MongoStorageFacade implements VariationStorage {
   private final String dbName;
   private final Mongo mongo;
   private DB db;
-  private final MongoModifiableStorage plainStorage;
+  private final MongoStorage plainStorage;
   private final MongoModifiableVariationStorage variationStorage;
 
   @Inject
@@ -53,7 +53,7 @@ public class MongoStorageFacade implements VariationStorage {
     if (conf.requiresAuth()) {
       db.authenticate(conf.getUser(), conf.getPassword().toCharArray());
     }
-    plainStorage = new MongoModifiableStorage(conf, mongo, db, registry);
+    plainStorage = new MongoStorage(conf, mongo, db, registry);
     variationStorage = new MongoModifiableVariationStorage(conf, mongo, db, options, registry);
   }
 
