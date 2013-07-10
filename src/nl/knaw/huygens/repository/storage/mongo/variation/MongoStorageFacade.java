@@ -41,7 +41,7 @@ public class MongoStorageFacade implements VariationStorage {
   private final Mongo mongo;
   private DB db;
   private final MongoStorage plainStorage;
-  private final MongoModifiableVariationStorage variationStorage;
+  private final MongoVariationStorage variationStorage;
 
   @Inject
   public MongoStorageFacade(StorageConfiguration conf, DocTypeRegistry registry) throws UnknownHostException, MongoException {
@@ -54,7 +54,7 @@ public class MongoStorageFacade implements VariationStorage {
       db.authenticate(conf.getUser(), conf.getPassword().toCharArray());
     }
     plainStorage = new MongoStorage(conf, mongo, db, registry);
-    variationStorage = new MongoModifiableVariationStorage(conf, mongo, db, options, registry);
+    variationStorage = new MongoVariationStorage(conf, mongo, db, options, registry);
   }
 
   @Override
