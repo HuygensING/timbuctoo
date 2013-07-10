@@ -67,10 +67,10 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public void destroy() {
+  public void close() {
     db.cleanCursors(true);
     mongo.close();
-    LOG.info("Stopped Mongo");
+    LOG.info("Closed");
   }
 
   // -------------------------------------------------------------------
