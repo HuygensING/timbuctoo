@@ -20,6 +20,8 @@ import nl.knaw.huygens.repository.storage.generic.StorageUtils;
 import org.mongojack.DBCursor;
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,6 +41,8 @@ import com.mongodb.util.JSON;
 
 @Singleton
 public class MongoStorage implements BasicStorage {
+
+  private static final Logger LOG = LoggerFactory.getLogger(MongoStorage.class);
 
   protected Mongo mongo;
   protected DB db;
@@ -98,7 +102,7 @@ public class MongoStorage implements BasicStorage {
   public void destroy() {
     db.cleanCursors(true);
     mongo.close();
-    System.err.println("Stopped Mongo.");
+    LOG.info("Stopped Mongo");
   }
 
   // -------------------------------------------------------------------
