@@ -52,7 +52,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @After
   public void tearDown() {
-    instance.db.dropDatabase();
+    instance.getDB().dropDatabase();
     instance.destroy();
     instance = null;
   }
@@ -64,8 +64,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     instance.addItem(type, input);
 
-    verifyCollectionSize(1, "testconcretedoc", instance.db);
-    verifyCollectionSize(1, "testconcretedoc-versions", instance.db);
+    verifyCollectionSize(1, "testconcretedoc", instance.getDB());
+    verifyCollectionSize(1, "testconcretedoc-versions", instance.getDB());
   }
 
   @Test
@@ -76,8 +76,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     instance.addItem(TestDocWithIDPrefix.class, input);
 
-    verifyCollectionSize(1, "testconcretedoc", instance.db);
-    verifyCollectionSize(1, "testconcretedoc-versions", instance.db);
+    verifyCollectionSize(1, "testconcretedoc", instance.getDB());
+    verifyCollectionSize(1, "testconcretedoc-versions", instance.getDB());
   }
 
   @Test
@@ -87,8 +87,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     instance.addItem(type, input);
 
-    verifyCollectionSize(1, "testconcretedoc", instance.db);
-    verifyCollectionSize(1, "testconcretedoc-versions", instance.db);
+    verifyCollectionSize(1, "testconcretedoc", instance.getDB());
+    verifyCollectionSize(1, "testconcretedoc-versions", instance.getDB());
   }
 
   @Test(expected = MongoException.class)
@@ -109,8 +109,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     instance.addItem(GeneralTestDoc.class, input);
 
-    verifyCollectionSize(1, "testconcretedoc", instance.db);
-    verifyCollectionSize(1, "testconcretedoc-versions", instance.db);
+    verifyCollectionSize(1, "testconcretedoc", instance.getDB());
+    verifyCollectionSize(1, "testconcretedoc-versions", instance.getDB());
   }
 
   @Test
@@ -120,8 +120,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     instance.addItems(type, items);
 
-    verifyCollectionSize(3, "testconcretedoc", instance.db);
-    verifyCollectionSize(3, "testconcretedoc-versions", instance.db);
+    verifyCollectionSize(3, "testconcretedoc", instance.getDB());
+    verifyCollectionSize(3, "testconcretedoc-versions", instance.getDB());
   }
 
   @Test
@@ -131,8 +131,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     instance.addItems(type, items);
 
-    verifyCollectionSize(3, "testconcretedoc", instance.db);
-    verifyCollectionSize(3, "testconcretedoc-versions", instance.db);
+    verifyCollectionSize(3, "testconcretedoc", instance.getDB());
+    verifyCollectionSize(3, "testconcretedoc-versions", instance.getDB());
   }
 
   @Test
@@ -145,8 +145,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     input.name = "updated";
     instance.updateItem(type, input.getId(), input);
 
-    verifyCollectionSize(1, "testconcretedoc", instance.db);
-    verifyCollectionSize(1, "testconcretedoc-versions", instance.db);
+    verifyCollectionSize(1, "testconcretedoc", instance.getDB());
+    verifyCollectionSize(1, "testconcretedoc-versions", instance.getDB());
   }
 
   @Test
@@ -162,8 +162,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     instance.updateItem(type, DEFAULT_ID, subClassInput);
 
-    verifyCollectionSize(1, "testconcretedoc", instance.db);
-    verifyCollectionSize(1, "testconcretedoc-versions", instance.db);
+    verifyCollectionSize(1, "testconcretedoc", instance.getDB());
+    verifyCollectionSize(1, "testconcretedoc-versions", instance.getDB());
   }
 
   @Test(expected = IOException.class)
@@ -185,8 +185,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     instance.deleteItem(type, DEFAULT_ID, null);
 
-    verifyCollectionSize(1, "testconcretedoc", instance.db);
-    verifyCollectionSize(1, "testconcretedoc-versions", instance.db);
+    verifyCollectionSize(1, "testconcretedoc", instance.getDB());
+    verifyCollectionSize(1, "testconcretedoc-versions", instance.getDB());
 
   }
 

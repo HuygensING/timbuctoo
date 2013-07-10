@@ -29,6 +29,8 @@ import org.apache.commons.lang.NotImplementedException;
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
 import org.mongojack.internal.stream.JacksonDBObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -39,7 +41,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.inject.Singleton;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -50,24 +51,25 @@ import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
-@Singleton
 public class MongoVariationStorage implements VariationStorage {
 
-  protected Mongo mongo;
-  protected DB db;
-  protected String dbName;
+  private static final Logger LOG = LoggerFactory.getLogger(MongoVariationStorage.class);
+
+  private Mongo mongo;
+  private DB db;
+  private String dbName;
 
   private final String COUNTER_COLLECTION_NAME = "counters";
-  protected JacksonDBCollection<Counter, String> counterCol;
+  private JacksonDBCollection<Counter, String> counterCol;
 
   private Set<String> documentCollections;
 
-  protected VariationInducer inducer;
-  protected VariationReducer reducer;
-  protected MongoOptions options;
+  private VariationInducer inducer;
+  private VariationReducer reducer;
+  private MongoOptions options;
 
   private ObjectMapper objectMapper;
-  protected TreeEncoderFactory treeEncoderFactory;
+  private TreeEncoderFactory treeEncoderFactory;
   private TreeDecoderFactory treeDecoderFactory;
 
   static class Counter {
@@ -124,7 +126,11 @@ public class MongoVariationStorage implements VariationStorage {
   public void destroy() {
     db.cleanCursors(true);
     mongo.close();
-    System.err.println("Stopped Mongo.");
+    LOG.info("Stopped");
+  }
+
+  protected DB getDB() {
+    return db;
   }
 
   public void resetDB(DB db) {
