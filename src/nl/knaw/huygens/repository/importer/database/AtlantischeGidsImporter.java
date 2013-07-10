@@ -5,6 +5,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.repository.config.BasicInjectionModule;
+import nl.knaw.huygens.repository.config.Configuration;
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
+import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DocumentRef;
 import nl.knaw.huygens.repository.model.atlg.ATLGArchive;
 import nl.knaw.huygens.repository.model.atlg.ATLGArchiver;
@@ -23,11 +27,17 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 public class AtlantischeGidsImporter {
 
   public static void main(String[] args) throws Exception {
-    new AtlantischeGidsImporter(null, "../AtlantischeGids/work/").importAll();
+    Configuration config = new Configuration("config.xml");
+    Injector injector = Guice.createInjector(new BasicInjectionModule(config));
+    DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
+
+    new AtlantischeGidsImporter(registry, null, "../AtlantischeGids/work/").importAll();
     System.out.printf("%n.. done%n");
   }
 
@@ -36,6 +46,7 @@ public class AtlantischeGidsImporter {
   private static final String[] JSON_EXTENSION = { "json" };
 
   private final ObjectMapper objectMapper;
+  private final DocTypeRegistry docTypeRegistry;
   private final StorageManager storageManager;
   private final File inputDir;
 
@@ -46,12 +57,23 @@ public class AtlantischeGidsImporter {
   private Map<String, DocumentRef> creatormatRefMap;
   private int errors;
 
-  public AtlantischeGidsImporter(StorageManager manager, String inputDirName) {
+  public AtlantischeGidsImporter(DocTypeRegistry registry, StorageManager manager, String inputDirName) {
     System.out.printf("%n.. Importing from %s%n", inputDirName);
     objectMapper = new ObjectMapper();
+    docTypeRegistry = registry;
     storageManager = manager;
     inputDir = new File(inputDirName);
     errors = 0;
+  }
+
+  private <T extends Document> DocumentRef newDocumentRef(Class<T> typeToken, T document) {
+    String type = docTypeRegistry.getTypeString(typeToken);
+    return new DocumentRef(type, document.getId(), document.getDisplayName());
+  }
+
+  private <T extends Document> DocumentRef newDocumentRef(Class<T> typeToken, String id, String displayName) {
+    String type = docTypeRegistry.getTypeString(typeToken);
+    return new DocumentRef(type, id, displayName);
   }
 
   private void handleError(String format, Object... args) {
@@ -108,7 +130,7 @@ public class AtlantischeGidsImporter {
       } else if (storageManager != null) {
         ATLGKeyword keyword = convert(xkeyword);
         storageManager.addDocument(ATLGKeyword.class, keyword);
-        refs.put(id, DocumentRef.newInstance(ATLGKeyword.class, keyword));
+        refs.put(id, newDocumentRef(ATLGKeyword.class, keyword));
       }
     }
     return refs;
@@ -153,7 +175,7 @@ public class AtlantischeGidsImporter {
       } else if (storageManager != null) {
         ATLGPerson person = convert(xperson);
         storageManager.addDocument(ATLGPerson.class, person);
-        refs.put(id, DocumentRef.newInstance(ATLGPerson.class, person));
+        refs.put(id, newDocumentRef(ATLGPerson.class, person));
       }
     }
     return refs;
@@ -206,7 +228,7 @@ public class AtlantischeGidsImporter {
         } else if (storageManager != null) {
           ATLGLegislation legislation = convert(wetgeving);
           storageManager.addDocument(ATLGLegislation.class, legislation);
-          refs.put(id, DocumentRef.newInstance(ATLGLegislation.class, legislation));
+          refs.put(id, newDocumentRef(ATLGLegislation.class, legislation));
         }
       }
     }
@@ -281,7 +303,7 @@ public class AtlantischeGidsImporter {
         } else if (storageManager != null) {
           ATLGArchive archive = convert(object);
           storageManager.addDocument(ATLGArchive.class, archive, false);
-          refs.put(id, DocumentRef.newInstance(ATLGArchive.class, archive));
+          refs.put(id, newDocumentRef(ATLGArchive.class, archive));
         }
       }
     }
@@ -338,15 +360,15 @@ public class AtlantischeGidsImporter {
       for (XRelated item : archiefmat.related) {
         if ("overhead_title".equals(item.type)) {
           for (String id : item.ids) {
-            archive.addOverheadArchive(new DocumentRef(ATLGArchive.class, id, "pending..."));
+            archive.addOverheadArchive(newDocumentRef(ATLGArchive.class, id, "pending..."));
           }
         } else if ("underlying_levels_titels".equals(item.type)) {
           for (String id : item.ids) {
-            archive.addUnderlyingArchive(new DocumentRef(ATLGArchive.class, id, "pending..."));
+            archive.addUnderlyingArchive(newDocumentRef(ATLGArchive.class, id, "pending..."));
           }
         } else if ("unit".equals(item.type)) {
           for (String id : item.ids) {
-            archive.addRelatedUnitArchive(new DocumentRef(ATLGArchive.class, id, "pending..."));
+            archive.addRelatedUnitArchive(newDocumentRef(ATLGArchive.class, id, "pending..."));
           }
         } else {
           handleError("Ignoring field 'related' with type '%s'", item.type);
@@ -427,7 +449,7 @@ public class AtlantischeGidsImporter {
         } else if (storageManager != null) {
           ATLGArchiver archiver = convert(creator);
           storageManager.addDocument(ATLGArchiver.class, archiver, false);
-          refs.put(id, DocumentRef.newInstance(ATLGArchiver.class, archiver));
+          refs.put(id, newDocumentRef(ATLGArchiver.class, archiver));
         }
       }
     }
@@ -477,11 +499,11 @@ public class AtlantischeGidsImporter {
       for (XRelated item : creator.related) {
         if ("archive".equals(item.type)) {
           for (String id : item.ids) {
-            archiver.addRelatedArchive(new DocumentRef(ATLGArchive.class, id, "pending..."));
+            archiver.addRelatedArchive(newDocumentRef(ATLGArchive.class, id, "pending..."));
           }
         } else if ("creator".equals(item.type)) {
           for (String id : item.ids) {
-            archiver.addRelatedArchiver(new DocumentRef(ATLGArchiver.class, id, "pending..."));
+            archiver.addRelatedArchiver(newDocumentRef(ATLGArchiver.class, id, "pending..."));
           }
         } else {
           handleError("Ignoring field 'related' with type '%s'", item.type);
