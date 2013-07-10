@@ -31,13 +31,6 @@ import com.google.inject.Singleton;
 @Singleton
 public class StorageManager {
 
-  /*
-   * TODO: use 3 types of Storage and Remove the use of MongoComplexStorage
-   * - Storage
-   * - PersistentStorage
-   * - VariationStorage
-   */
-
   private VariationStorage storage;
   private Map<Class<? extends Document>, Map<Class<? extends Document>, List<List<String>>>> annotationCache;
   private Set<String> documentTypes;
