@@ -32,6 +32,8 @@ import com.google.inject.Injector;
  */
 public class BulkImporter {
 
+  public static boolean ATLG = false;
+
   public static void main(String[] args) throws Exception {
     Configuration config = new Configuration("config.xml");
     Injector injector = Guice.createInjector(new BasicInjectionModule(config));
@@ -57,14 +59,17 @@ public class BulkImporter {
       GenericImporter importer = new GenericImporter(storageManager);
 
       long start = System.currentTimeMillis();
-      importer.importData("resources/DWCPlaceMapping.properties", DWCPlace.class);
-      importer.importData("resources/DWCScientistMapping.properties", DWCScientist.class);
-      importer.importData("resources/RAACivilServantMapping.properties", RAACivilServant.class);
-      CKCCPersonImporter csvImporter = new CKCCPersonImporter(storageManager);
-      csvImporter.handleFile("testdata/ckcc-persons.txt", 9, false);
-
-      // DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
-      // new AtlantischeGidsImporter(registry, storageManager, "../AtlantischeGids/work/").importAll();
+      if (ATLG) {
+        DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
+        DataPoster poster = new LocalDataPoster(storageManager);
+        new AtlantischeGidsImporter(registry, poster, "../AtlantischeGids/work/").importAll();
+      } else {
+        importer.importData("resources/DWCPlaceMapping.properties", DWCPlace.class);
+        importer.importData("resources/DWCScientistMapping.properties", DWCScientist.class);
+        importer.importData("resources/RAACivilServantMapping.properties", RAACivilServant.class);
+        CKCCPersonImporter csvImporter = new CKCCPersonImporter(storageManager);
+        csvImporter.handleFile("testdata/ckcc-persons.txt", 9, false);
+      }
 
       storageManager.ensureIndices();
 
