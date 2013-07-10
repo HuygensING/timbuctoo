@@ -33,7 +33,7 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 import com.mongodb.MongoException;
 
-public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
+public class MongoModifiableStorageTest extends MongoStorageTestBase {
   private static final String DEFAULT_ID = "TCD000000001";
   private MongoVariationStorage instance;
   private static DocTypeRegistry docTypeRegistry;
