@@ -35,7 +35,7 @@ import com.mongodb.MongoException;
 
 public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
   private static final String DEFAULT_ID = "TCD000000001";
-  private MongoModifiableVariationStorage instance;
+  private MongoVariationStorage instance;
   private static DocTypeRegistry docTypeRegistry;
 
   @BeforeClass
@@ -45,7 +45,7 @@ public class MongoModifiableVariationStorageTest extends MongoStorageTestBase {
 
   @Before
   public void setUp() throws UnknownHostException, MongoException {
-    instance = new MongoModifiableVariationStorage(storageConfiguration, docTypeRegistry);
+    instance = new MongoVariationStorage(storageConfiguration, docTypeRegistry);
   }
 
   @After
