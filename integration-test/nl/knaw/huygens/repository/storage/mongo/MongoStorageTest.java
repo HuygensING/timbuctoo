@@ -9,7 +9,6 @@ import java.net.UnknownHostException;
 import java.util.List;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.mongo.model.TestSystemDocument;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 
@@ -22,10 +21,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mongodb.MongoException;
 
-public class MongoModifiableStorageTest extends MongoStorageTestBase {
+public class MongoStorageTest extends MongoStorageTestBase {
+
+  private static DocTypeRegistry docTypeRegistry;
 
   private MongoStorage instance;
-  private static DocTypeRegistry docTypeRegistry;
 
   private void setUpDatabase() throws IOException {
     List<TestSystemDocument> docs = Lists.newArrayList(createTestSystemDocument("doc1", "testValue", "testValue2", "doc1", "doc1"),
@@ -264,28 +264,20 @@ public class MongoModifiableStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllByType() throws IOException {
-    this.setUpDatabase();
-
-    StorageIterator<TestSystemDocument> iterator = instance.getAllByType(TestSystemDocument.class);
-
-    assertEquals(3, iterator.size());
+    setUpDatabase();
+    assertEquals(3, instance.getAllByType(TestSystemDocument.class).size());
   }
 
   @Test
-  public void testGetAllByTypeNonFound() {
-    StorageIterator<TestSystemDocument> iterator = instance.getAllByType(TestSystemDocument.class);
-
-    assertEquals(0, iterator.size());
+  public void testGetAllByTypeNonFound() throws IOException {
+    assertEquals(0, instance.getAllByType(TestSystemDocument.class).size());
   }
 
   @Test
   public void testEmpty() throws IOException {
-    this.setUpDatabase();
+    setUpDatabase();
     instance.empty();
-
-    StorageIterator<TestSystemDocument> iterator = instance.getAllByType(TestSystemDocument.class);
-
-    assertEquals(0, iterator.size());
+    assertEquals(0, instance.getAllByType(TestSystemDocument.class).size());
   }
 
 }
