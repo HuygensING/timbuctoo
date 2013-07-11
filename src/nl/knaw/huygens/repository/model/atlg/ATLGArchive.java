@@ -7,6 +7,7 @@ import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Archive;
 import nl.knaw.huygens.repository.model.DocumentRef;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
 @DocumentTypeName("atlgarchive")
@@ -121,6 +122,26 @@ public class ATLGArchive extends Archive {
 
   public void setSubCode(String subCode) {
     this.subCode = subCode;
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "facet_s_refcode", canBeEmpty = true)
+  public String getIndexedRefCode() {
+    StringBuilder builder = new StringBuilder();
+    for (String country : getCountries()) {
+      appendTo(builder, country);
+    }
+    appendTo(builder, getRefCodeArchive());
+    return builder.toString();
+  }
+
+  private void appendTo(StringBuilder builder, String text) {
+    if (text != null && text.length() != 0) {
+      if (builder.length() != 0) {
+        builder.append(' ');
+      }
+      builder.append(text);
+    }
   }
 
   public String getSeries() {
