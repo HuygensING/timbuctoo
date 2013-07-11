@@ -42,7 +42,7 @@
       <port>25</port>
     </mail>
     <security>
-      <enabled>false</enabled>
+      <enabled>true</enabled>
       <apis>
         <!-- Apis security server -->
         <cache>true</cache>
@@ -75,7 +75,7 @@
     <doctypes>archive,archiver,keyword,legislation,person,place</doctypes>
     <indexeddoctypes>archive,archiver,keyword,legislation,person,place</indexeddoctypes>
     <versioneddoctypes>archive,archiver,keyword,legislation,person,place</versioneddoctypes>
-    <public_url>http://repository.huygens.knaw.nl/repository</public_url>
+    <public_url>http://repository.huygens.knaw.nl</public_url>
     <feed>
       <title>Repository changes</title>
     </feed>
