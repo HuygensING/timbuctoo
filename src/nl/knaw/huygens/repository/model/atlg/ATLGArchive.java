@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.model.atlg;
 import java.util.List;
 
 import nl.knaw.huygens.repository.annotations.DocumentTypeName;
+import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Archive;
 import nl.knaw.huygens.repository.model.DocumentRef;
 
@@ -13,9 +14,9 @@ public class ATLGArchive extends Archive {
 
   /** Migration: Name of source file */
   private String origFilename;
-  /** ING Forms: "Ref. code country" */
+  /** ING Forms: "Ref. code country"; refcode facet */
   private List<String> countries;
-  /** ING Forms: "Ref. code repository" */
+  /** ING Forms: "Ref. code repository"; refcode facet */
   private String refCodeArchive;
   /** ING Forms: "Reference code" */
   private String refCode;
@@ -27,11 +28,11 @@ public class ATLGArchive extends Archive {
   private String itemNo;
   /** ING Forms: "Title" */
   private String titleNld;
-  /** ING Forms: "English title" */
+  /** ING Forms: "English title"; text searchable */
   private String titleEng;
-  /** ING Forms: "Begin date" */
+  /** ING Forms: "Begin date"; date facet */
   private String beginDate;
-  /** ING Forms: "End date" */
+  /** ING Forms: "End date"; date facet */
   private String endDate;
   /** ING Forms: "Period description" */
   private String periodDescription;
@@ -43,13 +44,13 @@ public class ATLGArchive extends Archive {
   private List<String> creators;
   /** ING Forms: "Scope and content" */
   private String scope;
-  /** ING Forms: "Keyword(s) geography" */
+  /** ING Forms: "Keyword(s) geography"; place facet */
   private List<DocumentRef> placeKeywords;
-  /** ING Forms: "Keyword(s) subject" */
+  /** ING Forms: "Keyword(s) subject"; subject facet */
   private List<DocumentRef> subjectKeywords;
-  /** ING Forms: "Keyword(s) person" */
+  /** ING Forms: "Keyword(s) person"; person facet */
   private List<DocumentRef> persons;
-  /** ING Forms: "Remarks" */
+  /** ING Forms: "Remarks"; text searchable */
   private String notes;
   /** ING Forms: "Record made by-" */
   private String madeBy;
@@ -146,6 +147,7 @@ public class ATLGArchive extends Archive {
     titleNld = title;
   }
 
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true)
   public String getTitleEng() {
     return titleEng;
   }
@@ -214,6 +216,7 @@ public class ATLGArchive extends Archive {
     this.scope = scope;
   }
 
+  @IndexAnnotation(fieldName = "facet_s_place", accessors = { "getDisplayName" }, canBeEmpty = true)
   public List<DocumentRef> getPlaceKeywords() {
     return placeKeywords;
   }
@@ -228,6 +231,7 @@ public class ATLGArchive extends Archive {
     }
   }
 
+  @IndexAnnotation(fieldName = "facet_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true)
   public List<DocumentRef> getSubjectKeywords() {
     return subjectKeywords;
   }
@@ -242,6 +246,7 @@ public class ATLGArchive extends Archive {
     }
   }
 
+  @IndexAnnotation(fieldName = "facet_s_person", accessors = { "getDisplayName" }, canBeEmpty = true)
   public List<DocumentRef> getPersons() {
     return persons;
   }
@@ -256,6 +261,7 @@ public class ATLGArchive extends Archive {
     }
   }
 
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true)
   public String getNotes() {
     return notes;
   }

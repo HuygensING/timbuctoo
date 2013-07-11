@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.model.atlg;
 import java.util.List;
 
 import nl.knaw.huygens.repository.annotations.DocumentTypeName;
+import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.importer.database.AtlantischeGidsImporter.XRelated;
 import nl.knaw.huygens.repository.model.Archiver;
 import nl.knaw.huygens.repository.model.DocumentRef;
@@ -16,27 +17,27 @@ public class ATLGArchiver extends Archiver {
   private String origFilename;
   /** ING Forms: "Name" */
   private String nameNld;
-  /** ING Forms: "English name" */
+  /** ING Forms: "English name"; text searchable */
   public String nameEng;
-  /** ING Forms: "Begin date" */
+  /** ING Forms: "Begin date"; date facet */
   private String beginDate;
-  /** ING Forms: "End date" */
+  /** ING Forms: "End date"; date facet */
   private String endDate;
   /** ING Forms: "Period description" */
   private String periodDescription;
-  /** ING Forms: "History/functions/occupations/activities" */
+  /** ING Forms: "History/functions/occupations/activities"; text searchable */
   private String history;
   /** ING Forms: "Title(s) related archive(s)" */
   private List<DocumentRef> relatedArchives;
   /** ING Forms: "Title(s) related creator(s)" */
   private List<DocumentRef> relatedArchivers;
-  /** ING Forms: "Keyword(s) geography" */
+  /** ING Forms: "Keyword(s) geography"; place facet */
   private List<DocumentRef> placeKeywords;
-  /** ING Forms: "Keyword(s) subject" */
+  /** ING Forms: "Keyword(s) subject"; subject facet */
   private List<DocumentRef> subjectKeywords;
-  /** ING Forms: "Keyword(s) person" */
+  /** ING Forms: "Keyword(s) person"; person facet */
   private List<DocumentRef> persons;
-  /** ING Forms: "Remarks" */
+  /** ING Forms: "Remarks"; text searchable */
   private String notes;
   /** ING Forms: "Literature" */
   private String literature;
@@ -79,6 +80,7 @@ public class ATLGArchiver extends Archiver {
     nameNld = name;
   }
 
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true)
   public String getNameEng() {
     return nameEng;
   }
@@ -87,6 +89,7 @@ public class ATLGArchiver extends Archiver {
     nameEng = name;
   }
 
+  @IndexAnnotation(fieldName = "facet_t_begin_date", canBeEmpty = true)
   public String getBeginDate() {
     return beginDate;
   }
@@ -95,6 +98,7 @@ public class ATLGArchiver extends Archiver {
     beginDate = date;
   }
 
+  @IndexAnnotation(fieldName = "facet_t_end_date", canBeEmpty = true)
   public String getEndDate() {
     return endDate;
   }
@@ -111,6 +115,7 @@ public class ATLGArchiver extends Archiver {
     periodDescription = description;
   }
 
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true)
   public String getHistory() {
     return history;
   }
@@ -143,6 +148,7 @@ public class ATLGArchiver extends Archiver {
     relatedArchivers.add(ref);
   }
 
+  @IndexAnnotation(fieldName = "facet_s_place", accessors = { "getDisplayName" }, canBeEmpty = true)
   public List<DocumentRef> getPlaceKeywords() {
     return placeKeywords;
   }
@@ -157,6 +163,7 @@ public class ATLGArchiver extends Archiver {
     }
   }
 
+  @IndexAnnotation(fieldName = "facet_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true)
   public List<DocumentRef> getSubjectKeywords() {
     return subjectKeywords;
   }
@@ -171,6 +178,7 @@ public class ATLGArchiver extends Archiver {
     }
   }
 
+  @IndexAnnotation(fieldName = "facet_s_person", accessors = { "getDisplayName" }, canBeEmpty = true)
   public List<DocumentRef> getPersons() {
     return persons;
   }
@@ -185,6 +193,7 @@ public class ATLGArchiver extends Archiver {
     }
   }
 
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true)
   public String getNotes() {
     return notes;
   }
