@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.model.atlg;
 import java.util.List;
 
 import nl.knaw.huygens.repository.annotations.DocumentTypeName;
+import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.DocumentRef;
 import nl.knaw.huygens.repository.model.Legislation;
 
@@ -13,27 +14,27 @@ public class ATLGLegislation extends Legislation {
 
   /** Migration: Name of source file */
   private String origFilename;
-  /** ING Forms: "Reference" */
+  /** ING Forms: "Reference"; text searchable */
   private String reference;
   /** ING Forms: "Pages" */
   private String pages;
   /** ING Forms: "Short title" */
   private String titleNld;
-  /** ING Forms: "English title" */
+  /** ING Forms: "English title"; text searchable */
   private String titleEng;
   /** ING Forms: "Date" */
   private String date1;
   /** ING Forms: "Date 2" */
   private String date2;
-  /** ING Forms: "Keyword(s) geography" */
+  /** ING Forms: "Keyword(s) geography"; place facet */
   private List<DocumentRef> placeKeywords;
-  /** ING Forms: "Keyword(s) Group classification" */
+  /** ING Forms: "Keyword(s) Group classification"; subject facet */
   private List<DocumentRef> groupKeywords;
-  /** ING Forms: "Keyword(s) other subject" */
+  /** ING Forms: "Keyword(s) other subject"; subject facet */
   private List<DocumentRef> otherKeywords;
-  /** ING Forms: "Keyword(s) person" */
+  /** ING Forms: "Keyword(s) person"; person facet */
   private List<DocumentRef> persons;
-  /** ING Forms: "Summary of contents" */
+  /** ING Forms: "Summary of contents"; text searchable */
   private String contents;
   /** ING Forms: "See also" */
   private List<String> seeAlso;
@@ -76,6 +77,7 @@ public class ATLGLegislation extends Legislation {
     this.origFilename = origFilename;
   }
 
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true)
   public String getReference() {
     return reference;
   }
@@ -100,6 +102,7 @@ public class ATLGLegislation extends Legislation {
     this.titleNld = title;
   }
 
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true)
   public String getTitleEng() {
     return titleEng;
   }
@@ -108,6 +111,7 @@ public class ATLGLegislation extends Legislation {
     this.titleEng = title;
   }
 
+  @IndexAnnotation(fieldName = "facet_s_date", canBeEmpty = true)
   public String getDate1() {
     return date1;
   }
@@ -124,6 +128,7 @@ public class ATLGLegislation extends Legislation {
     this.date2 = date2;
   }
 
+  @IndexAnnotation(fieldName = "facet_s_place", accessors = { "getDisplayName" }, canBeEmpty = true)
   public List<DocumentRef> getPlaceKeywords() {
     return placeKeywords;
   }
@@ -138,6 +143,7 @@ public class ATLGLegislation extends Legislation {
     }
   }
 
+  @IndexAnnotation(fieldName = "facet_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true)
   public List<DocumentRef> getGroupKeywords() {
     return groupKeywords;
   }
@@ -152,6 +158,7 @@ public class ATLGLegislation extends Legislation {
     }
   }
 
+  @IndexAnnotation(fieldName = "facet_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true)
   public List<DocumentRef> getOtherKeywords() {
     return otherKeywords;
   }
@@ -166,6 +173,7 @@ public class ATLGLegislation extends Legislation {
     }
   }
 
+  @IndexAnnotation(fieldName = "facet_s_person", accessors = { "getDisplayName" }, canBeEmpty = true)
   public List<DocumentRef> getPersons() {
     return persons;
   }
@@ -180,6 +188,7 @@ public class ATLGLegislation extends Legislation {
     }
   }
 
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true)
   public String getContents() {
     return contents;
   }
