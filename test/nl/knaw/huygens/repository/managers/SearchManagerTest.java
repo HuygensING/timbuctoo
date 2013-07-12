@@ -49,95 +49,95 @@ public class SearchManagerTest {
   @Test
   public void testSearchOneResult() throws SolrServerException {
     List<String> documentIds = Lists.newArrayList("id1");
-    int numberOfFacets = 1;
+    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
     int numberOfFacetValues = 1;
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, numberOfFacets, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
   }
 
   @Test
   public void testSearchMultipleResults() throws SolrServerException {
     List<String> documentIds = Lists.newArrayList("id1", "id2", "id3", "id4");
-    int numberOfFacets = 1;
+    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
     int numberOfFacetValues = 1;
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, numberOfFacets, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
   }
 
   @Test
   public void testSearchNoResults() throws SolrServerException {
     List<String> documentIds = Lists.newArrayList();
-    int numberOfFacets = 1;
+    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
     int numberOfFacetValues = 1;
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, numberOfFacets, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
   }
 
   @Test
   public void testSearchWithOneFacetOneValue() throws SolrServerException {
     List<String> documentIds = Lists.newArrayList("id1");
-    int numberOfFacets = 1;
+    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
     int numberOfFacetValues = 1;
 
     List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("param", "value"));
 
     String expectedTerm = String.format("+facet_t_name:(%s) +param:(value)", SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, numberOfFacets, numberOfFacetValues, facetParameters, expectedTerm);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, numberOfFacetValues, facetParameters, expectedTerm);
   }
 
   @Test
   public void testSearchWithOneFacetMultipleValues() throws SolrServerException {
     List<String> documentIds = Lists.newArrayList("id1");
-    int numberOfFacets = 1;
+    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
     int numberOfFacetValues = 1;
 
     List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("param", "value", "value1"));
 
     String expectedTerm = String.format("+facet_t_name:(%s) +param:(value value1)", SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, numberOfFacets, numberOfFacetValues, facetParameters, expectedTerm);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, numberOfFacetValues, facetParameters, expectedTerm);
 
   }
 
   @Test
   public void testSearchWithMultipleFacetsOneValue() throws SolrServerException {
     List<String> documentIds = Lists.newArrayList("id1");
-    int numberOfFacets = 1;
+    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
     int numberOfFacetValues = 1;
 
     List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("param", "value"), createFacetParam("param1", "values"));
 
     String expectedTerm = String.format("+facet_t_name:(%s) +param:(value) +param1:(values)", SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, numberOfFacets, numberOfFacetValues, facetParameters, expectedTerm);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, numberOfFacetValues, facetParameters, expectedTerm);
   }
 
   @Test
   public void testSearchWithMultipleFacetsMultipleValues() throws SolrServerException {
     List<String> documentIds = Lists.newArrayList("id1");
-    int numberOfFacets = 1;
+    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
     int numberOfFacetValues = 1;
 
     List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("param", "value", "value1"), createFacetParam("param1", "value1", "value2"));
 
     String expectedTerm = String.format("+facet_t_name:(%s) +param:(value value1) +param1:(value1 value2)", SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, numberOfFacets, numberOfFacetValues, facetParameters, expectedTerm);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, numberOfFacetValues, facetParameters, expectedTerm);
 
   }
 
-  private void testSearch(Class<? extends Document> type, List<String> documentIds, String searchTerm, String typeString, int numberOfFacets, int numberOfFacetValues, List<FacetParameter> facetParameters,
-      String expectedTerm) throws SolrServerException {
+  private void testSearch(Class<? extends Document> type, List<String> documentIds, String searchTerm, String typeString, List<String> facetNames, int numberOfFacetValues,
+      List<FacetParameter> facetParameters, String expectedTerm) throws SolrServerException {
     FacetedSearchParameters searchParameters = new FacetedSearchParameters();
     searchParameters.setTerm(searchTerm);
     searchParameters.setTypeString(typeString);
     searchParameters.setFacetValues(facetParameters);
 
     SolrDocumentList docs = createSolrDocumentList(documentIds);
-    List<FacetField> facetFields = createFacetFieldList(numberOfFacets, numberOfFacetValues);
+    List<FacetField> facetFields = createFacetFieldList(facetNames, numberOfFacetValues);
     setUpQueryResponse(docs, facetFields);
 
-    List<FacetCount> facets = createFacetCountList(numberOfFacets, numberOfFacetValues);
+    List<FacetCount> facets = createFacetCountList(facetNames, numberOfFacetValues);
     SearchResult expected = createExpectedResult(TYPE_STRING, documentIds, expectedTerm, facets);
 
     SearchResult actual = instance.search(type, TYPE_STRING, searchParameters);
@@ -193,15 +193,15 @@ public class SearchManagerTest {
     return expected;
   }
 
-  private List<FacetCount> createFacetCountList(int numberOfFacets, int numberOfFacetValues) {
+  private List<FacetCount> createFacetCountList(List<String> facetFieldNames, int numberOfFacetValues) {
     List<FacetCount> facetCounts = Lists.newArrayList();
 
-    for (int i = 0; i < numberOfFacets; i++) {
+    for (String facetName : facetFieldNames) {
       FacetCount facetCount = new FacetCount();
-      facetCount.setName("" + i);
-      facetCount.setTitle("" + i);
+      facetCount.setName(facetName);
+      facetCount.setTitle(facetName);
       for (int j = 0; j < numberOfFacetValues; j++) {
-        facetCount.addOption(new Option().setName(i + " " + j).setCount(i + j));
+        facetCount.addOption(new Option().setName(facetName + " " + j).setCount(j));
       }
       facetCounts.add(facetCount);
     }
@@ -209,15 +209,15 @@ public class SearchManagerTest {
     return facetCounts;
   }
 
-  private List<FacetField> createFacetFieldList(int numberOfFacetFields, int numberOfCounts) {
+  private List<FacetField> createFacetFieldList(List<String> facetFieldNames, int numberOfCounts) {
     List<FacetField> facetFields = Lists.newArrayList();
 
-    for (int i = 0; i < numberOfFacetFields; i++) {
+    for (String facetFieldName : facetFieldNames) {
       List<Count> counts = Lists.newArrayList();
       for (int j = 0; j < numberOfCounts; j++) {
-        counts.add(createCount(i + j, "" + j));
+        counts.add(createCount(10, "" + j));
       }
-      facetFields.add(createFacetField("" + i, counts));
+      facetFields.add(createFacetField(facetFieldName, counts));
     }
 
     return facetFields;

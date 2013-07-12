@@ -77,7 +77,7 @@ public class ATLGLegislation extends Legislation {
     this.origFilename = origFilename;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = true)
   public String getReference() {
     return reference;
   }
@@ -102,7 +102,7 @@ public class ATLGLegislation extends Legislation {
     this.titleNld = title;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = true)
   public String getTitleEng() {
     return titleEng;
   }
@@ -111,7 +111,7 @@ public class ATLGLegislation extends Legislation {
     this.titleEng = title;
   }
 
-  @IndexAnnotation(fieldName = "facet_s_date", canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_s_date", canBeEmpty = true, isFaceted = true)
   public String getDate1() {
     return date1;
   }
@@ -128,7 +128,7 @@ public class ATLGLegislation extends Legislation {
     this.date2 = date2;
   }
 
-  @IndexAnnotation(fieldName = "facet_s_place", accessors = { "getDisplayName" }, canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<DocumentRef> getPlaceKeywords() {
     return placeKeywords;
   }
@@ -143,7 +143,7 @@ public class ATLGLegislation extends Legislation {
     }
   }
 
-  @IndexAnnotation(fieldName = "facet_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<DocumentRef> getGroupKeywords() {
     return groupKeywords;
   }
@@ -158,7 +158,7 @@ public class ATLGLegislation extends Legislation {
     }
   }
 
-  @IndexAnnotation(fieldName = "facet_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<DocumentRef> getOtherKeywords() {
     return otherKeywords;
   }
@@ -173,7 +173,7 @@ public class ATLGLegislation extends Legislation {
     }
   }
 
-  @IndexAnnotation(fieldName = "facet_s_person", accessors = { "getDisplayName" }, canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<DocumentRef> getPersons() {
     return persons;
   }
@@ -188,7 +188,7 @@ public class ATLGLegislation extends Legislation {
     }
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = true)
   public String getContents() {
     return contents;
   }
