@@ -22,8 +22,8 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 
 public class BulkDataPoster {
-  private static final String SERVICE_PATH = "repository/resources";
-  private static final String URL = "http://demo17.huygens.knaw.nl";
+  private static final String SERVICE_PATH = "resources";
+  private static final String URL = "http://repository.huygens.knaw.nl";
   /*
    * replace before running this file.
    * An access token can be created by the next url: http://demo17.huygens.knaw.nl/apis-example-client-app/test
