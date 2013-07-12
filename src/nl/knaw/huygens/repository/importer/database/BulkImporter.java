@@ -98,13 +98,13 @@ public class BulkImporter {
     }
   }
 
-  private static void sendEndOfDataMessage(Broker broker) throws JMSException {
-    Producer producer = broker.newProducer(Broker.INDEX_QUEUE, "BulkImporterProducer");
+  public static void sendEndOfDataMessage(Broker broker) throws JMSException {
+    Producer producer = broker.newProducer(Broker.INDEX_QUEUE, "ImporterProducer");
     producer.send(Broker.INDEX_END, "", "");
     producer.close();
   }
 
-  private static void waitForCompletion(Thread thread, long patience) throws InterruptedException {
+  public static void waitForCompletion(Thread thread, long patience) throws InterruptedException {
     long targetTime = System.currentTimeMillis() + patience;
     while (thread.isAlive()) {
       System.out.println("... indexing");
