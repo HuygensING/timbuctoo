@@ -8,6 +8,9 @@ import java.util.Map;
 import nl.knaw.huygens.repository.config.BasicInjectionModule;
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
+import nl.knaw.huygens.repository.index.IndexManager;
+import nl.knaw.huygens.repository.index.IndexService;
+import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DocumentRef;
 import nl.knaw.huygens.repository.model.atlg.ATLGArchive;
@@ -17,6 +20,7 @@ import nl.knaw.huygens.repository.model.atlg.ATLGLegislation;
 import nl.knaw.huygens.repository.model.atlg.ATLGPerson;
 import nl.knaw.huygens.repository.model.util.PersonName;
 import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
+import nl.knaw.huygens.repository.storage.StorageManager;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -29,15 +33,79 @@ import com.google.common.collect.Maps;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+/**
+ * Imports data of the "Atlantische Gids" project.
+ * 
+ * Usage:
+ *  java  -cp [specs]  nl.knaw.huygens.repository.importer.database.AtlantischeGidsImporter  importDirName  configFileName
+ * 
+ * The commandline arguments are optional.
+ * 
+ * Note that the Mongo database and the Solr index are built from scratch, any existing data is deleted.
+ * Future versions of this importer must use a more subtle approach.
+ */
 public class AtlantischeGidsImporter {
 
   public static void main(String[] args) throws Exception {
-    Configuration config = new Configuration("config.xml");
-    Injector injector = Guice.createInjector(new BasicInjectionModule(config));
-    DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
 
-    new AtlantischeGidsImporter(registry, null, "../AtlantischeGids/work/").importAll();
-    System.out.printf("%n.. done%n");
+    // Handle commandline argfuments
+    String importDirName = (args.length > 0) ? args[0] : "../AtlantischeGids/work/";
+    System.out.println("Import directory: " + importDirName);
+    String configFileName = (args.length > 1) ? args[1] : "config.xml";
+    System.out.println("Configuration file: " + configFileName);
+
+    Configuration config = new Configuration(configFileName);
+    Injector injector = Guice.createInjector(new BasicInjectionModule(config));
+
+    Broker broker = null;
+    StorageManager storageManager = null;
+    IndexManager indexManager = null;
+
+    try {
+      broker = injector.getInstance(Broker.class);
+      broker.start();
+
+      storageManager = injector.getInstance(StorageManager.class);
+      storageManager.getStorage().empty();
+
+      indexManager = injector.getInstance(IndexManager.class);
+      indexManager.deleteAllDocuments();
+
+      IndexService service = injector.getInstance(IndexService.class);
+      Thread thread = new Thread(service);
+      thread.start();
+
+      long start = System.currentTimeMillis();
+
+      DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
+      DataPoster poster = new LocalDataPoster(storageManager);
+      new AtlantischeGidsImporter(registry, poster, importDirName).importAll();
+
+      storageManager.ensureIndices();
+
+      // Signal we're done
+      BulkImporter.sendEndOfDataMessage(broker);
+
+      long time = (System.currentTimeMillis() - start) / 1000;
+      System.out.printf("%n=== Used %d seconds%n%n", time);
+
+      BulkImporter.waitForCompletion(thread, 5 * 60 * 1000);
+
+      time = (System.currentTimeMillis() - start) / 1000;
+      System.out.printf("%n=== Used %d seconds%n", time);
+
+    } finally {
+      // Close resources
+      if (indexManager != null) {
+        indexManager.close();
+      }
+      if (storageManager != null) {
+        storageManager.close();
+      }
+      if (broker != null) {
+        broker.close();
+      }
+    }
   }
 
   // -------------------------------------------------------------------
