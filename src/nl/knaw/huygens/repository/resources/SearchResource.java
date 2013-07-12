@@ -67,7 +67,7 @@ public class SearchResource {
     // Process
     try {
       String core = registry.getCollectionId(type);
-      SearchResult result = searchManager.search(core, searchParameters);
+      SearchResult result = searchManager.search(null, core, searchParameters);
       storageManager.addDocument(SearchResult.class, result);
       String queryId = result.getId();
       return Response.created(new URI(queryId)).build();

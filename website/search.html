@@ -63,7 +63,7 @@
   }
 
   function doPost() {
-    var query = 'facet_t_name:' + $('#searchtext').val();
+    var query = $('#searchtext').val();
     jQuery.ajax({
       url: searchUrl,
       type: 'POST',
