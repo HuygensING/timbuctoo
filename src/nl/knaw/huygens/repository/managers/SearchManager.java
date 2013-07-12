@@ -8,6 +8,9 @@ import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
+import nl.knaw.huygens.repository.model.atlg.ATLGArchive;
+import nl.knaw.huygens.repository.model.atlg.ATLGArchiver;
+import nl.knaw.huygens.repository.model.atlg.ATLGLegislation;
 import nl.knaw.huygens.solr.FacetCount;
 import nl.knaw.huygens.solr.FacetInfo;
 import nl.knaw.huygens.solr.FacetParameter;
@@ -110,14 +113,31 @@ public class SearchManager {
     return facets;
   }
 
+  // TODO refactor to reflective code
   private Map<String, FacetInfo> getFacetFieldNames(Class<? extends Document> type) {
     Map<String, FacetInfo> facetMap = Maps.newHashMap();
     if (Person.class.equals(type)) {
       facetMap.put("facet_t_name", new FacetInfo().setName("facet_t_name").setType(FacetType.LIST).setTitle("Name"));
       facetMap.put("facet_s_birthDate", new FacetInfo().setName("facet_s_birthDate").setType(FacetType.LIST).setTitle("Birth date"));
       facetMap.put("facet_s_deathDate", new FacetInfo().setName("facet_s_deathDate").setType(FacetType.LIST).setTitle("Death date"));
+    } else if (ATLGArchive.class.equals(type)) {
+      facetMap.put("facet_s_refcode", new FacetInfo().setName("facet_s_refcode").setType(FacetType.LIST).setTitle("Reference code"));
+      facetMap.put("facet_s_place", new FacetInfo().setName("facet_s_place").setType(FacetType.LIST).setTitle("Place"));
+      facetMap.put("facet_s_subject", new FacetInfo().setName("facet_s_subject").setType(FacetType.LIST).setTitle("Subject"));
+      facetMap.put("facet_s_person", new FacetInfo().setName("facet_s_person").setType(FacetType.LIST).setTitle("Person"));
+      facetMap.put("facet_t_text", new FacetInfo().setName("facet_t_text").setType(FacetType.LIST).setTitle("Notes"));
+    } else if (ATLGLegislation.class.equals(type)) {
+      facetMap.put("facet_t_text", new FacetInfo().setName("facet_t_text").setType(FacetType.LIST).setTitle("Reference"));
+      facetMap.put("facet_s_date", new FacetInfo().setName("facet_s_date").setType(FacetType.LIST).setTitle("Date"));
+      facetMap.put("facet_s_place", new FacetInfo().setName("facet_s_place").setType(FacetType.LIST).setTitle("Place"));
+      facetMap.put("facet_s_subject", new FacetInfo().setName("facet_s_subject").setType(FacetType.LIST).setTitle("Subject"));
+      facetMap.put("facet_s_person", new FacetInfo().setName("facet_s_person").setType(FacetType.LIST).setTitle("Person"));
+    } else if (ATLGArchiver.class.equals(type)) {
+      facetMap.put("facet_t_text", new FacetInfo().setName("facet_t_text").setType(FacetType.LIST).setTitle("History"));
+      facetMap.put("facet_s_place", new FacetInfo().setName("facet_s_place").setType(FacetType.LIST).setTitle("Place"));
+      facetMap.put("facet_s_subject", new FacetInfo().setName("facet_s_subject").setType(FacetType.LIST).setTitle("Subject"));
+      facetMap.put("facet_s_person", new FacetInfo().setName("facet_s_person").setType(FacetType.LIST).setTitle("Person"));
     }
-
     return facetMap;
   }
 

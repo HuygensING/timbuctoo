@@ -80,7 +80,7 @@ public class ATLGArchiver extends Archiver {
     nameNld = name;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = true)
   public String getNameEng() {
     return nameEng;
   }
@@ -89,7 +89,7 @@ public class ATLGArchiver extends Archiver {
     nameEng = name;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_begin_date", canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_t_begin_date", canBeEmpty = true, isFaceted = true)
   public String getBeginDate() {
     return beginDate;
   }
@@ -98,7 +98,7 @@ public class ATLGArchiver extends Archiver {
     beginDate = date;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_end_date", canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_t_end_date", canBeEmpty = true, isFaceted = true)
   public String getEndDate() {
     return endDate;
   }
@@ -115,7 +115,7 @@ public class ATLGArchiver extends Archiver {
     periodDescription = description;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = true)
   public String getHistory() {
     return history;
   }
@@ -148,7 +148,7 @@ public class ATLGArchiver extends Archiver {
     relatedArchivers.add(ref);
   }
 
-  @IndexAnnotation(fieldName = "facet_s_place", accessors = { "getDisplayName" }, canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<DocumentRef> getPlaceKeywords() {
     return placeKeywords;
   }
@@ -163,7 +163,7 @@ public class ATLGArchiver extends Archiver {
     }
   }
 
-  @IndexAnnotation(fieldName = "facet_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<DocumentRef> getSubjectKeywords() {
     return subjectKeywords;
   }
@@ -178,7 +178,7 @@ public class ATLGArchiver extends Archiver {
     }
   }
 
-  @IndexAnnotation(fieldName = "facet_s_person", accessors = { "getDisplayName" }, canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<DocumentRef> getPersons() {
     return persons;
   }
@@ -193,7 +193,7 @@ public class ATLGArchiver extends Archiver {
     }
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = true)
   public String getNotes() {
     return notes;
   }

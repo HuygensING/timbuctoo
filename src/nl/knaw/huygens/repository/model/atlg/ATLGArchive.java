@@ -125,7 +125,7 @@ public class ATLGArchive extends Archive {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "facet_s_refcode", canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_s_refcode", canBeEmpty = true, isFaceted = true)
   public String getIndexedRefCode() {
     StringBuilder builder = new StringBuilder();
     for (String country : getCountries()) {
@@ -168,7 +168,7 @@ public class ATLGArchive extends Archive {
     titleNld = title;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = true)
   public String getTitleEng() {
     return titleEng;
   }
@@ -237,7 +237,7 @@ public class ATLGArchive extends Archive {
     this.scope = scope;
   }
 
-  @IndexAnnotation(fieldName = "facet_s_place", accessors = { "getDisplayName" }, canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<DocumentRef> getPlaceKeywords() {
     return placeKeywords;
   }
@@ -252,7 +252,7 @@ public class ATLGArchive extends Archive {
     }
   }
 
-  @IndexAnnotation(fieldName = "facet_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<DocumentRef> getSubjectKeywords() {
     return subjectKeywords;
   }
@@ -267,7 +267,7 @@ public class ATLGArchive extends Archive {
     }
   }
 
-  @IndexAnnotation(fieldName = "facet_s_person", accessors = { "getDisplayName" }, canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<DocumentRef> getPersons() {
     return persons;
   }
@@ -282,7 +282,7 @@ public class ATLGArchive extends Archive {
     }
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = true)
   public String getNotes() {
     return notes;
   }
