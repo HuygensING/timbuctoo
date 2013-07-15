@@ -64,18 +64,15 @@ public class SearchManager {
   private String createSearchTerm(Class<? extends Document> type, FacetedSearchParameters searchParameters) {
     List<FacetParameter> facetValues = searchParameters.getFacetValues();
     if (facetValues != null && !facetValues.isEmpty()) {
-      StringBuffer buffer = new StringBuffer(String.format("+%s:(%s)", getFullTextSearchFields(type).get(0), searchParameters.getTerm()));
+      StringBuilder builder = new StringBuilder(String.format("+%s:(%s)", getFullTextSearchFields(type).get(0), searchParameters.getTerm()));
       for (FacetParameter facetParameter : facetValues) {
-        buffer.append(" +");
-        buffer.append(facetParameter.getName());
-        buffer.append(":(");
-
-        buffer.append(StringUtils.join(facetParameter.getValues(), " "));
-
-        buffer.append(")");
+        builder.append(" +");
+        builder.append(facetParameter.getName());
+        builder.append(":(");
+        builder.append(StringUtils.join(facetParameter.getValues(), " "));
+        builder.append(")");
       }
-      return buffer.toString();
-
+      return builder.toString();
     }
 
     return String.format("facet_t_name:(%s)", searchParameters.getTerm());
