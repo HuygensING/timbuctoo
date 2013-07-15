@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.List;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.storage.mongo.model.TestSystemDocument;
@@ -17,7 +16,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mongodb.MongoException;
 
@@ -28,16 +26,16 @@ public class MongoStorageTest extends MongoStorageTestBase {
   private MongoStorage storage;
 
   private void setUpDatabase() throws IOException {
-    List<TestSystemDocument> docs = Lists.newArrayList(createTestSystemDocument("doc1", "testValue", "testValue2", "doc1", "doc1"),
-        createTestSystemDocument("doc2", "testValue", "testValue2", "doc2", "doc2"), createTestSystemDocument("doc3", "testValue", "testValue2", "doc3", "doc3"));
-    storage.addItems(TestSystemDocument.class, docs);
+    storage.addItem(TestSystemDocument.class, newTestSystemDocument("doc1", "testValue", "testValue2", "doc1", "doc1"));
+    storage.addItem(TestSystemDocument.class, newTestSystemDocument("doc2", "testValue", "testValue2", "doc2", "doc2"));
+    storage.addItem(TestSystemDocument.class, newTestSystemDocument("doc3", "testValue", "testValue2", "doc3", "doc3"));
   }
 
-  protected TestSystemDocument createTestSystemDocument(String name, String testValue1, String testValue2, String annotatedProperty, String propWithAnnotatedAccessors) {
+  private TestSystemDocument newTestSystemDocument(String name, String value1, String value2, String annotatedProperty, String propWithAnnotatedAccessors) {
     TestSystemDocument doc = new TestSystemDocument();
     doc.setName(name);
-    doc.setTestValue1(testValue1);
-    doc.setTestValue2(testValue2);
+    doc.setTestValue1(value1);
+    doc.setTestValue2(value2);
     doc.setAnnotatedProperty(annotatedProperty);
     doc.setPropWithAnnotatedAccessors(propWithAnnotatedAccessors);
     return doc;
@@ -107,9 +105,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     TestSystemDocument example = new TestSystemDocument();
     example.setName("nonExisting");
 
-    TestSystemDocument actual = storage.searchItem(TestSystemDocument.class, example);
-
-    assertNull(actual);
+    assertNull(storage.searchItem(TestSystemDocument.class, example));
   }
 
   @Test
@@ -119,9 +115,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     TestConcreteDoc example = new TestConcreteDoc();
     example.name = "nonExisting";
 
-    TestConcreteDoc actual = storage.searchItem(TestConcreteDoc.class, example);
-
-    assertNull(actual);
+    assertNull(storage.searchItem(TestConcreteDoc.class, example));
   }
 
   @Test
@@ -147,9 +141,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     expected.setId(id);
     expected.setTestValue1("test");
 
-    Class<TestSystemDocument> type = TestSystemDocument.class;
-
-    storage.updateItem(type, id, expected);
+    storage.updateItem(TestSystemDocument.class, id, expected);
   }
 
   @Test
@@ -200,7 +192,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     TestSystemDocument actual = storage.getItem(type, id);
 
-    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+    assertNull(MongoDiff.diffDocuments(expected, actual));
   }
 
   @Test
@@ -213,7 +205,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     TestSystemDocument actual = storage.getItem(type, expected.getId());
 
-    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+    assertNull(MongoDiff.diffDocuments(expected, actual));
   }
 
   @Test
@@ -232,14 +224,12 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     TestSystemDocument actual = storage.getItem(type, id);
 
-    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+    assertNull(MongoDiff.diffDocuments(expected, actual));
   }
 
   @Test
   public void testGetItemNonExistent() {
-    TestSystemDocument doc = storage.getItem(TestSystemDocument.class, "TSD0000000001");
-
-    assertNull(doc);
+    assertNull(storage.getItem(TestSystemDocument.class, "TSD0000000001"));
   }
 
   @Test
@@ -259,7 +249,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     TestSystemDocument actual = storage.getItem(type, id);
 
-    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+    assertNull(MongoDiff.diffDocuments(expected, actual));
   }
 
   @Test
