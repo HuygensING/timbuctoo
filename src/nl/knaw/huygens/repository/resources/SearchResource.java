@@ -18,9 +18,9 @@ import javax.ws.rs.core.Response;
 
 import nl.knaw.huygens.repository.annotations.APIDesc;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.managers.SearchManager;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.SearchResult;
+import nl.knaw.huygens.repository.search.SearchManager;
 import nl.knaw.huygens.repository.storage.StorageManager;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
