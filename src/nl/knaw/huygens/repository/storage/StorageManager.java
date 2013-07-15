@@ -23,6 +23,9 @@ import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.generic.StorageUtils;
 import nl.knaw.huygens.repository.variation.VariationUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -30,6 +33,8 @@ import com.google.inject.Singleton;
 
 @Singleton
 public class StorageManager {
+
+  private static final Logger LOG = LoggerFactory.getLogger(StorageManager.class);
 
   private VariationStorage storage;
   private Map<Class<? extends Document>, Map<Class<? extends Document>, List<List<String>>>> annotationCache;
@@ -61,6 +66,17 @@ public class StorageManager {
     ensureIndices();
   }
 
+  public VariationStorage getStorage() {
+    return storage;
+  }
+
+  public void close() {
+    storage.close();
+    if (producer != null) {
+      producer.closeQuietly();
+    }
+  }
+
   // -------------------------------------------------------------------
 
   private Producer setupProducer(Broker broker) {
@@ -87,7 +103,7 @@ public class StorageManager {
     try {
       return storage.getItem(type, id);
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error("Error while handling {} {}", type.getName(), id);
       return null;
     }
   }
@@ -96,23 +112,17 @@ public class StorageManager {
     try {
       return storage.searchItem(type, example);
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error("Error while handling {} {}", type.getName(), example.getId());
       return null;
     }
 
   }
 
-  /**
-   * Get the latest document for a specific variation.
-   * @param type
-   * @param id
-   * @param variation
-   * @return
-   */
   public <T extends DomainDocument> T getCompleteVariation(Class<T> type, String id, String variation) {
     try {
       return storage.getVariation(type, id, variation);
-    } catch (Exception ex) {
+    } catch (Exception e) {
+      LOG.error("Error while handling {} {}", type.getName(), id);
       return null;
     }
   }
@@ -121,7 +131,7 @@ public class StorageManager {
     try {
       return storage.getItem(type, id);
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error("Error while handling {} {}", type.getName(), id);
       return null;
     }
   }
@@ -130,7 +140,7 @@ public class StorageManager {
     try {
       return storage.getAllVariations(type, id);
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error("Error while handling {} {}", type.getName(), id);
       return null;
     }
   }
@@ -143,7 +153,7 @@ public class StorageManager {
     try {
       return storage.getAllRevisions(type, id);
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error("Error while handling {} {}", type.getName(), id);
       return null;
     }
   }
@@ -167,7 +177,7 @@ public class StorageManager {
       String pid = persistenceManager.persistObject(collectionId, doc.getId());
       storage.setPID(type, pid, doc.getId());
     } catch (PersistenceException e) {
-      e.printStackTrace();
+      LOG.error("Error while handling {} {}", type.getName(), doc.getId());
     }
   }
 
@@ -194,7 +204,7 @@ public class StorageManager {
     try {
       return storage.getLastChanged(limit);
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error("Error while handling {}", limit);
       return Collections.<Document> emptyList();
     }
   }
@@ -275,17 +285,6 @@ public class StorageManager {
       rv.put(relatedType, listOfLists);
     }
     rv.get(relatedType).add(accessorList);
-  }
-
-  public VariationStorage getStorage() {
-    return storage;
-  }
-
-  public void close() {
-    storage.close();
-    if (producer != null) {
-      producer.closeQuietly();
-    }
   }
 
 }
