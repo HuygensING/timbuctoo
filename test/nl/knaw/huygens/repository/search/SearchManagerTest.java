@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.managers;
+package nl.knaw.huygens.repository.search;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -154,7 +154,7 @@ public class SearchManagerTest {
     searchParameters.setTerm(SEARCH_TERM);
     searchParameters.setTypeString(TYPE_STRING);
 
-    instance.search(null, TYPE_STRING, searchParameters);
+    instance.search(Person.class, TYPE_STRING, searchParameters);
 
   }
 
