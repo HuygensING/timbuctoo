@@ -69,7 +69,7 @@ public class AtlantischeGidsImporter {
       broker.start();
 
       storageManager = injector.getInstance(StorageManager.class);
-      storageManager.getStorage().empty();
+      storageManager.clear();
 
       indexManager = injector.getInstance(IndexManager.class);
       indexManager.deleteAllDocuments();
