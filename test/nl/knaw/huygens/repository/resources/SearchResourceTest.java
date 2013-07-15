@@ -99,7 +99,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addDocument(any(Class.class), any(SearchResult.class));
-    verify(searchManager, never()).search(null, anyString(), any(FacetedSearchParameters.class));
+    verify(searchManager, never()).search(any(Class.class), anyString(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
   }
@@ -116,7 +116,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addDocument(any(Class.class), any(SearchResult.class));
-    verify(searchManager, never()).search(null, anyString(), any(FacetedSearchParameters.class));
+    verify(searchManager, never()).search(any(Class.class), anyString(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
@@ -133,7 +133,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addDocument(any(Class.class), any(SearchResult.class));
-    verify(searchManager, never()).search(null, anyString(), any(FacetedSearchParameters.class));
+    verify(searchManager, never()).search(any(Class.class), anyString(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
@@ -247,9 +247,10 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertEquals(ClientResponse.Status.INTERNAL_SERVER_ERROR, response.getClientResponseStatus());
   }
 
+  @SuppressWarnings("unchecked")
   private void setupSearchManager(SearchResult searchResult) throws SolrServerException {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    when(searchManager.search(null, anyString(), any(FacetedSearchParameters.class))).thenReturn(searchResult);
+    when(searchManager.search(any(Class.class), anyString(), any(FacetedSearchParameters.class))).thenReturn(searchResult);
   }
 
   private void setupDocTypeRegistry() {
