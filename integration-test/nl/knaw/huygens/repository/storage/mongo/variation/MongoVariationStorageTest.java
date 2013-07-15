@@ -113,28 +113,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testAddItems() throws IOException {
-    List<TestConcreteDoc> items = createTestDocList("test1", "test2", "test3");
-
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    storage.addItems(type, items);
-
-    verifyCollectionSize(3, "testconcretedoc", storage.getDB());
-    verifyCollectionSize(3, "testconcretedoc-versions", storage.getDB());
-  }
-
-  @Test
-  public void testAddItemsWithId() throws IOException {
-    List<TestConcreteDoc> items = createTestDocListWithIds("TCD", "test1", "test2", "test3");
-
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    storage.addItems(type, items);
-
-    verifyCollectionSize(3, "testconcretedoc", storage.getDB());
-    verifyCollectionSize(3, "testconcretedoc-versions", storage.getDB());
-  }
-
-  @Test
   public void testUpdateItem() throws IOException {
     TestConcreteDoc input = createTestDoc("test");
 
@@ -339,10 +317,10 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllByType() throws IOException {
-    List<TestConcreteDoc> items = createTestDocList("test1", "test2", "test3");
-
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    storage.addItems(type, items);
+    for (TestConcreteDoc item : createTestDocList("test1", "test2", "test3")) {
+      storage.addItem(type, item);
+    }
 
     assertEquals(3, storage.getAllByType(type).size());
   }
@@ -410,10 +388,10 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetByMultipleIds() throws IOException {
-    List<TestConcreteDoc> items = createTestDocListWithIds("TCD", "test1", "test2", "test3");
-
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    storage.addItems(type, items);
+    for (TestConcreteDoc item : createTestDocListWithIds("TCD", "test1", "test2", "test3")) {
+      storage.addItem(type, item);
+    }
 
     List<String> ids = Lists.newArrayList("TCD1", "TCD2", "TCD3");
     assertEquals(3, storage.getByMultipleIds(type, ids).size());
@@ -421,10 +399,10 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetByMultipleIdsNotAllFound() throws IOException {
-    List<TestConcreteDoc> items = createTestDocListWithIds("TCD", "test1", "test2", "test3");
-
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    storage.addItems(type, items);
+    for (TestConcreteDoc item : createTestDocListWithIds("TCD", "test1", "test2", "test3")) {
+      storage.addItem(type, item);
+    }
 
     List<String> ids = Lists.newArrayList("TCD1", "TCD2", "TCD4");
     assertEquals(2, storage.getByMultipleIds(type, ids).size());
@@ -439,8 +417,11 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test(expected = IndexOutOfBoundsException.class)
   //FIXME: should not throw an exception
   public void testGetLastChanged() throws IOException {
-    List<TestConcreteDoc> items = createTestDocListWithIds("TCD", "test1", "test2", "test3");
-    storage.addItems(TestConcreteDoc.class, items);
+    Class<TestConcreteDoc> type = TestConcreteDoc.class;
+    for (TestConcreteDoc item : createTestDocListWithIds("TCD", "test1", "test2", "test3")) {
+      storage.addItem(type, item);
+    }
+
     assertEquals(2, storage.getLastChanged(2).size());
   }
 
