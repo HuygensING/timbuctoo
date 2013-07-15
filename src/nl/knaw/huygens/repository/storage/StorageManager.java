@@ -66,10 +66,16 @@ public class StorageManager {
     ensureIndices();
   }
 
-  public VariationStorage getStorage() {
-    return storage;
+  /**
+   * Clears the data store.
+   */
+  public void clear() {
+    storage.empty();
   }
 
+  /**
+   * Closes the data store.
+   */
   public void close() {
     storage.close();
     if (producer != null) {
