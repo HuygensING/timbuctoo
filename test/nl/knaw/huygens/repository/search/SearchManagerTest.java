@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.model.Document;
@@ -16,7 +17,9 @@ import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.solr.FacetCount;
 import nl.knaw.huygens.solr.FacetCount.Option;
+import nl.knaw.huygens.solr.FacetInfo;
 import nl.knaw.huygens.solr.FacetParameter;
+import nl.knaw.huygens.solr.FacetType;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 
 import org.apache.solr.client.solrj.SolrServerException;
@@ -28,22 +31,27 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrException;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class SearchManagerTest {
   private static final Class<Person> TYPE = Person.class;
   private static final String ID_FIELD_NAME = "id";
-  private SearchManager instance;
-  private LocalSolrServer solrInstance;
   private static final String TYPE_STRING = "person";
   private static final String SEARCH_TERM = "term";
   private static final String EXPECTED_TERM = String.format("facet_t_name:(%s)", SEARCH_TERM);
 
+  private SearchManager instance;
+  private LocalSolrServer solrInstance;
+  private FacetFinder facetFinder;
+
   @Before
   public void setUp() {
     solrInstance = mock(LocalSolrServer.class);
-    instance = new SearchManager(solrInstance);
+    facetFinder = mock(FacetFinder.class);
+    instance = new SearchManager(solrInstance, facetFinder);
   }
 
   @Test
@@ -137,12 +145,23 @@ public class SearchManagerTest {
     List<FacetField> facetFields = createFacetFieldList(facetNames, numberOfFacetValues);
     setUpQueryResponse(docs, facetFields);
 
+    setupFacetFinder(facetNames);
+
     List<FacetCount> facets = createFacetCountList(facetNames, numberOfFacetValues);
     SearchResult expected = createExpectedResult(TYPE_STRING, documentIds, expectedTerm, facets);
 
     SearchResult actual = instance.search(type, TYPE_STRING, searchParameters);
 
     verifySearchResult(expected, actual);
+  }
+
+  private void setupFacetFinder(List<String> facetNames) {
+    Map<String, FacetInfo> facetInfos = Maps.newHashMap();
+    for (String facetName : facetNames) {
+      facetInfos.put(facetName, new FacetInfo().setName(facetName).setTitle("test").setType(FacetType.LIST));
+    }
+
+    when(facetFinder.findFacets(Matchers.<Class<? extends Document>> any())).thenReturn(facetInfos);
   }
 
   @SuppressWarnings("unchecked")
