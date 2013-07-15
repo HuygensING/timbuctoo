@@ -21,6 +21,9 @@ import nl.knaw.huygens.repository.model.atlg.ATLGPerson;
 import nl.knaw.huygens.repository.model.util.PersonName;
 import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.repository.storage.StorageManager;
+import nl.knaw.huygens.repository.util.Token;
+import nl.knaw.huygens.repository.util.TokenHandler;
+import nl.knaw.huygens.repository.util.Tokens;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -359,6 +362,7 @@ public class AtlantischeGidsImporter {
   private static final String ARCHIEFMAT_DIR = "archiefmat";
 
   public Map<String, DocumentRef> importArchiefMats() throws Exception {
+    Tokens tokens = new Tokens();
     Map<String, DocumentRef> refs = Maps.newHashMap();
     File directory = new File(inputDir, ARCHIEFMAT_DIR);
     for (File file : FileUtils.listFiles(directory, JSON_EXTENSION, true)) {
@@ -371,9 +375,18 @@ public class AtlantischeGidsImporter {
           ATLGArchive archive = convert(object);
           dataPoster.addDocument(ATLGArchive.class, archive, false);
           refs.put(id, newDocumentRef(ATLGArchive.class, archive));
+          tokens.increment(archive.getIndexedRefCode());
         }
       }
     }
+    System.out.printf("%nGenerated reference codes (frequency and name)%n");
+    tokens.handleSortedByText(new TokenHandler() {
+      @Override
+      public boolean handle(Token token) {
+        System.out.printf("%4d :  %s%n", token.getCount(), token.getText());
+        return true;
+      }
+    });
     return refs;
   }
 
