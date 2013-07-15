@@ -52,7 +52,7 @@ public class DatabaseSetupper {
 
   public int run() throws IOException {
     System.out.println("Emptying the database...");
-    storageManager.getStorage().empty();
+    storageManager.clear();
     System.out.println("Emptied the database.");
 
     if (config.getBooleanSetting("dataNeedsCleaning", false)) {
