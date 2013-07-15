@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import nl.knaw.huygens.repository.indexdata.CustomIndexer;
+import nl.knaw.huygens.solr.FacetType;
 
 /**
  * Fields are indexed by Solr using a default schema.
@@ -37,5 +38,9 @@ public @interface IndexAnnotation {
   boolean isComplex() default false;
 
   boolean canBeEmpty() default false;
+
+  FacetType facetType() default FacetType.LIST;
+
+  String title() default "";
 
 }
