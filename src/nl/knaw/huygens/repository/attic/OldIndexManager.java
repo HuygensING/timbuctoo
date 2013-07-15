@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.managers;
+package nl.knaw.huygens.repository.attic;
 
 import java.util.List;
 import java.util.Map;
