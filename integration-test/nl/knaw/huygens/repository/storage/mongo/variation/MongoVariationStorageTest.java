@@ -13,7 +13,6 @@ import nl.knaw.huygens.repository.VariationHelper;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Reference;
 import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
-import nl.knaw.huygens.repository.storage.mongo.MongoDiff;
 import nl.knaw.huygens.repository.storage.mongo.MongoStorageTestBase;
 import nl.knaw.huygens.repository.variation.VariationException;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
@@ -184,9 +183,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     storage.addItem(type, expected);
 
-    TestConcreteDoc actual = storage.getItem(type, DEFAULT_ID);
-
-    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+    assertEqualDocs(expected, storage.getItem(type, DEFAULT_ID));
   }
 
   @Test
@@ -203,9 +200,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     expected.setRev(1);
     expected.getVariations().add(new Reference(TestConcreteDoc.class, DEFAULT_ID, null));
 
-    TestConcreteDoc actual = storage.getItem(type, DEFAULT_ID);
-
-    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+    assertEqualDocs(expected, storage.getItem(type, DEFAULT_ID));
   }
 
   @Test
@@ -222,9 +217,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     expected.setDeleted(true);
     expected.getVariations().add(new Reference(TestConcreteDoc.class, DEFAULT_ID, null));
 
-    TestConcreteDoc actual = storage.getItem(type, DEFAULT_ID);
-
-    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+    assertEqualDocs(expected, storage.getItem(type, DEFAULT_ID));
   }
 
   @Test
@@ -251,9 +244,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     storage.addItem(type, input);
 
-    GeneralTestDoc actual = storage.getItem(type, DEFAULT_ID);
-
-    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+    assertEqualDocs(expected, storage.getItem(type, DEFAULT_ID));
   }
 
   @Test
@@ -287,10 +278,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     expected.setCurrentVariation("projectb");
     expected.setRev(1);
 
-    TestConcreteDoc actual = storage.getVariation(TestConcreteDoc.class, DEFAULT_ID, "projectb");
-
-    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
-
+    assertEqualDocs(expected, storage.getVariation(TestConcreteDoc.class, DEFAULT_ID, "projectb"));
   }
 
   @Test
@@ -305,9 +293,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     storage.addItem(ProjectAGeneralTestDoc.class, projectAInput);
 
-    TestConcreteDoc actual = storage.getVariation(TestConcreteDoc.class, DEFAULT_ID, "projectb");
-
-    assertEquals(null, MongoDiff.diffDocuments(expected, actual));
+    assertEqualDocs(expected, storage.getVariation(TestConcreteDoc.class, DEFAULT_ID, "projectb"));
   }
 
   @Test
@@ -487,9 +473,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     Class<ProjectAGeneralTestDoc> type = ProjectAGeneralTestDoc.class;
     storage.addItem(type, doc);
 
-    ProjectAGeneralTestDoc revision = storage.getRevision(type, DEFAULT_ID, 0);
-
-    assertEquals(null, MongoDiff.diffDocuments(doc, revision));
+    assertEqualDocs(doc, storage.getRevision(type, DEFAULT_ID, 0));
   }
 
   @Test
@@ -504,7 +488,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     expected.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, DEFAULT_ID, "projecta", null));
     expected.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, DEFAULT_ID, "projecta", null));
 
-    assertEquals(null, MongoDiff.diffDocuments(expected, revision));
+    assertEqualDocs(expected, revision);
   }
 
   @Test
@@ -567,7 +551,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     projectBTestDoc.name = name;
     projectBTestDoc.generalTestDocValue = generalTestDocValue;
     projectBTestDoc.projectBGeneralTestDocValue = projectBGeneralTestDocValue;
-
     return projectBTestDoc;
   }
+
 }
