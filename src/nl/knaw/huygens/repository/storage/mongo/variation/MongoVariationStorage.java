@@ -3,7 +3,6 @@ package nl.knaw.huygens.repository.storage.mongo.variation;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -310,30 +309,6 @@ public class MongoVariationStorage implements VariationStorage {
     JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
     col.insert(insertedItem);
     addInitialVersion(type, item.getId(), insertedItem);
-  }
-
-  @Override
-  public <T extends Document> void addItems(Class<T> type, List<T> items) throws IOException {
-    for (T item : items) {
-      if (item.getId() == null) {
-        setNextId(type, item);
-      }
-    }
-    List<JsonNode> jsonNodes = inducer.induce(items, type, Collections.<String, DBObject> emptyMap());
-    DBCollection col = getVariationCollection(type);
-    @SuppressWarnings("unchecked")
-    JacksonDBObject<JsonNode>[] dbObjects = new JacksonDBObject[jsonNodes.size()];
-    int i = 0;
-    for (JsonNode n : jsonNodes) {
-      JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(n, JsonNode.class);
-      dbObjects[i++] = updatedDBObj;
-    }
-    col.insert(dbObjects);
-    for (i = 0; i < dbObjects.length; i++) {
-      JsonNode node = dbObjects[i].getObject();
-      String id = node.get("_id").asText();
-      addInitialVersion(type, id, dbObjects[i]);
-    }
   }
 
   @Override

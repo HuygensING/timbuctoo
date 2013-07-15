@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
-import java.util.List;
 
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
@@ -18,16 +17,15 @@ import nl.knaw.huygens.repository.storage.StorageManager;
 import org.mongojack.internal.MongoJacksonMapperModule;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 
 public class DbImporter {
 
   private final Configuration conf;
-  private final StorageManager storage;
+  private final StorageManager storageManager;
 
-  public DbImporter(Configuration conf, StorageManager storage) {
+  public DbImporter(Configuration conf, StorageManager manager) {
     this.conf = conf;
-    this.storage = storage;
+    storageManager = manager;
   }
 
   public <T extends Document> void bulkImport(Class<T> type, boolean setChange, String vreId, String vreName) {
@@ -37,9 +35,10 @@ public class DbImporter {
       System.out.printf("=== Importing documents of type '%s'%n", type.getSimpleName());
       String collectionName = DocTypeRegistry.getCollectionName(type);
       BufferedReader input = createReader(collectionName);
-      List<T> collection = Lists.newArrayList();
+      int count = 0;
       String line = null;
       while ((line = input.readLine()) != null) {
+        count++;
         T item = mapper.readValue(line, type);
         if (setChange) {
           Change change = new Change(new Date().getTime(), "database-id", "Database import", vreId, vreName);
@@ -53,11 +52,10 @@ public class DbImporter {
         if (item.getRev() == 0) {
           item.setRev(1);
         }
-        collection.add(item);
-        System.out.print((collection.size() % 100 == 99) ? ".\n" : ".");
+        storageManager.addDocument(type, item);
+        System.out.print((count % 100 == 99) ? ".\n" : ".");
       }
-      storage.getStorage().addItems(type, collection);
-      System.out.print("\nImported " + collection.size() + " items.\n\n");
+      System.out.print("\nImported " + count + " items.\n\n");
     } catch (Exception e) {
       e.printStackTrace();
     }
