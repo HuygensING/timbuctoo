@@ -225,44 +225,46 @@ public class MongoStorage implements BasicStorage {
     MongoUtils.getCollection(db, type).insert(item);
   }
 
-  @Override
-  public <T extends Document> void addItems(Class<T> type, List<T> items) throws IOException {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
-    boolean shouldVersion = versionedDocumentTypes.contains(col.getName());
-
-    // Create the changes objects for all these documents:
-    List<MongoChanges<T>> changes = Lists.newArrayListWithCapacity(items.size());
-    int lastId = 0;
-    for (T item : items) {
-      if (item.getId() == null) {
-        setNextId(type, item);
-      }
-      String itemId = item.getId();
-      lastId = Math.max(lastId, Integer.parseInt(itemId.substring(3), 10));
-      if (shouldVersion) {
-        changes.add(new MongoChanges<T>(item.getId(), item));
-      }
-    }
-
-    // Update the counter object.
-    DBObject counterQuery = new BasicDBObject("_id", DocTypeRegistry.getCollectionName(type));
-    Counter counter = counterCol.findOne(counterQuery);
-    if (counter == null || counter.next <= lastId) {
-      // Make sure we fail if the counter changes inbetween the findOne above
-      // and the findAndModify below:
-      if (counter != null) {
-        counterQuery.put("next", counter.next);
-      }
-      BasicDBObject inc = new BasicDBObject("$set", new BasicDBObject("next", lastId));
-      counterCol.findAndModify(counterQuery, null, null, false, inc, false, true);
-    }
-    // Insert the items:
-    col.insert(items);
-    // Insert the changes:
-    if (shouldVersion) {
-      MongoUtils.getVersioningCollection(db, type).insert(changes);
-    }
-  }
+  //
+  //  ** The code below is temporarily retained because it contains ideas about versioning **
+  //
+  //  public <T extends Document> void addItems(Class<T> type, List<T> items) throws IOException {
+  //    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
+  //    boolean shouldVersion = versionedDocumentTypes.contains(col.getName());
+  //
+  //    // Create the changes objects for all these documents:
+  //    List<MongoChanges<T>> changes = Lists.newArrayListWithCapacity(items.size());
+  //    int lastId = 0;
+  //    for (T item : items) {
+  //      if (item.getId() == null) {
+  //        setNextId(type, item);
+  //      }
+  //      String itemId = item.getId();
+  //      lastId = Math.max(lastId, Integer.parseInt(itemId.substring(3), 10));
+  //      if (shouldVersion) {
+  //        changes.add(new MongoChanges<T>(item.getId(), item));
+  //      }
+  //    }
+  //
+  //    // Update the counter object.
+  //    DBObject counterQuery = new BasicDBObject("_id", DocTypeRegistry.getCollectionName(type));
+  //    Counter counter = counterCol.findOne(counterQuery);
+  //    if (counter == null || counter.next <= lastId) {
+  //      // Make sure we fail if the counter changes inbetween the findOne above
+  //      // and the findAndModify below:
+  //      if (counter != null) {
+  //        counterQuery.put("next", counter.next);
+  //      }
+  //      BasicDBObject inc = new BasicDBObject("$set", new BasicDBObject("next", lastId));
+  //      counterCol.findAndModify(counterQuery, null, null, false, inc, false, true);
+  //    }
+  //    // Insert the items:
+  //    col.insert(items);
+  //    // Insert the changes:
+  //    if (shouldVersion) {
+  //      MongoUtils.getVersioningCollection(db, type).insert(changes);
+  //    }
+  //  }
 
   @Override
   public <T extends Document> void updateItem(Class<T> type, String id, T item) throws IOException {
