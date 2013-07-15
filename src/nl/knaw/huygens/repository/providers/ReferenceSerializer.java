@@ -21,13 +21,12 @@ public class ReferenceSerializer extends StdSerializer<Reference> {
   }
 
   private String createHTML(Reference reference) {
-    StringBuffer sb = new StringBuffer("<a href=\"");
+    StringBuilder sb = new StringBuilder("<a href=\"");
     sb.append(reference.getType().getSimpleName().toLowerCase());
-    sb.append("/");
+    sb.append('/');
     sb.append(reference.getId());
     if (reference.getVariation() != null) {
-      sb.append("/");
-      sb.append(reference.getVariation());
+      sb.append('/').append(reference.getVariation());
     }
     sb.append("\">");
     sb.append(reference.getLinkName());
