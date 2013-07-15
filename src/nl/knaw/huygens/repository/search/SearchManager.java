@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.managers;
+package nl.knaw.huygens.repository.search;
 
 import java.util.Date;
 import java.util.List;
@@ -17,6 +17,7 @@ import nl.knaw.huygens.solr.FacetParameter;
 import nl.knaw.huygens.solr.FacetType;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
@@ -69,17 +70,8 @@ public class SearchManager {
         buffer.append(facetParameter.getName());
         buffer.append(":(");
 
-        boolean isFirstValue = true;
-        List<String> values = facetParameter.getValues();
-        for (String value : values) {
-          if (isFirstValue) {
-            isFirstValue = false;
-          } else {
-            buffer.append(" ");
-          }
+        buffer.append(StringUtils.join(facetParameter.getValues(), " "));
 
-          buffer.append(value);
-        }
         buffer.append(")");
       }
       return buffer.toString();
