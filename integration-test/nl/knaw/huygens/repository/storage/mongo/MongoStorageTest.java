@@ -190,9 +190,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     Class<TestSystemDocument> type = TestSystemDocument.class;
     storage.addItem(type, expected);
 
-    TestSystemDocument actual = storage.getItem(type, id);
-
-    assertNull(MongoDiff.diffDocuments(expected, actual));
+    assertEqualDocs(expected, storage.getItem(type, id));
   }
 
   @Test
@@ -203,9 +201,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     Class<TestSystemDocument> type = TestSystemDocument.class;
     storage.addItem(type, expected);
 
-    TestSystemDocument actual = storage.getItem(type, expected.getId());
-
-    assertNull(MongoDiff.diffDocuments(expected, actual));
+    assertEqualDocs(expected, storage.getItem(type, expected.getId()));
   }
 
   @Test
@@ -222,9 +218,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     storage.updateItem(type, id, expected);
 
-    TestSystemDocument actual = storage.getItem(type, id);
-
-    assertNull(MongoDiff.diffDocuments(expected, actual));
+    assertEqualDocs(expected, storage.getItem(type, id));
   }
 
   @Test
@@ -247,9 +241,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     expected.setDeleted(true);
     expected.setRev(1);
 
-    TestSystemDocument actual = storage.getItem(type, id);
-
-    assertNull(MongoDiff.diffDocuments(expected, actual));
+    assertEqualDocs(expected, storage.getItem(type, id));
   }
 
   @Test

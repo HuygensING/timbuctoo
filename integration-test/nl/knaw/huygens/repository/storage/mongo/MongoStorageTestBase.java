@@ -1,8 +1,14 @@
 package nl.knaw.huygens.repository.storage.mongo;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+
+import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 
 import org.junit.BeforeClass;
@@ -30,6 +36,14 @@ public class MongoStorageTestBase {
 
   protected void verifyCollectionSize(long expectedSize, String collectionName, DB db) {
     assertEquals(expectedSize, db.getCollection(collectionName).getCount());
+  }
+
+  protected <T extends Document> void assertEqualDocs(T expected, T actual) {
+    try {
+      assertNull(MongoDiff.diffDocuments(expected, actual));
+    } catch (IOException e) {
+      fail(e.getMessage());
+    }
   }
 
 }
