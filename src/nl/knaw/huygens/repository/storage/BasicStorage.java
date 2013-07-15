@@ -17,6 +17,8 @@ public interface BasicStorage {
    */
   void close();
 
+  <T extends Document> void ensureIndex(Class<T> type, List<List<String>> accessorList);
+
   <T extends Document> T getItem(Class<T> type, String id) throws IOException;
 
   /**
@@ -34,8 +36,6 @@ public interface BasicStorage {
 
   <T extends Document> void addItem(Class<T> type, T item) throws IOException;
 
-  <T extends Document> void addItems(Class<T> type, List<T> items) throws IOException;
-
   <T extends Document> void updateItem(Class<T> type, String id, T item) throws IOException;
 
   <T extends Document> void setPID(Class<T> type, String pid, String id);
@@ -49,7 +49,5 @@ public interface BasicStorage {
   <T extends Document> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs);
 
   <T extends Document> List<String> getIdsForQuery(Class<T> type, List<String> accessors, String[] id);
-
-  <T extends Document> void ensureIndex(Class<T> type, List<List<String>> accessorList);
 
 }

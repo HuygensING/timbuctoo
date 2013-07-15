@@ -80,6 +80,11 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
+  public <T extends Document> void ensureIndex(Class<T> type, List<List<String>> accessors) {
+    getStorageFor(type).ensureIndex(type, accessors);
+  }
+
+  @Override
   public <T extends Document> T getItem(Class<T> type, String id) throws IOException {
     return getStorageFor(type).getItem(type, id);
   }
@@ -97,11 +102,6 @@ public class MongoStorageFacade implements VariationStorage {
   @Override
   public <T extends Document> void addItem(Class<T> type, T item) throws IOException {
     getStorageFor(type).addItem(type, item);
-  }
-
-  @Override
-  public <T extends Document> void addItems(Class<T> type, List<T> items) throws IOException {
-    getStorageFor(type).addItems(type, items);
   }
 
   @Override
@@ -137,11 +137,6 @@ public class MongoStorageFacade implements VariationStorage {
   @Override
   public <T extends Document> List<String> getIdsForQuery(Class<T> type, List<String> accessors, String[] id) {
     return getStorageFor(type).getIdsForQuery(type, accessors, id);
-  }
-
-  @Override
-  public <T extends Document> void ensureIndex(Class<T> type, List<List<String>> accessors) {
-    getStorageFor(type).ensureIndex(type, accessors);
   }
 
   @Override
