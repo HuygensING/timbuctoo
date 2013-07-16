@@ -26,6 +26,10 @@ public class CORSFilter implements ContainerResponseFilter {
       if (!StringUtils.isBlank(reqHead)) {
         resp.header("Access-Control-Allow-Headers", reqHead);
       }
+
+      //Needed so the VRE can access the Location when an object  is created.
+      resp.header("Access-Control-Expose-Headers", "Location");
+
       response.setResponse(resp.build());
     }
     return response;
