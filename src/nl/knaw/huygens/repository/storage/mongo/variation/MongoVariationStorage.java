@@ -18,6 +18,7 @@ import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
+import nl.knaw.huygens.repository.storage.mongo.MongoStorageBase;
 import nl.knaw.huygens.repository.storage.mongo.MongoUtils;
 import nl.knaw.huygens.repository.variation.VariationException;
 import nl.knaw.huygens.repository.variation.VariationInducer;
@@ -28,10 +29,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
 import org.mongojack.internal.stream.JacksonDBObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -50,18 +48,7 @@ import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
-public class MongoVariationStorage implements VariationStorage {
-
-  private static final Logger LOG = LoggerFactory.getLogger(MongoVariationStorage.class);
-
-  private Mongo mongo;
-  private DB db;
-  private String dbName;
-
-  private final String COUNTER_COLLECTION_NAME = "counters";
-  private JacksonDBCollection<Counter, String> counterCol;
-
-  private Set<String> documentCollections;
+public class MongoVariationStorage extends MongoStorageBase implements VariationStorage {
 
   private VariationInducer inducer;
   private VariationReducer reducer;
@@ -71,17 +58,10 @@ public class MongoVariationStorage implements VariationStorage {
   private TreeEncoderFactory treeEncoderFactory;
   private TreeDecoderFactory treeDecoderFactory;
 
-  static class Counter {
-    @JsonProperty("_id")
-    public String id;
-    public int next;
-  }
-
   private Map<Class<? extends Document>, DBCollection> collectionCache;
-  protected final DocTypeRegistry docTypeRegistry;
 
-  public MongoVariationStorage(StorageConfiguration conf, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
-    this.docTypeRegistry = docTypeRegistry;
+  public MongoVariationStorage(StorageConfiguration conf, DocTypeRegistry registry) throws UnknownHostException, MongoException {
+    super(registry);
     dbName = conf.getDbName();
     options = new MongoOptions();
     options.safe = true;
@@ -93,9 +73,9 @@ public class MongoVariationStorage implements VariationStorage {
     initializeVariationCollections(conf);
   }
 
-  public MongoVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options, DocTypeRegistry docTypeRegistry) throws UnknownHostException, MongoException {
+  public MongoVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options, DocTypeRegistry registry) throws UnknownHostException, MongoException {
+    super(registry);
     this.options = options;
-    this.docTypeRegistry = docTypeRegistry;
     dbName = conf.getDbName();
     this.mongo = m;
     this.db = db;
@@ -113,30 +93,6 @@ public class MongoVariationStorage implements VariationStorage {
     inducer.setView(JsonViews.DBView.class);
     reducer = new VariationReducer(docTypeRegistry);
   }
-
-  @Override
-  public void empty() {
-    db.cleanCursors(true);
-    mongo.dropDatabase(dbName);
-    db = mongo.getDB(dbName);
-  }
-
-  @Override
-  public void close() {
-    db.cleanCursors(true);
-    mongo.close();
-    LOG.info("Closed");
-  }
-
-  protected DB getDB() {
-    return db;
-  }
-
-  public void resetDB(DB db) {
-    this.db = db;
-  }
-
-  // -------------------------------------------------------------------
 
   @Override
   public <T extends Document> T getItem(Class<T> type, String id) throws VariationException, IOException {
