@@ -18,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
+import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.search.SearchManager;
@@ -28,6 +29,7 @@ import nl.knaw.huygens.solr.FacetedSearchParameters;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Matchers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -106,7 +108,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testPostTypeStringEmpty() throws IOException, SolrServerException {
+  public void testPostTypeStringNull() throws IOException, SolrServerException {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
@@ -123,7 +125,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testPostQueryStringEmpty() throws IOException, SolrServerException {
+  public void testPostQueryStringNull() throws IOException, SolrServerException {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
@@ -247,10 +249,9 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertEquals(ClientResponse.Status.INTERNAL_SERVER_ERROR, response.getClientResponseStatus());
   }
 
-  @SuppressWarnings("unchecked")
   private void setupSearchManager(SearchResult searchResult) throws SolrServerException {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    when(searchManager.search(any(Class.class), anyString(), any(FacetedSearchParameters.class))).thenReturn(searchResult);
+    when(searchManager.search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class))).thenReturn(searchResult);
   }
 
   private void setupDocTypeRegistry() {
