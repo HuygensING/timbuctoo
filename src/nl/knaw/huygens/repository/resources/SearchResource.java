@@ -48,7 +48,6 @@ public class SearchResource {
   @POST
   @APIDesc("Searches the Solr index")
   @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
   public Response post(FacetedSearchParameters searchParameters) {
     String typeString = searchParameters.getTypeString();
     String q = searchParameters.getTerm();
