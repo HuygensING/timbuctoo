@@ -19,7 +19,11 @@ public class FacetedSearchParameters {
   private boolean fuzzy = false;
 
   public FacetedSearchParameters setTerm(final String term) {
-    this.term = term;
+    if ("".equals(term)) {
+      this.term = "*";
+    } else {
+      this.term = term;
+    }
     return this;
   }
 
