@@ -1,10 +1,10 @@
 package nl.knaw.huygens.repository.resources;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -27,7 +27,7 @@ import nl.knaw.huygens.solr.FacetCount;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 
 import org.apache.solr.client.solrj.SolrServerException;
-import org.junit.Ignore;
+import org.apache.solr.common.SolrException;
 import org.junit.Test;
 import org.mockito.Matchers;
 
@@ -89,7 +89,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertEquals(expected, actual);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testPostTypeUnknown() throws SolrServerException, IOException {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -100,13 +99,12 @@ public class SearchResourceTest extends WebServiceTestSetup {
     WebResource resource = super.resource();
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
-    verify(storageManager, never()).addDocument(any(Class.class), any(SearchResult.class));
-    verify(searchManager, never()).search(any(Class.class), anyString(), any(FacetedSearchParameters.class));
+    verify(storageManager, never()).addDocument(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(searchManager, never()).search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testPostTypeStringNull() throws IOException, SolrServerException {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -117,13 +115,12 @@ public class SearchResourceTest extends WebServiceTestSetup {
     WebResource resource = super.resource();
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
-    verify(storageManager, never()).addDocument(any(Class.class), any(SearchResult.class));
-    verify(searchManager, never()).search(any(Class.class), anyString(), any(FacetedSearchParameters.class));
+    verify(storageManager, never()).addDocument(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(searchManager, never()).search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testPostQueryStringNull() throws IOException, SolrServerException {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -134,16 +131,47 @@ public class SearchResourceTest extends WebServiceTestSetup {
     WebResource resource = super.resource();
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
-    verify(storageManager, never()).addDocument(any(Class.class), any(SearchResult.class));
-    verify(searchManager, never()).search(any(Class.class), anyString(), any(FacetedSearchParameters.class));
+    verify(storageManager, never()).addDocument(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(searchManager, never()).search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
 
   @Test
-  @Ignore("Facets not yet implemented")
-  public void testPostFacetUnknown() {
-    fail("Yet to be implemented");
+  public void testPostSearchManagerThrowsAnException() throws IOException, SolrServerException {
+    setupDocTypeRegistry();
+
+    SearchManager searchManager = injector.getInstance(SearchManager.class);
+    doThrow(SolrException.class).when(searchManager).search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class));
+
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+
+    FacetedSearchParameters searchParameters = createSearchParameters(typeString, null, TERM);
+
+    WebResource resource = super.resource();
+    ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
+
+    verify(storageManager, never()).addDocument(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    assertEquals(ClientResponse.Status.INTERNAL_SERVER_ERROR, clientResponse.getClientResponseStatus());
+  }
+
+  @Test
+  public void testPostStorageManagerThrowsAnException() throws IOException, SolrServerException {
+    SearchResult searchResult = createPostSearchResult();
+
+    setupDocTypeRegistry();
+
+    setupSearchManager(searchResult);
+
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    doThrow(IOException.class).when(storageManager).addDocument(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+
+    FacetedSearchParameters searchParameters = createSearchParameters(typeString, null, TERM);
+
+    WebResource resource = super.resource();
+    ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
+
+    assertEquals(ClientResponse.Status.INTERNAL_SERVER_ERROR, clientResponse.getClientResponseStatus());
   }
 
   @Test
@@ -222,10 +250,10 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetUnknownId() {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(SearchResult.class, "unknown")).thenReturn(null);
+    when(storageManager.getDocument(SearchResult.class, id)).thenReturn(null);
 
     WebResource resource = super.resource();
-    ClientResponse response = resource.path("search").path("unknown").type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+    ClientResponse response = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
