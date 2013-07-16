@@ -34,18 +34,18 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   private static final String DEFAULT_ID = "TCD000000001";
 
-  private static DocTypeRegistry docTypeRegistry;
+  private static DocTypeRegistry registry;
 
   private MongoVariationStorage storage;
 
   @BeforeClass
   public static void setUpDocTypeRegistry() {
-    docTypeRegistry = new DocTypeRegistry("nl.knaw.huygens.repository.variation.model nl.knaw.huygens.repository.variation.model.projecta nl.knaw.huygens.repository.variation.model.projectb");
+    registry = new DocTypeRegistry("nl.knaw.huygens.repository.variation.model nl.knaw.huygens.repository.variation.model.projecta nl.knaw.huygens.repository.variation.model.projectb");
   }
 
   @Before
   public void setUp() throws UnknownHostException, MongoException {
-    storage = new MongoVariationStorage(storageConfiguration, docTypeRegistry);
+    storage = new MongoVariationStorage(registry, storageConfiguration);
   }
 
   @After

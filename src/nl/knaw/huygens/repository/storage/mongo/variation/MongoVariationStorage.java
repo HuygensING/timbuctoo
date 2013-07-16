@@ -60,7 +60,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   private Map<Class<? extends Document>, DBCollection> collectionCache;
 
-  public MongoVariationStorage(StorageConfiguration conf, DocTypeRegistry registry) throws UnknownHostException, MongoException {
+  public MongoVariationStorage(DocTypeRegistry registry, StorageConfiguration conf) throws UnknownHostException, MongoException {
     super(registry);
     dbName = conf.getDbName();
     options = new MongoOptions();
@@ -73,7 +73,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     initializeVariationCollections(conf);
   }
 
-  public MongoVariationStorage(StorageConfiguration conf, Mongo m, DB db, MongoOptions options, DocTypeRegistry registry) throws UnknownHostException, MongoException {
+  public MongoVariationStorage(DocTypeRegistry registry, StorageConfiguration conf, Mongo m, DB db, MongoOptions options) throws UnknownHostException, MongoException {
     super(registry);
     this.options = options;
     dbName = conf.getDbName();
