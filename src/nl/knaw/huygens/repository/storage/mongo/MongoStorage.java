@@ -38,7 +38,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
 
   // private Set<String> versionedDocumentTypes;
 
-  public MongoStorage(StorageConfiguration conf, DocTypeRegistry registry) throws UnknownHostException, MongoException {
+  public MongoStorage(DocTypeRegistry registry, StorageConfiguration conf) throws UnknownHostException, MongoException {
     super(registry);
     dbName = conf.getDbName();
     mongo = new Mongo(conf.getHost(), conf.getPort());
@@ -50,7 +50,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
     initializeDB(conf);
   }
 
-  public MongoStorage(StorageConfiguration conf, Mongo m, DB loanedDB, DocTypeRegistry registry) {
+  public MongoStorage(DocTypeRegistry registry, StorageConfiguration conf, Mongo m, DB loanedDB) {
     super(registry);
     mongo = m;
     db = loanedDB;

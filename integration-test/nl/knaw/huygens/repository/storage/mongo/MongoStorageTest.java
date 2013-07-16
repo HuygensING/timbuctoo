@@ -22,7 +22,8 @@ import com.mongodb.MongoException;
 public class MongoStorageTest extends MongoStorageTestBase {
 
   private static final Class<TestSystemDocument> TYPE = TestSystemDocument.class;
-  private static DocTypeRegistry docTypeRegistry;
+
+  private static DocTypeRegistry registry;
 
   private MongoStorage storage;
 
@@ -44,13 +45,13 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @BeforeClass
   public static void setUpDocTypeRegistry() {
-    docTypeRegistry = new DocTypeRegistry(TYPE.getPackage().getName());
+    registry = new DocTypeRegistry(TYPE.getPackage().getName());
   }
 
   @Before
   public void setUp() throws UnknownHostException, MongoException {
     when(storageConfiguration.getVersionedTypes()).thenReturn(Sets.newHashSet("testsystemdocument"));
-    storage = new MongoStorage(storageConfiguration, docTypeRegistry);
+    storage = new MongoStorage(registry, storageConfiguration);
   }
 
   @After
