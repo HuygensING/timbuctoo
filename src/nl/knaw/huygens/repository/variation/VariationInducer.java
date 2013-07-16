@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.DBObject;
 
@@ -47,14 +46,6 @@ public class VariationInducer {
 
   public <T extends Document> JsonNode induce(T item, Class<T> cls) throws VariationException {
     return induce(item, cls, (ObjectNode) null);
-  }
-
-  public <T extends Document> List<JsonNode> induce(List<T> items, Class<T> cls, Map<String, DBObject> existingItems) throws VariationException {
-    List<JsonNode> rv = Lists.newArrayListWithCapacity(items.size());
-    for (T item : items) {
-      rv.add(induce(item, cls, existingItems.get(item.getId())));
-    }
-    return rv;
   }
 
   @SuppressWarnings("unchecked")
