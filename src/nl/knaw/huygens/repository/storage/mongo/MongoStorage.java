@@ -20,10 +20,7 @@ import nl.knaw.huygens.repository.storage.generic.StorageUtils;
 import org.mongojack.DBCursor;
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -37,29 +34,12 @@ import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 import com.mongodb.util.JSON;
 
-public class MongoStorage implements BasicStorage {
+public class MongoStorage extends MongoStorageBase implements BasicStorage {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MongoStorage.class);
-
-  private Mongo mongo;
-  protected DB db;
-  private String dbName;
-
-  private final String COUNTER_COLLECTION_NAME = "counters";
-  protected JacksonDBCollection<Counter, String> counterCol;
-
-  private Set<String> documentCollections;
-  private Set<String> versionedDocumentTypes;
-  private final DocTypeRegistry docTypeRegistry;
-
-  static class Counter {
-    @JsonProperty("_id")
-    public String id;
-    public int next;
-  }
+  // private Set<String> versionedDocumentTypes;
 
   public MongoStorage(StorageConfiguration conf, DocTypeRegistry registry) throws UnknownHostException, MongoException {
-    docTypeRegistry = registry;
+    super(registry);
     dbName = conf.getDbName();
     mongo = new Mongo(conf.getHost(), conf.getPort());
     db = mongo.getDB(dbName);
@@ -71,37 +51,17 @@ public class MongoStorage implements BasicStorage {
   }
 
   public MongoStorage(StorageConfiguration conf, Mongo m, DB loanedDB, DocTypeRegistry registry) {
+    super(registry);
     mongo = m;
     db = loanedDB;
-    docTypeRegistry = registry;
     initializeDB(conf);
   }
 
   private void initializeDB(StorageConfiguration conf) {
     counterCol = JacksonDBCollection.wrap(db.getCollection(COUNTER_COLLECTION_NAME), Counter.class, String.class);
     documentCollections = conf.getDocumentTypes();
-    versionedDocumentTypes = conf.getVersionedTypes();
+    // versionedDocumentTypes = conf.getVersionedTypes();
   }
-
-  public void resetDB(DB db) {
-    this.db = db;
-  }
-
-  @Override
-  public void empty() {
-    db.cleanCursors(true);
-    mongo.dropDatabase(dbName);
-    db = mongo.getDB(dbName);
-  }
-
-  @Override
-  public void close() {
-    db.cleanCursors(true);
-    mongo.close();
-    LOG.info("Closed");
-  }
-
-  // -------------------------------------------------------------------
 
   @Override
   public <T extends Document> T getItem(Class<T> type, String id) {
