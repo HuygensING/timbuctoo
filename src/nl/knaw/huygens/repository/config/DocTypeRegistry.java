@@ -20,6 +20,19 @@ import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
 import com.google.inject.Singleton;
 
+/**
+ * The document registry contains properties of document classes.
+ * 
+ * In principle those properties can be retrieved from the classes
+ * by reflection, but a number of them are cached for quick access.
+ * 
+ * We distinguish two types of documents:<ul>
+ * <li>System documents are for internal use in the repository;
+ * they are not versioned and do not have variations.</li>
+ * <li>Domain documents are used for modeling user entities;
+ * they are versioned and may have variations.</li>
+ * </ul>
+ */
 @Singleton
 public class DocTypeRegistry {
 
