@@ -7,7 +7,6 @@ import java.util.Set;
 
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.solr.FacetCount;
 import nl.knaw.huygens.solr.FacetInfo;
@@ -31,16 +30,19 @@ public class SearchManager {
 
   private final LocalSolrServer server;
   private final FacetFinder facetFinder;
+  private final FullTextSearchFieldFinder fullTextSearchFieldFinder;
 
   @Inject
-  public SearchManager(LocalSolrServer server, FacetFinder facetFinder) {
+  public SearchManager(LocalSolrServer server, FacetFinder facetFinder, FullTextSearchFieldFinder fullTextSearchFieldFinder) {
     this.server = server;
     this.facetFinder = facetFinder;
+    this.fullTextSearchFieldFinder = fullTextSearchFieldFinder;
   }
 
   public SearchResult search(Class<? extends Document> type, String core, FacetedSearchParameters searchParameters) throws SolrServerException, FacetDoesNotExistException {
     Map<String, FacetInfo> facetInfoMap = facetFinder.findFacets(type);
-    String searchTerm = createSearchTerm(type, searchParameters, facetInfoMap.keySet());
+    List<String> fullTextSearchFields = fullTextSearchFieldFinder.findFullTextSearchFields(type);
+    String searchTerm = createSearchTerm(type, searchParameters, facetInfoMap.keySet(), fullTextSearchFields);
     QueryResponse response = server.getQueryResponse(searchTerm, facetInfoMap.keySet(), searchParameters.getSort(), core);
     SolrDocumentList documents = response.getResults();
 
@@ -58,10 +60,24 @@ public class SearchManager {
     return searchResult;
   }
 
-  private String createSearchTerm(Class<? extends Document> type, FacetedSearchParameters searchParameters, Set<String> existingFacets) throws FacetDoesNotExistException {
+  private String createSearchTerm(Class<? extends Document> type, FacetedSearchParameters searchParameters, Set<String> existingFacets, List<String> fullTextSearchFields)
+      throws FacetDoesNotExistException {
     List<FacetParameter> facetValues = searchParameters.getFacetValues();
-    if (facetValues != null && !facetValues.isEmpty()) {
-      StringBuilder builder = new StringBuilder(String.format("+%s:(%s)", getFullTextSearchFields(type).get(0), searchParameters.getTerm()));
+    boolean usesFacets = facetValues != null && !facetValues.isEmpty();
+    StringBuilder builder = new StringBuilder();
+    boolean isFirst = true;
+    for (String fullTextSearchField : fullTextSearchFields) {
+      if (!isFirst) {
+        builder.append(" ");
+      }
+      if (usesFacets) {
+        builder.append(String.format("+%s:(%s)", fullTextSearchField, searchParameters.getTerm()));
+      } else {
+        builder.append(String.format("%s:(%s)", fullTextSearchField, searchParameters.getTerm()));
+      }
+      isFirst = false;
+    }
+    if (usesFacets) {
       for (FacetParameter facetParameter : facetValues) {
         if (!existingFacets.contains(facetParameter.getName())) {
           throw new FacetDoesNotExistException("Facet " + facetParameter.getName() + " does not exist.");
@@ -72,10 +88,9 @@ public class SearchManager {
         builder.append(StringUtils.join(facetParameter.getValues(), " "));
         builder.append(")");
       }
-      return builder.toString();
     }
 
-    return String.format("facet_t_name:(%s)", searchParameters.getTerm());
+    return builder.toString();
   }
 
   private List<FacetCount> getFacetCounts(List<FacetField> facetFields, Map<String, FacetInfo> facetInfoMap) {
@@ -101,13 +116,4 @@ public class SearchManager {
 
     return facets;
   }
-
-  private List<String> getFullTextSearchFields(Class<? extends Document> type) {
-    if (Person.class.equals(type)) {
-      return Lists.newArrayList("facet_t_name");
-    }
-    return Lists.newArrayList();
-
-  }
-
 }
