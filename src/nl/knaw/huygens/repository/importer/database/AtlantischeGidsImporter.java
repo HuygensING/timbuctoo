@@ -137,12 +137,12 @@ public class AtlantischeGidsImporter {
   }
 
   private <T extends Document> DocumentRef newDocumentRef(Class<T> type, T document) {
-    String typeString = docTypeRegistry.getTypeString(type);
+    String typeString = docTypeRegistry.getINameForType(type);
     return new DocumentRef(typeString, document.getId(), document.getDisplayName());
   }
 
   private <T extends Document> DocumentRef newDocumentRef(Class<T> type, String id, String displayName) {
-    String typeString = docTypeRegistry.getTypeString(type);
+    String typeString = docTypeRegistry.getINameForType(type);
     return new DocumentRef(typeString, id, displayName);
   }
 

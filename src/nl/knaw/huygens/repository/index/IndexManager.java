@@ -40,7 +40,7 @@ public class IndexManager {
   private void setupIndexers(Configuration config, DocTypeRegistry registry, LocalSolrServer server) {
     indexers = Maps.newHashMap();
     for (String doctype : config.getSettings("indexeddoctypes")) {
-      Class<? extends Document> type = registry.getClassFromWebServiceTypeString(doctype);
+      Class<? extends Document> type = registry.getTypeForIName(doctype);
       // Better safe than sorry, this is also checked by the configuration validator...
       if (type != null) {
         indexers.put(type, SolrDocumentIndexer.newInstance(type, server, null));

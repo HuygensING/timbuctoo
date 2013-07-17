@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
-import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.storage.mongo.MongoDiffTest.Foo;
 
 import org.junit.Test;
@@ -20,13 +19,13 @@ import com.mongodb.DBCollection;
 public class MongoUtilsTest {
 
   @Test
-  public void testGetVersioningCollectionName() {
-    assertEquals("foo-versions", DocTypeRegistry.getVersioningCollectionName(Foo.class));
+  public void testGetCollectionName() {
+    assertEquals("foo", MongoUtils.getCollectionName(Foo.class));
   }
 
   @Test
-  public void testGetCollectionName() {
-    assertEquals("foo", DocTypeRegistry.getCollectionName(Foo.class));
+  public void testGetVersioningCollectionName() {
+    assertEquals("foo-versions", MongoUtils.getVersioningCollectionName(Foo.class));
   }
 
   @Test

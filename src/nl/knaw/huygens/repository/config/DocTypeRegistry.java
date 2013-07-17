@@ -2,7 +2,6 @@ package nl.knaw.huygens.repository.config;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,10 +22,7 @@ import com.google.inject.Singleton;
 
 /**
  * The document registry contains properties of document classes.
- * 
- * In principle those properties can be retrieved from the classes
- * by reflection, but a number of them are cached for quick access.
- * 
+ *
  * We distinguish two types of documents:<ul>
  * <li>System documents are for internal use in the repository;
  * they are not versioned and do not have variations.</li>
@@ -37,37 +33,35 @@ import com.google.inject.Singleton;
  * <p>The document registry scans specified Java packages for concrete
  * (i.e. not abstract) classes that subclass {@code Document}.
  * The developer has the option to prevent registration by providing
- * a {@code DoNotRegister} annotation.</p>
+ * a {@code DoNotRegister} annotation on a class.</p>
  *
- * <p>To distinguish between document types we use two characterizations:
- * - type token (usually abbreviated to type), which is the Java
- * {@code Class<? extends Document>} for the document
- * - type name (usually abbreviated to name) which is a Java string.
- * There is a one-to-one correspondence between the type token and the
- * type name. Hence type names must be unique.
- * The default rule for constructing type names is to take the lower
- * case version of the last part of the fully qualified class name.
- * This rule can be overridden by using a {@code DocumentTypeName}
- * annotation on the document class.</p>
+ * <p>The use of classes as type tokens is connected to type erasure
+ * of Java generics. In addition to type tokens we use two string
+ * representations of document types:
+ * - internal names, which are used, for instance, for indicating
+ * document types in JSON (so as to hide implementation details),
+ * for Solr core names, and for Mongo collection names.
+ * - external names, which are used in the REST API for indicating
+ * document collections.
+ * Internal names are simply detailed a rule: the lower case form
+ * of the simple class name (the last part of the fully qualified
+ * class name). External names are determined as the plural of the
+ * internal name (constructed by appending an 's' to the internal
+ * name) or a name supplied in a class annotation.</p>
  */
 @Singleton
 public class DocTypeRegistry {
 
   private final Logger LOG = LoggerFactory.getLogger(DocTypeRegistry.class);
 
-  private final Map<String, Class<? extends Document>> webServiceTypeStringToTypeMap;
-  private final Map<Class<? extends Document>, String> typeToStringMap;
-  private final Map<Class<? extends Document>, String> typeToCollectionIdMap;
+  private final Map<Class<? extends Document>, String> type2iname = Maps.newHashMap();
+  private final Map<String, Class<? extends Document>> iname2type = Maps.newHashMap();
 
-  private Map<Class<? extends Document>, String> type2name = Maps.newHashMap();
-  private Map<String, Class<? extends Document>> name2type = Maps.newHashMap();
+  private final Map<Class<? extends Document>, String> type2xname = Maps.newHashMap();
+  private final Map<String, Class<? extends Document>> xname2type = Maps.newHashMap();
 
   public DocTypeRegistry(String packageNames) {
-    Preconditions.checkNotNull(packageNames, "packageNames must not be null");
-
-    webServiceTypeStringToTypeMap = Maps.newHashMap();
-    typeToStringMap = Maps.newHashMap();
-    typeToCollectionIdMap = Maps.newHashMap();
+    Preconditions.checkNotNull(packageNames, "'packageNames' must not be null");
 
     ClassPath classPath = getClassPath();
     for (String packageName : StringUtils.split(packageNames)) {
@@ -77,7 +71,7 @@ public class DocTypeRegistry {
 
   private ClassPath getClassPath() {
     try {
-      return ClassPath.from(getClass().getClassLoader());
+      return ClassPath.from(this.getClass().getClassLoader());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -103,110 +97,82 @@ public class DocTypeRegistry {
   // -------------------------------------------------------------------
 
   private void registerClass(Class<? extends Document> type) {
-    String name = getTypeName(type);
-    if (name2type.containsKey(name)) {
-      throw new IllegalStateException("Duplicate document type name " + name);
+    String iname = getInternalName(type);
+    if (iname2type.containsKey(iname)) {
+      throw new IllegalStateException("Duplicate internal type name " + iname);
     }
-    name2type.put(name, type);
-    type2name.put(type, name);
+    iname2type.put(iname, type);
+    type2iname.put(type, iname);
 
-    // old stuff
-
-    String typeId = determineTypeName(type);
-    webServiceTypeStringToTypeMap.put(typeId, type);
-    typeToStringMap.put(type, typeId);
-    Class<? extends Document> baseCls = getBaseClass(type);
-    String baseTypeId = getCollectionName(baseCls);
-    typeToCollectionIdMap.put(type, baseTypeId);
+    String xname = getExternalName(type);
+    if (xname2type.containsKey(xname)) {
+      throw new IllegalStateException("Duplicate internal type name " + xname);
+    }
+    xname2type.put(xname, type);
+    type2xname.put(type, xname);
   }
 
-  private String getTypeName(Class<? extends Document> type) {
+  private String getInternalName(Class<? extends Document> type) {
+    return type.getSimpleName().toLowerCase();
+  }
+
+  private String getExternalName(Class<? extends Document> type) {
     if (type.isAnnotationPresent(DocumentTypeName.class)) {
       return type.getAnnotation(DocumentTypeName.class).value();
     } else {
-      return type.getSimpleName().toLowerCase();
+      return getInternalName(type) + "s";
     }
   }
 
-  /**
-   * Returns the document type name for the specified type token,
-   * or {@code null} if there is no such name.
-   */
-  public String docNameFor(Class<? extends Document> type) {
-    return type2name.get(type);
-  }
+  // --- public api ----------------------------------------------------
 
   /**
-   * Returns the document type token for the specified type name,
-   * or {@code null} if there is no such token.
-   */
-  public Class<? extends Document> docTypeFor(String name) {
-    return name2type.get(name);
-  }
-
-  // -------------------------------------------------------------------
-
-  /**
-   * Returns the registered document types.
+   * Returns the internal type names.
    */
   public Set<String> getTypeStrings() {
-    return ImmutableSortedSet.copyOf(webServiceTypeStringToTypeMap.keySet());
-  }
-
-  // FIXME all inits should be done at construction time!
-  public String getTypeString(Class<? extends Document> type) {
-    if (typeToStringMap.containsKey(type)) {
-      return typeToStringMap.get(type);
-    }
-    return getCollectionName(type);
-  }
-
-  public Class<? extends Document> getClassFromWebServiceTypeString(String typeString) {
-    return webServiceTypeStringToTypeMap.get(typeString);
-  }
-
-  // FIXME all inits should be done at construction time!
-  public String getCollectionId(Class<? extends Document> type) {
-    if (typeToCollectionIdMap.containsKey(type)) {
-      return typeToCollectionIdMap.get(type);
-    }
-    String collectionId = getCollectionName(getBaseClass(type));
-    typeToCollectionIdMap.put(type, collectionId);
-    return collectionId;
+    return ImmutableSortedSet.copyOf(iname2type.keySet());
   }
 
   /**
-   * Returns all registered document types.
+   * Returns the internal type name for the specified type token,
+   * or {@code null} if there is no such name.
    */
-  public Set<Class<? extends Document>> getDocumentTypes() {
-    return Collections.unmodifiableSet(typeToStringMap.keySet());
+  public String getINameForType(Class<? extends Document> type) {
+    return type2iname.get(type);
+  }
+
+  /**
+   * Returns the type token for the specified internal type name,
+   * or {@code null} if there is no such token.
+   */
+  public Class<? extends Document> getTypeForIName(String iname) {
+    return iname2type.get(iname);
+  }
+
+  /**
+   * Returns the external type name for the specified type token,
+   * or {@code null} if there is no such name.
+   */
+  public String getXNameForType(Class<? extends Document> type) {
+    return type2xname.get(type);
+  }
+
+  /**
+   * Returns the type token for the specified external type name,
+   * or {@code null} if there is no such token.
+   */
+  public Class<? extends Document> getTypeForXName(String xname) {
+    return xname2type.get(xname);
   }
 
   @SuppressWarnings("unchecked")
-  private Class<? extends Document> getBaseClass(Class<? extends Document> type) {
+  public Class<? extends Document> getBaseClass(Class<? extends Document> type) {
     Class<? extends Document> lastType = type;
     while (type != null && !Modifier.isAbstract(type.getModifiers())) {
       lastType = type;
       type = (Class<? extends Document>) type.getSuperclass();
     }
     return lastType;
-  }
-
-  public static String getVersioningCollectionName(Class<? extends Document> type) {
-    return getCollectionName(type) + "-versions";
-  }
-
-  public static String getCollectionName(Class<? extends Document> type) {
-    return type.getSimpleName().toLowerCase();
-  }
-
-  private static String determineTypeName(Class<? extends Document> type) {
-    DocumentTypeName annotation = type.getAnnotation(DocumentTypeName.class);
-    if (annotation != null) {
-      return annotation.value();
-    } else {
-      return type.getSimpleName().toLowerCase() + "s";
-    }
   }
 
 }

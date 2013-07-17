@@ -57,15 +57,17 @@ public class SearchResource {
       LOG.error("POST - type: '{}', q: '{}'", typeString, q);
       throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
-    Class<? extends Document> type = registry.getClassFromWebServiceTypeString(typeString);
+    Class<? extends Document> type = registry.getTypeForIName(typeString);
     if (type == null) {
-      LOG.error("POST - no type '{}'");
+      LOG.error("POST - no type {}", typeString);
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
 
     // Process
     try {
-      String core = registry.getCollectionId(type);
+      // FIX the `SearchResource shouldn't know the relation between types and cores
+      Class<? extends Document> baseType = registry.getBaseClass(type);
+      String core = registry.getINameForType(baseType);
       SearchResult result = searchManager.search(type, core, searchParameters);
       storageManager.addDocument(SearchResult.class, result);
       String queryId = result.getId();
@@ -95,7 +97,7 @@ public class SearchResource {
     }
 
     // Process
-    Class<? extends Document> type = registry.getClassFromWebServiceTypeString(result.getSearchType());
+    Class<? extends Document> type = registry.getTypeForIName(result.getSearchType());
     if (type == null) {
       LOG.error("GET - no document type for '{}'", result.getSearchType());
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);

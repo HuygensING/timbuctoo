@@ -42,7 +42,7 @@ import com.sun.jersey.api.client.WebResource;
 public class RESTAutoResourceTest extends WebServiceTestSetup {
   private void setupDocumentTypeRegister(Class<?> type) {
     DocTypeRegistry documentTypeRegister = injector.getInstance(DocTypeRegistry.class);
-    doReturn(type).when(documentTypeRegister).getClassFromWebServiceTypeString(anyString());
+    doReturn(type).when(documentTypeRegister).getTypeForIName(anyString());
   }
 
   @Test
@@ -517,7 +517,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     JacksonJsonProvider jsonProvider = injector.getInstance(JacksonJsonProvider.class);
     when(jsonProvider.readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
-    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getClassFromWebServiceTypeString(anyString());
+    doReturn(TestConcreteDoc.class).when(documentTypeRegister).getTypeForIName(anyString());
 
     WebResource webResource = super.resource();
     ClientResponse clientResponse = webResource.path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
