@@ -270,7 +270,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     when(storageManager.getDocument(SearchResult.class, id)).thenReturn(searchResult);
 
     DocTypeRegistry docTypeRegistry = injector.getInstance(DocTypeRegistry.class);
-    when(docTypeRegistry.getClassFromWebServiceTypeString(unknownType)).thenReturn(null);
+    when(docTypeRegistry.getTypeForIName(unknownType)).thenReturn(null);
 
     WebResource resource = super.resource();
     ClientResponse response = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
@@ -285,7 +285,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   private void setupDocTypeRegistry() {
     DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
-    doReturn(Person.class).when(registry).getClassFromWebServiceTypeString(typeString);
+    doReturn(Person.class).when(registry).getTypeForIName(typeString);
   }
 
   private SearchResult createPostSearchResult() {

@@ -235,7 +235,8 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   protected <T extends Document> DBCollection getVariationCollection(Class<T> type) {
     DBCollection col;
     if (!collectionCache.containsKey(type)) {
-      col = db.getCollection(docTypeRegistry.getCollectionId(type));
+      Class<? extends Document> baseType = docTypeRegistry.getBaseClass(type);
+      col = db.getCollection(docTypeRegistry.getINameForType(baseType));
       col.setDBDecoderFactory(treeDecoderFactory);
       col.setDBEncoderFactory(treeEncoderFactory);
       collectionCache.put(type, col);
@@ -246,8 +247,8 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   protected <T extends Document> DBCollection getRawVersionCollection(Class<T> type) {
-    DBCollection col = db.getCollection(docTypeRegistry.getCollectionId(type) + "-versions");
-    //col.setDBEncoderFactory(options.dbEncoderFactory);
+    Class<? extends Document> baseType = docTypeRegistry.getBaseClass(type);
+    DBCollection col = db.getCollection(docTypeRegistry.getINameForType(baseType) + "-versions");
     col.setDBDecoderFactory(treeDecoderFactory);
     col.setDBEncoderFactory(treeEncoderFactory);
     return col;
@@ -355,7 +356,8 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   private <T extends Document> void setNextId(Class<T> cls, T item) {
-    BasicDBObject idFinder = new BasicDBObject("_id", docTypeRegistry.getCollectionId(cls));
+    Class<? extends Document> baseType = docTypeRegistry.getBaseClass(cls);
+    BasicDBObject idFinder = new BasicDBObject("_id", docTypeRegistry.getINameForType(baseType));
     BasicDBObject counterIncrement = new BasicDBObject("$inc", new BasicDBObject("next", 1));
 
     // Find by id, return all fields, use default sort, increment the counter,

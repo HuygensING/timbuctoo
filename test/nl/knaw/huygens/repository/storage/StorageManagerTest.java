@@ -364,8 +364,8 @@ public class StorageManagerTest {
     Class<ReferringDoc> referringDocType = ReferringDoc.class;
     Class<ReferredDoc> referredDocType = ReferredDoc.class;
 
-    doReturn(referredDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referredDocId);
-    doReturn(referringDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referringDocId);
+    doReturn(referredDocType).when(docTypeRegistry).getTypeForIName(referredDocId);
+    doReturn(referringDocType).when(docTypeRegistry).getTypeForIName(referringDocId);
 
     when(storage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.newArrayList("RFD000000001"));
 
@@ -389,9 +389,9 @@ public class StorageManagerTest {
     Class<ReferredDoc> referredDocType = ReferredDoc.class;
     Class<MultipleReferringDoc> multipleReferringDocType = MultipleReferringDoc.class;
 
-    doReturn(referredDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referredDocId);
-    doReturn(referringDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referringDocId);
-    doReturn(multipleReferringDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(multipleReferringDocId);
+    doReturn(referredDocType).when(docTypeRegistry).getTypeForIName(referredDocId);
+    doReturn(referringDocType).when(docTypeRegistry).getTypeForIName(referringDocId);
+    doReturn(multipleReferringDocType).when(docTypeRegistry).getTypeForIName(multipleReferringDocId);
 
     when(storage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.newArrayList("RFD000000001", "RDD000000001"));
 
@@ -412,8 +412,8 @@ public class StorageManagerTest {
     Class<ReferredDoc> referredDocType = ReferredDoc.class;
     Class<OtherDoc> otherDocType = OtherDoc.class;
 
-    doReturn(referredDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referredDocId);
-    doReturn(referringDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referringDocId);
+    doReturn(referredDocType).when(docTypeRegistry).getTypeForIName(referredDocId);
+    doReturn(referringDocType).when(docTypeRegistry).getTypeForIName(referringDocId);
 
     instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceManager);
 
@@ -432,8 +432,8 @@ public class StorageManagerTest {
     Class<ReferredDoc> referredDocType = ReferredDoc.class;
     Class<OtherDoc> otherDocType = OtherDoc.class;
 
-    doReturn(referredDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referredDocId);
-    doReturn(referringDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referringDocId);
+    doReturn(referredDocType).when(docTypeRegistry).getTypeForIName(referredDocId);
+    doReturn(referringDocType).when(docTypeRegistry).getTypeForIName(referringDocId);
 
     instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceManager);
 
@@ -452,8 +452,8 @@ public class StorageManagerTest {
     Class<ReferringDoc> referringDocType = ReferringDoc.class;
     Class<ReferredDoc> referredDocType = ReferredDoc.class;
 
-    doReturn(referredDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referredDocId);
-    doReturn(referringDocType).when(docTypeRegistry).getClassFromWebServiceTypeString(referringDocId);
+    doReturn(referredDocType).when(docTypeRegistry).getTypeForIName(referredDocId);
+    doReturn(referringDocType).when(docTypeRegistry).getTypeForIName(referringDocId);
 
     when(storage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.<ReferringDoc> newArrayList());
 

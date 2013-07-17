@@ -27,20 +27,20 @@ public class DatabaseSetupper {
   private static final String FILE_FILTER = ".tab";
 
   private final Configuration config;
+  private final DocTypeRegistry docTypeRegistry;
+  private final StorageManager storageManager;
+  private final DbImporter importer;
   private File sourceDir;
   private File jsonDir;
   private BufferedWriter errors;
-  private final StorageManager storageManager;
-  private final DocTypeRegistry docTypeRegistry;
   private String vreName;
   private String vreId;
-  private final DbImporter importer;
 
   @Inject
-  public DatabaseSetupper(Configuration config, StorageManager storageManager, DocTypeRegistry docTypeRegistry, DbImporter importer) {
+  public DatabaseSetupper(Configuration config, DocTypeRegistry registry, StorageManager storageManager, DbImporter importer) {
     this.config = config;
+    this.docTypeRegistry = registry;
     this.storageManager = storageManager;
-    this.docTypeRegistry = docTypeRegistry;
     this.importer = importer;
     initialize();
   }
@@ -60,7 +60,7 @@ public class DatabaseSetupper {
       importCleaner();
     }
     for (String model : config.getSettings("doctypes")) {
-      Class<? extends Document> cls = docTypeRegistry.getClassFromWebServiceTypeString(model);
+      Class<? extends Document> cls = docTypeRegistry.getTypeForIName(model);
       importer.bulkImport(cls, true, vreId, vreName);
     }
     System.out.println("Creating indices...");
