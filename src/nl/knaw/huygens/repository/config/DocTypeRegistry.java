@@ -105,7 +105,7 @@ public class DocTypeRegistry {
   private void registerClass(Class<? extends Document> type) {
     String name = getTypeName(type);
     if (name2type.containsKey(name)) {
-      throw new RuntimeException("Duplicate document type name " + name);
+      throw new IllegalStateException("Duplicate document type name " + name);
     }
     name2type.put(name, type);
     type2name.put(type, name);

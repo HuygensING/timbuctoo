@@ -27,6 +27,11 @@ public class DocTypeRegistryTest {
     new DocTypeRegistry(null);
   }
 
+  @Test(expected = IllegalStateException.class)
+  public void testDocumentTypeNamesMustBeDifferent() {
+    new DocTypeRegistry(MODEL_PACKAGE + " " + MODEL_PACKAGE);
+  }
+
   @Test
   public void testConstructModelToRegister() {
     DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
