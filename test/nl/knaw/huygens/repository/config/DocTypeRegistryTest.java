@@ -22,6 +22,11 @@ public class DocTypeRegistryTest {
 
   private static final String MODEL_PACKAGE = "nl.knaw.huygens.repository.variation.model";
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testPackageNamesMustnotBeNull() {
+    new DocTypeRegistry(null);
+  }
+
   @Test
   public void testConstructModelToRegister() {
     DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
@@ -48,19 +53,19 @@ public class DocTypeRegistryTest {
 
   @Test
   public void testGetCollectionIdFromCollectionBaseClass() {
-    DocTypeRegistry registry = new DocTypeRegistry(null);
+    DocTypeRegistry registry = new DocTypeRegistry("");
     assertEquals("testbasedoc", registry.getCollectionId(TestBaseDoc.class));
   }
 
   @Test
   public void testGetCollectionIdFromCollectionClass() {
-    DocTypeRegistry registry = new DocTypeRegistry(null);
+    DocTypeRegistry registry = new DocTypeRegistry("");
     assertEquals("testconcretedoc", registry.getCollectionId(TestConcreteDoc.class));
   }
 
   @Test
   public void testGetCollectionIdFromNonDirectDescendantOfDocument() {
-    DocTypeRegistry registry = new DocTypeRegistry(null);
+    DocTypeRegistry registry = new DocTypeRegistry("");
     assertEquals("testinheritsfromtestbasedoc", registry.getCollectionId(TestInheritsFromTestBaseDoc.class));
   }
 
