@@ -41,7 +41,7 @@ public class SearchManager {
 
   public SearchResult search(Class<? extends Document> type, String core, FacetedSearchParameters searchParameters) throws SolrServerException, FacetDoesNotExistException {
     Map<String, FacetInfo> facetInfoMap = facetFinder.findFacets(type);
-    List<String> fullTextSearchFields = fullTextSearchFieldFinder.findFullTextSearchFields(type);
+    Set<String> fullTextSearchFields = fullTextSearchFieldFinder.findFullTextSearchFields(type);
     String searchTerm = createSearchTerm(type, searchParameters, facetInfoMap.keySet(), fullTextSearchFields);
     QueryResponse response = server.getQueryResponse(searchTerm, facetInfoMap.keySet(), searchParameters.getSort(), core);
     SolrDocumentList documents = response.getResults();
@@ -60,7 +60,7 @@ public class SearchManager {
     return searchResult;
   }
 
-  private String createSearchTerm(Class<? extends Document> type, FacetedSearchParameters searchParameters, Set<String> existingFacets, List<String> fullTextSearchFields)
+  private String createSearchTerm(Class<? extends Document> type, FacetedSearchParameters searchParameters, Set<String> existingFacets, Set<String> fullTextSearchFields)
       throws FacetDoesNotExistException {
     List<FacetParameter> facetValues = searchParameters.getFacetValues();
     boolean usesFacets = facetValues != null && !facetValues.isEmpty();
