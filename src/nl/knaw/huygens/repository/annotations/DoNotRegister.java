@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An annotation, that should make sure the class will not be registered by the DocTypeRegistry.
+ * Indicates that the annotated class must not be registered by the DocTypeRegistry.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
