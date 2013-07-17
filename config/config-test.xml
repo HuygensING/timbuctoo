@@ -53,7 +53,7 @@
     </security>
     <handle>
       <!--  persistency server -->
-      <enabled>true</enabled>
+      <enabled>false</enabled>
       <cipher>G8jUp6Ha</cipher>
       <naming_authority>0.NA</naming_authority>
       <prefix>11151</prefix>
