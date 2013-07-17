@@ -17,15 +17,24 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public abstract class CSVImporter {
 
-  public static final char SEPARATOR = ';';
-  public static final char QUOTE = '"';
-
+  private static final char SEPARATOR_CHAR = ';';
+  private static final char QUOTE_CHAR = '"';
   private static final int LINES_TO_SKIP = 4;
 
   protected final PrintWriter out;
+  protected final int linesToSkip;
+  protected final char separatorChar;
+  protected final char quoteChar;
+
+  public CSVImporter(PrintWriter out, char separator, char quote, int skip) {
+    this.out = out;
+    separatorChar = separator;
+    quoteChar = quote;
+    linesToSkip = skip;
+  }
 
   public CSVImporter(PrintWriter out) {
-    this.out = out;
+    this(out, SEPARATOR_CHAR, QUOTE_CHAR, LINES_TO_SKIP);
   }
 
   public void handleFile(File file, int itemsPerLine, boolean verbose) throws IOException {
@@ -41,7 +50,7 @@ public abstract class CSVImporter {
     CSVReader reader = null;
     try {
       Reader fileReader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-      reader = new CSVReader(fileReader, SEPARATOR, QUOTE, LINES_TO_SKIP);
+      reader = new CSVReader(fileReader, separatorChar, quoteChar, linesToSkip);
       for (String[] line : reader.readAll()) {
         // allow lines to be empty
         if (line.length > 0) {
