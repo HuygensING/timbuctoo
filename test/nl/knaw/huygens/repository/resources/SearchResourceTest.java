@@ -21,6 +21,7 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
+import nl.knaw.huygens.repository.search.FacetDoesNotExistException;
 import nl.knaw.huygens.repository.search.SearchManager;
 import nl.knaw.huygens.repository.storage.StorageManager;
 import nl.knaw.huygens.solr.FacetCount;
@@ -45,7 +46,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   private String id = "QRY0000000001";
 
   @Test
-  public void testPostSuccess() throws IOException, SolrServerException {
+  public void testPostSuccess() throws IOException, SolrServerException, FacetDoesNotExistException {
 
     SearchResult searchResult = createPostSearchResult();
 
@@ -68,7 +69,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostSuccessWithoutSort() throws IOException, SolrServerException {
+  public void testPostSuccessWithoutSort() throws IOException, SolrServerException, FacetDoesNotExistException {
     SearchResult searchResult = createPostSearchResult();
 
     setupDocTypeRegistry();
@@ -90,7 +91,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostTypeUnknown() throws SolrServerException, IOException {
+  public void testPostTypeUnknown() throws SolrServerException, IOException, FacetDoesNotExistException {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
@@ -106,7 +107,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostTypeStringNull() throws IOException, SolrServerException {
+  public void testPostTypeStringNull() throws IOException, SolrServerException, FacetDoesNotExistException {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
@@ -122,7 +123,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostQueryStringNull() throws IOException, SolrServerException {
+  public void testPostQueryStringNull() throws IOException, SolrServerException, FacetDoesNotExistException {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
@@ -138,7 +139,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostSearchManagerThrowsAnException() throws IOException, SolrServerException {
+  public void testPostSearchManagerThrowsAnException() throws IOException, SolrServerException, FacetDoesNotExistException {
     setupDocTypeRegistry();
 
     SearchManager searchManager = injector.getInstance(SearchManager.class);
@@ -156,7 +157,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostStorageManagerThrowsAnException() throws IOException, SolrServerException {
+  public void testPostStorageManagerThrowsAnException() throws IOException, SolrServerException, FacetDoesNotExistException {
     SearchResult searchResult = createPostSearchResult();
 
     setupDocTypeRegistry();
@@ -277,7 +278,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertEquals(ClientResponse.Status.INTERNAL_SERVER_ERROR, response.getClientResponseStatus());
   }
 
-  private void setupSearchManager(SearchResult searchResult) throws SolrServerException {
+  private void setupSearchManager(SearchResult searchResult) throws SolrServerException, FacetDoesNotExistException {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
     when(searchManager.search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class))).thenReturn(searchResult);
   }
