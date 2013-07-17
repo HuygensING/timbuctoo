@@ -1,11 +1,7 @@
 package nl.knaw.huygens.repository.variation;
 
-import java.util.Map;
-
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
-
-import com.google.common.collect.Maps;
 
 /**
  * Converts between (domain) model type tokens and variation names.
@@ -13,18 +9,15 @@ import com.google.common.collect.Maps;
  */
 class TypeConverter {
 
-  private final Map<String, Class<? extends Document>> map;
+  private final DocTypeRegistry registry;
 
   public TypeConverter(DocTypeRegistry registry) {
-    map = Maps.newHashMap();
-    for (Class<? extends Document> type : registry.getDocumentTypes()) {
-      map.put(type.getSimpleName().toLowerCase(), type);
-    }
+    this.registry = registry;
   }
 
   @SuppressWarnings("unchecked")
   public <T extends Document> Class<? extends T> getClass(String id) {
-    return (Class<? extends T>) map.get(normalize(id));
+    return (Class<? extends T>) registry.getTypeForIName(normalize(id));
   }
 
   private String normalize(String typeString) {

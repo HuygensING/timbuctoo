@@ -179,7 +179,8 @@ public class StorageManager {
   private <T extends Document> void persistDocumentVersion(Class<T> type, T doc) {
     try {
       // TODO make persistent id dependent on version.
-      String collectionId = docTypeRegistry.getCollectionId(type);
+      Class<? extends Document> baseType = docTypeRegistry.getBaseClass(type);
+      String collectionId = docTypeRegistry.getINameForType(baseType);
       String pid = persistenceManager.persistObject(collectionId, doc.getId());
       storage.setPID(type, pid, doc.getId());
     } catch (PersistenceException e) {
@@ -245,7 +246,7 @@ public class StorageManager {
   private void fillAnnotationCache() {
     annotationCache = Maps.newHashMap();
     for (String docType : documentTypes) {
-      Class<? extends Document> cls = docTypeRegistry.getClassFromWebServiceTypeString(docType);
+      Class<? extends Document> cls = docTypeRegistry.getTypeForIName(docType);
       annotationCache.put(cls, getAllRelatedDocumentAnnotations(cls));
     }
   }

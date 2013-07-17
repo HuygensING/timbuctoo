@@ -106,7 +106,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   public List<Document> getLastChanged(int limit) {
     List<Document> changedDocs = Lists.newArrayList();
     for (String colName : documentCollections) {
-      JacksonDBCollection<? extends Document, String> col = MongoUtils.getCollection(db, docTypeRegistry.getClassFromWebServiceTypeString(colName));
+      JacksonDBCollection<? extends Document, String> col = MongoUtils.getCollection(db, docTypeRegistry.getTypeForIName(colName));
       changedDocs.addAll(col.find().sort(new BasicDBObject("^lastChange.dateStamp", -1)).limit(limit).toArray());
     }
 
@@ -277,15 +277,15 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
 
   // -------------------------------------------------------------------
 
-  private <T extends Document> void setNextId(Class<T> cls, T item) {
-    BasicDBObject idFinder = new BasicDBObject("_id", DocTypeRegistry.getCollectionName(cls));
+  private <T extends Document> void setNextId(Class<T> type, T item) {
+    BasicDBObject idFinder = new BasicDBObject("_id", docTypeRegistry.getINameForType(type));
     BasicDBObject counterIncrement = new BasicDBObject("$inc", new BasicDBObject("next", 1));
 
     // Find by id, return all fields, use default sort, increment the counter,
     // return the new object, create if no object exists:
     Counter newCounter = counterCol.findAndModify(idFinder, null, null, false, counterIncrement, true, true);
 
-    String newId = cls.getAnnotation(IDPrefix.class).value() + String.format("%1$010d", newCounter.next);
+    String newId = type.getAnnotation(IDPrefix.class).value() + String.format("%1$010d", newCounter.next);
     item.setId(newId);
   }
 

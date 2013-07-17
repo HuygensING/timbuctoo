@@ -25,7 +25,7 @@ public class IndexerFactory {
 
     indexers = Maps.newHashMap();
     for (String doctype : config.getSettings("indexeddoctypes")) {
-      Class<? extends Document> type = registry.getClassFromWebServiceTypeString(doctype);
+      Class<? extends Document> type = registry.getTypeForIName(doctype);
       indexers.put(type, SolrDocumentIndexer.newInstance(type, server, hub));
     }
   }

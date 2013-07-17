@@ -59,7 +59,7 @@ public class OldIndexManager {
   private Set<Class<? extends Document>> setupIndexedTypes(Configuration conf) {
     Set<Class<? extends Document>> indexedTypes = Sets.newHashSet();
     for (String typeString : conf.getSettings("indexeddoctypes")) {
-      Class<? extends Document> type = docTypeRegistry.getClassFromWebServiceTypeString(typeString);
+      Class<? extends Document> type = docTypeRegistry.getTypeForIName(typeString);
       // Better safe than sorry, this is also checked by the configuration validator...
       if (type == null) {
         throw new RuntimeException("Invalid index type: " + typeString);
@@ -129,9 +129,9 @@ public class OldIndexManager {
         if (items.length > 0) {
           List<Class<? extends Document>> clsList = Lists.newArrayList();
           for (String item : items) {
-            clsList.add(docTypeRegistry.getClassFromWebServiceTypeString(item));
+            clsList.add(docTypeRegistry.getTypeForIName(item));
           }
-          indexRelations.put(docTypeRegistry.getClassFromWebServiceTypeString(k), clsList);
+          indexRelations.put(docTypeRegistry.getTypeForIName(k), clsList);
         }
       }
     }

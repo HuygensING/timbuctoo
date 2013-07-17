@@ -9,8 +9,8 @@ import nl.knaw.huygens.repository.index.DocumentIndexer;
 import nl.knaw.huygens.repository.index.IndexerFactory;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
-import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.StorageIterator;
+import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.util.Progress;
 import nl.knaw.huygens.repository.util.RepositoryException;
 
@@ -49,7 +49,7 @@ public class SolrIndexer {
     public int run() {
       int rv = 0;
       for (String doctype : config.getSettings("indexeddoctypes")) {
-        Class<? extends Document> cls = docTypeRegistry.getClassFromWebServiceTypeString(doctype);
+        Class<? extends Document> cls = docTypeRegistry.getTypeForIName(doctype);
         // Only DomainDocuments should be indexed.
         if (DomainDocument.class.isAssignableFrom(cls)) {
           try {

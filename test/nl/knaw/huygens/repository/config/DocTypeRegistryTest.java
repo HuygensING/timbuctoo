@@ -2,6 +2,7 @@ package nl.knaw.huygens.repository.config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.variation.model.TestBaseDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.repository.variation.model.TestExtraBaseDoc;
@@ -33,81 +34,64 @@ public class DocTypeRegistryTest {
   }
 
   @Test
-  public void testConstructModelToRegister() {
+  public void testGetTypeForIName() {
     DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
-    assertEquals(TestExtraBaseDoc.class, registry.getClassFromWebServiceTypeString("testextrabasedocs"));
+    assertEquals(TestExtraBaseDoc.class, registry.getTypeForIName("testextrabasedoc"));
   }
 
   @Test
-  public void testGetClassFromWebServiceTypeStringeAllLowerCase() {
+  public void testGetTypeForXName() {
     DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
-    assertEquals(TestExtraBaseDoc.class, registry.getClassFromWebServiceTypeString("testextrabasedocs"));
+    assertEquals(TestExtraBaseDoc.class, registry.getTypeForXName("testextrabasedocs"));
   }
 
   @Test
-  public void testGetClassFromWebServiceTypeStringWithCapitals() {
-    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
-    assertNull(registry.getClassFromWebServiceTypeString("TestExtraBaseDocs"));
-  }
-
-  @Test
-  public void testGetClassFromWebServiceTypeStringAllUppercase() {
-    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
-    assertNull(registry.getClassFromWebServiceTypeString("TESTEXTRABASEDOCs"));
-  }
-
-  @Test
-  public void testGetCollectionIdFromCollectionBaseClass() {
+  public void testBaseClassFromCollectionBaseClass() {
     DocTypeRegistry registry = new DocTypeRegistry("");
-    assertEquals("testbasedoc", registry.getCollectionId(TestBaseDoc.class));
+    assertEquals(TestBaseDoc.class, registry.getBaseClass(TestBaseDoc.class));
   }
 
   @Test
-  public void testGetCollectionIdFromCollectionClass() {
+  public void testBaseClassFromCollectionClass() {
     DocTypeRegistry registry = new DocTypeRegistry("");
-    assertEquals("testconcretedoc", registry.getCollectionId(TestConcreteDoc.class));
+    assertEquals(TestConcreteDoc.class, registry.getBaseClass(TestConcreteDoc.class));
   }
 
   @Test
-  public void testGetCollectionIdFromNonDirectDescendantOfDocument() {
+  public void testGetBaseClassFromNonDirectDescendantOfDocument() {
     DocTypeRegistry registry = new DocTypeRegistry("");
-    assertEquals("testinheritsfromtestbasedoc", registry.getCollectionId(TestInheritsFromTestBaseDoc.class));
+    assertEquals(TestInheritsFromTestBaseDoc.class, registry.getBaseClass(TestInheritsFromTestBaseDoc.class));
   }
 
   @Test
   public void testGetCollectionIdForARegisteredClass() {
     DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
-    assertEquals("testconcretedoc", registry.getCollectionId(TestConcreteDoc.class));
-  }
-
-  @Test
-  public void testRegisterPackageReadablePackage() {
-    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
-    assertEquals(TestExtraBaseDoc.class, registry.getClassFromWebServiceTypeString("testextrabasedocs"));
+    Class<? extends Document> baseType = registry.getBaseClass(TestConcreteDoc.class);
+    assertEquals("testconcretedoc", registry.getINameForType(baseType));
   }
 
   @Test
   public void testRegisterPackageDontRegisterClass() {
     DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
-    assertNull(registry.getClassFromWebServiceTypeString("donotregistertests"));
+    assertNull(registry.getTypeForIName("donotregistertests"));
   }
 
   @Test
   public void testRegisterPackageNonDocument() {
     DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
-    assertNull(registry.getClassFromWebServiceTypeString("nonDoc"));
+    assertNull(registry.getTypeForIName("nonDoc"));
   }
 
   @Test
   public void testRegisterPackageSubPackage() {
     DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
-    assertNull(registry.getClassFromWebServiceTypeString("testdoc"));
+    assertNull(registry.getTypeForIName("testdoc"));
   }
 
   @Test
   public void testRegisterPackageAbstractClass() {
     DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
-    assertNull(registry.getClassFromWebServiceTypeString("testbasedoc"));
+    assertNull(registry.getTypeForIName("testbasedoc"));
   }
 
 }

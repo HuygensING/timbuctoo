@@ -49,7 +49,6 @@ public class SearchManager {
     List<FacetCount> facets = getFacetCounts(response.getFacetFields(), facetInfoMap);
 
     List<String> ids = Lists.newArrayList();
-
     for (SolrDocument document : documents) {
       ids.add(document.getFieldValue("id").toString());
     }
@@ -116,4 +115,5 @@ public class SearchManager {
 
     return facets;
   }
+
 }

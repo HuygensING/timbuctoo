@@ -7,11 +7,9 @@ import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 import nl.knaw.huygens.repository.VariationHelper;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Reference;
 import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
 import nl.knaw.huygens.repository.storage.mongo.MongoDiff;
@@ -29,7 +27,6 @@ import org.mongojack.internal.stream.JacksonDBObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Sets;
 import com.mongodb.DBObject;
 
 public class VariationReducerTest {
@@ -41,13 +38,11 @@ public class VariationReducerTest {
   @Before
   public void setUp() {
     DocTypeRegistry registry = mock(DocTypeRegistry.class);
-    Set<Class<? extends Document>> types = Sets.newHashSet();
-    types.add(TestConcreteDoc.class);
-    types.add(TestInheritsFromTestBaseDoc.class);
-    types.add(GeneralTestDoc.class);
-    types.add(ProjectAGeneralTestDoc.class);
-    types.add(ProjectBGeneralTestDoc.class);
-    doReturn(types).when(registry).getDocumentTypes();
+    doReturn(TestConcreteDoc.class).when(registry).getTypeForIName("testconcretedoc");
+    doReturn(TestInheritsFromTestBaseDoc.class).when(registry).getTypeForIName("testinheritsfromtestbasedoc");
+    doReturn(GeneralTestDoc.class).when(registry).getTypeForIName("generaltestdoc");
+    doReturn(ProjectAGeneralTestDoc.class).when(registry).getTypeForIName("projectageneraltestdoc");
+    doReturn(ProjectBGeneralTestDoc.class).when(registry).getTypeForIName("projectbgeneraltestdoc");
 
     reducer = new VariationReducer(registry);
     m = new ObjectMapper();
