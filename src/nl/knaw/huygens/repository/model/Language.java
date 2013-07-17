@@ -1,7 +1,11 @@
 package nl.knaw.huygens.repository.model;
 
+import java.util.List;
+
 import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.annotations.IDPrefix;
+
+import com.google.common.collect.Lists;
 
 // TODO add validation
 
@@ -14,10 +18,8 @@ import nl.knaw.huygens.repository.annotations.IDPrefix;
 @DocumentTypeName("language")
 public class Language extends DomainDocument {
 
-  /** Two-letter code; usually ISO 639-1. */
-  private String code2;
-  /** Three-letter code; usually ISO 639-2. */
-  private String code3;
+  /** Codes, at least one, first is default. */
+  private List<String> codes;
   /** English name. */
   private String nameEng;
   /** French name. */
@@ -25,25 +27,25 @@ public class Language extends DomainDocument {
   /** ISO code, or not. */
   boolean iso;
 
+  public Language() {
+    codes = Lists.newArrayListWithCapacity(3);
+  }
+
   @Override
   public String getDisplayName() {
     return nameEng;
   }
 
-  public String getCode2() {
-    return code2;
+  public List<String> getCodes() {
+    return codes;
   }
 
-  public void setCode2(String code) {
-    code2 = code;
+  public void setCodes(List<String> codes) {
+    this.codes = codes;
   }
 
-  public String getCode3() {
-    return code3;
-  }
-
-  public void setCode3(String code) {
-    code3 = code;
+  public void addCode(String code) {
+    codes.add(code);
   }
 
   public String getNameEng() {
