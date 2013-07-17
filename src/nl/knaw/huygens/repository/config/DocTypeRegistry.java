@@ -33,11 +33,22 @@ import com.google.inject.Singleton;
  * <li>Domain documents are used for modeling user entities;
  * they are versioned and may have variations.</li>
  * </ul>
- * 
- * The document registry scans specified Java packages for concrete
- * (i.e. not abstract) classes that subclass <code<Document</code>.
+ *
+ * <p>The document registry scans specified Java packages for concrete
+ * (i.e. not abstract) classes that subclass {@code Document}.
  * The developer has the option to prevent registration by providing
- * a <code>DoNotRegister</code> annotation.
+ * a {@code DoNotRegister} annotation.</p>
+ *
+ * <p>To distinguish between document types we use two characterizations:
+ * - type token (usually abbreviated to type), which is the Java
+ * {@code Class<? extends Document>} for the document
+ * - type name (usually abbreviated to name) which is a Java string.
+ * There is a one-to-one correspondence between the type token and the
+ * type name. Hence type names must be unique.
+ * The default rule for constructing type names is to take the lower
+ * case version of the last part of the fully qualified class name.
+ * This rule can be overridden by using a {@code DocumentTypeName}
+ * annotation on the document class.</p>
  */
 @Singleton
 public class DocTypeRegistry {
@@ -47,6 +58,9 @@ public class DocTypeRegistry {
   private final Map<String, Class<? extends Document>> webServiceTypeStringToTypeMap;
   private final Map<Class<? extends Document>, String> typeToStringMap;
   private final Map<Class<? extends Document>, String> typeToCollectionIdMap;
+
+  private Map<Class<? extends Document>, String> type2name = Maps.newHashMap();
+  private Map<String, Class<? extends Document>> name2type = Maps.newHashMap();
 
   public DocTypeRegistry(String packageNames) {
     Preconditions.checkNotNull(packageNames, "packageNames must not be null");
@@ -89,6 +103,15 @@ public class DocTypeRegistry {
   // -------------------------------------------------------------------
 
   private void registerClass(Class<? extends Document> type) {
+    String name = getTypeName(type);
+    if (name2type.containsKey(name)) {
+      throw new RuntimeException("Duplicate document type name " + name);
+    }
+    name2type.put(name, type);
+    type2name.put(type, name);
+
+    // old stuff
+
     String typeId = determineTypeName(type);
     webServiceTypeStringToTypeMap.put(typeId, type);
     typeToStringMap.put(type, typeId);
@@ -96,6 +119,32 @@ public class DocTypeRegistry {
     String baseTypeId = getCollectionName(baseCls);
     typeToCollectionIdMap.put(type, baseTypeId);
   }
+
+  private String getTypeName(Class<? extends Document> type) {
+    if (type.isAnnotationPresent(DocumentTypeName.class)) {
+      return type.getAnnotation(DocumentTypeName.class).value();
+    } else {
+      return type.getSimpleName().toLowerCase();
+    }
+  }
+
+  /**
+   * Returns the document type name for the specified type token,
+   * or {@code null} if there is no such name.
+   */
+  public String docNameFor(Class<? extends Document> type) {
+    return type2name.get(type);
+  }
+
+  /**
+   * Returns the document type token for the specified type name,
+   * or {@code null} if there is no such token.
+   */
+  public Class<? extends Document> docTypeFor(String name) {
+    return name2type.get(name);
+  }
+
+  // -------------------------------------------------------------------
 
   /**
    * Returns the registered document types.
@@ -151,7 +200,7 @@ public class DocTypeRegistry {
     return type.getSimpleName().toLowerCase();
   }
 
-  public static String determineTypeName(Class<? extends Document> type) {
+  private static String determineTypeName(Class<? extends Document> type) {
     DocumentTypeName annotation = type.getAnnotation(DocumentTypeName.class);
     if (annotation != null) {
       return annotation.value();
