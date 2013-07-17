@@ -51,7 +51,7 @@ public class LanguageImporter extends CSVImporter {
 
     if (items[2].length() != 0) {
       if (items[2].length() != 2) {
-        displayError("second item must be 2-letter code", items);
+        displayError("third item must be 2-letter code", items);
         return;
       }
       language.addCode(items[2]);

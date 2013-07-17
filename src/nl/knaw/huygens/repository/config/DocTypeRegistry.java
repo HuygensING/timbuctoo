@@ -11,6 +11,7 @@ import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.model.Document;
 
 import org.apache.commons.lang.StringUtils;
+import org.scribe.utils.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,26 +39,57 @@ public class DocTypeRegistry {
 
   private final Logger LOG = LoggerFactory.getLogger(DocTypeRegistry.class);
 
-  private final ClassPath classPath;
   private final Map<String, Class<? extends Document>> webServiceTypeStringToTypeMap;
   private final Map<Class<? extends Document>, String> typeToStringMap;
   private final Map<Class<? extends Document>, String> typeToCollectionIdMap;
 
   public DocTypeRegistry(String packageNames) {
-    try {
-      classPath = ClassPath.from(this.getClass().getClassLoader());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    Preconditions.checkNotNull(packageNames, "packageNames must not be null");
 
     webServiceTypeStringToTypeMap = Maps.newHashMap();
     typeToStringMap = Maps.newHashMap();
     typeToCollectionIdMap = Maps.newHashMap();
-    if (packageNames != null) {
-      for (String packageName : StringUtils.split(packageNames)) {
-        registerPackage(packageName);
+
+    ClassPath classPath = getClassPath();
+    for (String packageName : StringUtils.split(packageNames)) {
+      registerPackage(classPath, packageName);
+    }
+  }
+
+  private ClassPath getClassPath() {
+    try {
+      return ClassPath.from(getClass().getClassLoader());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private void registerPackage(ClassPath classPath, String packageName) {
+    for (ClassInfo info : classPath.getTopLevelClasses(packageName)) {
+      Class<?> type = info.load();
+      if (shouldRegisterClass(type)) {
+        registerClass((Class<? extends Document>) type);
+        LOG.info("Registered {}", type.getName());
       }
     }
+  }
+
+  private boolean shouldRegisterClass(Class<?> type) {
+    return Document.class.isAssignableFrom(type) //
+        && !Modifier.isAbstract(type.getModifiers()) //
+        && !type.isAnnotationPresent(DoNotRegister.class);
+  }
+
+  // -------------------------------------------------------------------
+
+  private void registerClass(Class<? extends Document> type) {
+    String typeId = determineTypeName(type);
+    webServiceTypeStringToTypeMap.put(typeId, type);
+    typeToStringMap.put(type, typeId);
+    Class<? extends Document> baseCls = getBaseClass(type);
+    String baseTypeId = getCollectionName(baseCls);
+    typeToCollectionIdMap.put(type, baseTypeId);
   }
 
   /**
@@ -87,32 +119,6 @@ public class DocTypeRegistry {
     String collectionId = getCollectionName(getBaseClass(type));
     typeToCollectionIdMap.put(type, collectionId);
     return collectionId;
-  }
-
-  @SuppressWarnings("unchecked")
-  private void registerPackage(String packageName) {
-    for (ClassInfo info : classPath.getTopLevelClasses(packageName)) {
-      Class<?> cls = info.load();
-      if (shouldRegisterClass(cls)) {
-        registerClass(packageName, (Class<? extends Document>) cls);
-      }
-    }
-  }
-
-  private boolean shouldRegisterClass(Class<?> cls) {
-    return Document.class.isAssignableFrom(cls) //
-        && !Modifier.isAbstract(cls.getModifiers()) //
-        && !cls.isAnnotationPresent(DoNotRegister.class);
-  }
-
-  private void registerClass(String packageName, Class<? extends Document> type) {
-    String typeId = determineTypeName(type);
-    webServiceTypeStringToTypeMap.put(typeId, type);
-    typeToStringMap.put(type, typeId);
-    Class<? extends Document> baseCls = getBaseClass(type);
-    String baseTypeId = getCollectionName(baseCls);
-    typeToCollectionIdMap.put(type, baseTypeId);
-    LOG.info("Identified '{}' in package {}", typeId, packageName);
   }
 
   /**
