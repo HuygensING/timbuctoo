@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.search;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.model.Document;
@@ -37,9 +38,9 @@ public class SearchManager {
     this.facetFinder = facetFinder;
   }
 
-  public SearchResult search(Class<? extends Document> type, String core, FacetedSearchParameters searchParameters) throws SolrServerException {
-    String searchTerm = createSearchTerm(type, searchParameters);
+  public SearchResult search(Class<? extends Document> type, String core, FacetedSearchParameters searchParameters) throws SolrServerException, FacetDoesNotExistException {
     Map<String, FacetInfo> facetInfoMap = facetFinder.findFacets(type);
+    String searchTerm = createSearchTerm(type, searchParameters, facetInfoMap.keySet());
     QueryResponse response = server.getQueryResponse(searchTerm, facetInfoMap.keySet(), searchParameters.getSort(), core);
     SolrDocumentList documents = response.getResults();
 
@@ -57,11 +58,14 @@ public class SearchManager {
     return searchResult;
   }
 
-  private String createSearchTerm(Class<? extends Document> type, FacetedSearchParameters searchParameters) {
+  private String createSearchTerm(Class<? extends Document> type, FacetedSearchParameters searchParameters, Set<String> existingFacets) throws FacetDoesNotExistException {
     List<FacetParameter> facetValues = searchParameters.getFacetValues();
     if (facetValues != null && !facetValues.isEmpty()) {
       StringBuilder builder = new StringBuilder(String.format("+%s:(%s)", getFullTextSearchFields(type).get(0), searchParameters.getTerm()));
       for (FacetParameter facetParameter : facetValues) {
+        if (!existingFacets.contains(facetParameter.getName())) {
+          throw new FacetDoesNotExistException("Facet " + facetParameter.getName() + " does not exist.");
+        }
         builder.append(" +");
         builder.append(facetParameter.getName());
         builder.append(":(");
