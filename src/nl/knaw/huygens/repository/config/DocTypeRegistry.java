@@ -33,6 +33,11 @@ import com.google.inject.Singleton;
  * <li>Domain documents are used for modeling user entities;
  * they are versioned and may have variations.</li>
  * </ul>
+ * 
+ * The document registry scans specified Java packages for concrete
+ * (i.e. not abstract) classes that subclass <code<Document</code>.
+ * The developer has the option to prevent registration by providing
+ * a <code>DoNotRegister</code> annotation.
  */
 @Singleton
 public class DocTypeRegistry {
