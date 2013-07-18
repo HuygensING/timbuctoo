@@ -1,6 +1,7 @@
 package nl.knaw.huygens.repository.resources;
 
 import java.net.URI;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -15,12 +16,14 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 import nl.knaw.huygens.repository.annotations.APIDesc;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.search.SearchManager;
+import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.StorageManager;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
@@ -83,7 +86,7 @@ public class SearchResource {
   @APIDesc("Returns (paged) search results")
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
-  public Map<String, Object> get( //
+  public Response get( //
       @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") int start, //
       @QueryParam("rows") @DefaultValue("10") int rows //
@@ -106,16 +109,33 @@ public class SearchResource {
     int lo = toRange(start, 0, ids.size());
     int hi = toRange(lo + rows, 0, ids.size());
 
+    List<String> idsToGet = ids.subList(lo, hi);
+
+    StorageIterator<? extends Document> iterator = storageManager.getByMultipleIds(type, idsToGet);
+
     Map<String, Object> returnValue = Maps.newConcurrentMap();
     returnValue.put("term", result.getTerm());
     returnValue.put("facets", result.getFacets());
     returnValue.put("numFound", ids.size());
-    returnValue.put("ids", ids.subList(lo, hi));
-    returnValue.put("results", convert(type, ids, lo, hi));
-    returnValue.put("start", lo);
-    returnValue.put("rows", hi);
+    returnValue.put("ids", idsToGet);
+    returnValue.put("results", iterator.getSome(iterator.size()));
+    returnValue.put("start", start);
+    returnValue.put("rows", rows);
 
-    return returnValue;
+    ResponseBuilder response = Response.ok(returnValue);
+
+    if (start > 0) {
+      int prevStart = Math.max(start - rows, 0);
+      String prevLink = MessageFormat.format("<//{0}?start={1}&rows={2}>; rel=prev", queryId, prevStart, rows);
+      response.header("Link", prevLink);
+    }
+
+    if (hi < ids.size()) {
+      String nextLink = MessageFormat.format("<//{0}?start={1}&rows={2}>; rel=next", queryId, start + rows, rows);
+      response.header("Link", nextLink);
+    }
+
+    return response.build();
   }
 
   private int toRange(int value, int minValue, int maxValue) {
