@@ -26,7 +26,6 @@ import nl.knaw.huygens.solr.FacetCount;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.common.SolrException;
 import org.junit.Test;
 import org.mockito.Matchers;
 
@@ -128,9 +127,26 @@ public class SearchResourceTest extends WebServiceTestSetup {
   }
 
   @Test
+  public void testPostUnknownFacets() throws SolrServerException, FacetDoesNotExistException, IOException {
+    SearchManager searchManager = injector.getInstance(SearchManager.class);
+    doThrow(FacetDoesNotExistException.class).when(searchManager).search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class));
+
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+
+    FacetedSearchParameters searchParameters = createSearchParameters(typeString, null, TERM);
+
+    WebResource resource = super.resource();
+    ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
+
+    verify(storageManager, never()).addDocument(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
+
+  }
+
+  @Test
   public void testPostSearchManagerThrowsAnException() throws IOException, SolrServerException, FacetDoesNotExistException {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    doThrow(SolrException.class).when(searchManager).search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class));
+    doThrow(Exception.class).when(searchManager).search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class));
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
@@ -250,7 +266,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     WebResource resource = super.resource();
     ClientResponse response = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
-    assertEquals(ClientResponse.Status.INTERNAL_SERVER_ERROR, response.getClientResponseStatus());
+    assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
   }
 
   private void setupSearchManager(SearchResult searchResult) throws SolrServerException, FacetDoesNotExistException {
