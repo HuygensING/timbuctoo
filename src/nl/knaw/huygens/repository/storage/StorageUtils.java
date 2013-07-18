@@ -1,13 +1,13 @@
-package nl.knaw.huygens.repository.storage.generic;
+package nl.knaw.huygens.repository.storage;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.storage.StorageIterator;
 
 public class StorageUtils {
+
   public static <T extends Document> List<T> readFromIterator(StorageIterator<T> it, int offset, int limit) {
     if (offset > 0) {
       it.skip(offset);
@@ -32,7 +32,6 @@ public class StorageUtils {
     return readFromIterator(it, 0, limit);
   }
 
-
   public static void sortDocumentsByLastChange(List<Document> docs) {
     Collections.sort(docs, new Comparator<Document>() {
       @Override
@@ -44,4 +43,5 @@ public class StorageUtils {
       }
     });
   }
+
 }

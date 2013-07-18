@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.storage.generic;
+package nl.knaw.huygens.repository.storage;
 
 import nl.knaw.huygens.repository.model.Document;
 
@@ -18,4 +18,5 @@ public class GenericDBRef<T extends Document> {
   public T getItem() {
     return item;
   }
+
 }

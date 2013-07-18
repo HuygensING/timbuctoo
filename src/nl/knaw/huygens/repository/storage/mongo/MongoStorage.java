@@ -12,10 +12,10 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.BasicStorage;
+import nl.knaw.huygens.repository.storage.GenericDBRef;
+import nl.knaw.huygens.repository.storage.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.StorageIterator;
-import nl.knaw.huygens.repository.storage.generic.GenericDBRef;
-import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
-import nl.knaw.huygens.repository.storage.generic.StorageUtils;
+import nl.knaw.huygens.repository.storage.StorageUtils;
 
 import org.mongojack.DBCursor;
 import org.mongojack.DBQuery;
