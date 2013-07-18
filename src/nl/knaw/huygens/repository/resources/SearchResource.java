@@ -111,16 +111,14 @@ public class SearchResource {
 
     List<String> idsToGet = ids.subList(lo, hi);
 
-    StorageIterator<? extends Document> iterator = storageManager.getByMultipleIds(type, idsToGet);
-
     Map<String, Object> returnValue = Maps.newConcurrentMap();
     returnValue.put("term", result.getTerm());
     returnValue.put("facets", result.getFacets());
     returnValue.put("numFound", ids.size());
     returnValue.put("ids", idsToGet);
-    returnValue.put("results", iterator.getSome(iterator.size()));
-    returnValue.put("start", start);
-    returnValue.put("rows", rows);
+    returnValue.put("results", convert(type, ids, lo, hi));
+    returnValue.put("start", lo);
+    returnValue.put("rows", hi);
 
     ResponseBuilder response = Response.ok(returnValue);
 
