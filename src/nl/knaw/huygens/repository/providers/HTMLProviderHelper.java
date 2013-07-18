@@ -7,6 +7,8 @@ import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
+
 import org.apache.commons.lang.StringEscapeUtils;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -24,11 +26,13 @@ import com.google.common.collect.Maps;
  */
 public class HTMLProviderHelper {
 
+  private final DocTypeRegistry registry;
   private final Map<AnnotationBundleKey, ObjectWriter> writers;
   private final JsonFactory factory;
   private final String preamble;
 
-  public HTMLProviderHelper(String stylesheetLink, String publicURL) {
+  public HTMLProviderHelper(DocTypeRegistry registry, String stylesheetLink, String publicURL) {
+    this.registry = registry;
     writers = Maps.newHashMap();
     factory = new JsonFactory();
     preamble = createPreamble(stylesheetLink, publicURL);
@@ -92,7 +96,7 @@ public class HTMLProviderHelper {
     if (writer == null) {
       //A quick hack to add custom serialization of the Reference type.
       SimpleModule module = new SimpleModule();
-      module.addSerializer(new ReferenceSerializer());
+      module.addSerializer(new ReferenceSerializer(registry));
       ObjectMapper mapper = new ObjectMapper();
       mapper.registerModule(module);
       EndpointConfig endpointConfig = EndpointConfig.forWriting(mapper, annotations, null);

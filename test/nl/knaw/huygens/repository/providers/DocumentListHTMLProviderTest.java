@@ -41,7 +41,7 @@ public class DocumentListHTMLProviderTest {
   }
 
   private void assertIsWritable(boolean expected, String methodName, MediaType mediaType) {
-    DocumentListHTMLProvider provider = new DocumentListHTMLProvider("link", "url");
+    DocumentListHTMLProvider provider = new DocumentListHTMLProvider(null, "link", "url");
     try {
       Method method = Resource.class.getMethod(methodName);
       Class<?> type = method.getReturnType();

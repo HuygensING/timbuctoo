@@ -12,6 +12,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Sitemap;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -28,8 +29,8 @@ public class SitemapHTMLProvider implements MessageBodyWriter<Sitemap> {
   private final HTMLProviderHelper helper;
 
   @Inject
-  public SitemapHTMLProvider(@Named("html.defaultstylesheet") String stylesheetLink, @Named("public_url") String publicURL) {
-    helper = new HTMLProviderHelper(stylesheetLink, publicURL);
+  public SitemapHTMLProvider(DocTypeRegistry registry, @Named("html.defaultstylesheet") String stylesheetLink, @Named("public_url") String publicURL) {
+    helper = new HTMLProviderHelper(registry, stylesheetLink, publicURL);
   }
 
   @Override

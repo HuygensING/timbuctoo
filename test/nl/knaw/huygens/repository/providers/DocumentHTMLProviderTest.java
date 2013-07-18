@@ -17,7 +17,7 @@ public class DocumentHTMLProviderTest {
 
   @Before
   public void setup() {
-    provider = new DocumentHTMLProvider("link", "url");
+    provider = new DocumentHTMLProvider(null, "link", "url");
   }
 
   private void assertIsWritable(boolean expected, Class<?> type, MediaType mediaType) {
