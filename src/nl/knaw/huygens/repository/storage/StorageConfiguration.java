@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.storage.generic;
+package nl.knaw.huygens.repository.storage;
 
 import java.util.Set;
 
@@ -9,6 +9,7 @@ import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
 public class StorageConfiguration {
+
   private String host;
   private int port;
   private String dbName;

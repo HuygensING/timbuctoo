@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.storage.generic.JsonViews;
+import nl.knaw.huygens.repository.storage.JsonViews;
 
 import org.mongojack.JacksonDBCollection;
 import org.mongojack.internal.object.BsonObjectGenerator;
@@ -78,4 +78,5 @@ public class MongoUtils {
       }
     });
   }
+
 }

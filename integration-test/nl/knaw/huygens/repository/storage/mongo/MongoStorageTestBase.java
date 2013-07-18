@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.storage.generic.StorageConfiguration;
+import nl.knaw.huygens.repository.storage.StorageConfiguration;
 
 import org.junit.BeforeClass;
 

@@ -3,8 +3,8 @@ package nl.knaw.huygens.repository.storage.mongo;
 import java.util.List;
 
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.storage.JsonViews;
 import nl.knaw.huygens.repository.storage.RevisionChanges;
-import nl.knaw.huygens.repository.storage.generic.JsonViews;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -38,4 +38,5 @@ public class MongoChanges<T extends Document> implements RevisionChanges<T> {
   public List<T> getRevisions() {
     return versions;
   }
+
 }

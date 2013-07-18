@@ -2,13 +2,14 @@ package nl.knaw.huygens.repository.storage.mongo;
 
 import java.util.List;
 
-import org.mongojack.DBCursor;
+import nl.knaw.huygens.repository.storage.AbstractStorageIterator;
 
-import nl.knaw.huygens.repository.storage.generic.AbstractStorageIterator;
+import org.mongojack.DBCursor;
 
 public class MongoDBIteratorWrapper<T> extends AbstractStorageIterator<T> {
 
   protected DBCursor<T> cursor;
+
   public MongoDBIteratorWrapper(DBCursor<T> delegate) {
     super(delegate);
     cursor = delegate;
@@ -33,4 +34,5 @@ public class MongoDBIteratorWrapper<T> extends AbstractStorageIterator<T> {
   public List<T> getSome(int count) {
     return cursor.toArray(count);
   }
+
 }

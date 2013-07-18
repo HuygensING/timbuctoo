@@ -26,8 +26,8 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.search.FacetDoesNotExistException;
 import nl.knaw.huygens.repository.search.SearchManager;
+import nl.knaw.huygens.repository.storage.JsonViews;
 import nl.knaw.huygens.repository.storage.StorageManager;
-import nl.knaw.huygens.repository.storage.generic.JsonViews;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 
 import org.slf4j.Logger;
