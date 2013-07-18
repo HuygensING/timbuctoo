@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 import nl.knaw.huygens.repository.VariationHelper;
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Reference;
 import nl.knaw.huygens.repository.storage.mongo.model.TestSystemDocument;
@@ -28,14 +29,20 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 
 public class HTMLGeneratorTest {
 
+  private static final String PACKAGE = "nl.knaw.huygens.repository.variation.model";
+  private static final String PACKAGEA = "nl.knaw.huygens.repository.variation.model.projecta";
+  private static final String PACKAGEB = "nl.knaw.huygens.repository.variation.model.projectb";
+  private static final String MODEL_PACKAGES = PACKAGE + " " + PACKAGEA + " " + PACKAGEB;
+
   private HTMLGenerator gen;
   private ObjectMapper mapper;
   private StringWriter writer;
 
   @Before
   public void setUp() throws Exception {
+    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGES);
     SimpleModule module = new SimpleModule();
-    module.addSerializer(new ReferenceSerializer());
+    module.addSerializer(new ReferenceSerializer(registry));
     mapper = new ObjectMapper();
     mapper.registerModule(module);
     writer = new StringWriter();
