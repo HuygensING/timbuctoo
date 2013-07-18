@@ -2,6 +2,7 @@ package nl.knaw.huygens.repository.providers;
 
 import java.io.IOException;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Reference;
 
@@ -16,8 +17,11 @@ public class ReferenceSerializer extends StdSerializer<Reference> {
 
   private static final String SEMICOLON = "&#59;";
 
-  public ReferenceSerializer() {
+  private final DocTypeRegistry registry;
+
+  public ReferenceSerializer(DocTypeRegistry registry) {
     super(Reference.class);
+    this.registry = registry;
   }
 
   @Override
@@ -30,14 +34,14 @@ public class ReferenceSerializer extends StdSerializer<Reference> {
     String variation = reference.getVariation();
 
     StringBuilder builder = new StringBuilder("<a href=\"");
-    builder.append(type.getSimpleName().toLowerCase());
+    builder.append(registry.getINameForType(type));
     builder.append('/');
     builder.append(reference.getId());
     if (StringUtils.isNotBlank(variation)) {
       builder.append('/').append(variation);
     }
     builder.append("\">");
-    builder.append(type.getSimpleName().toLowerCase());
+    builder.append(registry.getINameForType(type));
     if (StringUtils.isNotBlank(variation)) {
       builder.append(" (").append(variation).append(")");
     }

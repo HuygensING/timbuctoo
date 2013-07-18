@@ -12,6 +12,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -28,8 +29,8 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
   private final HTMLProviderHelper helper;
 
   @Inject
-  public DocumentHTMLProvider(@Named("html.defaultstylesheet") String stylesheetLink, @Named("public_url") String publicURL) {
-    helper = new HTMLProviderHelper(stylesheetLink, publicURL);
+  public DocumentHTMLProvider(DocTypeRegistry registry, @Named("html.defaultstylesheet") String stylesheetLink, @Named("public_url") String publicURL) {
+    helper = new HTMLProviderHelper(registry, stylesheetLink, publicURL);
   }
 
   @Override

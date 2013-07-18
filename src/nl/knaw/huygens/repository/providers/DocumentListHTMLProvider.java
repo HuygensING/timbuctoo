@@ -15,6 +15,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -33,8 +34,8 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
   private final HTMLProviderHelper helper;
 
   @Inject
-  public DocumentListHTMLProvider(@Named("html.defaultstylesheet") String stylesheetLink, @Named("public_url") String publicURL) {
-    helper = new HTMLProviderHelper(stylesheetLink, publicURL);
+  public DocumentListHTMLProvider(DocTypeRegistry registry, @Named("html.defaultstylesheet") String stylesheetLink, @Named("public_url") String publicURL) {
+    helper = new HTMLProviderHelper(registry, stylesheetLink, publicURL);
   }
 
   @Override
