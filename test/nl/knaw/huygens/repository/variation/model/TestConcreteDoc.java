@@ -9,6 +9,12 @@ public class TestConcreteDoc extends DomainDocument {
 
   public String name;
 
+  public TestConcreteDoc() {}
+
+  public TestConcreteDoc(String id) {
+    setId(id);
+  }
+
   @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
