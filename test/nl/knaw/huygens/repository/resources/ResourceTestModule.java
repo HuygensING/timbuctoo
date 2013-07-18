@@ -18,13 +18,19 @@ import com.google.inject.name.Named;
 import com.sun.jersey.guice.JerseyServletModule;
 
 /**
- * This class mocks the ServletModel used in the webapplication.
- *
- * @author martijnm
+ * This class mocks the ServletModel used in the webapplication,
+ * except for DocTypeRegistry which is the real thing.
  */
 class ResourceTestModule extends JerseyServletModule {
+
+  private static final String M0 = "nl.knaw.huygens.repository.model";
+  private static final String M1 = "nl.knaw.huygens.repository.variation.model";
+  private static final String M1A = "nl.knaw.huygens.repository.variation.model.projecta";
+  private static final String M1B = "nl.knaw.huygens.repository.variation.model.projectb";
+  private static final String PACKAGES = M0 + " " + M1 + " " + M1A + " " + M1B;
+
+  private DocTypeRegistry docTypeRegistry;
   private StorageManager storageManager;
-  private DocTypeRegistry documentTypeRegister;
   private JacksonJsonProvider jsonProvider;
   private MockApisAuthorizationServerResourceFilter mockApisAuthorizationServerResourceFilter;
   private Validator validator;
@@ -33,8 +39,8 @@ class ResourceTestModule extends JerseyServletModule {
   private LocalSolrServer localSolrServer;
 
   public ResourceTestModule() {
+    docTypeRegistry = new DocTypeRegistry(PACKAGES);
     storageManager = mock(StorageManager.class);
-    documentTypeRegister = mock(DocTypeRegistry.class);
     jsonProvider = mock(JacksonJsonProvider.class);
     mockApisAuthorizationServerResourceFilter = new MockApisAuthorizationServerResourceFilter();
     validator = mock(Validator.class);
@@ -48,7 +54,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(storageManager, documentTypeRegister, jsonProvider, validator, mailSender, searchManager, localSolrServer);
+    reset(storageManager, jsonProvider, validator, mailSender, searchManager, localSolrServer);
   }
 
   @Override
@@ -64,7 +70,7 @@ class ResourceTestModule extends JerseyServletModule {
 
   @Provides
   public DocTypeRegistry providesDocumentTypeRegister() {
-    return this.documentTypeRegister;
+    return this.docTypeRegistry;
   }
 
   @Provides
