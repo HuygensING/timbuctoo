@@ -1,10 +1,11 @@
 package nl.knaw.huygens.repository.importer.database;
 
 import java.io.File;
-import java.io.IOException;
 
 import javax.ws.rs.core.MediaType;
 
+import nl.knaw.huygens.repository.config.Configuration;
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.repository.model.dwcbia.DWCScientist;
@@ -12,9 +13,6 @@ import nl.knaw.huygens.repository.model.raa.RAACivilServant;
 import nl.knaw.huygens.repository.util.Progress;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.sun.jersey.api.client.Client;
@@ -22,6 +20,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 
 public class BulkDataPoster {
+
   private static final String SERVICE_PATH = "resources";
   private static final String URL = "http://repository.huygens.knaw.nl";
   /*
@@ -32,41 +31,35 @@ public class BulkDataPoster {
 
   //private static final String URL = "http://localhost:8080";
 
-  /**
-   * @param args
-   * @throws IOException 
-   * @throws JsonProcessingException 
-   * @throws ClassNotFoundException 
-   */
-  public static void main(String[] args) throws JsonProcessingException, IOException, ClassNotFoundException {
+  public static void main(String[] args) throws Exception {
     long start = System.currentTimeMillis();
-    sendData(DWCScientist.class, DWCScientist[].class, "dwcscientist/all");
-    sendData(DWCPlace.class, DWCPlace[].class, "dwcplace/all");
-    sendData(RAACivilServant.class, RAACivilServant[].class, "raacivilservant/all");
+
+    Configuration config = new Configuration("config.xml");
+    DocTypeRegistry registry = new DocTypeRegistry(config.getSetting("model-packages"));
+
+    sendData(registry, DWCScientist.class, DWCScientist[].class);
+    sendData(registry, DWCPlace.class, DWCPlace[].class);
+    sendData(registry, RAACivilServant.class, RAACivilServant[].class);
+
     long end = System.currentTimeMillis();
-
     System.out.printf("post took %d seconds", (end - start) / 1000);
-
   }
 
-  protected static <T extends Document> void sendData(Class<T> type, Class<T[]> typeArray, String path) throws IOException, JsonParseException, JsonMappingException {
+  protected static <T extends Document> void sendData(DocTypeRegistry registry, Class<T> type, Class<T[]> typeArray) throws Exception {
     System.out.printf("%n=== Post documents of type '%s'%n", type.getSimpleName());
     T[] docs = readFile(type, typeArray, new File("testdata" + File.separator + type.getSimpleName() + ".json"));
-    postData(type, docs, path);
+    postData(type, docs, registry.getXNameForType(type));
   }
 
-  protected static <T extends Document> T[] readFile(Class<T> type, Class<T[]> typeArray, File fileToRead) throws IOException, JsonParseException, JsonMappingException {
+  protected static <T extends Document> T[] readFile(Class<T> type, Class<T[]> typeArray, File fileToRead) throws Exception {
     ObjectMapper mapper = new ObjectMapper();
-
     mapper.enableDefaultTyping(DefaultTyping.OBJECT_AND_NON_CONCRETE, As.PROPERTY);
-
-    T[] documents = mapper.readValue(fileToRead, typeArray);
-    return documents;
+    return mapper.readValue(fileToRead, typeArray);
   }
 
-  protected static <T extends Document> void postData(Class<T> type, T[] documents, String path) {
+  protected static <T extends Document> void postData(Class<T> type, T[] documents, String collection) {
     Client client = Client.create();
-    WebResource resource = client.resource(URL).path(SERVICE_PATH).path(path);
+    WebResource resource = client.resource(URL).path(SERVICE_PATH).path(collection).path("all");
     Progress progress = new Progress();
     for (T document : documents) {
       progress.step();
@@ -80,4 +73,5 @@ public class BulkDataPoster {
     }
     progress.done();
   }
+
 }
