@@ -43,7 +43,7 @@ public class IndexManager {
       Class<? extends Document> type = registry.getTypeForIName(doctype);
       // Better safe than sorry, this is also checked by the configuration validator...
       if (type != null) {
-        indexers.put(type, SolrDocumentIndexer.newInstance(type, server, null));
+        indexers.put(type, SolrDocumentIndexer.newInstance(type, server));
       }
     }
   }
