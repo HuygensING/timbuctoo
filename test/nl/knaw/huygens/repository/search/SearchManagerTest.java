@@ -33,7 +33,6 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrException;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Matchers;
 
@@ -80,7 +79,6 @@ public class SearchManagerTest {
     testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
   }
 
-  @Ignore
   @Test
   public void testSearchMultipleFields() throws SolrServerException, FacetDoesNotExistException {
     List<String> documentIds = Lists.newArrayList("id1", "id2", "id3", "id4");
@@ -188,7 +186,11 @@ public class SearchManagerTest {
   }
 
   private void setupFullTextSearchFinder(List<String> fullTextSearchNames) {
-    Set<String> fields = Sets.newHashSet();
+    /* 
+     * Use LinkedHashSet, so the order is maintained.
+     * This is needed so the easy compare of the term is allowed.
+     */
+    Set<String> fields = Sets.newLinkedHashSet();
     for (String fullTextSearchName : fullTextSearchNames) {
       fields.add(fullTextSearchName);
     }
