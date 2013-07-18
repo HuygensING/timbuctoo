@@ -1,7 +1,6 @@
 package nl.knaw.huygens.repository.resources;
 
 import java.net.URI;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -14,16 +13,18 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.repository.annotations.APIDesc;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.search.SearchManager;
-import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.StorageManager;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
@@ -89,8 +90,8 @@ public class SearchResource {
   public Response get( //
       @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") int start, //
-      @QueryParam("rows") @DefaultValue("10") int rows //
-  ) {
+      @QueryParam("rows") @DefaultValue("10") int rows, //
+      @Context UriInfo uriInfo) {
 
     // Retrieve result
     SearchResult result = storageManager.getDocument(SearchResult.class, queryId);
@@ -120,18 +121,22 @@ public class SearchResource {
     returnValue.put("start", lo);
     returnValue.put("rows", hi);
 
-    ResponseBuilder response = Response.ok(returnValue);
+    UriBuilder baseUriBuilder = uriInfo.getAbsolutePathBuilder();
+    System.out.println("baseURI: " + baseUriBuilder.build());
 
     if (start > 0) {
       int prevStart = Math.max(start - rows, 0);
-      String prevLink = MessageFormat.format("<//{0}?start={1}&rows={2}>; rel=prev", queryId, prevStart, rows);
-      response.header("Link", prevLink);
+      baseUriBuilder.queryParam("start", prevStart).queryParam("rows", rows);
+      //baseUriBuilder.build((String.format("?start=%s&rows=%s", prevStart, rows));
+      returnValue.put("_prev", baseUriBuilder.build());
     }
 
     if (hi < ids.size()) {
-      String nextLink = MessageFormat.format("<//{0}?start={1}&rows={2}>; rel=next", queryId, start + rows, rows);
-      response.header("Link", nextLink);
+      baseUriBuilder.queryParam("start", start + rows).queryParam("rows", rows);
+      returnValue.put("_next", baseUriBuilder.build());
     }
+
+    ResponseBuilder response = Response.ok(returnValue);
 
     return response.build();
   }
