@@ -24,6 +24,7 @@ import nl.knaw.huygens.repository.annotations.APIDesc;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.SearchResult;
+import nl.knaw.huygens.repository.search.FacetDoesNotExistException;
 import nl.knaw.huygens.repository.search.SearchManager;
 import nl.knaw.huygens.repository.storage.StorageManager;
 import nl.knaw.huygens.repository.storage.generic.JsonViews;
@@ -76,6 +77,9 @@ public class SearchResource {
       storageManager.addDocument(SearchResult.class, result);
       String queryId = result.getId();
       return Response.created(new URI(queryId)).build();
+    } catch (FacetDoesNotExistException ex) {
+      LOG.warn("POST - {}", ex.getMessage());
+      throw new WebApplicationException(Response.Status.BAD_REQUEST);
     } catch (Exception e) {
       LOG.warn("POST - {}", e.getMessage());
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
@@ -104,7 +108,7 @@ public class SearchResource {
     Class<? extends Document> type = registry.getTypeForIName(result.getSearchType());
     if (type == null) {
       LOG.error("GET - no document type for '{}'", result.getSearchType());
-      throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+      throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
     List<String> ids = result.getIds();
     int lo = toRange(start, 0, ids.size());
