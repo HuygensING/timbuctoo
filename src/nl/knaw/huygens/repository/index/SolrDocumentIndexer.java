@@ -2,9 +2,7 @@ package nl.knaw.huygens.repository.index;
 
 import java.util.List;
 
-import nl.knaw.huygens.repository.events.Events;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.pubsub.Hub;
 
 import org.apache.solr.common.SolrInputDocument;
 
@@ -31,14 +29,13 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
   /**
    * Creates a new <code>SolrDocumentIndexer</code> instance.
    */
-  public static <U extends Document> SolrDocumentIndexer<U> newInstance(Class<U> type, LocalSolrServer server, Hub hub) {
-    return new SolrDocumentIndexer<U>(type, server, hub);
+  public static <U extends Document> SolrDocumentIndexer<U> newInstance(Class<U> type, LocalSolrServer server) {
+    return new SolrDocumentIndexer<U>(type, server);
   }
 
   private final LocalSolrServer solrServer;
   private final String core;
   private final ModelIterator modelIterator;
-  private final Hub hub;
 
   /**
    * Creates a document indexer for the specified type.
@@ -47,13 +44,10 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
    *          document type token
    * @param server
    *          the SolrServer to use for indexing
-   * @param hub
-   *          the Hub to use for notifications.
    */
-  private SolrDocumentIndexer(Class<T> type, LocalSolrServer server, Hub hub) {
+  private SolrDocumentIndexer(Class<T> type, LocalSolrServer server) {
     this.solrServer = server;
     this.modelIterator = new ModelIterator();
-    this.hub = hub;
     core = coreForType(type);
   }
 
@@ -144,9 +138,7 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
   public void flush() throws IndexException {
     try {
       solrServer.commit(core);
-      if (hub != null) {
-        hub.publish(new Events.IndexChangedEvent());
-      }
+      // hub.publish(new Events.IndexChangedEvent());
     } catch (Exception ex) {
       throw new IndexException(ex);
     }
