@@ -3,7 +3,6 @@ package nl.knaw.huygens.repository.resources;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -17,7 +16,6 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
-import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
@@ -47,13 +45,8 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostSuccess() throws IOException, SolrServerException, FacetDoesNotExistException {
-
     SearchResult searchResult = createPostSearchResult();
-
-    setupDocTypeRegistry();
-
     setupSearchManager(searchResult);
-
     FacetedSearchParameters searchParameters = createSearchParameters(typeString, id, TERM);
 
     WebResource resource = super.resource();
@@ -71,11 +64,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostSuccessWithoutSort() throws IOException, SolrServerException, FacetDoesNotExistException {
     SearchResult searchResult = createPostSearchResult();
-
-    setupDocTypeRegistry();
-
     setupSearchManager(searchResult);
-
     FacetedSearchParameters searchParameters = createSearchParameters(typeString, null, TERM);
 
     WebResource resource = super.resource();
@@ -140,8 +129,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostSearchManagerThrowsAnException() throws IOException, SolrServerException, FacetDoesNotExistException {
-    setupDocTypeRegistry();
-
     SearchManager searchManager = injector.getInstance(SearchManager.class);
     doThrow(SolrException.class).when(searchManager).search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class));
 
@@ -159,9 +146,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostStorageManagerThrowsAnException() throws IOException, SolrServerException, FacetDoesNotExistException {
     SearchResult searchResult = createPostSearchResult();
-
-    setupDocTypeRegistry();
-
     setupSearchManager(searchResult);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -189,8 +173,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     setUpSearchResult(idList, storageManager, facets);
 
-    setupDocTypeRegistry();
-
     WebResource resource = super.resource();
     Map<String, Object> actual = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<Map<String, Object>>() {});
 
@@ -211,8 +193,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     setUpSearchResult(idList, storageManager, facets);
 
-    setupDocTypeRegistry();
-
     MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
     queryParameters.add("start", "10");
     queryParameters.add("rows", "100");
@@ -231,8 +211,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
     setUpSearchResult(Lists.<String> newArrayList(), storageManager, Lists.<FacetCount> newArrayList());
 
     Map<String, Object> expected = createExpectedResult(Lists.<String> newArrayList(), Lists.<Person> newArrayList(), Lists.<FacetCount> newArrayList(), 0, 0);
-
-    setupDocTypeRegistry();
 
     WebResource resource = super.resource();
     Map<String, Object> actual = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<Map<String, Object>>() {});
@@ -269,9 +247,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getDocument(SearchResult.class, id)).thenReturn(searchResult);
 
-    DocTypeRegistry docTypeRegistry = injector.getInstance(DocTypeRegistry.class);
-    when(docTypeRegistry.getTypeForIName(unknownType)).thenReturn(null);
-
     WebResource resource = super.resource();
     ClientResponse response = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
@@ -281,11 +256,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
   private void setupSearchManager(SearchResult searchResult) throws SolrServerException, FacetDoesNotExistException {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
     when(searchManager.search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class))).thenReturn(searchResult);
-  }
-
-  private void setupDocTypeRegistry() {
-    DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
-    doReturn(Person.class).when(registry).getTypeForIName(typeString);
   }
 
   private SearchResult createPostSearchResult() {
@@ -360,4 +330,5 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertEquals(expected.get("rows"), actual.get("rows"));
     assertEquals(((List<FacetCount>) expected.get("facets")).size(), ((List<FacetCount>) actual.get("facets")).size());
   }
+
 }
