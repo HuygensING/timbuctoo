@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.events;
+package nl.knaw.huygens.repository.attic;
 
 import nl.knaw.huygens.repository.model.Document;
 
