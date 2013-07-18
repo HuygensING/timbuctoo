@@ -127,7 +127,6 @@ public class SearchResource {
     if (start > 0) {
       int prevStart = Math.max(start - rows, 0);
       baseUriBuilder.queryParam("start", prevStart).queryParam("rows", rows);
-      //baseUriBuilder.build((String.format("?start=%s&rows=%s", prevStart, rows));
       returnValue.put("_prev", baseUriBuilder.build());
     }
 
