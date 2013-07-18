@@ -25,7 +25,7 @@ public class Keyword extends DomainDocument {
     this.type = type;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_value")
+  @IndexAnnotation(fieldName = "facet_t_value", isFaceted = false)
   public String getValue() {
     return value;
   }

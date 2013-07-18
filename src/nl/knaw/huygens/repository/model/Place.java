@@ -17,7 +17,7 @@ public class Place extends DomainDocument {
     return name;
   };
 
-  @IndexAnnotation(fieldName = "facet_t_name")
+  @IndexAnnotation(fieldName = "facet_t_name", isFaceted = false)
   public String getName() {
     return name;
   }
