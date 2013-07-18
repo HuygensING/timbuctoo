@@ -11,29 +11,39 @@ public class DocumentRef {
   /**
    * Utility for creating instances.
    */
-  public static <T extends Document> DocumentRef newInstance(String type, T document) {
-    return new DocumentRef(type, document.getId(), document.getDisplayName());
+  public static <T extends Document> DocumentRef newInstance(String itype, String xtype, T document) {
+    return new DocumentRef(itype, xtype, document.getId(), document.getDisplayName());
   }
 
-  private String type;
+  private String itype;
+  private String xtype;
   private String id;
   private String displayName;
 
   // For deserialization...
   public DocumentRef() {}
 
-  public DocumentRef(String type, String id, String displayName) {
-    this.type = type;
+  public DocumentRef(String itype, String xtype, String id, String displayName) {
+    this.itype = itype;
+    this.xtype = xtype;
     this.id = id;
     this.displayName = displayName;
   }
 
-  public String getType() {
-    return type;
+  public String getIType() {
+    return itype;
   }
 
-  public void setType(String type) {
-    this.type = type;
+  public void setIType(String itype) {
+    this.itype = itype;
+  }
+
+  public String getXType() {
+    return xtype;
+  }
+
+  public void setXType(String xtype) {
+    this.xtype = xtype;
   }
 
   public String getId() {
