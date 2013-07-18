@@ -53,6 +53,10 @@ public class HTMLGeneratorTest {
     Assert.assertThat(html, Matchers.containsString("<tr><th>" + key + "</th><td>" + value + "</td></tr>"));
   }
 
+  private void assertContains(String html, String value) {
+    Assert.assertThat(html, Matchers.containsString(value.replaceAll("\\|", "\"")));
+  }
+
   @Test
   public void testSystemDocument() throws JsonGenerationException, JsonMappingException, IOException {
     TestSystemDocument doc = new TestSystemDocument();
@@ -99,12 +103,14 @@ public class HTMLGeneratorTest {
     assertContains(html, "Last Change", "none");
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
-    assertContains(
-        html,
-        "Variations",
-        "<a href=\"projectageneraltestdoc/TCD0000000001\">projectageneraltestdoc</a>&#59;<br>\n<a href=\"projectbgeneraltestdoc/TCD0000000001\">projectbgeneraltestdoc</a>&#59;<br>\n"
-            + "<a href=\"generaltestdoc/TCD0000000001/projecta\">generaltestdoc (projecta)</a>&#59;<br>\n<a href=\"generaltestdoc/TCD0000000001/projectb\">generaltestdoc (projectb)</a>&#59;<br>\n"
-            + "<a href=\"testconcretedoc/TCD0000000001/projecta\">testconcretedoc (projecta)</a>&#59;<br>\n<a href=\"testconcretedoc/TCD0000000001/projectb\">testconcretedoc (projectb)</a>&#59;<br>\n");
+
+    assertContains(html, "href=|projectageneraltestdoc/TCD0000000001|");
+    assertContains(html, "href=|projectbgeneraltestdoc/TCD0000000001|");
+    assertContains(html, "href=|generaltestdoc/TCD0000000001/projecta|");
+    assertContains(html, "href=|generaltestdoc/TCD0000000001/projectb|");
+    assertContains(html, "href=|testconcretedoc/TCD0000000001/projecta|");
+    assertContains(html, "href=|testconcretedoc/TCD0000000001/projectb|");
+
     assertContains(html, "Current Variation", "projecta");
     assertContains(html, "Deleted", "no");
   }
@@ -132,12 +138,14 @@ public class HTMLGeneratorTest {
     assertContains(html, "Last Change", "none");
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
-    assertContains(
-        html,
-        "Variations",
-        "<a href=\"projectageneraltestdoc/GTD0000000001\">projectageneraltestdoc</a>&#59;<br>\n<a href=\"projectbgeneraltestdoc/GTD0000000001\">projectbgeneraltestdoc</a>&#59;<br>\n"
-            + "<a href=\"generaltestdoc/GTD0000000001/projecta\">generaltestdoc (projecta)</a>&#59;<br>\n<a href=\"generaltestdoc/GTD0000000001/projectb\">generaltestdoc (projectb)</a>&#59;<br>\n"
-            + "<a href=\"testconcretedoc/GTD0000000001/projecta\">testconcretedoc (projecta)</a>&#59;<br>\n<a href=\"testconcretedoc/GTD0000000001/projectb\">testconcretedoc (projectb)</a>&#59;<br>\n");
+
+    assertContains(html, "href=|projectageneraltestdoc/GTD0000000001|");
+    assertContains(html, "href=|projectbgeneraltestdoc/GTD0000000001|");
+    assertContains(html, "href=|generaltestdoc/GTD0000000001/projecta|");
+    assertContains(html, "href=|generaltestdoc/GTD0000000001/projectb|");
+    assertContains(html, "href=|testconcretedoc/GTD0000000001/projecta|");
+    assertContains(html, "href=|testconcretedoc/GTD0000000001/projectb|");
+
     assertContains(html, "Current Variation", "projecta");
     assertContains(html, "Deleted", "no");
   }
@@ -161,9 +169,12 @@ public class HTMLGeneratorTest {
     assertContains(html, "Last Change", "none");
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
-    assertContains(html, "Variations",
-        "<a href=\"otherdoc/OTD0000000001\">otherdoc</a>&#59;<br>\n<a href=\"testinheritsfromtestbasedoc/OTD0000000001/projecta\">testinheritsfromtestbasedoc (projecta)</a>&#59;<br>\n");
+
+    assertContains(html, "href=|otherdoc/OTD0000000001|");
+    assertContains(html, "href=|testinheritsfromtestbasedoc/OTD0000000001/projecta|");
+
     assertContains(html, "Current Variation", "none");
     assertContains(html, "Deleted", "no");
   }
+
 }
