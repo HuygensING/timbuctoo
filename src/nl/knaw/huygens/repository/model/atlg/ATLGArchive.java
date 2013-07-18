@@ -168,7 +168,7 @@ public class ATLGArchive extends Archive {
     titleNld = title;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = false)
   public String getTitleEng() {
     return titleEng;
   }
@@ -282,7 +282,7 @@ public class ATLGArchive extends Archive {
     }
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = false)
   public String getNotes() {
     return notes;
   }

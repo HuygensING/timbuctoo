@@ -77,7 +77,7 @@ public class ATLGLegislation extends Legislation {
     this.origFilename = origFilename;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = false)
   public String getReference() {
     return reference;
   }
@@ -102,7 +102,7 @@ public class ATLGLegislation extends Legislation {
     this.titleNld = title;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = false)
   public String getTitleEng() {
     return titleEng;
   }
@@ -188,7 +188,7 @@ public class ATLGLegislation extends Legislation {
     }
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = false)
   public String getContents() {
     return contents;
   }

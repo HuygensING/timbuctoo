@@ -80,7 +80,7 @@ public class ATLGArchiver extends Archiver {
     nameNld = name;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = false)
   public String getNameEng() {
     return nameEng;
   }
@@ -89,7 +89,7 @@ public class ATLGArchiver extends Archiver {
     nameEng = name;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_begin_date", canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "facet_t_begin_date", canBeEmpty = true, isFaceted = false)
   public String getBeginDate() {
     return beginDate;
   }
@@ -98,7 +98,7 @@ public class ATLGArchiver extends Archiver {
     beginDate = date;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_end_date", canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "facet_t_end_date", canBeEmpty = true, isFaceted = false)
   public String getEndDate() {
     return endDate;
   }
@@ -115,7 +115,7 @@ public class ATLGArchiver extends Archiver {
     periodDescription = description;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = false)
   public String getHistory() {
     return history;
   }
@@ -193,7 +193,7 @@ public class ATLGArchiver extends Archiver {
     }
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = false)
   public String getNotes() {
     return notes;
   }
