@@ -5,7 +5,6 @@ import java.util.Map;
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.pubsub.Hub;
 import nl.knaw.huygens.repository.util.RepositoryException;
 
 import com.google.common.collect.Maps;
@@ -20,13 +19,13 @@ public class IndexerFactory {
   private final Map<Class<? extends Document>, DocumentIndexer<? extends Document>> indexers;
 
   @Inject
-  public IndexerFactory(Configuration config, DocTypeRegistry registry, LocalSolrServer server, Hub hub) {
+  public IndexerFactory(Configuration config, DocTypeRegistry registry, LocalSolrServer server) {
     this.server = server;
 
     indexers = Maps.newHashMap();
     for (String doctype : config.getSettings("indexeddoctypes")) {
       Class<? extends Document> type = registry.getTypeForIName(doctype);
-      indexers.put(type, SolrDocumentIndexer.newInstance(type, server, hub));
+      indexers.put(type, SolrDocumentIndexer.newInstance(type, server));
     }
   }
 
