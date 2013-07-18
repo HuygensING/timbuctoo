@@ -12,8 +12,8 @@ import nl.knaw.huygens.solr.FacetCount;
 import nl.knaw.huygens.solr.FacetInfo;
 import nl.knaw.huygens.solr.FacetParameter;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
+import nl.knaw.huygens.solr.SolrUtils;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
@@ -69,11 +69,7 @@ public class SearchManager {
       if (!isFirst) {
         builder.append(" ");
       }
-      if (usesFacets) {
-        builder.append(String.format("+%s:(%s)", fullTextSearchField, searchParameters.getTerm()));
-      } else {
-        builder.append(String.format("%s:(%s)", fullTextSearchField, searchParameters.getTerm()));
-      }
+      builder.append(String.format("%s:%s", formatTextField(usesFacets, fullTextSearchField), formatTerm(searchParameters.getTerm())));
       isFirst = false;
     }
     if (usesFacets) {
@@ -81,15 +77,42 @@ public class SearchManager {
         if (!existingFacets.contains(facetParameter.getName())) {
           throw new FacetDoesNotExistException("Facet " + facetParameter.getName() + " does not exist.");
         }
-        builder.append(" +");
-        builder.append(facetParameter.getName());
-        builder.append(":(");
-        builder.append(StringUtils.join(facetParameter.getValues(), " "));
-        builder.append(")");
+        builder.append(String.format(" +%s:%s", facetParameter.getName(), formatFacetValues(facetParameter.getValues())));
       }
     }
 
     return builder.toString();
+  }
+
+  private String formatFacetValues(List<String> values) {
+
+    if (values.size() > 1) {
+      StringBuilder builder = new StringBuilder();
+      builder.append("(");
+      boolean isFirst = true;
+      for (String value : values) {
+
+        if (!isFirst) {
+          builder.append(" ");
+        }
+        builder.append(SolrUtils.escapeFacetId(value));
+        isFirst = false;
+      }
+      builder.append(")");
+      return builder.toString();
+    }
+    return String.format("%s", SolrUtils.escapeFacetId(values.get(0)));
+  }
+
+  private String formatTextField(boolean usesFacets, String textField) {
+    return String.format(usesFacets ? "+%s" : "%s", textField);
+  }
+
+  private String formatTerm(String term) {
+    if (term.trim().contains(" ")) {
+      return String.format("(%s)", term);
+    }
+    return String.format("%s", term);
   }
 
   private List<FacetCount> getFacetCounts(List<FacetField> facetFields, Map<String, FacetInfo> facetInfoMap) {

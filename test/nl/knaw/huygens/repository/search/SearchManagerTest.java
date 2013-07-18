@@ -46,7 +46,7 @@ public class SearchManagerTest {
   private static final String ID_FIELD_NAME = "id";
   private static final String TYPE_STRING = "person";
   private static final String SEARCH_TERM = "term";
-  private static final String EXPECTED_TERM = String.format("facet_t_name:(%s)", SEARCH_TERM);
+  private static final String EXPECTED_TERM = String.format("facet_t_name:%s", SEARCH_TERM);
 
   private SearchManager instance;
   private LocalSolrServer solrInstance;
@@ -80,13 +80,35 @@ public class SearchManagerTest {
   }
 
   @Test
+  public void testSearchWildCard() throws SolrServerException, FacetDoesNotExistException {
+    List<String> documentIds = Lists.newArrayList("id1");
+    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
+    int numberOfFacetValues = 1;
+
+    String expectedTerm = "facet_t_name:*";
+    String searchTerm = "*";
+    testSearch(TYPE, documentIds, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm);
+  }
+
+  @Test
+  public void testSearchMultipleTerms() throws SolrServerException, FacetDoesNotExistException {
+    List<String> documentIds = Lists.newArrayList("id1");
+    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
+    int numberOfFacetValues = 1;
+
+    String expectedTerm = "facet_t_name:(test 123)";
+    String searchTerm = "test 123";
+    testSearch(TYPE, documentIds, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm);
+  }
+
+  @Test
   public void testSearchMultipleFields() throws SolrServerException, FacetDoesNotExistException {
     List<String> documentIds = Lists.newArrayList("id1", "id2", "id3", "id4");
     List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
     int numberOfFacetValues = 1;
 
     List<String> fullTextSearchFields = Lists.newArrayList("facet_t_name", "facet_t_test");
-    String expectedTerm = String.format("facet_t_name:(%s) facet_t_test:(%s)", SEARCH_TERM, SEARCH_TERM);
+    String expectedTerm = String.format("facet_t_name:%s facet_t_test:%s", SEARCH_TERM, SEARCH_TERM);
 
     testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, fullTextSearchFields, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm);
     testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
@@ -108,7 +130,7 @@ public class SearchManagerTest {
 
     List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("facet_s_birthDate", "value"));
 
-    String expectedTerm = String.format("+facet_t_name:(%s) +facet_s_birthDate:(value)", SEARCH_TERM);
+    String expectedTerm = String.format("+facet_t_name:%s +facet_s_birthDate:value", SEARCH_TERM);
 
     testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
   }
@@ -121,10 +143,9 @@ public class SearchManagerTest {
 
     List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("facet_s_birthDate", "value", "value1"));
 
-    String expectedTerm = String.format("+facet_t_name:(%s) +facet_s_birthDate:(value value1)", SEARCH_TERM);
+    String expectedTerm = String.format("+facet_t_name:%s +facet_s_birthDate:(value value1)", SEARCH_TERM);
 
     testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
-
   }
 
   @Test
@@ -135,7 +156,7 @@ public class SearchManagerTest {
 
     List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("facet_s_birthDate", "value"), createFacetParam("facet_s_deathDate", "values"));
 
-    String expectedTerm = String.format("+facet_t_name:(%s) +facet_s_birthDate:(value) +facet_s_deathDate:(values)", SEARCH_TERM);
+    String expectedTerm = String.format("+facet_t_name:%s +facet_s_birthDate:value +facet_s_deathDate:values", SEARCH_TERM);
 
     testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
   }
@@ -148,7 +169,7 @@ public class SearchManagerTest {
 
     List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("facet_s_birthDate", "value", "value1"), createFacetParam("facet_s_deathDate", "value1", "value2"));
 
-    String expectedTerm = String.format("+facet_t_name:(%s) +facet_s_birthDate:(value value1) +facet_s_deathDate:(value1 value2)", SEARCH_TERM);
+    String expectedTerm = String.format("+facet_t_name:%s +facet_s_birthDate:(value value1) +facet_s_deathDate:(value1 value2)", SEARCH_TERM);
 
     testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
 
