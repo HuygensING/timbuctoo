@@ -44,7 +44,7 @@ public class IndexService implements Runnable {
         Message message = consumer.receive();
         if (message != null) {
           String action = message.getStringProperty(Broker.PROP_ACTION);
-          String typeString = message.getStringProperty(Broker.PROP_DOC_TYPE).toLowerCase();
+          String typeString = message.getStringProperty(Broker.PROP_DOC_TYPE);
           Class<? extends Document> type = registry.getTypeForIName(typeString);
           String id = message.getStringProperty(Broker.PROP_DOC_ID);
           if (Broker.INDEX_ADD.equals(action)) {
