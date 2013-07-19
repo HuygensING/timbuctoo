@@ -19,7 +19,6 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
-import nl.knaw.huygens.repository.variation.VariationUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,14 +37,14 @@ public class StorageManager {
   private Map<Class<? extends Document>, Map<Class<? extends Document>, List<List<String>>>> annotationCache;
   private Set<String> documentTypes;
 
+  private final DocTypeRegistry docTypeRegistry;
   private final Producer producer;
-  private DocTypeRegistry docTypeRegistry;
   private PersistenceManager persistenceManager;
 
   @Inject
-  public StorageManager(StorageConfiguration storageConf, VariationStorage storage, Broker broker, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceMananger) {
+  public StorageManager(StorageConfiguration storageConf, VariationStorage storage, Broker broker, DocTypeRegistry registry, PersistenceManager persistenceMananger) {
+    docTypeRegistry = registry;
     producer = setupProducer(broker);
-    this.docTypeRegistry = docTypeRegistry;
     documentTypes = storageConf.getDocumentTypes();
     this.storage = storage;
     this.persistenceManager = persistenceMananger;
@@ -54,11 +53,11 @@ public class StorageManager {
   }
 
   // Test-only!
-  protected StorageManager(VariationStorage storage, Set<String> documentTypes, Broker broker, DocTypeRegistry docTypeRegistry, PersistenceManager persistenceManager) {
+  protected StorageManager(VariationStorage storage, Set<String> documentTypes, Broker broker, DocTypeRegistry registry, PersistenceManager persistenceManager) {
+    docTypeRegistry = registry;
     producer = null;
-    this.storage = storage;
-    this.docTypeRegistry = docTypeRegistry;
     this.documentTypes = documentTypes;
+    this.storage = storage;
     this.persistenceManager = persistenceManager;
     fillAnnotationCache();
     ensureIndices();
@@ -166,7 +165,7 @@ public class StorageManager {
     storage.addItem(type, doc);
     persistDocumentVersion(type, doc);
     if (DomainDocument.class.isAssignableFrom(type) && isComplete) {
-      sendIndexMessage(Broker.INDEX_ADD, VariationUtils.getBaseClass(type).getSimpleName(), doc.getId());
+      sendIndexMessage(Broker.INDEX_ADD, docTypeRegistry.getINameForType(type), doc.getId());
     }
   }
 
@@ -190,14 +189,14 @@ public class StorageManager {
     storage.updateItem(type, doc.getId(), doc);
     persistDocumentVersion(type, doc);
     if (DomainDocument.class.isAssignableFrom(type)) {
-      sendIndexMessage(Broker.INDEX_MOD, VariationUtils.getBaseClass(type).getSimpleName(), doc.getId());
+      sendIndexMessage(Broker.INDEX_MOD, docTypeRegistry.getINameForType(type), doc.getId());
     }
   }
 
   public <T extends Document> void removeDocument(Class<T> type, T doc) throws IOException {
     storage.deleteItem(type, doc.getId(), doc.getLastChange());
     if (DomainDocument.class.isAssignableFrom(type)) {
-      sendIndexMessage(Broker.INDEX_DEL, VariationUtils.getBaseClass(type).getSimpleName(), doc.getId());
+      sendIndexMessage(Broker.INDEX_DEL, docTypeRegistry.getINameForType(type), doc.getId());
     }
   }
 
