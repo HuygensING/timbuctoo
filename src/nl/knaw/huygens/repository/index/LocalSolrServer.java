@@ -41,8 +41,8 @@ public class LocalSolrServer {
   private static final Logger LOG = LoggerFactory.getLogger(LocalSolrServer.class);
 
   // FIXME this is probably suboptimal:
-  private static final int ROWS = 2000;
-  private static final int FACET_LIMIT = 1000;
+  private static final int ROWS = 20000;
+  private static final int FACET_LIMIT = 10000;
 
   private static final String DESC_FIELD = "desc";
   private static final String ID_FIELD = "id";
