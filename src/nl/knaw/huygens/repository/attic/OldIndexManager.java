@@ -14,7 +14,6 @@ import nl.knaw.huygens.repository.index.IndexException;
 import nl.knaw.huygens.repository.index.IndexerFactory;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.StorageManager;
-import nl.knaw.huygens.repository.variation.VariationUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -249,7 +248,7 @@ public class OldIndexManager {
    * @param docIds The document ids.
    */
   private <T extends Document> void modifyAllDocsByType(Class<T> cls, Set<String> docIds) {
-    Class<? extends Document> baseCls = VariationUtils.getBaseClass(cls);
+    Class<? extends Document> baseCls = docTypeRegistry.getBaseClass(cls);
     doReIndex(docIds, baseCls);
   }
 
