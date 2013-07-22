@@ -60,6 +60,8 @@ public class BulkImporter {
 
       long start = System.currentTimeMillis();
       if (ATLG) {
+        LanguageImporter languageImporter = new LanguageImporter(storageManager);
+        languageImporter.handleFile("testdata/iso-639-2-language-codes.txt", 5, false);
         DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
         DataPoster poster = new LocalDataPoster(storageManager);
         new AtlantischeGidsImporter(registry, poster, "../AtlantischeGids/work/").importAll();
