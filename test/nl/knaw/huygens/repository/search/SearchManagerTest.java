@@ -19,6 +19,7 @@ import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
+import nl.knaw.huygens.repository.model.atlg.ATLGPerson;
 import nl.knaw.huygens.solr.FacetCount;
 import nl.knaw.huygens.solr.FacetCount.Option;
 import nl.knaw.huygens.solr.FacetInfo;
@@ -53,13 +54,14 @@ public class SearchManagerTest {
   private LocalSolrServer solrInstance;
   private FacetFinder facetFinder;
   private FullTextSearchFieldFinder fullTextSearchFieldFinder;
+  private DocTypeRegistry docTypeRegistry;
 
   @Before
   public void setUp() {
     solrInstance = mock(LocalSolrServer.class);
     facetFinder = mock(FacetFinder.class);
     fullTextSearchFieldFinder = mock(FullTextSearchFieldFinder.class);
-    DocTypeRegistry docTypeRegistry = new DocTypeRegistry(Person.class.getPackage().getName());
+    docTypeRegistry = new DocTypeRegistry(Person.class.getPackage().getName() + " " + ATLGPerson.class.getPackage().getName());
     instance = new SearchManager(solrInstance, facetFinder, fullTextSearchFieldFinder, docTypeRegistry);
   }
 
@@ -69,7 +71,18 @@ public class SearchManagerTest {
     List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
     int numberOfFacetValues = 1;
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM, TYPE_STRING);
+  }
+
+  @Test
+  public void testSearchSubType() throws SolrServerException, FacetDoesNotExistException {
+    List<String> documentIds = Lists.newArrayList("id1");
+    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
+    int numberOfFacetValues = 1;
+    Class<? extends Document> type = ATLGPerson.class;
+
+    testSearch(type, documentIds, SEARCH_TERM, docTypeRegistry.getINameForType(type), facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(),
+        EXPECTED_TERM, TYPE_STRING);
   }
 
   @Test
@@ -78,7 +91,7 @@ public class SearchManagerTest {
     List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
     int numberOfFacetValues = 1;
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM, TYPE_STRING);
   }
 
   @Test
@@ -89,7 +102,7 @@ public class SearchManagerTest {
 
     String expectedTerm = "facet_t_name:*";
     String searchTerm = "*";
-    testSearch(TYPE, documentIds, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm);
+    testSearch(TYPE, documentIds, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm, TYPE_STRING);
   }
 
   @Test
@@ -100,7 +113,7 @@ public class SearchManagerTest {
 
     String expectedTerm = "facet_t_name:(test 123)";
     String searchTerm = "test 123";
-    testSearch(TYPE, documentIds, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm);
+    testSearch(TYPE, documentIds, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm, TYPE_STRING);
   }
 
   @Test
@@ -112,8 +125,8 @@ public class SearchManagerTest {
     List<String> fullTextSearchFields = Lists.newArrayList("facet_t_name", "facet_t_test");
     String expectedTerm = String.format("facet_t_name:%s facet_t_test:%s", SEARCH_TERM, SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, fullTextSearchFields, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm);
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, fullTextSearchFields, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm, TYPE_STRING);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM, TYPE_STRING);
   }
 
   @Test
@@ -121,7 +134,7 @@ public class SearchManagerTest {
     List<String> documentIds = Lists.newArrayList();
     List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
     int numberOfFacetValues = 1;
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM, TYPE_STRING);
   }
 
   @Test
@@ -134,7 +147,7 @@ public class SearchManagerTest {
 
     String expectedTerm = String.format("+facet_t_name:%s +facet_s_birthDate:value", SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm, TYPE_STRING);
   }
 
   @Test
@@ -147,7 +160,7 @@ public class SearchManagerTest {
 
     String expectedTerm = String.format("+facet_t_name:%s +facet_s_birthDate:(value value1)", SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm, TYPE_STRING);
   }
 
   @Test
@@ -160,7 +173,7 @@ public class SearchManagerTest {
 
     String expectedTerm = String.format("+facet_t_name:%s +facet_s_birthDate:value +facet_s_deathDate:values", SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm, TYPE_STRING);
   }
 
   @Test
@@ -173,12 +186,11 @@ public class SearchManagerTest {
 
     String expectedTerm = String.format("+facet_t_name:%s +facet_s_birthDate:(value value1) +facet_s_deathDate:(value1 value2)", SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
-
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm, TYPE_STRING);
   }
 
   private void testSearch(Class<? extends Document> type, List<String> documentIds, String searchTerm, String typeString, List<String> facetNames, List<String> fullTextSearchNames,
-      int numberOfFacetValues, List<FacetParameter> facetParameters, String expectedTerm) throws SolrServerException, FacetDoesNotExistException {
+      int numberOfFacetValues, List<FacetParameter> facetParameters, String expectedTerm, String searchCore) throws SolrServerException, FacetDoesNotExistException {
     FacetedSearchParameters searchParameters = new FacetedSearchParameters();
     searchParameters.setTerm(searchTerm);
     searchParameters.setTypeString(typeString);
@@ -192,11 +204,32 @@ public class SearchManagerTest {
     setupFullTextSearchFinder(fullTextSearchNames);
 
     List<FacetCount> facets = createFacetCountList(facetNames, numberOfFacetValues);
-    SearchResult expected = createExpectedResult(TYPE_STRING, documentIds, expectedTerm, facets);
+    SearchResult expected = createExpectedResult(typeString, documentIds, expectedTerm, facets);
 
-    SearchResult actual = instance.search(type, TYPE_STRING, searchParameters);
+    SearchResult actual = instance.search(type, searchCore, searchParameters);
 
     verifySearchResult(expected, actual);
+  }
+
+  @Test(expected = SolrException.class)
+  public void testSearchSolrException() throws SolrServerException, FacetDoesNotExistException {
+    doThrow(SolrException.class).when(solrInstance).getQueryResponse(anyString(), anyCollectionOf(String.class), anyString(), anyString());
+
+    FacetedSearchParameters searchParameters = new FacetedSearchParameters();
+    searchParameters.setTerm(SEARCH_TERM);
+    searchParameters.setTypeString(TYPE_STRING);
+
+    instance.search(Person.class, TYPE_STRING, searchParameters);
+  }
+
+  @Test(expected = FacetDoesNotExistException.class)
+  public void testSearchFacetDoesNotExistException() throws SolrServerException, FacetDoesNotExistException {
+    FacetedSearchParameters searchParameters = new FacetedSearchParameters();
+    searchParameters.setTerm(SEARCH_TERM);
+    searchParameters.setTypeString(TYPE_STRING);
+    searchParameters.setFacetValues(Lists.newArrayList(new FacetParameter().setName("unknown")));
+
+    instance.search(Person.class, TYPE_STRING, searchParameters);
   }
 
   private void setupFacetFinder(List<String> facetNames) {
@@ -219,27 +252,6 @@ public class SearchManagerTest {
     }
 
     when(fullTextSearchFieldFinder.findFullTextSearchFields(Matchers.<Class<? extends Document>> any())).thenReturn(fields);
-  }
-
-  @Test(expected = SolrException.class)
-  public void testSearchSolrException() throws SolrServerException, FacetDoesNotExistException {
-    doThrow(SolrException.class).when(solrInstance).getQueryResponse(anyString(), anyCollectionOf(String.class), anyString(), anyString());
-
-    FacetedSearchParameters searchParameters = new FacetedSearchParameters();
-    searchParameters.setTerm(SEARCH_TERM);
-    searchParameters.setTypeString(TYPE_STRING);
-
-    instance.search(Person.class, TYPE_STRING, searchParameters);
-  }
-
-  @Test(expected = FacetDoesNotExistException.class)
-  public void testSearchFacetDoesNotExistException() throws SolrServerException, FacetDoesNotExistException {
-    FacetedSearchParameters searchParameters = new FacetedSearchParameters();
-    searchParameters.setTerm(SEARCH_TERM);
-    searchParameters.setTypeString(TYPE_STRING);
-    searchParameters.setFacetValues(Lists.newArrayList(new FacetParameter().setName("unknown")));
-
-    instance.search(Person.class, TYPE_STRING, searchParameters);
   }
 
   private void verifySearchResult(SearchResult expected, SearchResult actual) {
