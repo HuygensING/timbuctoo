@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.SearchResult;
@@ -31,12 +32,14 @@ public class SearchManager {
   private final LocalSolrServer server;
   private final FacetFinder facetFinder;
   private final FullTextSearchFieldFinder fullTextSearchFieldFinder;
+  private final DocTypeRegistry docTypeRegistry;
 
   @Inject
-  public SearchManager(LocalSolrServer server, FacetFinder facetFinder, FullTextSearchFieldFinder fullTextSearchFieldFinder) {
+  public SearchManager(LocalSolrServer server, FacetFinder facetFinder, FullTextSearchFieldFinder fullTextSearchFieldFinder, DocTypeRegistry docTypeRegistry) {
     this.server = server;
     this.facetFinder = facetFinder;
     this.fullTextSearchFieldFinder = fullTextSearchFieldFinder;
+    this.docTypeRegistry = docTypeRegistry;
   }
 
   public SearchResult search(Class<? extends Document> type, String core, FacetedSearchParameters searchParameters) throws SolrServerException, FacetDoesNotExistException {
@@ -53,7 +56,7 @@ public class SearchManager {
       ids.add(document.getFieldValue("id").toString());
     }
 
-    SearchResult searchResult = new SearchResult(ids, type.getSimpleName().toLowerCase(), searchTerm, searchParameters.getSort(), new Date().toString());
+    SearchResult searchResult = new SearchResult(ids, docTypeRegistry.getINameForType(type), searchTerm, searchParameters.getSort(), new Date().toString());
     searchResult.setFacets(facets);
 
     return searchResult;

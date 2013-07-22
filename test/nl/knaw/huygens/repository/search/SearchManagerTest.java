@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Person;
@@ -58,7 +59,8 @@ public class SearchManagerTest {
     solrInstance = mock(LocalSolrServer.class);
     facetFinder = mock(FacetFinder.class);
     fullTextSearchFieldFinder = mock(FullTextSearchFieldFinder.class);
-    instance = new SearchManager(solrInstance, facetFinder, fullTextSearchFieldFinder);
+    DocTypeRegistry docTypeRegistry = new DocTypeRegistry(Person.class.getPackage().getName());
+    instance = new SearchManager(solrInstance, facetFinder, fullTextSearchFieldFinder, docTypeRegistry);
   }
 
   @Test
