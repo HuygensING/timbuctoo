@@ -58,8 +58,6 @@ public class LanguageImporter extends CSVImporter {
     }
 
     language.setNameEng(items[3]);
-    language.setNameFra(items[4]);
-    language.setIso(true);
 
     try {
       storageManager.addDocument(Language.class, language, false);
