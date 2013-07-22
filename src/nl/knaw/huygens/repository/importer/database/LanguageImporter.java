@@ -10,7 +10,9 @@ import nl.knaw.huygens.repository.util.CSVImporter;
 /**
  * Imports languages from a CSV file.
  * 
- * The import file is obtained directly from the internet.
+ * The import file is obtained directly from the internet at
+ * {@code http://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt}
+ *
  * Each line contains 5 fields, separated by a '|' character:
  * - bibliographic code, 3 letters, always present
  * - terminology code, 3 letters, optional
@@ -39,14 +41,14 @@ public class LanguageImporter extends CSVImporter {
       displayError("first item must be 3-letter code", items);
       return;
     }
-    language.addCode(items[0]);
+    language.addCode("iso_639_2", items[0]);
 
     if (items[1].length() != 0) {
       if (items[1].length() != 3) {
         displayError("second item must be 3-letter code", items);
         return;
       }
-      language.addCode(items[1]);
+      language.addCode("iso_639_2t", items[1]);
     }
 
     if (items[2].length() != 0) {
@@ -54,10 +56,10 @@ public class LanguageImporter extends CSVImporter {
         displayError("third item must be 2-letter code", items);
         return;
       }
-      language.addCode(items[2]);
+      language.addCode("iso_639_1", items[2]);
     }
 
-    language.setNameEng(items[3]);
+    language.setName(items[3]);
 
     try {
       storageManager.addDocument(Language.class, language, false);
