@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>TestVRE</title>
+<link href="../css/static-html.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<button name="login">Login</button>
+
+<table border='1' id="table" style="display:none;">
+	<tr><th>param</th><th>value</th></tr>
+</table>
+
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script type="text/javascript" src="../config.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	var searchString = window.location.hash.substring(1);
+	var params = searchString.split('&');
+	if(params[0] != ''){
+		var i = 0;
+		var table = $('#table');
+		var token;
+		var tokenType;
+		
+		for(i = 0; i < params.length; i++){
+			val = params[i].split('=');
+			
+			if(val[0] == 'access_token'){
+				token = val[1];
+			}
+			else if(val[0] == 'token_type'){
+				tokenType = val[1];
+			}
+			
+			var tr = '<tr><td>' + val[0] + '</td><td>' + val[1] + '</td></tr>'; 
+			table.append(tr);
+		}
+		
+		table.show();
+		$('[name=login]').hide();
+		
+		document.cookie = 'access_token='+tokenType +' ' + token+';';
+		window.location = './user_info.html'
+		
+	}
+	
+});
+
+</script>
+<script type="text/javascript">
+$('[name="login"]').click(function(){
+	//You must register your client with the authorization server 
+	var redirectURL = window.location;
+	//After you registered you client change the clientId to the registered one
+	var clientId = 'testvre'; 
+	var authorizationURL = 'http://' + window.config.securityUri + '/apis-authorization-server/oauth2/authorize?response_type=token&client_id='+clientId+'&redirect_uri='+redirectURL+'&scope=read&state=example';
+	window.location = authorizationURL;
+});
+</script>
+</body>
+</html>
