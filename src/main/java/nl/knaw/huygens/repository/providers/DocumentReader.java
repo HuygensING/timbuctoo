@@ -22,12 +22,20 @@ import javax.ws.rs.ext.Provider;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Inject;
 
+/**
+ * A {@code MessageBodyReader} that converts a stream to a (@code Document} instance.
+ */
 @Provider
 @Consumes(MediaType.APPLICATION_JSON)
 public class DocumentReader implements MessageBodyReader<Document> {
+
+  private final Logger LOG = LoggerFactory.getLogger(DocumentReader.class);
 
   @Context
   private UriInfo uriInfo;
@@ -54,6 +62,7 @@ public class DocumentReader implements MessageBodyReader<Document> {
     String entityType = uriInfo.getPathParameters().getFirst("entityType");
     Class<?> cls = docTypeRegistry.getTypeForIName(entityType);
     if (cls == null) {
+      LOG.error("Cannot convert entity type {} to a document type", entityType);
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
 
@@ -66,6 +75,7 @@ public class DocumentReader implements MessageBodyReader<Document> {
     }
 
     if (doc == null) {
+      LOG.error("Failed to convert JSON for document with entity type {}", entityType);
       throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
 
@@ -73,6 +83,7 @@ public class DocumentReader implements MessageBodyReader<Document> {
 
     //If we are posting a document we don't is some not null fields missing a value, these fields are possibly auto generated.
     if (!validationErrors.isEmpty() && !"POST".equals(request.getMethod())) {
+      LOG.error("Validation error(s) for document with entity type {}", entityType);
       throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(validationErrors).type(MediaType.APPLICATION_JSON_TYPE).build());
     }
     return doc;
