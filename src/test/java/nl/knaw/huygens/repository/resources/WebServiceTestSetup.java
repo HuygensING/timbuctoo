@@ -16,6 +16,7 @@ import org.junit.BeforeClass;
 import org.surfnet.oaaas.auth.principal.AuthenticatedPrincipal;
 import org.surfnet.oaaas.model.VerifyTokenResponse;
 
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.sun.jersey.api.container.filter.LoggingFilter;
@@ -87,4 +88,13 @@ public abstract class WebServiceTestSetup extends JerseyTest {
 
     return webAppDescriptor;
   }
+
+  protected StorageManager getStorageManager() {
+    return injector.getInstance(StorageManager.class);
+  }
+
+  protected JacksonJsonProvider getJsonProvider() {
+    return injector.getInstance(JacksonJsonProvider.class);
+  }
+
 }
