@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
     <wb-module deploy-name="repository">
-        <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/" source-path="/config"/>
-        <wb-resource deploy-path="/WEB-INF/classes" source-path="/test"/>
-        <wb-resource deploy-path="/WEB-INF/classes" source-path="/resources"/>
-        <wb-resource deploy-path="/static" source-path="/website"/>
-        <wb-resource deploy-path="/WEB-INF/classes" source-path="/integration-test"/>
-        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
-        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/integration-test/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
+        <wb-resource deploy-path="/static" source-path="/src/main/webapp"/>
+        <wb-resource deploy-path="/WEB-INF" source-path="/src/main/webapp/WEB-INF"/>
+        <wb-resource deploy-path="/META-INF" source-path="/src/main/webapp/META-INF"/>
         <property name="java-output-path" value="/repository/build/classes"/>
         <property name="context-root" value="repository"/>
     </wb-module>
