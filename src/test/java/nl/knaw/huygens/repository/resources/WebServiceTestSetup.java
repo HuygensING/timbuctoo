@@ -19,6 +19,7 @@ import org.surfnet.oaaas.model.VerifyTokenResponse;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.container.filter.LoggingFilter;
 import com.sun.jersey.api.container.filter.RolesAllowedResourceFilterFactory;
 import com.sun.jersey.api.core.PackagesResourceConfig;
@@ -95,6 +96,10 @@ public abstract class WebServiceTestSetup extends JerseyTest {
 
   protected JacksonJsonProvider getJsonProvider() {
     return injector.getInstance(JacksonJsonProvider.class);
+  }
+
+  protected WebResource autoResource() {
+    return resource().path("resources");
   }
 
 }
