@@ -128,12 +128,12 @@ public class AtlantischeGidsImporter {
   private int errors;
 
   public AtlantischeGidsImporter(DocTypeRegistry registry, DataPoster poster, String inputDirName) {
-    System.out.printf("%n.. Importing from %s%n", inputDirName);
     objectMapper = new ObjectMapper();
     docTypeRegistry = registry;
     dataPoster = poster;
     inputDir = new File(inputDirName);
     errors = 0;
+    System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());
   }
 
   private <T extends Document> DocumentRef newDocumentRef(Class<T> type, T document) {
@@ -148,12 +148,16 @@ public class AtlantischeGidsImporter {
     return new DocumentRef(itype, xtype, id, displayName);
   }
 
+  private String prevMessage;
+
   private void handleError(String format, Object... args) {
     errors++;
-    if (errors <= 40) {
+    String message = String.format(format, args);
+    if (!message.equals(prevMessage)) {
       System.err.print("## ");
-      System.err.printf(format, args);
+      System.err.printf(message);
       System.err.println();
+      prevMessage = message;
     }
   }
 
@@ -184,7 +188,9 @@ public class AtlantischeGidsImporter {
     System.out.printf("%n.. 'creator' -- pass 2%n");
     resolveATLGArchiverRefs();
 
-    System.err.println("## Error count = " + errors);
+    if (errors > 0) {
+      System.err.printf("%n## Error count = %d%n", errors);
+    }
   }
 
   // -------------------------------------------------------------------
@@ -198,7 +204,7 @@ public class AtlantischeGidsImporter {
     for (XKeyword xkeyword : objectMapper.readValue(file, XKeyword[].class)) {
       String id = xkeyword._id;
       if (refs.containsKey(id)) {
-        System.err.printf("## [%s] Duplicate id %s%n", KEYWORD_FILE, id);
+        System.err.printf("## [%s] Duplicate keyword id %s%n", KEYWORD_FILE, id);
       } else if (dataPoster != null) {
         ATLGKeyword keyword = convert(xkeyword);
         dataPoster.addDocument(ATLGKeyword.class, keyword, true);
@@ -243,7 +249,7 @@ public class AtlantischeGidsImporter {
     for (XPerson xperson : objectMapper.readValue(file, XPerson[].class)) {
       String id = xperson._id;
       if (refs.containsKey(id)) {
-        handleError("[%s] Duplicate id %s", PERSON_FILE, id);
+        handleError("[%s] Duplicate person id %s", PERSON_FILE, id);
       } else if (dataPoster != null) {
         ATLGPerson person = convert(xperson);
         dataPoster.addDocument(ATLGPerson.class, person, true);
@@ -296,7 +302,7 @@ public class AtlantischeGidsImporter {
         Wetgeving wetgeving = entry.wetgeving;
         String id = wetgeving._id;
         if (refs.containsKey(id)) {
-          handleError("[%s] Duplicate id %s", file.getName(), id);
+          handleError("[%s] Duplicate wetgeving id %s", file.getName(), id);
         } else if (dataPoster != null) {
           ATLGLegislation legislation = convert(wetgeving);
           dataPoster.addDocument(ATLGLegislation.class, legislation, true);
@@ -372,7 +378,7 @@ public class AtlantischeGidsImporter {
         ArchiefMat object = entry.archiefmat;
         String id = object._id;
         if (refs.containsKey(id)) {
-          handleError("[%s] Duplicate id %s", file.getName(), id);
+          handleError("[%s] Duplicate archiefmat id %s", file.getName(), id);
         } else if (dataPoster != null) {
           ATLGArchive archive = convert(object);
           dataPoster.addDocument(ATLGArchive.class, archive, false);
@@ -385,7 +391,7 @@ public class AtlantischeGidsImporter {
     tokens.handleSortedByText(new TokenHandler() {
       @Override
       public boolean handle(Token token) {
-        System.out.printf("%4d :  %s%n", token.getCount(), token.getText());
+        System.out.printf("%04d :  %s%n", token.getCount(), token.getText());
         return true;
       }
     });
