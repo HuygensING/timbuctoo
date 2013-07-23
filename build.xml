@@ -19,16 +19,16 @@
   <property name="dist.dir" location="${build.dir}/dist" />
   <property name="assembly.dir" location="${build.dir}/assembly" />
 
-  <property name="main.src.dir" location="src" />
-  <property name="resource.src.dir" location="resources" />
+  <property name="main.src.dir" location="src/main/java" />
+  <property name="resource.src.dir" location="src/main/resources" />
   <property name="main.bin.dir" location="${build.dir}/main/classes" />
 
-  <property name="test.src.dir" location="test" />
+  <property name="test.src.dir" location="src/test/java" />
   <property name="test.bin.dir" location="${build.dir}/test/classes" />
   <property name="test.data.dir" location="${build.dir}/test/data" />
   <property name="test.reports.dir" location="${build.dir}/test/reports" />
 
-  <property name="server.stage.address" value="hi14hingtest.huygens.knaw.nl" />
+  <!--<property name="server.stage.address" value="hi14hingtest.huygens.knaw.nl" />
   <property name="server.stage.path" value="/usr/share/tomcat6/webapps" />
   <property name="server.stage.user" value="repository" />
   <property name="server.stage.datapath" value="/data/repository/" />
@@ -41,15 +41,16 @@
   <property name="server.live.datapath" value="/data/repository/" />
   <property name="server.live.datafullpath" value="/data/repository/repository/" />
   <property name="server.live.key" value="${home}/.ssh/repository_dsa" />
+  -->
 
   <property name="target.jar" location="${dist.dir}/tools.jar" />
-  <property name="target.pom" location="${dist.dir}/${project.name-ver}.pom" />
 
   <!--  <property name="local.tomcat.dir" location="/usr/local/bin/apache-tomcat-7.0.6/webapps" />-->
   <property name="local.dir" location="${home}/repository" />
-  <property name="config.src" location="config" />
-  <property name="website.src" location="website" />
-  <property name="solr.src" location="solr" />
+  <property name="config.src" location="src/main/config" />
+  <property name="website.src" location="src/main/webapp" />
+  <property name="web.cfg" location="${website.src}/WEB-INF/web.xml" />
+  <property name="solr.src" location="${resource.src.dir}/solr" />
 
   <tstamp>
     <format property="timestamp.isoformat" pattern="yyyy-mm-dd'T'HH:mm:ss" locale="en" />
@@ -190,7 +191,7 @@
   <target name="war" depends="unit-tests">
     <antcall target="website-prep" />
     <!-- TODO parametrize -->
-    <war destfile="${project.name}.war" webxml="WebContent/WEB-INF/web.xml">
+    <war destfile="${project.name}.war" webxml="${web.cfg}">
       <classes dir="${main.bin.dir}" />
       <lib dir="${ivy.lib.dir}/main" />
       <webinf dir="${config.src}">
@@ -270,29 +271,29 @@
   </target>
   -->
 
-  <target name="stage-test" depends="setup,war" description="Deploys Repository to tomcat on test server.">
+  <!--<target name="stage-test" depends="setup,war" description="Deploys Repository to tomcat on test server.">
     <sshexec host="${server.stage.address}" username="${server.stage.user}" keyfile="${server.stage.key}" command="mkdir -p ${server.stage.datafullpath}/config" />
     <scp todir="${server.stage.user}@${server.stage.address}:${server.stage.datafullpath}/config" keyfile="${server.stage.key}">
       <fileset dir="${config.src}" />
     </scp>
 
-    <!-- <antcall target="sync-solr"/> -->
+    <antcall target="sync-solr"/>
 
     <scp file="${dist.dir}/${project.name}.war" todir="${server.stage.user}@${server.stage.address}:${server.stage.datapath}" keyfile="${server.stage.key}" />
     <sshexec host="${server.stage.address}" username="${server.stage.user}" keyfile="${server.stage.key}" command="mv ${server.stage.datapath}/${project.name}.war ${server.stage.path}" />
-  </target>
+  </target>-->
 
-  <target name="stage-live" depends="setup,war" description="Deploys Repository to tomcat on live server.">
+  <!--<target name="stage-live" depends="setup,war" description="Deploys Repository to tomcat on live server.">
     <sshexec host="${server.live.address}" username="${server.live.user}" keyfile="${server.live.key}" command="mkdir -p ${server.live.datafullpath}/config" />
     <scp todir="${server.live.user}@${server.live.address}:${server.live.datafullpath}/config" keyfile="${server.live.key}">
       <fileset dir="${config.src}" />
     </scp>
 
-    <!-- <antcall target="sync-solr-live"/> -->
+    <antcall target="sync-solr-live"/>
 
     <scp file="${dist.dir}/${project.name}.war" todir="${server.live.user}@${server.live.address}:${server.live.datapath}" keyfile="${server.live.key}" />
     <sshexec host="${server.live.address}" username="${server.live.user}" keyfile="${server.live.key}" command="mv ${server.live.datapath}/${project.name}.war ${server.live.path}" />
-  </target>
+  </target>-->
 
   <target name="sync-solr">
     <!-- Because a recursive copy only copies the files (rather than replacing the directory and thus removing old files,
