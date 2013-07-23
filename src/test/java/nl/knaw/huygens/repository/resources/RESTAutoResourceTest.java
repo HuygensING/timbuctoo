@@ -39,7 +39,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     TestConcreteDoc expectedDoc = new TestConcreteDoc(id);
     when(getStorageManager().getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
 
-    TestConcreteDoc actualDoc = resource().path("/resources/testconcretedoc/" + id).get(TestConcreteDoc.class);
+    TestConcreteDoc actualDoc = autoResource().path("testconcretedocs").path(id).get(TestConcreteDoc.class);
     assertNotNull(actualDoc);
     assertEquals(expectedDoc.getId(), actualDoc.getId());
   }
@@ -49,13 +49,13 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     String id = "TST0000000001";
     when(getStorageManager().getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(null);
 
-    ClientResponse response = resource().path("/resources/testconcretedoc/" + id).get(ClientResponse.class);
+    ClientResponse response = autoResource().path("testconcretedocs").path(id).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
   @Test
   public void testGetDocNonExistingClass() {
-    ClientResponse response = resource().path("/resources/unknown/TST0000000001").get(ClientResponse.class);
+    ClientResponse response = autoResource().path("unknown").path("TST0000000001").get(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
@@ -68,7 +68,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     when(getStorageManager().getAllLimited(TestConcreteDoc.class, 0, 200)).thenReturn(expectedList);
 
     GenericType<List<TestConcreteDoc>> genericType = new GenericType<List<TestConcreteDoc>>() {};
-    List<TestConcreteDoc> actualList = resource().path("/resources/testconcretedoc/all").get(genericType);
+    List<TestConcreteDoc> actualList = autoResource().path("testconcretedocs").path("all").get(genericType);
     assertEquals(expectedList.size(), actualList.size());
   }
 
@@ -78,7 +78,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     when(getStorageManager().getAllLimited(TestConcreteDoc.class, 0, 200)).thenReturn(expectedList);
 
     GenericType<List<TestConcreteDoc>> genericType = new GenericType<List<TestConcreteDoc>>() {};
-    List<TestConcreteDoc> actualList = resource().path("/resources/testconcretedoc/all").get(genericType);
+    List<TestConcreteDoc> actualList = autoResource().path("testconcretedocs").path("all").get(genericType);
     assertEquals(expectedList.size(), actualList.size());
   }
 
@@ -91,7 +91,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     TestConcreteDoc doc = new TestConcreteDoc(id);
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
-    ClientResponse response = resource().path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
   }
 
@@ -151,7 +151,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
     when(validator.validate(doc)).thenReturn(Sets.<ConstraintViolation<TestConcreteDoc>> newHashSet(violation));
 
-    ClientResponse response = resource().path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
   }
 
@@ -173,7 +173,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
       }
     }).when(getStorageManager()).modifyDocument(any(Class.class), any(TestConcreteDoc.class));
 
-    ClientResponse response = resource().path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
@@ -184,7 +184,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     String id = "TST0000000001";
     TestConcreteDoc doc = new TestConcreteDoc(id);
 
-    ClientResponse response = resource().path("/resources/unknownDoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("unknown").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
@@ -194,7 +194,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     String id = "TST0000000001";
     TestConcreteDoc doc = new TestConcreteDoc(id);
 
-    ClientResponse response = resource().path("/resources/otherdoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("otherdocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
   }
 
@@ -205,7 +205,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     String id = "TST0000000001";
     GeneralTestDoc doc = new GeneralTestDoc(id);
 
-    ClientResponse response = resource().path("/resources/otherdoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("otherdocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
   }
 
@@ -214,7 +214,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     String id = "TST0000000001";
     GeneralTestDoc doc = new GeneralTestDoc(id);
 
-    ClientResponse response = resource().path("/resources/otherdoc").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("otherdocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
   }
 
@@ -227,7 +227,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     doc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
-    ClientResponse response = resource().path("/resources/testconcretedoc/all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("testconcretedocs").path("all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
     assertNotNull(response.getHeaders().getFirst("Location"));
   }
@@ -239,7 +239,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.name = "test";
 
-    ClientResponse response = resource().path("/resources/unknown/all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("unknown").path("all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
@@ -252,7 +252,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     doc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
-    ClientResponse response = resource().path("/resources/testconcretedoc/all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("testconcretedocs").path("all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
   }
 
@@ -265,7 +265,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     doc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(null);
 
-    ClientResponse response = resource().path("/resources/otherdoc/all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("otherdocs").path("all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
   }
 
@@ -275,7 +275,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     TestConcreteDoc doc = new TestConcreteDoc(id);
     doc.name = "test";
 
-    ClientResponse response = resource().path("/resources/otherdoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("otherdocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
   }
 
@@ -287,7 +287,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     TestConcreteDoc doc = new TestConcreteDoc(id);
     when(getStorageManager().getDocument(TestConcreteDoc.class, id)).thenReturn(doc);
 
-    ClientResponse response = resource().path("/resources/testconcretedoc").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
+    ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
   }
 
@@ -298,7 +298,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     String id = "TST0000000001";
     when(getStorageManager().getDocument(TestConcreteDoc.class, id)).thenReturn(null);
 
-    ClientResponse response = resource().path("/resources/testconcretedoc").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
+    ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
@@ -310,13 +310,13 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     setUpUserRoles(USER_ID, Lists.newArrayList("USER"));
     when(getStorageManager().getDocument(TestConcreteDoc.class, id)).thenReturn(null);
 
-    ClientResponse response = resource().path("/resources/testconcretedoc").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
+    ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
   @Test
   public void testDeleteCollection() {
-    ClientResponse response = resource().path("/resources/testconcretedoc").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
+    ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
   }
 
@@ -328,7 +328,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     TestConcreteDoc expectedDoc = new TestConcreteDoc(id);
     when(getStorageManager().getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
 
-    ClientResponse response = resource().path("/resources/testconcretedoc/" + id).get(ClientResponse.class);
+    ClientResponse response = autoResource().path("testconcretedocs").path(id).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
   }
 
@@ -338,7 +338,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     TestConcreteDoc expectedDoc = new TestConcreteDoc(id);
     when(getStorageManager().getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
 
-    ClientResponse response = resource().path("/resources/testconcretedoc/" + id).get(ClientResponse.class);
+    ClientResponse response = autoResource().path("testconcretedocs").path(id).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
   }
 
@@ -351,7 +351,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     TestConcreteDoc doc = new TestConcreteDoc(id);
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
-    ClientResponse response = resource().path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
   }
 
@@ -362,7 +362,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     TestConcreteDoc doc = new TestConcreteDoc(id);
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
-    ClientResponse response = resource().path("/resources/testconcretedoc/" + id).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
   }
 
@@ -375,7 +375,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     inputDoc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(inputDoc);
 
-    ClientResponse response = resource().path("/resources/testconcretedoc/all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
+    ClientResponse response = autoResource().path("testconcretedocs").path("all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .post(ClientResponse.class, inputDoc);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
   }
@@ -387,7 +387,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     doc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
-    ClientResponse response = resource().path("/resources/testconcretedoc/all").type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("testconcretedocs").path("all").type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
   }
 
@@ -395,7 +395,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testDeleteNotLoggedIn() {
     String id = "TST0000000001";
 
-    ClientResponse response = resource().path("/resources/testconcretedoc").path(id).type(MediaType.APPLICATION_JSON_TYPE).delete(ClientResponse.class);
+    ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
   }
 
@@ -405,7 +405,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
     String id = "TST0000000001";
 
-    ClientResponse response = resource().path("/resources/testconcretedoc").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
+    ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
   }
 
@@ -418,7 +418,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     String variation = "projecta";
     when(getStorageManager().getCompleteVariation(TestConcreteDoc.class, id, variation)).thenReturn(expectedDoc);
 
-    TestConcreteDoc actualDoc = resource().path("/resources/testconcretedoc/" + id + "/" + variation).header("Authorization", "bearer 12333322abef").get(TestConcreteDoc.class);
+    TestConcreteDoc actualDoc = autoResource().path("testconcretedocs").path(id).path(variation).header("Authorization", "bearer 12333322abef").get(TestConcreteDoc.class);
     assertNotNull(actualDoc);
     assertEquals(expectedDoc.getId(), actualDoc.getId());
   }
@@ -429,7 +429,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     String variation = "projecta";
     when(getStorageManager().getCompleteVariation(TestConcreteDoc.class, id, variation)).thenReturn(null);
 
-    ClientResponse response = resource().path("/resources/testconcretedoc/" + id + "/" + variation).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
+    ClientResponse response = autoResource().path("testconcretedocs").path(id).path(variation).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 

@@ -111,12 +111,12 @@ public class HTMLGeneratorTest {
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
 
-    assertContains(html, "href=|projectageneraltestdoc/TCD0000000001|");
-    assertContains(html, "href=|projectbgeneraltestdoc/TCD0000000001|");
-    assertContains(html, "href=|generaltestdoc/TCD0000000001/projecta|");
-    assertContains(html, "href=|generaltestdoc/TCD0000000001/projectb|");
-    assertContains(html, "href=|testconcretedoc/TCD0000000001/projecta|");
-    assertContains(html, "href=|testconcretedoc/TCD0000000001/projectb|");
+    assertContains(html, "href=|projectageneraltestdocs/TCD0000000001|");
+    assertContains(html, "href=|projectbgeneraltestdocs/TCD0000000001|");
+    assertContains(html, "href=|generaltestdocs/TCD0000000001/projecta|");
+    assertContains(html, "href=|generaltestdocs/TCD0000000001/projectb|");
+    assertContains(html, "href=|testconcretedocs/TCD0000000001/projecta|");
+    assertContains(html, "href=|testconcretedocs/TCD0000000001/projectb|");
 
     assertContains(html, "Current Variation", "projecta");
     assertContains(html, "Deleted", "no");
@@ -146,12 +146,12 @@ public class HTMLGeneratorTest {
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
 
-    assertContains(html, "href=|projectageneraltestdoc/GTD0000000001|");
-    assertContains(html, "href=|projectbgeneraltestdoc/GTD0000000001|");
-    assertContains(html, "href=|generaltestdoc/GTD0000000001/projecta|");
-    assertContains(html, "href=|generaltestdoc/GTD0000000001/projectb|");
-    assertContains(html, "href=|testconcretedoc/GTD0000000001/projecta|");
-    assertContains(html, "href=|testconcretedoc/GTD0000000001/projectb|");
+    assertContains(html, "href=|projectageneraltestdocs/GTD0000000001|");
+    assertContains(html, "href=|projectbgeneraltestdocs/GTD0000000001|");
+    assertContains(html, "href=|generaltestdocs/GTD0000000001/projecta|");
+    assertContains(html, "href=|generaltestdocs/GTD0000000001/projectb|");
+    assertContains(html, "href=|testconcretedocs/GTD0000000001/projecta|");
+    assertContains(html, "href=|testconcretedocs/GTD0000000001/projectb|");
 
     assertContains(html, "Current Variation", "projecta");
     assertContains(html, "Deleted", "no");
@@ -177,8 +177,8 @@ public class HTMLGeneratorTest {
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
 
-    assertContains(html, "href=|otherdoc/OTD0000000001|");
-    assertContains(html, "href=|testinheritsfromtestbasedoc/OTD0000000001/projecta|");
+    assertContains(html, "href=|otherdocs/OTD0000000001|");
+    assertContains(html, "href=|testinheritsfromtestbasedocs/OTD0000000001/projecta|");
 
     assertContains(html, "Current Variation", "none");
     assertContains(html, "Deleted", "no");

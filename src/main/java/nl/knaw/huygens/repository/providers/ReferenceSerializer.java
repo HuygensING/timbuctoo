@@ -34,14 +34,14 @@ public class ReferenceSerializer extends StdSerializer<Reference> {
     String variation = reference.getVariation();
 
     StringBuilder builder = new StringBuilder("<a href=\"");
-    builder.append(registry.getINameForType(type));
+    builder.append(registry.getXNameForType(type));
     builder.append('/');
     builder.append(reference.getId());
     if (StringUtils.isNotBlank(variation)) {
       builder.append('/').append(variation);
     }
     builder.append("\">");
-    builder.append(registry.getINameForType(type));
+    builder.append(registry.getXNameForType(type));
     if (StringUtils.isNotBlank(variation)) {
       builder.append(" (").append(variation).append(")");
     }
