@@ -27,11 +27,19 @@ import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.storage.JsonViews;
 import nl.knaw.huygens.repository.storage.StorageManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.inject.Inject;
 
+/**
+ * A REST resource for adressing collections of documents.
+ */
 @Path("resources/{entityType: [a-zA-Z]+}")
 public class RESTAutoResource {
+
+  private final Logger LOG = LoggerFactory.getLogger(RESTAutoResource.class);
 
   private static final String ID_PARAM = "id";
   private static final String ID_PATH = "/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}";
@@ -164,7 +172,12 @@ public class RESTAutoResource {
   // -------------------------------------------------------------------
 
   private Class<? extends Document> getDocType(String entityType) {
-    return checkNotNull(docTypeRegistry.getTypeForIName(entityType), Status.NOT_FOUND);
+    Class<? extends Document> type = docTypeRegistry.getTypeForXName(entityType);
+    if (type == null) {
+      LOG.error("Cannot convert '{}' to a document type", entityType);
+      throw new WebApplicationException(Status.NOT_FOUND);
+    }
+    return type;
   }
 
   /**
