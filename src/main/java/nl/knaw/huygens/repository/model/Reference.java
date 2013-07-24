@@ -15,12 +15,6 @@ public class Reference {
   // Default constructor for deserializing
   public Reference() {}
 
-  public Reference(Class<? extends Document> type, String id, String variation) {
-    this.type = type;
-    this.id = id;
-    this.variation = variation;
-  }
-
   public Reference(Class<? extends Document> type, String id) {
     this.type = type;
     this.id = id;

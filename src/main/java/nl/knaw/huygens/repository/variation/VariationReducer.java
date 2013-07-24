@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.mongodb.DBObject;
 
 public class VariationReducer {
@@ -173,19 +172,13 @@ public class VariationReducer {
    */
   private List<Reference> getVariations(List<String> typeStrings, String id) throws VariationException {
     List<Reference> references = Lists.<Reference> newLinkedList();
-    Map<Class<? extends Document>, String> classVariationMap = Maps.<Class<? extends Document>, String> newHashMap();
-    List<Class<? extends Document>> baseModelClasses = Lists.<Class<? extends Document>> newLinkedList();
     for (String typeString : typeStrings) {
       Class<? extends Document> type = converter.getClass(typeString);
       if (typeString.contains("-")) {
         // project specific classes don't have any variation
         references.add(new Reference(type, id));
-        // gather variation information of the project specific types.
-        classVariationMap.put(type, VariationUtils.getVariationName(type));
       } else if (type != null) {
         references.add(new Reference(type, id));
-        // These classes could contain variation
-        baseModelClasses.add(type);
       } else {
         LOG.error("Unknown variation {}", typeString);
         throw new VariationException("Unknown variation " + typeString);
