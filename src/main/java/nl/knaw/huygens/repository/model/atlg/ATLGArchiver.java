@@ -2,7 +2,6 @@ package nl.knaw.huygens.repository.model.atlg;
 
 import java.util.List;
 
-import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.importer.database.AtlantischeGidsImporter.XRelated;
 import nl.knaw.huygens.repository.model.Archiver;
@@ -11,7 +10,6 @@ import nl.knaw.huygens.solr.FacetType;
 
 import com.google.common.collect.Lists;
 
-@DocumentTypeName("atlgarchiver")
 public class ATLGArchiver extends Archiver {
 
   /** Migration: Name of source file */
