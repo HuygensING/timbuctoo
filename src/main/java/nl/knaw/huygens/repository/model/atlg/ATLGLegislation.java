@@ -6,6 +6,7 @@ import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.DocumentRef;
 import nl.knaw.huygens.repository.model.Legislation;
+import nl.knaw.huygens.solr.FacetType;
 
 import com.google.common.collect.Lists;
 
@@ -111,7 +112,7 @@ public class ATLGLegislation extends Legislation {
     this.titleEng = title;
   }
 
-  @IndexAnnotation(fieldName = "facet_s_date", canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "facet_s_date", canBeEmpty = true, isFaceted = true, facetType = FacetType.DATE)
   public String getDate1() {
     return date1;
   }

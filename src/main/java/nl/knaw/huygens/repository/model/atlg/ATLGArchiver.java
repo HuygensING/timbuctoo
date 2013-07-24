@@ -7,6 +7,7 @@ import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.importer.database.AtlantischeGidsImporter.XRelated;
 import nl.knaw.huygens.repository.model.Archiver;
 import nl.knaw.huygens.repository.model.DocumentRef;
+import nl.knaw.huygens.solr.FacetType;
 
 import com.google.common.collect.Lists;
 
@@ -89,7 +90,7 @@ public class ATLGArchiver extends Archiver {
     nameEng = name;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_begin_date", canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "facet_s_begin_date", canBeEmpty = true, isFaceted = true, facetType = FacetType.DATE)
   public String getBeginDate() {
     return beginDate;
   }
@@ -98,7 +99,7 @@ public class ATLGArchiver extends Archiver {
     beginDate = date;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_end_date", canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "facet_s_end_date", canBeEmpty = true, isFaceted = true, facetType = FacetType.DATE)
   public String getEndDate() {
     return endDate;
   }
@@ -234,6 +235,7 @@ public class ATLGArchiver extends Archiver {
     this.related = related;
   }
 
+  @IndexAnnotation(fieldName = "facet_s_type", accessors = { "toString" }, canBeEmpty = true, isFaceted = true)
   public List<String> getTypes() {
     return types;
   }
