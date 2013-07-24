@@ -2,7 +2,6 @@ package nl.knaw.huygens.repository.model.atlg;
 
 import java.util.List;
 
-import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Archive;
 import nl.knaw.huygens.repository.model.DocumentRef;
@@ -11,7 +10,6 @@ import nl.knaw.huygens.solr.FacetType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
-@DocumentTypeName("atlgarchive")
 public class ATLGArchive extends Archive {
 
   /** Migration: Name of source file */

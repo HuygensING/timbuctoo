@@ -3,13 +3,10 @@ package nl.knaw.huygens.repository.model;
 import java.util.List;
 
 import nl.knaw.huygens.repository.annotations.DoNotRegister;
-import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.annotations.IDPrefix;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@IDPrefix("USR")
-@DocumentTypeName("user")
 /*
  * Make sure the User-class is not registered by the DocumentTypeRegistry. The reason is that User has it's own resource class with it's specific authorization.
  * This creates a possibility for a security leak. This would occur when the UserResource URL and the RESTAutoResource URL have a different structure. 
@@ -17,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * When the User-class is not registered, the class will not be found by the RESTAutoResource and the User will only be available through the UserResource. 
  */
 @DoNotRegister
+@IDPrefix("USR")
 public class User extends SystemDocument {
 
   private String userId; // a unique id to identify the use.

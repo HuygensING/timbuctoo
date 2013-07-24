@@ -1,9 +1,7 @@
 package nl.knaw.huygens.repository.model.atlg;
 
-import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.model.Person;
 
-@DocumentTypeName("atlgperson")
 public class ATLGPerson extends Person {
 
   private String label;

@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.config;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestBaseDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.repository.variation.model.TestExtraBaseDoc;
@@ -16,8 +17,6 @@ import org.junit.Test;
  * implementation changes, a lot of tests will fail.
  * 
  * TODO: remove the dependency of the model-package, in these tests.
- * 
- * @author martijnm
  */
 public class DocTypeRegistryTest {
 
@@ -36,13 +35,16 @@ public class DocTypeRegistryTest {
   @Test
   public void testGetTypeForIName() {
     DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
+    assertEquals(GeneralTestDoc.class, registry.getTypeForIName("generaltestdoc"));
     assertEquals(TestExtraBaseDoc.class, registry.getTypeForIName("testextrabasedoc"));
   }
 
   @Test
   public void testGetTypeForXName() {
     DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
-    assertEquals(TestExtraBaseDoc.class, registry.getTypeForXName("testextrabasedocs"));
+    assertEquals(GeneralTestDoc.class, registry.getTypeForXName("generaltestdocs"));
+    // TestExtraBaseDoc has @DocumentTypeName("testextrabasedoc")
+    assertEquals(TestExtraBaseDoc.class, registry.getTypeForXName("testextrabasedoc"));
   }
 
   @Test
