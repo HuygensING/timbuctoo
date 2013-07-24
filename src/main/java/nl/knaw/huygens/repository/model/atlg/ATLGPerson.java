@@ -14,6 +14,11 @@ public class ATLGPerson extends Person {
     reference = "";
   }
 
+  @Override
+  public String getDisplayName() {
+    return getName().getSortName();
+  }
+
   public String getLabel() {
     return label;
   }
