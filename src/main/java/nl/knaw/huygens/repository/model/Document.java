@@ -113,6 +113,10 @@ public abstract class Document {
     this.variations = variations;
   }
 
+  public void addVariation(Class<? extends Document> refType, String refId) {
+    variations.add(new Reference(refType, refId));
+  }
+
   @JsonProperty("!currentVariation")
   public String getCurrentVariation() {
     return currentVariation;
