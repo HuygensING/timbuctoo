@@ -6,6 +6,7 @@ import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Archive;
 import nl.knaw.huygens.repository.model.DocumentRef;
+import nl.knaw.huygens.solr.FacetType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
@@ -177,6 +178,7 @@ public class ATLGArchive extends Archive {
     titleEng = title;
   }
 
+  @IndexAnnotation(fieldName = "facet_s_begin_date", canBeEmpty = true, isFaceted = true, facetType = FacetType.DATE)
   public String getBeginDate() {
     return beginDate;
   }
@@ -185,6 +187,7 @@ public class ATLGArchive extends Archive {
     beginDate = date;
   }
 
+  @IndexAnnotation(fieldName = "facet_s_end_date", canBeEmpty = true, isFaceted = true, facetType = FacetType.DATE)
   public String getEndDate() {
     return endDate;
   }
