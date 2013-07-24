@@ -221,7 +221,7 @@ public class MongoDiffTest {
     Foo y = new Foo();
     y.setId("foo");
     x.bars = Lists.newArrayList("a", "b");
-    x.setVariations(Lists.newArrayList(new Reference(Foo.class, "foo", null)));
+    x.setVariations(Lists.newArrayList(new Reference(Foo.class, "foo")));
     y.bars = Lists.newArrayList("a", "b", "c");
     y.setVariations(null);
     BSONObject diff = MongoDiff.diffDocuments(x, y);
