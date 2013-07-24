@@ -21,6 +21,11 @@ public class Reference {
     this.variation = variation;
   }
 
+  public Reference(Class<? extends Document> type, String id) {
+    this.type = type;
+    this.id = id;
+  }
+
   public Class<? extends Document> getType() {
     return type;
   }
