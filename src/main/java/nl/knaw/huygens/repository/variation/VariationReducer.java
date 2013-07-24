@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
@@ -180,41 +179,19 @@ public class VariationReducer {
       Class<? extends Document> type = converter.getClass(typeString);
       if (typeString.contains("-")) {
         // project specific classes don't have any variation
-        references.add(new Reference(type, id, null));
+        references.add(new Reference(type, id));
         // gather variation information of the project specific types.
         classVariationMap.put(type, VariationUtils.getVariationName(type));
       } else if (type != null) {
-        references.add(new Reference(type, id, null));
+        references.add(new Reference(type, id));
         // These classes could contain variation
         baseModelClasses.add(type);
       } else {
-        LOG.error("Variation " + typeString + " is not known.");
-        throw new VariationException("Variation " + typeString + " is not known.");
+        LOG.error("Unknown variation {}", typeString);
+        throw new VariationException("Unknown variation " + typeString);
       }
     }
-
-    references.addAll(getVariationsOfBaseClasses(id, baseModelClasses, classVariationMap));
-
     return references;
-  }
-
-  private List<Reference> getVariationsOfBaseClasses(String id, List<Class<? extends Document>> baseClasses, Map<Class<? extends Document>, String> classVariationMapping) {
-    List<Reference> variationRefenrences = Lists.<Reference> newArrayList();
-
-    Set<Class<? extends Document>> variationClasses = classVariationMapping.keySet();
-
-    for (Class<? extends Document> type : baseClasses) {
-      for (Class<? extends Document> variationClass : variationClasses) {
-        if (type.isAssignableFrom(variationClass)) {
-          Reference reference = new Reference(type, id, classVariationMapping.get(variationClass));
-          if (!variationRefenrences.contains(reference)) {
-            variationRefenrences.add(reference);
-          }
-        }
-      }
-    }
-
-    return variationRefenrences;
   }
 
   private String getVariationToRetrieve(final String packageName, JsonNode defaultVariationNode, String requestedVariation, List<String> variations) throws VariationException {

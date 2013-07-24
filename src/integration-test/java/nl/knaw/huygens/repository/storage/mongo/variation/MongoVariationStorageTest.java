@@ -9,9 +9,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.knaw.huygens.repository.VariationHelper;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Reference;
 import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
 import nl.knaw.huygens.repository.storage.mongo.MongoStorageTestBase;
 import nl.knaw.huygens.repository.variation.VariationException;
@@ -92,10 +90,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test(expected = MongoException.class)
   public void testAddItemTwice() throws IOException {
     TestConcreteDoc input = createTestDoc(DEFAULT_ID, "test");
-
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    storage.addItem(type, input);
-    storage.addItem(type, input);
+    storage.addItem(TestConcreteDoc.class, input);
+    storage.addItem(TestConcreteDoc.class, input);
   }
 
   @Test
@@ -145,11 +141,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test(expected = IOException.class)
   public void testUpdateItemNonExistent() throws IOException {
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "test");
-
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
     expected.name = "updated";
-    storage.updateItem(type, DEFAULT_ID, expected);
+    storage.updateItem(TestConcreteDoc.class, DEFAULT_ID, expected);
   }
 
   @Test
@@ -168,17 +161,15 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test(expected = IOException.class)
   public void testDeleteItemNonExistent() throws IOException {
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
-    storage.deleteItem(type, DEFAULT_ID, null);
+    storage.deleteItem(TestConcreteDoc.class, DEFAULT_ID, null);
   }
 
-  //MongoVariationStorageImpl tests
+  // MongoVariationStorageImpl tests
 
   @Test
   public void testGetItem() throws IOException {
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "getItem");
-    expected.getVariations().add(new Reference(TestConcreteDoc.class, DEFAULT_ID, null));
+    expected.addVariation(TestConcreteDoc.class, DEFAULT_ID);
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     storage.addItem(type, expected);
@@ -198,7 +189,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "getItem2");
     expected.setRev(1);
-    expected.getVariations().add(new Reference(TestConcreteDoc.class, DEFAULT_ID, null));
+    expected.addVariation(TestConcreteDoc.class, DEFAULT_ID);
 
     assertEqualDocs(expected, storage.getItem(type, DEFAULT_ID));
   }
@@ -215,15 +206,14 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "getItem");
     expected.setRev(1);
     expected.setDeleted(true);
-    expected.getVariations().add(new Reference(TestConcreteDoc.class, DEFAULT_ID, null));
+    expected.addVariation(TestConcreteDoc.class, DEFAULT_ID);
 
     assertEqualDocs(expected, storage.getItem(type, DEFAULT_ID));
   }
 
   @Test
   public void testGetItemNonExistent() throws VariationException, IOException {
-    TestConcreteDoc item = storage.getItem(TestConcreteDoc.class, "TCD000000001");
-    assertNull(item);
+    assertNull(storage.getItem(TestConcreteDoc.class, "TCD000000001"));
   }
 
   @Test
@@ -238,8 +228,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     expected.name = "subType";
     expected.generalTestDocValue = "test";
     expected.setCurrentVariation("model");
-    expected.getVariations().add(new Reference(GeneralTestDoc.class, DEFAULT_ID, null));
-    expected.getVariations().add(new Reference(TestConcreteDoc.class, DEFAULT_ID, null));
+    expected.addVariation(GeneralTestDoc.class, DEFAULT_ID);
+    expected.addVariation(TestConcreteDoc.class, DEFAULT_ID);
 
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     storage.addItem(type, input);
@@ -271,10 +261,10 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     storage.updateItem(ProjectBGeneralTestDoc.class, DEFAULT_ID, projectBInput);
 
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "subTypeB");
-    expected.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_ID, null));
-    expected.getVariations().add(new Reference(ProjectBGeneralTestDoc.class, DEFAULT_ID, null));
-    expected.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, DEFAULT_ID, "projecta", "projectb", null));
-    expected.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, DEFAULT_ID, "projecta", "projectb", null));
+    expected.addVariation(ProjectAGeneralTestDoc.class, DEFAULT_ID);
+    expected.addVariation(ProjectBGeneralTestDoc.class, DEFAULT_ID);
+    expected.addVariation(TestConcreteDoc.class, DEFAULT_ID);
+    expected.addVariation(GeneralTestDoc.class, DEFAULT_ID);
     expected.setCurrentVariation("projectb");
     expected.setRev(1);
 
@@ -286,9 +276,9 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     ProjectAGeneralTestDoc projectAInput = createProjectAGeneralTestDoc(DEFAULT_ID, "subTypeA", "testA", "aTestA");;
 
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "subTypeA");
-    expected.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_ID, null));
-    expected.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, DEFAULT_ID, "projecta", null));
-    expected.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, DEFAULT_ID, "projecta", null));
+    expected.addVariation(ProjectAGeneralTestDoc.class, DEFAULT_ID);
+    expected.addVariation(GeneralTestDoc.class, DEFAULT_ID);
+    expected.addVariation(TestConcreteDoc.class, DEFAULT_ID);
     expected.setCurrentVariation("projecta");
 
     storage.addItem(ProjectAGeneralTestDoc.class, projectAInput);
@@ -368,8 +358,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllRevisionsOfNoneExisting() throws IOException {
-    MongoChanges<ProjectAGeneralTestDoc> changes = storage.getAllRevisions(ProjectAGeneralTestDoc.class, DEFAULT_ID);
-    assertNull(changes);
+    assertNull(storage.getAllRevisions(ProjectAGeneralTestDoc.class, DEFAULT_ID));
   }
 
   @Test
@@ -467,9 +456,9 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test
   public void testGetRevision() throws IOException {
     ProjectAGeneralTestDoc doc = createProjectAGeneralTestDoc(DEFAULT_ID, "test", "testDocValue", "projectATestDocValue");
-    doc.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_ID, null));
-    doc.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, DEFAULT_ID, "projecta", null));
-    doc.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, DEFAULT_ID, "projecta", null));
+    doc.addVariation(ProjectAGeneralTestDoc.class, DEFAULT_ID);
+    doc.addVariation(GeneralTestDoc.class, DEFAULT_ID);
+    doc.addVariation(TestConcreteDoc.class, DEFAULT_ID);
     Class<ProjectAGeneralTestDoc> type = ProjectAGeneralTestDoc.class;
     storage.addItem(type, doc);
 
@@ -484,9 +473,9 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "test");
     expected.setCurrentVariation("projecta");
-    expected.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_ID, null));
-    expected.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, DEFAULT_ID, "projecta", null));
-    expected.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, DEFAULT_ID, "projecta", null));
+    expected.addVariation(ProjectAGeneralTestDoc.class, DEFAULT_ID);
+    expected.addVariation(GeneralTestDoc.class, DEFAULT_ID);
+    expected.addVariation(TestConcreteDoc.class, DEFAULT_ID);
 
     assertEqualDocs(expected, revision);
   }
@@ -496,14 +485,12 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     TestConcreteDoc doc = createTestDoc(DEFAULT_ID, "test");
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     storage.addItem(type, doc);
-    TestConcreteDoc revision = storage.getRevision(type, DEFAULT_ID, 1);
-    assertNull(revision);
+    assertNull(storage.getRevision(type, DEFAULT_ID, 1));
   }
 
   @Test
   public void testGetRevisionOfNonExistingItem() throws IOException {
-    TestConcreteDoc revision = storage.getRevision(TestConcreteDoc.class, DEFAULT_ID, 1);
-    assertNull(revision);
+    assertNull(storage.getRevision(TestConcreteDoc.class, DEFAULT_ID, 1));
   }
 
   private List<TestConcreteDoc> createTestDocListWithIds(String idBase, String... names) {
