@@ -5,7 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import nl.knaw.huygens.repository.indexdata.CustomIndexer;
+import nl.knaw.huygens.repository.index.CustomIndexer;
 import nl.knaw.huygens.solr.FacetType;
 
 /**
