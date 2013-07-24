@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.indexdata;
+package nl.knaw.huygens.repository.index;
 
 import org.apache.solr.common.SolrInputDocument;
 
