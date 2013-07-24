@@ -1,11 +1,9 @@
 package nl.knaw.huygens.repository.model.ckcc;
 
-import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.util.Datable;
 
-@DocumentTypeName("ckccperson")
 public class CKCCPerson extends Person {
 
   /** To start with a simple type: ("f", "m", "?"}, no validation. */

@@ -2,7 +2,6 @@ package nl.knaw.huygens.repository.model;
 
 import java.util.Map;
 
-import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.annotations.IDPrefix;
 
 import com.google.common.collect.Maps;
@@ -11,7 +10,6 @@ import com.google.common.collect.Maps;
  * Denotes a language, catering for ISO 639-2 and 639-1 codes.
  */
 @IDPrefix("LAN")
-@DocumentTypeName("language")
 public class Language extends DomainDocument {
 
   /** Codes, e.g. "iso_639_2". */

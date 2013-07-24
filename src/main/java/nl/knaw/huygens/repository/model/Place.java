@@ -1,11 +1,9 @@
 package nl.knaw.huygens.repository.model;
 
-import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.annotations.IDPrefix;
 import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 
 @IDPrefix("PLA")
-@DocumentTypeName("place")
 public class Place extends DomainDocument {
 
   public String name;

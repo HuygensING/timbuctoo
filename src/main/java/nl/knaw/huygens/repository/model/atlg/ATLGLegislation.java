@@ -2,7 +2,6 @@ package nl.knaw.huygens.repository.model.atlg;
 
 import java.util.List;
 
-import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.DocumentRef;
 import nl.knaw.huygens.repository.model.Legislation;
@@ -10,7 +9,6 @@ import nl.knaw.huygens.solr.FacetType;
 
 import com.google.common.collect.Lists;
 
-@DocumentTypeName("atlglegislation")
 public class ATLGLegislation extends Legislation {
 
   /** Migration: Name of source file */
