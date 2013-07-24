@@ -3,10 +3,8 @@ package nl.knaw.huygens.repository.providers;
 import java.io.IOException;
 import java.io.StringWriter;
 
-import nl.knaw.huygens.repository.VariationHelper;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.Reference;
 import nl.knaw.huygens.repository.storage.mongo.model.TestSystemDocument;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
@@ -94,10 +92,10 @@ public class HTMLGeneratorTest {
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.setId("TCD0000000001");
     doc.name = "test";
-    doc.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, doc.getId(), null));
-    doc.getVariations().add(new Reference(ProjectBGeneralTestDoc.class, doc.getId(), null));
-    doc.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, doc.getId(), "projecta", "projectb"));
-    doc.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, doc.getId(), "projecta", "projectb"));
+    doc.addVariation(ProjectAGeneralTestDoc.class, doc.getId());
+    doc.addVariation(ProjectBGeneralTestDoc.class, doc.getId());
+    doc.addVariation(GeneralTestDoc.class, doc.getId());
+    doc.addVariation(TestConcreteDoc.class, doc.getId());
     doc.setCurrentVariation("projecta");
     doc.setPid("pid");
 
@@ -113,10 +111,6 @@ public class HTMLGeneratorTest {
 
     assertContains(html, "href=|projectageneraltestdocs/TCD0000000001|");
     assertContains(html, "href=|projectbgeneraltestdocs/TCD0000000001|");
-    assertContains(html, "href=|generaltestdocs/TCD0000000001/projecta|");
-    assertContains(html, "href=|generaltestdocs/TCD0000000001/projectb|");
-    assertContains(html, "href=|testconcretedocs/TCD0000000001/projecta|");
-    assertContains(html, "href=|testconcretedocs/TCD0000000001/projectb|");
 
     assertContains(html, "Current Variation", "projecta");
     assertContains(html, "Deleted", "no");
@@ -128,10 +122,10 @@ public class HTMLGeneratorTest {
     doc.setId("GTD0000000001");
     doc.generalTestDocValue = "generalTestDocValue";
     doc.name = "test";
-    doc.getVariations().add(new Reference(ProjectAGeneralTestDoc.class, doc.getId(), null));
-    doc.getVariations().add(new Reference(ProjectBGeneralTestDoc.class, doc.getId(), null));
-    doc.getVariations().addAll(VariationHelper.createVariationsForType(GeneralTestDoc.class, doc.getId(), "projecta", "projectb"));
-    doc.getVariations().addAll(VariationHelper.createVariationsForType(TestConcreteDoc.class, doc.getId(), "projecta", "projectb"));
+    doc.addVariation(ProjectAGeneralTestDoc.class, doc.getId());
+    doc.addVariation(ProjectBGeneralTestDoc.class, doc.getId());
+    doc.addVariation(GeneralTestDoc.class, doc.getId());
+    doc.addVariation(TestConcreteDoc.class, doc.getId());
     doc.setCurrentVariation("projecta");
     doc.setPid("pid");
 
@@ -148,10 +142,6 @@ public class HTMLGeneratorTest {
 
     assertContains(html, "href=|projectageneraltestdocs/GTD0000000001|");
     assertContains(html, "href=|projectbgeneraltestdocs/GTD0000000001|");
-    assertContains(html, "href=|generaltestdocs/GTD0000000001/projecta|");
-    assertContains(html, "href=|generaltestdocs/GTD0000000001/projectb|");
-    assertContains(html, "href=|testconcretedocs/GTD0000000001/projecta|");
-    assertContains(html, "href=|testconcretedocs/GTD0000000001/projectb|");
 
     assertContains(html, "Current Variation", "projecta");
     assertContains(html, "Deleted", "no");
@@ -163,8 +153,8 @@ public class HTMLGeneratorTest {
     doc.setId("OTD0000000001");
     doc.otherThing = "test";
     doc.setPid("pid");
-    doc.getVariations().add(new Reference(OtherDoc.class, doc.getId(), null));
-    doc.getVariations().add(new Reference(TestInheritsFromTestBaseDoc.class, doc.getId(), "projecta"));
+    doc.addVariation(OtherDoc.class, doc.getId());
+    doc.addVariation(TestInheritsFromTestBaseDoc.class, doc.getId());
 
     String html = generateHtml(doc);
 
@@ -178,10 +168,8 @@ public class HTMLGeneratorTest {
     assertContains(html, "Pid", "pid");
 
     assertContains(html, "href=|otherdocs/OTD0000000001|");
-    assertContains(html, "href=|testinheritsfromtestbasedocs/OTD0000000001/projecta|");
 
     assertContains(html, "Current Variation", "none");
     assertContains(html, "Deleted", "no");
   }
-
 }
