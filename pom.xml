@@ -1,0 +1,464 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <groupId>repository</groupId>
+  <artifactId>repository</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>war</packaging>
+  <name>datarepository</name>
+  <description>Back-end software that provides different front-ends to share data and variations on that data.</description>
+  <url>http://repository.huygens.knaw.nl/static/search.html</url>
+  <organization>
+  	<name>Huygens ING</name>
+  	<url>http://www.huygens.knaw.nl/</url>
+  </organization>
+  <inceptionYear>2013</inceptionYear>
+  
+  <prerequisites>
+    <maven>3.0</maven>
+  </prerequisites>
+  
+  <repositories>
+    <repository>
+      <id>central</id>
+      <name>Central repository</name>
+      <url>http://repo1.maven.org/maven2/</url>
+    </repository>
+  	<repository>
+  	  <id>sun-repo-2</id>
+  	  <url>http://download.java.net/maven/2/</url>
+  	</repository>
+  	<repository>
+  	  <id>apache</id>
+  	  <url>https://repository.apache.org/content/repositories/public/</url>
+  	</repository>
+  	<repository>
+  	  <id>oracle</id>
+  	  <url>http://download.oracle.com/maven/</url>
+  	</repository>
+  	<repository>
+  	  <id>surfconext</id>
+  	  <url>https://build.surfconext.nl/repository/public/releases/</url>
+  	</repository>
+  	<repository>
+      <id>Huygens</id>
+      <url>http://maven.huygens.knaw.nl/repository/</url>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+  	</repository>
+  </repositories>
+  
+  <!-- TODO: fill in the details. -->
+  <licenses>
+  </licenses>
+  
+  <!-- TODO: fill in the details -->
+  <scm>
+    <connection>?</connection>
+    <developerConnection>?</developerConnection>
+    <url>?</url>
+  </scm>
+  
+  <issueManagement>
+  	<system>Redmine</system>
+  	<url>http://suzanna.huygens.knaw.nl/projects/datarepositories</url>
+  </issueManagement>
+  
+  <ciManagement>
+  	<system>cruisecontrolrb</system>
+  	<url>http://cruisecontrol.huygens.knaw.nl/projects/repository</url>
+  </ciManagement>
+  
+  <developers>
+    <developer>
+  	  <id>WR</id>
+  	  <name>Walter Ravenek</name>
+  	  <organization>Huygens ING</organization>
+  	  <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+  	</developer>
+  	<developer>
+  	  <id>MM</id>
+  	  <name>Martijn Maas</name>
+  	  <organization>Huygens ING</organization>
+  	  <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+  	</developer>
+  </developers>
+  
+  <properties>
+    <apis.version>1.2.3</apis.version>
+    <jackson.version>2.1.1</jackson.version>
+    <jersey.version>1.16</jersey.version>
+    <mockito.version>1.9.0</mockito.version>
+    <slf4j.version>1.6.6</slf4j.version>
+    <solr.version>4.3.1</solr.version>
+  </properties>
+  
+  <dependencies>
+    <!-- ## Main libraries ## -->
+    <!-- Guava -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>14.0</version>
+    </dependency>
+    
+    <!-- Guice -->
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+      <version>3.0</version>
+    </dependency>
+    
+    <!-- Jackson for JSON -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.jaxrs</groupId>
+      <artifactId>jackson-jaxrs-json-provider</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+        
+    <!-- Jersey -->
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-client</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-server</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-servlet</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey.jersey-test-framework</groupId>
+      <artifactId>jersey-test-framework-core</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey.jersey-test-framework</groupId>
+      <artifactId>jersey-test-framework-inmemory</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+        
+    <!-- Commons Configuration, assists with reading configuration files. -->
+    <dependency>
+      <groupId>commons-configuration</groupId>
+      <artifactId>commons-configuration</artifactId>
+      <version>1.9</version>
+    </dependency>
+    
+    <!-- Handle pesistancy server client -->
+    <dependency>
+      <groupId>handle.net</groupId>
+      <artifactId>handle-client</artifactId>
+      <version>7.1</version>
+    </dependency>
+    
+    <!-- Email support -->
+    <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>mail</artifactId>
+      <version>1.4.7</version>
+    </dependency>
+    
+    <!-- Apis authorization server communication -->
+    <dependency>
+      <groupId>nl.surfnet.apis</groupId>
+      <artifactId>apis-resource-server-library</artifactId>
+      <version>${apis.version}</version>
+    </dependency>
+    <!-- Dependencies needed for deserializing the VerifyTokenResponse -->
+    <dependency>
+      <groupId>nl.surfnet.apis</groupId>
+      <artifactId>apis-surfconext-authn</artifactId>
+      <version>${apis.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.ibm.websphere</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>nl.surfnet.apis</groupId>
+          <artifactId>apis-authorization-server</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.hsqldb</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.surfnet.coin</groupId>
+          <artifactId>coin-test</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.surfnet.coint</groupId>
+          <artifactId>spring-security-opensaml</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    
+    <!-- Apache ActiveMQ -->
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>activemq-all</artifactId>
+      <version>5.7.0</version>
+    </dependency>
+       
+    <!-- Open JPA, needed for the communication with the apis authorization server -->
+    <dependency>
+      <groupId>org.apache.openjpa</groupId>
+      <artifactId>openjpa-kernel</artifactId>
+      <version>2.2.2</version>
+      <exclusions>
+      <exclusion>
+          <groupId>com.ibm.websphere</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    
+    <!-- Solr -->
+    <dependency>
+      <groupId>org.apache.solr</groupId>
+      <artifactId>solr-core</artifactId>
+      <version>${solr.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.velocity</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-io</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-digester</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.restlet.jee</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.solr</groupId>
+      <artifactId>solr-solrj</artifactId>
+      <version>${solr.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.velocity</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-io</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-digester</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    
+    <!-- Mongo database support -->
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-java-driver</artifactId>
+      <version>2.9.1</version>
+    </dependency>
+    
+    <!-- Log4j -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.17</version>
+    </dependency>
+    
+    <!-- Rome for Feed/XML stuff -->
+    <dependency>
+      <groupId>rome</groupId>
+      <artifactId>rome</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <!-- ## End of main libraries ## -->
+    
+    <!-- ## Import tooling libraries ##-->
+    <!-- MySQL -->
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>5.1.6</version>
+    </dependency>
+    
+    <!-- CSV support -->
+    <dependency>
+      <groupId>net.sf.opencsv</groupId>
+      <artifactId>opencsv</artifactId>
+      <version>2.3</version>
+    </dependency>
+    
+    <!-- PostgreSQL -->
+    <dependency>
+      <groupId>postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>9.1-901.jdbc4</version>
+    </dependency>    
+    <!-- ## End of import tooling libraries ##-->
+    
+    <!-- ## Build helper libraries ## -->
+    <!-- Ant plug-in, should probably be removed -->
+    <dependency>
+      <groupId>ant-contrib</groupId>
+      <artifactId>ant-contrib</artifactId>
+      <version>1.0b3</version>
+      <exclusions>
+      <exclusion>
+          <groupId>org.apache.ant</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    
+    <!-- Closure compiler for optimizing JavaScript, could probably be removed -->
+    <dependency>
+      <groupId>com.google.javascript</groupId>
+      <artifactId>closure-compiler</artifactId>
+      <version>r1459</version>
+      <exclusions>
+        <exclusion>
+          <groupId>junit</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    
+    <!-- Java Secure Channel, could probably be removed -->
+    <dependency>
+      <groupId>com.jcraft</groupId>
+      <artifactId>jsch</artifactId>
+      <version>0.1.44-1</version>
+    </dependency>
+    
+    <!-- temporarily? to make ant build work -->
+    <!-- default servlet api -->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet.api</artifactId>
+      <version>3.0.1</version>
+    </dependency>
+    
+    <!-- temporarily? to make ant build work -->
+    <!-- Annotations for Tomcat to run the application -->
+    <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>annotations-api</artifactId>
+      <version>6.0.13</version> 
+    </dependency>
+    <!-- ## End of build helper libraries ## -->
+    
+    
+    <!-- ## Test libraries ## -->
+    <!-- JUnit test framework -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.10</version>
+    </dependency>
+    
+    <!-- Hamcrest library for easier String comparing -->
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <version>1.3</version>
+    </dependency>
+    
+    <!-- Mockito mocking framework -->
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>${mockito.version}</version>
+    </dependency>
+    <!-- ## Test libraries ## -->
+  </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.0</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>2.3</version>
+        <configuration>
+          <failOnMissingWebXml>false</failOnMissingWebXml>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
