@@ -1,7 +1,6 @@
 package nl.knaw.huygens.repository.importer.database;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +20,8 @@ import nl.knaw.huygens.repository.model.atlg.ATLGPerson;
 import nl.knaw.huygens.repository.model.util.PersonName;
 import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.repository.storage.StorageManager;
+import nl.knaw.huygens.repository.util.EncodingFixer;
+import nl.knaw.huygens.repository.util.Files;
 import nl.knaw.huygens.repository.util.Token;
 import nl.knaw.huygens.repository.util.TokenHandler;
 import nl.knaw.huygens.repository.util.Tokens;
@@ -28,8 +29,6 @@ import nl.knaw.huygens.repository.util.Tokens;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -161,6 +160,15 @@ public class AtlantischeGidsImporter {
     }
   }
 
+  private <T> T readJsonValue(File file, Class<T> valueType) throws Exception {
+    String text = Files.readTextFromFile(file);
+    String converted = EncodingFixer.convert2(text);
+    if (!converted.equals(text)) {
+      handleError("Fixed character encoding in '%s'", file.getName());
+    }
+    return objectMapper.readValue(converted, valueType);
+  }
+
   public void importAll() throws Exception {
     System.out.printf("%n.. 'keyword'%n");
     keywordRefMap = importKeywords();
@@ -201,7 +209,7 @@ public class AtlantischeGidsImporter {
   private Map<String, DocumentRef> importKeywords() throws Exception {
     Map<String, DocumentRef> refs = Maps.newHashMap();
     File file = new File(new File(inputDir, KEYWORD_DIR), KEYWORD_FILE);
-    for (XKeyword xkeyword : objectMapper.readValue(file, XKeyword[].class)) {
+    for (XKeyword xkeyword : readJsonValue(file, XKeyword[].class)) {
       String id = xkeyword._id;
       if (refs.containsKey(id)) {
         System.err.printf("## [%s] Duplicate keyword id %s%n", KEYWORD_FILE, id);
@@ -246,7 +254,7 @@ public class AtlantischeGidsImporter {
   private Map<String, DocumentRef> importPersons() throws Exception {
     Map<String, DocumentRef> refs = Maps.newHashMap();
     File file = new File(new File(inputDir, PERSON_DIR), PERSON_FILE);
-    for (XPerson xperson : objectMapper.readValue(file, XPerson[].class)) {
+    for (XPerson xperson : readJsonValue(file, XPerson[].class)) {
       String id = xperson._id;
       if (refs.containsKey(id)) {
         handleError("[%s] Duplicate person id %s", PERSON_FILE, id);
@@ -298,7 +306,7 @@ public class AtlantischeGidsImporter {
     Map<String, DocumentRef> refs = Maps.newHashMap();
     File directory = new File(inputDir, WETGEVING_DIR);
     for (File file : FileUtils.listFiles(directory, JSON_EXTENSION, true)) {
-      for (WetgevingEntry entry : objectMapper.readValue(file, WetgevingEntry[].class)) {
+      for (WetgevingEntry entry : readJsonValue(file, WetgevingEntry[].class)) {
         Wetgeving wetgeving = entry.wetgeving;
         String id = wetgeving._id;
         if (refs.containsKey(id)) {
@@ -374,7 +382,7 @@ public class AtlantischeGidsImporter {
     Map<String, DocumentRef> refs = Maps.newHashMap();
     File directory = new File(inputDir, ARCHIEFMAT_DIR);
     for (File file : FileUtils.listFiles(directory, JSON_EXTENSION, true)) {
-      for (ArchiefMatEntry entry : objectMapper.readValue(file, ArchiefMatEntry[].class)) {
+      for (ArchiefMatEntry entry : readJsonValue(file, ArchiefMatEntry[].class)) {
         ArchiefMat object = entry.archiefmat;
         String id = object._id;
         if (refs.containsKey(id)) {
@@ -524,11 +532,11 @@ public class AtlantischeGidsImporter {
 
   private static final String CREATORS_DIR = "creators";
 
-  public Map<String, DocumentRef> importCreators() throws JsonParseException, JsonMappingException, IOException {
+  public Map<String, DocumentRef> importCreators() throws Exception {
     Map<String, DocumentRef> refs = Maps.newHashMap();
     File directory = new File(inputDir, CREATORS_DIR);
     for (File file : FileUtils.listFiles(directory, JSON_EXTENSION, true)) {
-      CreatorEntry[] entries = objectMapper.readValue(file, CreatorEntry[].class);
+      CreatorEntry[] entries = readJsonValue(file, CreatorEntry[].class);
       for (CreatorEntry entry : entries) {
         Creator creator = entry.creator;
         String id = creator._id;
