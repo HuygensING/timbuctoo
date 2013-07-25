@@ -155,14 +155,10 @@
       <artifactId>jersey-servlet</artifactId>
       <version>${jersey.version}</version>
     </dependency>
+    <!-- Jersey Guice plugin -->
     <dependency>
-      <groupId>com.sun.jersey.jersey-test-framework</groupId>
-      <artifactId>jersey-test-framework-core</artifactId>
-      <version>${jersey.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.jersey.jersey-test-framework</groupId>
-      <artifactId>jersey-test-framework-inmemory</artifactId>
+      <groupId>com.sun.jersey.contribs</groupId>
+      <artifactId>jersey-guice</artifactId>
       <version>${jersey.version}</version>
     </dependency>
         
@@ -187,6 +183,13 @@
       <version>1.4.7</version>
     </dependency>
     
+    <!-- Apache validation -->
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+      <version>1.0.0.GA</version>
+    </dependency>
+    
     <!-- Apis authorization server communication -->
     <dependency>
       <groupId>nl.surfnet.apis</groupId>
@@ -198,7 +201,7 @@
       <groupId>nl.surfnet.apis</groupId>
       <artifactId>apis-surfconext-authn</artifactId>
       <version>${apis.version}</version>
-      <exclusions>
+      <!-- <exclusions>
         <exclusion>
           <groupId>com.ibm.websphere</groupId>
           <artifactId>*</artifactId>
@@ -220,6 +223,7 @@
           <artifactId>spring-security-opensaml</artifactId>
         </exclusion>
       </exclusions>
+      -->
     </dependency>
     
     <!-- Apache ActiveMQ -->
@@ -228,18 +232,25 @@
       <artifactId>activemq-all</artifactId>
       <version>5.7.0</version>
     </dependency>
+    
+    <dependency>
+      <groupId>org.apache.bval</groupId>
+      <artifactId>org.apache.bval.bundle</artifactId>
+      <version>0.5</version>
+    </dependency>
        
     <!-- Open JPA, needed for the communication with the apis authorization server -->
     <dependency>
       <groupId>org.apache.openjpa</groupId>
       <artifactId>openjpa-kernel</artifactId>
       <version>2.2.2</version>
-      <exclusions>
-      <exclusion>
+      <!-- <exclusions>
+        <exclusion>
           <groupId>com.ibm.websphere</groupId>
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
+       -->
     </dependency>
     
     <!-- Solr -->
@@ -247,7 +258,7 @@
       <groupId>org.apache.solr</groupId>
       <artifactId>solr-core</artifactId>
       <version>${solr.version}</version>
-      <exclusions>
+      <!-- <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>*</artifactId>
@@ -277,12 +288,13 @@
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
+      -->
     </dependency>
     <dependency>
       <groupId>org.apache.solr</groupId>
       <artifactId>solr-solrj</artifactId>
       <version>${solr.version}</version>
-      <exclusions>
+      <!-- <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>*</artifactId>
@@ -304,6 +316,14 @@
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
+       -->
+    </dependency>
+    
+    <!-- Mindrot, for password encryption -->
+    <dependency>
+      <groupId>org.mindrot</groupId>
+      <artifactId>jbcrypt</artifactId>
+      <version>0.3m</version>
     </dependency>
     
     <!-- Mongo database support -->
@@ -311,6 +331,12 @@
       <groupId>org.mongodb</groupId>
       <artifactId>mongo-java-driver</artifactId>
       <version>2.9.1</version>
+    </dependency>
+    <!-- Mongo with Jackson 2.0 plugin -->
+    <dependency>
+      <groupId>org.mongojack</groupId>
+      <artifactId>mongojack</artifactId>
+      <version>2.0.0-RC1</version>
     </dependency>
     
     <!-- Log4j -->
@@ -367,12 +393,13 @@
       <groupId>ant-contrib</groupId>
       <artifactId>ant-contrib</artifactId>
       <version>1.0b3</version>
-      <exclusions>
-      <exclusion>
+      <!-- <exclusions>
+        <exclusion>
           <groupId>org.apache.ant</groupId>
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
+      -->
     </dependency>
     
     <!-- Closure compiler for optimizing JavaScript, could probably be removed -->
@@ -380,12 +407,13 @@
       <groupId>com.google.javascript</groupId>
       <artifactId>closure-compiler</artifactId>
       <version>r1459</version>
-      <exclusions>
+      <!-- <exclusions>
         <exclusion>
           <groupId>junit</groupId>
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
+      -->
     </dependency>
     
     <!-- Java Secure Channel, could probably be removed -->
@@ -399,7 +427,7 @@
     <!-- default servlet api -->
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet.api</artifactId>
+      <artifactId>javax.servlet-api</artifactId>
       <version>3.0.1</version>
     </dependency>
     
@@ -414,6 +442,18 @@
     
     
     <!-- ## Test libraries ## -->
+    <!-- Jersey test framework -->
+    <dependency>
+      <groupId>com.sun.jersey.jersey-test-framework</groupId>
+      <artifactId>jersey-test-framework-core</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey.jersey-test-framework</groupId>
+      <artifactId>jersey-test-framework-inmemory</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    
     <!-- JUnit test framework -->
     <dependency>
       <groupId>junit</groupId>
