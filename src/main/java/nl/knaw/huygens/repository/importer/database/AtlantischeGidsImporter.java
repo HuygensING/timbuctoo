@@ -164,7 +164,8 @@ public class AtlantischeGidsImporter {
     String text = Files.readTextFromFile(file);
     String converted = EncodingFixer.convert2(text);
     if (!converted.equals(text)) {
-      handleError("Fixed character encoding in '%s'", file.getName());
+      int n = text.length() - converted.length();
+      handleError("Fixed %d character encoding error%s in '%s'", n, (n == 1) ? "" : "s", file.getName());
     }
     return objectMapper.readValue(converted, valueType);
   }
