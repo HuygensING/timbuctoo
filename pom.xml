@@ -528,8 +528,18 @@
       </plugin>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
-        <version>2.3</version>
+        <version>2.4</version>
         <configuration>
+          <webResources>
+            <resource>
+              <directory>${basedir}/src/main/config</directory>
+              <targetPath>WEB-INF</targetPath>
+        	  <filtering>false</filtering>
+              <includes>
+                <include>config.xml</include>
+              </includes>
+            </resource>
+          </webResources>
           <failOnMissingWebXml>false</failOnMissingWebXml>
         </configuration>
       </plugin>
