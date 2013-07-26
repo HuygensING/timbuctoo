@@ -532,16 +532,6 @@
         <configuration>
           <webResources>
             <resource>
-              <directory>${basedir}/src/main/webapp</directory>
-              <targetPath>static</targetPath>
-              <filtering>true</filtering>
-              <excludes>
-                <exclude>config-*.js</exclude>
-                <exclude>META-INF/</exclude>
-                <exclude>WEB-INF/</exclude>
-              </excludes>
-            </resource>
-            <resource>
               <directory>${basedir}/src/main/config</directory>
               <targetPath>WEB-INF</targetPath>
         	  <filtering>false</filtering>
