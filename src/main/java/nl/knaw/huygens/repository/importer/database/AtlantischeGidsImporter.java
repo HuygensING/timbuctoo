@@ -187,12 +187,12 @@ public class AtlantischeGidsImporter {
     archiefmatRefMap = importArchiefMats();
     System.out.printf("Number of entries = %d%n", archiefmatRefMap.size());
 
-    System.out.printf("%n.. 'archiefmat' -- pass 2%n");
-    resolveATLGArchiveRefs();
-
     System.out.printf("%n.. 'creator' -- pass 1%n");
     creatormatRefMap = importCreators();
     System.out.printf("Number of entries = %d%n", creatormatRefMap.size());
+
+    System.out.printf("%n.. 'archiefmat' -- pass 2%n");
+    resolveATLGArchiveRefs();
 
     System.out.printf("%n.. 'creator' -- pass 2%n");
     resolveATLGArchiverRefs();
@@ -202,7 +202,7 @@ public class AtlantischeGidsImporter {
     }
   }
 
-  // -------------------------------------------------------------------
+  // --- keywords ------------------------------------------------------
 
   private static final String KEYWORD_DIR = "keywords";
   private static final String KEYWORD_FILE = "keywords.json";
@@ -247,7 +247,7 @@ public class AtlantischeGidsImporter {
     return keyword;
   }
 
-  // -------------------------------------------------------------------
+  // --- persons -------------------------------------------------------
 
   private static final String PERSON_DIR = "keywords";
   private static final String PERSON_FILE = "persons.json";
@@ -299,7 +299,7 @@ public class AtlantischeGidsImporter {
     return person;
   }
 
-  // -------------------------------------------------------------------
+  // --- legislations --------------------------------------------------
 
   private static final String WETGEVING_DIR = "wetgeving";
 
@@ -374,7 +374,7 @@ public class AtlantischeGidsImporter {
     return legislation;
   }
 
-  // -------------------------------------------------------------------
+  // --- archives ------------------------------------------------------
 
   private static final String ARCHIEFMAT_DIR = "archiefmat";
 
@@ -396,6 +396,12 @@ public class AtlantischeGidsImporter {
         }
       }
     }
+    displayRefCodes(tokens);
+
+    return refs;
+  }
+
+  private void displayRefCodes(Tokens tokens) {
     System.out.printf("%nGenerated reference codes (frequency and name)%n");
     tokens.handleSortedByText(new TokenHandler() {
       @Override
@@ -404,7 +410,6 @@ public class AtlantischeGidsImporter {
         return true;
       }
     });
-    return refs;
   }
 
   private ATLGArchive convert(ArchiefMat archiefmat) {
@@ -431,7 +436,8 @@ public class AtlantischeGidsImporter {
     archive.setFindingAid(archiefmat.finding_aid);
     if (archiefmat.creators != null) {
       for (String creator : archiefmat.creators) {
-        archive.addCreator(creator);
+        // This field is implied by creator records
+        handleError("[%s] Ignoring creator '%s'", archiefmat.titel_eng, creator);
       }
     }
     archive.setScope(archiefmat.scope);
@@ -529,7 +535,7 @@ public class AtlantischeGidsImporter {
     return newRefs;
   }
 
-  // -------------------------------------------------------------------
+  // --- archivers -----------------------------------------------------
 
   private static final String CREATORS_DIR = "creators";
 
@@ -913,16 +919,17 @@ public class AtlantischeGidsImporter {
 
   // -------------------------------------------------------------------
 
-  public static class XDates {
+  private static class XDates {
     public String date1;
     public String date2;
   }
 
-  public static class XPeriod {
+  private static class XPeriod {
     public String begin_date;
     public String end_date;
   }
 
+  // TODO make private
   public static class XRelated {
     public String type;
     public String[] ids;
@@ -933,7 +940,7 @@ public class AtlantischeGidsImporter {
     }
   }
 
-  public static class XSeeAlso {
+  private static class XSeeAlso {
     public String ref_id;
     public String text_line;
 
