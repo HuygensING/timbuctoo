@@ -62,4 +62,29 @@ public class DocumentRef {
     this.displayName = displayName;
   }
 
+  @Override
+  public boolean equals(Object object) {
+    if (object instanceof DocumentRef) {
+      DocumentRef that = (DocumentRef) object;
+      return (this.itype == null ? that.itype == null : this.itype.equals(that.itype)) //
+          && (this.xtype == null ? that.xtype == null : this.xtype.equals(that.xtype)) //
+          && (this.id == null ? that.id == null : this.id.equals(that.id)) //
+          && (this.displayName == null ? that.displayName == null : this.displayName.equals(that.displayName));
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = 17;
+    result = 31 * result + (itype == null ? 0 : itype.hashCode());
+    result = 31 * result + (id == null ? 0 : id.hashCode());
+    return result;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("{%s,%s}", itype, id);
+  }
+
 }
