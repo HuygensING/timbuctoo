@@ -113,7 +113,6 @@ public class AtlantischeGidsImporter {
   // -------------------------------------------------------------------
 
   private static final String[] JSON_EXTENSION = { "json" };
-  private static final String NO_TITLE = null;
 
   private final ObjectMapper objectMapper;
   private final DocTypeRegistry docTypeRegistry;
@@ -142,10 +141,10 @@ public class AtlantischeGidsImporter {
     return new DocumentRef(itype, xtype, document.getId(), document.getDisplayName());
   }
 
-  private <T extends Document> DocumentRef newDocumentRef(Class<T> type, String id, String displayName) {
+  private <T extends Document> DocumentRef newDocumentRef(Class<T> type, String id) {
     String itype = docTypeRegistry.getINameForType(type);
     String xtype = docTypeRegistry.getXNameForType(type);
-    return new DocumentRef(itype, xtype, id, displayName);
+    return new DocumentRef(itype, xtype, id, null);
   }
 
   private String prevMessage;
@@ -215,7 +214,7 @@ public class AtlantischeGidsImporter {
       String id = xkeyword._id;
       if (refs.containsKey(id)) {
         System.err.printf("## [%s] Duplicate keyword id %s%n", KEYWORD_FILE, id);
-      } else if (dataPoster != null) {
+      } else {
         ATLGKeyword keyword = convert(xkeyword);
         dataPoster.addDocument(ATLGKeyword.class, keyword, true);
         refs.put(id, newDocumentRef(ATLGKeyword.class, keyword));
@@ -260,7 +259,7 @@ public class AtlantischeGidsImporter {
       String id = xperson._id;
       if (refs.containsKey(id)) {
         handleError("[%s] Duplicate person id %s", PERSON_FILE, id);
-      } else if (dataPoster != null) {
+      } else {
         ATLGPerson person = convert(xperson);
         dataPoster.addDocument(ATLGPerson.class, person, true);
         refs.put(id, newDocumentRef(ATLGPerson.class, person));
@@ -313,7 +312,7 @@ public class AtlantischeGidsImporter {
         String id = wetgeving._id;
         if (refs.containsKey(id)) {
           handleError("[%s] Duplicate wetgeving id %s", file.getName(), id);
-        } else if (dataPoster != null) {
+        } else {
           ATLGLegislation legislation = convert(wetgeving);
           dataPoster.addDocument(ATLGLegislation.class, legislation, true);
           refs.put(id, newDocumentRef(ATLGLegislation.class, legislation));
@@ -387,13 +386,13 @@ public class AtlantischeGidsImporter {
       for (ArchiefMatEntry entry : readJsonValue(file, ArchiefMatEntry[].class)) {
         ArchiefMat object = entry.archiefmat;
         String id = object._id;
-        DocumentRef key = newDocumentRef(ATLGArchive.class, id, NO_TITLE);
+        DocumentRef key = newDocumentRef(ATLGArchive.class, id);
         if (docRefMap.containsKey(key)) {
-          handleError("[%s] Duplicate archiefmat id %s", file.getName(), id);
-        } else if (dataPoster != null) {
+          handleError("[%s] Duplicate entry %s", file.getName(), key);
+        } else {
           ATLGArchive archive = convert(object);
           dataPoster.addDocument(ATLGArchive.class, archive, false);
-          docRefMap.put(key, newDocumentRef(ATLGArchive.class, archive.getId(), archive.getDisplayName()));
+          docRefMap.put(key, newDocumentRef(ATLGArchive.class, archive));
           ids.add(archive.getId());
           tokens.increment(archive.getIndexedRefCode());
         }
@@ -465,15 +464,15 @@ public class AtlantischeGidsImporter {
       for (XRelated item : archiefmat.related) {
         if ("overhead_title".equals(item.type)) {
           for (String id : item.ids) {
-            archive.addOverheadArchive(newDocumentRef(ATLGArchive.class, id, NO_TITLE));
+            archive.addOverheadArchive(newDocumentRef(ATLGArchive.class, id));
           }
         } else if ("underlying_levels_titels".equals(item.type)) {
           for (String id : item.ids) {
-            archive.addUnderlyingArchive(newDocumentRef(ATLGArchive.class, id, NO_TITLE));
+            archive.addUnderlyingArchive(newDocumentRef(ATLGArchive.class, id));
           }
         } else if ("unit".equals(item.type)) {
           for (String id : item.ids) {
-            archive.addRelatedUnitArchive(newDocumentRef(ATLGArchive.class, id, NO_TITLE));
+            archive.addRelatedUnitArchive(newDocumentRef(ATLGArchive.class, id));
           }
         } else {
           handleError("Ignoring field 'related' with type '%s'", item.type);
@@ -539,13 +538,13 @@ public class AtlantischeGidsImporter {
       for (CreatorEntry entry : entries) {
         Creator creator = entry.creator;
         String id = creator._id;
-        DocumentRef key = newDocumentRef(ATLGArchiver.class, id, NO_TITLE);
+        DocumentRef key = newDocumentRef(ATLGArchiver.class, id);
         if (docRefMap.containsKey(key)) {
-          handleError("[%s] Duplicate archiefmat id %s", file.getName(), id);
-        } else if (dataPoster != null) {
+          handleError("[%s] Duplicate entry %s", file.getName(), key);
+        } else {
           ATLGArchiver archiver = convert(creator);
           dataPoster.addDocument(ATLGArchiver.class, archiver, false);
-          docRefMap.put(key, newDocumentRef(ATLGArchiver.class, archiver.getId(), archiver.getDisplayName()));
+          docRefMap.put(key, newDocumentRef(ATLGArchiver.class, archiver));
           ids.add(archiver.getId());
         }
       }
@@ -570,7 +569,7 @@ public class AtlantischeGidsImporter {
     if (creator.related_creators != null) {
       handleError("Ignoring field 'related_creators'");
       // for (String id : creator.related_creators) {
-      //   archiver.addRelatedArchiver(new DocumentRef(ATLGArchiver.class, id, NO_TITLE));
+      //   archiver.addRelatedArchiver(new DocumentRef(ATLGArchiver.class, id));
       // }
     }
     if (creator.geography != null) {
@@ -596,11 +595,11 @@ public class AtlantischeGidsImporter {
       for (XRelated item : creator.related) {
         if ("archive".equals(item.type)) {
           for (String id : item.ids) {
-            archiver.addRelatedArchive(newDocumentRef(ATLGArchive.class, id, NO_TITLE));
+            archiver.addRelatedArchive(newDocumentRef(ATLGArchive.class, id));
           }
         } else if ("creator".equals(item.type)) {
           for (String id : item.ids) {
-            archiver.addRelatedArchiver(newDocumentRef(ATLGArchiver.class, id, NO_TITLE));
+            archiver.addRelatedArchiver(newDocumentRef(ATLGArchiver.class, id));
           }
         } else {
           handleError("Ignoring field 'related' with type '%s'", item.type);
