@@ -1,8 +1,10 @@
 package nl.knaw.huygens.repository.importer.database;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import nl.knaw.huygens.repository.config.BasicInjectionModule;
 import nl.knaw.huygens.repository.config.Configuration;
@@ -32,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -119,6 +122,7 @@ public class AtlantischeGidsImporter {
   private final DataPoster dataPoster;
   private final File inputDir;
 
+  private final Graph graph = new Graph();
   private final Map<DocumentRef, DocumentRef> docRefMap;
   private Map<String, DocumentRef> keywordRefMap;
   private Map<String, DocumentRef> personRefMap;
@@ -170,6 +174,25 @@ public class AtlantischeGidsImporter {
     return objectMapper.readValue(converted, valueType);
   }
 
+  // docRefMap
+  private Graph convertGraph(Graph graph) {
+    Graph result = new Graph();
+    for (Vertex vertex : graph.getVertices()) {
+      DocumentRef srce = docRefMap.get(vertex.getDocumentRef());
+      if (srce == null) {
+        throw new RuntimeException("Unable to resolve srce node " + vertex.getDocumentRef());
+      }
+      for (Edge edge : vertex.getEdges()) {
+        DocumentRef dest = docRefMap.get(edge.getDest());
+        if (dest == null) {
+          throw new RuntimeException("Unable to resolve dest node " + edge.getDest());
+        }
+        result.addEdge(srce, dest, edge.getTypes());
+      }
+    }
+    return result;
+  }
+
   public void importAll() throws Exception {
     System.out.printf("%n.. 'keyword'%n");
     keywordRefMap = importKeywords();
@@ -191,8 +214,10 @@ public class AtlantischeGidsImporter {
     List<String> archiverIds = importCreators();
     System.out.printf("Number of entries = %d%n", archiverIds.size());
 
+    Graph newGraph = convertGraph(graph);
+
     System.out.printf("%n.. 'archiefmat' -- pass 2%n");
-    resolveArchiveRefs(archiveIds);
+    resolveArchiveRefs(archiveIds, newGraph);
 
     System.out.printf("%n.. 'creator' -- pass 2%n");
     resolveArchiverRefs(archiverIds);
@@ -491,24 +516,36 @@ public class AtlantischeGidsImporter {
     return archive;
   }
 
-  private void resolveArchiveRefs(List<String> archiveIds) throws Exception {
+  private void resolveArchiveRefs(List<String> archiveIds, Graph newGraph) throws Exception {
     for (String archiveId : archiveIds) {
       ATLGArchive archive = dataPoster.getDocument(ATLGArchive.class, archiveId);
+      String filename = archive.getOrigFilename();
       List<DocumentRef> oldRefs = archive.getOverheadArchives();
       if (oldRefs != null && oldRefs.size() != 0) {
-        List<DocumentRef> newRefs = resolveRefs(archive.getOrigFilename(), "overhead archive", oldRefs);
-        archive.setOverheadArchives(newRefs);
+        archive.setOverheadArchives(resolveRefs(filename, "overhead archive", oldRefs));
       }
       oldRefs = archive.getUnderlyingArchives();
       if (oldRefs != null && oldRefs.size() != 0) {
-        List<DocumentRef> newRefs = resolveRefs(archive.getOrigFilename(), "underlying archive", oldRefs);
-        archive.setUnderlyingArchives(newRefs);
+        archive.setUnderlyingArchives(resolveRefs(filename, "underlying archive", oldRefs));
       }
       oldRefs = archive.getRelatedUnitArchives();
       if (oldRefs != null && oldRefs.size() != 0) {
-        List<DocumentRef> newRefs = resolveRefs(archive.getOrigFilename(), "related unit archive", oldRefs);
-        archive.setRelatedUnitArchives(newRefs);
+        archive.setRelatedUnitArchives(resolveRefs(filename, "related unit archive", oldRefs));
       }
+
+      // boolean first = true;
+      Vertex vertex = newGraph.getVertex(newDocumentRef(ATLGArchive.class, archive));
+      for (Edge edge : vertex.getEdges()) {
+        if (edge.containsType("created_by")) {
+          // if (first) {
+          //    System.out.println(archive.getDisplayName());
+          //    first = false;
+          // }
+          // System.out.println("  by: " + edge.getDest().getDisplayName());
+          archive.addCreator(edge.getDest());
+        }
+      }
+
       dataPoster.modDocument(ATLGArchive.class, archive);
     }
   }
@@ -545,6 +582,13 @@ public class AtlantischeGidsImporter {
           ATLGArchiver archiver = convert(creator);
           dataPoster.addDocument(ATLGArchiver.class, archiver, false);
           docRefMap.put(key, newDocumentRef(ATLGArchiver.class, archiver));
+          // this looks awfully smart: this creator has created a number of archives
+          // what remains is to create a new graph with references converted
+          // then a simple lookup allows one to set the relarions in the objects
+          for (DocumentRef ref : archiver.getRelatedArchives()) {
+            graph.addEdge(key, ref, "created");
+            graph.addEdge(ref, key, "created_by");
+          }
           ids.add(archiver.getId());
         }
       }
@@ -617,15 +661,14 @@ public class AtlantischeGidsImporter {
   private void resolveArchiverRefs(List<String> archiverIds) throws Exception {
     for (String id : archiverIds) {
       ATLGArchiver archiver = dataPoster.getDocument(ATLGArchiver.class, id);
+      String filename = archiver.getOrigFilename();
       List<DocumentRef> oldRefs = archiver.getRelatedArchives();
       if (oldRefs != null && oldRefs.size() != 0) {
-        List<DocumentRef> newRefs = resolveRefs(archiver.getOrigFilename(), "related archives", oldRefs);
-        archiver.setRelatedArchives(newRefs);
+        archiver.setRelatedArchives(resolveRefs(filename, "related archives", oldRefs));
       }
       oldRefs = archiver.getRelatedArchivers();
       if (oldRefs != null && oldRefs.size() != 0) {
-        List<DocumentRef> newRefs = resolveRefs(archiver.getOrigFilename(), "related archivers", oldRefs);
-        archiver.setRelatedArchivers(newRefs);
+        archiver.setRelatedArchivers(resolveRefs(filename, "related archivers", oldRefs));
       }
       dataPoster.modDocument(ATLGArchiver.class, archiver);
     }
@@ -938,6 +981,88 @@ public class AtlantischeGidsImporter {
     @Override
     public String toString() {
       return (ref_id == null) ? text_line : String.format("%s: %s", ref_id, text_line);
+    }
+  }
+
+  // --- property graphs - primitive -----------------------------------
+
+  public static class Graph {
+    private final Map<DocumentRef, Vertex> vertices = Maps.newHashMap();
+
+    public Collection<Vertex> getVertices() {
+      return vertices.values();
+    }
+
+    private Vertex getVertex(DocumentRef ref) {
+      Vertex vertex = vertices.get(ref);
+      if (vertex == null) {
+        vertex = new Vertex(ref);
+        vertices.put(ref, vertex);
+      }
+      return vertex;
+    }
+
+    public void addEdge(DocumentRef srce, DocumentRef dest, String type) {
+      getVertex(srce).getEdgeTo(dest).addType(type);
+    }
+
+    public void addEdge(DocumentRef srce, DocumentRef dest, Set<String> types) {
+      getVertex(srce).getEdgeTo(dest).setTypes(types);
+    }
+  }
+
+  public static class Vertex {
+    private final Map<DocumentRef, Edge> adjacencies = Maps.newHashMap();
+    private final DocumentRef ref;
+
+    public Vertex(DocumentRef ref) {
+      this.ref = ref;
+    }
+
+    public DocumentRef getDocumentRef() {
+      return ref;
+    }
+
+    public Collection<Edge> getEdges() {
+      return adjacencies.values();
+    }
+
+    public Edge getEdgeTo(DocumentRef dest) {
+      Edge edge = adjacencies.get(dest);
+      if (edge == null) {
+        edge = new Edge(dest);
+        adjacencies.put(dest, edge);
+      }
+      return edge;
+    }
+  }
+
+  public static class Edge {
+    private Set<String> types = Sets.newHashSet();
+    private final DocumentRef dest;
+
+    public Edge(DocumentRef dest) {
+      this.dest = dest;
+    }
+
+    public DocumentRef getDest() {
+      return dest;
+    }
+
+    public Set<String> getTypes() {
+      return types;
+    }
+
+    public boolean containsType(String type) {
+      return types.contains(type);
+    }
+
+    public void setTypes(Set<String> types) {
+      this.types = types;
+    }
+
+    public void addType(String type) {
+      types.add(type);
     }
   }
 
