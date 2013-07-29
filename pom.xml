@@ -239,6 +239,29 @@
       <artifactId>apis-surfconext-authn</artifactId>
       <version>${apis.version}</version>
       <scope>runtime</scope>
+      <!-- <exclusions>
+        <exclusion>
+          <groupId>com.ibm.websphere</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>nl.surfnet.apis</groupId>
+          <artifactId>apis-authorization-server</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.hsqldb</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.surfnet.coin</groupId>
+          <artifactId>coin-test</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.surfnet.coint</groupId>
+          <artifactId>spring-security-opensaml</artifactId>
+        </exclusion>
+      </exclusions>
+      -->
       <exclusions>
       	<exclusion>
       		<artifactId>hamcrest-core</artifactId>
@@ -392,6 +415,13 @@
       <artifactId>log4j</artifactId>
       <version>1.2.17</version>
     </dependency>
+    
+    <!-- Rome for Feed/XML stuff -->
+    <dependency>
+      <groupId>rome</groupId>
+      <artifactId>rome</artifactId>
+      <version>1.0</version>
+    </dependency>
     <!-- ## End of main libraries ## -->
     
     <!-- ## Import tooling libraries ##-->
@@ -418,7 +448,7 @@
     <!-- ## End of import tooling libraries ##-->
     
     <!-- ## Build helper libraries ## -->
-           
+                
     <!-- temporarily? to make ant build work -->
     <!-- default servlet api -->
     <dependency>
