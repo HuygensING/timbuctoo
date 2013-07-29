@@ -41,7 +41,7 @@ public class ATLGArchive extends Archive {
   /** ING Forms: "Additional finding aid" */
   private String findingAid;
   /** ING Forms: "Name(s) of Creator(s)" */
-  private List<String> creators;
+  private List<DocumentRef> creators;
   /** ING Forms: "Scope and content" */
   private String scope;
   /** ING Forms: "Keyword(s) geography"; place facet */
@@ -218,15 +218,15 @@ public class ATLGArchive extends Archive {
     this.findingAid = findingAid;
   }
 
-  public List<String> getCreators() {
+  public List<DocumentRef> getCreators() {
     return creators;
   }
 
-  public void setCreators(List<String> creators) {
+  public void setCreators(List<DocumentRef> creators) {
     this.creators = creators;
   }
 
-  public void addCreator(String creator) {
+  public void addCreator(DocumentRef creator) {
     creators.add(creator);
   }
 
