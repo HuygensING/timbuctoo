@@ -26,9 +26,9 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.codec.binary.Base64;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.scribe.utils.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 import org.surfnet.oaaas.auth.AuthorizationServerFilter;
 import org.surfnet.oaaas.auth.ObjectMapperProvider;
 import org.surfnet.oaaas.model.TokenResponseCache;
@@ -75,13 +75,13 @@ public class ApisAuthorizationServerResourceFilter implements ResourceFilter, Co
     this.authorizationServerUrl = authorizationServerUrl;
     this.cacheEnabled = cacheEnabled;
 
-    Assert.hasText(this.resourceServerKey, "Must provide a resource server key");
-    Assert.hasText(this.resourceServerSecret, "Must provide a resource server secret");
-    Assert.hasText(this.authorizationServerUrl, "Must provide a authorization server url");
+    Preconditions.checkEmptyString(this.resourceServerKey, "Must provide a resource server key");
+    Preconditions.checkEmptyString(this.resourceServerSecret, "Must provide a resource server secret");
+    Preconditions.checkEmptyString(this.authorizationServerUrl, "Must provide a authorization server url");
 
     if (this.cacheEnabled) {
       this.cache = this.buildCache();
-      Assert.notNull(this.cache);
+      Preconditions.checkNotNull(this.cache, "Cache may not be null.");
     }
 
     this.authorizationValue = new String(Base64.encodeBase64(resourceServerKey.concat(":").concat(resourceServerSecret).getBytes()));
