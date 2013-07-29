@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  
+
   <groupId>repository</groupId>
   <artifactId>repository</artifactId>
   <version>0.0.1-SNAPSHOT</version>
@@ -9,38 +9,38 @@
   <description>Back-end software that provides different front-ends to share data and variations on that data.</description>
   <url>http://repository.huygens.knaw.nl/static/search.html</url>
   <organization>
-  	<name>Huygens ING</name>
-  	<url>http://www.huygens.knaw.nl/</url>
+    <name>Huygens ING</name>
+    <url>http://www.huygens.knaw.nl/</url>
   </organization>
   <inceptionYear>2013</inceptionYear>
-  
+
   <prerequisites>
     <maven>3.0</maven>
   </prerequisites>
-  
+
   <repositories>
     <repository>
       <id>central</id>
       <name>Central repository</name>
       <url>http://repo1.maven.org/maven2/</url>
     </repository>
-  	<repository>
-  	  <id>sun-repo-2</id>
-  	  <url>http://download.java.net/maven/2/</url>
-  	</repository>
-  	<repository>
-  	  <id>apache</id>
-  	  <url>https://repository.apache.org/content/repositories/public/</url>
-  	</repository>
-  	<repository>
-  	  <id>oracle</id>
-  	  <url>http://download.oracle.com/maven/</url>
-  	</repository>
-  	<repository>
-  	  <id>surfconext</id>
-  	  <url>https://build.surfconext.nl/repository/public/releases/</url>
-  	</repository>
-  	<repository>
+    <repository>
+      <id>sun-repo-2</id>
+      <url>http://download.java.net/maven/2/</url>
+    </repository>
+    <repository>
+      <id>apache</id>
+      <url>https://repository.apache.org/content/repositories/public/</url>
+    </repository>
+    <repository>
+      <id>oracle</id>
+      <url>http://download.oracle.com/maven/</url>
+    </repository>
+    <repository>
+      <id>surfconext</id>
+      <url>https://build.surfconext.nl/repository/public/releases/</url>
+    </repository>
+    <repository>
       <id>Huygens</id>
       <url>http://maven.huygens.knaw.nl/repository/</url>
       <releases>
@@ -53,45 +53,45 @@
         <updatePolicy>always</updatePolicy>
         <checksumPolicy>fail</checksumPolicy>
       </snapshots>
-  	</repository>
+    </repository>
   </repositories>
-  
+
   <!-- TODO: fill in the details. -->
   <licenses>
   </licenses>
-  
+
   <!-- TODO: fill in the details -->
   <scm>
     <connection>?</connection>
     <developerConnection>?</developerConnection>
     <url>?</url>
   </scm>
-  
+
   <issueManagement>
-  	<system>Redmine</system>
-  	<url>http://suzanna.huygens.knaw.nl/projects/datarepositories</url>
+    <system>Redmine</system>
+    <url>http://suzanna.huygens.knaw.nl/projects/datarepositories</url>
   </issueManagement>
-  
+
   <ciManagement>
-  	<system>cruisecontrolrb</system>
-  	<url>http://cruisecontrol.huygens.knaw.nl/projects/repository</url>
+    <system>cruisecontrolrb</system>
+    <url>http://cruisecontrol.huygens.knaw.nl/projects/repository</url>
   </ciManagement>
-  
+
   <developers>
     <developer>
-  	  <id>WR</id>
-  	  <name>Walter Ravenek</name>
-  	  <organization>Huygens ING</organization>
-  	  <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
-  	</developer>
-  	<developer>
-  	  <id>MM</id>
-  	  <name>Martijn Maas</name>
-  	  <organization>Huygens ING</organization>
-  	  <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
-  	</developer>
+      <id>WR</id>
+      <name>Walter Ravenek</name>
+      <organization>Huygens ING</organization>
+      <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+    </developer>
+    <developer>
+      <id>MM</id>
+      <name>Martijn Maas</name>
+      <organization>Huygens ING</organization>
+      <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+    </developer>
   </developers>
-  
+
   <properties>
     <apis.version>1.2.3</apis.version>
     <jackson.version>2.1.1</jackson.version>
@@ -100,7 +100,7 @@
     <slf4j.version>1.6.6</slf4j.version>
     <solr.version>4.3.1</solr.version>
   </properties>
-  
+
   <dependencies>
     <!-- ## Main libraries ## -->
     <!-- Guava -->
@@ -109,14 +109,14 @@
       <artifactId>guava</artifactId>
       <version>14.0</version>
     </dependency>
-    
+
     <!-- Guice -->
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
       <version>3.0</version>
     </dependency>
-    
+
     <!-- Jackson for JSON -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -138,7 +138,7 @@
       <artifactId>jackson-jaxrs-json-provider</artifactId>
       <version>${jackson.version}</version>
     </dependency>
-        
+
     <!-- Jersey -->
     <dependency>
       <groupId>com.sun.jersey</groupId>
@@ -161,76 +161,82 @@
       <artifactId>jersey-guice</artifactId>
       <version>${jersey.version}</version>
     </dependency>
-        
+
     <!-- Commons Configuration, assists with reading configuration files. -->
     <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
-      <version>1.9</version>     	
+      <version>1.9</version>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
-    
+
     <!-- Apache collections utils -->
     <dependency>
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
       <version>3.2.1</version>
     </dependency>
-    
+
     <!-- Handle pesistancy server client -->
     <dependency>
       <groupId>handle.net</groupId>
       <artifactId>handle-client</artifactId>
       <version>7.1</version>
     </dependency>
-    
+
     <!-- Email support -->
     <dependency>
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
       <version>1.4.7</version>
     </dependency>
-    
+
     <!-- Apache validation -->
     <dependency>
       <groupId>javax.validation</groupId>
       <artifactId>validation-api</artifactId>
       <version>1.0.0.GA</version>
     </dependency>
-    
+
     <!-- Apis authorization server communication -->
     <dependency>
       <groupId>nl.surfnet.apis</groupId>
       <artifactId>apis-resource-server-library</artifactId>
       <version>${apis.version}</version>
       <exclusions>
-      	<exclusion>
-      		<artifactId>stax-api</artifactId>
-      		<groupId>stax</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>jettison</artifactId>
-      		<groupId>org.codehaus.jettison</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>spring-core</artifactId>
-      		<groupId>org.springframework</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>spring-aop</artifactId>
-      		<groupId>org.springframework</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>spring-beans</artifactId>
-      		<groupId>org.springframework</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>slf4j-api</artifactId>
-      		<groupId>org.slf4j</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>jul-to-slf4j</artifactId>
-      		<groupId>org.slf4j</groupId>
-      	</exclusion>
+        <exclusion>
+          <artifactId>stax-api</artifactId>
+          <groupId>stax</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jettison</artifactId>
+          <groupId>org.codehaus.jettison</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>spring-core</artifactId>
+          <groupId>org.springframework</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>spring-aop</artifactId>
+          <groupId>org.springframework</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>spring-beans</artifactId>
+          <groupId>org.springframework</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>slf4j-api</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jul-to-slf4j</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <!-- Dependencies needed for deserializing the VerifyTokenResponse -->
@@ -240,74 +246,74 @@
       <version>${apis.version}</version>
       <scope>runtime</scope>
       <exclusions>
-      	<exclusion>
-      		<artifactId>hamcrest-core</artifactId>
-      		<groupId>org.hamcrest</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>log4j-over-slf4j</artifactId>
-      		<groupId>org.slf4j</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>openws</artifactId>
-      		<groupId>org.opensaml</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>spring-core</artifactId>
-      		<groupId>org.springframework</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>spring-aop</artifactId>
-      		<groupId>org.springframework</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>spring-beans</artifactId>
-      		<groupId>org.springframework</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>slf4j-api</artifactId>
-      		<groupId>org.slf4j</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>jul-to-slf4j</artifactId>
-      		<groupId>org.slf4j</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>jcl-over-slf4j</artifactId>
-      		<groupId>org.slf4j</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>velocity</artifactId>
-      		<groupId>velocity</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>coin-test</artifactId>
-      		<groupId>org.surfnet.coin</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>opensaml</artifactId>
-      		<groupId>org.opensaml</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>apis-authorization-server</artifactId>
-      		<groupId>nl.surfnet.apis</groupId>
-      	</exclusion>
+        <exclusion>
+          <artifactId>hamcrest-core</artifactId>
+          <groupId>org.hamcrest</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>log4j-over-slf4j</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>openws</artifactId>
+          <groupId>org.opensaml</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>spring-core</artifactId>
+          <groupId>org.springframework</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>spring-aop</artifactId>
+          <groupId>org.springframework</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>spring-beans</artifactId>
+          <groupId>org.springframework</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>slf4j-api</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jul-to-slf4j</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jcl-over-slf4j</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>velocity</artifactId>
+          <groupId>velocity</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>coin-test</artifactId>
+          <groupId>org.surfnet.coin</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>opensaml</artifactId>
+          <groupId>org.opensaml</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>apis-authorization-server</artifactId>
+          <groupId>nl.surfnet.apis</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
-    
+
     <!-- Apache ActiveMQ -->
     <dependency>
       <groupId>org.apache.activemq</groupId>
       <artifactId>activemq-all</artifactId>
       <version>5.7.0</version>
     </dependency>
-    
+
     <dependency>
       <groupId>org.apache.bval</groupId>
       <artifactId>org.apache.bval.bundle</artifactId>
       <version>0.5</version>
     </dependency>
-       
+
     <!-- Open JPA, needed for the communication with the apis authorization server -->
     <dependency>
       <groupId>org.apache.openjpa</groupId>
@@ -315,25 +321,25 @@
       <version>2.2.2</version>
       <scope>runtime</scope>
     </dependency>
-    
+
     <!-- Solr -->
     <dependency>
       <groupId>org.apache.solr</groupId>
       <artifactId>solr-core</artifactId>
       <version>${solr.version}</version>
       <exclusions>
-      	<exclusion>
-      		<artifactId>commons-lang</artifactId>
-      		<groupId>commons-lang</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>org.restlet</artifactId>
-      		<groupId>org.restlet.jee</groupId>
-      	</exclusion>
-      	<exclusion>
-      		<artifactId>org.restlet.ext.servlet</artifactId>
-      		<groupId>org.restlet.jee</groupId>
-      	</exclusion>
+        <exclusion>
+          <artifactId>commons-lang</artifactId>
+          <groupId>commons-lang</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>org.restlet</artifactId>
+          <groupId>org.restlet.jee</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>org.restlet.ext.servlet</artifactId>
+          <groupId>org.restlet.jee</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -341,20 +347,20 @@
       <artifactId>solr-solrj</artifactId>
       <version>${solr.version}</version>
       <exclusions>
-      	<exclusion>
-      		<artifactId>slf4j-api</artifactId>
-      		<groupId>org.slf4j</groupId>
-      	</exclusion>
+        <exclusion>
+          <artifactId>slf4j-api</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
-    
+
     <!-- Mindrot, for password encryption -->
     <dependency>
       <groupId>org.mindrot</groupId>
       <artifactId>jbcrypt</artifactId>
       <version>0.3m</version>
     </dependency>
-    
+
     <!-- Mongo database support -->
     <dependency>
       <groupId>org.mongodb</groupId>
@@ -367,24 +373,24 @@
       <artifactId>mongojack</artifactId>
       <version>2.0.0-RC1</version>
     </dependency>
-    
+
     <!-- Scribe util methods -->
     <dependency>
       <groupId>org.scribe</groupId>
       <artifactId>scribe</artifactId>
       <version>1.3.0</version>
     </dependency>
-    
+
     <!-- Log4j -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
       <version>${slf4j.version}</version>
       <exclusions>
-      	<exclusion>
-      		<artifactId>slf4j-api</artifactId>
-      		<groupId>org.slf4j</groupId>
-      	</exclusion>
+        <exclusion>
+          <artifactId>slf4j-api</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -392,7 +398,7 @@
       <artifactId>log4j</artifactId>
       <version>1.2.17</version>
     </dependency>
-    
+
     <!-- Rome for Feed/XML stuff -->
     <dependency>
       <groupId>rome</groupId>
@@ -400,7 +406,7 @@
       <version>1.0</version>
     </dependency>
     <!-- ## End of main libraries ## -->
-    
+
     <!-- ## Import tooling libraries ##-->
     <!-- MySQL -->
     <dependency>
@@ -408,23 +414,23 @@
       <artifactId>mysql-connector-java</artifactId>
       <version>5.1.6</version>
     </dependency>
-    
+
     <!-- CSV support -->
     <dependency>
       <groupId>net.sf.opencsv</groupId>
       <artifactId>opencsv</artifactId>
       <version>2.3</version>
     </dependency>
-    
+
     <!-- PostgreSQL -->
     <dependency>
       <groupId>postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <version>9.1-901.jdbc4</version>
-    </dependency>    
+    </dependency>
     <!-- ## End of import tooling libraries ##-->
-    
-    <!-- ## Build helper libraries ## -->     
+
+    <!-- ## Build helper libraries ## -->
     <!-- temporarily? to make ant build work -->
     <!-- default servlet api -->
     <dependency>
@@ -432,16 +438,16 @@
       <artifactId>javax.servlet-api</artifactId>
       <version>3.0.1</version>
     </dependency>
-    
+
     <!-- temporarily? to make ant build work -->
     <!-- Annotations for Tomcat to run the application -->
     <dependency>
       <groupId>org.apache.tomcat</groupId>
       <artifactId>annotations-api</artifactId>
-      <version>6.0.13</version> 
+      <version>6.0.13</version>
     </dependency>
     <!-- ## End of build helper libraries ## -->
-        
+
     <!-- ## Test libraries ## -->
     <!-- Jersey test framework -->
     <dependency>
@@ -456,7 +462,7 @@
       <version>${jersey.version}</version>
       <scope>test</scope>
     </dependency>
-    
+
     <!-- JUnit test framework -->
     <dependency>
       <groupId>junit</groupId>
@@ -464,13 +470,13 @@
       <version>4.10</version>
       <scope>test</scope>
       <exclusions>
-      	<exclusion>
-      		<artifactId>hamcrest-core</artifactId>
-      		<groupId>org.hamcrest</groupId>
-      	</exclusion>
+        <exclusion>
+          <artifactId>hamcrest-core</artifactId>
+          <groupId>org.hamcrest</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
-    
+
     <!-- Hamcrest library for easier String comparing -->
     <dependency>
       <groupId>org.hamcrest</groupId>
@@ -478,7 +484,7 @@
       <version>1.3</version>
       <scope>test</scope>
     </dependency>
-        
+
     <!-- Mockito mocking framework -->
     <dependency>
       <groupId>org.mockito</groupId>
@@ -486,10 +492,10 @@
       <version>${mockito.version}</version>
       <scope>test</scope>
       <exclusions>
-      	<exclusion>
-      		<artifactId>hamcrest-core</artifactId>
-      		<groupId>org.hamcrest</groupId>
-      	</exclusion>
+        <exclusion>
+          <artifactId>hamcrest-core</artifactId>
+          <groupId>org.hamcrest</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -500,7 +506,7 @@
     </dependency>
     <!-- ## End of test libraries ## -->
   </dependencies>
-  
+
   <build>
     <plugins>
       <plugin>
@@ -519,7 +525,7 @@
             <resource>
               <directory>${basedir}/src/main/config</directory>
               <targetPath>WEB-INF</targetPath>
-        	  <filtering>false</filtering>
+            <filtering>false</filtering>
               <includes>
                 <include>config.xml</include>
               </includes>
