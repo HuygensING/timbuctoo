@@ -5,5 +5,6 @@ public enum FacetType {
   BOOLEAN, //
   DATE, //
   PERSON, //
-  PLACE
+  PLACE, //
+  PERIOD
 }
