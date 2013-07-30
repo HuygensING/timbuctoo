@@ -3,7 +3,7 @@
 
   <groupId>repository</groupId>
   <artifactId>repository</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.1-SNAPSHOT</version>
   <packaging>war</packaging>
   <name>datarepository</name>
   <description>Back-end software that provides different front-ends to share data and variations on that data.</description>
