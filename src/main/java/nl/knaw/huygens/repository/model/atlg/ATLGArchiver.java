@@ -6,8 +6,10 @@ import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.importer.database.AtlantischeGidsImporter.XRelated;
 import nl.knaw.huygens.repository.model.Archiver;
 import nl.knaw.huygens.repository.model.DocumentRef;
+import nl.knaw.huygens.repository.model.util.PeriodHelper;
 import nl.knaw.huygens.solr.FacetType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
 public class ATLGArchiver extends Archiver {
@@ -97,13 +99,19 @@ public class ATLGArchiver extends Archiver {
     beginDate = date;
   }
 
-  @IndexAnnotation(fieldName = "facet_s_end_date", canBeEmpty = true, isFaceted = true, facetType = FacetType.DATE)
+  @IndexAnnotation(fieldName = "facet_s_end_date", canBeEmpty = false, isFaceted = true, facetType = FacetType.DATE)
   public String getEndDate() {
     return endDate;
   }
 
   public void setEndDate(String date) {
     endDate = date;
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "facet_s_period", canBeEmpty = true, isFaceted = true, facetType = FacetType.PERIOD)
+  public String getActivePeriod() {
+    return PeriodHelper.createPeriod(beginDate, endDate);
   }
 
   public String getPeriodDescription() {
