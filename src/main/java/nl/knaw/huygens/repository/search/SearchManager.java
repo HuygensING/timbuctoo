@@ -104,7 +104,7 @@ public class SearchManager {
       builder.append(")");
       return builder.toString();
     }
-    return String.format("%s", SolrUtils.escapeFacetId(values.get(0)));
+    return SolrUtils.escapeFacetId(values.get(0));
   }
 
   private String formatTextField(boolean usesFacets, String textField) {
@@ -115,7 +115,7 @@ public class SearchManager {
     if (term.trim().contains(" ")) {
       return String.format("(%s)", term);
     }
-    return String.format("%s", term);
+    return term;
   }
 
   private List<FacetCount> getFacetCounts(List<FacetField> facetFields, Map<String, FacetInfo> facetInfoMap) {
