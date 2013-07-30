@@ -5,6 +5,7 @@ import java.util.List;
 import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Archive;
 import nl.knaw.huygens.repository.model.DocumentRef;
+import nl.knaw.huygens.repository.model.util.PeriodHelper;
 import nl.knaw.huygens.solr.FacetType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -192,6 +193,12 @@ public class ATLGArchive extends Archive {
 
   public void setEndDate(String date) {
     endDate = date;
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "facet_s_period", canBeEmpty = true, isFaceted = true, facetType = FacetType.PERIOD)
+  public String getActivePeriod() {
+    return PeriodHelper.createPeriod(beginDate, endDate);
   }
 
   public String getPeriodDescription() {
