@@ -19,8 +19,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.LukeRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.SimpleOrderedMap;
@@ -44,7 +42,6 @@ public class LocalSolrServer {
   private static final int ROWS = 20000;
   private static final int FACET_LIMIT = 10000;
 
-  private static final String DESC_FIELD = "desc";
   private static final String ID_FIELD = "id";
   private static final String SOLR_DEFAULT_FIELD = ID_FIELD;
 
@@ -171,26 +168,6 @@ public class LocalSolrServer {
 
   public Set<String> getCoreNames() {
     return coreNames;
-  }
-
-  // TODO decide whether this is useful
-  /**
-   * Obtain a simple mapping of IDs to descriptions of the document
-   * @param core
-   * @return
-   * @throws SolrServerException
-   */
-  public Map<String, String> getSimpleMap(String core) throws SolrServerException {
-    SolrQuery query = new SolrQuery();
-    query.setFields(ID_FIELD, DESC_FIELD);
-    query.setQuery("*:*");
-    QueryResponse response = solrServers.get(core).query(query);
-    SolrDocumentList results = response.getResults();
-    Map<String, String> rv = Maps.newHashMapWithExpectedSize(results.size());
-    for (SolrDocument doc : results) {
-      rv.put(doc.getFieldValue(ID_FIELD).toString(), doc.getFieldValue(DESC_FIELD).toString());
-    }
-    return rv;
   }
 
   private SolrServer serverFor(String core) {
