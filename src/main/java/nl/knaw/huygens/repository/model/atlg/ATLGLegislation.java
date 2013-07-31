@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.model.atlg;
 import java.util.List;
 
 import nl.knaw.huygens.repository.annotations.IndexAnnotation;
+import nl.knaw.huygens.repository.annotations.IndexAnnotations;
 import nl.knaw.huygens.repository.model.DocumentRef;
 import nl.knaw.huygens.repository.model.Legislation;
 import nl.knaw.huygens.solr.FacetType;
@@ -101,7 +102,8 @@ public class ATLGLegislation extends Legislation {
     this.titleNld = title;
   }
 
-  @IndexAnnotation(fieldName = "facet_sort_text", canBeEmpty = true, isFaceted = false, isSortable = true)
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "facet_sort_title", canBeEmpty = true, isFaceted = false, isSortable = true),
+      @IndexAnnotation(fieldName = "facet_t_title", canBeEmpty = true, isFaceted = false, isSortable = false) })
   public String getTitleEng() {
     return titleEng;
   }
@@ -110,7 +112,8 @@ public class ATLGLegislation extends Legislation {
     this.titleEng = title;
   }
 
-  @IndexAnnotation(fieldName = "facet_sort_date", canBeEmpty = true, isFaceted = true, facetType = FacetType.DATE, isSortable = true)
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "facet_sort_date", canBeEmpty = true, isFaceted = false, facetType = FacetType.DATE, isSortable = true),
+      @IndexAnnotation(fieldName = "facet_s_date", canBeEmpty = true, isFaceted = true, facetType = FacetType.DATE, isSortable = false) })
   public String getDate1() {
     return date1;
   }

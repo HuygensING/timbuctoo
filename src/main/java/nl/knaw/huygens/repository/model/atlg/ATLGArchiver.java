@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.model.atlg;
 import java.util.List;
 
 import nl.knaw.huygens.repository.annotations.IndexAnnotation;
+import nl.knaw.huygens.repository.annotations.IndexAnnotations;
 import nl.knaw.huygens.repository.importer.database.AtlantischeGidsImporter.XRelated;
 import nl.knaw.huygens.repository.model.Archiver;
 import nl.knaw.huygens.repository.model.DocumentRef;
@@ -81,7 +82,8 @@ public class ATLGArchiver extends Archiver {
     nameNld = name;
   }
 
-  @IndexAnnotation(fieldName = "facet_sort_text", canBeEmpty = true, isFaceted = false, isSortable = true)
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "facet_sort_name", canBeEmpty = true, isFaceted = false, isSortable = true),
+      @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = false, isSortable = false) })
   public String getNameEng() {
     return nameEng;
   }
@@ -109,7 +111,8 @@ public class ATLGArchiver extends Archiver {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "facet_sort_period", canBeEmpty = true, isFaceted = true, facetType = FacetType.PERIOD, isSortable = true)
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "facet_sort_period", canBeEmpty = true, isFaceted = false, facetType = FacetType.PERIOD, isSortable = true),
+      @IndexAnnotation(fieldName = "facet_s_period", canBeEmpty = true, isFaceted = true, facetType = FacetType.PERIOD, isSortable = false) })
   public String getActivePeriod() {
     return PeriodHelper.createPeriod(beginDate, endDate);
   }
