@@ -9,6 +9,7 @@ import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.persistence.PersistenceManagerFactory;
 import nl.knaw.huygens.repository.search.FacetFinder;
 import nl.knaw.huygens.repository.search.FullTextSearchFieldFinder;
+import nl.knaw.huygens.repository.search.SortableFieldFinder;
 import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.mongo.variation.MongoStorageFacade;
 
@@ -67,4 +68,9 @@ public class BasicInjectionModule extends AbstractModule {
     return new FullTextSearchFieldFinder();
   }
 
+  @Provides
+  @Singleton
+  SortableFieldFinder provideSortableFieldFinder() {
+    return new SortableFieldFinder();
+  }
 }
