@@ -81,7 +81,7 @@ public class ATLGArchiver extends Archiver {
     nameNld = name;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = false, isSortable = true)
   public String getNameEng() {
     return nameEng;
   }
@@ -109,7 +109,7 @@ public class ATLGArchiver extends Archiver {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "facet_s_period", canBeEmpty = true, isFaceted = true, facetType = FacetType.PERIOD)
+  @IndexAnnotation(fieldName = "facet_s_period", canBeEmpty = true, isFaceted = true, facetType = FacetType.PERIOD, isSortable = true)
   public String getActivePeriod() {
     return PeriodHelper.createPeriod(beginDate, endDate);
   }
