@@ -128,21 +128,23 @@ public class SearchResource {
     returnValue.put("ids", idsToGet);
     returnValue.put("results", convert(type, ids, lo, hi));
     returnValue.put("start", lo);
-    returnValue.put("rows", hi); //TODO make this the number of returned results
+    returnValue.put("rows", idsToGet.size());
     returnValue.put("sortableFields", sortableFields);
 
-    UriBuilder baseUriBuilder = uriInfo.getAbsolutePathBuilder();
-    System.out.println("baseURI: " + baseUriBuilder.build());
+    System.out.println("path: " + uriInfo.getAbsolutePath());
+
+    UriBuilder prevUriBuilder = uriInfo.getAbsolutePathBuilder();
+    UriBuilder nextUriBuilder = uriInfo.getAbsolutePathBuilder();
 
     if (start > 0) {
       int prevStart = Math.max(start - rows, 0);
-      baseUriBuilder.queryParam("start", prevStart).queryParam("rows", rows);
-      returnValue.put("_prev", baseUriBuilder.build());
+      prevUriBuilder.queryParam("start", prevStart).queryParam("rows", rows);
+      returnValue.put("_prev", prevUriBuilder.build());
     }
 
     if (hi < ids.size()) {
-      baseUriBuilder.queryParam("start", start + rows).queryParam("rows", rows);
-      returnValue.put("_next", baseUriBuilder.build());
+      nextUriBuilder.queryParam("start", start + rows).queryParam("rows", rows);
+      returnValue.put("_next", nextUriBuilder.build());
     }
 
     ResponseBuilder response = Response.ok(returnValue);
