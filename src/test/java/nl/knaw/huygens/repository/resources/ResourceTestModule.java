@@ -9,6 +9,7 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.mail.MailSender;
 import nl.knaw.huygens.repository.search.SearchManager;
+import nl.knaw.huygens.repository.search.SortableFieldFinder;
 import nl.knaw.huygens.repository.storage.StorageManager;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
@@ -37,6 +38,7 @@ class ResourceTestModule extends JerseyServletModule {
   private MailSender mailSender;
   private SearchManager searchManager;
   private LocalSolrServer localSolrServer;
+  private SortableFieldFinder sortableFieldFinder;
 
   public ResourceTestModule() {
     docTypeRegistry = new DocTypeRegistry(PACKAGES);
@@ -47,6 +49,8 @@ class ResourceTestModule extends JerseyServletModule {
     mailSender = mock(MailSender.class);
     searchManager = mock(SearchManager.class);
     localSolrServer = mock(LocalSolrServer.class);
+    sortableFieldFinder = mock(SortableFieldFinder.class);
+
   }
 
   /* Because the RestAutoResourceModule is used in a static way for multiple tests,
@@ -120,8 +124,12 @@ class ResourceTestModule extends JerseyServletModule {
 
   @Provides
   public LocalSolrServer provideLocalSolrServer() {
-
     return localSolrServer;
+  }
+
+  @Provides
+  public SortableFieldFinder prSortableFieldFinder() {
+    return sortableFieldFinder;
   }
 
 }

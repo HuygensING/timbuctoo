@@ -251,7 +251,7 @@ public class SearchManagerTest {
       fields.add(fullTextSearchName);
     }
 
-    when(fullTextSearchFieldFinder.findFullTextSearchFields(Matchers.<Class<? extends Document>> any())).thenReturn(fields);
+    when(fullTextSearchFieldFinder.findFields(Matchers.<Class<? extends Document>> any())).thenReturn(fields);
   }
 
   private void verifySearchResult(SearchResult expected, SearchResult actual) {
