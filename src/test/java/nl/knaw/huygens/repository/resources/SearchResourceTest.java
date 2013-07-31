@@ -10,8 +10,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -21,26 +23,36 @@ import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.search.FacetDoesNotExistException;
 import nl.knaw.huygens.repository.search.SearchManager;
+import nl.knaw.huygens.repository.search.SortableFieldFinder;
 import nl.knaw.huygens.repository.storage.StorageManager;
 import nl.knaw.huygens.solr.FacetCount;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 
 import org.apache.solr.client.solrj.SolrServerException;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class SearchResourceTest extends WebServiceTestSetup {
+  private static final Set<String> SORTABLE_FIELDS = Sets.newHashSet("test1", "test");
   private static final String TERM = "facet_t_name:Huygens";
   private static final String LOCATION_HEADER = "Location";
   private String typeString = "person";
   private String id = "QRY0000000001";
+
+  @Before
+  public void setUpSortableFieldsFinder() {
+    SortableFieldFinder fieldsFinder = injector.getInstance(SortableFieldFinder.class);
+    when(fieldsFinder.findFields(Matchers.<Class<? extends Document>> any())).thenReturn(SORTABLE_FIELDS);
+  }
 
   @Test
   public void testPostSuccess() throws IOException, SolrServerException, FacetDoesNotExistException {
@@ -185,7 +197,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     List<FacetCount> facets = createFacets();
 
-    Map<String, Object> expected = createExpectedResult(idList, personList, facets, 0, 10);
+    Map<String, Object> expected = createExpectedResult(idList, personList, facets, 0, 10, SORTABLE_FIELDS);
 
     setUpSearchResult(idList, storageManager, facets);
 
@@ -205,7 +217,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     List<FacetCount> facets = createFacets();
 
-    Map<String, Object> expected = createExpectedResult(idList, personList, facets, 10, 100);
+    Map<String, Object> expected = createExpectedResult(idList, personList, facets, 10, 100, SORTABLE_FIELDS);
 
     setUpSearchResult(idList, storageManager, facets);
 
@@ -226,7 +238,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     setUpSearchResult(Lists.<String> newArrayList(), storageManager, Lists.<FacetCount> newArrayList());
 
-    Map<String, Object> expected = createExpectedResult(Lists.<String> newArrayList(), Lists.<Person> newArrayList(), Lists.<FacetCount> newArrayList(), 0, 0);
+    Map<String, Object> expected = createExpectedResult(Lists.<String> newArrayList(), Lists.<Person> newArrayList(), Lists.<FacetCount> newArrayList(), 0, 0, SORTABLE_FIELDS);
 
     WebResource resource = super.resource();
     Map<String, Object> actual = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<Map<String, Object>>() {});
@@ -288,7 +300,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     return searchParameters;
   }
 
-  private Map<String, Object> createExpectedResult(List<String> idList, List<Person> personList, List<FacetCount> facets, int start, int rows) {
+  private Map<String, Object> createExpectedResult(List<String> idList, List<Person> personList, List<FacetCount> facets, int start, int rows, Set<String> sortableFields) {
     Map<String, Object> expectedResult = Maps.newHashMap();
     expectedResult.put("results", personList.subList(start, rows));
     expectedResult.put("start", start); // start index of the results
@@ -297,6 +309,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     expectedResult.put("facets", facets); // all applying facets
     expectedResult.put("numFound", idList.size()); // all found results
     expectedResult.put("ids", idList.subList(start, rows)); //only the ids of the objects in the in response.
+    expectedResult.put("sortableFields", sortableFields);
 
     return expectedResult;
   }
@@ -345,6 +358,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertEquals(expected.get("start"), actual.get("start"));
     assertEquals(expected.get("rows"), actual.get("rows"));
     assertEquals(((List<FacetCount>) expected.get("facets")).size(), ((List<FacetCount>) actual.get("facets")).size());
+    assertEquals(((Collection<String>) expected.get("sortableFields")).size(), ((Collection<String>) actual.get("sortableFields")).size());
   }
 
 }

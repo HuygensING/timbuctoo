@@ -43,4 +43,6 @@ public @interface IndexAnnotation {
 
   String title() default "";
 
+  boolean isSortable() default false;
+
 }
