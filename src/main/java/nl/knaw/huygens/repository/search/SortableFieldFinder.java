@@ -1,0 +1,18 @@
+package nl.knaw.huygens.repository.search;
+
+import java.util.Set;
+
+import nl.knaw.huygens.repository.annotations.IndexAnnotation;
+
+import org.apache.commons.lang.StringUtils;
+
+public class SortableFieldFinder extends AbstractFieldFinder {
+
+  @Override
+  protected void addField(Set<String> fields, IndexAnnotation indexAnnotation) {
+    if (indexAnnotation.isSortable() && StringUtils.isNotBlank(indexAnnotation.fieldName())) {
+      fields.add(indexAnnotation.fieldName());
+    }
+  }
+
+}

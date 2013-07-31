@@ -31,7 +31,7 @@ public class SearchManager {
 
   private final LocalSolrServer server;
   private final FacetFinder facetFinder;
-  private final FullTextSearchFieldFinder fullTextSearchFieldFinder;
+  private final AbstractFieldFinder fullTextSearchFieldFinder;
   private final DocTypeRegistry docTypeRegistry;
 
   @Inject
@@ -44,7 +44,7 @@ public class SearchManager {
 
   public SearchResult search(Class<? extends Document> type, String core, FacetedSearchParameters searchParameters) throws SolrServerException, FacetDoesNotExistException {
     Map<String, FacetInfo> facetInfoMap = facetFinder.findFacets(type);
-    Set<String> fullTextSearchFields = fullTextSearchFieldFinder.findFullTextSearchFields(type);
+    Set<String> fullTextSearchFields = fullTextSearchFieldFinder.findFields(type);
     String searchTerm = createSearchTerm(type, searchParameters, facetInfoMap.keySet(), fullTextSearchFields);
     QueryResponse response = server.getQueryResponse(searchTerm, facetInfoMap.keySet(), searchParameters.getSort(), core);
     SolrDocumentList documents = response.getResults();

@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.resources;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -26,6 +27,7 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.search.FacetDoesNotExistException;
 import nl.knaw.huygens.repository.search.SearchManager;
+import nl.knaw.huygens.repository.search.SortableFieldFinder;
 import nl.knaw.huygens.repository.storage.JsonViews;
 import nl.knaw.huygens.repository.storage.StorageManager;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
@@ -49,6 +51,8 @@ public class SearchResource {
   private StorageManager storageManager;
   @Inject
   private DocTypeRegistry registry;
+  @Inject
+  SortableFieldFinder sortableFieldFinder;
 
   @POST
   @APIDesc("Searches the Solr index")
@@ -93,8 +97,8 @@ public class SearchResource {
   @JsonView(JsonViews.WebView.class)
   public Response get( //
       @PathParam("id") String queryId, //
-      @QueryParam("start") @DefaultValue("0") int start, //
-      @QueryParam("rows") @DefaultValue("10") int rows, //
+      @QueryParam("start") @DefaultValue("0") final int start, //
+      @QueryParam("rows") @DefaultValue("10") final int rows, //
       @Context UriInfo uriInfo) {
 
     // Retrieve result
@@ -115,6 +119,7 @@ public class SearchResource {
     int hi = toRange(lo + rows, 0, ids.size());
 
     List<String> idsToGet = ids.subList(lo, hi);
+    Set<String> sortableFields = sortableFieldFinder.findFields(type);
 
     Map<String, Object> returnValue = Maps.newConcurrentMap();
     returnValue.put("term", result.getTerm());
@@ -123,7 +128,8 @@ public class SearchResource {
     returnValue.put("ids", idsToGet);
     returnValue.put("results", convert(type, ids, lo, hi));
     returnValue.put("start", lo);
-    returnValue.put("rows", hi);
+    returnValue.put("rows", hi); //TODO make this the number of returned results
+    returnValue.put("sortableFields", sortableFields);
 
     UriBuilder baseUriBuilder = uriInfo.getAbsolutePathBuilder();
     System.out.println("baseURI: " + baseUriBuilder.build());

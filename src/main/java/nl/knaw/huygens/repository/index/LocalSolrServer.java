@@ -127,7 +127,7 @@ public class LocalSolrServer {
     return serverFor(core).query(params).getResults().getNumFound();
   }
 
-  public QueryResponse getQueryResponse(String term, Collection<String> facetFieldNames, String sort, String core) throws SolrServerException {
+  public QueryResponse getQueryResponse(String term, Collection<String> facetFieldNames, String sortField, String core) throws SolrServerException {
     SolrQuery query = new SolrQuery();
     query.setQuery(term);
     query.setFields(SOLR_DEFAULT_FIELD);
@@ -136,7 +136,7 @@ public class LocalSolrServer {
     query.setFacetMinCount(0);
     query.setFacetLimit(FACET_LIMIT);
     query.setFilterQueries("!cache=false");
-    query.setSort(new SortClause(sort, SolrQuery.ORDER.asc));
+    query.setSort(new SortClause(sortField, SolrQuery.ORDER.asc));
     LOG.info("{}", query);
     return serverFor(core).query(query);
   }

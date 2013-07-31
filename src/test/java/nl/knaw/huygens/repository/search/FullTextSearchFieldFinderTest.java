@@ -64,7 +64,7 @@ public class FullTextSearchFieldFinderTest {
   }
 
   private void testFindFullTextSearchField(Class<? extends Document> type, Set<String> expected) {
-    Set<String> actual = instance.findFullTextSearchFields(type);
+    Set<String> actual = instance.findFields(type);
     assertThat(actual, equalTo(expected));
   }
 }
