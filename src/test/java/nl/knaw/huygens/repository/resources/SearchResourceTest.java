@@ -10,8 +10,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -21,26 +23,36 @@ import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.search.FacetDoesNotExistException;
 import nl.knaw.huygens.repository.search.SearchManager;
+import nl.knaw.huygens.repository.search.SortableFieldFinder;
 import nl.knaw.huygens.repository.storage.StorageManager;
 import nl.knaw.huygens.solr.FacetCount;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 
 import org.apache.solr.client.solrj.SolrServerException;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class SearchResourceTest extends WebServiceTestSetup {
+  private static final Set<String> SORTABLE_FIELDS = Sets.newHashSet("test1", "test");
   private static final String TERM = "facet_t_name:Huygens";
   private static final String LOCATION_HEADER = "Location";
   private String typeString = "person";
   private String id = "QRY0000000001";
+
+  @Before
+  public void setUpSortableFieldsFinder() {
+    SortableFieldFinder fieldsFinder = injector.getInstance(SortableFieldFinder.class);
+    when(fieldsFinder.findFields(Matchers.<Class<? extends Document>> any())).thenReturn(SORTABLE_FIELDS);
+  }
 
   @Test
   public void testPostSuccess() throws IOException, SolrServerException, FacetDoesNotExistException {
@@ -185,11 +197,13 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     List<FacetCount> facets = createFacets();
 
-    Map<String, Object> expected = createExpectedResult(idList, personList, facets, 0, 10);
-
     setUpSearchResult(idList, storageManager, facets);
 
     WebResource resource = super.resource();
+
+    String nextUri = String.format("%ssearch/%s?start=10&rows=10", resource.getURI(), id);
+    Map<String, Object> expected = createExpectedResult(idList, personList, facets, 0, 10, SORTABLE_FIELDS, 10, nextUri, null);
+
     Map<String, Object> actual = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<Map<String, Object>>() {});
 
     compareResults(expected, actual);
@@ -205,7 +219,33 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     List<FacetCount> facets = createFacets();
 
-    Map<String, Object> expected = createExpectedResult(idList, personList, facets, 10, 100);
+    setUpSearchResult(idList, storageManager, facets);
+
+    MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
+    queryParameters.add("start", "20");
+    queryParameters.add("rows", "20");
+
+    WebResource resource = super.resource();
+
+    String prevUri = String.format("%ssearch/%s?start=0&rows=20", resource.getURI(), id);
+    String nextUri = String.format("%ssearch/%s?start=40&rows=20", resource.getURI(), id);
+    Map<String, Object> expected = createExpectedResult(idList, personList, facets, 20, 20, SORTABLE_FIELDS, 20, nextUri, prevUri);
+
+    Map<String, Object> actual = resource.path("search").path(id).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE)
+        .get(new GenericType<Map<String, Object>>() {});
+
+    compareResults(expected, actual);
+  }
+
+  @Test
+  public void testGetSuccessWithStartAndRowsMoreThanMax() {
+    List<String> idList = Lists.newArrayList();
+    List<Person> personList = Lists.newArrayList();
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+
+    createSearchResult(idList, personList, storageManager);
+
+    List<FacetCount> facets = createFacets();
 
     setUpSearchResult(idList, storageManager, facets);
 
@@ -214,6 +254,10 @@ public class SearchResourceTest extends WebServiceTestSetup {
     queryParameters.add("rows", "100");
 
     WebResource resource = super.resource();
+
+    String prevUri = String.format("%ssearch/%s?start=0&rows=100", resource.getURI(), id);
+    Map<String, Object> expected = createExpectedResult(idList, personList, facets, 10, 100, SORTABLE_FIELDS, 90, null, prevUri);
+
     Map<String, Object> actual = resource.path("search").path(id).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE)
         .get(new GenericType<Map<String, Object>>() {});
 
@@ -226,7 +270,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     setUpSearchResult(Lists.<String> newArrayList(), storageManager, Lists.<FacetCount> newArrayList());
 
-    Map<String, Object> expected = createExpectedResult(Lists.<String> newArrayList(), Lists.<Person> newArrayList(), Lists.<FacetCount> newArrayList(), 0, 0);
+    Map<String, Object> expected = createExpectedResult(Lists.<String> newArrayList(), Lists.<Person> newArrayList(), Lists.<FacetCount> newArrayList(), 0, 0, SORTABLE_FIELDS, 0, null, null);
 
     WebResource resource = super.resource();
     Map<String, Object> actual = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<Map<String, Object>>() {});
@@ -288,15 +332,21 @@ public class SearchResourceTest extends WebServiceTestSetup {
     return searchParameters;
   }
 
-  private Map<String, Object> createExpectedResult(List<String> idList, List<Person> personList, List<FacetCount> facets, int start, int rows) {
+  private Map<String, Object> createExpectedResult(List<String> idList, List<Person> personList, List<FacetCount> facets, int start, int rows, Set<String> sortableFields, int returnedRows,
+      String next, String prev) {
     Map<String, Object> expectedResult = Maps.newHashMap();
-    expectedResult.put("results", personList.subList(start, rows));
+    int lastIndex = (start + rows) >= personList.size() ? personList.size() : (start + rows);
+
+    expectedResult.put("results", personList.subList(start, Math.max(lastIndex, 0)));
     expectedResult.put("start", start); // start index of the results
-    expectedResult.put("rows", rows); // number of results in the response
+    expectedResult.put("rows", returnedRows); // number of results in the response
     expectedResult.put("term", TERM); // search query
     expectedResult.put("facets", facets); // all applying facets
     expectedResult.put("numFound", idList.size()); // all found results
     expectedResult.put("ids", idList.subList(start, rows)); //only the ids of the objects in the in response.
+    expectedResult.put("sortableFields", sortableFields);
+    expectedResult.put("_next", next);
+    expectedResult.put("_prev", prev);
 
     return expectedResult;
   }
@@ -345,6 +395,8 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertEquals(expected.get("start"), actual.get("start"));
     assertEquals(expected.get("rows"), actual.get("rows"));
     assertEquals(((List<FacetCount>) expected.get("facets")).size(), ((List<FacetCount>) actual.get("facets")).size());
+    assertEquals(((Collection<String>) expected.get("sortableFields")).size(), ((Collection<String>) actual.get("sortableFields")).size());
+    assertEquals(expected.get("_next"), actual.get("_next"));
+    assertEquals(expected.get("_prev"), actual.get("_prev"));
   }
-
 }

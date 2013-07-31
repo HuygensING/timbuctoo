@@ -101,7 +101,7 @@ public class ATLGLegislation extends Legislation {
     this.titleNld = title;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_text", canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "facet_sort_text", canBeEmpty = true, isFaceted = false, isSortable = true)
   public String getTitleEng() {
     return titleEng;
   }
@@ -110,7 +110,7 @@ public class ATLGLegislation extends Legislation {
     this.titleEng = title;
   }
 
-  @IndexAnnotation(fieldName = "facet_s_date", canBeEmpty = true, isFaceted = true, facetType = FacetType.DATE)
+  @IndexAnnotation(fieldName = "facet_sort_date", canBeEmpty = true, isFaceted = true, facetType = FacetType.DATE, isSortable = true)
   public String getDate1() {
     return date1;
   }
