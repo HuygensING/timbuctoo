@@ -27,8 +27,8 @@
 <h2>Results</h2>
 <table>
 <tr>
-  <td>Search id</td>
-  <td><input name="" type="text" id="searchid" disabled="disabled"/></td>
+  <td>URL</td>
+  <td><input name="" type="text" id="searchid"/></td>
 </tr>
 <tr>
   <td>Start</td>
@@ -50,7 +50,7 @@
 <script>
   var baseUrl = 'http://'+window.config.serverUri+'/';
   var searchUrl = baseUrl + 'search';
-  var personUrl = baseUrl + 'resources/persons/';
+  var resultUrl = baseUrl + 'resources/atlgarchives/';
 
   /* Simply concatenates the components of a name */
   function buildName(name) {
@@ -67,7 +67,7 @@
     jQuery.ajax({
       url: searchUrl,
       type: 'POST',
-      data: JSON.stringify({'typeString': 'person', 'term': query, 'sort': 'id'}),
+      data: JSON.stringify({'typeString': 'atlgarchive', 'term': query, 'sort': 'id'}),
       contentType: 'application/json; charset=utf-8',
       complete: function (xhr) {
         var queryURL = xhr.getResponseHeader('Location') || 'None';
@@ -88,7 +88,7 @@
       success: function (data) {
         var html = '<table><tr><th>Id</th><th>Name</th></tr>';
         $.each(data.results, function (i, item) {
-          html += '<tr><td><a href="' + personUrl + item._id + '">' + item._id + '</a></td><td>' + buildName(item.name) + '</td></tr>';
+          html += '<tr><td><a href="' + resultUrl + item._id + '">' + item._id + '</a></td><td>' + item.titleEng + '</td></tr>';
         });
         html += '</table>';
         $('#results').html(html);
@@ -97,8 +97,8 @@
   }
 
   $(document).ready(function() {
-    $('#searchtype').val('person');
-    $('#searchtext').val('Huygens');
+    $('#searchtype').val('archive');
+    $('#searchtext').val('Storm');
     $('#searchid').val('');
     $('#results').html('No results (yet)');
   });
