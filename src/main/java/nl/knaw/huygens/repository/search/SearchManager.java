@@ -88,18 +88,13 @@ public class SearchManager {
   }
 
   private String formatFacetValues(List<String> values) {
-
     if (values.size() > 1) {
       StringBuilder builder = new StringBuilder();
       builder.append("(");
-      boolean isFirst = true;
+      String prefix = "";
       for (String value : values) {
-
-        if (!isFirst) {
-          builder.append(" ");
-        }
-        builder.append(SolrUtils.escapeFacetId(value));
-        isFirst = false;
+        builder.append(prefix).append(SolrUtils.escapeFacetId(value));
+        prefix = " ";
       }
       builder.append(")");
       return builder.toString();
