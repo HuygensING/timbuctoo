@@ -3,10 +3,7 @@ package nl.knaw.huygens.repository.providers;
 import java.io.IOException;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Reference;
-
-import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,8 +11,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 public class ReferenceSerializer extends StdSerializer<Reference> {
-
-  private static final String SEMICOLON = "&#59;";
 
   private final DocTypeRegistry registry;
 
@@ -25,29 +20,15 @@ public class ReferenceSerializer extends StdSerializer<Reference> {
   }
 
   @Override
-  public void serialize(Reference value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
-    jgen.writeRaw(createHTML(value));
-  }
-
-  private String createHTML(Reference reference) {
-    Class<? extends Document> type = reference.getType();
-    String variation = reference.getVariation();
-
-    StringBuilder builder = new StringBuilder("<a href=\"");
-    builder.append(registry.getXNameForType(type));
-    builder.append('/');
-    builder.append(reference.getId());
-    if (StringUtils.isNotBlank(variation)) {
-      builder.append('/').append(variation);
-    }
-    builder.append("\">");
-    builder.append(registry.getXNameForType(type));
-    if (StringUtils.isNotBlank(variation)) {
-      builder.append(" (").append(variation).append(")");
-    }
-    builder.append("</a>" + SEMICOLON + "<br>\n");
-
-    return builder.toString();
+  public void serialize(Reference reference, JsonGenerator generator, SerializerProvider provider) throws IOException, JsonProcessingException {
+    String name = registry.getXNameForType(reference.getType());
+    generator.writeRaw("<a href=\"");
+    generator.writeRaw(name);
+    generator.writeRaw("/");
+    generator.writeRaw(reference.getId());
+    generator.writeRaw("\">");
+    generator.writeRaw(name);
+    generator.writeRaw("</a><br/>");
   }
 
 }
