@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.importer.database;
+package nl.knaw.huygens.repository.tools.importer.database;
 
 import nl.knaw.huygens.repository.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.repository.model.dwcbia.DWCScientist;
