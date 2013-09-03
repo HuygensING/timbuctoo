@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.importer;
+package nl.knaw.huygens.repository.tools.importer;
 
 import java.util.List;
 

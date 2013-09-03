@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.importer.database;
+package nl.knaw.huygens.repository.tools.importer.database;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import nl.knaw.huygens.repository.model.util.Datable;
+import nl.knaw.huygens.repository.tools.importer.database.GenericResultSetConverter;
 
 public class GenericResultSetConverterTest {
 
