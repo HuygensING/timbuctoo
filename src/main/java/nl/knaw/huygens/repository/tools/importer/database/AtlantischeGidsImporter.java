@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.importer.database;
+package nl.knaw.huygens.repository.tools.importer.database;
 
 import java.io.File;
 import java.util.Collection;
@@ -964,7 +964,7 @@ public class AtlantischeGidsImporter {
   }
 
   // TODO make private
-  public static class XRelated {
+  public class XRelated {
     public String type;
     public String[] ids;
 
