@@ -19,6 +19,7 @@ import nl.knaw.huygens.repository.model.atlg.ATLGArchiver;
 import nl.knaw.huygens.repository.model.atlg.ATLGKeyword;
 import nl.knaw.huygens.repository.model.atlg.ATLGLegislation;
 import nl.knaw.huygens.repository.model.atlg.ATLGPerson;
+import nl.knaw.huygens.repository.model.atlg.XRelated;
 import nl.knaw.huygens.repository.model.util.PersonName;
 import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.repository.storage.StorageManager;
@@ -961,17 +962,6 @@ public class AtlantischeGidsImporter {
   private static class XPeriod {
     public String begin_date;
     public String end_date;
-  }
-
-  // TODO make private
-  public class XRelated {
-    public String type;
-    public String[] ids;
-
-    @Override
-    public String toString() {
-      return String.format("  %s: %s", type, StringUtils.join(ids, " ##"));
-    }
   }
 
   private static class XSeeAlso {
