@@ -7,7 +7,6 @@ import nl.knaw.huygens.repository.annotations.IndexAnnotations;
 import nl.knaw.huygens.repository.model.Archiver;
 import nl.knaw.huygens.repository.model.DocumentRef;
 import nl.knaw.huygens.repository.model.util.PeriodHelper;
-import nl.knaw.huygens.repository.tools.importer.database.AtlantischeGidsImporter.XRelated;
 import nl.knaw.huygens.solr.FacetType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
