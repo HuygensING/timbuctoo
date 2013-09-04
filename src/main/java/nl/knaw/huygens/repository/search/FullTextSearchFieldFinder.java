@@ -6,7 +6,7 @@ import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 
 import org.apache.commons.lang.StringUtils;
 
-public class FullTextSearchFieldFinder extends AbstractFieldFinder {
+class FullTextSearchFieldFinder extends AbstractFieldFinder {
   private static final String FULL_TEXT_SEARCH_PREFIX = "facet_t_";
 
   @Override
