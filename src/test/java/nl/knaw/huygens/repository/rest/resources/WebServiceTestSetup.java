@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 
 import nl.knaw.huygens.repository.model.User;
-import nl.knaw.huygens.repository.server.security.apis.SecurityContextCreatorResourceFilterFactory;
+import nl.knaw.huygens.repository.rest.security.apis.SecurityContextCreatorResourceFilterFactory;
 import nl.knaw.huygens.repository.storage.StorageManager;
 
 import org.junit.After;
