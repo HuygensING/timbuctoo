@@ -3,10 +3,10 @@ package nl.knaw.huygens.repository.rest;
 import javax.jms.JMSException;
 import javax.servlet.ServletContextEvent;
 
-import nl.knaw.huygens.repository.config.BasicInjectionModule;
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.index.IndexService;
 import nl.knaw.huygens.repository.messages.Broker;
+import nl.knaw.huygens.repository.rest.config.RESTInjectionModule;
 import nl.knaw.huygens.repository.rest.config.ServletInjectionModule;
 import nl.knaw.huygens.repository.storage.StorageManager;
 
@@ -39,7 +39,7 @@ public class RepoContextListener extends GuiceServletContextListener {
   protected Injector getInjector() {
     try {
       Configuration config = new Configuration();
-      Module baseModule = new BasicInjectionModule(config);
+      Module baseModule = new RESTInjectionModule(config);
       Module servletModule = new ServletInjectionModule();
       injector = Guice.createInjector(baseModule, servletModule);
       return injector;
