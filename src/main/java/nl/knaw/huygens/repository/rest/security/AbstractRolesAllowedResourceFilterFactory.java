@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.server.security;
+package nl.knaw.huygens.repository.rest.security;
 
 import javax.annotation.security.RolesAllowed;
 
