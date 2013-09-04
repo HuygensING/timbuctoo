@@ -72,7 +72,7 @@ public class BasicInjectionModule extends AbstractModule {
     return new FullTextSearchFieldFinder();
   }
 
-  // REST only
+  // Search only
   @Provides
   @Singleton
   SortableFieldFinder provideSortableFieldFinder() {
