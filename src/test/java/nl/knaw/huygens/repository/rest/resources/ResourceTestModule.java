@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.resources;
+package nl.knaw.huygens.repository.rest.resources;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -8,6 +8,7 @@ import javax.validation.Validator;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.mail.MailSender;
+import nl.knaw.huygens.repository.rest.resources.RESTAutoResource;
 import nl.knaw.huygens.repository.search.SearchManager;
 import nl.knaw.huygens.repository.search.SortableFieldFinder;
 import nl.knaw.huygens.repository.storage.StorageManager;

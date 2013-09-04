@@ -22,7 +22,7 @@ import javax.ws.rs.ext.Provider;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.resources.RESTAutoResource;
+import nl.knaw.huygens.repository.rest.resources.RESTAutoResource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

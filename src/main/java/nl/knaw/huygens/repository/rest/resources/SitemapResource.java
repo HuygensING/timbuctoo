@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.resources;
+package nl.knaw.huygens.repository.rest.resources;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
