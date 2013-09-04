@@ -1,12 +1,7 @@
 package nl.knaw.huygens.repository.config;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
-
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.persistence.PersistenceManagerFactory;
-import nl.knaw.huygens.repository.rest.mail.MailSender;
-import nl.knaw.huygens.repository.rest.mail.MailSenderFactory;
 import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.mongo.variation.MongoStorageFacade;
 
@@ -17,7 +12,7 @@ import com.google.inject.name.Names;
 
 public class BasicInjectionModule extends AbstractModule {
 
-  private final Configuration config;
+  protected final Configuration config;
   private final DocTypeRegistry registry;
 
   public BasicInjectionModule(Configuration config) {
@@ -41,17 +36,4 @@ public class BasicInjectionModule extends AbstractModule {
     return PersistenceManagerFactory.newPersistenceManager(config);
   }
 
-  //REST only
-  @Provides
-  @Singleton
-  Validator provideValidator() {
-    return Validation.buildDefaultValidatorFactory().getValidator();
-  }
-
-  //REST only
-  @Provides
-  @Singleton
-  MailSender provideMailSender() {
-    return new MailSenderFactory(config).create();
-  }
 }
