@@ -1,10 +1,12 @@
-package nl.knaw.huygens.repository.providers;
+package nl.knaw.huygens.repository.rest.providers;
 
 import java.io.IOException;
 import java.io.StringWriter;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.rest.providers.HTMLGenerator;
+import nl.knaw.huygens.repository.rest.providers.ReferenceSerializer;
 import nl.knaw.huygens.repository.storage.mongo.model.TestSystemDocument;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;

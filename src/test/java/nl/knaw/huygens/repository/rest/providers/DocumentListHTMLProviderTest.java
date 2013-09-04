@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.providers;
+package nl.knaw.huygens.repository.rest.providers;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -8,6 +8,7 @@ import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.User;
+import nl.knaw.huygens.repository.rest.providers.DocumentListHTMLProvider;
 
 import org.junit.Assert;
 import org.junit.Test;
