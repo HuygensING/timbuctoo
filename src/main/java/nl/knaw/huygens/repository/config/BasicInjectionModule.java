@@ -44,30 +44,35 @@ public class BasicInjectionModule extends AbstractModule {
     return PersistenceManagerFactory.newPersistenceManager(config);
   }
 
+  //REST only
   @Provides
   @Singleton
   Validator provideValidator() {
     return Validation.buildDefaultValidatorFactory().getValidator();
   }
 
+  //REST only
   @Provides
   @Singleton
   MailSender provideMailSender() {
     return new MailSenderFactory(config).create();
   }
 
+  // Search only
   @Provides
   @Singleton
   FacetFinder provideFacetFinder() {
     return new FacetFinder();
   }
 
+  // Search only
   @Provides
   @Singleton
   FullTextSearchFieldFinder provideFullTextSearchFieldFinder() {
     return new FullTextSearchFieldFinder();
   }
 
+  // REST only
   @Provides
   @Singleton
   SortableFieldFinder provideSortableFieldFinder() {
