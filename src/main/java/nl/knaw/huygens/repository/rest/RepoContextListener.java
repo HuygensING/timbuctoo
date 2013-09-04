@@ -1,4 +1,4 @@
-package nl.knaw.huygens.rest.repository;
+package nl.knaw.huygens.repository.rest;
 
 import javax.jms.JMSException;
 import javax.servlet.ServletContextEvent;
