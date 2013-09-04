@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.util;
+package nl.knaw.huygens.repository.rest.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -14,7 +14,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.repository.annotations.APIDesc;
-import nl.knaw.huygens.repository.util.JAXUtils.API;
+import nl.knaw.huygens.repository.rest.util.JAXUtils;
+import nl.knaw.huygens.repository.rest.util.JAXUtils.API;
 
 import org.junit.Test;
 
