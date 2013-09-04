@@ -33,13 +33,19 @@ public class SearchManager {
   private final FacetFinder facetFinder;
   private final AbstractFieldFinder fullTextSearchFieldFinder;
   private final DocTypeRegistry docTypeRegistry;
+  private final SortableFieldFinder sortableFieldFinder;
 
   @Inject
-  public SearchManager(LocalSolrServer server, FacetFinder facetFinder, FullTextSearchFieldFinder fullTextSearchFieldFinder, DocTypeRegistry docTypeRegistry) {
+  public SearchManager(LocalSolrServer server, FacetFinder facetFinder, FullTextSearchFieldFinder fullTextSearchFieldFinder, DocTypeRegistry docTypeRegistry, SortableFieldFinder sortableFieldFinder) {
     this.server = server;
     this.facetFinder = facetFinder;
     this.fullTextSearchFieldFinder = fullTextSearchFieldFinder;
     this.docTypeRegistry = docTypeRegistry;
+    this.sortableFieldFinder = sortableFieldFinder;
+  }
+
+  public Set<String> findSortableFields(Class<? extends Document> type) {
+    return sortableFieldFinder.findFields(type);
   }
 
   public SearchResult search(Class<? extends Document> type, String core, FacetedSearchParameters searchParameters) throws SolrServerException, FacetDoesNotExistException {

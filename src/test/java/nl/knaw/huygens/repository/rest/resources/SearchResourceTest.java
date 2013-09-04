@@ -23,7 +23,6 @@ import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.search.FacetDoesNotExistException;
 import nl.knaw.huygens.repository.search.SearchManager;
-import nl.knaw.huygens.repository.search.SortableFieldFinder;
 import nl.knaw.huygens.repository.storage.StorageManager;
 import nl.knaw.huygens.solr.FacetCount;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
@@ -49,9 +48,9 @@ public class SearchResourceTest extends WebServiceTestSetup {
   private String id = "QRY0000000001";
 
   @Before
-  public void setUpSortableFieldsFinder() {
-    SortableFieldFinder fieldsFinder = injector.getInstance(SortableFieldFinder.class);
-    when(fieldsFinder.findFields(Matchers.<Class<? extends Document>> any())).thenReturn(SORTABLE_FIELDS);
+  public void setUpSortableFields() {
+    SearchManager searchManager = injector.getInstance(SearchManager.class);
+    when(searchManager.findSortableFields(Matchers.<Class<? extends Document>> any())).thenReturn(SORTABLE_FIELDS);
   }
 
   @Test
