@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package nl.knaw.huygens.repository.server.security.apis;
+package nl.knaw.huygens.repository.rest.security.apis;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;

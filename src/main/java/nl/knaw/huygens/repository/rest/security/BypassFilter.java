@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.server.security;
+package nl.knaw.huygens.repository.rest.security;
 
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerRequestFilter;

@@ -1,6 +1,6 @@
 package nl.knaw.huygens.repository.rest.resources;
 
-import nl.knaw.huygens.repository.server.security.AbstractRolesAllowedResourceFilterFactory;
+import nl.knaw.huygens.repository.rest.security.AbstractRolesAllowedResourceFilterFactory;
 
 import com.google.inject.Inject;
 import com.sun.jersey.api.model.AbstractMethod;
