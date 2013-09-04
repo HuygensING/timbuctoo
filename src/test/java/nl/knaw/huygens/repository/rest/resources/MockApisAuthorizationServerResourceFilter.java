@@ -1,6 +1,6 @@
 package nl.knaw.huygens.repository.rest.resources;
 
-import nl.knaw.huygens.repository.server.security.apis.ApisAuthorizationServerResourceFilter;
+import nl.knaw.huygens.repository.rest.security.apis.ApisAuthorizationServerResourceFilter;
 
 import org.surfnet.oaaas.model.VerifyTokenResponse;
 
