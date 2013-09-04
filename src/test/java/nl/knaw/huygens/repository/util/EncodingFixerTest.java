@@ -7,14 +7,16 @@ public class EncodingFixerTest {
 
   @Test
   public void testConversion() {
+    Assert.assertEquals("Belvédère", EncodingFixer.convert1("BelvÃ©dÃ¨re"));
     Assert.assertEquals("Curaçao", EncodingFixer.convert1("CuraÃ§ao"));
-    Assert.assertEquals("Één", EncodingFixer.convert1("Ã‰Ã©n"));
+    Assert.assertEquals("Wolffenbüttel", EncodingFixer.convert1("WolffenbÃ¼ttel"));
+    Assert.assertEquals("notariële", EncodingFixer.convert1("notariÃ«le"));
   }
 
   @Test
   public void testInvariance() {
+    Assert.assertEquals("Belvédère", EncodingFixer.convert1("Belvédère"));
     Assert.assertEquals("Curaçao", EncodingFixer.convert1("Curaçao"));
-    Assert.assertEquals("Één", EncodingFixer.convert1("Één"));
   }
 
 }
