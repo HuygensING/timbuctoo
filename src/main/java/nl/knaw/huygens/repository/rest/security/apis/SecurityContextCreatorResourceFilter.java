@@ -2,8 +2,8 @@ package nl.knaw.huygens.repository.rest.security.apis;
 
 import java.io.IOException;
 
-import nl.knaw.huygens.repository.mail.MailSender;
 import nl.knaw.huygens.repository.model.User;
+import nl.knaw.huygens.repository.rest.mail.MailSender;
 import nl.knaw.huygens.repository.rest.security.UserSecurityContext;
 import nl.knaw.huygens.repository.storage.StorageManager;
 
