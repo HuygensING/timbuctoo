@@ -22,6 +22,7 @@ import com.google.inject.Injector;
  * Currently this class is not used, because every object is indexed at the time it is stored in the database.
  * This class could be the base of a process for (re)indexing all or a part of the data. 
  */
+@Deprecated
 public class SolrIndexer {
 
   public static void main(String[] args) throws Exception {
@@ -31,6 +32,7 @@ public class SolrIndexer {
     System.exit(runner.run());
   }
 
+  @Deprecated
   public static class SolrIndexerRunner {
     private final Configuration config;
     private final IndexerFactory indices;
