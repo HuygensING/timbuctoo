@@ -1,7 +1,7 @@
-package nl.knaw.huygens.repository.server.security.apis;
+package nl.knaw.huygens.repository.rest.security.apis;
 
-import nl.knaw.huygens.repository.server.security.AbstractRolesAllowedResourceFilterFactory;
-import nl.knaw.huygens.repository.server.security.BypassFilter;
+import nl.knaw.huygens.repository.rest.security.AbstractRolesAllowedResourceFilterFactory;
+import nl.knaw.huygens.repository.rest.security.BypassFilter;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
