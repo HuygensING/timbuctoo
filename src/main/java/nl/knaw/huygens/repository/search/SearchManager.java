@@ -36,12 +36,12 @@ public class SearchManager {
   private final SortableFieldFinder sortableFieldFinder;
 
   @Inject
-  public SearchManager(LocalSolrServer server, FacetFinder facetFinder, FullTextSearchFieldFinder fullTextSearchFieldFinder, DocTypeRegistry docTypeRegistry, SortableFieldFinder sortableFieldFinder) {
+  public SearchManager(LocalSolrServer server, DocTypeRegistry docTypeRegistry) {
     this.server = server;
-    this.facetFinder = facetFinder;
-    this.fullTextSearchFieldFinder = fullTextSearchFieldFinder;
+    this.facetFinder = new FacetFinder();
+    this.fullTextSearchFieldFinder = new FullTextSearchFieldFinder();
     this.docTypeRegistry = docTypeRegistry;
-    this.sortableFieldFinder = sortableFieldFinder;
+    this.sortableFieldFinder = new SortableFieldFinder();
   }
 
   public Set<String> findSortableFields(Class<? extends Document> type) {
