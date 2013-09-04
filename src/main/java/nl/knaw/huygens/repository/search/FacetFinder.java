@@ -10,7 +10,7 @@ import nl.knaw.huygens.solr.FacetInfo;
 
 import com.google.common.collect.Maps;
 
-public class FacetFinder {
+class FacetFinder {
   private static final Class<IndexAnnotations> INDEX_ANNOTATIONS_CLASS = IndexAnnotations.class;
   private static final Class<IndexAnnotation> INDEX_ANNOTATION_CLASS = IndexAnnotation.class;
 

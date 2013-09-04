@@ -11,8 +11,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
@@ -20,11 +18,10 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.model.atlg.ATLGPerson;
+import nl.knaw.huygens.repository.search.model.ClassWithMupltipleFullTestSearchFields;
 import nl.knaw.huygens.solr.FacetCount;
 import nl.knaw.huygens.solr.FacetCount.Option;
-import nl.knaw.huygens.solr.FacetInfo;
 import nl.knaw.huygens.solr.FacetParameter;
-import nl.knaw.huygens.solr.FacetType;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 
 import org.apache.solr.client.solrj.SolrServerException;
@@ -36,11 +33,8 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrException;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public class SearchManagerTest {
   private static final ArrayList<String> FULL_TEXT_SEARCH_NAMES = Lists.newArrayList("facet_t_name");
@@ -52,19 +46,14 @@ public class SearchManagerTest {
 
   private SearchManager instance;
   private LocalSolrServer solrInstance;
-  private FacetFinder facetFinder;
-  private FullTextSearchFieldFinder fullTextSearchFieldFinder;
   private DocTypeRegistry docTypeRegistry;
-  private SortableFieldFinder sortableFieldFinder;
 
   @Before
   public void setUp() {
     solrInstance = mock(LocalSolrServer.class);
-    facetFinder = mock(FacetFinder.class);
-    fullTextSearchFieldFinder = mock(FullTextSearchFieldFinder.class);
-    sortableFieldFinder = mock(SortableFieldFinder.class);
-    docTypeRegistry = new DocTypeRegistry(Person.class.getPackage().getName() + " " + ATLGPerson.class.getPackage().getName());
-    instance = new SearchManager(solrInstance, facetFinder, fullTextSearchFieldFinder, docTypeRegistry, sortableFieldFinder);
+    docTypeRegistry = new DocTypeRegistry(Person.class.getPackage().getName() + " " + ATLGPerson.class.getPackage().getName() + " "
+        + ClassWithMupltipleFullTestSearchFields.class.getPackage().getName());
+    instance = new SearchManager(solrInstance, docTypeRegistry);
   }
 
   @Test
@@ -121,14 +110,14 @@ public class SearchManagerTest {
   @Test
   public void testSearchMultipleFields() throws SolrServerException, FacetDoesNotExistException {
     List<String> documentIds = Lists.newArrayList("id1", "id2", "id3", "id4");
-    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
+    List<String> facetFieldNames = Lists.newArrayList("facet_t_simple");
     int numberOfFacetValues = 1;
 
-    List<String> fullTextSearchFields = Lists.newArrayList("facet_t_name", "facet_t_test");
-    String expectedTerm = String.format("facet_t_name:%s facet_t_test:%s", SEARCH_TERM, SEARCH_TERM);
+    List<String> fullTextSearchFields = Lists.newArrayList("facet_t_simple", "facet_t_simple1");
+    String expectedTerm = String.format("facet_t_simple1:%s facet_t_simple:%s", SEARCH_TERM, SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, fullTextSearchFields, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm, TYPE_STRING);
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM, TYPE_STRING);
+    testSearch(ClassWithMupltipleFullTestSearchFields.class, documentIds, SEARCH_TERM, "classwithmupltiplefulltestsearchfields", facetFieldNames, fullTextSearchFields, numberOfFacetValues,
+        Lists.<FacetParameter> newArrayList(), expectedTerm, TYPE_STRING);
   }
 
   @Test
@@ -202,9 +191,6 @@ public class SearchManagerTest {
     List<FacetField> facetFields = createFacetFieldList(facetNames, numberOfFacetValues);
     setUpQueryResponse(docs, facetFields);
 
-    setupFacetFinder(facetNames);
-    setupFullTextSearchFinder(fullTextSearchNames);
-
     List<FacetCount> facets = createFacetCountList(facetNames, numberOfFacetValues);
     SearchResult expected = createExpectedResult(typeString, documentIds, expectedTerm, facets);
 
@@ -232,28 +218,6 @@ public class SearchManagerTest {
     searchParameters.setFacetValues(Lists.newArrayList(new FacetParameter().setName("unknown")));
 
     instance.search(Person.class, TYPE_STRING, searchParameters);
-  }
-
-  private void setupFacetFinder(List<String> facetNames) {
-    Map<String, FacetInfo> facetInfos = Maps.newHashMap();
-    for (String facetName : facetNames) {
-      facetInfos.put(facetName, new FacetInfo().setName(facetName).setTitle("test").setType(FacetType.LIST));
-    }
-
-    when(facetFinder.findFacets(Matchers.<Class<? extends Document>> any())).thenReturn(facetInfos);
-  }
-
-  private void setupFullTextSearchFinder(List<String> fullTextSearchNames) {
-    /* 
-     * Use LinkedHashSet, so the order is maintained.
-     * This is needed so the easy compare of the term is allowed.
-     */
-    Set<String> fields = Sets.newLinkedHashSet();
-    for (String fullTextSearchName : fullTextSearchNames) {
-      fields.add(fullTextSearchName);
-    }
-
-    when(fullTextSearchFieldFinder.findFields(Matchers.<Class<? extends Document>> any())).thenReturn(fields);
   }
 
   private void verifySearchResult(SearchResult expected, SearchResult actual) {

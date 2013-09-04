@@ -6,7 +6,7 @@ import nl.knaw.huygens.repository.annotations.IndexAnnotation;
 
 import org.apache.commons.lang.StringUtils;
 
-public class SortableFieldFinder extends AbstractFieldFinder {
+class SortableFieldFinder extends AbstractFieldFinder {
 
   @Override
   protected void addField(Set<String> fields, IndexAnnotation indexAnnotation) {
