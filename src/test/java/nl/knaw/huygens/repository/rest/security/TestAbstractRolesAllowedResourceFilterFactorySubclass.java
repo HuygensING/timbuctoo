@@ -1,4 +1,6 @@
-package nl.knaw.huygens.repository.server.security;
+package nl.knaw.huygens.repository.rest.security;
+
+import nl.knaw.huygens.repository.rest.security.AbstractRolesAllowedResourceFilterFactory;
 
 import com.sun.jersey.api.model.AbstractMethod;
 import com.sun.jersey.spi.container.ContainerRequestFilter;
