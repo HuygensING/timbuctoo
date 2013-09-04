@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.resources;
+package nl.knaw.huygens.repository.rest.resources;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -81,7 +81,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   @Override
   protected AppDescriptor configure() {
     WebAppDescriptor webAppDescriptor = new WebAppDescriptor.Builder().build();
-    webAppDescriptor.getInitParams().put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.repository.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.repository.providers");
+    webAppDescriptor.getInitParams().put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.repository.rest.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.repository.providers");
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
         MockApisAuthorizationFilterFactory.class.getName() + ";" + SecurityContextCreatorResourceFilterFactory.class.getName() + ";" + RolesAllowedResourceFilterFactory.class.getName() + ";");
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, LoggingFilter.class.getName());
