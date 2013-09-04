@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.util;
+package nl.knaw.huygens.repository.rest.util;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
