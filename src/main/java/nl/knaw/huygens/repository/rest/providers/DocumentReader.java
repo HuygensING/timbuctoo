@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.providers;
+package nl.knaw.huygens.repository.rest.providers;
 
 import java.io.IOException;
 import java.io.InputStream;
