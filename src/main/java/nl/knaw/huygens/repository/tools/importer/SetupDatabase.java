@@ -6,6 +6,7 @@ import nl.knaw.huygens.repository.config.Configuration;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+@Deprecated
 public class SetupDatabase {
 
   public static void main(String[] args) throws Exception {
