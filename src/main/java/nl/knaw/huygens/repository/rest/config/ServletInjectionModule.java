@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.config;
+package nl.knaw.huygens.repository.rest.config;
 
 import java.util.Map;
 
