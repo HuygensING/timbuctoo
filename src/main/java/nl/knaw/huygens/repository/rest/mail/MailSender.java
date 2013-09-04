@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.mail;
+package nl.knaw.huygens.repository.rest.mail;
 
 public interface MailSender {
 
