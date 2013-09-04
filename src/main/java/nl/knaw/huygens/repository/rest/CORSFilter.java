@@ -1,4 +1,4 @@
-package nl.knaw.huygens.rest.repository;
+package nl.knaw.huygens.repository.rest;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;

@@ -2,8 +2,8 @@ package nl.knaw.huygens.repository.config;
 
 import java.util.Map;
 
+import nl.knaw.huygens.repository.rest.CORSFilter;
 import nl.knaw.huygens.repository.server.security.apis.SecurityContextCreatorResourceFilterFactory;
-import nl.knaw.huygens.rest.repository.CORSFilter;
 
 import com.google.common.collect.Maps;
 import com.sun.jersey.api.container.filter.LoggingFilter;
