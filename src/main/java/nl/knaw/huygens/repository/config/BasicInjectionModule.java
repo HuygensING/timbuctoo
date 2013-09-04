@@ -3,10 +3,10 @@ package nl.knaw.huygens.repository.config;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
-import nl.knaw.huygens.repository.mail.MailSender;
-import nl.knaw.huygens.repository.mail.MailSenderFactory;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.persistence.PersistenceManagerFactory;
+import nl.knaw.huygens.repository.rest.mail.MailSender;
+import nl.knaw.huygens.repository.rest.mail.MailSenderFactory;
 import nl.knaw.huygens.repository.search.FacetFinder;
 import nl.knaw.huygens.repository.search.FullTextSearchFieldFinder;
 import nl.knaw.huygens.repository.search.SortableFieldFinder;

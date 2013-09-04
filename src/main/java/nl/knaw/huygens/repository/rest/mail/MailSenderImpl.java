@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.mail;
+package nl.knaw.huygens.repository.rest.mail;
 
 import java.util.Date;
 import java.util.Properties;
