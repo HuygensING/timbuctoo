@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.resources;
+package nl.knaw.huygens.repository.rest.resources;
 
 import static org.junit.Assert.assertEquals;
 
