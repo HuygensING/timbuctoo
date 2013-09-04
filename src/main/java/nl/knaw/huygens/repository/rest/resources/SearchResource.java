@@ -27,7 +27,6 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.search.FacetDoesNotExistException;
 import nl.knaw.huygens.repository.search.SearchManager;
-import nl.knaw.huygens.repository.search.SortableFieldFinder;
 import nl.knaw.huygens.repository.storage.JsonViews;
 import nl.knaw.huygens.repository.storage.StorageManager;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
@@ -51,8 +50,6 @@ public class SearchResource {
   private StorageManager storageManager;
   @Inject
   private DocTypeRegistry registry;
-  @Inject
-  SortableFieldFinder sortableFieldFinder;
 
   @POST
   @APIDesc("Searches the Solr index")
@@ -119,7 +116,7 @@ public class SearchResource {
     int hi = toRange(lo + rows, 0, ids.size());
 
     List<String> idsToGet = ids.subList(lo, hi);
-    Set<String> sortableFields = sortableFieldFinder.findFields(type);
+    Set<String> sortableFields = searchManager.findSortableFields(type);
 
     Map<String, Object> returnValue = Maps.newConcurrentMap();
     returnValue.put("term", result.getTerm());

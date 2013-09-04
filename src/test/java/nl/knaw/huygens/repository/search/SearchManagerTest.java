@@ -55,14 +55,16 @@ public class SearchManagerTest {
   private FacetFinder facetFinder;
   private FullTextSearchFieldFinder fullTextSearchFieldFinder;
   private DocTypeRegistry docTypeRegistry;
+  private SortableFieldFinder sortableFieldFinder;
 
   @Before
   public void setUp() {
     solrInstance = mock(LocalSolrServer.class);
     facetFinder = mock(FacetFinder.class);
     fullTextSearchFieldFinder = mock(FullTextSearchFieldFinder.class);
+    sortableFieldFinder = mock(SortableFieldFinder.class);
     docTypeRegistry = new DocTypeRegistry(Person.class.getPackage().getName() + " " + ATLGPerson.class.getPackage().getName());
-    instance = new SearchManager(solrInstance, facetFinder, fullTextSearchFieldFinder, docTypeRegistry);
+    instance = new SearchManager(solrInstance, facetFinder, fullTextSearchFieldFinder, docTypeRegistry, sortableFieldFinder);
   }
 
   @Test
