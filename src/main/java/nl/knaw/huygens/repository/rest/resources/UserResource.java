@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.resources;
+package nl.knaw.huygens.repository.rest.resources;
 
 import java.io.IOException;
 import java.util.List;
