@@ -7,13 +7,13 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.rest.providers.HTMLGenerator;
 import nl.knaw.huygens.repository.rest.providers.ReferenceSerializer;
-import nl.knaw.huygens.repository.storage.mongo.model.TestSystemDocument;
-import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
-import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
-import nl.knaw.huygens.repository.variation.model.TestInheritsFromTestBaseDoc;
-import nl.knaw.huygens.repository.variation.model.projecta.OtherDoc;
-import nl.knaw.huygens.repository.variation.model.projecta.ProjectAGeneralTestDoc;
-import nl.knaw.huygens.repository.variation.model.projectb.ProjectBGeneralTestDoc;
+import nl.knaw.huygens.repository.rest.providers.model.GeneralTestDoc;
+import nl.knaw.huygens.repository.rest.providers.model.TestConcreteDoc;
+import nl.knaw.huygens.repository.rest.providers.model.TestInheritsFromTestBaseDoc;
+import nl.knaw.huygens.repository.rest.providers.model.TestSystemDocument;
+import nl.knaw.huygens.repository.rest.providers.model.projecta.OtherDoc;
+import nl.knaw.huygens.repository.rest.providers.model.projecta.ProjectAGeneralTestDoc;
+import nl.knaw.huygens.repository.rest.providers.model.projectb.ProjectBGeneralTestDoc;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -29,9 +29,9 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 
 public class HTMLGeneratorTest {
 
-  private static final String PACKAGE = "nl.knaw.huygens.repository.variation.model";
-  private static final String PACKAGEA = "nl.knaw.huygens.repository.variation.model.projecta";
-  private static final String PACKAGEB = "nl.knaw.huygens.repository.variation.model.projectb";
+  private static final String PACKAGE = "nl.knaw.huygens.repository.rest.providers.model";
+  private static final String PACKAGEA = "nl.knaw.huygens.repository.rest.providers.model.projecta";
+  private static final String PACKAGEB = "nl.knaw.huygens.repository.rest.providers.model.projectb";
   private static final String MODEL_PACKAGES = PACKAGE + " " + PACKAGEA + " " + PACKAGEB;
 
   private HTMLGenerator gen;
@@ -74,7 +74,7 @@ public class HTMLGeneratorTest {
 
     String html = generateHtml(doc);
 
-    assertContains(html, "Class", "nl.knaw.huygens.repository.storage.mongo.model.TestSystemDocument");
+    assertContains(html, "Class", TestSystemDocument.class.getName());
     assertContains(html, "Name", "none");
     assertContains(html, "Test Value", "none");
     assertContains(html, "Id", "TSD0000000001");
@@ -103,7 +103,7 @@ public class HTMLGeneratorTest {
 
     String html = generateHtml(doc);
 
-    assertContains(html, "Class", "nl.knaw.huygens.repository.variation.model.TestConcreteDoc");
+    assertContains(html, "Class", TestConcreteDoc.class.getName());
     assertContains(html, "Name", "test");
     assertContains(html, "Id", "TCD0000000001");
     assertContains(html, "Rev", "0");
@@ -133,7 +133,7 @@ public class HTMLGeneratorTest {
 
     String html = generateHtml(doc);
 
-    assertContains(html, "Class", "nl.knaw.huygens.repository.variation.model.GeneralTestDoc");
+    assertContains(html, "Class", GeneralTestDoc.class.getName());
     assertContains(html, "Name", "test");
     assertContains(html, "General Test Doc Value", "generalTestDocValue");
     assertContains(html, "Id", "GTD0000000001");
@@ -159,8 +159,8 @@ public class HTMLGeneratorTest {
     doc.addVariation(TestInheritsFromTestBaseDoc.class, doc.getId());
 
     String html = generateHtml(doc);
-
-    assertContains(html, "Class", "nl.knaw.huygens.repository.variation.model.projecta.OtherDoc");
+   
+    assertContains(html, "Class", OtherDoc.class.getName());
     assertContains(html, "Name", "none");
     assertContains(html, "Other Thing", "test");
     assertContains(html, "Id", "OTD0000000001");
