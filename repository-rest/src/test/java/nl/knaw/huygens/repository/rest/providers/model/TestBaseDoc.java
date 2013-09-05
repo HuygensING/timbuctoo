@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.variation.model;
+package nl.knaw.huygens.repository.rest.providers.model;
 
 import nl.knaw.huygens.repository.model.Document;
 
