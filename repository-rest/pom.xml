@@ -47,6 +47,14 @@
       <artifactId>jersey-guice</artifactId>
       <version>${jersey.version}</version>
     </dependency>
+    
+    <!-- Email support -->
+    <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>mail</artifactId>
+      <version>1.4.7</version>
+    </dependency>
+
     <!-- ## End of main libraries ## -->
     
     <!-- ## Test libraries ## -->
