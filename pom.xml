@@ -16,7 +16,7 @@
 
   <modules>
     <module>repository-core</module>
-    <!--<module>repository-rest</module>-->
+    <module>repository-rest</module>
   </modules>
 
   <prerequisites>
