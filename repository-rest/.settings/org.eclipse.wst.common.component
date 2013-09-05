@@ -6,7 +6,7 @@
         <dependent-module archiveName="repository-core-1.0.4-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-core/repository-core">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <property name="context-root" value="repository-rest"/>
         <property name="java-output-path" value="/repository-rest/target/classes"/>
+        <property name="context-root" value="repository"/>
     </wb-module>
 </project-modules>
