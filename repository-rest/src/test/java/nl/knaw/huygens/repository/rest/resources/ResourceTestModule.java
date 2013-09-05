@@ -24,9 +24,9 @@ import com.sun.jersey.guice.JerseyServletModule;
 class ResourceTestModule extends JerseyServletModule {
 
   private static final String M0 = "nl.knaw.huygens.repository.model";
-  private static final String M1 = "nl.knaw.huygens.repository.variation.model";
-  private static final String M1A = "nl.knaw.huygens.repository.variation.model.projecta";
-  private static final String M1B = "nl.knaw.huygens.repository.variation.model.projectb";
+  private static final String M1 = "nl.knaw.huygens.repository.rest.providers.model";
+  private static final String M1A = "nl.knaw.huygens.repository.rest.providers.model.projecta";
+  private static final String M1B = "nl.knaw.huygens.repository.rest.providers.model.projectb";
   private static final String PACKAGES = M0 + " " + M1 + " " + M1A + " " + M1B;
 
   private DocTypeRegistry docTypeRegistry;

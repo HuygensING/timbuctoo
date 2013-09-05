@@ -19,8 +19,8 @@ import javax.validation.metadata.ConstraintDescriptor;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
-import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
-import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
+import nl.knaw.huygens.repository.rest.providers.model.GeneralTestDoc;
+import nl.knaw.huygens.repository.rest.providers.model.TestConcreteDoc;
 
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
