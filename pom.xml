@@ -191,20 +191,13 @@
       <version>3.2.1</version>
     </dependency>
 
-    <!-- Handle pesistancy server client -->
+    <!-- Handle persistency server client -->
     <dependency>
       <groupId>handle.net</groupId>
       <artifactId>handle-client</artifactId>
       <version>7.1</version>
     </dependency>
-
-    <!-- Email support -->
-    <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>mail</artifactId>
-      <version>1.4.7</version>
-    </dependency>
-
+    
     <!-- Apache validation -->
     <dependency>
       <groupId>javax.validation</groupId>
