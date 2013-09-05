@@ -4,7 +4,7 @@
   <groupId>repository</groupId>
   <artifactId>repository</artifactId>
   <version>1.0.4-SNAPSHOT</version>
-  <packaging>war</packaging>
+  <packaging>pom</packaging>
   <name>datarepository</name>
   <description>Back-end software that provides different front-ends to share data and variations on that data.</description>
   <url>http://repository.huygens.knaw.nl/static/search.html</url>
@@ -13,6 +13,11 @@
     <url>http://www.huygens.knaw.nl/</url>
   </organization>
   <inceptionYear>2013</inceptionYear>
+
+  <modules>
+    <module>repository-core</module>
+    <!--<module>repository-rest</module>-->
+  </modules>
 
   <prerequisites>
     <maven>3.0</maven>
