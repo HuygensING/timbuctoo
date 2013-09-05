@@ -4,6 +4,7 @@
   <parent>
     <groupId>repository</groupId>
     <artifactId>repository</artifactId>
+    <version>1.0.4-SNAPSHOT</version>
   </parent>
   <artifactId>repository-rest</artifactId>
   <packaging>war</packaging>
@@ -13,6 +14,7 @@
     <dependency>
       <groupId>repository</groupId>
       <artifactId>repository-core</artifactId>
+      <version>1.0.4-SNAPSHOT</version>
     </dependency>
   </dependencies> 
 </project>
