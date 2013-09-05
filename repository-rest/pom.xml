@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>repository</groupId>
+    <artifactId>repository</artifactId>
+  </parent>
+  <artifactId>repository-rest</artifactId>
+  <packaging>war</packaging>
+  <name>datarepository REST api</name>
+  <description>This artifact contains the REST-api of the repository.</description>
+  <dependencies>
+    <dependency>
+      <groupId>repository</groupId>
+      <artifactId>repository-core</artifactId>
+    </dependency>
+  </dependencies> 
+</project>
