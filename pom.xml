@@ -100,7 +100,6 @@
   <properties>
     <apis.version>1.2.3</apis.version>
     <jackson.version>2.1.1</jackson.version>
-    <jersey.version>1.16</jersey.version>
     <mockito.version>1.9.0</mockito.version>
     <slf4j.version>1.6.6</slf4j.version>
     <solr.version>4.3.1</solr.version>
@@ -176,28 +175,7 @@
       <version>${jackson.version}</version>
     </dependency>
 
-    <!-- Jersey -->
-    <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-client</artifactId>
-      <version>${jersey.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-server</artifactId>
-      <version>${jersey.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-servlet</artifactId>
-      <version>${jersey.version}</version>
-    </dependency>
-    <!-- Jersey Guice plugin -->
-    <dependency>
-      <groupId>com.sun.jersey.contribs</groupId>
-      <artifactId>jersey-guice</artifactId>
-      <version>${jersey.version}</version>
-    </dependency>
+    
 
     <!-- Commons Configuration, assists with reading configuration files. -->
     <dependency>
@@ -462,20 +440,7 @@
     <!-- ## End of build helper libraries ## -->
 
     <!-- ## Test libraries ## -->
-    <!-- Jersey test framework -->
-    <dependency>
-      <groupId>com.sun.jersey.jersey-test-framework</groupId>
-      <artifactId>jersey-test-framework-core</artifactId>
-      <version>${jersey.version}</version>
-      
-    </dependency>
-    <dependency>
-      <groupId>com.sun.jersey.jersey-test-framework</groupId>
-      <artifactId>jersey-test-framework-inmemory</artifactId>
-      <version>${jersey.version}</version>
-      
-    </dependency>
-
+    
     <!-- JUnit test framework -->
     <dependency>
       <groupId>junit</groupId>
