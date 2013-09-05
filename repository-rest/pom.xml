@@ -10,13 +10,59 @@
   <packaging>war</packaging>
   <name>datarepository REST api</name>
   <description>This artifact contains the REST-api of the repository.</description>
+  
+  <properties>
+    <jersey.version>1.16</jersey.version>
+  </properties>
+  
   <dependencies>
+    <!-- Core project -->
     <dependency>
       <groupId>repository</groupId>
       <artifactId>repository-core</artifactId>
       <version>1.0.4-SNAPSHOT</version>
     </dependency>
-  </dependencies> 
+    <!-- Jersey -->
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-client</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-server</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-servlet</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <!-- Jersey Guice plugin -->
+    <dependency>
+      <groupId>com.sun.jersey.contribs</groupId>
+      <artifactId>jersey-guice</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    
+    <!-- ## End of main libraries ## -->
+    
+    <!-- ## Test libraries ## -->
+    <!-- Jersey test framework -->
+    <dependency>
+      <groupId>com.sun.jersey.jersey-test-framework</groupId>
+      <artifactId>jersey-test-framework-core</artifactId>
+      <version>${jersey.version}</version>
+      
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey.jersey-test-framework</groupId>
+      <artifactId>jersey-test-framework-inmemory</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+  </dependencies>
+  <!-- ## End of test libraries ## -->
+  
   <build>
     <plugins>
       <plugin>
