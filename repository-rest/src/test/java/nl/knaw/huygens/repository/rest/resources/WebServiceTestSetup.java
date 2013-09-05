@@ -36,7 +36,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   protected static final String USER_ID = "USR000000001";
   protected static final String VRE_ID = "vreID";
   protected static Injector injector;
-  private static ResourceTestModule restAutoResourceTestModule;
+  private static ResourceTestModule resourceTestModule;
 
   public WebServiceTestSetup() {
     super(new GuiceTestContainerFactory(injector));
@@ -44,8 +44,8 @@ public abstract class WebServiceTestSetup extends JerseyTest {
 
   @BeforeClass
   public static void setUpClass() {
-    restAutoResourceTestModule = new ResourceTestModule();
-    injector = Guice.createInjector(restAutoResourceTestModule);
+    resourceTestModule = new ResourceTestModule();
+    injector = Guice.createInjector(resourceTestModule);
   }
 
   @Before
@@ -75,7 +75,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   @After
   public void tearDownMocks() {
     // Reset the mocked object so they influence no tests after the current.
-    restAutoResourceTestModule.cleanUpMocks();
+    resourceTestModule.cleanUpMocks();
   }
 
   @Override
