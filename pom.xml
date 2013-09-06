@@ -525,6 +525,30 @@
         </configuration>
       </plugin>
       <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <echo>change configuration files for environment '${environment}'</echo>
+                <!-- delete the current config.xml and replace it with the one of the selected environment -->
+                <delete file="${basedir}/src/main/config/config.xml" />
+                <copy file="${basedir}/src/main/config/config-${environment}.xml"
+                	  tofile="${basedir}/src/main/config/config.xml"/>
+                <!-- delete the current config.js and replace it with the one of the selected environment -->
+                <delete file="${basedir}/src/main/webapp/static/config.js" />
+                <copy file="${basedir}/src/main/webapp/static/config-${environment}.js"
+                	  tofile="${basedir}/src/main/webapp/static/config.js"/>
+              </tasks>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-war-plugin</artifactId>
         <version>2.4</version>
         <configuration>
@@ -532,7 +556,7 @@
             <resource>
               <directory>${basedir}/src/main/config</directory>
               <targetPath>WEB-INF</targetPath>
-            <filtering>false</filtering>
+              <filtering>false</filtering>
               <includes>
                 <include>config.xml</include>
               </includes>
@@ -543,4 +567,28 @@
       </plugin>
     </plugins>
   </build>
+  
+  <profiles>
+    <profile>
+      <id>dev</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <environment>dev</environment>
+      </properties>
+    </profile>
+    <profile>
+      <id>test</id>
+      <properties>
+        <environment>test</environment>
+      </properties>
+    </profile>
+    <profile>
+      <id>prod</id>
+      <properties>
+        <environment>prod</environment>
+      </properties>
+    </profile>
+  </profiles>
 </project>
