@@ -167,7 +167,8 @@ public class AtlantischeGidsImporter {
 
   private <T> T readJsonValue(File file, Class<T> valueType) throws Exception {
     String text = Files.readTextFromFile(file);
-    String converted = EncodingFixer.convert2(text);
+    // For Atlantische Gids it seems OK to map "Ã " --> "à "
+    String converted = EncodingFixer.convert2(text).replaceAll("Ã ", "à ");
     if (!converted.equals(text)) {
       int n = text.length() - converted.length();
       handleError("Fixed %d character encoding error%s in '%s'", n, (n == 1) ? "" : "s", file.getName());
