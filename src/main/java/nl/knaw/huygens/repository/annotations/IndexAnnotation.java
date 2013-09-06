@@ -15,7 +15,7 @@ import nl.knaw.huygens.solr.FacetType;
  *   <field name="id" type="string" indexed="true" stored="true" required="true"/>
  *   <field name="desc" type="string" indexed="true" stored="true" multiValued="true"/>
  * Dynamic fields use a name pattern:
- *   <dynamicField name="facet_sort_*" type="string" indexed="true" stored="false" multiValued="false"/>
+ *   <dynamicField name="facet_sort_*" type="alphaOnlySort" indexed="true" stored="false" multiValued="false"/>
  *   <dynamicField name="facet_s_*" type="string" indexed="true" stored="true" multiValued="true"/>
  *   <dynamicField name="facet_t_*" type="textgen" indexed="true" stored="true" multiValued="true"/>
  *   <dynamicField name="facet_i_*" type="int" indexed="true" stored="true" multiValued="true"/>
