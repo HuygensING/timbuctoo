@@ -6,6 +6,9 @@
         <dependent-module archiveName="repository-core-1.0.4-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-core/repository-core">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="repository-search-1.0.4-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-search/repository-search">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="java-output-path" value="/repository-rest/target/classes"/>
         <property name="context-root" value="repository-rest"/>
     </wb-module>
