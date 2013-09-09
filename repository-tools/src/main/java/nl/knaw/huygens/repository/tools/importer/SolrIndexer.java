@@ -11,7 +11,7 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.VariationStorage;
-import nl.knaw.huygens.repository.util.Progress;
+import nl.knaw.huygens.repository.tools.util.Progress;
 import nl.knaw.huygens.repository.util.RepositoryException;
 
 import com.google.inject.Guice;
