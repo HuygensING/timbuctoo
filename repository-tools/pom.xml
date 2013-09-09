@@ -11,17 +11,17 @@
   <name>repository tools</name>
   
   <dependencies>
-   <!-- ## Repository packages ## -->
+    <!-- ## Repository packages ## -->
     <!-- Core project -->
-  	<dependency>
-  	  <groupId>repository</groupId>
-  	  <artifactId>repository-core</artifactId>
+    <dependency>
+      <groupId>repository</groupId>
+      <artifactId>repository-core</artifactId>
       <version>1.0.4-SNAPSHOT</version>
-  	</dependency>
-  	<!-- ## End of repository packages ## -->
+    </dependency>
+    <!-- ## End of repository packages ## -->
   	
-  	<!-- Main packages -->
-  	<!-- Apis authorization server communication -->
+    <!-- Main packages -->
+    <!-- Apis authorization server communication -->
     <dependency>
       <groupId>nl.surfnet.apis</groupId>
       <artifactId>apis-resource-server-library</artifactId>
@@ -142,6 +142,5 @@
       <version>9.1-901.jdbc4</version>
     </dependency>
     <!-- ## End of import tooling libraries ##-->
-    
   </dependencies>
 </project>
