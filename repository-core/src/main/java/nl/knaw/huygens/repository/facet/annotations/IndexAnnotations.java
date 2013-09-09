@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.annotations;
+package nl.knaw.huygens.repository.facet.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
