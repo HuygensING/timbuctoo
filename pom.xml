@@ -18,6 +18,7 @@
     <module>repository-core</module>
     <module>repository-rest</module>
     <module>repository-search</module>
+    <module>repository-tools</module>
   </modules>
 
   <prerequisites>
