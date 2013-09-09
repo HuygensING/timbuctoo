@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import nl.knaw.huygens.repository.util.Paths;
+import nl.knaw.huygens.repository.config.Configuration;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -85,7 +85,7 @@ public class LocalSolrServer {
   }
 
   private String getSolrDir(String path) {
-    return Strings.isNullOrEmpty(path) ? Paths.pathInUserHome("repository/solr") : path;
+    return Strings.isNullOrEmpty(path) ? Configuration.pathInUserHome("repository/solr") : path;
   }
 
   public void add(String core, SolrInputDocument doc) throws SolrServerException, IOException {
