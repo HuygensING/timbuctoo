@@ -37,12 +37,12 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 
 public class SearchManagerTest {
-  private static final ArrayList<String> FULL_TEXT_SEARCH_NAMES = Lists.newArrayList("facet_t_name");
+  private static final ArrayList<String> FULL_TEXT_SEARCH_NAMES = Lists.newArrayList("dynamic_t_name");
   private static final Class<Person> TYPE = Person.class;
   private static final String ID_FIELD_NAME = "id";
   private static final String TYPE_STRING = "person";
   private static final String SEARCH_TERM = "term";
-  private static final String EXPECTED_TERM = String.format("facet_t_name:%s", SEARCH_TERM);
+  private static final String EXPECTED_TERM = String.format("dynamic_t_name:%s", SEARCH_TERM);
 
   private SearchManager instance;
   private LocalSolrServer solrInstance;
@@ -59,7 +59,7 @@ public class SearchManagerTest {
   @Test
   public void testSearchOneResult() throws SolrServerException, FacetDoesNotExistException {
     List<String> documentIds = Lists.newArrayList("id1");
-    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
+    List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
 
     testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM, TYPE_STRING);
@@ -68,7 +68,7 @@ public class SearchManagerTest {
   @Test
   public void testSearchSubType() throws SolrServerException, FacetDoesNotExistException {
     List<String> documentIds = Lists.newArrayList("id1");
-    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
+    List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
     Class<? extends Document> type = ATLGPerson.class;
 
@@ -79,7 +79,7 @@ public class SearchManagerTest {
   @Test
   public void testSearchMultipleResults() throws SolrServerException, FacetDoesNotExistException {
     List<String> documentIds = Lists.newArrayList("id1", "id2", "id3", "id4");
-    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
+    List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
 
     testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM, TYPE_STRING);
@@ -88,10 +88,10 @@ public class SearchManagerTest {
   @Test
   public void testSearchWildCard() throws SolrServerException, FacetDoesNotExistException {
     List<String> documentIds = Lists.newArrayList("id1");
-    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
+    List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
 
-    String expectedTerm = "facet_t_name:*";
+    String expectedTerm = "dynamic_t_name:*";
     String searchTerm = "*";
     testSearch(TYPE, documentIds, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm, TYPE_STRING);
   }
@@ -99,10 +99,10 @@ public class SearchManagerTest {
   @Test
   public void testSearchMultipleTerms() throws SolrServerException, FacetDoesNotExistException {
     List<String> documentIds = Lists.newArrayList("id1");
-    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
+    List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
 
-    String expectedTerm = "facet_t_name:(test 123)";
+    String expectedTerm = "dynamic_t_name:(test 123)";
     String searchTerm = "test 123";
     testSearch(TYPE, documentIds, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm, TYPE_STRING);
   }
@@ -110,11 +110,11 @@ public class SearchManagerTest {
   @Test
   public void testSearchMultipleFields() throws SolrServerException, FacetDoesNotExistException {
     List<String> documentIds = Lists.newArrayList("id1", "id2", "id3", "id4");
-    List<String> facetFieldNames = Lists.newArrayList("facet_t_simple");
+    List<String> facetFieldNames = Lists.newArrayList("dynamic_t_simple");
     int numberOfFacetValues = 1;
 
-    List<String> fullTextSearchFields = Lists.newArrayList("facet_t_simple", "facet_t_simple1");
-    String expectedTerm = String.format("facet_t_simple1:%s facet_t_simple:%s", SEARCH_TERM, SEARCH_TERM);
+    List<String> fullTextSearchFields = Lists.newArrayList("dynamic_t_simple", "dynamic_t_simple1");
+    String expectedTerm = String.format("dynamic_t_simple1:%s dynamic_t_simple:%s", SEARCH_TERM, SEARCH_TERM);
 
     testSearch(ClassWithMupltipleFullTestSearchFields.class, documentIds, SEARCH_TERM, "classwithmupltiplefulltestsearchfields", facetFieldNames, fullTextSearchFields, numberOfFacetValues,
         Lists.<FacetParameter> newArrayList(), expectedTerm, TYPE_STRING);
@@ -123,7 +123,7 @@ public class SearchManagerTest {
   @Test
   public void testSearchNoResults() throws SolrServerException, FacetDoesNotExistException {
     List<String> documentIds = Lists.newArrayList();
-    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
+    List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
     testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM, TYPE_STRING);
   }
@@ -131,12 +131,12 @@ public class SearchManagerTest {
   @Test
   public void testSearchWithOneFacetOneValue() throws SolrServerException, FacetDoesNotExistException {
     List<String> documentIds = Lists.newArrayList("id1");
-    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
+    List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
 
-    List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("facet_s_birthDate", "value"));
+    List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("dynamic_s_birthDate", "value"));
 
-    String expectedTerm = String.format("+facet_t_name:%s +facet_s_birthDate:value", SEARCH_TERM);
+    String expectedTerm = String.format("+dynamic_t_name:%s +dynamic_s_birthDate:value", SEARCH_TERM);
 
     testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm, TYPE_STRING);
   }
@@ -144,12 +144,12 @@ public class SearchManagerTest {
   @Test
   public void testSearchWithOneFacetMultipleValues() throws SolrServerException, FacetDoesNotExistException {
     List<String> documentIds = Lists.newArrayList("id1");
-    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate");
+    List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
 
-    List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("facet_s_birthDate", "value", "value1"));
+    List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("dynamic_s_birthDate", "value", "value1"));
 
-    String expectedTerm = String.format("+facet_t_name:%s +facet_s_birthDate:(value value1)", SEARCH_TERM);
+    String expectedTerm = String.format("+dynamic_t_name:%s +dynamic_s_birthDate:(value value1)", SEARCH_TERM);
 
     testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm, TYPE_STRING);
   }
@@ -157,12 +157,12 @@ public class SearchManagerTest {
   @Test
   public void testSearchWithMultipleFacetsOneValue() throws SolrServerException, FacetDoesNotExistException {
     List<String> documentIds = Lists.newArrayList("id1");
-    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate", "facet_s_deathDate");
+    List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate", "dynamic_s_deathDate");
     int numberOfFacetValues = 1;
 
-    List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("facet_s_birthDate", "value"), createFacetParam("facet_s_deathDate", "values"));
+    List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("dynamic_s_birthDate", "value"), createFacetParam("dynamic_s_deathDate", "values"));
 
-    String expectedTerm = String.format("+facet_t_name:%s +facet_s_birthDate:value +facet_s_deathDate:values", SEARCH_TERM);
+    String expectedTerm = String.format("+dynamic_t_name:%s +dynamic_s_birthDate:value +dynamic_s_deathDate:values", SEARCH_TERM);
 
     testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm, TYPE_STRING);
   }
@@ -170,12 +170,12 @@ public class SearchManagerTest {
   @Test
   public void testSearchWithMultipleFacetsMultipleValues() throws SolrServerException, FacetDoesNotExistException {
     List<String> documentIds = Lists.newArrayList("id1");
-    List<String> facetFieldNames = Lists.newArrayList("facet_s_birthDate", "facet_s_deathDate");
+    List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate", "dynamic_s_deathDate");
     int numberOfFacetValues = 1;
 
-    List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("facet_s_birthDate", "value", "value1"), createFacetParam("facet_s_deathDate", "value1", "value2"));
+    List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("dynamic_s_birthDate", "value", "value1"), createFacetParam("dynamic_s_deathDate", "value1", "value2"));
 
-    String expectedTerm = String.format("+facet_t_name:%s +facet_s_birthDate:(value value1) +facet_s_deathDate:(value1 value2)", SEARCH_TERM);
+    String expectedTerm = String.format("+dynamic_t_name:%s +dynamic_s_birthDate:(value value1) +dynamic_s_deathDate:(value1 value2)", SEARCH_TERM);
 
     testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm, TYPE_STRING);
   }

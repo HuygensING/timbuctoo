@@ -24,7 +24,7 @@ public class Person extends DomainDocument {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "facet_t_name", isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
   public String getIndexedName() {
     return name.getFullName();
   }
@@ -37,7 +37,7 @@ public class Person extends DomainDocument {
     this.name = name;
   }
 
-  @IndexAnnotation(fieldName = "facet_s_birthDate", isFaceted = true, canBeEmpty = true)
+  @IndexAnnotation(fieldName = "dynamic_s_birthDate", isFaceted = true, canBeEmpty = true)
   public Datable getBirthDate() {
     return birthDate;
   }
@@ -46,7 +46,7 @@ public class Person extends DomainDocument {
     this.birthDate = birthDate;
   }
 
-  @IndexAnnotation(fieldName = "facet_s_deathDate", isFaceted = true, canBeEmpty = true)
+  @IndexAnnotation(fieldName = "dynamic_s_deathDate", isFaceted = true, canBeEmpty = true)
   public Datable getDeathDate() {
     return deathDate;
   }

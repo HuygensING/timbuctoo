@@ -32,7 +32,7 @@ public class FacetFinderTest {
   @Test
   public void testFindFacetsAnnotatedClass() {
     Map<String, FacetInfo> expectedFacets = Maps.newHashMap();
-    expectedFacets.put("facet_s_simple", createFacetInfo("facet_s_simple", FacetType.LIST, "Simple"));
+    expectedFacets.put("dynamic_s_simple", createFacetInfo("dynamic_s_simple", FacetType.LIST, "Simple"));
 
     testFindFacets(expectedFacets, SimpleAnnotatedClass.class);
   }
@@ -40,8 +40,8 @@ public class FacetFinderTest {
   @Test
   public void testFindFacetsComplexAnnotatedClassAllFaceted() {
     Map<String, FacetInfo> expectedFacets = Maps.newHashMap();
-    expectedFacets.put("facet_t_complex1", createFacetInfo("facet_t_complex1", FacetType.LIST, "Complex1"));
-    expectedFacets.put("facet_t_complex2", createFacetInfo("facet_t_complex2", FacetType.LIST, "Complex2"));
+    expectedFacets.put("dynamic_t_complex1", createFacetInfo("dynamic_t_complex1", FacetType.LIST, "Complex1"));
+    expectedFacets.put("dynamic_t_complex2", createFacetInfo("dynamic_t_complex2", FacetType.LIST, "Complex2"));
 
     testFindFacets(expectedFacets, ComplexAnnotatedClass.class);
   }
@@ -49,7 +49,7 @@ public class FacetFinderTest {
   @Test
   public void testFindFacetsComplexAnnotatedClassNotAllFaceted() {
     Map<String, FacetInfo> expectedFacets = Maps.newHashMap();
-    expectedFacets.put("facet_t_complex1", createFacetInfo("facet_t_complex1", FacetType.LIST, "Complex1"));
+    expectedFacets.put("dynamic_t_complex1", createFacetInfo("dynamic_t_complex1", FacetType.LIST, "Complex1"));
 
     testFindFacets(expectedFacets, ComplexAnnotatedClassNotAllFaceted.class);
   }
@@ -64,8 +64,8 @@ public class FacetFinderTest {
   @Test
   public void testFindFacetsAnnotatedClassAndSuperClass() {
     Map<String, FacetInfo> expectedFacets = Maps.newHashMap();
-    expectedFacets.put("facet_s_simple", createFacetInfo("facet_s_simple", FacetType.LIST, "Simple"));
-    expectedFacets.put("facet_s_prop", createFacetInfo("facet_s_prop", FacetType.LIST, "Property"));
+    expectedFacets.put("dynamic_s_simple", createFacetInfo("dynamic_s_simple", FacetType.LIST, "Simple"));
+    expectedFacets.put("dynamic_s_prop", createFacetInfo("dynamic_s_prop", FacetType.LIST, "Property"));
 
     testFindFacets(expectedFacets, SimpleAnnotatedSubClass.class);
   }
@@ -73,7 +73,7 @@ public class FacetFinderTest {
   @Test
   public void testFindFacetsAnnotatedSuperClass() {
     Map<String, FacetInfo> expectedFacets = Maps.newHashMap();
-    expectedFacets.put("facet_s_simple", createFacetInfo("facet_s_simple", FacetType.LIST, "Simple"));
+    expectedFacets.put("dynamic_s_simple", createFacetInfo("dynamic_s_simple", FacetType.LIST, "Simple"));
 
     testFindFacets(expectedFacets, NonAnnotatedSubClass.class);
   }

@@ -230,16 +230,16 @@ public class SolrInputDocGeneratorTest {
     String descriptionDoc1 = "doc1";
     Document doc1 = createDocument(descriptionDoc1);
     SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(doc1);
-    processMethod(doc1, doc1Generator, "getDisplayName", false, "facet_sort_desc");
+    processMethod(doc1, doc1Generator, "getDisplayName", false, "dynamic_sort_desc");
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
     String descriptionDoc2 = "doc2";
     Document doc2 = createDocument(descriptionDoc2, doc1.getId());
     SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(doc2, inputDoc1);
-    processMethod(doc2, doc2Generator, "getDisplayName", false, "facet_sort_desc");
+    processMethod(doc2, doc2Generator, "getDisplayName", false, "dynamic_sort_desc");
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
-    SolrInputField descriptionField = inputDoc2.getField("facet_sort_desc");
+    SolrInputField descriptionField = inputDoc2.getField("dynamic_sort_desc");
     Collection<Object> actualIds = descriptionField.getValues();
 
     assertEquals(1, actualIds.size());

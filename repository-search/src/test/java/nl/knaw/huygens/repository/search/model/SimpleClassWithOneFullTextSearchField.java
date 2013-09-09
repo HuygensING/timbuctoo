@@ -17,7 +17,7 @@ public class SimpleClassWithOneFullTextSearchField extends Document {
     return null;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_simple", isFaceted = true, title = "Simple")
+  @IndexAnnotation(fieldName = "dynamic_t_simple", isFaceted = true, title = "Simple")
   public String getSimpleIndexField() {
     return simpleIndexField;
   }

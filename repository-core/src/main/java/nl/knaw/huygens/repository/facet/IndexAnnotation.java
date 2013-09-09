@@ -12,12 +12,12 @@ import java.lang.annotation.Target;
  *   <field name="id" type="string" indexed="true" stored="true" required="true"/>
  *   <field name="desc" type="string" indexed="true" stored="true" multiValued="true"/>
  * Dynamic fields use a name pattern:
- *   <dynamicField name="facet_sort_*" type="alphaOnlySort" indexed="true" stored="false" multiValued="false"/>
- *   <dynamicField name="facet_s_*" type="string" indexed="true" stored="true" multiValued="true"/>
- *   <dynamicField name="facet_t_*" type="textgen" indexed="true" stored="true" multiValued="true"/>
- *   <dynamicField name="facet_i_*" type="int" indexed="true" stored="true" multiValued="true"/>
- *   <dynamicField name="facet_b_*" type="boolean" indexed="true" stored="true" multiValued="true"/>
- *   <dynamicField name="facet_d_*" type="date" indexed="true" stored="true" multiValued="true"/>
+ *   <dynamicField name="dynamic_sort_*" type="alphaOnlySort" indexed="true" stored="false" multiValued="false"/>
+ *   <dynamicField name="dynamic_s_*" type="string" indexed="true" stored="true" multiValued="true"/>
+ *   <dynamicField name="dynamic_t_*" type="textgen" indexed="true" stored="true" multiValued="true"/>
+ *   <dynamicField name="dynamic_i_*" type="int" indexed="true" stored="true" multiValued="true"/>
+ *   <dynamicField name="dynamic_b_*" type="boolean" indexed="true" stored="true" multiValued="true"/>
+ *   <dynamicField name="dynamic_d_*" type="date" indexed="true" stored="true" multiValued="true"/>
  */
 @Target(value = { ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)

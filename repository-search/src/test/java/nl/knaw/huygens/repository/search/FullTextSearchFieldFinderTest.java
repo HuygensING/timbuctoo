@@ -29,37 +29,37 @@ public class FullTextSearchFieldFinderTest {
 
   @Test
   public void testFindFullTextSearchFieldSingleField() {
-    HashSet<String> expected = Sets.newHashSet("facet_t_simple");
+    HashSet<String> expected = Sets.newHashSet("dynamic_t_simple");
     testFindFullTextSearchField(SimpleClassWithOneFullTextSearchField.class, expected);
   }
 
   @Test
   public void testFindFullTextSearchFieldMultipleFields() {
-    HashSet<String> expected = Sets.newHashSet("facet_t_simple", "facet_t_simple1");
+    HashSet<String> expected = Sets.newHashSet("dynamic_t_simple", "dynamic_t_simple1");
     testFindFullTextSearchField(ClassWithMupltipleFullTestSearchFields.class, expected);
   }
 
   @Test
   public void testFindFullTextSearchFieldMultipleFieldsSameName() {
-    HashSet<String> expected = Sets.newHashSet("facet_t_simple");
+    HashSet<String> expected = Sets.newHashSet("dynamic_t_simple");
     testFindFullTextSearchField(ClassWithMupltipleFullTestSearchFieldsWithSameName.class, expected);
   }
 
   @Test
   public void testFindFullTextSearchFieldMultipleFieldsNotAllFullText() {
-    HashSet<String> expected = Sets.newHashSet("facet_t_simple");
+    HashSet<String> expected = Sets.newHashSet("dynamic_t_simple");
     testFindFullTextSearchField(ClassWithMupltipleFullTestSearchFieldsNotAllFTS.class, expected);
   }
 
   @Test
   public void testFindFullTextSearchFieldsInherited() {
-    HashSet<String> expected = Sets.newHashSet("facet_t_simple");
+    HashSet<String> expected = Sets.newHashSet("dynamic_t_simple");
     testFindFullTextSearchField(ClassWithInheritedFullTextSearchFields.class, expected);
   }
 
   @Test
   public void testFindFullTextSearchFieldsComplex() {
-    HashSet<String> expected = Sets.newHashSet("facet_t_complex1", "facet_t_complex2");
+    HashSet<String> expected = Sets.newHashSet("dynamic_t_complex1", "dynamic_t_complex2");
     testFindFullTextSearchField(ComplexAnnotatedClassNoneFaceted.class, expected);
   }
 

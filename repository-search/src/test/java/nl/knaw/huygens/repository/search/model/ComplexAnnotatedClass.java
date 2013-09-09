@@ -16,8 +16,8 @@ public class ComplexAnnotatedClass extends Document {
     return null;
   }
 
-  @IndexAnnotations({ @IndexAnnotation(fieldName = "facet_t_complex1", accessors = "getDisplayName", isFaceted = true, title = "Complex1"),
-      @IndexAnnotation(fieldName = "facet_t_complex2", accessors = "getSimpleIndexField", isFaceted = true, title = "Complex2") })
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_t_complex1", accessors = "getDisplayName", isFaceted = true, title = "Complex1"),
+      @IndexAnnotation(fieldName = "dynamic_t_complex2", accessors = "getSimpleIndexField", isFaceted = true, title = "Complex2") })
   public SimpleAnnotatedClass getSimpleAnnotatedClass() {
 
     return null;

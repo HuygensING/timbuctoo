@@ -17,7 +17,7 @@ public class SimpleAnnotatedClass extends Document {
     return "name";
   }
 
-  @IndexAnnotation(fieldName = "facet_s_simple", isFaceted = true, title = "Simple")
+  @IndexAnnotation(fieldName = "dynamic_s_simple", isFaceted = true, title = "Simple")
   public String getSimpleIndexField() {
     return simpleIndexField;
   }
