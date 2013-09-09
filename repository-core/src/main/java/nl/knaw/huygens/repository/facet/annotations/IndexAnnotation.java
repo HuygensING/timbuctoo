@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.annotations;
+package nl.knaw.huygens.repository.facet.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,7 +6,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import nl.knaw.huygens.repository.index.CustomIndexer;
-import nl.knaw.huygens.solr.FacetType;
 
 /**
  * Fields are indexed by Solr using a default schema.

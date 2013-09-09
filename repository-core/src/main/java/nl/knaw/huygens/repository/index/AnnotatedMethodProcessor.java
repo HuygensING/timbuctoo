@@ -2,7 +2,7 @@ package nl.knaw.huygens.repository.index;
 
 import java.lang.reflect.Method;
 
-import nl.knaw.huygens.repository.annotations.IndexAnnotation;
+import nl.knaw.huygens.repository.facet.annotations.IndexAnnotation;
 
 /**
  * Function pointers for Java! We want to loop over the same annotations
