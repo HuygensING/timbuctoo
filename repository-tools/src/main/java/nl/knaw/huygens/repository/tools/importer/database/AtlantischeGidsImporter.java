@@ -55,7 +55,7 @@ public class AtlantischeGidsImporter {
   public static void main(String[] args) throws Exception {
 
     // Handle commandline argfuments
-    String importDirName = (args.length > 0) ? args[0] : "../AtlantischeGids/work/";
+    String importDirName = (args.length > 0) ? args[0] : "../../AtlantischeGids/work/";
     System.out.println("Import directory: " + importDirName);
     String configFileName = (args.length > 1) ? args[1] : "config.xml";
     System.out.println("Configuration file: " + configFileName);
