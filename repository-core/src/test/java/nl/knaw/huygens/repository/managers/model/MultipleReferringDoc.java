@@ -2,7 +2,7 @@ package nl.knaw.huygens.repository.managers.model;
 
 import nl.knaw.huygens.repository.annotations.RelatedDocument;
 import nl.knaw.huygens.repository.annotations.RelatedDocuments;
-import nl.knaw.huygens.repository.facet.annotations.IndexAnnotation;
+import nl.knaw.huygens.repository.facet.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Document;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

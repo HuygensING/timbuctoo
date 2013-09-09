@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.facet.annotations.FacetCount;
+import nl.knaw.huygens.repository.facet.FacetCount;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.SearchResult;

@@ -3,8 +3,8 @@ package nl.knaw.huygens.repository.search;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-import nl.knaw.huygens.repository.facet.annotations.IndexAnnotation;
-import nl.knaw.huygens.repository.facet.annotations.IndexAnnotations;
+import nl.knaw.huygens.repository.facet.IndexAnnotation;
+import nl.knaw.huygens.repository.facet.IndexAnnotations;
 import nl.knaw.huygens.repository.model.Document;
 
 import com.google.common.collect.Sets;
