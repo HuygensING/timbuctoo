@@ -4,7 +4,7 @@ import java.util.List;
 
 import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.annotations.IDPrefix;
-import nl.knaw.huygens.repository.facet.annotations.FacetCount;
+import nl.knaw.huygens.repository.facet.FacetCount;
 
 @IDPrefix("QRY")
 @DocumentTypeName("search")

@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Map;
 import java.util.Set;
 
-import nl.knaw.huygens.repository.facet.annotations.FacetType;
+import nl.knaw.huygens.repository.facet.FacetType;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.search.model.ComplexAnnotatedClass;
 import nl.knaw.huygens.repository.search.model.ComplexAnnotatedClassNoneFaceted;

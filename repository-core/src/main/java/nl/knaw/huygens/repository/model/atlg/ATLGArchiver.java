@@ -2,9 +2,9 @@ package nl.knaw.huygens.repository.model.atlg;
 
 import java.util.List;
 
-import nl.knaw.huygens.repository.facet.annotations.FacetType;
-import nl.knaw.huygens.repository.facet.annotations.IndexAnnotation;
-import nl.knaw.huygens.repository.facet.annotations.IndexAnnotations;
+import nl.knaw.huygens.repository.facet.FacetType;
+import nl.knaw.huygens.repository.facet.IndexAnnotation;
+import nl.knaw.huygens.repository.facet.IndexAnnotations;
 import nl.knaw.huygens.repository.model.Archiver;
 import nl.knaw.huygens.repository.model.DocumentRef;
 import nl.knaw.huygens.repository.model.util.PeriodHelper;

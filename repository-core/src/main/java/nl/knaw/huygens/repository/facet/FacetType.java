@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.facet.annotations;
+package nl.knaw.huygens.repository.facet;
 
 public enum FacetType {
   LIST, //
