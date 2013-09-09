@@ -1,7 +1,7 @@
 package nl.knaw.huygens.repository.model;
 
 import nl.knaw.huygens.repository.annotations.IDPrefix;
-import nl.knaw.huygens.repository.annotations.IndexAnnotation;
+import nl.knaw.huygens.repository.facet.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.util.Datable;
 import nl.knaw.huygens.repository.model.util.PersonName;
 

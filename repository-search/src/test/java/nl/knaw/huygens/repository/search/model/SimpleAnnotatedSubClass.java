@@ -1,6 +1,6 @@
 package nl.knaw.huygens.repository.search.model;
 
-import nl.knaw.huygens.repository.annotations.IndexAnnotation;
+import nl.knaw.huygens.repository.facet.annotations.IndexAnnotation;
 
 public class SimpleAnnotatedSubClass extends SimpleAnnotatedClass {
   private String simpleProperty;
