@@ -2,7 +2,7 @@ package nl.knaw.huygens.repository.search;
 
 import java.util.Set;
 
-import nl.knaw.huygens.repository.facet.annotations.IndexAnnotation;
+import nl.knaw.huygens.repository.facet.IndexAnnotation;
 
 import org.apache.commons.lang.StringUtils;
 
