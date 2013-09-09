@@ -1,6 +1,6 @@
 package nl.knaw.huygens.repository.model.ckcc;
 
-import nl.knaw.huygens.repository.annotations.IndexAnnotation;
+import nl.knaw.huygens.repository.facet.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.util.Datable;
 

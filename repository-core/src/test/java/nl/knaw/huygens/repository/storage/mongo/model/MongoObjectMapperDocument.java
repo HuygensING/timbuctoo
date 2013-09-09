@@ -3,7 +3,7 @@ package nl.knaw.huygens.repository.storage.mongo.model;
 import java.util.List;
 
 import nl.knaw.huygens.repository.annotations.IDPrefix;
-import nl.knaw.huygens.repository.annotations.IndexAnnotation;
+import nl.knaw.huygens.repository.facet.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.model.SystemDocument;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
