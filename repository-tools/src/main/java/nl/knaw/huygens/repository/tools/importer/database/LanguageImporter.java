@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 
 import nl.knaw.huygens.repository.model.Language;
 import nl.knaw.huygens.repository.storage.StorageManager;
-import nl.knaw.huygens.repository.util.CSVImporter;
+import nl.knaw.huygens.repository.tools.util.CSVImporter;
 
 /**
  * Imports languages from a CSV file.

@@ -1,4 +1,6 @@
-package nl.knaw.huygens.repository.util;
+package nl.knaw.huygens.repository.tools.util;
+
+import nl.knaw.huygens.repository.tools.util.EncodingFixer;
 
 import org.junit.Assert;
 import org.junit.Test;
