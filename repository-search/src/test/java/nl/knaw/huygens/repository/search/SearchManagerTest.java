@@ -13,14 +13,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
+import nl.knaw.huygens.repository.facet.annotations.FacetCount;
+import nl.knaw.huygens.repository.facet.annotations.FacetCount.Option;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.model.atlg.ATLGPerson;
 import nl.knaw.huygens.repository.search.model.ClassWithMupltipleFullTestSearchFields;
-import nl.knaw.huygens.solr.FacetCount;
-import nl.knaw.huygens.solr.FacetCount.Option;
 import nl.knaw.huygens.solr.FacetParameter;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 

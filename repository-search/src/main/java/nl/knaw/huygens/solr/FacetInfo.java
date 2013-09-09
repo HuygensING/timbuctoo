@@ -1,5 +1,7 @@
 package nl.knaw.huygens.solr;
 
+import nl.knaw.huygens.repository.facet.annotations.FacetType;
+
 public class FacetInfo {
   String name = "";
   String title = "";

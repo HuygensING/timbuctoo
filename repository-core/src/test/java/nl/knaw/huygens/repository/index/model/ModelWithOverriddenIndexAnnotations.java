@@ -1,7 +1,7 @@
 package nl.knaw.huygens.repository.index.model;
 
-import nl.knaw.huygens.repository.annotations.IndexAnnotation;
-import nl.knaw.huygens.repository.annotations.IndexAnnotations;
+import nl.knaw.huygens.repository.facet.annotations.IndexAnnotation;
+import nl.knaw.huygens.repository.facet.annotations.IndexAnnotations;
 
 public class ModelWithOverriddenIndexAnnotations extends ExplicitlyAnnotatedModelWithIndexAnnotations {
 
