@@ -16,5 +16,10 @@
   	  <artifactId>repository-core</artifactId>
       <version>1.0.4-SNAPSHOT</version>
   	</dependency>
+  	<dependency>
+  	  <groupId>repository</groupId>
+  	  <artifactId>repository-search</artifactId>
+      <version>1.0.4-SNAPSHOT</version>
+  	</dependency>
   </dependencies>
 </project>
