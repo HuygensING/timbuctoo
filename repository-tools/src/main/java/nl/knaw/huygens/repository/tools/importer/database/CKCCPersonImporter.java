@@ -12,7 +12,7 @@ import nl.knaw.huygens.repository.model.util.PersonName;
 import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.storage.StorageManager;
-import nl.knaw.huygens.repository.util.CSVImporter;
+import nl.knaw.huygens.repository.tools.util.CSVImporter;
 
 /**
  * Imports CKCC person data from a CSV file.

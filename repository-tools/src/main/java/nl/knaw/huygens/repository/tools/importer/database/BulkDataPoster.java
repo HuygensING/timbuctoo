@@ -10,7 +10,7 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.repository.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.repository.model.raa.RAACivilServant;
-import nl.knaw.huygens.repository.util.Progress;
+import nl.knaw.huygens.repository.tools.util.Progress;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.databind.ObjectMapper;
