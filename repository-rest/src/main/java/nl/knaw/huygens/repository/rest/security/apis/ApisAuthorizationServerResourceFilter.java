@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package nl.knaw.huygens.repository.rest.security.apis;
 
 import javax.servlet.http.HttpServletResponse;
@@ -29,7 +28,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.scribe.utils.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.surfnet.oaaas.auth.AuthorizationServerFilter;
 import org.surfnet.oaaas.auth.ObjectMapperProvider;
 import org.surfnet.oaaas.model.TokenResponseCache;
 import org.surfnet.oaaas.model.TokenResponseCacheImpl;
@@ -49,13 +47,12 @@ import com.sun.jersey.spi.container.ResourceFilter;
  * All the functionality is copy-pasted except for the CORS-code. This code should be added a javax.servlet.Filter and not in a ResourceFilter.
  *  
  * @author martijnm
- *
  */
-
 public class ApisAuthorizationServerResourceFilter implements ResourceFilter, ContainerRequestFilter {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ApisAuthorizationServerResourceFilter.class);
   private static final String VERIFY_TOKEN_RESPONSE = "VERIFY_TOKEN_RESPONSE";
   private static final String BEARER = "bearer";
-  private static final Logger LOG = LoggerFactory.getLogger(AuthorizationServerFilter.class);
 
   private String resourceServerKey;
   private String resourceServerSecret;
@@ -159,7 +156,7 @@ public class ApisAuthorizationServerResourceFilter implements ResourceFilter, Co
           .accept("application/json").get(ClientResponse.class);
       try {
         String responseString = res.getEntity(String.class);
-        System.out.println("response: " + responseString);
+        LOG.debug("response: ", responseString);
         int statusCode = res.getClientResponseStatus().getStatusCode();
         LOG.debug("Got verify token response (status: {}): '{}'", statusCode, responseString);
         if (statusCode == HttpServletResponse.SC_OK) {
