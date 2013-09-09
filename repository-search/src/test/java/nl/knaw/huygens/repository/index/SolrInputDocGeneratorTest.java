@@ -14,7 +14,7 @@ import nl.knaw.huygens.repository.facet.CustomIndexer;
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
 import nl.knaw.huygens.repository.facet.CustomIndexer.NoopIndexer;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.variation.model.TestExtraBaseDoc;
+import nl.knaw.huygens.repository.index.model.TestExtraBaseDoc;
 
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
