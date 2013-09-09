@@ -128,7 +128,7 @@ public class SearchResource {
     returnValue.put("rows", idsToGet.size());
     returnValue.put("sortableFields", sortableFields);
 
-    System.out.println("path: " + uriInfo.getAbsolutePath());
+    LOG.debug("path: {}", uriInfo.getAbsolutePath());
 
     UriBuilder prevUriBuilder = uriInfo.getAbsolutePathBuilder();
     UriBuilder nextUriBuilder = uriInfo.getAbsolutePathBuilder();
