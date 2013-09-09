@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.repository.annotations.IndexAnnotation;
+import nl.knaw.huygens.repository.facet.annotations.IndexAnnotation;
 
 public class AnnotatedMethodProcessorMock implements AnnotatedMethodProcessor {
 

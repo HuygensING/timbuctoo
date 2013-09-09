@@ -18,13 +18,13 @@ import java.util.Set;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
+import nl.knaw.huygens.repository.facet.annotations.FacetCount;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.search.FacetDoesNotExistException;
 import nl.knaw.huygens.repository.search.SearchManager;
 import nl.knaw.huygens.repository.storage.StorageManager;
-import nl.knaw.huygens.solr.FacetCount;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 
 import org.apache.solr.client.solrj.SolrServerException;

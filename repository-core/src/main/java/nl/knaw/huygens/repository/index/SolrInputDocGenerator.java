@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import nl.knaw.huygens.repository.annotations.IndexAnnotation;
+import nl.knaw.huygens.repository.facet.annotations.IndexAnnotation;
 import nl.knaw.huygens.repository.index.CustomIndexer.NoopIndexer;
 import nl.knaw.huygens.repository.model.Document;
 
