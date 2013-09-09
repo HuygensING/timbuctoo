@@ -18,7 +18,7 @@ import java.util.Set;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
-import nl.knaw.huygens.repository.facet.annotations.FacetCount;
+import nl.knaw.huygens.repository.facet.FacetCount;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.facet.annotations;
+package nl.knaw.huygens.repository.facet;
 
 import java.util.List;
 
