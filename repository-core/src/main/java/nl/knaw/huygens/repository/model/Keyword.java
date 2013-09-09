@@ -14,7 +14,7 @@ public class Keyword extends DomainDocument {
     return value;
   };
 
-  @IndexAnnotation(fieldName = "facet_s_type")
+  @IndexAnnotation(fieldName = "dynamic_s_type")
   public String getType() {
     return type;
   }
@@ -23,7 +23,7 @@ public class Keyword extends DomainDocument {
     this.type = type;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_value", isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_t_value", isFaceted = false)
   public String getValue() {
     return value;
   }

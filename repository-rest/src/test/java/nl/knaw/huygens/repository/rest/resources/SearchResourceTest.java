@@ -42,7 +42,7 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class SearchResourceTest extends WebServiceTestSetup {
   private static final Set<String> SORTABLE_FIELDS = Sets.newHashSet("test1", "test");
-  private static final String TERM = "facet_t_name:Huygens";
+  private static final String TERM = "dynamic_t_name:Huygens";
   private static final String LOCATION_HEADER = "Location";
   private String typeString = "person";
   private String id = "QRY0000000001";
@@ -355,7 +355,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     FacetCount.Option option1 = new FacetCount.Option().setCount(1).setName("17-5-1900");
     FacetCount.Option option2 = new FacetCount.Option().setCount(2).setName("21-6");
     FacetCount.Option option3 = new FacetCount.Option().setCount(97).setName("1780");
-    FacetCount facet = new FacetCount().setName("facet_s_birthDate").setTitle("birthdate");
+    FacetCount facet = new FacetCount().setName("dynamic_s_birthDate").setTitle("birthdate");
     facet.addOption(option1);
     facet.addOption(option2);
     facet.addOption(option3);

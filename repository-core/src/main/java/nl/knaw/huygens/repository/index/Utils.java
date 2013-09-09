@@ -31,7 +31,7 @@ public class Utils {
     } else {
       type = "s";
     }
-    return "facet_" + type + "_" + StringUtils.join(parts, "_").toLowerCase();
+    return "dynamic_" + type + "_" + StringUtils.join(parts, "_").toLowerCase();
   }
 
   private Utils() {
