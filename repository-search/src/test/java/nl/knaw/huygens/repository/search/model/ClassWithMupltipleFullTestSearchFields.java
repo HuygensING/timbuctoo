@@ -17,7 +17,7 @@ public class ClassWithMupltipleFullTestSearchFields extends Document {
     return null;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_simple", isFaceted = true, title = "Simple")
+  @IndexAnnotation(fieldName = "dynamic_t_simple", isFaceted = true, title = "Simple")
   public String getSimpleIndexField() {
     return simpleIndexField;
   }
@@ -26,7 +26,7 @@ public class ClassWithMupltipleFullTestSearchFields extends Document {
     this.simpleIndexField = simpleIndexField;
   }
 
-  @IndexAnnotation(fieldName = "facet_t_simple1", isFaceted = true, title = "Simple1")
+  @IndexAnnotation(fieldName = "dynamic_t_simple1", isFaceted = true, title = "Simple1")
   public String getSimpleIndexField1() {
     return simpleIndexField;
   }

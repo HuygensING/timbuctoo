@@ -56,7 +56,7 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
         doc.setField(fieldName, nonDuplicateValues);
       }
 
-      if (fieldName.startsWith("facet_sort_")) {
+      if (fieldName.startsWith("dynamic_sort_")) {
         Object o = values.iterator().next();
         doc.setField(fieldName, o);
       }

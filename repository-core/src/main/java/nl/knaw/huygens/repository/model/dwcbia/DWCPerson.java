@@ -7,7 +7,7 @@ public class DWCPerson extends Person {
 
   private boolean important;
 
-  @IndexAnnotation(fieldName = "facet_b_important", isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_b_important", isFaceted = true)
   public boolean getImportant() {
     return important;
   }

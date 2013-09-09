@@ -15,17 +15,17 @@ public class Place extends DomainDocument {
     return name;
   };
 
-  @IndexAnnotation(fieldName = "facet_t_name", isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
   public String getName() {
     return name;
   }
 
-  @IndexAnnotation(fieldName = "facet_s_latitude")
+  @IndexAnnotation(fieldName = "dynamic_s_latitude")
   public String getLatitude() {
     return latitude;
   }
 
-  @IndexAnnotation(fieldName = "facet_s_longitude")
+  @IndexAnnotation(fieldName = "dynamic_s_longitude")
   public String getLongitude() {
     return longitude;
   }

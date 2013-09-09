@@ -28,7 +28,7 @@ public class CKCCPerson extends Person {
     return value;
   }
 
-  @IndexAnnotation(fieldName = "facet_s_gender")
+  @IndexAnnotation(fieldName = "dynamic_s_gender")
   public String getGender() {
     return gender;
   }

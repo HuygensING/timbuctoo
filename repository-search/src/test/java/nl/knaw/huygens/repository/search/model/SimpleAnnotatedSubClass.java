@@ -5,7 +5,7 @@ import nl.knaw.huygens.repository.facet.IndexAnnotation;
 public class SimpleAnnotatedSubClass extends SimpleAnnotatedClass {
   private String simpleProperty;
 
-  @IndexAnnotation(fieldName = "facet_s_prop", isFaceted = true, title = "Property")
+  @IndexAnnotation(fieldName = "dynamic_s_prop", isFaceted = true, title = "Property")
   public String getSimpleProperty() {
     return simpleProperty;
   }
