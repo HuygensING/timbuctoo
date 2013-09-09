@@ -1,4 +1,5 @@
-package nl.knaw.huygens.repository.util;
+package nl.knaw.huygens.repository.tools.util;
+
 
 /**
  * Performs an action for a specified token.

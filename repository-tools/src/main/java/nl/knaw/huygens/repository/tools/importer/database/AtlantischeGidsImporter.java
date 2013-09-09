@@ -23,11 +23,11 @@ import nl.knaw.huygens.repository.model.atlg.XRelated;
 import nl.knaw.huygens.repository.model.util.PersonName;
 import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.repository.storage.StorageManager;
-import nl.knaw.huygens.repository.util.EncodingFixer;
-import nl.knaw.huygens.repository.util.Files;
-import nl.knaw.huygens.repository.util.Token;
-import nl.knaw.huygens.repository.util.TokenHandler;
-import nl.knaw.huygens.repository.util.Tokens;
+import nl.knaw.huygens.repository.tools.util.EncodingFixer;
+import nl.knaw.huygens.repository.tools.util.Files;
+import nl.knaw.huygens.repository.tools.util.Token;
+import nl.knaw.huygens.repository.tools.util.TokenHandler;
+import nl.knaw.huygens.repository.tools.util.Tokens;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
