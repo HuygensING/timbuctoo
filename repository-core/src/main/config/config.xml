@@ -10,14 +10,14 @@
     <database>
       <!-- Mongo database -->
       <host>localhost</host>
-      <name>repository</name>
+      <name>datarepository</name>
       <port>27017</port>
-      <user>test</user>
-      <password>test</password>
+      <user>datarepository</user>
+      <password>datarepository</password>
     </database>
     <solr>
       <!-- Solr directory, default '${user.home}/repository/solr' -->
-      <directory></directory>
+      <directory>/data/datarepository/solr</directory>
       <!-- overkill? -->
       <config>solrconfig.xml</config>
       <!-- Maximum time before a commit in ms -->
@@ -58,7 +58,7 @@
       <naming_authority>0.NA</naming_authority>
       <prefix>11151</prefix>
       <!-- When deployed to server the key should be 'webapps/repository/WEB-INF/classes/admpriv.bin', without the directories. -->
-      <private_key_file>repository/resources/admpriv.bin</private_key_file>
+      <private_key_file>webapps/repository/WEB-INF/classes/admpriv.bin</private_key_file>
     </handle>
     <paths>
       <source>data/source</source>
@@ -75,7 +75,7 @@
     <doctypes>archive,archiver,keyword,legislation,person,place</doctypes>
     <indexeddoctypes>archive,archiver,keyword,legislation,person,place</indexeddoctypes>
     <versioneddoctypes>archive,archiver,keyword,legislation,person,place</versioneddoctypes>
-    <public_url>http://localhost:8080/repository</public_url>
+    <public_url>http://repository.huygens.knaw.nl</public_url>
     <feed>
       <title>Repository changes</title>
     </feed>
