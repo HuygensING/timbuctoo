@@ -54,13 +54,14 @@ public class LocalSolrServer {
 
   @Inject
   public LocalSolrServer( //
+      Configuration config,
       @Named("solr.directory") String configuredSolrDir, //
       @Named("indexeddoctypes") String coreNameList, //
       @Named("solr.commit_within") String commitWithinSpec //
   ) {
 
     try {
-      String solrDir = getSolrDir(configuredSolrDir);
+      String solrDir = getSolrDir(config, configuredSolrDir);
       LOG.info("Solr directory: {}", solrDir);
       commitWithin = stringToInt(commitWithinSpec, 10 * 1000);
       LOG.info("Maximum time before a commit: {} seconds", commitWithin / 1000);
@@ -84,8 +85,8 @@ public class LocalSolrServer {
     }
   }
 
-  private String getSolrDir(String path) {
-    return Strings.isNullOrEmpty(path) ? Configuration.pathInUserHome("repository/solr") : path;
+  private String getSolrDir(Configuration config, String path) {
+    return Strings.isNullOrEmpty(path) ? config.pathInUserHome("repository/solr") : path;
   }
 
   public void add(String core, SolrInputDocument doc) throws SolrServerException, IOException {

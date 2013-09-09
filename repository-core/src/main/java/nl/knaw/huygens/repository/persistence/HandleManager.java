@@ -38,8 +38,7 @@ public class HandleManager extends DefaultPersistenceManager {
     String url = config.getSetting("public_url");
     String cipherString = config.getSetting("handle.cipher");
     byte[] cipher = cipherString.getBytes();
-    String privateKeyURI = config.getSetting("handle.private_key_file");
-    byte[] privateKeyBytes = readPrivateKey(privateKeyURI);
+    byte[] privateKeyBytes = readPrivateKey(config);
     String authority = config.getSetting("handle.naming_authority");
     String prefix = config.getSetting("handle.prefix");
     String adminHandle = getAdminHandle(authority, prefix);
@@ -69,10 +68,11 @@ public class HandleManager extends DefaultPersistenceManager {
     return new HandleManager(resolver, prefix, authority, url);
   }
 
-  private static byte[] readPrivateKey(String privateKeyURI) {
+  private static byte[] readPrivateKey(Configuration config) {
     FileInputStream inputStream = null;
     try {
-      File file = new File(Configuration.pathInUserHome(privateKeyURI));
+      String privateKeyURI = config.getSetting("handle.private_key_file");
+      File file = new File(config.pathInUserHome(privateKeyURI));
       LOG.info("Location of private key: {}", file.getAbsolutePath());
       inputStream = new FileInputStream(file);
       byte[] privateKey = new byte[(int) file.length()];
