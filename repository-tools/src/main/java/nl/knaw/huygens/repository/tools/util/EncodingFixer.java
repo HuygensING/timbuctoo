@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.util;
+package nl.knaw.huygens.repository.tools.util;
 
 import org.apache.commons.lang.StringUtils;
 

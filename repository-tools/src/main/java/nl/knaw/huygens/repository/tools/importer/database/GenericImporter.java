@@ -5,7 +5,7 @@ import java.util.List;
 
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.StorageManager;
-import nl.knaw.huygens.repository.util.Progress;
+import nl.knaw.huygens.repository.tools.util.Progress;
 
 public class GenericImporter extends GenericDataHandler {
 
