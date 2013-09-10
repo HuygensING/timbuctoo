@@ -70,15 +70,17 @@ public class LocalSolrServer {
       container = new CoreContainer(solrDir, configFile);
       solrServers = Maps.newHashMap();
       for (String coreName : coreNameList.split(",")) {
+        LOG.info("Handling core '{}'", coreName);
         solrServers.put(coreName, new EmbeddedSolrServer(container, coreName));
       }
       coreNames = Collections.unmodifiableSet(solrServers.keySet());
     } catch (Exception e) {
+      LOG.error("Initialization: {}", e.getMessage());
       if (container != null) {
         try {
           container.shutdown();
         } catch (Exception e2) {
-          // Do nothing;
+          LOG.error("Solr CoreContainer shutdown: {}", e2.getMessage());
         }
       }
       throw new RuntimeException(e);
