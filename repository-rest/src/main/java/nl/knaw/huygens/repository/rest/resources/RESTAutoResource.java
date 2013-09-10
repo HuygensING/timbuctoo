@@ -58,7 +58,6 @@ public class RESTAutoResource {
   // --- API -----------------------------------------------------------
 
   @GET
-  @Path("/all")
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
   public List<? extends Document> getAllDocs( //
@@ -71,7 +70,6 @@ public class RESTAutoResource {
   }
 
   @POST
-  @Path("/all")
   @Consumes(MediaType.APPLICATION_JSON)
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
