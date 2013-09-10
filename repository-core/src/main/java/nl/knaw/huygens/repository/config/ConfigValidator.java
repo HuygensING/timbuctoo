@@ -1,5 +1,9 @@
 package nl.knaw.huygens.repository.config;
 
+import java.io.File;
+
+import com.google.common.base.Strings;
+
 /**
  * Validates the Configuration of the Repository Project.
  */
@@ -21,6 +25,8 @@ public class ConfigValidator {
     validateDocTypes("indexeddoctypes");
     validateDocTypes("versioneddoctypes");
 
+    validateSolrDirectory();
+
     if (error) {
       throw new RuntimeException("Configuration error(s)");
     }
@@ -33,6 +39,20 @@ public class ConfigValidator {
         error = true;
       }
     }
+  }
+
+  private void validateSolrDirectory() {
+    File dir = new File(getSolrDir(config));
+    if (!dir.isDirectory()) {
+      System.err.printf("Solr directory '%s' does not exist%n", dir.getAbsolutePath());
+      error = true;
+    }
+  }
+
+  // TODO make this part of Configuration
+  private String getSolrDir(Configuration config) {
+    String path = config.getSetting("solr.directory");
+    return Strings.isNullOrEmpty(path) ? config.pathInUserHome("repository/solr") : path;
   }
 
 }
