@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
@@ -6,14 +5,16 @@
     <artifactId>repository</artifactId>
     <version>1.0.4-SNAPSHOT</version>
   </parent>
-  <artifactId>repository-core</artifactId>
-  <name>datarepository core</name>
-  <description>The core that provides the variation and the database connection.</description>
+  <artifactId>repository-persistence</artifactId>
+  <name>repository persistence</name>
   <dependencies>
+    <!-- ## Main dependencies ## -->
+    <!-- Handle persistency server client -->
     <dependency>
-      <groupId>repository</groupId>
-      <artifactId>repository-persistence</artifactId>
-      <version>1.0.4-SNAPSHOT</version>
+      <groupId>handle.net</groupId>
+      <artifactId>handle-client</artifactId>
+      <version>7.1</version>
     </dependency>
+    <!-- ## End of main dependencies ## -->    
   </dependencies>
 </project>
