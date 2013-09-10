@@ -19,6 +19,7 @@
     <module>repository-rest</module>
     <module>repository-search</module>
     <module>repository-tools</module>
+    <module>repository-persistence</module>
   </modules>
 
   <prerequisites>
@@ -193,13 +194,6 @@
       <version>3.2.1</version>
     </dependency>
 
-    <!-- Handle persistency server client -->
-    <dependency>
-      <groupId>handle.net</groupId>
-      <artifactId>handle-client</artifactId>
-      <version>7.1</version>
-    </dependency>
-    
     <!-- Apache validation -->
     <dependency>
       <groupId>javax.validation</groupId>
