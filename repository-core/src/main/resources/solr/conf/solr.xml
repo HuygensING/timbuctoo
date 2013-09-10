@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<solr persistent="true">
+  <cores adminPath="/admin/cores">
+    <!-- cores will be registered dynamically -->
+  </cores>
+</solr>

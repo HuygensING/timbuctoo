@@ -23,6 +23,8 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.SimpleOrderedMap;
 import org.apache.solr.core.CoreContainer;
+import org.apache.solr.core.CoreDescriptor;
+import org.apache.solr.core.SolrCore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +35,12 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+/**
+ * Handles communication with an embedded Solr server with various cores.
+ * The cores are specified in the {@code indexeddoctypes} entry of the
+ * configuration file; each type corresponds with a core. Existing cores
+ * that are not referred to in the configuration file are ignored.
+ */
 @Singleton
 public class LocalSolrServer {
 
@@ -70,8 +78,8 @@ public class LocalSolrServer {
       container = new CoreContainer(solrDir, configFile);
       solrServers = Maps.newHashMap();
       for (String coreName : coreNameList.split(",")) {
-        LOG.info("Handling core '{}'", coreName);
-        solrServers.put(coreName, new EmbeddedSolrServer(container, coreName));
+        // solrServers.put(coreName, new EmbeddedSolrServer(container, coreName));
+        solrServers.put(coreName, createServer(container, coreName, solrDir));
       }
       coreNames = Collections.unmodifiableSet(solrServers.keySet());
     } catch (Exception e) {
@@ -85,6 +93,26 @@ public class LocalSolrServer {
       }
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * Creates an embedded Solr server with the given core name.
+   * If a schema file exists for the core it will be used,
+   * otherwise the schema {@code file schema-tmpl.xml} will be used.
+   * The core must not be specified in the solr.xml file.
+   */
+  private SolrServer createServer(CoreContainer container, String coreName, String instanceDir) {
+    CoreDescriptor descriptor = new CoreDescriptor(container, coreName, instanceDir);
+    String specialSchema = String.format("schema-%s.xml", coreName);
+    File file = new File(instanceDir, specialSchema);
+    String usedSchema = file.isFile() ? specialSchema : "schema-tmpl.xml";
+    LOG.info("Schema for {} index: {}", coreName, usedSchema);
+    descriptor.setSchemaName(usedSchema);
+    descriptor.setDataDir(coreName);
+    descriptor.setLoadOnStartup(true);
+    SolrCore core = container.create(descriptor);
+    container.register(coreName, core, true);
+    return new EmbeddedSolrServer(container, coreName);
   }
 
   private String getSolrDir(Configuration config, String path) {
