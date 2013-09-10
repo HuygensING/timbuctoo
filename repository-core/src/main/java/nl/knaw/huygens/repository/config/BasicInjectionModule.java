@@ -33,7 +33,7 @@ public class BasicInjectionModule extends AbstractModule {
   @Provides
   @Singleton
   PersistenceManager providePersistenceManager() {
-    return PersistenceManagerFactory.newPersistenceManager(config);
+    return PersistenceManagerFactory.newPersistenceManager(config.getBooleanSetting("handle.enabled", true), config.getSetting("public_url"), config.getSetting("handle.cipher"), config.getSetting("handle.naming_authority"), config.getSetting("handle.prefix"), config.pathInUserHome(config.getSetting("handle.private_key_file")));
   }
 
 }

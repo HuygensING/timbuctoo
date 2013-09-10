@@ -17,7 +17,6 @@ import net.handle.hdllib.HandleValue;
 import net.handle.hdllib.PublicKeyAuthenticationInfo;
 import net.handle.hdllib.SessionSetupInfo;
 import net.handle.hdllib.Util;
-import nl.knaw.huygens.repository.config.Configuration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,14 +32,19 @@ public class HandleManager extends DefaultPersistenceManager {
 
   /**
    * Returns a new <code>HandleManager</code>.
+   * For more information http://handle.net/documentation.html
+ * @param publicUrl the url of the webapplication, that communicates with the handle server
+ * @param cypherString the cypher, that is used to allow admin actions.
+ * @param namingAuthority the naming authority, used by Handle
+ * @param prefix the subscription number of the system.
+ * @param pathToPrivateKey the private key is created during the setup of the server.
    */
-  public static HandleManager newHandleManager(Configuration config) {
-    String url = config.getSetting("public_url");
-    String cipherString = config.getSetting("handle.cipher");
+  public static HandleManager newHandleManager(String publicUrl, String cypherString, String namingAuthority, String prefix, String pathToPrivateKey) {
+    String url = publicUrl;
+    String cipherString = cypherString;
     byte[] cipher = cipherString.getBytes();
-    byte[] privateKeyBytes = readPrivateKey(config);
-    String authority = config.getSetting("handle.naming_authority");
-    String prefix = config.getSetting("handle.prefix");
+    byte[] privateKeyBytes = readPrivateKey(pathToPrivateKey);
+    String authority = namingAuthority;
     String adminHandle = getAdminHandle(authority, prefix);
 
     PublicKeyAuthenticationInfo authenticationInfo = null;
@@ -68,11 +72,10 @@ public class HandleManager extends DefaultPersistenceManager {
     return new HandleManager(resolver, prefix, authority, url);
   }
 
-  private static byte[] readPrivateKey(Configuration config) {
+  private static byte[] readPrivateKey(String pathToPrivateKey) {
     FileInputStream inputStream = null;
     try {
-      String privateKeyURI = config.getSetting("handle.private_key_file");
-      File file = new File(config.pathInUserHome(privateKeyURI));
+      File file = new File(pathToPrivateKey);
       LOG.info("Location of private key: {}", file.getAbsolutePath());
       inputStream = new FileInputStream(file);
       byte[] privateKey = new byte[(int) file.length()];
