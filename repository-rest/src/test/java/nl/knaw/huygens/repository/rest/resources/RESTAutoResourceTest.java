@@ -68,7 +68,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     when(getStorageManager().getAllLimited(TestConcreteDoc.class, 0, 200)).thenReturn(expectedList);
 
     GenericType<List<TestConcreteDoc>> genericType = new GenericType<List<TestConcreteDoc>>() {};
-    List<TestConcreteDoc> actualList = autoResource().path("testconcretedocs").path("all").get(genericType);
+    List<TestConcreteDoc> actualList = autoResource().path("testconcretedocs").get(genericType);
     assertEquals(expectedList.size(), actualList.size());
   }
 
@@ -78,7 +78,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     when(getStorageManager().getAllLimited(TestConcreteDoc.class, 0, 200)).thenReturn(expectedList);
 
     GenericType<List<TestConcreteDoc>> genericType = new GenericType<List<TestConcreteDoc>>() {};
-    List<TestConcreteDoc> actualList = autoResource().path("testconcretedocs").path("all").get(genericType);
+    List<TestConcreteDoc> actualList = autoResource().path("testconcretedocs").get(genericType);
     assertEquals(expectedList.size(), actualList.size());
   }
 
@@ -227,7 +227,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     doc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
-    ClientResponse response = autoResource().path("testconcretedocs").path("all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
     assertNotNull(response.getHeaders().getFirst("Location"));
   }
@@ -252,7 +252,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     doc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
-    ClientResponse response = autoResource().path("testconcretedocs").path("all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
   }
 
@@ -265,7 +265,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     doc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(null);
 
-    ClientResponse response = autoResource().path("otherdocs").path("all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("otherdocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
   }
 
@@ -375,7 +375,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     inputDoc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(inputDoc);
 
-    ClientResponse response = autoResource().path("testconcretedocs").path("all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
+    ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .post(ClientResponse.class, inputDoc);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
   }
@@ -387,7 +387,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     doc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
-    ClientResponse response = autoResource().path("testconcretedocs").path("all").type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, doc);
+    ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
   }
 
