@@ -153,19 +153,9 @@ public class HandleManager extends DefaultPersistenceManager {
     return id;
   }
 
-  public HandleValue createAdminValue(final String adminHandle, final int keyIndex, int index) throws HandleException {
+  private HandleValue createAdminValue(final String adminHandle, final int keyIndex, int index) throws HandleException {
     AdminRecord adminRecord = new AdminRecord(Util.encodeString(adminHandle), keyIndex, true, true, true, true, true, true, true, true, true, true, true, true);
     return new HandleValue(index, Common.ADMIN_TYPE, Encoder.encodeAdminRecord(adminRecord), HandleValue.TTL_TYPE_RELATIVE, 86400, 0, null, true, true, true, false);
-  }
-
-  @Override
-  public String persistObject(String collectionId, String objectId) throws PersistenceException {
-    String url = createUrl(collectionId, objectId);
-    return persistURL(url);
-  }
-
-  private String createUrl(String collectionId, String id) {
-    return baseUrl + "resources/" + collectionId + "/" + id;
   }
 
   private String createAdminHandle() {

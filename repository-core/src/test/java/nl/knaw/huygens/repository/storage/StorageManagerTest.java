@@ -27,6 +27,7 @@ import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
+import nl.knaw.huygens.repository.persistence.PersistenceWrapper;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.repository.variation.model.projecta.OtherDoc;
@@ -44,7 +45,7 @@ public class StorageManagerTest {
   private Set<String> documentTypes;
   private Broker broker;
   private DocTypeRegistry docTypeRegistry;
-  private PersistenceManager persistenceManager;
+  private PersistenceWrapper persistenceWrapper;
 
   @Before
   public void SetUp() {
@@ -52,8 +53,8 @@ public class StorageManagerTest {
     documentTypes = new HashSet<String>();
     broker = mock(Broker.class);
     docTypeRegistry = mock(DocTypeRegistry.class);
-    persistenceManager = mock(PersistenceManager.class);
-    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceManager);
+    persistenceWrapper = mock(PersistenceWrapper.class);
+    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceWrapper);
   }
 
   @Test
@@ -243,7 +244,7 @@ public class StorageManagerTest {
     doc.name = "test";
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    doThrow(PersistenceException.class).when(persistenceManager).persistObject(anyString(), anyString());
+    doThrow(PersistenceException.class).when(persistenceWrapper).persistObject(anyString(), anyString());
 
     instance.addDocument(type, doc);
 
@@ -369,7 +370,7 @@ public class StorageManagerTest {
 
     when(storage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.newArrayList("RFD000000001"));
 
-    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceWrapper);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(referringDocType, referredDocType, "RDD000000001");
 
@@ -395,7 +396,7 @@ public class StorageManagerTest {
 
     when(storage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.newArrayList("RFD000000001", "RDD000000001"));
 
-    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceWrapper);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(multipleReferringDocType, referredDocType, "RDD000000001");
 
@@ -415,7 +416,7 @@ public class StorageManagerTest {
     doReturn(referredDocType).when(docTypeRegistry).getTypeForIName(referredDocId);
     doReturn(referringDocType).when(docTypeRegistry).getTypeForIName(referringDocId);
 
-    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceWrapper);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(otherDocType, referredDocType, "RDD000000001");
 
@@ -435,7 +436,7 @@ public class StorageManagerTest {
     doReturn(referredDocType).when(docTypeRegistry).getTypeForIName(referredDocId);
     doReturn(referringDocType).when(docTypeRegistry).getTypeForIName(referringDocId);
 
-    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceWrapper);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(referringDocType, otherDocType, "RDD000000001");
 
@@ -457,7 +458,7 @@ public class StorageManagerTest {
 
     when(storage.getIdsForQuery(any(Class.class), any(List.class), any(String[].class))).thenReturn(Lists.<ReferringDoc> newArrayList());
 
-    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceManager);
+    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceWrapper);
 
     Map<List<String>, List<String>> referringDocs = instance.getReferringDocs(referringDocType, referredDocType, "RDD000000001");
 
