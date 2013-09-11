@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.storage.mongo.variation;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
@@ -142,6 +143,11 @@ public class MongoStorageFacade implements VariationStorage {
   @Override
   public <T extends Document> T searchItem(Class<T> type, T item) throws IOException {
     return getStorageFor(type).searchItem(type, item);
+  }
+
+  @Override
+  public <T extends Document> int removeByDate(Class<T> type, String dateField, Date dateValue) {
+    return getStorageFor(type).removeByDate(type, dateField, dateValue);
   }
 
   // -------------------------------------------------------------------
