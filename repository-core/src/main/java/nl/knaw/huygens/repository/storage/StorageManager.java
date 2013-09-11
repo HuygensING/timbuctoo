@@ -19,6 +19,7 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.persistence.PersistenceException;
 import nl.knaw.huygens.repository.persistence.PersistenceManager;
+import nl.knaw.huygens.repository.persistence.PersistenceWrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,26 +40,26 @@ public class StorageManager {
 
   private final DocTypeRegistry docTypeRegistry;
   private final Producer producer;
-  private PersistenceManager persistenceManager;
+  private PersistenceWrapper persistenceWrapper;
 
   @Inject
-  public StorageManager(StorageConfiguration storageConf, VariationStorage storage, Broker broker, DocTypeRegistry registry, PersistenceManager persistenceMananger) {
+  public StorageManager(StorageConfiguration storageConf, VariationStorage storage, Broker broker, DocTypeRegistry registry, PersistenceWrapper persistenceWrapper) {
     docTypeRegistry = registry;
     producer = setupProducer(broker);
     documentTypes = storageConf.getDocumentTypes();
     this.storage = storage;
-    this.persistenceManager = persistenceMananger;
+    this.persistenceWrapper = persistenceWrapper;
     fillAnnotationCache();
     ensureIndices();
   }
 
   // Test-only!
-  protected StorageManager(VariationStorage storage, Set<String> documentTypes, Broker broker, DocTypeRegistry registry, PersistenceManager persistenceManager) {
+  protected StorageManager(VariationStorage storage, Set<String> documentTypes, Broker broker, DocTypeRegistry registry, PersistenceWrapper persistenceWrapper) {
     docTypeRegistry = registry;
     producer = null;
     this.documentTypes = documentTypes;
     this.storage = storage;
-    this.persistenceManager = persistenceManager;
+    this.persistenceWrapper = persistenceWrapper;
     fillAnnotationCache();
     ensureIndices();
   }
@@ -178,7 +179,7 @@ public class StorageManager {
       // TODO make persistent id dependent on version.
       Class<? extends Document> baseType = docTypeRegistry.getBaseClass(type);
       String collectionId = docTypeRegistry.getINameForType(baseType);
-      String pid = persistenceManager.persistObject(collectionId, doc.getId());
+      String pid = persistenceWrapper.persistObject(collectionId, doc.getId());
       storage.setPID(type, pid, doc.getId());
     } catch (PersistenceException e) {
       LOG.error("Error while handling {} {}", type.getName(), doc.getId());
