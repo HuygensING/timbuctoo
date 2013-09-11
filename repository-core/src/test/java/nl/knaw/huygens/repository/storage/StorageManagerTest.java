@@ -19,14 +19,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.model.MultipleReferringDoc;
 import nl.knaw.huygens.repository.managers.model.ReferredDoc;
 import nl.knaw.huygens.repository.managers.model.ReferringDoc;
 import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.persistence.PersistenceException;
-import nl.knaw.huygens.repository.persistence.PersistenceManager;
 import nl.knaw.huygens.repository.persistence.PersistenceWrapper;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
