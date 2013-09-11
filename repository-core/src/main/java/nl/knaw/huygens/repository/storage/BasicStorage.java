@@ -2,6 +2,7 @@ package nl.knaw.huygens.repository.storage;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.repository.model.Document;
@@ -48,5 +49,11 @@ public interface BasicStorage {
   <T extends Document> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs);
 
   <T extends Document> List<String> getIdsForQuery(Class<T> type, List<String> accessors, String[] id);
+
+  /**
+   * Removes (system) documents that have a value of the specified date field
+   * that is older than the specified date.
+   */
+  <T extends Document> int removeByDate(Class<T> type, String dateField, Date dateValue);
 
 }

@@ -1,5 +1,7 @@
 package nl.knaw.huygens.repository.storage.mongo.model;
 
+import java.util.Date;
+
 import nl.knaw.huygens.repository.annotations.IDPrefix;
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
 import nl.knaw.huygens.repository.model.SystemDocument;
@@ -16,6 +18,7 @@ public class TestSystemDocument extends SystemDocument {
   @JsonProperty("propAnnotated")
   private String annotatedProperty;
   private String propWithAnnotatedAccessors;
+  private Date date;
 
   @Override
   @JsonProperty("!currentVariation")
@@ -74,6 +77,14 @@ public class TestSystemDocument extends SystemDocument {
   @JsonProperty("pwaa")
   public void setPropWithAnnotatedAccessors(String propWithAnnotatedAccessors) {
     this.propWithAnnotatedAccessors = propWithAnnotatedAccessors;
+  }
+
+  public Date getDate() {
+    return date;
+  }
+
+  public void setDate(Date date) {
+    this.date = date;
   }
 
 }

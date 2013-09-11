@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.storage.mongo.variation;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -378,6 +379,12 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     }
     // We don't know what this is supposed to be, return "UNK" for unknown...
     return "UNK";
+  }
+
+  @Override
+  public <T extends Document> int removeByDate(Class<T> type, String dateField, Date dateValue) {
+    // only for system documents...
+    return 0;
   }
 
 }

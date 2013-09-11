@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.storage.mongo;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +20,7 @@ import nl.knaw.huygens.repository.storage.StorageUtils;
 
 import org.mongojack.DBCursor;
 import org.mongojack.DBQuery;
+import org.mongojack.DBQuery.Query;
 import org.mongojack.JacksonDBCollection;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -273,6 +275,13 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
     // always work;
     // we simply set the delete prop to true.
     col.findAndModify(DBQuery.is("_id", id), update);
+  }
+
+  @Override
+  public <T extends Document> int removeByDate(Class<T> type, String dateField, Date dateValue) {
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
+    Query query = DBQuery.lessThan(dateField, dateValue);
+    return col.remove(query).getN();
   }
 
   // -------------------------------------------------------------------
