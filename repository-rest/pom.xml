@@ -29,6 +29,12 @@
       <artifactId>repository-search</artifactId>
       <version>1.0.4-SNAPSHOT</version>
     </dependency>
+    <!-- Services project -->
+    <dependency>
+      <groupId>repository</groupId>
+      <artifactId>repository-services</artifactId>
+      <version>1.0.4-SNAPSHOT</version>
+    </dependency>
     <!-- ## End of repository packages ## -->
     
     <!-- ## Main libraries ## -->

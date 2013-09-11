@@ -1,6 +1,4 @@
-package nl.knaw.huygens.repository.rest.mail;
-
-import nl.knaw.huygens.repository.config.Configuration;
+package nl.knaw.huygens.repository.services.mail;
 
 import com.google.inject.Inject;
 
@@ -11,11 +9,11 @@ public class MailSenderFactory {
   private String fromAddress;
 
   @Inject
-  public MailSenderFactory(Configuration config) {
-    enabled = config.getBooleanSetting("mail.enabled");
-    host = config.getSetting("mail.host");
-    port = config.getSetting("mail.port");
-    fromAddress = config.getSetting("mail.from_address");
+  public MailSenderFactory(boolean isMailEnabled, String host, String portNumber, String fromAddress) {
+    enabled = isMailEnabled;
+    this.host = host;
+    port = portNumber;
+    this.fromAddress = fromAddress;
   }
 
   public MailSender create() {

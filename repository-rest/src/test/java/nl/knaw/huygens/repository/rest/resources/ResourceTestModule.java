@@ -7,8 +7,8 @@ import javax.validation.Validator;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
-import nl.knaw.huygens.repository.rest.mail.MailSender;
 import nl.knaw.huygens.repository.search.SearchManager;
+import nl.knaw.huygens.repository.services.mail.MailSender;
 import nl.knaw.huygens.repository.storage.StorageManager;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;

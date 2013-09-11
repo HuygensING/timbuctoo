@@ -18,7 +18,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import nl.knaw.huygens.repository.model.User;
-import nl.knaw.huygens.repository.rest.mail.MailSender;
+import nl.knaw.huygens.repository.services.mail.MailSender;
 import nl.knaw.huygens.repository.storage.StorageManager;
 
 import org.apache.commons.lang.StringUtils;
