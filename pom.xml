@@ -20,9 +20,7 @@
     <module>repository-search</module>
     <module>repository-tools</module>
     <module>repository-persistence</module>
-  
-  <module>>reposito>
-ry-services</module></modules>
+  </modules>
 
   <prerequisites>
     <maven>3.0</maven>
