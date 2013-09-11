@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Date;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.storage.mongo.model.TestSystemDocument;
@@ -251,6 +252,32 @@ public class MongoStorageTest extends MongoStorageTestBase {
     setUpDatabase();
     storage.empty();
     assertEquals(0, storage.getAllByType(TYPE).size());
+  }
+
+  @Test
+  public void testRemoveByDate() throws IOException {
+    Date now = new Date();
+    TestSystemDocument doc1 = newTestSystemDocument("doc1", "testValue", "testValue2", "doc1", "doc1");
+    doc1.setDate(offsetDate(now, -3100));
+    storage.addItem(TYPE, doc1);
+    TestSystemDocument doc2 = newTestSystemDocument("doc2", "testValue", "testValue2", "doc2", "doc2");
+    doc2.setDate(offsetDate(now, -2100));
+    storage.addItem(TYPE, doc2);
+    TestSystemDocument doc3 = newTestSystemDocument("doc3", "testValue", "testValue2", "doc1", "doc3");
+    doc3.setDate(offsetDate(now, -1100));
+    storage.addItem(TYPE, doc3);
+
+    verifyCollectionSize(3, "testsystemdocument", storage.db);
+    assertEquals(0, storage.removeByDate(TestSystemDocument.class, "date", offsetDate(now, -4000)));
+    verifyCollectionSize(3, "testsystemdocument", storage.db);
+    assertEquals(1, storage.removeByDate(TestSystemDocument.class, "date", offsetDate(now, -3000)));
+    verifyCollectionSize(2, "testsystemdocument", storage.db);
+    assertEquals(2, storage.removeByDate(TestSystemDocument.class, "date", offsetDate(now, -1000)));
+    verifyCollectionSize(0, "testsystemdocument", storage.db);
+  }
+
+  private Date offsetDate(Date date, long millis) {
+    return new Date(date.getTime() + millis);
   }
 
 }
