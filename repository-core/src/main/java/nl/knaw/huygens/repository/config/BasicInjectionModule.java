@@ -1,7 +1,7 @@
 package nl.knaw.huygens.repository.config;
 
-import nl.knaw.huygens.repository.persistence.PersistenceManager;
-import nl.knaw.huygens.repository.persistence.PersistenceManagerFactory;
+import nl.knaw.huygens.persistence.PersistenceManager;
+import nl.knaw.huygens.persistence.PersistenceManagerFactory;
 import nl.knaw.huygens.repository.persistence.PersistenceWrapper;
 import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.mongo.variation.MongoStorageFacade;
