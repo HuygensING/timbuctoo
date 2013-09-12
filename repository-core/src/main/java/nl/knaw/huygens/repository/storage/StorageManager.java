@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +19,7 @@ import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.messages.Producer;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.persistence.PersistenceWrapper;
 
 import org.slf4j.Logger;
@@ -111,6 +113,10 @@ public class StorageManager {
     }
   }
 
+  /**
+   * Returns a single document matching the non-null fields of
+   * the specified document, or null if no such document exists.
+   */
   public <T extends Document> T searchDocument(Class<T> type, T example) {
     try {
       return storage.searchItem(type, example);
@@ -118,7 +124,6 @@ public class StorageManager {
       LOG.error("Error while handling {} {}", type.getName(), example.getId());
       return null;
     }
-
   }
 
   public <T extends DomainDocument> T getCompleteVariation(Class<T> type, String id, String variation) {
@@ -189,6 +194,10 @@ public class StorageManager {
     if (DomainDocument.class.isAssignableFrom(type)) {
       sendIndexMessage(Broker.INDEX_DEL, docTypeRegistry.getINameForType(type), doc.getId());
     }
+  }
+
+  public void removeSearchResultsBefore(Date date) {
+    storage.removeByDate(SearchResult.class, SearchResult.DATE_FIELD, date);
   }
 
   public <T extends Document> StorageIterator<T> getByMultipleIds(Class<T> type, List<String> ids) {
