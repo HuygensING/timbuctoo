@@ -62,7 +62,7 @@ public class SearchManager {
       ids.add(document.getFieldValue("id").toString());
     }
 
-    SearchResult searchResult = new SearchResult(ids, docTypeRegistry.getINameForType(type), searchTerm, searchParameters.getSort(), new Date().toString());
+    SearchResult searchResult = new SearchResult(ids, docTypeRegistry.getINameForType(type), searchTerm, searchParameters.getSort(), new Date());
     searchResult.setFacets(facets);
 
     return searchResult;
