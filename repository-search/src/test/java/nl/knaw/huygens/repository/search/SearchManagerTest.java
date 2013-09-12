@@ -1,6 +1,7 @@
 package nl.knaw.huygens.repository.search;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyString;
@@ -230,6 +231,7 @@ public class SearchManagerTest {
 
     assertEquals(expected.getTerm(), actual.getTerm());
     assertEquals(expected.getSearchType(), actual.getSearchType());
+    assertNotNull(actual.getDate());
   }
 
   private FacetField createFacetField(String facetName, List<Count> counts) {

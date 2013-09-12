@@ -1,5 +1,6 @@
 package nl.knaw.huygens.repository.model;
 
+import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.repository.annotations.DocumentTypeName;
@@ -10,21 +11,23 @@ import nl.knaw.huygens.repository.facet.FacetCount;
 @DocumentTypeName("search")
 public class SearchResult extends SystemDocument implements Persistent {
 
+  public static final String DATE_FIELD = "date";
+
   private List<String> ids;
   private String term;
   private String sort;
-  private String date;
+  private Date date;
   private String searchType;
   private List<FacetCount> facets;
 
   public SearchResult() {}
 
-  public SearchResult(List<String> ids, String type, String term, String sort, String date) {
+  public SearchResult(List<String> ids, String type, String term, String sort, Date date) {
     this.ids = ids;
     this.term = term;
     this.sort = sort;
     this.date = date;
-    this.searchType = type;
+    searchType = type;
   }
 
   public List<String> getIds() {
@@ -51,11 +54,11 @@ public class SearchResult extends SystemDocument implements Persistent {
     this.sort = sort;
   }
 
-  public String getDate() {
+  public Date getDate() {
     return date;
   }
 
-  public void setDate(String date) {
+  public void setDate(Date date) {
     this.date = date;
   }
 
@@ -64,7 +67,7 @@ public class SearchResult extends SystemDocument implements Persistent {
   }
 
   public void setSearchType(String type) {
-    this.searchType = type;
+    searchType = type;
   }
 
   @Override
