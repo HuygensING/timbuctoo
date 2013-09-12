@@ -37,7 +37,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testGetDocExisting() {
     String id = "TST0000000001";
     TestConcreteDoc expectedDoc = new TestConcreteDoc(id);
-    when(getStorageManager().getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
+    when(getStorageManager().getDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
 
     TestConcreteDoc actualDoc = autoResource().path("testconcretedocs").path(id).get(TestConcreteDoc.class);
     assertNotNull(actualDoc);
@@ -47,7 +47,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetDocNonExistingInstance() {
     String id = "TST0000000001";
-    when(getStorageManager().getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(null);
+    when(getStorageManager().getDocument(TestConcreteDoc.class, id)).thenReturn(null);
 
     ClientResponse response = autoResource().path("testconcretedocs").path(id).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
@@ -326,7 +326,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testGetDocNotLoggedIn() {
     String id = "TST0000000001";
     TestConcreteDoc expectedDoc = new TestConcreteDoc(id);
-    when(getStorageManager().getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
+    when(getStorageManager().getDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
 
     ClientResponse response = autoResource().path("testconcretedocs").path(id).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
@@ -336,7 +336,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testGetDocEmptyAuthorizationKey() {
     String id = "TST0000000001";
     TestConcreteDoc expectedDoc = new TestConcreteDoc(id);
-    when(getStorageManager().getCompleteDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
+    when(getStorageManager().getDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
 
     ClientResponse response = autoResource().path("testconcretedocs").path(id).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
@@ -375,8 +375,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     inputDoc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(inputDoc);
 
-    ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
-        .post(ClientResponse.class, inputDoc);
+    ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, inputDoc);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
   }
 

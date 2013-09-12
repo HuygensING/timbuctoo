@@ -57,44 +57,6 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testGetCompleteDocumentDocumentFound() throws IOException {
-    Class<GeneralTestDoc> type = GeneralTestDoc.class;
-    String id = "testId";
-
-    GeneralTestDoc doc = mock(GeneralTestDoc.class);
-    when(doc.getId()).thenReturn(id);
-    when(doc.getDisplayName()).thenReturn("test");
-
-    when(storage.getItem(type, id)).thenReturn(doc);
-
-    Document actualDoc = instance.getCompleteDocument(type, id);
-
-    assertEquals(id, actualDoc.getId());
-    assertEquals("test", actualDoc.getDisplayName());
-  }
-
-  @Test
-  public void testGetCompleteDocumentDocumentNotFound() throws IOException {
-    Class<GeneralTestDoc> type = GeneralTestDoc.class;
-    String id = "testId";
-
-    when(storage.getItem(type, id)).thenReturn(null);
-
-    assertNull(instance.getCompleteDocument(type, id));
-  }
-
-  @SuppressWarnings("unchecked")
-  @Test
-  public void testGetCompleteDocumentIOException() throws IOException {
-    Class<GeneralTestDoc> type = GeneralTestDoc.class;
-    String id = "testId";
-
-    when(storage.getItem(type, id)).thenThrow(IOException.class);
-
-    assertNull(instance.getCompleteDocument(type, id));
-  }
-
-  @Test
   public void testGetDocumentDocumentFound() throws IOException {
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     String id = "testId";
