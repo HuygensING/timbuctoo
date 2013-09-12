@@ -34,7 +34,7 @@ public class CKCCPersonImporter extends CSVImporter {
       String id = items[8];
       Person retrieved = null;
       if (id.length() > 0 && !id.equals("?")) {
-        retrieved = storageManager.getCompleteDocument(Person.class, id);
+        retrieved = storageManager.getDocument(Person.class, id);
         exists = retrieved != null;
       }
       CKCCPerson person = new CKCCPerson();

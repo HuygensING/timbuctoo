@@ -61,9 +61,13 @@ public class RESTAutoResource {
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
   public List<? extends Document> getAllDocs( //
-      @PathParam(ENTITY_PARAM) String entityType, //
-      @QueryParam("rows") @DefaultValue("200") int rows, //
-      @QueryParam("start") int start //
+      @PathParam(ENTITY_PARAM)
+      String entityType, //
+      @QueryParam("rows")
+      @DefaultValue("200")
+      int rows, //
+      @QueryParam("start")
+      int start //
   ) {
     Class<? extends Document> type = getDocType(entityType);
     return storageManager.getAllLimited(type, start, rows);
@@ -74,9 +78,11 @@ public class RESTAutoResource {
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
   public <T extends Document> Response post( //
-      @PathParam(ENTITY_PARAM) String entityType, //
+      @PathParam(ENTITY_PARAM)
+      String entityType, //
       Document input, //
-      @Context UriInfo uriInfo //
+      @Context
+      UriInfo uriInfo //
   ) throws IOException {
     @SuppressWarnings("unchecked")
     Class<T> type = (Class<T>) getDocType(entityType);
@@ -101,11 +107,13 @@ public class RESTAutoResource {
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
   public Document getDoc( //
-      @PathParam(ENTITY_PARAM) String entityType, //
-      @PathParam(ID_PARAM) String id //
+      @PathParam(ENTITY_PARAM)
+      String entityType, //
+      @PathParam(ID_PARAM)
+      String id //
   ) {
     Class<? extends Document> type = getDocType(entityType);
-    return checkNotNull(storageManager.getCompleteDocument(type, id), Status.NOT_FOUND);
+    return checkNotNull(storageManager.getDocument(type, id), Status.NOT_FOUND);
   }
 
   @PUT
@@ -114,8 +122,10 @@ public class RESTAutoResource {
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
   public <T extends Document> void putDoc( //
-      @PathParam(ENTITY_PARAM) String entityType, //
-      @PathParam(ID_PARAM) String id, //
+      @PathParam(ENTITY_PARAM)
+      String entityType, //
+      @PathParam(ID_PARAM)
+      String id, //
       Document input //
   ) throws IOException {
     @SuppressWarnings("unchecked")
@@ -143,8 +153,10 @@ public class RESTAutoResource {
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
   public <T extends Document> Response delete( //
-      @PathParam(ENTITY_PARAM) String entityType, //
-      @PathParam(ID_PARAM) String id //
+      @PathParam(ENTITY_PARAM)
+      String entityType, //
+      @PathParam(ID_PARAM)
+      String id //
   ) throws IOException {
     @SuppressWarnings("unchecked")
     Class<T> type = (Class<T>) getDocType(entityType);
@@ -158,9 +170,12 @@ public class RESTAutoResource {
   @JsonView(JsonViews.WebView.class)
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   public DomainDocument getDocOfVariation( //
-      @PathParam(ENTITY_PARAM) String entityType, //
-      @PathParam(ID_PARAM) String id, //
-      @PathParam("variation") String variation //
+      @PathParam(ENTITY_PARAM)
+      String entityType, //
+      @PathParam(ID_PARAM)
+      String id, //
+      @PathParam("variation")
+      String variation //
   ) {
     @SuppressWarnings("unchecked")
     Class<? extends DomainDocument> type = (Class<? extends DomainDocument>) getDocType(entityType);

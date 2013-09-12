@@ -102,7 +102,7 @@ public class StorageManager {
 
   // -------------------------------------------------------------------
 
-  public <T extends Document> T getCompleteDocument(Class<T> type, String id) {
+  public <T extends Document> T getDocument(Class<T> type, String id) {
     try {
       return storage.getItem(type, id);
     } catch (IOException e) {
@@ -125,15 +125,6 @@ public class StorageManager {
     try {
       return storage.getVariation(type, id, variation);
     } catch (Exception e) {
-      LOG.error("Error while handling {} {}", type.getName(), id);
-      return null;
-    }
-  }
-
-  public <T extends Document> T getDocument(Class<T> type, String id) {
-    try {
-      return storage.getItem(type, id);
-    } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
       return null;
     }
