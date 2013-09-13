@@ -5,8 +5,12 @@ import javax.validation.Validator;
 
 import nl.knaw.huygens.repository.config.BasicInjectionModule;
 import nl.knaw.huygens.repository.config.Configuration;
+import nl.knaw.huygens.repository.security.UserSecurityContextCreator;
 import nl.knaw.huygens.repository.services.mail.MailSender;
 import nl.knaw.huygens.repository.services.mail.MailSenderFactory;
+import nl.knaw.huygens.security.AuthorizationHandler;
+import nl.knaw.huygens.security.SecurityContextCreator;
+import nl.knaw.huygens.security.apis.ApisAuthorizationHandler;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -15,6 +19,14 @@ public class RESTInjectionModule extends BasicInjectionModule {
 
   public RESTInjectionModule(Configuration config) {
     super(config);
+  }
+
+  @Override
+  protected void configure() {
+
+    bind(SecurityContextCreator.class).to(UserSecurityContextCreator.class);
+    bind(AuthorizationHandler.class).to(ApisAuthorizationHandler.class);
+    super.configure();
   }
 
   @Provides

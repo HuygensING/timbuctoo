@@ -76,6 +76,8 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testGetAllUsersNotLoggedIn() {
     WebResource webResource = super.resource();
 
+    setUserUnauthorized();
+
     ClientResponse clientResponse = webResource.path("/resources/user/all").get(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.UNAUTHORIZED, clientResponse.getClientResponseStatus());
@@ -209,6 +211,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testGetUserNotLoggedIn() {
     WebResource webResource = super.resource();
 
+    setUserUnauthorized();
     ClientResponse clientResponse = webResource.path("/resources/user").path(USER_ID).get(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.UNAUTHORIZED, clientResponse.getClientResponseStatus());
@@ -293,6 +296,8 @@ public class UserResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getDocument(User.class, USER_ID)).thenReturn(null);
 
+    setUserUnauthorized();
+
     WebResource webResource = super.resource();
 
     ClientResponse clientResponse = webResource.path("/resources/user").path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, user);
@@ -351,6 +356,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     expected.setId(USER_ID);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getDocument(User.class, USER_ID)).thenReturn(expected);
+    setUserUnauthorized();
 
     ClientResponse clientResponse = webResource.path("/resources/user").path(USER_ID).delete(ClientResponse.class);
 

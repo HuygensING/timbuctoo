@@ -16,12 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package nl.knaw.huygens.repository.rest.security.apis;
+package nl.knaw.huygens.security.apis;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response.Status;
+
+import nl.knaw.huygens.security.AuthorizationHandler;
+import nl.knaw.huygens.security.SecurityInformation;
+import nl.knaw.huygens.security.UnauthorizedException;
 
 import org.apache.commons.codec.binary.Base64;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -33,25 +35,23 @@ import org.surfnet.oaaas.model.TokenResponseCache;
 import org.surfnet.oaaas.model.TokenResponseCacheImpl;
 import org.surfnet.oaaas.model.VerifyTokenResponse;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.spi.container.ContainerRequest;
-import com.sun.jersey.spi.container.ContainerRequestFilter;
-import com.sun.jersey.spi.container.ContainerResponseFilter;
-import com.sun.jersey.spi.container.ResourceFilter;
 
 /**
- * This class is a ResourceFilter implementation of the AuthorizationServerFilter of the 'apis resource server library'.
+ * This class uses the functionality of the AuthorizationServerFilter of the 'apis resource server library'.
  * All the functionality is copy-pasted except for the CORS-code. This code should be added a javax.servlet.Filter and not in a ResourceFilter.
  *  
  * @author martijnm
  */
-public class ApisAuthorizationServerResourceFilter implements ResourceFilter, ContainerRequestFilter {
+public class ApisAuthorizationHandler implements AuthorizationHandler {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ApisAuthorizationServerResourceFilter.class);
-  private static final String VERIFY_TOKEN_RESPONSE = "VERIFY_TOKEN_RESPONSE";
+  private static final Logger LOG = LoggerFactory.getLogger(ApisAuthorizationHandler.class);
   private static final String BEARER = "bearer";
 
   private String resourceServerKey;
@@ -66,7 +66,12 @@ public class ApisAuthorizationServerResourceFilter implements ResourceFilter, Co
 
   private TokenResponseCache cache;
 
-  public ApisAuthorizationServerResourceFilter(String resourceServerKey, String resourceServerSecret, String authorizationServerUrl, boolean cacheEnabled) {
+  @Inject
+  public ApisAuthorizationHandler(@Named("security.apis.key")
+  String resourceServerKey, @Named("security.apis.secret")
+  String resourceServerSecret, @Named("security.apis.server")
+  String authorizationServerUrl, @Named("security.apis.cache")
+  boolean cacheEnabled) {
     this.resourceServerKey = resourceServerKey;
     this.resourceServerSecret = resourceServerSecret;
     this.authorizationServerUrl = authorizationServerUrl;
@@ -88,26 +93,22 @@ public class ApisAuthorizationServerResourceFilter implements ResourceFilter, Co
   }
 
   @Override
-  public ContainerRequest filter(ContainerRequest request) {
+  public SecurityInformation getSecurityInformation(ContainerRequest request) throws UnauthorizedException {
     final String accessToken = getAccessToken(request);
+    SecurityInformation securityInformation = null;
     if (accessToken != null) {
       VerifyTokenResponse verifyTokenResponse = getVerifyTokenResponse(accessToken);
       if (isValidResponse(verifyTokenResponse)) {
-        request.getProperties().put(VERIFY_TOKEN_RESPONSE, verifyTokenResponse);
-        return request;
+        securityInformation = new SecurityInformation();
+        securityInformation.setApplicationName(verifyTokenResponse.getAudience());
+        securityInformation.setDisplayName(verifyTokenResponse.getPrincipal().getAttributes().get("DISPLAY_NAME"));
+        securityInformation.setPrincipal(verifyTokenResponse.getPrincipal());
+
+        return securityInformation;
       }
     }
-    throw new WebApplicationException(Status.UNAUTHORIZED);
-  }
 
-  @Override
-  public ContainerRequestFilter getRequestFilter() {
-    return this;
-  }
-
-  @Override
-  public ContainerResponseFilter getResponseFilter() {
-    return null;
+    throw new UnauthorizedException();
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })

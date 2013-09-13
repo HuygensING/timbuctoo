@@ -15,10 +15,13 @@
         <dependent-module archiveName="repository-search-1.0.4-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-search/repository-search">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="repository-security-1.0.4-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-security/repository-security">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <dependent-module archiveName="repository-services-1.0.4-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-services/repository-services">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <property name="java-output-path" value="/repository-rest/target/classes"/>
-        <property name="context-root" value="repository"/>
+        <property name="context-root" value="repository-rest"/>
     </wb-module>
 </project-modules>

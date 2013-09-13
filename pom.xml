@@ -16,10 +16,12 @@
 
   <modules>
     <module>repository-core</module>
+    <module>repository-persistence</module>
     <module>repository-rest</module>
     <module>repository-search</module>
+    <module>repository-services</module>
     <module>repository-tools</module>
-    <module>repository-persistence</module>
+    <module>repository-security</module>
   </modules>
 
   <prerequisites>
@@ -106,6 +108,7 @@
     <mockito.version>1.9.0</mockito.version>
     <slf4j.version>1.6.6</slf4j.version>
     <solr.version>4.3.1</solr.version>
+    <jersey.version>1.16</jersey.version>
   </properties>
 
   <dependencies>
@@ -199,104 +202,6 @@
       <groupId>javax.validation</groupId>
       <artifactId>validation-api</artifactId>
       <version>1.0.0.GA</version>
-    </dependency>
-
-    <!-- Apis authorization server communication -->
-    <dependency>
-      <groupId>nl.surfnet.apis</groupId>
-      <artifactId>apis-resource-server-library</artifactId>
-      <version>${apis.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>stax-api</artifactId>
-          <groupId>stax</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jettison</artifactId>
-          <groupId>org.codehaus.jettison</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>spring-core</artifactId>
-          <groupId>org.springframework</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>spring-aop</artifactId>
-          <groupId>org.springframework</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>spring-beans</artifactId>
-          <groupId>org.springframework</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>slf4j-api</artifactId>
-          <groupId>org.slf4j</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jul-to-slf4j</artifactId>
-          <groupId>org.slf4j</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!-- Dependencies needed for deserializing the VerifyTokenResponse -->
-    <dependency>
-      <groupId>nl.surfnet.apis</groupId>
-      <artifactId>apis-surfconext-authn</artifactId>
-      <version>${apis.version}</version>
-      <scope>runtime</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>hamcrest-core</artifactId>
-          <groupId>org.hamcrest</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>log4j-over-slf4j</artifactId>
-          <groupId>org.slf4j</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>openws</artifactId>
-          <groupId>org.opensaml</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>spring-core</artifactId>
-          <groupId>org.springframework</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>spring-aop</artifactId>
-          <groupId>org.springframework</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>spring-beans</artifactId>
-          <groupId>org.springframework</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>slf4j-api</artifactId>
-          <groupId>org.slf4j</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jul-to-slf4j</artifactId>
-          <groupId>org.slf4j</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jcl-over-slf4j</artifactId>
-          <groupId>org.slf4j</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>velocity</artifactId>
-          <groupId>velocity</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>coin-test</artifactId>
-          <groupId>org.surfnet.coin</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>opensaml</artifactId>
-          <groupId>org.opensaml</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>apis-authorization-server</artifactId>
-          <groupId>nl.surfnet.apis</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <!-- Apache ActiveMQ -->

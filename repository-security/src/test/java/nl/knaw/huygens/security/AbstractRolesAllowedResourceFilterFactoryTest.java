@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.rest.security;
+package nl.knaw.huygens.security;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -11,7 +11,7 @@ import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 
-import nl.knaw.huygens.repository.rest.security.AbstractRolesAllowedResourceFilterFactory;
+import nl.knaw.huygens.security.AbstractRolesAllowedResourceFilterFactory;
 
 import org.junit.Test;
 

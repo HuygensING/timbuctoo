@@ -8,8 +8,11 @@ import javax.validation.Validator;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.search.SearchManager;
+import nl.knaw.huygens.repository.security.UserSecurityContextCreator;
 import nl.knaw.huygens.repository.services.mail.MailSender;
 import nl.knaw.huygens.repository.storage.StorageManager;
+import nl.knaw.huygens.security.AuthorizationHandler;
+import nl.knaw.huygens.security.SecurityContextCreator;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Provides;
@@ -32,21 +35,23 @@ class ResourceTestModule extends JerseyServletModule {
   private DocTypeRegistry docTypeRegistry;
   private StorageManager storageManager;
   private JacksonJsonProvider jsonProvider;
-  private MockApisAuthorizationServerResourceFilter mockApisAuthorizationServerResourceFilter;
   private Validator validator;
   private MailSender mailSender;
   private SearchManager searchManager;
   private LocalSolrServer localSolrServer;
+  private SecurityContextCreator securityContextCreator;
+  private AuthorizationHandler authorizationHandler;
 
   public ResourceTestModule() {
     docTypeRegistry = new DocTypeRegistry(PACKAGES);
     storageManager = mock(StorageManager.class);
     jsonProvider = mock(JacksonJsonProvider.class);
-    mockApisAuthorizationServerResourceFilter = new MockApisAuthorizationServerResourceFilter();
     validator = mock(Validator.class);
     mailSender = mock(MailSender.class);
     searchManager = mock(SearchManager.class);
     localSolrServer = mock(LocalSolrServer.class);
+    securityContextCreator = new UserSecurityContextCreator(storageManager);
+    authorizationHandler = mock(AuthorizationHandler.class);
 
   }
 
@@ -55,7 +60,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(storageManager, jsonProvider, validator, mailSender, searchManager, localSolrServer);
+    reset(storageManager, jsonProvider, validator, mailSender, searchManager, localSolrServer, authorizationHandler);
   }
 
   @Override
@@ -72,11 +77,6 @@ class ResourceTestModule extends JerseyServletModule {
   @Provides
   public DocTypeRegistry providesDocumentTypeRegister() {
     return this.docTypeRegistry;
-  }
-
-  @Provides
-  public MockApisAuthorizationServerResourceFilter provideMockApisAuthorizationServerResourceFilter() {
-    return this.mockApisAuthorizationServerResourceFilter;
   }
 
   @Singleton
@@ -115,6 +115,7 @@ class ResourceTestModule extends JerseyServletModule {
   }
 
   @Provides
+  @Singleton
   public SearchManager provideSearchManager() {
     return searchManager;
   }
@@ -124,4 +125,15 @@ class ResourceTestModule extends JerseyServletModule {
     return localSolrServer;
   }
 
+  @Provides
+  @Singleton
+  public SecurityContextCreator provideSecurityContextCreator() {
+    return securityContextCreator;
+  }
+
+  @Provides
+  @Singleton
+  public AuthorizationHandler provideAuthorizationHandler() {
+    return authorizationHandler;
+  }
 }

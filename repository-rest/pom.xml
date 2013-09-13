@@ -11,10 +11,6 @@
   <name>datarepository REST api</name>
   <description>This artifact contains the REST-api of the repository.</description>
   
-  <properties>
-    <jersey.version>1.16</jersey.version>
-  </properties>
-  
   <dependencies>
     <!-- ## Repository packages ## -->
     <!-- Core project -->
@@ -27,6 +23,12 @@
     <dependency>
       <groupId>repository</groupId>
       <artifactId>repository-search</artifactId>
+      <version>1.0.4-SNAPSHOT</version>
+    </dependency>
+    <!-- Security project -->
+    <dependency>
+      <groupId>repository</groupId>
+      <artifactId>repository-security</artifactId>
       <version>1.0.4-SNAPSHOT</version>
     </dependency>
     <!-- Services project -->

@@ -42,7 +42,7 @@
       <port>25</port>
     </mail>
     <security>
-      <enabled>false</enabled>
+      <enabled>true</enabled>
       <apis>
         <!-- Apis security server -->
         <cache>false</cache> <!-- cache disabled, because it throws a class not found exception -->

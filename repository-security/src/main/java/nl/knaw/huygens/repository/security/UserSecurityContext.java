@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.rest.security;
+package nl.knaw.huygens.repository.security;
 
 import java.security.Principal;
 import java.util.List;
