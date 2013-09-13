@@ -45,7 +45,7 @@
       <enabled>false</enabled>
       <apis>
         <!-- Apis security server -->
-        <cache>true</cache>
+        <cache>false</cache> <!-- cache disabled, because it throws a class not found exception -->
         <key>be69631f-bd25-4f93-9eaf-90853f6caace</key>
         <secret>b8257bfc-ceb0-4ef5-a0d0-d643ba1ee3a6</secret>
         <server>http://demo17.huygens.knaw.nl/apis-authorization-server/v1/tokeninfo</server>
