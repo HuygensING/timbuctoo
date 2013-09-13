@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.rest.security;
+package nl.knaw.huygens.security;
 
 import javax.annotation.security.RolesAllowed;
 
@@ -7,7 +7,7 @@ import com.sun.jersey.spi.container.ResourceFilter;
 import com.sun.jersey.spi.container.ResourceFilterFactory;
 
 /**
- * Base class for multiple RolesAllowedFilterFactories like ApisAuthorizationResourceFilterFactory and SecurityContextFilterFactory.
+ * Base class for RolesAllowedFilterFactories like SecurityFilterFactory. 
  * @author martijnm
  *
  */

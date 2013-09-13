@@ -11,6 +11,7 @@
   <name>repository tools</name>
   
   <dependencies>
+    <!-- ## Repository packages ## -->
   	<dependency>
   	  <groupId>repository</groupId>
   	  <artifactId>repository-core</artifactId>
@@ -21,5 +22,15 @@
   	  <artifactId>repository-search</artifactId>
       <version>1.0.4-SNAPSHOT</version>
   	</dependency>
+    <!-- ## End of repository packages ## -->
+    
+    <!-- ## Main libraries ## -->	
+  	<dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-client</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <!-- ## End of main libraries ## -->
   </dependencies>
+  
 </project>
