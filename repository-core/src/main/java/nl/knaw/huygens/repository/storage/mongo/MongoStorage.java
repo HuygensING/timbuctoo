@@ -278,6 +278,12 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   }
 
   @Override
+  public <T extends Document> int removeAll(Class<T> type) {
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
+    return col.remove(new BasicDBObject()).getN();
+  }
+
+  @Override
   public <T extends Document> int removeByDate(Class<T> type, String dateField, Date dateValue) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     Query query = DBQuery.lessThan(dateField, dateValue);
