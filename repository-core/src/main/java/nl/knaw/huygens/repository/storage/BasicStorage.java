@@ -51,8 +51,15 @@ public interface BasicStorage {
   <T extends Document> List<String> getIdsForQuery(Class<T> type, List<String> accessors, String[] id);
 
   /**
-   * Removes (system) documents that have a value of the specified date field
+   * Removes all system douments with the specified type.
+   * @return The number of documents removed.
+   */
+  <T extends Document> int removeAll(Class<T> type);
+
+  /**
+   * Removes system documents that have a value of the specified date field
    * that is older than the specified date.
+   * @return The number of documents removed.
    */
   <T extends Document> int removeByDate(Class<T> type, String dateField, Date dateValue);
 

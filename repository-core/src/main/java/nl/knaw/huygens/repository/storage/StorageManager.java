@@ -196,6 +196,10 @@ public class StorageManager {
     }
   }
 
+  public void removeAllSearchResults() {
+    storage.removeAll(SearchResult.class);
+  }
+
   public void removeSearchResultsBefore(Date date) {
     storage.removeByDate(SearchResult.class, SearchResult.DATE_FIELD, date);
   }

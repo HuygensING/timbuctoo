@@ -382,8 +382,14 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
+  public <T extends Document> int removeAll(Class<T> type) {
+    // Only for system documents...
+    return 0;
+  }
+
+  @Override
   public <T extends Document> int removeByDate(Class<T> type, String dateField, Date dateValue) {
-    // only for system documents...
+    // Only for system documents...
     return 0;
   }
 
