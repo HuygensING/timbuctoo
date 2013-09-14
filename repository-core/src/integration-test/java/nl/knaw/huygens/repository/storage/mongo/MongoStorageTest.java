@@ -255,18 +255,16 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testRemoveByDate() throws IOException {
-    Date now = new Date();
-    TestSystemDocument doc1 = newTestSystemDocument("doc1", "testValue", "testValue2", "doc1", "doc1");
-    doc1.setDate(offsetDate(now, -3100));
-    storage.addItem(TYPE, doc1);
-    TestSystemDocument doc2 = newTestSystemDocument("doc2", "testValue", "testValue2", "doc2", "doc2");
-    doc2.setDate(offsetDate(now, -2100));
-    storage.addItem(TYPE, doc2);
-    TestSystemDocument doc3 = newTestSystemDocument("doc3", "testValue", "testValue2", "doc1", "doc3");
-    doc3.setDate(offsetDate(now, -1100));
-    storage.addItem(TYPE, doc3);
+  public void testRemoveAll() throws IOException {
+    createDocumentsWithDate();
+    verifyCollectionSize(3, "testsystemdocument", storage.db);
+    assertEquals(3, storage.removeAll(TestSystemDocument.class));
+    verifyCollectionSize(0, "testsystemdocument", storage.db);
+  }
 
+  @Test
+  public void testRemoveByDate() throws IOException {
+    Date now = createDocumentsWithDate();
     verifyCollectionSize(3, "testsystemdocument", storage.db);
     assertEquals(0, storage.removeByDate(TestSystemDocument.class, "date", offsetDate(now, -4000)));
     verifyCollectionSize(3, "testsystemdocument", storage.db);
@@ -274,6 +272,20 @@ public class MongoStorageTest extends MongoStorageTestBase {
     verifyCollectionSize(2, "testsystemdocument", storage.db);
     assertEquals(2, storage.removeByDate(TestSystemDocument.class, "date", offsetDate(now, -1000)));
     verifyCollectionSize(0, "testsystemdocument", storage.db);
+  }
+
+  private Date createDocumentsWithDate() throws IOException {
+    Date now = new Date();
+    TestSystemDocument doc1 = newTestSystemDocument("doc1", "value", "value2", "doc1", "doc1");
+    doc1.setDate(offsetDate(now, -3100));
+    storage.addItem(TYPE, doc1);
+    TestSystemDocument doc2 = newTestSystemDocument("doc2", "value", "value2", "doc2", "doc2");
+    doc2.setDate(offsetDate(now, -2100));
+    storage.addItem(TYPE, doc2);
+    TestSystemDocument doc3 = newTestSystemDocument("doc3", "value", "value2", "doc1", "doc3");
+    doc3.setDate(offsetDate(now, -1100));
+    storage.addItem(TYPE, doc3);
+    return now;
   }
 
   private Date offsetDate(Date date, long millis) {
