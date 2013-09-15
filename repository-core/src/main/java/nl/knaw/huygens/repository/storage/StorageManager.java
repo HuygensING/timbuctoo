@@ -196,12 +196,12 @@ public class StorageManager {
     }
   }
 
-  public void removeAllSearchResults() {
-    storage.removeAll(SearchResult.class);
+  public int removeAllSearchResults() {
+    return storage.removeAll(SearchResult.class);
   }
 
-  public void removeSearchResultsBefore(Date date) {
-    storage.removeByDate(SearchResult.class, SearchResult.DATE_FIELD, date);
+  public int removeSearchResultsBefore(Date date) {
+    return storage.removeByDate(SearchResult.class, SearchResult.DATE_FIELD, date);
   }
 
   public <T extends Document> StorageIterator<T> getByMultipleIds(Class<T> type, List<String> ids) {
