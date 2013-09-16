@@ -2,44 +2,43 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-	<modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<artifactId>repository</artifactId>
-		<groupId>repository</groupId>
-		<version>1.0.4-SNAPSHOT</version>
-	</parent>
-
+  <parent>
+	<artifactId>repository</artifactId>
 	<groupId>repository</groupId>
-	<artifactId>repository-dev-config-war</artifactId>
 	<version>1.0.4-SNAPSHOT</version>
-	<packaging>war</packaging>
+  </parent>
 
-	<name>repository-dev-config-war</name>
-	<description>repository-dev-config-war war</description>
+  <artifactId>repository-dev-config-war</artifactId>
+  <version>1.0.4-SNAPSHOT</version>
+  <packaging>war</packaging>
 
-	<properties>
-		<maven-bundle-plugin.version>2.3.4</maven-bundle-plugin.version>
-		<maven-war-plugin.version>2.1.1</maven-war-plugin.version>
-		<servlet-api.version>2.5</servlet-api.version>
-	</properties>
+  <name>repository-dev-config-war</name>
+  <description>Configuration project for the dev environment</description>
 
-	<dependencies>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>${servlet-api.version}</version>
-		</dependency>
-	</dependencies>
+  <properties>
+	<maven-bundle-plugin.version>2.3.4</maven-bundle-plugin.version>
+	<maven-war-plugin.version>2.1.1</maven-war-plugin.version>
+	<servlet-api.version>2.5</servlet-api.version>
+  </properties>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<version>${maven-war-plugin.version}</version>
-			</plugin>
-		</plugins>
-	</build>
+  <dependencies>
+	<dependency>
+	  <groupId>javax.servlet</groupId>
+	  <artifactId>servlet-api</artifactId>
+	  <version>${servlet-api.version}</version>
+	</dependency>
+  </dependencies>
+
+  <build>
+	<plugins>
+	  <plugin>
+	    <groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-war-plugin</artifactId>
+		<version>${maven-war-plugin.version}</version>
+	  </plugin>
+	</plugins>
+  </build>
 
 </project>
