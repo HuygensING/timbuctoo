@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
@@ -23,6 +24,8 @@
     <module>repository-tools</module>
     <module>repository-security</module>
     <module>repository-dev-config-war</module>
+    <module>repository-test-config-war</module>
+    <module>repository-prod-config-war</module>
   </modules>
 
   <prerequisites>
@@ -392,27 +395,4 @@
     </plugins>
   </build>
   
-  <profiles>
-    <profile>
-      <id>dev</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <environment>dev</environment>
-      </properties>
-    </profile>
-    <profile>
-      <id>test</id>
-      <properties>
-        <environment>test</environment>
-      </properties>
-    </profile>
-    <profile>
-      <id>prod</id>
-      <properties>
-        <environment>prod</environment>
-      </properties>
-    </profile>
-  </profiles>
 </project>
