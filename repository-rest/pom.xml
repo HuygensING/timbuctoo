@@ -88,15 +88,49 @@
     <!-- ## End of test libraries ## -->
     
     <!-- ## Runtime dependencies ## -->
-    <dependency>
-      <groupId>repository</groupId>
-      <artifactId>repository-dev-config-war</artifactId>
-      <version>1.0.4-SNAPSHOT</version>
-      <type>war</type>
-      <scope>runtime</scope>
-    </dependency>
+    
     <!-- ## End of runtime dependencies ## -->
   </dependencies> 
   
-  
+  <profiles>
+    <profile>
+      <id>dev</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>repository</groupId>
+          <artifactId>repository-dev-config-war</artifactId>
+          <version>1.0.4-SNAPSHOT</version>
+          <type>war</type>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>test</id>
+      <dependencies>
+        <dependency>
+          <groupId>repository</groupId>
+          <artifactId>repository-test-config-war</artifactId>
+          <version>1.0.4-SNAPSHOT</version>
+          <type>war</type>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>     
+    </profile>
+    <profile>
+      <id>prod</id>
+      <dependencies>
+        <dependency>
+          <groupId>repository</groupId>
+          <artifactId>repository-prod-config-war</artifactId>
+          <version>1.0.4-SNAPSHOT</version>
+          <type>war</type>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
 </project>
