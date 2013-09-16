@@ -146,6 +146,11 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
+  public <T extends Document> int removeAll(Class<T> type) {
+    return getStorageFor(type).removeAll(type);
+  }
+
+  @Override
   public <T extends Document> int removeByDate(Class<T> type, String dateField, Date dateValue) {
     return getStorageFor(type).removeByDate(type, dateField, dateValue);
   }
