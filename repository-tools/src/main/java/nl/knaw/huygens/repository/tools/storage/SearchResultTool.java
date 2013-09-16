@@ -54,7 +54,7 @@ public class SearchResultTool {
     if (!"all".equals(value)) {
       threshold = UTCUtils.stringToDate(value);
       if (threshold == null) {
-        String message = String.format("Use date format '%s' or 'all'", UTCUtils.dateToString(new Date()));
+        String message = String.format("Use ISO date format, e.g. '%s', or 'all'", UTCUtils.now());
         throw new ParseException(message);
       }
     }
