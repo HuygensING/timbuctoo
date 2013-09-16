@@ -22,6 +22,7 @@
     <module>repository-services</module>
     <module>repository-tools</module>
     <module>repository-security</module>
+    <module>repository-dev-config-war</module>
   </modules>
 
   <prerequisites>
