@@ -62,10 +62,12 @@ public class LocalSolrServer {
 
   @Inject
   public LocalSolrServer( //
-      Configuration config,
-      @Named("solr.directory") String configuredSolrDir, //
-      @Named("indexeddoctypes") String coreNameList, //
-      @Named("solr.commit_within") String commitWithinSpec //
+      Configuration config, @Named("solr.directory")
+      String configuredSolrDir, //
+      @Named("indexeddoctypes")
+      String coreNameList, //
+      @Named("solr.commit_within")
+      String commitWithinSpec //
   ) {
 
     try {
@@ -103,11 +105,13 @@ public class LocalSolrServer {
    */
   private SolrServer createServer(CoreContainer container, String coreName, String instanceDir) {
     CoreDescriptor descriptor = new CoreDescriptor(container, coreName, instanceDir);
-    String specialSchema = String.format("schema-%s.xml", coreName);
-    File file = new File(instanceDir, specialSchema);
-    String usedSchema = file.isFile() ? specialSchema : "schema-tmpl.xml";
-    LOG.info("Schema for {} index: {}", coreName, usedSchema);
-    descriptor.setSchemaName(usedSchema);
+    String schema = String.format("schema-%s.xml", coreName);
+    if (new File(instanceDir, schema).isFile()) {
+      descriptor.setSchemaName(schema);
+      LOG.info("Schema for {} index: {}", coreName, schema);
+    } else {
+      descriptor.setSchemaName("schema-tmpl.xml");
+    }
     descriptor.setDataDir(coreName);
     descriptor.setLoadOnStartup(true);
     SolrCore core = container.create(descriptor);
