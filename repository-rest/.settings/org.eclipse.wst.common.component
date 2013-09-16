@@ -18,6 +18,9 @@
         <dependent-module archiveName="repository-security-1.0.4-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-security/repository-security">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="huygens-security-1.0.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/security/security">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <dependent-module archiveName="repository-services-1.0.4-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-services/repository-services">
             <dependency-type>uses</dependency-type>
         </dependent-module>
