@@ -86,51 +86,17 @@
       <version>${jersey.version}</version>
     </dependency>
     <!-- ## End of test libraries ## -->
+    
+    <!-- ## Runtime dependencies ## -->
+    <dependency>
+      <groupId>repository</groupId>
+      <artifactId>repository-dev-config-war</artifactId>
+      <version>1.0.4-SNAPSHOT</version>
+      <type>war</type>
+      <scope>runtime</scope>
+    </dependency>
+    <!-- ## End of runtime dependencies ## -->
   </dependencies> 
   
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <tasks>
-                <echo>change configuration files for environment '${environment}'</echo>
-                <!-- delete the current config.xml and replace it with the one of the selected environment -->
-                <delete file="${basedir}/src/main/config/config.xml" />
-                <copy file="${basedir}/src/main/config/config-${environment}.xml"
-                	  tofile="${basedir}/src/main/config/config.xml"/>
-                <!-- delete the current config.js and replace it with the one of the selected environment -->
-                <delete file="${basedir}/src/main/webapp/static/config.js" />
-                <copy file="${basedir}/src/main/webapp/static/config-${environment}.js"
-                	  tofile="${basedir}/src/main/webapp/static/config.js"/>
-              </tasks>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>2.4</version>
-        <configuration>
-          <webResources>
-            <resource>
-              <directory>${basedir}/src/main/config</directory>
-              <targetPath>WEB-INF</targetPath>
-              <filtering>false</filtering>
-              <includes>
-                <include>config.xml</include>
-              </includes>
-            </resource>
-          </webResources>
-          <failOnMissingWebXml>false</failOnMissingWebXml>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+  
 </project>
