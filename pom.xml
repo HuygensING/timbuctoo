@@ -93,14 +93,20 @@
 
   <developers>
     <developer>
-      <id>WR</id>
-      <name>Walter Ravenek</name>
+      <id>RD</id>
+      <name>Ronald Haentjens Dekker</name>
       <organization>Huygens ING</organization>
       <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
     </developer>
     <developer>
       <id>MM</id>
       <name>Martijn Maas</name>
+      <organization>Huygens ING</organization>
+      <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+    </developer>
+    <developer>
+      <id>WR</id>
+      <name>Walter Ravenek</name>
       <organization>Huygens ING</organization>
       <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
     </developer>
@@ -184,8 +190,6 @@
       <artifactId>jackson-jaxrs-json-provider</artifactId>
       <version>${jackson.version}</version>
     </dependency>
-
-    
 
     <!-- Commons Configuration, assists with reading configuration files. -->
     <dependency>
@@ -296,29 +300,6 @@
     </dependency>
     <!-- ## End of main libraries ## -->
 
-    <!-- ## Import tooling libraries ##-->
-    <!-- MySQL -->
-    <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <version>5.1.6</version>
-    </dependency>
-
-    <!-- CSV support -->
-    <dependency>
-      <groupId>net.sf.opencsv</groupId>
-      <artifactId>opencsv</artifactId>
-      <version>2.3</version>
-    </dependency>
-
-    <!-- PostgreSQL -->
-    <dependency>
-      <groupId>postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>9.1-901.jdbc4</version>
-    </dependency>
-    <!-- ## End of import tooling libraries ##-->
-
     <!-- ## Build helper libraries ## -->
     <!-- temporarily? to make ant build work -->
     <!-- default servlet api -->
@@ -338,13 +319,12 @@
     <!-- ## End of build helper libraries ## -->
 
     <!-- ## Test libraries ## -->
-    
+
     <!-- JUnit test framework -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.10</version>
-      
       <exclusions>
         <exclusion>
           <artifactId>hamcrest-core</artifactId>
@@ -365,7 +345,6 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>${mockito.version}</version>
-      
       <exclusions>
         <exclusion>
           <artifactId>hamcrest-core</artifactId>
@@ -377,7 +356,6 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
       <version>${mockito.version}</version>
-      
     </dependency>
     <!-- ## End of test libraries ## -->
   </dependencies>
