@@ -12,6 +12,14 @@
   
   <dependencies>
   	<!-- ## Main libraries ## -->
+    
+    <!-- Guice -->
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+      <version>${guice.version}</version>
+    </dependency>
+    
   	<!-- Email support -->
     <dependency>
       <groupId>javax.mail</groupId>
