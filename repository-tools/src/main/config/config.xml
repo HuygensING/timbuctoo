@@ -18,11 +18,16 @@
     <solr>
       <!-- Solr directory, default '${user.home}/repository/solr' -->
       <directory></directory>
-      <!-- overkill? -->
-      <config>solrconfig.xml</config>
       <!-- Maximum time before a commit in ms -->
       <commit_within>10000</commit_within>
     </solr>
+    <search_results_cleanup>
+      <enabled>true</enabled>
+      <!-- interval between cleanups (hh:mm:ss) -->
+      <interval>00:00:10</interval>
+      <!-- time to live of search results (hh:mm:ss) -->
+      <ttl>00:01:00</ttl>
+    </search_results_cleanup>
     <messages>
       <!-- ActiveMQ message broker -->
       <enabled>true</enabled>
