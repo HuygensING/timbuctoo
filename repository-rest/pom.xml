@@ -10,7 +10,7 @@
   <packaging>war</packaging>
   <name>datarepository REST api</name>
   <description>This artifact contains the REST-api of the repository.</description>
-  
+
   <dependencies>
     <!-- ## Repository packages ## -->
     <!-- Core project -->
@@ -38,23 +38,23 @@
       <version>1.0.4-SNAPSHOT</version>
     </dependency>
     <!-- ## End of repository packages ## -->
-    
+
     <!-- ## Main libraries ## -->
-    
+
     <!-- Apache validation -->
     <dependency>
       <groupId>javax.validation</groupId>
       <artifactId>validation-api</artifactId>
       <version>${javax.validation.version}</version>
     </dependency>
-    
+
     <!-- Guice -->
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
       <version>${guice.version}</version>
     </dependency>
-    
+
     <!-- Jackson for JSON -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -76,7 +76,7 @@
       <artifactId>jackson-jaxrs-json-provider</artifactId>
       <version>${jackson.version}</version>
     </dependency>
-    
+
     <!-- Jersey -->
     <dependency>
       <groupId>com.sun.jersey</groupId>
@@ -99,7 +99,14 @@
       <artifactId>jersey-guice</artifactId>
       <version>${jersey.version}</version>
     </dependency>
-    
+
+    <!-- Quartz job scheduler -->
+    <dependency>
+      <groupId>org.quartz-scheduler</groupId>
+      <artifactId>quartz</artifactId>
+      <version>${quartz.version}</version>
+    </dependency>
+
     <!-- Email support -->
     <dependency>
       <groupId>javax.mail</groupId>
@@ -108,14 +115,14 @@
     </dependency>
 
     <!-- ## End of main libraries ## -->
-    
+
     <!-- ## Test libraries ## -->
     <!-- Jersey test framework -->
     <dependency>
       <groupId>com.sun.jersey.jersey-test-framework</groupId>
       <artifactId>jersey-test-framework-core</artifactId>
       <version>${jersey.version}</version>
-      
+
     </dependency>
     <dependency>
       <groupId>com.sun.jersey.jersey-test-framework</groupId>
@@ -123,12 +130,12 @@
       <version>${jersey.version}</version>
     </dependency>
     <!-- ## End of test libraries ## -->
-    
+
     <!-- ## Runtime dependencies ## -->
-    
+
     <!-- ## End of runtime dependencies ## -->
-  </dependencies> 
-  
+  </dependencies>
+
   <profiles>
     <profile>
       <id>dev</id>
@@ -155,7 +162,7 @@
           <type>war</type>
           <scope>runtime</scope>
         </dependency>
-      </dependencies>     
+      </dependencies>
     </profile>
     <profile>
       <id>prod</id>
