@@ -114,13 +114,15 @@
   </developers>
 
   <properties>
+    <commons.configuration.version>1.9</commons.configuration.version>
     <guice.version>3.0</guice.version>
     <jackson.version>2.1.1</jackson.version>
+    <javax.validation.version>1.0.0.GA</javax.validation.version>
+    <jersey.version>1.16</jersey.version>
+    <junit.version>4.10</junit.version>    
     <mockito.version>1.9.0</mockito.version>
     <slf4j.version>1.6.6</slf4j.version>
     <solr.version>4.3.1</solr.version>
-    <jersey.version>1.16</jersey.version>
-    <javax.validation.version>1.0.0.GA</javax.validation.version>
   </properties>
 
   <dependencies>
@@ -140,28 +142,6 @@
       </exclusions>
     </dependency>
 
-    <!-- Commons Configuration, assists with reading configuration files. -->
-    <dependency>
-      <groupId>commons-configuration</groupId>
-      <artifactId>commons-configuration</artifactId>
-      <version>1.9</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>commons-logging</artifactId>
-          <groupId>commons-logging</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <!-- Apache collections utils -->
-    <dependency>
-      <groupId>commons-collections</groupId>
-      <artifactId>commons-collections</artifactId>
-      <version>3.2.1</version>
-    </dependency>
-
-
-
     <!-- Apache ActiveMQ -->
     <dependency>
       <groupId>org.apache.activemq</groupId>
@@ -173,27 +153,6 @@
       <groupId>org.apache.bval</groupId>
       <artifactId>org.apache.bval.bundle</artifactId>
       <version>0.5</version>
-    </dependency>
-
-    <!-- Mindrot, for password encryption -->
-    <dependency>
-      <groupId>org.mindrot</groupId>
-      <artifactId>jbcrypt</artifactId>
-      <version>0.3m</version>
-    </dependency>
-
-    <!-- Scribe util methods -->
-    <dependency>
-      <groupId>org.scribe</groupId>
-      <artifactId>scribe</artifactId>
-      <version>1.3.0</version>
-    </dependency>
-
-    <!-- Rome for Feed/XML stuff -->
-    <dependency>
-      <groupId>rome</groupId>
-      <artifactId>rome</artifactId>
-      <version>1.0</version>
     </dependency>
     <!-- ## End of main libraries ## -->
 
@@ -221,20 +180,13 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.10</version>
+      <version>${junit.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>hamcrest-core</artifactId>
           <groupId>org.hamcrest</groupId>
         </exclusion>
       </exclusions>
-    </dependency>
-
-    <!-- Hamcrest library for easier String comparing -->
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
-      <version>1.3</version>
     </dependency>
 
     <!-- Mockito mocking framework -->

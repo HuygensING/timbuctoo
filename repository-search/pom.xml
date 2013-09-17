@@ -20,6 +20,20 @@
     <!-- ## End of project dependencies ## -->
     
     <!-- ## Main dependencies ## -->
+    
+    <!-- Commons Configuration, assists with reading configuration files. -->
+    <dependency>
+      <groupId>commons-configuration</groupId>
+      <artifactId>commons-configuration</artifactId>
+      <version>${commons.configuration.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>commons-logging</artifactId>
+          <groupId>commons-logging</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    
     <!-- Guice -->
     <dependency>
       <groupId>com.google.inject</groupId>
