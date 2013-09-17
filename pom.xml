@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>repository</groupId>
@@ -113,18 +114,20 @@
   </developers>
 
   <properties>
-    <apis.version>1.2.3</apis.version>
+    <guice.version>3.0</guice.version>
     <jackson.version>2.1.1</jackson.version>
     <mockito.version>1.9.0</mockito.version>
     <slf4j.version>1.6.6</slf4j.version>
     <solr.version>4.3.1</solr.version>
     <jersey.version>1.16</jersey.version>
+    <javax.validation.version>1.0.0.GA</javax.validation.version>
   </properties>
 
   <dependencies>
     <!-- ## Main libraries ## -->
 
     <!-- Logging -->
+    <!-- ...and provide an alternative -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
@@ -136,66 +139,18 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.17</version>
-    </dependency>
-    <!-- Exclude commons-logging... -->
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>1.1.1</version>
-      <scope>provided</scope>
-    </dependency>
-    <!-- ...and provide an alternative -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-
-    <!-- Guava -->
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>14.0</version>
-    </dependency>
-
-    <!-- Guice -->
-    <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-      <version>3.0</version>
-    </dependency>
-
-    <!-- Jackson for JSON -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.jaxrs</groupId>
-      <artifactId>jackson-jaxrs-json-provider</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
 
     <!-- Commons Configuration, assists with reading configuration files. -->
     <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
       <version>1.9</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>commons-logging</artifactId>
+          <groupId>commons-logging</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Apache collections utils -->
@@ -205,12 +160,7 @@
       <version>3.2.1</version>
     </dependency>
 
-    <!-- Apache validation -->
-    <dependency>
-      <groupId>javax.validation</groupId>
-      <artifactId>validation-api</artifactId>
-      <version>1.0.0.GA</version>
-    </dependency>
+
 
     <!-- Apache ActiveMQ -->
     <dependency>
@@ -225,64 +175,11 @@
       <version>0.5</version>
     </dependency>
 
-    <!-- Open JPA, needed for the communication with the apis authorization server -->
-    <dependency>
-      <groupId>org.apache.openjpa</groupId>
-      <artifactId>openjpa-kernel</artifactId>
-      <version>2.2.2</version>
-      <scope>runtime</scope>
-    </dependency>
-
-    <!-- Solr -->
-    <dependency>
-      <groupId>org.apache.solr</groupId>
-      <artifactId>solr-core</artifactId>
-      <version>${solr.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>commons-lang</artifactId>
-          <groupId>commons-lang</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>org.restlet</artifactId>
-          <groupId>org.restlet.jee</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>org.restlet.ext.servlet</artifactId>
-          <groupId>org.restlet.jee</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.solr</groupId>
-      <artifactId>solr-solrj</artifactId>
-      <version>${solr.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>slf4j-api</artifactId>
-          <groupId>org.slf4j</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
     <!-- Mindrot, for password encryption -->
     <dependency>
       <groupId>org.mindrot</groupId>
       <artifactId>jbcrypt</artifactId>
       <version>0.3m</version>
-    </dependency>
-
-    <!-- Mongo database support -->
-    <dependency>
-      <groupId>org.mongodb</groupId>
-      <artifactId>mongo-java-driver</artifactId>
-      <version>2.9.1</version>
-    </dependency>
-    <!-- Mongo with Jackson 2.0 plugin -->
-    <dependency>
-      <groupId>org.mongojack</groupId>
-      <artifactId>mongojack</artifactId>
-      <version>2.0.0-RC1</version>
     </dependency>
 
     <!-- Scribe util methods -->
@@ -372,5 +269,5 @@
       </plugin>
     </plugins>
   </build>
-  
+
 </project>

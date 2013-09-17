@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>repository</groupId>
@@ -10,28 +11,32 @@
   <artifactId>repository-security</artifactId>
   <name>repository security</name>
   <description>Contains all the classes that have something to do with securing the rest service.</description>
-  
+
+  <properties>
+    <apis.version>1.2.3</apis.version>
+  </properties>
+
   <dependencies>
     <!-- ## Repository packages ## -->
-  	<dependency>
-  	  <groupId>repository</groupId>
-  	  <artifactId>repository-core</artifactId>
-  	  <version>1.0.4-SNAPSHOT</version>
-  	</dependency>
-  	<!-- ## End of repository packages ## -->
-  	
-  	<!-- ## Main libraries ## -->
+    <dependency>
+      <groupId>repository</groupId>
+      <artifactId>repository-core</artifactId>
+      <version>1.0.4-SNAPSHOT</version>
+    </dependency>
+    <!-- ## End of repository packages ## -->
+
+    <!-- ## Main libraries ## -->
     <dependency>
       <groupId>nl.knaw.huygens</groupId>
       <artifactId>huygens-security</artifactId>
       <version>1.0.0-SNAPSHOT</version>
     </dependency>
-  	<dependency>
+    <dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-server</artifactId>
       <version>${jersey.version}</version>
     </dependency>
-    
+
     <!-- Apis authorization server communication -->
     <dependency>
       <groupId>nl.surfnet.apis</groupId>
@@ -130,6 +135,17 @@
       </exclusions>
     </dependency>
     <!-- ## End of main libraries ## -->
+
+    <!-- ## Runtime libraries ## -->
+    <!-- Open JPA, needed for the communication with the apis authorization 
+      server -->
+    <dependency>
+      <groupId>org.apache.openjpa</groupId>
+      <artifactId>openjpa-kernel</artifactId>
+      <version>2.2.2</version>
+      <scope>runtime</scope>
+    </dependency>
+    <!-- ## End of runtime libraries ## -->
   </dependencies>
-  
+
 </project>
