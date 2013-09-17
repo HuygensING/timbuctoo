@@ -137,7 +137,7 @@
     <!-- ## End of main libraries ## -->
 
     <!-- ## Runtime libraries ## -->
-    <!-- Open JPA, needed for the communication with the apis authorization 
+    <!-- Open JPA, needed for the communication with the apis authorization
       server -->
     <dependency>
       <groupId>org.apache.openjpa</groupId>
