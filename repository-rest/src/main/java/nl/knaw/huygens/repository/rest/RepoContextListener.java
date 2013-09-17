@@ -9,6 +9,7 @@ import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.rest.config.RESTInjectionModule;
 import nl.knaw.huygens.repository.rest.config.ServletInjectionModule;
 import nl.knaw.huygens.repository.storage.StorageManager;
+import nl.knaw.huygens.repository.util.TimeUtils;
 
 import org.apache.commons.configuration.ConfigurationException;
 
@@ -30,15 +31,17 @@ public class RepoContextListener extends GuiceServletContextListener {
   // on it's internal introspection. Once new ThreadLocals are created the entry that causes this message is removed.
   // See: http://code.google.com/p/google-guice/issues/detail?id=707
 
+  private Configuration config;
   private Injector injector;
   private Broker broker;
   private IndexService service;
   private Thread indexServiceThread;
+  private RepoScheduler scheduler;
 
   @Override
   protected Injector getInjector() {
     try {
-      Configuration config = new Configuration();
+      config = new Configuration();
       Module baseModule = new RESTInjectionModule(config);
       Module servletModule = new ServletInjectionModule();
       injector = Guice.createInjector(baseModule, servletModule);
@@ -52,6 +55,13 @@ public class RepoContextListener extends GuiceServletContextListener {
   public void contextInitialized(ServletContextEvent event) {
     super.contextInitialized(event);
 
+    if (config.getBooleanSetting("search_results_cleanup.enabled", false)) {
+      long interval = getMillis("search_results_cleanup.interval", "00:15:00");
+      long ttl = getMillis("search_results_cleanup.ttl", "24:00:00");
+      scheduler = new RepoScheduler(injector, interval, ttl);
+      scheduler.start();
+    }
+
     try {
       broker = injector.getInstance(Broker.class);
       broker.start();
@@ -64,14 +74,26 @@ public class RepoContextListener extends GuiceServletContextListener {
     indexServiceThread.start();
   }
 
+  private long getMillis(String key, String defaultValue) {
+    String text = config.getSetting(key, defaultValue);
+    long value = TimeUtils.hhmmssToMillis(text);
+    if (value < 0) {
+      throw new RuntimeException("Invalid configuration value for " + key);
+    }
+    return value;
+  }
+
   @Override
   public void contextDestroyed(ServletContextEvent event) {
+    if (scheduler != null) {
+      scheduler.stop();
+      scheduler = null;
+    }
     if (indexServiceThread != null) {
       service.stop();
       IndexService.waitForCompletion(indexServiceThread, 1 * 1000);
       indexServiceThread = null;
     }
-
     if (injector != null) {
       StorageManager storageManager = injector.getInstance(StorageManager.class);
       if (storageManager != null) {
@@ -79,12 +101,10 @@ public class RepoContextListener extends GuiceServletContextListener {
       }
       injector = null;
     }
-
     if (broker != null) {
       broker.close();
       broker = null;
     }
-
     super.contextDestroyed(event);
   }
 
