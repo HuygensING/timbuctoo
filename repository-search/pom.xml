@@ -9,7 +9,7 @@
   </parent>
   <artifactId>repository-search</artifactId>
   <name>repository search</name>
-  
+
   <dependencies>
     <!-- ## Project dependencies ## -->
   	<dependency>
@@ -18,9 +18,9 @@
       <version>1.0.4-SNAPSHOT</version>
   	</dependency>
     <!-- ## End of project dependencies ## -->
-    
+
     <!-- ## Main dependencies ## -->
-    
+
     <!-- Commons Configuration, assists with reading configuration files. -->
     <dependency>
       <groupId>commons-configuration</groupId>
@@ -33,14 +33,14 @@
         </exclusion>
       </exclusions>
     </dependency>
-    
+
     <!-- Guice -->
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
       <version>${guice.version}</version>
     </dependency>
-    
+
     <!-- Solr -->
     <dependency>
       <groupId>org.apache.solr</groupId>
