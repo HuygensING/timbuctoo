@@ -20,7 +20,6 @@
     <!-- ## End of project dependencies ## -->
 
     <!-- ## Main dependencies ## -->
-
     <!-- Commons Configuration, assists with reading configuration files. -->
     <dependency>
       <groupId>commons-configuration</groupId>
@@ -73,5 +72,37 @@
       </exclusions>
     </dependency>
     <!-- ## End of main dependencies ## -->
+    <!-- ## Test dependencies ## -->
+    <!-- JUnit test framework -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>hamcrest-core</artifactId>
+          <groupId>org.hamcrest</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- Mockito mocking framework -->
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>hamcrest-core</artifactId>
+          <groupId>org.hamcrest</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>${mockito.version}</version>
+    </dependency>
+    <!-- ## End of test dependencies ## -->
   </dependencies>
 </project>
