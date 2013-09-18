@@ -135,6 +135,50 @@
       </exclusions>
     </dependency>
     <!-- ## End of main libraries ## -->
+    
+    <!-- ## Test libraries ## -->
+    <!-- JUnit test framework -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>hamcrest-core</artifactId>
+          <groupId>org.hamcrest</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- Mockito mocking framework -->
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>hamcrest-core</artifactId>
+          <groupId>org.hamcrest</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>${mockito.version}</version>
+    </dependency>
+    <!-- ## End of test libraries ## -->
+    
+    
+    <!-- ## Build helper libraries ## -->
+    <!-- temporarily? to make ant build work -->
+    <!-- default servlet api -->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>${servlet-api.version}</version>
+    </dependency>
+    <!-- ## End of build helper libraries ## -->
 
     <!-- ## Runtime libraries ## -->
     <!-- Open JPA, needed for the communication with the apis authorization

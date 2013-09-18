@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>repository</groupId>
@@ -11,8 +12,7 @@
   <description>A module that contains serveral service that should be extracted somewhere in time.</description>
 
   <dependencies>
-  	<!-- ## Main libraries ## -->
-
+    <!-- ## Main libraries ## -->
     <!-- Guice -->
     <dependency>
       <groupId>com.google.inject</groupId>
@@ -20,11 +20,29 @@
       <version>${guice.version}</version>
     </dependency>
 
-  	<!-- Email support -->
+    <!-- Email support -->
     <dependency>
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
       <version>1.4.7</version>
+    </dependency>
+
+    <!-- Logging -->
+    <dependency>
+      <artifactId>slf4j-api</artifactId>
+      <groupId>org.slf4j</groupId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>${slf4j.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>slf4j-api</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!-- ## End of main libraries ## -->
   </dependencies>
