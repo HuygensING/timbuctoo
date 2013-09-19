@@ -552,12 +552,18 @@ public class AtlantischeGidsImporter {
     }
   }
 
+  /**
+   * Resolve the id's of the document references.
+   * Duplicates are removed, but the order of the references is preserved.
+   */
   private List<DocumentRef> resolveRefs(String filename, String type, List<DocumentRef> oldRefs) {
-    List<DocumentRef> newRefs = Lists.newArrayListWithCapacity(oldRefs.size());
+    List<DocumentRef> newRefs = Lists.newArrayList();
     for (DocumentRef oldRef : oldRefs) {
       DocumentRef newRef = docRefMap.get(oldRef);
       if (newRef == null) {
         handleError("[%s] No %s for id %s", filename, type, oldRef.getId());
+      } else if (newRefs.contains(newRef)){
+        handleError("[%s] %s has duplicate reference to '%s'", filename, type, newRef.getDisplayName());
       } else {
         newRefs.add(newRef);
       }
