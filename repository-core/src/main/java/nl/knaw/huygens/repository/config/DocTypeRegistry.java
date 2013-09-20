@@ -60,6 +60,8 @@ public class DocTypeRegistry {
   private final Map<Class<? extends Document>, String> type2xname = Maps.newHashMap();
   private final Map<String, Class<? extends Document>> xname2type = Maps.newHashMap();
 
+  private final Map<String, String> iname2xname = Maps.newHashMap();
+
   public DocTypeRegistry(String packageNames) {
     Preconditions.checkNotNull(packageNames, "'packageNames' must not be null");
 
@@ -110,6 +112,8 @@ public class DocTypeRegistry {
     }
     xname2type.put(xname, type);
     type2xname.put(type, xname);
+
+    iname2xname.put(iname, xname);
   }
 
   private String getInternalName(Class<? extends Document> type) {
@@ -163,6 +167,14 @@ public class DocTypeRegistry {
    */
   public Class<? extends Document> getTypeForXName(String xname) {
     return xname2type.get(xname);
+  }
+
+  /**
+   * Returns the external type name for the specified internal type name,
+   * or {@code null} if there is no such name.
+   */
+  public String getXNameForIName(String iname) {
+    return iname2xname.get(iname);
   }
 
   @SuppressWarnings("unchecked")
