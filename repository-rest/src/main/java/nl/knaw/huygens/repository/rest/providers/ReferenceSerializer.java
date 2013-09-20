@@ -21,7 +21,7 @@ public class ReferenceSerializer extends StdSerializer<Reference> {
 
   @Override
   public void serialize(Reference reference, JsonGenerator generator, SerializerProvider provider) throws IOException, JsonProcessingException {
-    String name = registry.getXNameForType(reference.getType());
+    String name = registry.getXNameForIName(reference.getType());
     generator.writeRaw("<a href=\"");
     generator.writeRaw(name);
     generator.writeRaw("/");
