@@ -8,24 +8,23 @@ import org.apache.commons.lang.ObjectUtils;
  */
 public class Reference {
 
-  private Class<? extends Document> type;
+  private String type;
   private String id;
-  private String variation;
 
   // Default constructor for deserializing
   public Reference() {}
 
-  public Reference(Class<? extends Document> type, String id) {
-    this.type = type;
+  public Reference(Class<? extends Document> typeToken, String id) {
+    this.type = typeToken.getSimpleName().toLowerCase();
     this.id = id;
   }
 
-  public Class<? extends Document> getType() {
+  public String getType() {
     return type;
   }
 
-  public void setType(Class<? extends Document> objectType) {
-    this.type = objectType;
+  public void setType(String type) {
+    this.type = type;
   }
 
   public String getId() {
@@ -36,21 +35,12 @@ public class Reference {
     this.id = id;
   }
 
-  public String getVariation() {
-    return variation;
-  }
-
-  public void setVariation(String variation) {
-    this.variation = variation;
-  }
-
   @Override
   public boolean equals(Object obj) {
     // a null reference will never be an instance of Reference.
     if (obj instanceof Reference) {
       Reference other = (Reference) obj;
       boolean isEqual = ObjectUtils.equals(id, other.id);
-      isEqual &= ObjectUtils.equals(variation, other.variation);
       isEqual &= ObjectUtils.equals(type, other.type);
       return isEqual;
     }
