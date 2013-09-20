@@ -66,11 +66,12 @@ public class BulkImporter {
         DataPoster poster = new LocalDataPoster(storageManager);
         new AtlantischeGidsImporter(registry, poster, "../AtlantischeGids/work/").importAll();
       } else {
-        importer.importData("resources/DWCPlaceMapping.properties", DWCPlace.class);
-        importer.importData("resources/DWCScientistMapping.properties", DWCScientist.class);
-        importer.importData("resources/RAACivilServantMapping.properties", RAACivilServant.class);
+        String resourceDir = "src/main/resources/";
+        importer.importData(resourceDir + "DWCPlaceMapping.properties", DWCPlace.class);
+        importer.importData(resourceDir + "DWCScientistMapping.properties", DWCScientist.class);
+        importer.importData(resourceDir + "RAACivilServantMapping.properties", RAACivilServant.class);
         CKCCPersonImporter csvImporter = new CKCCPersonImporter(storageManager);
-        csvImporter.handleFile("testdata/ckcc-persons.txt", 9, false);
+        csvImporter.handleFile(resourceDir + "testdata/ckcc-persons.txt", 9, false);
       }
 
       storageManager.ensureIndices();
