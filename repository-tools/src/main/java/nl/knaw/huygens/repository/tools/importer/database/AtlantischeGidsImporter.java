@@ -12,8 +12,13 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.IndexManager;
 import nl.knaw.huygens.repository.index.IndexService;
 import nl.knaw.huygens.repository.messages.Broker;
+import nl.knaw.huygens.repository.model.Archive;
+import nl.knaw.huygens.repository.model.Archiver;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DocumentRef;
+import nl.knaw.huygens.repository.model.Reference;
+import nl.knaw.huygens.repository.model.Relation;
+import nl.knaw.huygens.repository.model.RelationType;
 import nl.knaw.huygens.repository.model.atlg.ATLGArchive;
 import nl.knaw.huygens.repository.model.atlg.ATLGArchiver;
 import nl.knaw.huygens.repository.model.atlg.ATLGKeyword;
@@ -130,6 +135,8 @@ public class AtlantischeGidsImporter {
   private Map<String, DocumentRef> wetgevingRefMap;
   private int errors;
 
+  private Reference isCreatorRef;
+
   public AtlantischeGidsImporter(DocTypeRegistry registry, DataPoster poster, String inputDirName) {
     objectMapper = new ObjectMapper();
     docTypeRegistry = registry;
@@ -196,6 +203,9 @@ public class AtlantischeGidsImporter {
   }
 
   public void importAll() throws Exception {
+    System.out.printf("%n.. relation type%n");
+    importRelationTypes();
+
     System.out.printf("%n.. 'keyword'%n");
     keywordRefMap = importKeywords();
     System.out.printf("Number of entries = %d%n", keywordRefMap.size());
@@ -227,6 +237,14 @@ public class AtlantischeGidsImporter {
     if (errors > 0) {
       System.err.printf("%n## Error count = %d%n", errors);
     }
+  }
+
+  // --- relation types ------------------------------------------------
+
+  private void importRelationTypes() {
+    RelationType type = new RelationType("is_creator_of", Archiver.class, Archive.class);
+    dataPoster.addDocument(RelationType.class, type, true);
+    isCreatorRef = new Reference(RelationType.class, type.getId());
   }
 
   // --- keywords ------------------------------------------------------
@@ -669,10 +687,18 @@ public class AtlantischeGidsImporter {
   private void resolveArchiverRefs(List<String> archiverIds) throws Exception {
     for (String id : archiverIds) {
       ATLGArchiver archiver = dataPoster.getDocument(ATLGArchiver.class, id);
+      Reference sourceRef = new Reference(Archiver.class, id);
       String filename = archiver.getOrigFilename();
       List<DocumentRef> oldRefs = archiver.getRelatedArchives();
       if (oldRefs != null && oldRefs.size() != 0) {
-        archiver.setRelatedArchives(resolveRefs(filename, "related archives", oldRefs));
+        List<DocumentRef> newRefs = resolveRefs(filename, "related archives", oldRefs);
+        archiver.setRelatedArchives(newRefs);
+        for (DocumentRef archiveRef : newRefs) {
+          Reference targetRef = new Reference(Archive.class, archiveRef.getId());
+          Relation relation = new Relation(sourceRef, isCreatorRef, targetRef);
+          System.out.println(relation.getDisplayName());
+          dataPoster.addDocument(Relation.class, relation, true);
+        }
       }
       oldRefs = archiver.getRelatedArchivers();
       if (oldRefs != null && oldRefs.size() != 0) {
