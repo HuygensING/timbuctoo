@@ -1,17 +1,17 @@
 package nl.knaw.huygens.repository.model;
 
-import org.apache.commons.lang.ObjectUtils;
-
 /**
- * A class that represents a link to other objects.
- * @author martijnm
+ * A reference to a {@code Document} instance,
+ * allowing it to be retrieved from the storage.
  */
 public class Reference {
 
+  /** The internal type name. */
   private String type;
+  /** The identifier. */
   private String id;
 
-  // Default constructor for deserializing
+  // For deserialization...
   public Reference() {}
 
   public Reference(Class<? extends Document> typeToken, String id) {
@@ -36,15 +36,26 @@ public class Reference {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    // a null reference will never be an instance of Reference.
-    if (obj instanceof Reference) {
-      Reference other = (Reference) obj;
-      boolean isEqual = ObjectUtils.equals(id, other.id);
-      isEqual &= ObjectUtils.equals(type, other.type);
-      return isEqual;
+  public boolean equals(Object object) {
+    if (object instanceof Reference) {
+      Reference that = (Reference) object;
+      return (this.type == null ? that.type == null : this.type.equals(that.type)) //
+          && (this.id == null ? that.id == null : this.id.equals(that.id));
     }
     return false;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = 17;
+    result = 31 * result + (type == null ? 0 : type.hashCode());
+    result = 31 * result + (id == null ? 0 : id.hashCode());
+    return result;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("{%s,%s}", type, id);
   }
 
 }

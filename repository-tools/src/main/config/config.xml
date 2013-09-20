@@ -77,9 +77,9 @@
       nl.knaw.huygens.repository.model.dwcbia
       nl.knaw.huygens.repository.model.raa
     </model-packages>
-    <doctypes>archive,archiver,keyword,legislation,person,place</doctypes>
-    <indexeddoctypes>archive,archiver,keyword,legislation,person,place</indexeddoctypes>
-    <versioneddoctypes>archive,archiver,keyword,legislation,person,place</versioneddoctypes>
+    <doctypes>archive,archiver,keyword,legislation,person,place,relation,relationtype</doctypes>
+    <indexeddoctypes>archive,archiver,keyword,legislation,person,place,relation</indexeddoctypes>
+    <versioneddoctypes>archive,archiver,keyword,legislation,person,place,relation,relationtype</versioneddoctypes>
     <public_url>http://localhost:8080/repository</public_url>
     <feed>
       <title>Repository changes</title>
