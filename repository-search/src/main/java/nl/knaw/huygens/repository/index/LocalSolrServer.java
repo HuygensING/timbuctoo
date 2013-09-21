@@ -159,7 +159,7 @@ public class LocalSolrServer {
     return serverFor(core).query(params).getResults().getNumFound();
   }
 
-  public QueryResponse getQueryResponse(String term, Collection<String> facetFieldNames, String sortField, String core) throws SolrServerException {
+  public QueryResponse search(String core, String term, Collection<String> facetFieldNames, String sortField) throws SolrServerException {
     SolrQuery query = new SolrQuery();
     query.setQuery(term);
     query.setFields(SOLR_DEFAULT_FIELD);
@@ -173,8 +173,8 @@ public class LocalSolrServer {
     return serverFor(core).query(query);
   }
 
-  public QueryResponse getByIds(List<String> ids, Collection<String> facetFieldNames, String sort, String core) throws SolrServerException, IOException {
-    return getQueryResponse("id:(" + StringUtils.join(ids, " ") + ")", facetFieldNames, sort, core);
+  public QueryResponse getByIds(String core, List<String> ids, Collection<String> facetFieldNames, String sort) throws SolrServerException, IOException {
+    return search(core, "id:(" + StringUtils.join(ids, " ") + ")", facetFieldNames, sort);
   }
 
   public Set<String> getAllFields(String core) throws SolrServerException, IOException {

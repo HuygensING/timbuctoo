@@ -52,7 +52,7 @@ public class SearchManager {
     Map<String, FacetInfo> facetInfoMap = facetFinder.findFacets(type);
     Set<String> fullTextSearchFields = fullTextSearchFieldFinder.findFields(type);
     String searchTerm = createSearchTerm(type, searchParameters, facetInfoMap.keySet(), fullTextSearchFields);
-    QueryResponse response = server.getQueryResponse(searchTerm, facetInfoMap.keySet(), searchParameters.getSort(), core);
+    QueryResponse response = server.search(core, searchTerm, facetInfoMap.keySet(), searchParameters.getSort());
     SolrDocumentList documents = response.getResults();
 
     List<FacetCount> facets = getFacetCounts(response.getFacetFields(), facetInfoMap);
