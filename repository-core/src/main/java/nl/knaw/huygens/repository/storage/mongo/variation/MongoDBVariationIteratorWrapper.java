@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import com.google.common.collect.Lists;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.variation.VariationReducer;
+
+import com.google.common.collect.Lists;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 
 public class MongoDBVariationIteratorWrapper<T extends Document> implements StorageIterator<T> {
 
@@ -24,7 +24,7 @@ public class MongoDBVariationIteratorWrapper<T extends Document> implements Stor
     this.reducer = reducer;
     this.cls = cls;
   }
-  
+
   @Override
   public T next() {
     try {
@@ -61,7 +61,7 @@ public class MongoDBVariationIteratorWrapper<T extends Document> implements Stor
         close();
         break;
       }
-      
+
       try {
         rv.add(reducer.reduceDBObject(next, cls));
       } catch (IOException e) {
@@ -88,7 +88,7 @@ public class MongoDBVariationIteratorWrapper<T extends Document> implements Stor
 
   @Override
   public void close() {
-    synchronized(this) {
+    synchronized (this) {
       if (!closed) {
         closed = true;
         delegate.close();
