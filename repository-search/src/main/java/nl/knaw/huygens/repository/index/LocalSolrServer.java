@@ -51,8 +51,6 @@ public class LocalSolrServer {
   private static final int FACET_LIMIT = 10000;
 
   private static final String ID_FIELD = "id";
-  private static final String SOLR_DEFAULT_FIELD = ID_FIELD;
-
   private static final String ALL = "*:*";
 
   private CoreContainer container = null;
@@ -160,28 +158,28 @@ public class LocalSolrServer {
   }
 
   /**
-   * Search a Solr core for the specified term and return the specified fields.
+   * Search a Solr core with the specified query and return the specified fields.
    */
-  public QueryResponse search(String core, String term, String... fields) throws SolrServerException {
-    SolrQuery query = new SolrQuery();
-    query.setQuery(term);
-    query.setFields(fields);
-    query.setRows(ROWS);
-    return serverFor(core).query(query);
+  public QueryResponse search(String core, String query, String... fields) throws SolrServerException {
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery.setQuery(query);
+    solrQuery.setFields(fields);
+    solrQuery.setRows(ROWS);
+    return serverFor(core).query(solrQuery);
   }
 
-  public QueryResponse search(String core, String term, Collection<String> facetFieldNames, String sortField) throws SolrServerException {
-    SolrQuery query = new SolrQuery();
-    query.setQuery(term);
-    query.setFields(SOLR_DEFAULT_FIELD);
-    query.setRows(ROWS);
-    query.addFacetField(facetFieldNames.toArray(new String[facetFieldNames.size()]));
-    query.setFacetMinCount(0);
-    query.setFacetLimit(FACET_LIMIT);
-    query.setFilterQueries("!cache=false");
-    query.setSort(new SortClause(sortField, SolrQuery.ORDER.asc));
-    LOG.info("{}", query);
-    return serverFor(core).query(query);
+  public QueryResponse search(String core, String query, Collection<String> facetFieldNames, String sortField) throws SolrServerException {
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery.setQuery(query);
+    solrQuery.setFields(ID_FIELD);
+    solrQuery.setRows(ROWS);
+    solrQuery.addFacetField(facetFieldNames.toArray(new String[facetFieldNames.size()]));
+    solrQuery.setFacetMinCount(0);
+    solrQuery.setFacetLimit(FACET_LIMIT);
+    solrQuery.setFilterQueries("!cache=false");
+    solrQuery.setSort(new SortClause(sortField, SolrQuery.ORDER.asc));
+    LOG.debug("Query: {}", solrQuery);
+    return serverFor(core).query(solrQuery);
   }
 
   public QueryResponse getByIds(String core, List<String> ids, Collection<String> facetFieldNames, String sort) throws SolrServerException, IOException {
