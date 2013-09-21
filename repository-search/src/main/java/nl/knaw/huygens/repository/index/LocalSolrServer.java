@@ -159,6 +159,17 @@ public class LocalSolrServer {
     return serverFor(core).query(params).getResults().getNumFound();
   }
 
+  /**
+   * Search a Solr core for the specified term and return the specified fields.
+   */
+  public QueryResponse search(String core, String term, String... fields) throws SolrServerException {
+    SolrQuery query = new SolrQuery();
+    query.setQuery(term);
+    query.setFields(fields);
+    query.setRows(ROWS);
+    return serverFor(core).query(query);
+  }
+
   public QueryResponse search(String core, String term, Collection<String> facetFieldNames, String sortField) throws SolrServerException {
     SolrQuery query = new SolrQuery();
     query.setQuery(term);
