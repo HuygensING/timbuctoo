@@ -202,7 +202,7 @@ public class SearchManagerTest {
 
   @Test(expected = SolrException.class)
   public void testSearchSolrException() throws SolrServerException, FacetDoesNotExistException {
-    doThrow(SolrException.class).when(solrInstance).getQueryResponse(anyString(), anyCollectionOf(String.class), anyString(), anyString());
+    doThrow(SolrException.class).when(solrInstance).search(anyString(), anyString(), anyCollectionOf(String.class), anyString());
 
     FacetedSearchParameters searchParameters = new FacetedSearchParameters();
     searchParameters.setTerm(SEARCH_TERM);
@@ -293,7 +293,7 @@ public class SearchManagerTest {
     when(response.getResults()).thenReturn(docs);
     when(response.getFacetFields()).thenReturn(facetFields);
 
-    when(solrInstance.getQueryResponse(anyString(), any(List.class), anyString(), anyString())).thenReturn(response);
+    when(solrInstance.search(anyString(), anyString(), any(List.class), anyString())).thenReturn(response);
   }
 
   private SolrDocumentList createSolrDocumentList(List<String> documentIds) {
