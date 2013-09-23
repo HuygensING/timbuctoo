@@ -9,6 +9,7 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.facet.FacetCount;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.RelationValue;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.solr.FacetInfo;
 import nl.knaw.huygens.solr.FacetParameter;
@@ -46,6 +47,22 @@ public class SearchManager {
 
   public Set<String> findSortableFields(Class<? extends Document> type) {
     return sortableFieldFinder.findFields(type);
+  }
+
+  public List<RelationValue> findRelations(String source) throws SolrServerException {
+    String term = String.format("dynamic_s_source:%s", source);
+    String[] fields = { "id", "dynamic_s_source", "dynamic_s_target" };
+    QueryResponse response = server.search("relation", term, fields);
+    SolrDocumentList documents = response.getResults();
+
+    List<RelationValue> list = Lists.newArrayList();
+    for (SolrDocument document : documents) {
+      RelationValue value = new RelationValue();
+      value.source = document.getFieldValue("dynamic_s_source").toString();
+      value.target = document.getFieldValue("dynamic_s_target").toString();
+      list.add(value);
+    }
+    return list;
   }
 
   public SearchResult search(Class<? extends Document> type, String core, FacetedSearchParameters searchParameters) throws SolrServerException, FacetDoesNotExistException {

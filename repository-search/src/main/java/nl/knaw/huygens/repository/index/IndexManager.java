@@ -5,6 +5,7 @@ import java.util.Map;
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.storage.StorageManager;
 
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import com.google.inject.Singleton;
  * The manager uses the Solr cores defined in the configuration file.
  * Each core corresponds to a primitive document type and stores data
  * for all subclasses of that document type.
+ * Relations are basic infrastructure and need not be specified.
  *
  * Since we are using the 'commitWithin' feature of Solr, there's no need
  * for flushing indexes, except when closing down.
@@ -46,14 +48,17 @@ public class IndexManager {
   private void setupIndexers(Configuration config, StorageManager storageManager) {
     boolean error = false;
     indexers = Maps.newHashMap();
+    indexers.put(Relation.class, new RelationIndexer(registry, storageManager, server));
     for (String doctype : config.getSettings("indexeddoctypes")) {
       Class<? extends Document> type = registry.getTypeForIName(doctype);
       if (type == null) {
-        LOG.error("Configuration error: '{}' is not a document type", doctype);
+        LOG.error("Configuration: '{}' is not a document type", doctype);
         error = true;
       } else if (type != registry.getBaseClass(type)) {
-        LOG.error("Configuration error: '{}' is not a primitive document type", doctype);
+        LOG.error("Configuration: '{}' is not a primitive document type", doctype);
         error = true;
+      } else if (indexers.containsKey(type)) {
+        LOG.warn("Configuration: ignoring entry '{}' in indexeddoctypes", doctype);
       } else {
         String core = type.getSimpleName().toLowerCase();
         indexers.put(type, DomainDocumentIndexer.newInstance(storageManager, server, core));

@@ -138,7 +138,6 @@ class DomainDocumentIndexer<T extends DomainDocument> implements DocumentIndexer
   public void flush() throws IndexException {
     try {
       solrServer.commit(core);
-      // hub.publish(new Events.IndexChangedEvent());
     } catch (Exception ex) {
       throw new IndexException(ex);
     }
