@@ -2,7 +2,7 @@ package nl.knaw.huygens.repository.index;
 
 import java.util.List;
 
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.DomainDocument;
 
 import org.apache.solr.common.SolrInputDocument;
 
@@ -15,7 +15,7 @@ import org.apache.solr.common.SolrInputDocument;
  * 
  * Note that whenever you update documents through this index, it is the
  * caller's responsibility to call
- * {@link nl.knaw.huygens.repository.index.SolrDocumentIndexer#flush flush} to
+ * {@link nl.knaw.huygens.repository.index.DomainDocumentIndexer#flush flush} to
  * update the index and notify the world that this has happened.
  * 
  * @author Gijs
@@ -24,13 +24,13 @@ import org.apache.solr.common.SolrInputDocument;
  *          The generic parameter specifying what kind of POJO objects are used,
  *          and (implicitly) which index to index them in.
  */
-class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
+class DomainDocumentIndexer<T extends DomainDocument> implements DocumentIndexer<T> {
 
   /**
-   * Creates a new <code>SolrDocumentIndexer</code> instance.
+   * Creates a new {@code DomainDocumentIndexer} instance.
    */
-  public static <U extends Document> SolrDocumentIndexer<U> newInstance(Class<U> type, LocalSolrServer server) {
-    return new SolrDocumentIndexer<U>(type, server);
+  public static <U extends DomainDocument> DomainDocumentIndexer<U> newInstance(LocalSolrServer server, String core) {
+    return new DomainDocumentIndexer<U>(server, core);
   }
 
   private final LocalSolrServer solrServer;
@@ -38,24 +38,17 @@ class SolrDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
   private final ModelIterator modelIterator;
 
   /**
-   * Creates a document indexer for the specified type.
+   * Creates a domain document indexer.
    * 
-   * @param type
-   *          document type token
    * @param server
    *          the SolrServer to use for indexing
+   * @param core
+   *          the Solr core
    */
-  private SolrDocumentIndexer(Class<T> type, LocalSolrServer server) {
+  private DomainDocumentIndexer(LocalSolrServer server, String core) {
     this.solrServer = server;
-    this.modelIterator = new ModelIterator();
-    core = coreForType(type);
-  }
-
-  /**
-   * Returns the Solr core for the specified document type.
-   */
-  private String coreForType(Class<? extends Document> type) {
-    return type.getSimpleName().toLowerCase();
+    this.core = core;
+    modelIterator = new ModelIterator();
   }
 
   /**
