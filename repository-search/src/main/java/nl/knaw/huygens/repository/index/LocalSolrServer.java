@@ -77,6 +77,7 @@ public class LocalSolrServer {
       File configFile = new File(new File(solrDir, "conf"), "solr.xml");
       container = new CoreContainer(solrDir, configFile);
       solrServers = Maps.newHashMap();
+      solrServers.put("relation", createServer(container, "relation", solrDir));
       for (String coreName : coreNameList.split(",")) {
         // solrServers.put(coreName, new EmbeddedSolrServer(container, coreName));
         solrServers.put(coreName, createServer(container, coreName, solrDir));

@@ -7,6 +7,15 @@ import nl.knaw.huygens.repository.facet.IndexAnnotation;
  * A relation between domain documents.
  *
  * (This resembles an RDF statement.)
+ * 
+ * There is a conceptual problem to solve.
+ * Suppose we have a relation between an ATLArchive and an ATLArchiver.
+ * What types do we use? Those types or the primitive types?
+ * When indexing, this problem comes back to use straightaway:
+ * If we want to store the displayname (which we do), it depends on
+ * the type specified which value we retrieve from the database
+ * (it's a different variation we retrieve), so "just" indexing is
+ * too simple a concept: we need an index for a VRE.
  */
 @IDPrefix("REL")
 public class Relation extends DomainDocument {
