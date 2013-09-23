@@ -43,7 +43,7 @@ public class ActiveMQConsumer implements Consumer {
     String typeString = message.getStringProperty(Broker.PROP_DOC_TYPE);
     String id = message.getStringProperty(Broker.PROP_DOC_ID);
 
-    return new Action(actionType, id, typeString);
+    return new Action(actionType, typeString, id);
   }
 
   @Override
