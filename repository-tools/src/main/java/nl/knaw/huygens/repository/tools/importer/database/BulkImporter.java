@@ -7,6 +7,7 @@ import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.IndexManager;
 import nl.knaw.huygens.repository.index.IndexService;
+import nl.knaw.huygens.repository.messages.ActionType;
 import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.messages.Producer;
 import nl.knaw.huygens.repository.model.dwcbia.DWCPlace;
@@ -103,7 +104,7 @@ public class BulkImporter {
 
   public static void sendEndOfDataMessage(Broker broker) throws JMSException {
     Producer producer = broker.newProducer(Broker.INDEX_QUEUE, "ImporterProducer");
-    producer.send(Broker.INDEX_END, "", "");
+    producer.send(ActionType.INDEX_END, "", "");
     producer.close();
   }
 
