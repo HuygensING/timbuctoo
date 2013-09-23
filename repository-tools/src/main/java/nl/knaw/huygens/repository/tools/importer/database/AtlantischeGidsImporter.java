@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import nl.knaw.huygens.repository.config.BasicInjectionModule;
+import nl.knaw.huygens.repository.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.IndexManager;
@@ -66,7 +66,7 @@ public class AtlantischeGidsImporter {
     System.out.println("Configuration file: " + configFileName);
 
     Configuration config = new Configuration(configFileName);
-    Injector injector = Guice.createInjector(new BasicInjectionModule(config));
+    Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
     Broker broker = null;
     StorageManager storageManager = null;
@@ -580,7 +580,7 @@ public class AtlantischeGidsImporter {
       DocumentRef newRef = docRefMap.get(oldRef);
       if (newRef == null) {
         handleError("[%s] No %s for id %s", filename, type, oldRef.getId());
-      } else if (newRefs.contains(newRef)){
+      } else if (newRefs.contains(newRef)) {
         handleError("[%s] %s has duplicate reference to '%s'", filename, type, newRef.getDisplayName());
       } else {
         newRefs.add(newRef);

@@ -5,6 +5,8 @@ import javax.validation.Validator;
 
 import nl.knaw.huygens.repository.config.BasicInjectionModule;
 import nl.knaw.huygens.repository.config.Configuration;
+import nl.knaw.huygens.repository.messages.ActiveMQBroker;
+import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.security.UserSecurityContextCreator;
 import nl.knaw.huygens.repository.services.mail.MailSender;
 import nl.knaw.huygens.repository.services.mail.MailSenderFactory;
@@ -26,6 +28,7 @@ public class RESTInjectionModule extends BasicInjectionModule {
 
     bind(SecurityContextCreator.class).to(UserSecurityContextCreator.class);
     bind(AuthorizationHandler.class).to(ApisAuthorizationHandler.class);
+    bind(Broker.class).to(ActiveMQBroker.class);
     super.configure();
   }
 
