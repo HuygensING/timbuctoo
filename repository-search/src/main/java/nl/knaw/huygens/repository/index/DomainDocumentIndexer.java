@@ -3,6 +3,7 @@ package nl.knaw.huygens.repository.index;
 import java.util.List;
 
 import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.storage.StorageManager;
 
 import org.apache.solr.common.SolrInputDocument;
 
@@ -29,23 +30,27 @@ class DomainDocumentIndexer<T extends DomainDocument> implements DocumentIndexer
   /**
    * Creates a new {@code DomainDocumentIndexer} instance.
    */
-  public static <U extends DomainDocument> DomainDocumentIndexer<U> newInstance(LocalSolrServer server, String core) {
-    return new DomainDocumentIndexer<U>(server, core);
+  public static <U extends DomainDocument> DomainDocumentIndexer<U> newInstance(StorageManager storageManager, LocalSolrServer server, String core) {
+    return new DomainDocumentIndexer<U>(storageManager, server, core);
   }
 
+  private final StorageManager storageManager;
   private final LocalSolrServer solrServer;
   private final String core;
   private final ModelIterator modelIterator;
 
   /**
-   * Creates a domain document indexer.
+   * Creates an indexer for a primitive domain document.
    * 
+   * @param storageManager
+   *          the storage manager for retrieving data
    * @param server
    *          the SolrServer to use for indexing
    * @param core
    *          the Solr core
    */
-  private DomainDocumentIndexer(LocalSolrServer server, String core) {
+  private DomainDocumentIndexer(StorageManager storageManager, LocalSolrServer server, String core) {
+    this.storageManager = storageManager;
     this.solrServer = server;
     this.core = core;
     modelIterator = new ModelIterator();
@@ -61,9 +66,10 @@ class DomainDocumentIndexer<T extends DomainDocument> implements DocumentIndexer
    *          if adding the document fails for some reason.
    */
   @Override
-  public <U extends T> void add(List<U> entities) throws IndexException {
+  public void add(Class<T> type, String id) throws IndexException {
     try {
-      solrServer.add(core, getSolrInputDocument(entities));
+      List<T> variations = storageManager.getAllVariations(type, id);
+      solrServer.add(core, getSolrInputDocument(variations));
     } catch (Exception e) {
       throw new IndexException(e);
     }
@@ -80,9 +86,10 @@ class DomainDocumentIndexer<T extends DomainDocument> implements DocumentIndexer
    *          if adding the document fails for some reason.
    */
   @Override
-  public <U extends T> void modify(List<U> entity) throws IndexException {
+  public void modify(Class<T> type, String id) throws IndexException {
     try {
-      solrServer.add(core, getSolrInputDocument(entity));
+      List<T> variations = storageManager.getAllVariations(type, id);
+      solrServer.add(core, getSolrInputDocument(variations));
     } catch (Exception e) {
       throw new IndexException(e);
     }

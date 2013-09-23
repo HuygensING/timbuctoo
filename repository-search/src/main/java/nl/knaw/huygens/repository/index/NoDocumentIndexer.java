@@ -1,7 +1,5 @@
 package nl.knaw.huygens.repository.index;
 
-import java.util.List;
-
 import nl.knaw.huygens.repository.model.Document;
 
 /**
@@ -10,10 +8,10 @@ import nl.knaw.huygens.repository.model.Document;
 class NoDocumentIndexer<T extends Document> implements DocumentIndexer<T> {
 
   @Override
-  public <U extends T> void add(List<U> entities) {}
+  public void add(Class<T> type, String id) throws IndexException {}
 
   @Override
-  public <U extends T> void modify(List<U> entity) {}
+  public void modify(Class<T> type, String id) throws IndexException {}
 
   @Override
   public void remove(String id) {}

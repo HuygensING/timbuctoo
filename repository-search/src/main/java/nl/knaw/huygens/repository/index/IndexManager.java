@@ -1,6 +1,5 @@
 package nl.knaw.huygens.repository.index;
 
-import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.repository.config.Configuration;
@@ -35,18 +34,16 @@ public class IndexManager {
 
   private final DocTypeRegistry registry;
   private final LocalSolrServer server;
-  private final StorageManager storageManager;
   private Map<Class<? extends Document>, DocumentIndexer<? extends Document>> indexers;
 
   @Inject
   public IndexManager(Configuration config, DocTypeRegistry registry, LocalSolrServer server, StorageManager storageManager) {
     this.registry = registry;
     this.server = server;
-    this.storageManager = storageManager;
-    setupIndexers(config);
+    setupIndexers(config, storageManager);
   }
 
-  private void setupIndexers(Configuration config) {
+  private void setupIndexers(Configuration config, StorageManager storageManager) {
     boolean error = false;
     indexers = Maps.newHashMap();
     for (String doctype : config.getSettings("indexeddoctypes")) {
@@ -59,7 +56,7 @@ public class IndexManager {
         error = true;
       } else {
         String core = type.getSimpleName().toLowerCase();
-        indexers.put(type, DomainDocumentIndexer.newInstance(server, core));
+        indexers.put(type, DomainDocumentIndexer.newInstance(storageManager, server, core));
       }
     }
     if (error) {
@@ -78,8 +75,7 @@ public class IndexManager {
   }
 
   private <T extends Document> void addBaseDocument(Class<T> type, String id) throws IndexException {
-    List<T> docs = storageManager.getAllVariations(type, id);
-    indexerForType(type).add(docs);
+    indexerForType(type).add(type, id);
   }
 
   public <T extends Document> void updateDocument(Class<T> type, String id) throws IndexException {
@@ -87,8 +83,7 @@ public class IndexManager {
   }
 
   private <T extends Document> void updateBaseDocument(Class<T> type, String id) throws IndexException {
-    List<T> docs = storageManager.getAllVariations(type, id);
-    indexerForType(type).modify(docs);
+    indexerForType(type).modify(type, id);
   }
 
   public <T extends Document> void deleteDocument(Class<T> type, String id) throws IndexException {
