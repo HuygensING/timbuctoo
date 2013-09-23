@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import nl.knaw.huygens.repository.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.IndexManager;
@@ -28,6 +27,7 @@ import nl.knaw.huygens.repository.model.atlg.XRelated;
 import nl.knaw.huygens.repository.model.util.PersonName;
 import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.repository.storage.StorageManager;
+import nl.knaw.huygens.repository.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.repository.tools.util.EncodingFixer;
 import nl.knaw.huygens.repository.tools.util.Files;
 import nl.knaw.huygens.repository.tools.util.Token;
@@ -117,6 +117,8 @@ public class AtlantischeGidsImporter {
         broker.close();
       }
     }
+    //If the application is not explicitly closed a finalizer thread of Guice keeps running.
+    System.exit(0);
   }
 
   // -------------------------------------------------------------------
