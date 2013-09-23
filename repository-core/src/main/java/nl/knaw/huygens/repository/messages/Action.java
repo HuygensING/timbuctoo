@@ -5,7 +5,7 @@ public class Action {
   private String id;
   private String typeString;
 
-  public Action(ActionType actionType, String id, String typeString) {
+  public Action(ActionType actionType, String typeString, String id) {
     this.actionType = actionType;
     this.id = id;
     this.typeString = typeString;
@@ -21,6 +21,11 @@ public class Action {
 
   public String getTypeString() {
     return typeString;
+  }
+
+  @Override
+  public String toString() {
+    return "actionType: " + actionType + "\ntypeString: " + typeString + "\nid: " + id;
   }
 
 }
