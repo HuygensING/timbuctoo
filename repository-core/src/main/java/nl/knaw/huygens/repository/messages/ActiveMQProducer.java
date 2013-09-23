@@ -34,9 +34,9 @@ public class ActiveMQProducer implements Producer {
   }
 
   @Override
-  public void send(String action, String type, String id) throws JMSException {
+  public void send(ActionType action, String type, String id) throws JMSException {
     Message message = session.createMessage();
-    message.setStringProperty(Broker.PROP_ACTION, action);
+    message.setStringProperty(Broker.PROP_ACTION, action.getStringRepresentation());
     message.setStringProperty(Broker.PROP_DOC_TYPE, type);
     message.setStringProperty(Broker.PROP_DOC_ID, id);
     producer.send(message);
