@@ -58,7 +58,8 @@ public class IndexManager {
         LOG.error("Configuration error: '{}' is not a primitive document type", doctype);
         error = true;
       } else {
-        indexers.put(type, SolrDocumentIndexer.newInstance(type, server));
+        String core = type.getSimpleName().toLowerCase();
+        indexers.put(type, DomainDocumentIndexer.newInstance(server, core));
       }
     }
     if (error) {
