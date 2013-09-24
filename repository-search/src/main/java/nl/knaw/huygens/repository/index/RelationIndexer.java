@@ -30,29 +30,30 @@ public class RelationIndexer implements DocumentIndexer<Relation> {
   }
 
   @Override
-  public void add(Class<Relation> type, String id) throws IndexException {
+  public void add(Class<Relation> docType, String docId) throws IndexException {
+    Relation relation = storageManager.getDocument(docType, docId);
+    if (relation == null) {
+      LOG.error("Failed to retrieve relation {}", docId);
+      throw new IndexException("Failed to index relation");
+    }
+    Reference typeRef = relation.getTypeRef();
+    RelationType relType = storageManager.getDocument(RelationType.class, typeRef.getId());
+    if (relType == null) {
+      LOG.error("Failed to retrieve relation type {}", typeRef.getId());
+      throw new IndexException("Failed to index relation");
+    }
     try {
-      Relation relation = storageManager.getDocument(type, id);
-      if (relation == null) {
-        LOG.error("Failed to retrieve relation {}", id);
-      } else {
-        Reference relTypeRef = relation.getTypeRef();
-        RelationType relationType = storageManager.getDocument(RelationType.class, relTypeRef.getId());
-        if (relationType == null) {
-          LOG.error("Failed to retrieve relation type {}", relTypeRef.getId());
-        } else {
-          doIndex(relation.getId(), relationType, relation.getSourceRef(), relation.getTargetRef());
-          if (relationType.isSymmetric()) {
-            doIndex(relation.getId() + "s", relationType, relation.getTargetRef(), relation.getSourceRef());
-          }
-        }
+      doAdd(docId, relType, relation.getSourceRef(), relation.getTargetRef());
+      if (relType.isSymmetric()) {
+        doAdd(docId + "s", relType, relation.getTargetRef(), relation.getSourceRef());
       }
     } catch (Exception e) {
-      throw new IndexException(e);
+      LOG.error(e.getMessage());
+      throw new IndexException("Failed to index relation");
     }
   }
 
-  private void doIndex(String id, RelationType relationType, Reference sourceRef, Reference targetRef) throws SolrServerException, IOException {
+  private void doAdd(String id, RelationType relationType, Reference sourceRef, Reference targetRef) throws SolrServerException, IOException {
     SolrInputDocument solrDoc = new SolrInputDocument();
     solrDoc.addField("id", id);
     solrDoc.addField("dynamic_s_type_id", relationType.getId());
@@ -80,9 +81,9 @@ public class RelationIndexer implements DocumentIndexer<Relation> {
 
   @Override
   public void remove(String id) throws IndexException {
-    // TODO also remove derived relations
     try {
-      server.delete(CORE, id);
+      String query = String.format("id:%s*", id);
+      server.deleteByQuery(CORE, query);
     } catch (Exception e) {
       throw new IndexException(e);
     }

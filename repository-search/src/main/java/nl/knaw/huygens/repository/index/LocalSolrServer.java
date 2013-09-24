@@ -126,8 +126,12 @@ public class LocalSolrServer {
     serverFor(core).add(doc, commitWithin);
   }
 
-  public void delete(String core, String id) throws SolrServerException, IOException {
+  public void deleteById(String core, String id) throws SolrServerException, IOException {
     serverFor(core).deleteById(id, commitWithin);
+  }
+
+  public void deleteByQuery(String core, String query) throws SolrServerException, IOException {
+    serverFor(core).deleteByQuery(query, commitWithin);
   }
 
   public void deleteAll(String core) throws SolrServerException, IOException {
