@@ -7,6 +7,7 @@ import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Reference;
 import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.model.RelationType;
+import nl.knaw.huygens.repository.storage.RelationManager;
 import nl.knaw.huygens.repository.storage.StorageManager;
 
 import org.apache.solr.client.solrj.SolrServerException;
@@ -14,19 +15,28 @@ import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RelationIndexer implements DocumentIndexer<Relation> {
+/**
+ * Manages the Solr core for {@code Relation} documents.
+ * 
+ * Note that a single relation can give rise to multiple Solr documents.
+ * The id's of these Solr documents have the id of the relation document
+ * as prefix, allowing them to be deleted by a simple query.
+ */
+class RelationIndexer implements DocumentIndexer<Relation> {
 
   private static final Logger LOG = LoggerFactory.getLogger(RelationIndexer.class);
   private static final String CORE = "relation";
 
   private final DocTypeRegistry registry;
-  private final StorageManager storageManager;
   private final LocalSolrServer server;
+  private final StorageManager storageManager;
+  private final RelationManager relationManager;
 
-  public RelationIndexer(DocTypeRegistry registry, StorageManager storageManager, LocalSolrServer server) {
+  public RelationIndexer(DocTypeRegistry registry, LocalSolrServer server, StorageManager storageManager, RelationManager relationManager) {
     this.registry = registry;
-    this.storageManager = storageManager;
     this.server = server;
+    this.storageManager = storageManager;
+    this.relationManager = relationManager;
   }
 
   @Override
@@ -37,15 +47,19 @@ public class RelationIndexer implements DocumentIndexer<Relation> {
       throw new IndexException("Failed to index relation");
     }
     Reference typeRef = relation.getTypeRef();
-    RelationType relType = storageManager.getDocument(RelationType.class, typeRef.getId());
+    RelationType relType = relationManager.getRelationType(typeRef);
     if (relType == null) {
       LOG.error("Failed to retrieve relation type {}", typeRef.getId());
       throw new IndexException("Failed to index relation");
     }
     try {
-      doAdd(docId, relType, relation.getSourceRef(), relation.getTargetRef());
-      if (relType.isSymmetric()) {
-        doAdd(docId + "s", relType, relation.getTargetRef(), relation.getSourceRef());
+      Reference sourceRef = relation.getSourceRef();
+      Reference targetRef = relation.getTargetRef();
+      for (RelationType type : relationManager.getSynonyms(relType)) {
+        doAdd(docId + "-n-", type, sourceRef, targetRef);
+      }
+      for (RelationType type : relationManager.getInverses(relType)) {
+        doAdd(docId + "-i-", type, targetRef, sourceRef);
       }
     } catch (Exception e) {
       LOG.error(e.getMessage());
@@ -55,7 +69,7 @@ public class RelationIndexer implements DocumentIndexer<Relation> {
 
   private void doAdd(String id, RelationType relationType, Reference sourceRef, Reference targetRef) throws SolrServerException, IOException {
     SolrInputDocument solrDoc = new SolrInputDocument();
-    solrDoc.addField("id", id);
+    solrDoc.addField("id", id + relationType.getId());
     solrDoc.addField("dynamic_s_type_id", relationType.getId());
     solrDoc.addField("dynamic_s_type_name", relationType.getRelTypeName());
     Document sourceDoc = getDocument(sourceRef);

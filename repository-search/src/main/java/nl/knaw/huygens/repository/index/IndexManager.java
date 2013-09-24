@@ -6,6 +6,7 @@ import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.Relation;
+import nl.knaw.huygens.repository.storage.RelationManager;
 import nl.knaw.huygens.repository.storage.StorageManager;
 
 import org.slf4j.Logger;
@@ -39,16 +40,16 @@ public class IndexManager {
   private Map<Class<? extends Document>, DocumentIndexer<? extends Document>> indexers;
 
   @Inject
-  public IndexManager(Configuration config, DocTypeRegistry registry, LocalSolrServer server, StorageManager storageManager) {
+  public IndexManager(Configuration config, DocTypeRegistry registry, LocalSolrServer server, StorageManager storageManager, RelationManager relationManager) {
     this.registry = registry;
     this.server = server;
-    setupIndexers(config, storageManager);
+    setupIndexers(config, storageManager, relationManager);
   }
 
-  private void setupIndexers(Configuration config, StorageManager storageManager) {
+  private void setupIndexers(Configuration config, StorageManager storageManager, RelationManager relationManager) {
     boolean error = false;
     indexers = Maps.newHashMap();
-    indexers.put(Relation.class, new RelationIndexer(registry, storageManager, server));
+    indexers.put(Relation.class, new RelationIndexer(registry, server, storageManager, relationManager));
     for (String doctype : config.getSettings("indexeddoctypes")) {
       Class<? extends Document> type = registry.getTypeForIName(doctype);
       if (type == null) {
