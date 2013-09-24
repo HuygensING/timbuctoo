@@ -9,7 +9,7 @@ public class DocumentTest {
   @Test
   public void testTypeName() {
     Document doc = new ModelWithOverriddenIndexAnnotations();
-    assertEquals("ModelWithOverriddenIndexAnnotations", doc.getTypeName());
+    assertEquals("ModelWithOverriddenIndexAnnotations", doc.getClass().getSimpleName());
   }
 
 }
