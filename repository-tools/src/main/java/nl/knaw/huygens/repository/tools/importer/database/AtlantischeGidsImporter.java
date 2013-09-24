@@ -116,6 +116,7 @@ public class AtlantischeGidsImporter {
       if (broker != null) {
         broker.close();
       }
+      System.exit(0);
     }
   }
 
@@ -242,7 +243,7 @@ public class AtlantischeGidsImporter {
   // --- relation types ------------------------------------------------
 
   private void importRelationTypes() {
-    RelationType type = new RelationType("is_creator_of", Archiver.class, Archive.class);
+    RelationType type = new RelationType("is_creator_of", ATLGArchiver.class, ATLGArchive.class);
     dataPoster.addDocument(RelationType.class, type, true);
     isCreatorRef = new Reference(RelationType.class, type.getId());
   }
@@ -687,16 +688,15 @@ public class AtlantischeGidsImporter {
   private void resolveArchiverRefs(List<String> archiverIds) throws Exception {
     for (String id : archiverIds) {
       ATLGArchiver archiver = dataPoster.getDocument(ATLGArchiver.class, id);
-      Reference sourceRef = new Reference(Archiver.class, id);
+      Reference sourceRef = new Reference(ATLGArchiver.class, id);
       String filename = archiver.getOrigFilename();
       List<DocumentRef> oldRefs = archiver.getRelatedArchives();
       if (oldRefs != null && oldRefs.size() != 0) {
         List<DocumentRef> newRefs = resolveRefs(filename, "related archives", oldRefs);
         archiver.setRelatedArchives(newRefs);
         for (DocumentRef archiveRef : newRefs) {
-          Reference targetRef = new Reference(Archive.class, archiveRef.getId());
+          Reference targetRef = new Reference(ATLGArchive.class, archiveRef.getId());
           Relation relation = new Relation(sourceRef, isCreatorRef, targetRef);
-          System.out.println(relation.getDisplayName());
           dataPoster.addDocument(Relation.class, relation, true);
         }
       }
