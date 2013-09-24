@@ -10,8 +10,8 @@ import nl.knaw.huygens.repository.annotations.IDPrefix;
 @IDPrefix("RLT")
 public class RelationType extends DomainDocument {
 
-  /** The name that uniquely identifies this type. */
-  private String typeName;
+  /** The name that uniquely identifies this relation type. */
+  private String relTypeName;
   /** The type token of the 'active' participant of the relation. */
   private Class<? extends DomainDocument> sourceDocType;
   /** The type token of the 'passive' participant of the relation. */
@@ -25,7 +25,7 @@ public class RelationType extends DomainDocument {
   public RelationType() {}
 
   public RelationType(String typeName, Class<? extends DomainDocument> sourceDocType, Class<? extends DomainDocument> targetDocType) {
-    this.typeName = typeName;
+    this.relTypeName = typeName;
     this.sourceDocType = sourceDocType;
     this.targetDocType = targetDocType;
     this.reflexive = sourceDocType.equals(targetDocType);
@@ -38,15 +38,15 @@ public class RelationType extends DomainDocument {
 
   @Override
   public String getDisplayName() {
-    return getTypeName();
+    return relTypeName;
   }
 
-  public String getTypeName() {
-    return typeName;
+  public String getRelTypeName() {
+    return relTypeName;
   }
 
-  public void setTypeName(String typeName) {
-    this.typeName = typeName;
+  public void setRelTypeName(String typeName) {
+    this.relTypeName = typeName;
   }
 
   public Class<? extends DomainDocument> getSourceDocType() {

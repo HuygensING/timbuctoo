@@ -1,12 +1,14 @@
 package nl.knaw.huygens.repository.model;
 
 import nl.knaw.huygens.repository.annotations.IDPrefix;
-import nl.knaw.huygens.repository.facet.IndexAnnotation;
 
 /**
  * A relation between domain documents.
  *
  * (This resembles an RDF statement.)
+ * 
+ * N.B. Relations are indexed by {@code RelationIndexer),
+ * which does not require index annotations.
  * 
  * There is a conceptual problem to solve.
  * Suppose we have a relation between an ATLArchive and an ATLArchiver.
@@ -21,52 +23,49 @@ import nl.knaw.huygens.repository.facet.IndexAnnotation;
 public class Relation extends DomainDocument {
 
   /** A reference to the 'active' participant of the relation (resembles rdf:subject). */
-  private Reference source;
+  private Reference sourceRef;
   /** A reference to the property or characteristic of the subject (resembles rdf:predicate). */
-  private Reference type;
+  private Reference typeRef;
   /** A reference to the 'passive' participant of the relation (resembles rdf:object). */
-  private Reference target;
+  private Reference targetRef;
 
   // For deserialization...
   public Relation() {}
 
-  public Relation(Reference source, Reference type, Reference target) {
+  public Relation(Reference sourceRef, Reference typeRef, Reference targetRef) {
     // TODO validate consistency
-    this.source = source;
-    this.type = type;
-    this.target = target;
+    this.sourceRef = sourceRef;
+    this.typeRef = typeRef;
+    this.targetRef = targetRef;
   }
 
   @Override
   public String getDisplayName() {
-    return String.format("(%s, %s, %s)", source, type, target);
+    return String.format("(%s, %s, %s)", sourceRef, typeRef, targetRef);
   }
 
-  @IndexAnnotation(fieldName = "dynamic_s_source", accessors = { "getId" }, canBeEmpty = false, isFaceted = false)
-  public Reference getSource() {
-    return source;
+  public Reference getSourceRef() {
+    return sourceRef;
   }
 
-  public void setSource(Reference source) {
-    this.source = source;
+  public void setSourceRef(Reference sourceRef) {
+    this.sourceRef = sourceRef;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_s_type", canBeEmpty = false, isFaceted = false)
-  public Reference getType() {
-    return type;
+  public Reference getTypeRef() {
+    return typeRef;
   }
 
-  public void setType(Reference type) {
-    this.type = type;
+  public void setTypeRef(Reference typeRef) {
+    this.typeRef = typeRef;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_s_target", accessors = { "getId" }, canBeEmpty = false, isFaceted = false)
-  public Reference getTarget() {
-    return target;
+  public Reference getTargetRef() {
+    return targetRef;
   }
 
-  public void setTarget(Reference target) {
-    this.target = target;
+  public void setTargetRef(Reference targetRef) {
+    this.targetRef = targetRef;
   }
 
 }
