@@ -66,9 +66,9 @@ class DomainDocumentIndexer<T extends DomainDocument> implements DocumentIndexer
    *          if adding the document fails for some reason.
    */
   @Override
-  public void add(Class<T> type, String id) throws IndexException {
+  public void add(Class<T> docType, String docId) throws IndexException {
     try {
-      List<T> variations = storageManager.getAllVariations(type, id);
+      List<T> variations = storageManager.getAllVariations(docType, docId);
       solrServer.add(core, getSolrInputDocument(variations));
     } catch (Exception e) {
       throw new IndexException(e);
@@ -86,9 +86,9 @@ class DomainDocumentIndexer<T extends DomainDocument> implements DocumentIndexer
    *          if adding the document fails for some reason.
    */
   @Override
-  public void modify(Class<T> type, String id) throws IndexException {
+  public void modify(Class<T> docType, String docId) throws IndexException {
     try {
-      List<T> variations = storageManager.getAllVariations(type, id);
+      List<T> variations = storageManager.getAllVariations(docType, docId);
       solrServer.add(core, getSolrInputDocument(variations));
     } catch (Exception e) {
       throw new IndexException(e);
@@ -99,15 +99,15 @@ class DomainDocumentIndexer<T extends DomainDocument> implements DocumentIndexer
    * Remove a {@link nl.knaw.huygens.repository.model.Document
    * <code>Document</code>} from the index.
    * 
-   * @param id
+   * @param docId
    *          the id of the <code>Document</code> to remove.
    * @throws IndexException
    *          if removing the document fails for some reason.
    */
   @Override
-  public void remove(String id) throws IndexException {
+  public void remove(String docId) throws IndexException {
     try {
-      solrServer.delete(core, id);
+      solrServer.deleteById(core, docId);
     } catch (Exception e) {
       throw new IndexException(e);
     }
@@ -138,8 +138,8 @@ class DomainDocumentIndexer<T extends DomainDocument> implements DocumentIndexer
   public void flush() throws IndexException {
     try {
       solrServer.commit(core);
-    } catch (Exception ex) {
-      throw new IndexException(ex);
+    } catch (Exception e) {
+      throw new IndexException(e);
     }
   }
 
