@@ -73,8 +73,9 @@ public class CKCCPersonImporter extends CSVImporter {
       System.out.println(id);
       List<Person> persons = storageManager.getAllVariations(Person.class, id);
       for (Person p : persons) {
-        if (p.getClass() != Person.class && p.getClass() != DWCScientist.class) {
-          System.out.printf("%-20s %-40s %-12s %-12s%n", p.getTypeName(), p.getName(), p.getBirthDate(), p.getDeathDate());
+        Class<? extends Person> cls = p.getClass();
+        if (cls != Person.class && cls != DWCScientist.class) {
+          System.out.printf("%-20s %-40s %-12s %-12s%n", cls.getSimpleName(), p.getName(), p.getBirthDate(), p.getDeathDate());
         }
       }
     }

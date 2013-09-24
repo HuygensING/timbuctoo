@@ -34,7 +34,9 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
   private final HTMLProviderHelper helper;
 
   @Inject
-  public DocumentListHTMLProvider(DocTypeRegistry registry, @Named("html.defaultstylesheet") String stylesheetLink, @Named("public_url") String publicURL) {
+  public DocumentListHTMLProvider(DocTypeRegistry registry, @Named("html.defaultstylesheet")
+  String stylesheetLink, @Named("public_url")
+  String publicURL) {
     helper = new HTMLProviderHelper(registry, stylesheetLink, publicURL);
   }
 
@@ -89,7 +91,12 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
   }
 
   private String getTitle(List<? extends Document> docs) {
-    return docs.isEmpty() ? "No documents" : String.format("%d instances of %s", docs.size(), docs.get(0).getTypeName());
+    if (docs == null || docs.isEmpty()) {
+      return "No documents";
+    } else {
+      String docTypeName = docs.get(0).getClass().getSimpleName();
+      return String.format("%d instances of %s", docs.size(), docTypeName);
+    }
   }
 
   private String getDocTitle(Document doc) {
