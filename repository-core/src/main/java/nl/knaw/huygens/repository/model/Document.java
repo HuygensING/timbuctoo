@@ -37,11 +37,6 @@ public abstract class Document {
   @IndexAnnotation(fieldName = "desc")
   public abstract String getDisplayName();
 
-  @JsonIgnore
-  public String getTypeName() {
-    return getClass().getSimpleName();
-  }
-
   @JsonProperty("_id")
   @IndexAnnotation(fieldName = "id")
   public String getId() {
