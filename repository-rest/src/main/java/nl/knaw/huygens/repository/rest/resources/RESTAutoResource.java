@@ -24,9 +24,11 @@ import javax.ws.rs.core.UriInfo;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.search.SearchManager;
 import nl.knaw.huygens.repository.storage.JsonViews;
 import nl.knaw.huygens.repository.storage.StorageManager;
 
+import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,11 +50,13 @@ public class RESTAutoResource {
 
   private final DocTypeRegistry docTypeRegistry;
   private final StorageManager storageManager;
+  private final SearchManager searchManager;
 
   @Inject
-  public RESTAutoResource(DocTypeRegistry registry, StorageManager manager) {
+  public RESTAutoResource(DocTypeRegistry registry, StorageManager storageManager, SearchManager searchManager) {
     docTypeRegistry = registry;
-    storageManager = manager;
+    this.storageManager = storageManager;
+    this.searchManager = searchManager;
   }
 
   // --- API -----------------------------------------------------------
@@ -113,7 +117,17 @@ public class RESTAutoResource {
       String id //
   ) {
     Class<? extends Document> type = getDocType(entityType);
-    return checkNotNull(storageManager.getDocument(type, id), Status.NOT_FOUND);
+    Document document = checkNotNull(storageManager.getDocument(type, id), Status.NOT_FOUND);
+
+    if (document instanceof DomainDocument) {
+      try {
+        searchManager.addRelationsTo((DomainDocument) document);
+      } catch (SolrServerException e) {
+        LOG.error(e.getMessage());
+        throw new WebApplicationException(Status.NOT_FOUND);
+      }
+    }
+    return document;
   }
 
   @PUT

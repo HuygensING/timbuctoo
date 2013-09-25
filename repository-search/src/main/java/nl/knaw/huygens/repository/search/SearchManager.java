@@ -9,7 +9,8 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.facet.FacetCount;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
 import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.RelationValue;
+import nl.knaw.huygens.repository.model.DocumentRef;
+import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.solr.FacetInfo;
 import nl.knaw.huygens.solr.FacetParameter;
@@ -49,20 +50,27 @@ public class SearchManager {
     return sortableFieldFinder.findFields(type);
   }
 
-  public List<RelationValue> findRelations(String source) throws SolrServerException {
-    String term = String.format("dynamic_s_source:%s", source);
-    String[] fields = { "id", "dynamic_s_source", "dynamic_s_target" };
+  public void addRelationsTo(DomainDocument document) throws SolrServerException {
+    String term = String.format("dynamic_k_source_id:%s", document.getId());
+    String[] fields = { "dynamic_k_type_name", "dynamic_k_target_type", "dynamic_k_target_id", "dynamic_k_target_name" };
     QueryResponse response = server.search("relation", term, fields);
-    SolrDocumentList documents = response.getResults();
-
-    List<RelationValue> list = Lists.newArrayList();
-    for (SolrDocument document : documents) {
-      RelationValue value = new RelationValue();
-      value.source = document.getFieldValue("dynamic_s_source").toString();
-      value.target = document.getFieldValue("dynamic_s_target").toString();
-      list.add(value);
+    for (SolrDocument doc : response.getResults()) {
+      String typeName = getFieldValue(doc, "dynamic_k_type_name");
+      String iname = getFieldValue(doc, "dynamic_k_target_type");
+      String xname = docTypeRegistry.getXNameForIName(iname);
+      String id = getFieldValue(doc, "dynamic_k_target_id");
+      String displayName = getFieldValue(doc, "dynamic_k_target_name");
+      DocumentRef ref = new DocumentRef(iname, xname, id, displayName);
+      document.addRelation(typeName, ref);
     }
-    return list;
+  }
+
+  private String getFieldValue(SolrDocument doc, String fieldName) throws SolrServerException {
+    Object value = doc.getFieldValue(fieldName);
+    if (value == null || value instanceof String) {
+      return (String) value;
+    }
+    throw new SolrServerException("Unexpected field type " + value.getClass());
   }
 
   public SearchResult search(Class<? extends Document> type, String core, FacetedSearchParameters searchParameters) throws SolrServerException, FacetDoesNotExistException {
