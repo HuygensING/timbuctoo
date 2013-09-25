@@ -5,7 +5,7 @@
   <parent>
     <groupId>repository</groupId>
     <artifactId>repository</artifactId>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>${repository.version}</version>
   </parent>
   <artifactId>repository-core</artifactId>
   <name>datarepository core</name>
@@ -15,7 +15,7 @@
     <dependency>
       <groupId>repository</groupId>
       <artifactId>repository-persistence</artifactId>
-      <version>1.0.4-SNAPSHOT</version>
+      <version>${repository.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>jackson-annotations</artifactId>
