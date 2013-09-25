@@ -13,6 +13,7 @@ import java.lang.annotation.Target;
  *   <field name="desc" type="string" indexed="true" stored="true" multiValued="true"/>
  * Dynamic fields use a name pattern:
  *   <dynamicField name="dynamic_sort_*" type="alphaOnlySort" indexed="true" stored="false" multiValued="false"/>
+ *   <dynamicField name="dynamic_k_*" type="string" indexed="true" stored="true" multiValued="false"/>
  *   <dynamicField name="dynamic_s_*" type="string" indexed="true" stored="true" multiValued="true"/>
  *   <dynamicField name="dynamic_t_*" type="textgen" indexed="true" stored="true" multiValued="true"/>
  *   <dynamicField name="dynamic_i_*" type="int" indexed="true" stored="true" multiValued="true"/>
