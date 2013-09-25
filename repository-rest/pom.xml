@@ -5,7 +5,7 @@
   <parent>
     <groupId>repository</groupId>
     <artifactId>repository</artifactId>
-    <version>${repository.version}</version>
+    <version>1.0.5-SNAPSHOT</version>
   </parent>
   <artifactId>repository-rest</artifactId>
   <packaging>war</packaging>
@@ -18,25 +18,25 @@
     <dependency>
       <groupId>repository</groupId>
       <artifactId>repository-core</artifactId>
-      <version>${repository.version}</version>
+      <version>${project.version}</version>
     </dependency>
     <!-- Search project -->
     <dependency>
       <groupId>repository</groupId>
       <artifactId>repository-search</artifactId>
-      <version>${repository.version}</version>
+      <version>${project.version}</version>
     </dependency>
     <!-- Security project -->
     <dependency>
       <groupId>repository</groupId>
       <artifactId>repository-security</artifactId>
-      <version>${repository.version}</version>
+      <version>${project.version}</version>
     </dependency>
     <!-- Services project -->
     <dependency>
       <groupId>repository</groupId>
       <artifactId>repository-services</artifactId>
-      <version>${parent.version}</version>
+      <version>${project.version}</version>
     </dependency>
     <!-- ## End of repository packages ## -->
 
@@ -210,7 +210,7 @@
         <dependency>
           <groupId>repository</groupId>
           <artifactId>repository-dev-config-war</artifactId>
-          <version>${repository.version}</version>
+          <version>${project.version}</version>
           <type>war</type>
           <scope>runtime</scope>
         </dependency>
@@ -222,7 +222,7 @@
         <dependency>
           <groupId>repository</groupId>
           <artifactId>repository-test-config-war</artifactId>
-          <version>${repository.version}</version>
+          <version>${project.version}</version>
           <type>war</type>
           <scope>runtime</scope>
         </dependency>
@@ -234,7 +234,7 @@
         <dependency>
           <groupId>repository</groupId>
           <artifactId>repository-prod-config-war</artifactId>
-          <version>${repository.version}</version>
+          <version>${project.version}</version>
           <type>war</type>
           <scope>runtime</scope>
         </dependency>

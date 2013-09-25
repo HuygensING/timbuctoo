@@ -3,7 +3,7 @@
   <parent>
     <groupId>repository</groupId>
     <artifactId>repository</artifactId>
-    <version>${repository.version}</version>
+    <version>1.0.5-SNAPSHOT</version>
   </parent>
   <artifactId>repository-persistence</artifactId>
   <name>repository persistence</name>
