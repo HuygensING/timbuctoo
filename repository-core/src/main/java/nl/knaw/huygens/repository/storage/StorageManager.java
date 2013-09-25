@@ -15,6 +15,7 @@ import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.repository.annotations.RelatedDocument;
 import nl.knaw.huygens.repository.annotations.RelatedDocuments;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
+import nl.knaw.huygens.repository.messages.ActionType;
 import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.messages.Producer;
 import nl.knaw.huygens.repository.model.Document;
@@ -92,7 +93,7 @@ public class StorageManager {
     }
   }
 
-  private void sendIndexMessage(String action, String type, String id) {
+  private void sendIndexMessage(ActionType action, String type, String id) {
     if (producer != null) {
       try {
         producer.send(action, type, id);
@@ -161,7 +162,7 @@ public class StorageManager {
     storage.addItem(type, doc);
     persistDocumentVersion(type, doc);
     if (DomainDocument.class.isAssignableFrom(type) && isComplete) {
-      sendIndexMessage(Broker.INDEX_ADD, docTypeRegistry.getINameForType(type), doc.getId());
+      sendIndexMessage(ActionType.INDEX_ADD, docTypeRegistry.getINameForType(type), doc.getId());
     }
   }
 
@@ -185,14 +186,14 @@ public class StorageManager {
     storage.updateItem(type, doc.getId(), doc);
     persistDocumentVersion(type, doc);
     if (DomainDocument.class.isAssignableFrom(type)) {
-      sendIndexMessage(Broker.INDEX_MOD, docTypeRegistry.getINameForType(type), doc.getId());
+      sendIndexMessage(ActionType.INDEX_MOD, docTypeRegistry.getINameForType(type), doc.getId());
     }
   }
 
   public <T extends Document> void removeDocument(Class<T> type, T doc) throws IOException {
     storage.deleteItem(type, doc.getId(), doc.getLastChange());
     if (DomainDocument.class.isAssignableFrom(type)) {
-      sendIndexMessage(Broker.INDEX_DEL, docTypeRegistry.getINameForType(type), doc.getId());
+      sendIndexMessage(ActionType.INDEX_DEL, docTypeRegistry.getINameForType(type), doc.getId());
     }
   }
 
