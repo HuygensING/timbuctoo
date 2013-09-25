@@ -5,7 +5,7 @@
 
   <groupId>repository</groupId>
   <artifactId>repository</artifactId>
-  <version>1.0.4-SNAPSHOT</version>
+  <version>${repository.version}</version>
   <packaging>pom</packaging>
   <name>datarepository</name>
   <description>Back-end software that provides different front-ends to share data and variations on that data.</description>
@@ -28,6 +28,23 @@
     <module>repository-test-config-war</module>
     <module>repository-prod-config-war</module>
   </modules>
+  
+  <properties>
+    <!-- Version number, to easily update every version reference of the repository. -->
+    <repository.version>1.0.5-SNAPSHOT</repository.version>
+    <activemq.version>5.7.0</activemq.version>
+    <commons.configuration.version>1.9</commons.configuration.version>
+    <guice.version>3.0</guice.version>
+    <jackson.version>2.1.1</jackson.version>
+    <javax.validation.version>1.0.0.GA</javax.validation.version>
+    <jersey.version>1.16</jersey.version>
+    <junit.version>4.10</junit.version>
+    <mockito.version>1.9.0</mockito.version>
+    <quartz.version>2.2.0</quartz.version>
+    <servlet-api.version>3.0.1</servlet-api.version>
+    <slf4j.version>1.6.6</slf4j.version>
+    <solr.version>4.3.1</solr.version>
+  </properties>
 
   <prerequisites>
     <maven>3.0</maven>
@@ -112,21 +129,6 @@
       <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
     </developer>
   </developers>
-
-  <properties>
-    <activemq.version>5.7.0</activemq.version>
-    <commons.configuration.version>1.9</commons.configuration.version>
-    <guice.version>3.0</guice.version>
-    <jackson.version>2.1.1</jackson.version>
-    <javax.validation.version>1.0.0.GA</javax.validation.version>
-    <jersey.version>1.16</jersey.version>
-    <junit.version>4.10</junit.version>
-    <mockito.version>1.9.0</mockito.version>
-    <quartz.version>2.2.0</quartz.version>
-    <servlet-api.version>3.0.1</servlet-api.version>
-    <slf4j.version>1.6.6</slf4j.version>
-    <solr.version>4.3.1</solr.version>
-  </properties>
 
   <build>
     <plugins>
