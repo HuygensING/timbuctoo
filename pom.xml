@@ -5,7 +5,7 @@
 
   <groupId>repository</groupId>
   <artifactId>repository</artifactId>
-  <version>${repository.version}</version>
+  <version>1.0.5-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>datarepository</name>
   <description>Back-end software that provides different front-ends to share data and variations on that data.</description>
@@ -31,8 +31,6 @@
   </modules>
   
   <properties>
-    <!-- Version number, to easily update every version reference of the repository. -->
-    <repository.version>1.0.5-SNAPSHOT</repository.version>
     <activemq.version>5.7.0</activemq.version>
     <commons.configuration.version>1.9</commons.configuration.version>
     <guice.version>3.0</guice.version>

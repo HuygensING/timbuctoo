@@ -24,7 +24,7 @@
         <dependent-module archiveName="repository-services-1.0.5-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-services/repository-services">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module deploy-path="/" handle="module:/overlay/var/M2_REPO/repository/repository-dev-config-war/1.0.4-SNAPSHOT/repository-dev-config-war-1.0.4-SNAPSHOT.war?unpackFolder=target/m2e-wtp/overlays&amp;includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
+        <dependent-module deploy-path="/" handle="module:/overlay/prj/repository-dev-config-war?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
             <dependency-type>consumes</dependency-type>
         </dependent-module>
         <dependent-module deploy-path="/" handle="module:/overlay/slf/?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">

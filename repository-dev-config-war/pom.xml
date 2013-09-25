@@ -7,7 +7,7 @@
   <parent>
 	<artifactId>repository</artifactId>
 	<groupId>repository</groupId>
-	<version>${repository.version}</version>
+	<version>1.0.5-SNAPSHOT</version>
   </parent>
 
   <artifactId>repository-dev-config-war</artifactId>

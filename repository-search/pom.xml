@@ -5,7 +5,7 @@
   <parent>
     <groupId>repository</groupId>
     <artifactId>repository</artifactId>
-    <version>${repository.version}</version>
+    <version>1.0.5-SNAPSHOT</version>
   </parent>
   <artifactId>repository-search</artifactId>
   <name>repository search</name>
@@ -15,7 +15,7 @@
   	<dependency>
   	  <groupId>repository</groupId>
   	  <artifactId>repository-core</artifactId>
-      <version>${repository.version}</version>
+      <version>${project.version}</version>
   	</dependency>
     <!-- ## End of project dependencies ## -->
 
