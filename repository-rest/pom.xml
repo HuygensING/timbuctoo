@@ -210,7 +210,7 @@
         <dependency>
           <groupId>repository</groupId>
           <artifactId>repository-dev-config-war</artifactId>
-          <version>1.0.4-SNAPSHOT</version>
+          <version>${repository.version}</version>
           <type>war</type>
           <scope>runtime</scope>
         </dependency>
@@ -222,7 +222,7 @@
         <dependency>
           <groupId>repository</groupId>
           <artifactId>repository-test-config-war</artifactId>
-          <version>1.0.4-SNAPSHOT</version>
+          <version>${repository.version}</version>
           <type>war</type>
           <scope>runtime</scope>
         </dependency>
@@ -234,7 +234,7 @@
         <dependency>
           <groupId>repository</groupId>
           <artifactId>repository-prod-config-war</artifactId>
-          <version>1.0.4-SNAPSHOT</version>
+          <version>${repository.version}</version>
           <type>war</type>
           <scope>runtime</scope>
         </dependency>
