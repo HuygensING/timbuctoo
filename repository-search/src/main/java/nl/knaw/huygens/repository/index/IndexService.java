@@ -1,9 +1,10 @@
 package nl.knaw.huygens.repository.index;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
+import nl.knaw.huygens.repository.messages.Action;
+import nl.knaw.huygens.repository.messages.ActionType;
 import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.messages.Consumer;
 import nl.knaw.huygens.repository.model.Document;
@@ -39,22 +40,27 @@ public class IndexService implements Runnable {
   public void run() {
     LOG.info("Started");
     running = true;
-    while (running) {
+    RUN_LOOP: while (running) {
       try {
-        Message message = consumer.receive();
-        if (message != null) {
-          String action = message.getStringProperty(Broker.PROP_ACTION);
-          String typeString = message.getStringProperty(Broker.PROP_DOC_TYPE);
+        Action action = consumer.receive();
+        if (action != null) {
+          ActionType actionType = action.getActionType();
+          String typeString = action.getTypeString();
           Class<? extends Document> type = registry.getTypeForIName(typeString);
-          String id = message.getStringProperty(Broker.PROP_DOC_ID);
-          if (Broker.INDEX_ADD.equals(action)) {
+          String id = action.getId();
+
+          switch (actionType) {
+          case INDEX_ADD:
             manager.addDocument(type, id);
-          } else if (Broker.INDEX_MOD.equals(action)) {
-            manager.updateDocument(type, id);
-          } else if (Broker.INDEX_DEL.equals(action)) {
-            manager.deleteDocument(type, id);
-          } else if (Broker.INDEX_END.equals(action)) {
             break;
+          case INDEX_MOD:
+            manager.updateDocument(type, id);
+            break;
+          case INDEX_DEL:
+            manager.deleteDocument(type, id);
+            break;
+          case INDEX_END:
+            break RUN_LOOP; //break the while loop
           }
         }
       } catch (JMSException e) {
