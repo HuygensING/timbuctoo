@@ -13,6 +13,7 @@ import nl.knaw.huygens.repository.messages.Producer;
 import nl.knaw.huygens.repository.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.repository.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.repository.model.raa.RAACivilServant;
+import nl.knaw.huygens.repository.storage.RelationManager;
 import nl.knaw.huygens.repository.storage.StorageManager;
 
 import com.google.inject.Guice;
@@ -64,8 +65,9 @@ public class BulkImporter {
         LanguageImporter languageImporter = new LanguageImporter(storageManager);
         languageImporter.handleFile("testdata/iso-639-2-language-codes.txt", 5, false);
         DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
+        RelationManager relationManager = new RelationManager(registry, storageManager);
         DataPoster poster = new LocalDataPoster(storageManager);
-        new AtlantischeGidsImporter(registry, poster, "../AtlantischeGids/work/").importAll();
+        new AtlantischeGidsImporter(registry, relationManager, poster, "../AtlantischeGids/work/").importAll();
       } else {
         String resourceDir = "src/main/resources/";
         importer.importData(resourceDir + "DWCPlaceMapping.properties", DWCPlace.class);

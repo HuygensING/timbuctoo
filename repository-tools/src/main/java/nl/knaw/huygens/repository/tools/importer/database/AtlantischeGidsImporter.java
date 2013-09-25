@@ -11,8 +11,6 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.IndexManager;
 import nl.knaw.huygens.repository.index.IndexService;
 import nl.knaw.huygens.repository.messages.Broker;
-import nl.knaw.huygens.repository.model.Archive;
-import nl.knaw.huygens.repository.model.Archiver;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DocumentRef;
 import nl.knaw.huygens.repository.model.Reference;
@@ -26,6 +24,8 @@ import nl.knaw.huygens.repository.model.atlg.ATLGPerson;
 import nl.knaw.huygens.repository.model.atlg.XRelated;
 import nl.knaw.huygens.repository.model.util.PersonName;
 import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
+import nl.knaw.huygens.repository.storage.RelationManager;
+import nl.knaw.huygens.repository.storage.RelationManager.RelationBuilder;
 import nl.knaw.huygens.repository.storage.StorageManager;
 import nl.knaw.huygens.repository.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.repository.tools.util.EncodingFixer;
@@ -89,8 +89,9 @@ public class AtlantischeGidsImporter {
       long start = System.currentTimeMillis();
 
       DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
+      RelationManager relationManager = new RelationManager(registry, storageManager);
       DataPoster poster = new LocalDataPoster(storageManager);
-      new AtlantischeGidsImporter(registry, poster, importDirName).importAll();
+      new AtlantischeGidsImporter(registry, relationManager, poster, importDirName).importAll();
 
       storageManager.ensureIndices();
 
@@ -128,21 +129,24 @@ public class AtlantischeGidsImporter {
 
   private final ObjectMapper objectMapper;
   private final DocTypeRegistry docTypeRegistry;
+  private final RelationManager relationManager;
   private final DataPoster dataPoster;
   private final File inputDir;
 
   private final Graph graph = new Graph();
   private final Map<DocumentRef, DocumentRef> docRefMap;
-  private Map<String, DocumentRef> keywordRefMap;
+  private Map<String, DocumentRef> keywordDocRefMap = Maps.newHashMap();
+  private Map<String, Reference> keywordRefMap = Maps.newHashMap();
   private Map<String, DocumentRef> personRefMap;
   private Map<String, DocumentRef> wetgevingRefMap;
   private int errors;
 
   private Reference isCreatorRef;
 
-  public AtlantischeGidsImporter(DocTypeRegistry registry, DataPoster poster, String inputDirName) {
+  public AtlantischeGidsImporter(DocTypeRegistry registry, RelationManager relationManager, DataPoster poster, String inputDirName) {
     objectMapper = new ObjectMapper();
     docTypeRegistry = registry;
+    this.relationManager = relationManager;
     dataPoster = poster;
     inputDir = new File(inputDirName);
     docRefMap = Maps.newHashMap();
@@ -210,7 +214,7 @@ public class AtlantischeGidsImporter {
     importRelationTypes();
 
     System.out.printf("%n.. 'keyword'%n");
-    keywordRefMap = importKeywords();
+    importKeywords();
     System.out.printf("Number of entries = %d%n", keywordRefMap.size());
 
     System.out.printf("%n.. 'person'%n");
@@ -242,7 +246,7 @@ public class AtlantischeGidsImporter {
     }
   }
 
-  // --- relation types ------------------------------------------------
+  // --- relations -----------------------------------------------------
 
   private void importRelationTypes() {
     RelationType type = new RelationType("is_creator_of", ATLGArchiver.class, ATLGArchive.class);
@@ -250,25 +254,35 @@ public class AtlantischeGidsImporter {
     isCreatorRef = new Reference(RelationType.class, type.getId());
   }
 
+  void addRelations(Reference sourceRef, Reference relTypeRef, Class<? extends Document> type, List<DocumentRef> docRefs) {
+    for (DocumentRef docRef : docRefs) {
+      Reference targetRef = new Reference(type, docRef.getId());
+      RelationBuilder builder = relationManager.getBuilder();
+      Relation relation = builder.type(relTypeRef).source(sourceRef).target(targetRef).build();
+      if (relation != null) {
+        dataPoster.addDocument(Relation.class, relation, true);
+      }
+    }
+  }
+
   // --- keywords ------------------------------------------------------
 
   private static final String KEYWORD_DIR = "keywords";
   private static final String KEYWORD_FILE = "keywords.json";
 
-  private Map<String, DocumentRef> importKeywords() throws Exception {
-    Map<String, DocumentRef> refs = Maps.newHashMap();
+  private void importKeywords() throws Exception {
     File file = new File(new File(inputDir, KEYWORD_DIR), KEYWORD_FILE);
     for (XKeyword xkeyword : readJsonValue(file, XKeyword[].class)) {
-      String id = xkeyword._id;
-      if (refs.containsKey(id)) {
-        System.err.printf("## [%s] Duplicate keyword id %s%n", KEYWORD_FILE, id);
+      String jsonId = xkeyword._id;
+      if (keywordRefMap.containsKey(jsonId)) {
+        System.err.printf("## [%s] Duplicate keyword id %s%n", KEYWORD_FILE, jsonId);
       } else {
         ATLGKeyword keyword = convert(xkeyword);
-        dataPoster.addDocument(ATLGKeyword.class, keyword, true);
-        refs.put(id, newDocumentRef(ATLGKeyword.class, keyword));
+        String storedId = dataPoster.addDocument(ATLGKeyword.class, keyword, true);
+        keywordRefMap.put(jsonId, new Reference(ATLGKeyword.class, storedId));
+        keywordDocRefMap.put(jsonId, newDocumentRef(ATLGKeyword.class, keyword));
       }
     }
-    return refs;
   }
 
   private ATLGKeyword convert(XKeyword xkeyword) {
@@ -383,17 +397,17 @@ public class AtlantischeGidsImporter {
     }
     if (wetgeving.geography != null) {
       for (String keyword : wetgeving.geography) {
-        legislation.addPlaceKeyword(keywordRefMap.get(keyword));
+        legislation.addPlaceKeyword(keywordDocRefMap.get(keyword));
       }
     }
     if (wetgeving.keywords != null) {
       for (String keyword : wetgeving.keywords) {
-        legislation.addGroupKeyword(keywordRefMap.get(keyword));
+        legislation.addGroupKeyword(keywordDocRefMap.get(keyword));
       }
     }
     if (wetgeving.keywords_extra != null) {
       for (String keyword : wetgeving.keywords_extra) {
-        legislation.addOtherKeyword(keywordRefMap.get(keyword));
+        legislation.addOtherKeyword(keywordDocRefMap.get(keyword));
       }
     }
     if (wetgeving.persons != null) {
@@ -492,12 +506,12 @@ public class AtlantischeGidsImporter {
     archive.setScope(archiefmat.scope);
     if (archiefmat.geography != null) {
       for (String keyword : archiefmat.geography) {
-        archive.addPlaceKeyword(keywordRefMap.get(keyword));
+        archive.addPlaceKeyword(keywordDocRefMap.get(keyword));
       }
     }
     if (archiefmat.keywords != null) {
       for (String keyword : archiefmat.keywords) {
-        archive.addSubjectKeyword(keywordRefMap.get(keyword));
+        archive.addSubjectKeyword(keywordDocRefMap.get(keyword));
       }
     }
     if (archiefmat.persons != null) {
@@ -647,12 +661,12 @@ public class AtlantischeGidsImporter {
     }
     if (creator.geography != null) {
       for (String keyword : creator.geography) {
-        archiver.addPlaceKeyword(keywordRefMap.get(keyword));
+        archiver.addPlaceKeyword(keywordDocRefMap.get(keyword));
       }
     }
     if (creator.keywords != null) {
       for (String keyword : creator.keywords) {
-        archiver.addSubjectKeyword(keywordRefMap.get(keyword));
+        archiver.addSubjectKeyword(keywordDocRefMap.get(keyword));
       }
     }
     if (creator.persons != null) {
