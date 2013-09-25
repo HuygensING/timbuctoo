@@ -27,6 +27,7 @@
     <module>repository-dev-config-war</module>
     <module>repository-test-config-war</module>
     <module>repository-prod-config-war</module>
+    <module>repository-tools-config</module>
   </modules>
   
   <properties>
