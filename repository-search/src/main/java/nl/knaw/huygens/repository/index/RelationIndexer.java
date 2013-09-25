@@ -70,16 +70,17 @@ class RelationIndexer implements DocumentIndexer<Relation> {
   private void doAdd(String id, RelationType relationType, Reference sourceRef, Reference targetRef) throws SolrServerException, IOException {
     SolrInputDocument solrDoc = new SolrInputDocument();
     solrDoc.addField("id", id + relationType.getId());
-    solrDoc.addField("dynamic_s_type_id", relationType.getId());
-    solrDoc.addField("dynamic_s_type_name", relationType.getRelTypeName());
-    Document sourceDoc = getDocument(sourceRef);
-    solrDoc.addField("dynamic_s_source_type", sourceRef.getType());
-    solrDoc.addField("dynamic_s_source_id", sourceRef.getId());
-    solrDoc.addField("dynamic_s_source_name", sourceDoc.getDisplayName());
+    // relation type
+    solrDoc.addField("dynamic_k_type_id", relationType.getId());
+    solrDoc.addField("dynamic_k_type_name", relationType.getRelTypeName());
+    // source document
+    solrDoc.addField("dynamic_k_source_type", sourceRef.getType());
+    solrDoc.addField("dynamic_k_source_id", sourceRef.getId());
+    // target document
     Document targetDoc = getDocument(targetRef);
-    solrDoc.addField("dynamic_s_target_type", targetRef.getType());
-    solrDoc.addField("dynamic_s_target_id", targetRef.getId());
-    solrDoc.addField("dynamic_s_target_name", targetDoc.getDisplayName());
+    solrDoc.addField("dynamic_k_target_type", targetRef.getType());
+    solrDoc.addField("dynamic_k_target_id", targetRef.getId());
+    solrDoc.addField("dynamic_k_target_name", targetDoc.getDisplayName());
     server.add(CORE, solrDoc);
   }
 
