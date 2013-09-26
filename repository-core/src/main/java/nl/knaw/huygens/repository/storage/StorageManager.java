@@ -58,7 +58,7 @@ public class StorageManager {
   // Test-only!
   protected StorageManager(VariationStorage storage, Set<String> documentTypes, Broker broker, DocTypeRegistry registry, PersistenceWrapper persistenceWrapper) {
     docTypeRegistry = registry;
-    producer = null;
+    producer = setupProducer(broker);
     this.documentTypes = documentTypes;
     this.storage = storage;
     this.persistenceWrapper = persistenceWrapper;
@@ -158,16 +158,46 @@ public class StorageManager {
     }
   }
 
-  public <T extends Document> void addDocument(Class<T> type, T doc, boolean isComplete) throws IOException {
+  /* A bit of code duplication, but I think it is more readable than calling this method from addDocument and then persisting it.
+   * This code is needed, because of issue #1774 in Redmine. It contains the question if the persistent identifier should be added autmaticallly. 
+   */
+  public <T extends Document> void addDocumentWithoutPersisting(Class<T> type, T doc, boolean isComplete) throws IOException {
     storage.addItem(type, doc);
-    persistDocumentVersion(type, doc);
     if (DomainDocument.class.isAssignableFrom(type) && isComplete) {
       sendIndexMessage(ActionType.INDEX_ADD, docTypeRegistry.getINameForType(type), doc.getId());
     }
   }
 
+  /**
+   * A convenience method for ${@code addDocument(type, doc, true)}
+   * @param type
+   * @param doc
+   * @throws IOException
+   */
   public <T extends Document> void addDocument(Class<T> type, T doc) throws IOException {
     addDocument(type, doc, true);
+  }
+
+  /**
+   * Stores an item into the database. When no exception is thrown and the document is of the type DomainDocument, the document is persisted. 
+   * If the boolean isComplete is true the document will be indexed as well.
+   * 
+   * @param type should be a DomainDocument
+   * @param doc should be of a the type used in type.
+   * @param isComplete marks if the document contains all it's references and relations, 
+   * when this boolean is true the document will be indexed
+   * @throws IOException when thrown by storage
+   */
+  public <T extends Document> void addDocument(Class<T> type, T doc, boolean isComplete) throws IOException {
+    storage.addItem(type, doc);
+
+    if (DomainDocument.class.isAssignableFrom(type)) {
+      persistDocumentVersion(type, doc);
+
+      if (isComplete) {
+        sendIndexMessage(ActionType.INDEX_ADD, docTypeRegistry.getINameForType(type), doc.getId());
+      }
+    }
   }
 
   private <T extends Document> void persistDocumentVersion(Class<T> type, T doc) {
@@ -182,16 +212,24 @@ public class StorageManager {
     }
   }
 
+  public <T extends Document> void modifyDocumentWithoutPersisting(Class<T> type, T doc) throws IOException {
+    storage.updateItem(type, doc.getId(), doc);
+    if (DomainDocument.class.isAssignableFrom(type)) {
+      sendIndexMessage(ActionType.INDEX_MOD, docTypeRegistry.getINameForType(type), doc.getId());
+    }
+  }
+
   public <T extends Document> void modifyDocument(Class<T> type, T doc) throws IOException {
     storage.updateItem(type, doc.getId(), doc);
-    persistDocumentVersion(type, doc);
     if (DomainDocument.class.isAssignableFrom(type)) {
+      persistDocumentVersion(type, doc);
       sendIndexMessage(ActionType.INDEX_MOD, docTypeRegistry.getINameForType(type), doc.getId());
     }
   }
 
   public <T extends Document> void removeDocument(Class<T> type, T doc) throws IOException {
     storage.deleteItem(type, doc.getId(), doc.getLastChange());
+    //TODO do something with the PID.
     if (DomainDocument.class.isAssignableFrom(type)) {
       sendIndexMessage(ActionType.INDEX_DEL, docTypeRegistry.getINameForType(type), doc.getId());
     }
