@@ -55,7 +55,7 @@ import com.google.inject.Injector;
  * Note that the Mongo database and the Solr index are built from scratch, any existing data is deleted.
  * Future versions of this importer must use a more subtle approach.
  */
-public class AtlantischeGidsImporter {
+public class AtlantischeGidsImporter extends DefaultImporter {
 
   public static void main(String[] args) throws Exception {
 
@@ -90,8 +90,7 @@ public class AtlantischeGidsImporter {
 
       DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
       RelationManager relationManager = new RelationManager(registry, storageManager);
-      DataPoster poster = new LocalDataPoster(storageManager);
-      new AtlantischeGidsImporter(registry, relationManager, poster, importDirName).importAll();
+      new AtlantischeGidsImporter(registry, relationManager, storageManager, importDirName).importAll();
 
       storageManager.ensureIndices();
 
@@ -128,9 +127,7 @@ public class AtlantischeGidsImporter {
   private static final String[] JSON_EXTENSION = { "json" };
 
   private final ObjectMapper objectMapper;
-  private final DocTypeRegistry docTypeRegistry;
   private final RelationManager relationManager;
-  private final DataPoster dataPoster;
   private final File inputDir;
 
   private final Graph graph = new Graph();
@@ -139,44 +136,16 @@ public class AtlantischeGidsImporter {
   private Map<String, Reference> keywordRefMap = Maps.newHashMap();
   private Map<String, DocumentRef> personRefMap;
   private Map<String, DocumentRef> wetgevingRefMap;
-  private int errors;
 
   private Reference isCreatorRef;
 
-  public AtlantischeGidsImporter(DocTypeRegistry registry, RelationManager relationManager, DataPoster poster, String inputDirName) {
+  public AtlantischeGidsImporter(DocTypeRegistry registry, RelationManager relationManager, StorageManager storageManager, String inputDirName) {
+    super(registry, storageManager);
     objectMapper = new ObjectMapper();
-    docTypeRegistry = registry;
     this.relationManager = relationManager;
-    dataPoster = poster;
     inputDir = new File(inputDirName);
     docRefMap = Maps.newHashMap();
-    errors = 0;
     System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());
-  }
-
-  private <T extends Document> DocumentRef newDocumentRef(Class<T> type, T document) {
-    String itype = docTypeRegistry.getINameForType(type);
-    String xtype = docTypeRegistry.getXNameForType(type);
-    return new DocumentRef(itype, xtype, document.getId(), document.getDisplayName());
-  }
-
-  private <T extends Document> DocumentRef newDocumentRef(Class<T> type, String id) {
-    String itype = docTypeRegistry.getINameForType(type);
-    String xtype = docTypeRegistry.getXNameForType(type);
-    return new DocumentRef(itype, xtype, id, null);
-  }
-
-  private String prevMessage;
-
-  private void handleError(String format, Object... args) {
-    errors++;
-    String message = String.format(format, args);
-    if (!message.equals(prevMessage)) {
-      System.err.print("## ");
-      System.err.printf(message);
-      System.err.println();
-      prevMessage = message;
-    }
   }
 
   private <T> T readJsonValue(File file, Class<T> valueType) throws Exception {
@@ -241,16 +210,14 @@ public class AtlantischeGidsImporter {
     System.out.printf("%n.. 'creator' -- pass 2%n");
     resolveArchiverRefs(archiverIds);
 
-    if (errors > 0) {
-      System.err.printf("%n## Error count = %d%n", errors);
-    }
+    displayErrorSummary();
   }
 
   // --- relations -----------------------------------------------------
 
   private void importRelationTypes() {
     RelationType type = new RelationType("is_creator_of", ATLGArchiver.class, ATLGArchive.class);
-    dataPoster.addDocument(RelationType.class, type, true);
+    addDocument(RelationType.class, type, true);
     isCreatorRef = new Reference(RelationType.class, type.getId());
   }
 
@@ -260,7 +227,7 @@ public class AtlantischeGidsImporter {
       RelationBuilder builder = relationManager.getBuilder();
       Relation relation = builder.type(relTypeRef).source(sourceRef).target(targetRef).build();
       if (relation != null) {
-        dataPoster.addDocument(Relation.class, relation, true);
+        addDocument(Relation.class, relation, true);
       }
     }
   }
@@ -278,7 +245,7 @@ public class AtlantischeGidsImporter {
         System.err.printf("## [%s] Duplicate keyword id %s%n", KEYWORD_FILE, jsonId);
       } else {
         ATLGKeyword keyword = convert(xkeyword);
-        String storedId = dataPoster.addDocument(ATLGKeyword.class, keyword, true);
+        String storedId = addDocument(ATLGKeyword.class, keyword, true);
         keywordRefMap.put(jsonId, new Reference(ATLGKeyword.class, storedId));
         keywordDocRefMap.put(jsonId, newDocumentRef(ATLGKeyword.class, keyword));
       }
@@ -323,7 +290,7 @@ public class AtlantischeGidsImporter {
         handleError("[%s] Duplicate person id %s", PERSON_FILE, id);
       } else {
         ATLGPerson person = convert(xperson);
-        dataPoster.addDocument(ATLGPerson.class, person, true);
+        addDocument(ATLGPerson.class, person, true);
         refs.put(id, newDocumentRef(ATLGPerson.class, person));
       }
     }
@@ -376,7 +343,7 @@ public class AtlantischeGidsImporter {
           handleError("[%s] Duplicate wetgeving id %s", file.getName(), id);
         } else {
           ATLGLegislation legislation = convert(wetgeving);
-          dataPoster.addDocument(ATLGLegislation.class, legislation, true);
+          addDocument(ATLGLegislation.class, legislation, true);
           refs.put(id, newDocumentRef(ATLGLegislation.class, legislation));
         }
       }
@@ -453,7 +420,7 @@ public class AtlantischeGidsImporter {
           handleError("[%s] Duplicate entry %s", file.getName(), key);
         } else {
           ATLGArchive archive = convert(object);
-          dataPoster.addDocument(ATLGArchive.class, archive, false);
+          addDocument(ATLGArchive.class, archive, false);
           docRefMap.put(key, newDocumentRef(ATLGArchive.class, archive));
           ids.add(archive.getId());
           tokens.increment(archive.getIndexedRefCode());
@@ -555,7 +522,7 @@ public class AtlantischeGidsImporter {
 
   private void resolveArchiveRefs(List<String> archiveIds, Graph newGraph) throws Exception {
     for (String archiveId : archiveIds) {
-      ATLGArchive archive = dataPoster.getDocument(ATLGArchive.class, archiveId);
+      ATLGArchive archive = getDocument(ATLGArchive.class, archiveId);
       String filename = archive.getOrigFilename();
       List<DocumentRef> oldRefs = archive.getOverheadArchives();
       if (oldRefs != null && oldRefs.size() != 0) {
@@ -583,7 +550,7 @@ public class AtlantischeGidsImporter {
         }
       }
 
-      dataPoster.modDocument(ATLGArchive.class, archive);
+      modDocument(ATLGArchive.class, archive);
     }
   }
 
@@ -623,7 +590,7 @@ public class AtlantischeGidsImporter {
           handleError("[%s] Duplicate entry %s", file.getName(), key);
         } else {
           ATLGArchiver archiver = convert(creator);
-          dataPoster.addDocument(ATLGArchiver.class, archiver, false);
+          addDocument(ATLGArchiver.class, archiver, false);
           docRefMap.put(key, newDocumentRef(ATLGArchiver.class, archiver));
           // this looks awfully smart: this creator has created a number of archives
           // what remains is to create a new graph with references converted
@@ -703,7 +670,7 @@ public class AtlantischeGidsImporter {
 
   private void resolveArchiverRefs(List<String> archiverIds) throws Exception {
     for (String id : archiverIds) {
-      ATLGArchiver archiver = dataPoster.getDocument(ATLGArchiver.class, id);
+      ATLGArchiver archiver = getDocument(ATLGArchiver.class, id);
       Reference sourceRef = new Reference(ATLGArchiver.class, id);
       String filename = archiver.getOrigFilename();
       List<DocumentRef> oldRefs = archiver.getRelatedArchives();
@@ -713,14 +680,14 @@ public class AtlantischeGidsImporter {
         for (DocumentRef archiveRef : newRefs) {
           Reference targetRef = new Reference(ATLGArchive.class, archiveRef.getId());
           Relation relation = new Relation(sourceRef, isCreatorRef, targetRef);
-          dataPoster.addDocument(Relation.class, relation, true);
+          addDocument(Relation.class, relation, true);
         }
       }
       oldRefs = archiver.getRelatedArchivers();
       if (oldRefs != null && oldRefs.size() != 0) {
         archiver.setRelatedArchivers(resolveRefs(filename, "related archivers", oldRefs));
       }
-      dataPoster.modDocument(ATLGArchiver.class, archiver);
+      modDocument(ATLGArchiver.class, archiver);
     }
   }
 

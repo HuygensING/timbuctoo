@@ -66,8 +66,7 @@ public class BulkImporter {
         languageImporter.handleFile("testdata/iso-639-2-language-codes.txt", 5, false);
         DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
         RelationManager relationManager = new RelationManager(registry, storageManager);
-        DataPoster poster = new LocalDataPoster(storageManager);
-        new AtlantischeGidsImporter(registry, relationManager, poster, "../AtlantischeGids/work/").importAll();
+        new AtlantischeGidsImporter(registry, relationManager, storageManager, "../AtlantischeGids/work/").importAll();
       } else {
         String resourceDir = "src/main/resources/";
         importer.importData(resourceDir + "DWCPlaceMapping.properties", DWCPlace.class);
