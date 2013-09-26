@@ -29,7 +29,7 @@ public class LocalDataPoster implements DataPoster {
   @Override
   public <T extends Document> String addDocument(Class<T> type, T document, boolean isComplete) {
     try {
-      storageManager.addDocument(type, document, isComplete);
+      storageManager.addDocumentWithoutPersisting(type, document, isComplete);
       return document.getId();
     } catch (IOException e) {
       LOG.error("Failed to modify {}; {}", document.getDisplayName(), e.getMessage());
@@ -40,7 +40,7 @@ public class LocalDataPoster implements DataPoster {
   @Override
   public <T extends Document> T modDocument(Class<T> type, T document) {
     try {
-      storageManager.modifyDocument(type, document);
+      storageManager.modifyDocumentWithoutPersisting(type, document);
       return document;
     } catch (IOException e) {
       LOG.error("Failed to modify {}; {}", document.getDisplayName(), e.getMessage());

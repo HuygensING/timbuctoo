@@ -10,6 +10,8 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -19,20 +21,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.jms.JMSException;
+
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.managers.model.MultipleReferringDoc;
 import nl.knaw.huygens.repository.managers.model.ReferredDoc;
 import nl.knaw.huygens.repository.managers.model.ReferringDoc;
+import nl.knaw.huygens.repository.messages.ActionType;
 import nl.knaw.huygens.repository.messages.Broker;
+import nl.knaw.huygens.repository.messages.Producer;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.persistence.PersistenceWrapper;
+import nl.knaw.huygens.repository.storage.mongo.model.TestSystemDocument;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.repository.variation.model.projecta.OtherDoc;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.verification.VerificationMode;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -45,15 +54,108 @@ public class StorageManagerTest {
   private Broker broker;
   private DocTypeRegistry docTypeRegistry;
   private PersistenceWrapper persistenceWrapper;
+  private Producer producer;
 
   @Before
-  public void SetUp() {
+  public void SetUp() throws JMSException {
     storage = mock(VariationStorage.class);
     documentTypes = new HashSet<String>();
     broker = mock(Broker.class);
+    producer = mock(Producer.class);
+    when(broker.newProducer(anyString(), anyString())).thenReturn(producer);
     docTypeRegistry = mock(DocTypeRegistry.class);
     persistenceWrapper = mock(PersistenceWrapper.class);
     instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceWrapper);
+  }
+
+  @Test
+  public void testAddDocumentDomainDocument() throws IOException, PersistenceException, JMSException {
+    String id = "GTD000000001";
+    GeneralTestDoc doc = new GeneralTestDoc(id);
+    Class<GeneralTestDoc> type = GeneralTestDoc.class;
+    when(docTypeRegistry.getINameForType(type)).thenReturn("generaltestdoc");
+
+    instance.addDocument(type, doc);
+
+    verifyAddDocument(type, doc, times(1), times(1), times(1));
+  }
+
+  @Test
+  public void testAddDocumentDomainDocumentInComplete() throws JMSException, PersistenceException, IOException {
+    String id = "GTD000000001";
+    GeneralTestDoc doc = new GeneralTestDoc(id);
+    Class<GeneralTestDoc> type = GeneralTestDoc.class;
+    when(docTypeRegistry.getINameForType(type)).thenReturn("generaltestdoc");
+
+    instance.addDocument(type, doc, false);
+
+    verifyAddDocument(type, doc, times(1), times(1), never());
+  }
+
+  @Test
+  public void testAddDocumentSystemDocument() throws IOException, PersistenceException, JMSException {
+    TestSystemDocument doc = new TestSystemDocument();
+    doc.setId("TSD0000000001");
+
+    Class<TestSystemDocument> type = TestSystemDocument.class;
+
+    instance.addDocument(type, doc);
+
+    verifyAddDocument(type, doc, times(1), never(), never());
+  }
+
+  @Test(expected = IOException.class)
+  public void testAddDocumentStorageException() throws IOException, PersistenceException {
+    TestConcreteDoc doc = new TestConcreteDoc();
+    doc.name = "test";
+
+    Class<TestConcreteDoc> type = TestConcreteDoc.class;
+    doThrow(IOException.class).when(storage).addItem(type, doc);
+
+    instance.addDocument(type, doc);
+  }
+
+  @Test
+  public void testAddDocumentPersistentException() throws IOException, PersistenceException, JMSException {
+    TestConcreteDoc doc = new TestConcreteDoc();
+    doc.name = "test";
+
+    Class<TestConcreteDoc> type = TestConcreteDoc.class;
+    doThrow(PersistenceException.class).when(persistenceWrapper).persistObject(anyString(), anyString());
+
+    instance.addDocument(type, doc);
+
+    verifyAddDocument(type, doc, times(1), times(1), times(1));
+  }
+
+  protected <T extends Document> void verifyAddDocument(Class<T> type, T doc, VerificationMode storageVerification, VerificationMode persistenceVerification, VerificationMode indexingVerification)
+      throws IOException, PersistenceException, JMSException {
+
+    verify(storage, storageVerification).addItem(type, doc);
+    verify(persistenceWrapper, persistenceVerification).persistObject(anyString(), anyString());
+    verify(producer, indexingVerification).send(any(ActionType.class), anyString(), anyString());
+  }
+
+  @Test
+  public void testAddDocumentWithoutPersistingCompleteDocument() throws IOException, PersistenceException, JMSException {
+    TestConcreteDoc doc = new TestConcreteDoc();
+    doc.name = "test";
+    Class<TestConcreteDoc> type = TestConcreteDoc.class;
+
+    instance.addDocumentWithoutPersisting(type, doc, true);
+
+    verifyAddDocument(type, doc, times(1), never(), times(1));
+  }
+
+  @Test
+  public void testAddDocumentWithoutPersistingInCompleteDocument() throws IOException, PersistenceException, JMSException {
+    TestConcreteDoc doc = new TestConcreteDoc();
+    doc.name = "test";
+    Class<TestConcreteDoc> type = TestConcreteDoc.class;
+
+    instance.addDocumentWithoutPersisting(type, doc, false);
+
+    verifyAddDocument(type, doc, times(1), never(), never());
   }
 
   @Test
@@ -177,51 +279,28 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testAddDocumentDocumentAdded() throws IOException {
-    TestConcreteDoc doc = new TestConcreteDoc();
-    doc.name = "test";
-
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
-    instance.addDocument(type, doc);
-
-    verify(storage).addItem(type, doc);
-  }
-
-  @Test(expected = IOException.class)
-  public void testAddDocumentStorageException() throws IOException {
-    TestConcreteDoc doc = new TestConcreteDoc();
-    doc.name = "test";
-
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    doThrow(IOException.class).when(storage).addItem(type, doc);
-
-    instance.addDocument(type, doc);
-  }
-
-  @Test
-  public void testAddDocumentPersistentException() throws IOException, PersistenceException {
-    TestConcreteDoc doc = new TestConcreteDoc();
-    doc.name = "test";
-
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    doThrow(PersistenceException.class).when(persistenceWrapper).persistObject(anyString(), anyString());
-
-    instance.addDocument(type, doc);
-
-    verify(storage).addItem(type, doc);
-  }
-
-  @Test
-  public void testModifyDocumentDocumentModified() throws IOException {
+  public void testModifyDocumentDomainDocumentModified() throws IOException, PersistenceException, JMSException {
     TestConcreteDoc expectedDoc = new TestConcreteDoc();
     expectedDoc.name = "test";
-    expectedDoc.setId("TCD0000000001");
+    String id = "TCD0000000001";
+    expectedDoc.setId(id);
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
     instance.modifyDocument(type, expectedDoc);
-    verify(storage).updateItem(type, expectedDoc.getId(), expectedDoc);
+    verifyModifyDocument(type, expectedDoc, times(1), times(1), times(1));
+  }
+
+  @Test
+  public void testModifyDocumentSystemDocumentModified() throws IOException, PersistenceException, JMSException {
+    String id = "TSD0000000001";
+    TestSystemDocument expectedDoc = new TestSystemDocument();
+    expectedDoc.setId(id);
+
+    Class<TestSystemDocument> type = TestSystemDocument.class;
+
+    instance.modifyDocument(type, expectedDoc);
+    verifyModifyDocument(type, expectedDoc, times(1), never(), never());
   }
 
   @Test(expected = IOException.class)
@@ -237,7 +316,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testModifyDocumentPersistentException() throws IOException, PersistenceException {
+  public void testModifyDocumentPersistentException() throws IOException, PersistenceException, JMSException {
     TestConcreteDoc expectedDoc = new TestConcreteDoc();
     expectedDoc.name = "test";
     expectedDoc.setId("TCD0000000001");
@@ -245,20 +324,60 @@ public class StorageManagerTest {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
     instance.modifyDocument(type, expectedDoc);
-    verify(storage).updateItem(type, expectedDoc.getId(), expectedDoc);
+    verifyModifyDocument(type, expectedDoc, times(1), times(1), times(1));
+  }
+
+  protected <T extends Document> void verifyModifyDocument(Class<T> type, T expectedDoc, VerificationMode storageVerification, VerificationMode persistenceVerification,
+      VerificationMode indexVerification) throws IOException, PersistenceException, JMSException {
+
+    verify(storage, storageVerification).updateItem(type, expectedDoc.getId(), expectedDoc);
+    verify(persistenceWrapper, persistenceVerification).persistObject(anyString(), anyString());
+    verify(producer, indexVerification).send(any(ActionType.class), anyString(), anyString());
   }
 
   @Test
-  public void testRemoveDocumentDocumentRemoved() throws IOException {
-    TestConcreteDoc inputDoc = new TestConcreteDoc();
-    inputDoc.name = "test";
-    inputDoc.setId("TCD0000000001");
-    inputDoc.setDeleted(true);
+  public void testModifyDocumentWithoutPersisitingDomainDocument() throws IOException, PersistenceException, JMSException {
+    TestConcreteDoc expectedDoc = new TestConcreteDoc();
+    expectedDoc.name = "test";
+    String id = "TCD0000000001";
+    expectedDoc.setId(id);
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
+    instance.modifyDocumentWithoutPersisting(type, expectedDoc);
+    verifyModifyDocument(type, expectedDoc, times(1), never(), times(1));
+  }
+
+  @Test
+  public void testRemoveDocumentDomainDocumentRemoved() throws IOException, JMSException {
+    TestConcreteDoc inputDoc = new TestConcreteDoc();
+    inputDoc.name = "test";
+    String id = "TCD0000000001";
+    inputDoc.setId(id);
+    inputDoc.setDeleted(true);
+
+    Class<TestConcreteDoc> type = TestConcreteDoc.class;
+    String typeString = "testconcretedoc";
+
+    when(docTypeRegistry.getINameForType(Mockito.<Class<? extends Document>> any())).thenReturn(typeString);
+
     instance.removeDocument(type, inputDoc);
     verify(storage).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
+    verify(producer).send(ActionType.INDEX_DEL, typeString, id);
+  }
+
+  @Test
+  public void testRemoveDocumentSystemDocumentRemoved() throws IOException, JMSException {
+    TestSystemDocument inputDoc = new TestSystemDocument();
+    String id = "TCD0000000001";
+    inputDoc.setId(id);
+    inputDoc.setDeleted(true);
+
+    Class<TestSystemDocument> type = TestSystemDocument.class;
+
+    instance.removeDocument(type, inputDoc);
+    verify(storage, times(1)).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
+    verify(producer, never()).send(any(ActionType.class), anyString(), anyString());
   }
 
   @Test(expected = IOException.class)
