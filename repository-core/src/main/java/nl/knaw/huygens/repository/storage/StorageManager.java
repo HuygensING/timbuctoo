@@ -99,6 +99,7 @@ public class StorageManager {
       try {
         producer.send(action, type, id);
       } catch (JMSException e) {
+        LOG.error("Error while sending message {} - {} - {}\n{}", action, type, id, e.getMessage());
         throw new RuntimeException(e);
       }
     }
@@ -240,6 +241,33 @@ public class StorageManager {
 
   public int removeSearchResultsBefore(Date date) {
     return storage.removeByDate(SearchResult.class, SearchResult.DATE_FIELD, date);
+  }
+
+  /**
+   * Removes all the objects of type <T>, that have no persistent identifier.
+   * The idea behind this method is that {@code DomainDocument}s without persistent identifier are not validated yet.
+   * After a bulk import non of the imported documents will have a persistent identifier, until a user has agreed with the imported collection.  
+   * 
+   * @param <T> extends {@code DomainDocument}, because {@code SystemDocument}s have no persistent identifiers.
+   * @param type the type all of the objects should removed permanently from.
+   */
+  public <T extends DomainDocument> void removePermanently(Class<T> type) {
+    Collection<String> ids = storage.getAllIdsWithOutPIDOfType(type);
+
+    String typeString = docTypeRegistry.getINameForType(type);
+
+    for (String id : ids) {
+      sendIndexMessage(ActionType.INDEX_DEL, typeString, id);
+    }
+
+    try {
+      storage.removePermanently(type, ids);
+    } finally {
+      //roll back
+      for (String id : ids) {
+        sendIndexMessage(ActionType.INDEX_ADD, typeString, id);
+      }
+    }
   }
 
   public <T extends Document> StorageIterator<T> getByMultipleIds(Class<T> type, List<String> ids) {
