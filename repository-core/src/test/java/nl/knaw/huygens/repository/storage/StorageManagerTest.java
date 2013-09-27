@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import nl.knaw.huygens.repository.messages.ActionType;
 import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.messages.Producer;
 import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.persistence.PersistenceWrapper;
 import nl.knaw.huygens.repository.storage.mongo.model.TestSystemDocument;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
@@ -390,6 +392,95 @@ public class StorageManagerTest {
     doThrow(IOException.class).when(storage).deleteItem(type, doc.getId(), doc.getLastChange());
 
     instance.removeDocument(type, doc);
+  }
+
+  @Test
+  public void testRemovePermanently() throws JMSException {
+    String id1 = "PER0000000001";
+    String id2 = "PER0000000002";
+    String id3 = "PER0000000005";
+    Class<GeneralTestDoc> type = GeneralTestDoc.class;
+    String typeString = "generaltestdoc";
+
+    ArrayList<String> ids = Lists.newArrayList(id1, id2, id3);
+    when(storage.getAllIdsWithOutPIDOfType(type)).thenReturn(ids);
+    when(docTypeRegistry.getINameForType(type)).thenReturn(typeString);
+
+    instance.removePermanently(type);
+
+    ActionType action = ActionType.INDEX_DEL;
+    verify(producer, times(1)).send(action, typeString, id1);
+    verify(producer, times(1)).send(action, typeString, id2);
+    verify(producer, times(1)).send(action, typeString, id3);
+
+    verify(storage, times(1)).removePermanently(type, ids);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testRemovePermanentlyJMSException() throws JMSException {
+    String id1 = "PER0000000001";
+    String id2 = "PER0000000002";
+    String id3 = "PER0000000005";
+    Class<GeneralTestDoc> type = GeneralTestDoc.class;
+    String typeString = "generaltestdoc";
+
+    ArrayList<String> ids = Lists.newArrayList(id1, id2, id3);
+    when(storage.getAllIdsWithOutPIDOfType(type)).thenReturn(ids);
+    when(docTypeRegistry.getINameForType(type)).thenReturn(typeString);
+    doThrow(JMSException.class).when(producer).send(any(ActionType.class), anyString(), anyString());
+
+    try {
+      instance.removePermanently(type);
+    } finally {
+      verify(producer, times(1)).send(ActionType.INDEX_DEL, typeString, id1);
+      verify(storage, never()).removePermanently(type, ids);
+    }
+
+  }
+
+  @Test(expected = IOException.class)
+  public void testRemovePermanentlyStorageDeleteException() throws JMSException {
+    String id1 = "PER0000000001";
+    String id2 = "PER0000000002";
+    String id3 = "PER0000000005";
+    Class<GeneralTestDoc> type = GeneralTestDoc.class;
+    String typeString = "generaltestdoc";
+
+    ArrayList<String> ids = Lists.newArrayList(id1, id2, id3);
+
+    //doThrow(IOException.class).when(storage).getAllIdsWithOutPIDOfType(type);
+    when(storage.getAllIdsWithOutPIDOfType(type)).thenReturn(ids);
+    doThrow(IOException.class).when(storage).removePermanently(type, ids);
+    when(docTypeRegistry.getINameForType(type)).thenReturn(typeString);
+
+    try {
+      instance.removePermanently(type);
+    } finally {
+      ActionType delete = ActionType.INDEX_DEL;
+      verify(producer, times(1)).send(delete, typeString, id1);
+      verify(producer, times(1)).send(delete, typeString, id2);
+      verify(producer, times(1)).send(delete, typeString, id3);
+
+      verify(storage, times(1)).removePermanently(type, ids);
+
+      // Verify the roll back
+      ActionType add = ActionType.INDEX_ADD;
+      verify(producer, times(1)).send(add, typeString, id1);
+      verify(producer, times(1)).send(add, typeString, id2);
+      verify(producer, times(1)).send(add, typeString, id3);
+    }
+  }
+
+  @Test(expected = IOException.class)
+  public void testRemovePermanentlyStorageGetException() throws JMSException {
+    doThrow(IOException.class).when(storage).getAllIdsWithOutPIDOfType(GeneralTestDoc.class);
+
+    try {
+      instance.removePermanently(GeneralTestDoc.class);
+    } finally {
+      verify(producer, never()).send(any(ActionType.class), anyString(), anyString());
+      verify(storage, never()).removePermanently(Mockito.<Class<? extends DomainDocument>> any(), Mockito.<List<String>> any());
+    }
   }
 
   @Test

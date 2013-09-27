@@ -405,4 +405,14 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     return (int) col.count(query);
   }
 
+  public <T extends DomainDocument> Collection<String> getAllIdsWithOutPIDOfType(Class<T> type) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public <T extends DomainDocument> void removePermanently(Class<T> type, Collection<String> ids) {
+    // TODO Auto-generated method stub
+  }
+
 }

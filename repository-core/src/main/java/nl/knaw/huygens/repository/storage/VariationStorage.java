@@ -1,6 +1,7 @@
 package nl.knaw.huygens.repository.storage;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 import nl.knaw.huygens.repository.model.Document;
@@ -29,4 +30,18 @@ public interface VariationStorage extends BasicStorage {
    */
   int countRelations(Relation relation);
 
+  /**
+   * Returns all the ids of objects of type <T>, that are not persisted.
+   * @param type
+   * @return
+   */
+  <T extends DomainDocument> Collection<String> getAllIdsWithOutPIDOfType(Class<T> type);
+
+  /**
+   * Permanently removes the objects from the database.
+   * 
+   * @param type 
+   * @param ids
+   */
+  <T extends DomainDocument> void removePermanently(Class<T> type, Collection<String> ids);
 }
