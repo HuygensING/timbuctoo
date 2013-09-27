@@ -11,8 +11,8 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.IndexManager;
 import nl.knaw.huygens.repository.index.IndexService;
 import nl.knaw.huygens.repository.messages.Broker;
-import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DocumentRef;
+import nl.knaw.huygens.repository.model.DomainDocument;
 import nl.knaw.huygens.repository.model.Reference;
 import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.model.RelationType;
@@ -116,10 +116,9 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       if (broker != null) {
         broker.close();
       }
+      // If the application is not explicitly closed a finalizer thread of Guice keeps running.
       System.exit(0);
     }
-    //If the application is not explicitly closed a finalizer thread of Guice keeps running.
-    System.exit(0);
   }
 
   // -------------------------------------------------------------------
@@ -134,10 +133,14 @@ public class AtlantischeGidsImporter extends DefaultImporter {
   private final Map<DocumentRef, DocumentRef> docRefMap;
   private Map<String, DocumentRef> keywordDocRefMap = Maps.newHashMap();
   private Map<String, Reference> keywordRefMap = Maps.newHashMap();
-  private Map<String, DocumentRef> personRefMap;
+  private Map<String, DocumentRef> personDocRefMap = Maps.newHashMap();
+  private Map<String, Reference> personRefMap = Maps.newHashMap();
   private Map<String, DocumentRef> wetgevingRefMap;
 
   private Reference isCreatorRef;
+  private Reference hasKeywordRef;
+  private Reference hasPersonRef;
+  private Reference hasPlaceRef;
 
   public AtlantischeGidsImporter(DocTypeRegistry registry, RelationManager relationManager, StorageManager storageManager, String inputDirName) {
     super(registry, storageManager);
@@ -187,7 +190,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     System.out.printf("Number of entries = %d%n", keywordRefMap.size());
 
     System.out.printf("%n.. 'person'%n");
-    personRefMap = importPersons();
+    importPersons();
     System.out.printf("Number of entries = %d%n", personRefMap.size());
 
     System.out.printf("%n.. 'wetgeving'%n");
@@ -219,16 +222,33 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     RelationType type = new RelationType("is_creator_of", ATLGArchiver.class, ATLGArchive.class);
     addDocument(RelationType.class, type, true);
     isCreatorRef = new Reference(RelationType.class, type.getId());
+
+    type = new RelationType("has_keyword", DomainDocument.class, ATLGKeyword.class);
+    addDocument(RelationType.class, type, true);
+    hasKeywordRef = new Reference(RelationType.class, type.getId());
+
+    type = new RelationType("has_person", DomainDocument.class, ATLGPerson.class);
+    addDocument(RelationType.class, type, true);
+    hasPersonRef = new Reference(RelationType.class, type.getId());
+
+    type = new RelationType("has_place", DomainDocument.class, ATLGKeyword.class);
+    addDocument(RelationType.class, type, true);
+    hasPlaceRef = new Reference(RelationType.class, type.getId());
   }
 
-  void addRelations(Reference sourceRef, Reference relTypeRef, Class<? extends Document> type, List<DocumentRef> docRefs) {
-    for (DocumentRef docRef : docRefs) {
-      Reference targetRef = new Reference(type, docRef.getId());
-      RelationBuilder builder = relationManager.getBuilder();
-      Relation relation = builder.type(relTypeRef).source(sourceRef).target(targetRef).build();
-      if (relation != null) {
-        addDocument(Relation.class, relation, true);
+  private void addRelations(Reference sourceRef, Reference relTypeRef, Map<String, Reference> map, String[] keys) {
+    if (keys != null) {
+      for (String key : keys) {
+        addRelation(sourceRef, relTypeRef, map.get(key));
       }
+    }
+  }
+
+  private void addRelation(Reference sourceRef, Reference relTypeRef, Reference targetRef) {
+    RelationBuilder builder = relationManager.getBuilder();
+    Relation relation = builder.source(sourceRef).type(relTypeRef).target(targetRef).build();
+    if (relation != null) {
+      addDocument(Relation.class, relation, true);
     }
   }
 
@@ -281,20 +301,19 @@ public class AtlantischeGidsImporter extends DefaultImporter {
   private static final String PERSON_DIR = "keywords";
   private static final String PERSON_FILE = "persons.json";
 
-  private Map<String, DocumentRef> importPersons() throws Exception {
-    Map<String, DocumentRef> refs = Maps.newHashMap();
+  private void importPersons() throws Exception {
     File file = new File(new File(inputDir, PERSON_DIR), PERSON_FILE);
     for (XPerson xperson : readJsonValue(file, XPerson[].class)) {
-      String id = xperson._id;
-      if (refs.containsKey(id)) {
-        handleError("[%s] Duplicate person id %s", PERSON_FILE, id);
+      String jsonId = xperson._id;
+      if (personRefMap.containsKey(jsonId)) {
+        handleError("[%s] Duplicate person id %s", PERSON_FILE, jsonId);
       } else {
         ATLGPerson person = convert(xperson);
-        addDocument(ATLGPerson.class, person, true);
-        refs.put(id, newDocumentRef(ATLGPerson.class, person));
+        String storedId = addDocument(ATLGPerson.class, person, true);
+        personRefMap.put(jsonId, new Reference(ATLGPerson.class, storedId));
+        personDocRefMap.put(jsonId, newDocumentRef(ATLGPerson.class, person));
       }
     }
-    return refs;
   }
 
   private ATLGPerson convert(XPerson xperson) {
@@ -338,20 +357,22 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     for (File file : FileUtils.listFiles(directory, JSON_EXTENSION, true)) {
       for (WetgevingEntry entry : readJsonValue(file, WetgevingEntry[].class)) {
         Wetgeving wetgeving = entry.wetgeving;
-        String id = wetgeving._id;
-        if (refs.containsKey(id)) {
-          handleError("[%s] Duplicate wetgeving id %s", file.getName(), id);
+        String jsonId = wetgeving._id;
+        if (refs.containsKey(jsonId)) {
+          handleError("[%s] Duplicate wetgeving id %s", file.getName(), jsonId);
         } else {
           ATLGLegislation legislation = convert(wetgeving);
-          addDocument(ATLGLegislation.class, legislation, true);
-          refs.put(id, newDocumentRef(ATLGLegislation.class, legislation));
+          String storedId = addDocument(ATLGLegislation.class, legislation, true);
+          Reference legislationRef = new Reference(ATLGLegislation.class, storedId);
+          addLegislationRelations(legislationRef, wetgeving);
+          refs.put(jsonId, newDocumentRef(ATLGLegislation.class, legislation));
         }
       }
     }
     return refs;
   }
 
-  public ATLGLegislation convert(Wetgeving wetgeving) {
+  private ATLGLegislation convert(Wetgeving wetgeving) {
     ATLGLegislation legislation = new ATLGLegislation();
     legislation.setOrigFilename(wetgeving.orig_filename);
     legislation.setReference(wetgeving.reference);
@@ -362,24 +383,28 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       legislation.setDate1(wetgeving.dates.date1);
       legislation.setDate2(wetgeving.dates.date2);
     }
+    // delete
     if (wetgeving.geography != null) {
       for (String keyword : wetgeving.geography) {
         legislation.addPlaceKeyword(keywordDocRefMap.get(keyword));
       }
     }
+    // delete
     if (wetgeving.keywords != null) {
       for (String keyword : wetgeving.keywords) {
         legislation.addGroupKeyword(keywordDocRefMap.get(keyword));
       }
     }
+    // delete
     if (wetgeving.keywords_extra != null) {
       for (String keyword : wetgeving.keywords_extra) {
         legislation.addOtherKeyword(keywordDocRefMap.get(keyword));
       }
     }
+    // delete
     if (wetgeving.persons != null) {
       for (String keyword : wetgeving.persons) {
-        legislation.addPerson(personRefMap.get(keyword));
+        legislation.addPerson(personDocRefMap.get(keyword));
       }
     }
     legislation.setContents(wetgeving.contents);
@@ -401,6 +426,13 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     legislation.setMadeBy(wetgeving.made_by);
     legislation.setReminders(wetgeving.Aantekeningen);
     return legislation;
+  }
+
+  private void addLegislationRelations(Reference reference, Wetgeving wetgeving) {
+    addRelations(reference, hasPlaceRef, keywordRefMap, wetgeving.geography);
+    addRelations(reference, hasKeywordRef, keywordRefMap, wetgeving.keywords);
+    addRelations(reference, hasKeywordRef, keywordRefMap, wetgeving.keywords_extra);
+    addRelations(reference, hasPersonRef, personRefMap, wetgeving.persons);
   }
 
   // --- archives ------------------------------------------------------
@@ -483,7 +515,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     }
     if (archiefmat.persons != null) {
       for (String keyword : archiefmat.persons) {
-        archive.addPerson(personRefMap.get(keyword));
+        archive.addPerson(personDocRefMap.get(keyword));
       }
     }
     archive.setNotes(archiefmat.notes);
@@ -638,7 +670,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     }
     if (creator.persons != null) {
       for (String keyword : creator.persons) {
-        archiver.addPerson(personRefMap.get(keyword));
+        archiver.addPerson(personDocRefMap.get(keyword));
       }
     }
     archiver.setNotes(creator.notes);
