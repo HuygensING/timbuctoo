@@ -176,9 +176,17 @@ public class MongoStorageFacade implements VariationStorage {
     throw new UnsupportedOperationException("Method not available for this type");
   }
 
-  @Override
   public int countRelations(Relation relation) {
     return variationStorage.countRelations(relation);
+  }
+
+  public <T extends DomainDocument> Collection<String> getAllIdsWithOutPIDOfType(Class<T> type) {
+    return variationStorage.getAllIdsWithOutPIDOfType(type);
+  }
+
+  @Override
+  public <T extends DomainDocument> void removePermanently(Class<T> type, Collection<String> ids) {
+    variationStorage.removePermanently(type, ids);
   }
 
 }
