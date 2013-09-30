@@ -68,4 +68,24 @@ public class Relation extends DomainDocument {
     this.targetRef = targetRef;
   }
 
+  @Override
+  public boolean equals(Object object) {
+    if (object instanceof Relation) {
+      Relation that = (Relation) object;
+      return (this.typeRef == null ? that.typeRef == null : this.typeRef.equals(that.typeRef)) //
+          && (this.sourceRef == null ? that.sourceRef == null : this.sourceRef.equals(that.sourceRef)) //
+          && (this.targetRef == null ? that.targetRef == null : this.targetRef.equals(that.targetRef));
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = 17;
+    result = 31 * result + (typeRef == null ? 0 : typeRef.hashCode());
+    result = 31 * result + (sourceRef == null ? 0 : sourceRef.hashCode());
+    result = 31 * result + (targetRef == null ? 0 : targetRef.hashCode());
+    return result;
+  }
+
 }
