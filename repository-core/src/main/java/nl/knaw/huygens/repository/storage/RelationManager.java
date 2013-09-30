@@ -1,5 +1,6 @@
 package nl.knaw.huygens.repository.storage;
 
+import java.io.IOException;
 import java.util.List;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
@@ -57,6 +58,32 @@ public class RelationManager {
     } else {
       return Lists.newArrayList();
     }
+  }
+
+  public String storeRelation(Reference sourceRef, Reference relTypeRef, Reference targetRef) {
+    RelationType relationType = getRelationType(relTypeRef);
+    RelationBuilder builder = getBuilder().type(relTypeRef);
+    if (relationType.isSymmetric() && sourceRef.getId().compareTo(targetRef.getId()) > 0) {
+      builder.source(targetRef).target(sourceRef);
+    } else {
+      builder.source(sourceRef).target(targetRef);
+    }
+    Relation relation = builder.build();
+    if (relation != null) {
+      // if (relationType.isSymmetric()) System.out.println(relation.getDisplayName());
+      try {
+        //        if (stored.contains(relation)) {
+        //          System.out.printf("Duplicate relation %s%n", relation.getDisplayName());
+        //        } else {
+        storageManager.addDocumentWithoutPersisting(Relation.class, relation, true);
+        //          stored.add(relation);
+        return relation.getId();
+        //        }
+      } catch (IOException e) {
+        LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
+      }
+    }
+    return null;
   }
 
   public RelationBuilder getBuilder() {

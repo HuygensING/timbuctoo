@@ -28,16 +28,16 @@ public abstract class DefaultImporter {
     errors++;
     String message = String.format(format, args);
     if (!message.equals(prevMessage)) {
-      System.err.print("## ");
-      System.err.printf(message);
-      System.err.println();
+      System.out.print("## ");
+      System.out.printf(message);
+      System.out.println();
       prevMessage = message;
     }
   }
 
   protected void displayErrorSummary() {
     if (errors > 0) {
-      System.err.printf("%n## Error count = %d%n", errors);
+      System.out.printf("%n## Error count = %d%n", errors);
     }
   }
 
