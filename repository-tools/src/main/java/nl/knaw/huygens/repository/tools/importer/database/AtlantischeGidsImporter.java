@@ -130,12 +130,11 @@ public class AtlantischeGidsImporter extends DefaultImporter {
   private final File inputDir;
 
   private final Graph graph = new Graph();
-  private final Map<DocumentRef, DocumentRef> docRefMap;
-  private Map<String, DocumentRef> keywordDocRefMap = Maps.newHashMap();
-  private Map<String, Reference> keywordRefMap = Maps.newHashMap();
-  private Map<String, DocumentRef> personDocRefMap = Maps.newHashMap();
-  private Map<String, Reference> personRefMap = Maps.newHashMap();
-  private Map<String, DocumentRef> wetgevingRefMap;
+  private final Map<DocumentRef, DocumentRef> docRefMap = Maps.newHashMap();
+  private final Map<String, DocumentRef> keywordDocRefMap = Maps.newHashMap();
+  private final Map<String, Reference> keywordRefMap = Maps.newHashMap();
+  private final Map<String, DocumentRef> personDocRefMap = Maps.newHashMap();
+  private final Map<String, Reference> personRefMap = Maps.newHashMap();
 
   private Reference isCreatorRef;
   private Reference hasKeywordRef;
@@ -147,7 +146,6 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     objectMapper = new ObjectMapper();
     this.relationManager = relationManager;
     inputDir = new File(inputDirName);
-    docRefMap = Maps.newHashMap();
     System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());
   }
 
@@ -162,7 +160,6 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     return objectMapper.readValue(converted, valueType);
   }
 
-  // docRefMap
   private Graph convertGraph(Graph graph) {
     Graph result = new Graph();
     for (Vertex vertex : graph.getVertices()) {
@@ -182,35 +179,36 @@ public class AtlantischeGidsImporter extends DefaultImporter {
   }
 
   public void importAll() throws Exception {
-    System.out.printf("%n.. relation type%n");
+    System.out.printf("%n.. Relation types%n");
     importRelationTypes();
+    System.out.printf("Number of entries = 4%n");
 
-    System.out.printf("%n.. 'keyword'%n");
+    System.out.printf("%n.. Keywords%n");
     importKeywords();
     System.out.printf("Number of entries = %d%n", keywordRefMap.size());
 
-    System.out.printf("%n.. 'person'%n");
+    System.out.printf("%n.. Persons%n");
     importPersons();
     System.out.printf("Number of entries = %d%n", personRefMap.size());
 
-    System.out.printf("%n.. 'wetgeving'%n");
-    wetgevingRefMap = importWetgevings();
-    System.out.printf("Number of entries = %d%n", wetgevingRefMap.size());
+    System.out.printf("%n.. Legislation%n");
+    int n = importLegislation();
+    System.out.printf("Number of entries = %d%n", n);
 
-    System.out.printf("%n.. 'archiefmat' -- pass 1%n");
+    System.out.printf("%n.. Archives -- pass 1%n");
     List<String> archiveIds = importArchiefMats();
     System.out.printf("Number of entries = %d%n", archiveIds.size());
 
-    System.out.printf("%n.. 'creator' -- pass 1%n");
+    System.out.printf("%n.. Archivers -- pass 1%n");
     List<String> archiverIds = importCreators();
     System.out.printf("Number of entries = %d%n", archiverIds.size());
 
     Graph newGraph = convertGraph(graph);
 
-    System.out.printf("%n.. 'archiefmat' -- pass 2%n");
+    System.out.printf("%n.. Archives -- pass 2%n");
     resolveArchiveRefs(archiveIds, newGraph);
 
-    System.out.printf("%n.. 'creator' -- pass 2%n");
+    System.out.printf("%n.. Archivers -- pass 2%n");
     resolveArchiverRefs(archiverIds);
 
     displayErrorSummary();
@@ -252,7 +250,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     }
   }
 
-  // --- keywords ------------------------------------------------------
+  // --- Keywords ------------------------------------------------------
 
   private static final String KEYWORD_DIR = "keywords";
   private static final String KEYWORD_FILE = "keywords.json";
@@ -296,7 +294,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     return keyword;
   }
 
-  // --- persons -------------------------------------------------------
+  // --- Persons -------------------------------------------------------
 
   private static final String PERSON_DIR = "keywords";
   private static final String PERSON_FILE = "persons.json";
@@ -347,29 +345,29 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     return person;
   }
 
-  // --- legislations --------------------------------------------------
+  // --- Legislation ---------------------------------------------------
 
   private static final String WETGEVING_DIR = "wetgeving";
 
-  public Map<String, DocumentRef> importWetgevings() throws Exception {
-    Map<String, DocumentRef> refs = Maps.newHashMap();
+  public int importLegislation() throws Exception {
+    Set<String> refs = Sets.newHashSet();
     File directory = new File(inputDir, WETGEVING_DIR);
     for (File file : FileUtils.listFiles(directory, JSON_EXTENSION, true)) {
       for (WetgevingEntry entry : readJsonValue(file, WetgevingEntry[].class)) {
         Wetgeving wetgeving = entry.wetgeving;
         String jsonId = wetgeving._id;
-        if (refs.containsKey(jsonId)) {
+        if (refs.contains(jsonId)) {
           handleError("[%s] Duplicate wetgeving id %s", file.getName(), jsonId);
         } else {
           ATLGLegislation legislation = convert(wetgeving);
           String storedId = addDocument(ATLGLegislation.class, legislation, true);
           Reference legislationRef = new Reference(ATLGLegislation.class, storedId);
           addLegislationRelations(legislationRef, wetgeving);
-          refs.put(jsonId, newDocumentRef(ATLGLegislation.class, legislation));
+          refs.add(jsonId);
         }
       }
     }
-    return refs;
+    return refs.size();
   }
 
   private ATLGLegislation convert(Wetgeving wetgeving) {
@@ -435,7 +433,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     addRelations(reference, hasPersonRef, personRefMap, wetgeving.persons);
   }
 
-  // --- archives ------------------------------------------------------
+  // --- Archives ------------------------------------------------------
 
   private static final String ARCHIEFMAT_DIR = "archiefmat";
 
@@ -605,7 +603,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     return newRefs;
   }
 
-  // --- archivers -----------------------------------------------------
+  // --- Archivers -----------------------------------------------------
 
   private static final String CREATORS_DIR = "creators";
 
