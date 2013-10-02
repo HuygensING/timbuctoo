@@ -36,7 +36,7 @@ public class RelationManager {
    * or null if it does not exist.
    */
   public RelationType getRelationType(String id) {
-    return storageManager.getDocument(RelationType.class, id);
+    return storageManager.getEntity(RelationType.class, id);
   }
 
   /**
@@ -74,7 +74,7 @@ public class RelationManager {
         if (storageManager.countRelations(relation) > 0) {
           LOG.info("Duplicate relation {}", relation.getDisplayName());
         } else {
-          return storageManager.addDocumentWithoutPersisting(Relation.class, relation, true);
+          return storageManager.addEntityWithoutPersisting(Relation.class, relation, true);
         }
       } catch (IOException e) {
         LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
@@ -132,7 +132,7 @@ public class RelationManager {
         LOG.error("Missing target ref");
         return null;
       }
-      RelationType relationType = storageManager.getDocument(RelationType.class, relation.getTypeRef().getId());
+      RelationType relationType = storageManager.getEntity(RelationType.class, relation.getTypeRef().getId());
       if (relationType == null) {
         LOG.error("Unknown relation type {}", relation.getTypeRef().getId());
         return null;

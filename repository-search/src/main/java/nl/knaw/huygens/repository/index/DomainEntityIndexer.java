@@ -11,12 +11,12 @@ import org.apache.solr.common.SolrInputDocument;
  * Used for talking to a specific index on the Solr Server that matches the
  * class used as a generic parameter. Takes care of converting POJO objects
  * (that extend {@link nl.knaw.huygens.repository.model.Entity
- * <code>Document</code>}) to {@link org.apache.solr.common.SolrInputDocument
+ * <code>Entity</code>}) to {@link org.apache.solr.common.SolrInputDocument
  * <code>SolrInputDocument</code>}s.
  * 
- * Note that whenever you update documents through this index, it is the
+ * Note that whenever you update entities through this index, it is the
  * caller's responsibility to call
- * {@link nl.knaw.huygens.repository.index.DomainDocumentIndexer#flush flush} to
+ * {@link nl.knaw.huygens.repository.index.DomainEntityIndexer#flush flush} to
  * update the index and notify the world that this has happened.
  * 
  * @author Gijs
@@ -25,13 +25,13 @@ import org.apache.solr.common.SolrInputDocument;
  *          The generic parameter specifying what kind of POJO objects are used,
  *          and (implicitly) which index to index them in.
  */
-class DomainDocumentIndexer<T extends DomainEntity> implements DocumentIndexer<T> {
+class DomainEntityIndexer<T extends DomainEntity> implements EntityIndexer<T> {
 
   /**
-   * Creates a new {@code DomainDocumentIndexer} instance.
+   * Creates a new {@code DomainEntityIndexer} instance.
    */
-  public static <U extends DomainEntity> DomainDocumentIndexer<U> newInstance(StorageManager storageManager, LocalSolrServer server, String core) {
-    return new DomainDocumentIndexer<U>(storageManager, server, core);
+  public static <U extends DomainEntity> DomainEntityIndexer<U> newInstance(StorageManager storageManager, LocalSolrServer server, String core) {
+    return new DomainEntityIndexer<U>(storageManager, server, core);
   }
 
   private final StorageManager storageManager;
@@ -40,7 +40,7 @@ class DomainDocumentIndexer<T extends DomainEntity> implements DocumentIndexer<T
   private final ModelIterator modelIterator;
 
   /**
-   * Creates an indexer for a primitive domain document.
+   * Creates an indexer for a primitive domain entity.
    * 
    * @param storageManager
    *          the storage manager for retrieving data
@@ -49,7 +49,7 @@ class DomainDocumentIndexer<T extends DomainEntity> implements DocumentIndexer<T
    * @param core
    *          the Solr core
    */
-  private DomainDocumentIndexer(StorageManager storageManager, LocalSolrServer server, String core) {
+  private DomainEntityIndexer(StorageManager storageManager, LocalSolrServer server, String core) {
     this.storageManager = storageManager;
     this.solrServer = server;
     this.core = core;
@@ -58,12 +58,12 @@ class DomainDocumentIndexer<T extends DomainEntity> implements DocumentIndexer<T
 
   /**
    * Add a {@link nl.knaw.huygens.repository.model.Entity
-   * <code>Document</code>} to the index.
+   * <code>Entity</code>} to the index.
    * 
    * @param entities
-   *          the <code>Document</code> to add.
+   *          the <code>Entity</code> to add.
    * @throws IndexException
-   *          if adding the document fails for some reason.
+   *          if adding the entity fails for some reason.
    */
   @Override
   public void add(Class<T> docType, String docId) throws IndexException {
@@ -77,13 +77,13 @@ class DomainDocumentIndexer<T extends DomainEntity> implements DocumentIndexer<T
 
   /**
    * Update a {@link nl.knaw.huygens.repository.model.Entity
-   * <code>Document</code>} already in the index. The existing document will be
+   * <code>Entity</code>} already in the index. The existing entity will be
    * found using the ID of the entity you pass.
    * 
    * @param entity
-   *          the <code>Document</code> and it's subtypes to update.
+   *          the <code>Entity</code> and it's subtypes to update.
    * @throws IndexException
-   *          if adding the document fails for some reason.
+   *          if adding the entity fails for some reason.
    */
   @Override
   public void modify(Class<T> docType, String docId) throws IndexException {
@@ -97,12 +97,12 @@ class DomainDocumentIndexer<T extends DomainEntity> implements DocumentIndexer<T
 
   /**
    * Remove a {@link nl.knaw.huygens.repository.model.Entity
-   * <code>Document</code>} from the index.
+   * <code>Entity</code>} from the index.
    * 
    * @param docId
-   *          the id of the <code>Document</code> to remove.
+   *          the id of the <code>Entity</code> to remove.
    * @throws IndexException
-   *          if removing the document fails for some reason.
+   *          if removing the entity fails for some reason.
    */
   @Override
   public void remove(String docId) throws IndexException {
@@ -148,22 +148,22 @@ class DomainDocumentIndexer<T extends DomainEntity> implements DocumentIndexer<T
    * <code>SolrInputDocument</code>} given the POJO object passed.
    * 
    * @param entities
-   *          the document and it's subtypes that you want a SolrInputDocument for.
+   *          the entity and it's subtypes that you want a SolrInputDocument for.
    * @return the corresponding SolrInputDocument
    */
   private <U extends T> SolrInputDocument getSolrInputDocument(List<U> entities) {
-    SolrInputDocument inputDocument = null;
+    SolrInputDocument document = null;
     SolrInputDocGenerator indexer = null;
     for (U entity : entities) {
-      if (inputDocument == null) {
+      if (document == null) {
         indexer = new SolrInputDocGenerator(entity);
       } else {
-        indexer = new SolrInputDocGenerator(entity, inputDocument);
+        indexer = new SolrInputDocGenerator(entity, document);
       }
       modelIterator.processClass(indexer, entity.getClass());
-      inputDocument = indexer.getResult();
+      document = indexer.getResult();
     }
-    return inputDocument;
+    return document;
   }
 
 }

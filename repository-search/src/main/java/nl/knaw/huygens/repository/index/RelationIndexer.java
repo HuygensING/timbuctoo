@@ -16,13 +16,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Manages the Solr core for {@code Relation} documents.
+ * Manages the Solr core for {@code Relation} entities.
  * 
  * Note that a single relation can give rise to multiple Solr documents.
- * The id's of these Solr documents have the id of the relation document
+ * The id's of these Solr documents have the id of the relation entity
  * as prefix, allowing them to be deleted by a simple query.
  */
-class RelationIndexer implements DocumentIndexer<Relation> {
+class RelationIndexer implements EntityIndexer<Relation> {
 
   private static final Logger LOG = LoggerFactory.getLogger(RelationIndexer.class);
   private static final String CORE = "relation";
@@ -41,7 +41,7 @@ class RelationIndexer implements DocumentIndexer<Relation> {
 
   @Override
   public void add(Class<Relation> docType, String docId) throws IndexException {
-    Relation relation = storageManager.getDocument(docType, docId);
+    Relation relation = storageManager.getEntity(docType, docId);
     if (relation == null) {
       LOG.error("Failed to retrieve relation {}", docId);
       throw new IndexException("Failed to index relation");
@@ -73,20 +73,20 @@ class RelationIndexer implements DocumentIndexer<Relation> {
     // relation type
     solrDoc.addField("dynamic_k_type_id", relationType.getId());
     solrDoc.addField("dynamic_k_type_name", relationType.getRelTypeName());
-    // source document
+    // source entity
     solrDoc.addField("dynamic_k_source_type", sourceRef.getType());
     solrDoc.addField("dynamic_k_source_id", sourceRef.getId());
-    // target document
-    Entity targetDoc = getDocument(targetRef);
+    // target entity
+    Entity targetDoc = getEntity(targetRef);
     solrDoc.addField("dynamic_k_target_type", targetRef.getType());
     solrDoc.addField("dynamic_k_target_id", targetRef.getId());
     solrDoc.addField("dynamic_k_target_name", targetDoc.getDisplayName());
     server.add(CORE, solrDoc);
   }
 
-  private Entity getDocument(Reference reference) {
+  private Entity getEntity(Reference reference) {
     Class<? extends Entity> type = registry.getTypeForIName(reference.getType());
-    return storageManager.getDocument(type, reference.getId());
+    return storageManager.getEntity(type, reference.getId());
   }
 
   @Override

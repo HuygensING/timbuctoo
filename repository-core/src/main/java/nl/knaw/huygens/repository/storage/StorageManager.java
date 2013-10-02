@@ -107,7 +107,7 @@ public class StorageManager {
 
   // -------------------------------------------------------------------
 
-  public <T extends Entity> T getDocument(Class<T> type, String id) {
+  public <T extends Entity> T getEntity(Class<T> type, String id) {
     try {
       return storage.getItem(type, id);
     } catch (IOException e) {
@@ -121,7 +121,7 @@ public class StorageManager {
    * Returns a single entity matching the non-null fields of
    * the specified entity, or null if no such entity exists.
    */
-  public <T extends Entity> T searchDocument(Class<T> type, T example) {
+  public <T extends Entity> T searchEntity(Class<T> type, T example) {
     try {
       return storage.searchItem(type, example);
     } catch (IOException e) {
@@ -164,7 +164,7 @@ public class StorageManager {
   /* A bit of code duplication, but I think it is more readable than calling this method from addDocument and then persisting it.
    * This code is needed, because of issue #1774 in Redmine. It contains the question if the persistent identifier should be added autmaticallly. 
    */
-  public <T extends Entity> String addDocumentWithoutPersisting(Class<T> type, T doc, boolean isComplete) throws IOException {
+  public <T extends Entity> String addEntityWithoutPersisting(Class<T> type, T doc, boolean isComplete) throws IOException {
     String id = storage.addItem(type, doc);
     if (DomainEntity.class.isAssignableFrom(type) && isComplete) {
       sendIndexMessage(ActionType.INDEX_ADD, docTypeRegistry.getINameForType(type), id);
@@ -173,10 +173,10 @@ public class StorageManager {
   }
 
   /**
-   * A convenience method for ${@code addDocument(type, doc, true)}
+   * A convenience method for ${@code addEntity(type, doc, true)}
    */
-  public <T extends Entity> String addDocument(Class<T> type, T doc) throws IOException {
-    return addDocument(type, doc, true);
+  public <T extends Entity> String addEntity(Class<T> type, T doc) throws IOException {
+    return addEntity(type, doc, true);
   }
 
   /**
@@ -189,10 +189,10 @@ public class StorageManager {
    * when this boolean is true the entity will be indexed
    * @throws IOException when thrown by storage
    */
-  public <T extends Entity> String addDocument(Class<T> type, T doc, boolean isComplete) throws IOException {
+  public <T extends Entity> String addEntity(Class<T> type, T doc, boolean isComplete) throws IOException {
     String id = storage.addItem(type, doc);
     if (DomainEntity.class.isAssignableFrom(type)) {
-      persistDocumentVersion(type, doc);
+      persistEntityVersion(type, doc);
       if (isComplete) {
         sendIndexMessage(ActionType.INDEX_ADD, docTypeRegistry.getINameForType(type), id);
       }
@@ -200,7 +200,7 @@ public class StorageManager {
     return id;
   }
 
-  private <T extends Entity> void persistDocumentVersion(Class<T> type, T doc) {
+  private <T extends Entity> void persistEntityVersion(Class<T> type, T doc) {
     try {
       // TODO make persistent id dependent on version.
       Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(type);
@@ -212,22 +212,22 @@ public class StorageManager {
     }
   }
 
-  public <T extends Entity> void modifyDocumentWithoutPersisting(Class<T> type, T doc) throws IOException {
+  public <T extends Entity> void modifyEntityWithoutPersisting(Class<T> type, T doc) throws IOException {
     storage.updateItem(type, doc.getId(), doc);
     if (DomainEntity.class.isAssignableFrom(type)) {
       sendIndexMessage(ActionType.INDEX_MOD, docTypeRegistry.getINameForType(type), doc.getId());
     }
   }
 
-  public <T extends Entity> void modifyDocument(Class<T> type, T doc) throws IOException {
+  public <T extends Entity> void modifyEntity(Class<T> type, T doc) throws IOException {
     storage.updateItem(type, doc.getId(), doc);
     if (DomainEntity.class.isAssignableFrom(type)) {
-      persistDocumentVersion(type, doc);
+      persistEntityVersion(type, doc);
       sendIndexMessage(ActionType.INDEX_MOD, docTypeRegistry.getINameForType(type), doc.getId());
     }
   }
 
-  public <T extends Entity> void removeDocument(Class<T> type, T doc) throws IOException {
+  public <T extends Entity> void removeEntity(Class<T> type, T doc) throws IOException {
     storage.deleteItem(type, doc.getId(), doc.getLastChange());
     //TODO do something with the PID.
     if (DomainEntity.class.isAssignableFrom(type)) {
