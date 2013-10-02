@@ -252,7 +252,7 @@ public class StorageManager {
    * @param type the type all of the objects should removed permanently from.
    */
   public <T extends DomainDocument> void removePermanently(Class<T> type) {
-    Collection<String> ids = storage.getAllIdsWithOutPIDOfType(type);
+    Collection<String> ids = storage.getAllIdsWithoutPIDOfType(type);
 
     String typeString = docTypeRegistry.getINameForType(type);
 

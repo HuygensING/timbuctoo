@@ -405,17 +405,37 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     return (int) col.count(query);
   }
 
-  public <T extends DomainDocument> Collection<String> getAllIdsWithOutPIDOfType(Class<T> type) {
-    // TODO Auto-generated method stub
-    return null;
+  @Override
+  public <T extends DomainDocument> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) {
+    DBCollection col = getVariationCollection(type);
+
+    String typeName = VariationUtils.getClassId(type);
+    DBObject query = new BasicDBObject(typeName, new BasicDBObject("$ne", null));
+    query.put("^pid", null);
+
+    DBObject columnsToShow = new BasicDBObject("_id", 1);
+
+    DBCursor cursor = col.find(query, columnsToShow);
+
+    Set<String> returnValue = Sets.newHashSet();
+
+    while (cursor.hasNext()) {
+      returnValue.add((String) cursor.next().get("_id"));
+    }
+
+    return returnValue;
   }
 
   @Override
   public <T extends DomainDocument> void removePermanently(Class<T> type, Collection<String> ids) {
-    // TODO Auto-generated method stub
+    DBCollection col = getVariationCollection(type);
+
+    DBObject query = DBQuery.in("_id", ids);
+    query.put("^pid", null);
+    col.remove(query);
   }
 
-  // Test only, an ugly hack to  be able to mock the counter collection
+  // Test only, an ugly hack to be able to mock the counter collection
   void setCounterCollection(JacksonDBCollection<MongoStorageBase.Counter, String> collection) {
     counterCol = collection;
   }
