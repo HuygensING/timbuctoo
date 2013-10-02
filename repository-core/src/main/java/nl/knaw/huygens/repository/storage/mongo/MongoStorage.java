@@ -179,12 +179,13 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
 
   // TODO make unit test: add & retrieve
   @Override
-  public <T extends Document> void addItem(Class<T> type, T item) throws IOException {
+  public <T extends Document> String addItem(Class<T> type, T item) throws IOException {
     item.setCreation(item.getLastChange());
     if (item.getId() == null) {
       setNextId(type, item);
     }
     MongoUtils.getCollection(db, type).insert(item);
+    return item.getId();
   }
 
   //
