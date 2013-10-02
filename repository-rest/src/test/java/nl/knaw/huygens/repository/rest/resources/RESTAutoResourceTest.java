@@ -37,7 +37,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetDocExisting() {
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
     TestConcreteDoc expectedDoc = new TestConcreteDoc(id);
     when(getStorageManager().getDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
 
@@ -89,7 +89,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testPutDocExistingDocument() throws IOException {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
     TestConcreteDoc doc = new TestConcreteDoc(id);
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
@@ -102,7 +102,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testPutDocInvalidDocument() throws IOException {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
     TestConcreteDoc doc = new TestConcreteDoc(id);
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
@@ -162,7 +162,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testPutDocNonExistingDocument() throws IOException {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
-    String id = "NEI0000000001";
+    String id = "NULL000000000001";
     TestConcreteDoc doc = new TestConcreteDoc(id);
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
@@ -183,7 +183,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testPutDocNonExistingType() {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
     TestConcreteDoc doc = new TestConcreteDoc(id);
 
     ClientResponse response = autoResource().path("unknown").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
@@ -193,7 +193,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   public void testPutDocWrongType() {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
     TestConcreteDoc doc = new TestConcreteDoc(id);
 
     ClientResponse response = autoResource().path("otherdocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
@@ -204,7 +204,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testPutOnSuperClass() {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
     GeneralTestDoc doc = new GeneralTestDoc(id);
 
     ClientResponse response = autoResource().path("otherdocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
@@ -213,7 +213,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutOnCollection() {
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
     GeneralTestDoc doc = new GeneralTestDoc(id);
 
     ClientResponse response = autoResource().path("otherdocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
@@ -273,7 +273,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostSpecificDocument() {
-    String id = "TST000000001";
+    String id = "TEST000000000001";
     TestConcreteDoc doc = new TestConcreteDoc(id);
     doc.name = "test";
 
@@ -285,7 +285,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testDelete() throws IOException {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
     TestConcreteDoc doc = new TestConcreteDoc(id);
     when(getStorageManager().getDocument(TestConcreteDoc.class, id)).thenReturn(doc);
 
@@ -297,7 +297,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testDeleteDocumentDoesNotExist() {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
     when(getStorageManager().getDocument(TestConcreteDoc.class, id)).thenReturn(null);
 
     ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
@@ -308,7 +308,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testDeleteTypeDoesNotExist() {
     setUpUserRoles(USER_ID, null);
 
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
     when(getStorageManager().getDocument(TestConcreteDoc.class, id)).thenReturn(null);
 
@@ -326,7 +326,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetDocNotLoggedIn() {
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
     TestConcreteDoc expectedDoc = new TestConcreteDoc(id);
     when(getStorageManager().getDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
 
@@ -336,7 +336,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetDocEmptyAuthorizationKey() {
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
     TestConcreteDoc expectedDoc = new TestConcreteDoc(id);
     when(getStorageManager().getDocument(TestConcreteDoc.class, id)).thenReturn(expectedDoc);
 
@@ -349,7 +349,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testPutDocUserNotInRole() throws IOException {
     setUpUserRoles(USER_ID, null);
 
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
     TestConcreteDoc doc = new TestConcreteDoc(id);
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
@@ -360,7 +360,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   @Test
   @SuppressWarnings("unchecked")
   public void testPutDocUserNotLoggedIn() throws IOException {
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
     TestConcreteDoc doc = new TestConcreteDoc(id);
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
@@ -398,7 +398,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteNotLoggedIn() {
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
 
     setUserUnauthorized();
 
@@ -410,7 +410,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testDeleteUserNotInRole() {
     setUpUserRoles(USER_ID, null);
 
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
 
     ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
@@ -420,7 +420,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetDocOfVariation() {
-    String id = "TST0000000001";
+    String id = "TEST000000000001";
     TestConcreteDoc expectedDoc = new TestConcreteDoc(id);
     String variation = "projecta";
     when(getStorageManager().getCompleteVariation(TestConcreteDoc.class, id, variation)).thenReturn(expectedDoc);
@@ -432,7 +432,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetDocOfVariationDocDoesNotExist() {
-    String id = "TST0000000002";
+    String id = "TEST000000000002";
     String variation = "projecta";
     when(getStorageManager().getCompleteVariation(TestConcreteDoc.class, id, variation)).thenReturn(null);
 

@@ -4,9 +4,34 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import nl.knaw.huygens.repository.annotations.IDPrefix;
 import nl.knaw.huygens.repository.model.Document;
 
 public class StorageUtils {
+
+  public static final String UNKNOWN_ID_PREFIX = "UNKN";
+
+  /**
+   * Returns the prefix of an entity id.
+   */
+  public static String getIDPrefix(Class<?> type) {
+    if (type != null && Document.class.isAssignableFrom(type)) {
+      IDPrefix annotation = type.getAnnotation(IDPrefix.class);
+      if (annotation != null) {
+        return annotation.value();
+      } else {
+        return getIDPrefix(type.getSuperclass());
+      }
+    }
+    return UNKNOWN_ID_PREFIX;
+  }
+
+  /**
+   * Returns a formatted entity id.
+   */
+  public static String formatEntityId(Class<? extends Document> type, long counter) {
+    return String.format("%s%012d", getIDPrefix(type), counter);
+  }
 
   public static <T extends Document> List<T> readFromIterator(StorageIterator<T> it, int offset, int limit) {
     if (offset > 0) {

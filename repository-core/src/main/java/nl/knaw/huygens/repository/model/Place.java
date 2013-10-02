@@ -3,7 +3,7 @@ package nl.knaw.huygens.repository.model;
 import nl.knaw.huygens.repository.annotations.IDPrefix;
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
 
-@IDPrefix("PLA")
+@IDPrefix("PLAC")
 public class Place extends DomainDocument {
 
   public String name;

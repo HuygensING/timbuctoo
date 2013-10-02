@@ -7,7 +7,7 @@ import nl.knaw.huygens.repository.annotations.DocumentTypeName;
 import nl.knaw.huygens.repository.annotations.IDPrefix;
 import nl.knaw.huygens.repository.facet.FacetCount;
 
-@IDPrefix("QRY")
+@IDPrefix("QURY")
 @DocumentTypeName("search")
 public class SearchResult extends SystemDocument implements Persistent {
 

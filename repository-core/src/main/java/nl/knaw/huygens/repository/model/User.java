@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * When the User-class is not registered, the class will not be found by the RESTAutoResource and the User will only be available through the UserResource. 
  */
 @DoNotRegister
-@IDPrefix("USR")
+@IDPrefix("USER")
 public class User extends SystemDocument {
 
   private String userId; // a unique id to identify the use.
