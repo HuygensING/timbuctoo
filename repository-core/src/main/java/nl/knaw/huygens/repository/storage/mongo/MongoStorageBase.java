@@ -28,7 +28,7 @@ public class MongoStorageBase {
   protected DB db;
 
   protected JacksonDBCollection<Counter, String> counterCol;
-  protected Set<String> documentCollections;
+  protected Set<String> entityCollections;
 
   public MongoStorageBase(DocTypeRegistry registry) {
     docTypeRegistry = registry;

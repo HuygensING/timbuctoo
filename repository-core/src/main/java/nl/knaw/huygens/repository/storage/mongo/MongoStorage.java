@@ -59,7 +59,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
 
   private void initializeDB(StorageConfiguration conf) {
     counterCol = JacksonDBCollection.wrap(db.getCollection(COUNTER_COLLECTION_NAME), Counter.class, String.class);
-    documentCollections = conf.getDocumentTypes();
+    entityCollections = conf.getEntityTypes();
   }
 
   @Override
@@ -104,7 +104,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   @Override
   public List<Entity> getLastChanged(int limit) {
     List<Entity> changedDocs = Lists.newArrayList();
-    for (String colName : documentCollections) {
+    for (String colName : entityCollections) {
       JacksonDBCollection<? extends Entity, String> col = MongoUtils.getCollection(db, docTypeRegistry.getTypeForIName(colName));
       changedDocs.addAll(col.find().sort(new BasicDBObject("^lastChange.dateStamp", -1)).limit(limit).toArray());
     }
@@ -172,7 +172,6 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   }
 
   // -------------------------------------------------------------------
-  // --- modifiable ----------------------------------------------------
 
   // TODO make unit test: add & retrieve
   @Override

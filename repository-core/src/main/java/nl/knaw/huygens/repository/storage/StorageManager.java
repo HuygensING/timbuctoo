@@ -39,7 +39,7 @@ public class StorageManager {
 
   private VariationStorage storage;
   private Map<Class<? extends Entity>, Map<Class<? extends Entity>, List<List<String>>>> annotationCache;
-  private Set<String> documentTypes;
+  private Set<String> entityTypes;
 
   private final DocTypeRegistry docTypeRegistry;
   private final Producer producer;
@@ -49,7 +49,7 @@ public class StorageManager {
   public StorageManager(StorageConfiguration storageConf, VariationStorage storage, Broker broker, DocTypeRegistry registry, PersistenceWrapper persistenceWrapper) {
     docTypeRegistry = registry;
     producer = setupProducer(broker);
-    documentTypes = storageConf.getDocumentTypes();
+    entityTypes = storageConf.getEntityTypes();
     this.storage = storage;
     this.persistenceWrapper = persistenceWrapper;
     fillAnnotationCache();
@@ -57,10 +57,10 @@ public class StorageManager {
   }
 
   // Test-only!
-  protected StorageManager(VariationStorage storage, Set<String> documentTypes, Broker broker, DocTypeRegistry registry, PersistenceWrapper persistenceWrapper) {
+  protected StorageManager(VariationStorage storage, Set<String> entityTypes, Broker broker, DocTypeRegistry registry, PersistenceWrapper persistenceWrapper) {
     docTypeRegistry = registry;
     producer = setupProducer(broker);
-    this.documentTypes = documentTypes;
+    this.entityTypes = entityTypes;
     this.storage = storage;
     this.persistenceWrapper = persistenceWrapper;
     fillAnnotationCache();
@@ -312,8 +312,8 @@ public class StorageManager {
 
   private void fillAnnotationCache() {
     annotationCache = Maps.newHashMap();
-    for (String docType : documentTypes) {
-      Class<? extends Entity> cls = docTypeRegistry.getTypeForIName(docType);
+    for (String entityType : entityTypes) {
+      Class<? extends Entity> cls = docTypeRegistry.getTypeForIName(entityType);
       annotationCache.put(cls, getAllRelatedDocumentAnnotations(cls));
     }
   }
