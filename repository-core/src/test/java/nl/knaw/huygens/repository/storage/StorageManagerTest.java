@@ -403,7 +403,7 @@ public class StorageManagerTest {
     String typeString = "generaltestdoc";
 
     ArrayList<String> ids = Lists.newArrayList(id1, id2, id3);
-    when(storage.getAllIdsWithOutPIDOfType(type)).thenReturn(ids);
+    when(storage.getAllIdsWithoutPIDOfType(type)).thenReturn(ids);
     when(docTypeRegistry.getINameForType(type)).thenReturn(typeString);
 
     instance.removePermanently(type);
@@ -425,7 +425,7 @@ public class StorageManagerTest {
     String typeString = "generaltestdoc";
 
     ArrayList<String> ids = Lists.newArrayList(id1, id2, id3);
-    when(storage.getAllIdsWithOutPIDOfType(type)).thenReturn(ids);
+    when(storage.getAllIdsWithoutPIDOfType(type)).thenReturn(ids);
     when(docTypeRegistry.getINameForType(type)).thenReturn(typeString);
     doThrow(JMSException.class).when(producer).send(any(ActionType.class), anyString(), anyString());
 
@@ -449,7 +449,7 @@ public class StorageManagerTest {
     ArrayList<String> ids = Lists.newArrayList(id1, id2, id3);
 
     //doThrow(IOException.class).when(storage).getAllIdsWithOutPIDOfType(type);
-    when(storage.getAllIdsWithOutPIDOfType(type)).thenReturn(ids);
+    when(storage.getAllIdsWithoutPIDOfType(type)).thenReturn(ids);
     doThrow(IOException.class).when(storage).removePermanently(type, ids);
     when(docTypeRegistry.getINameForType(type)).thenReturn(typeString);
 
@@ -473,7 +473,7 @@ public class StorageManagerTest {
 
   @Test(expected = IOException.class)
   public void testRemovePermanentlyStorageGetException() throws JMSException {
-    doThrow(IOException.class).when(storage).getAllIdsWithOutPIDOfType(GeneralTestDoc.class);
+    doThrow(IOException.class).when(storage).getAllIdsWithoutPIDOfType(GeneralTestDoc.class);
 
     try {
       instance.removePermanently(GeneralTestDoc.class);

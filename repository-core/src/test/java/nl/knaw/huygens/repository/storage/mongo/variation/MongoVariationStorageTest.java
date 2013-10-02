@@ -2,6 +2,7 @@ package nl.knaw.huygens.repository.storage.mongo.variation;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -15,6 +16,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +39,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoException;
 
@@ -339,6 +342,86 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     verify(anyCollection).findOne(query);
   }
 
+  @Test
+  public void testGetAllIdsWithoutPIDOfType() {
+    DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
+    query.put("^pid", null);
+    DBObject columnsToShow = new BasicDBObject("_id", 1);
+
+    Map<String, Object> map1 = Maps.newHashMap();
+    String id1 = "TSD0000000001";
+    map1.put("_id", id1);
+    DBObject dbObject = createDBJsonNode(map1);
+
+    DBCursor cursor = createDBCursorWithOneValue(dbObject);
+    when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
+
+    Collection<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+
+    assertTrue(ids.contains(id1));
+
+    verify(anyCollection).find(query, columnsToShow);
+    verify(db).getCollection("testconcretedoc");
+  }
+
+  @Test
+  public void testGetAllIdsWithoutPIDOfTypeMultipleFound() {
+    DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
+    query.put("^pid", null);
+    DBObject columnsToShow = new BasicDBObject("_id", 1);
+
+    String id1 = DEFAULT_ID;
+    DBObject dbObject1 = createDBJsonNode(createSimpleMap("_id", id1));
+    String id2 = "TCD000000002";
+    DBObject dbObject2 = createDBJsonNode(createSimpleMap("_id", id2));
+    String id3 = "TCD000000003";
+    DBObject dbObject3 = createDBJsonNode(createSimpleMap("_id", id3));
+
+    DBCursor cursor = mock(DBCursor.class);
+    when(cursor.next()).thenReturn(dbObject1, dbObject2, dbObject3);
+    when(cursor.hasNext()).thenReturn(true, true, true, false);
+
+    when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
+
+    Collection<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+
+    assertTrue(ids.contains(id1));
+    assertTrue(ids.contains(id2));
+    assertTrue(ids.contains(id3));
+
+    verify(anyCollection).find(query, columnsToShow);
+    verify(db).getCollection("testconcretedoc");
+  }
+
+  @Test
+  public void testGetAllIdsWithoutPIDOfTypeNoneFound() {
+    DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
+    query.put("^pid", null);
+    DBObject columnsToShow = new BasicDBObject("_id", 1);
+
+    DBCursor cursor = createCursorWithoutValues();
+    when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
+
+    Collection<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+
+    assertTrue(ids.isEmpty());
+
+    verify(anyCollection).find(query, columnsToShow);
+    verify(db).getCollection("testconcretedoc");
+  }
+
+  @Test
+  public void testRemovePermanently() {
+    List<String> ids = Lists.newArrayList("TCD000000001", "TCD000000003", "TCD000000005");
+    DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
+    query.put("^pid", null);
+
+    storage.removePermanently(TestConcreteDoc.class, ids);
+
+    verify(anyCollection).remove(query);
+    verify(db).getCollection("testconcretedoc");
+  }
+
   private List<TestConcreteDoc> createTestDocListWithIds(String idBase, String... names) {
     List<TestConcreteDoc> docs = new ArrayList<TestConcreteDoc>();
     int counter = 1;
@@ -406,6 +489,13 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     return nameMap;
   }
 
+  private Map<String, Object> createSimpleMap(String id, Object value) {
+    Map<String, Object> map = Maps.newHashMap();
+    map.put(id, value);
+
+    return map;
+  }
+
   private Map<String, Object> createDefaultMap(String id) {
     Map<String, Object> map = Maps.newHashMap();
     map.put("_id", id);
@@ -428,9 +518,9 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
    * @param map
    * @return
    */
-  protected DBJsonNode createDBJsonNode(Map<String, Object> map) {
+  private DBJsonNode createDBJsonNode(Map<String, Object> map) {
     ObjectMapper mapper = new ObjectMapper();
-  
+
     DBJsonNode dbObject = new DBJsonNode(mapper.valueToTree(map));
     return dbObject;
   }

@@ -132,8 +132,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     String name = "nonExisting";
     example.setName(name);
 
-    DBCursor cursor = mock(DBCursor.class);
-    when(cursor.hasNext()).thenReturn(false);
+    DBCursor cursor = createCursorWithoutValues();
 
     DBObject query = new BasicDBObject("name", name);
     when(anyCollection.find(query, null)).thenReturn(cursor);
@@ -146,20 +145,12 @@ public class MongoStorageTest extends MongoStorageTestBase {
     TestSystemDocument example = new TestSystemDocument();
     example.setName("nonExisting");
 
-    DBCursor cursor = mock(DBCursor.class);
-    when(cursor.hasNext()).thenReturn(false);
+    DBCursor cursor = createCursorWithoutValues();
 
     DBObject query = new BasicDBObject("name", "nonExisting");
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
     storage.searchItem(TYPE, example);
-  }
-
-  protected DBCursor createDBCursorWithOneValue(DBObject dbObject) {
-    DBCursor cursor = mock(DBCursor.class);
-    when(cursor.hasNext()).thenReturn(true, false);
-    when(cursor.next()).thenReturn(dbObject);
-    return cursor;
   }
 
   @Test
@@ -214,8 +205,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     expected.setId(DEFAULT_ID);
     expected.setTestValue1("test");
 
-    DBCursor cursor = mock(DBCursor.class);
-    when(cursor.hasNext()).thenReturn(false);
+    DBCursor cursor = createCursorWithoutValues();
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
     query.put("^rev", 0);
     when(anyCollection.find(query, null)).thenReturn(cursor);
@@ -324,8 +314,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetItemNonExistent() {
-    DBCursor cursor = mock(DBCursor.class);
-    when(cursor.hasNext()).thenReturn(false);
+    DBCursor cursor = createCursorWithoutValues();
 
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
     when(anyCollection.find(query, null)).thenReturn(cursor);
@@ -347,8 +336,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllByTypeNonFound() throws IOException {
-    DBCursor cursor = mock(DBCursor.class);
-    when(cursor.hasNext()).thenReturn(false);
+    DBCursor cursor = createCursorWithoutValues();
 
     when(anyCollection.find()).thenReturn(cursor);
 

@@ -180,8 +180,8 @@ public class MongoStorageFacade implements VariationStorage {
     return variationStorage.countRelations(relation);
   }
 
-  public <T extends DomainDocument> Collection<String> getAllIdsWithOutPIDOfType(Class<T> type) {
-    return variationStorage.getAllIdsWithOutPIDOfType(type);
+  public <T extends DomainDocument> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) {
+    return variationStorage.getAllIdsWithoutPIDOfType(type);
   }
 
   @Override

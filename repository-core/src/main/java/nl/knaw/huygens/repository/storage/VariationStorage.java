@@ -35,7 +35,7 @@ public interface VariationStorage extends BasicStorage {
    * @param type
    * @return
    */
-  <T extends DomainDocument> Collection<String> getAllIdsWithOutPIDOfType(Class<T> type);
+  <T extends DomainDocument> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type);
 
   /**
    * Permanently removes the objects from the database.
