@@ -53,7 +53,7 @@ public class UserResource {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
   public User get(@PathParam(ID_PARAM) String id) {
-    User user = storageManager.getDocument(User.class, id);
+    User user = storageManager.getEntity(User.class, id);
 
     if (user == null) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -67,7 +67,7 @@ public class UserResource {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed({ ADMIN_ROLE, USER_ROLE, UNVERIFIED_USER_ROLE })
   public User getMyUserData(@QueryParam("id") String id) {
-    return storageManager.getDocument(User.class, id);
+    return storageManager.getEntity(User.class, id);
   }
 
   @PUT
@@ -76,7 +76,7 @@ public class UserResource {
   @RolesAllowed(ADMIN_ROLE)
   public Response put(@PathParam(ID_PARAM) String id, User user) throws IOException {
     try {
-      storageManager.modifyDocument(User.class, user);
+      storageManager.modifyEntity(User.class, user);
     } catch (IOException ex) {
       throw new WebApplicationException(Status.NOT_FOUND);
     }
@@ -108,13 +108,13 @@ public class UserResource {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
   public Response delete(@PathParam(ID_PARAM) String id) throws IOException {
-    User user = storageManager.getDocument(User.class, id);
+    User user = storageManager.getEntity(User.class, id);
 
     if (user == null) {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
 
-    storageManager.removeDocument(User.class, user);
+    storageManager.removeEntity(User.class, user);
 
     return Response.status(Response.Status.OK).build();
   }

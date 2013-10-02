@@ -34,7 +34,7 @@ public class CKCCPersonImporter extends CSVImporter {
       String id = items[8];
       Person retrieved = null;
       if (id.length() > 0 && !id.equals("?")) {
-        retrieved = storageManager.getDocument(Person.class, id);
+        retrieved = storageManager.getEntity(Person.class, id);
         exists = retrieved != null;
       }
       CKCCPerson person = new CKCCPerson();
@@ -45,9 +45,9 @@ public class CKCCPersonImporter extends CSVImporter {
       if (exists) {
         person.setId(retrieved.getId());
         person.setPid(retrieved.getPid());
-        storageManager.modifyDocument(CKCCPerson.class, person);
+        storageManager.modifyEntity(CKCCPerson.class, person);
       } else {
-        storageManager.addDocument(CKCCPerson.class, person);
+        storageManager.addEntity(CKCCPerson.class, person);
       }
     } catch (IOException e) {
       displayError(e.getMessage(), items);

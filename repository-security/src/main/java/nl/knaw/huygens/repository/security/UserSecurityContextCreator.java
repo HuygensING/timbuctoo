@@ -56,7 +56,7 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
       // Set the role to unverified user so the user can still retrieve her / his own user information.
       user.setRoles(Lists.newArrayList(UNVERIFIED_USER_ROLE));
 
-      storageManager.addDocument(User.class, user);
+      storageManager.addEntity(User.class, user);
 
     } catch (IOException e) {
       LOG.error(e.getMessage());
@@ -72,7 +72,7 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
 
   private User findUser(final User example) {
 
-    return storageManager.searchDocument(User.class, example);
+    return storageManager.searchEntity(User.class, example);
   }
 
 }

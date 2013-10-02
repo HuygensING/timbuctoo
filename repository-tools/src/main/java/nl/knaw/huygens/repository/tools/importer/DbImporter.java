@@ -54,7 +54,7 @@ public class DbImporter {
         if (item.getRev() == 0) {
           item.setRev(1);
         }
-        storageManager.addDocument(type, item);
+        storageManager.addEntity(type, item);
         System.out.print((count % 100 == 99) ? ".\n" : ".");
       }
       System.out.print("\nImported " + count + " items.\n\n");

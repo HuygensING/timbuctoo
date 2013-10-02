@@ -68,7 +68,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertEquals(expected, actual);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    verify(storageManager).addDocument(SearchResult.class, searchResult);
+    verify(storageManager).addEntity(SearchResult.class, searchResult);
   }
 
   @Test
@@ -83,7 +83,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    verify(storageManager).addDocument(SearchResult.class, searchResult);
+    verify(storageManager).addEntity(SearchResult.class, searchResult);
 
     assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
     assertEquals(expected, actual);
@@ -99,7 +99,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     WebResource resource = super.resource();
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
-    verify(storageManager, never()).addDocument(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(Matchers.<Class<? extends Entity>> any(), anyString(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
@@ -115,7 +115,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     WebResource resource = super.resource();
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
-    verify(storageManager, never()).addDocument(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(Matchers.<Class<? extends Entity>> any(), anyString(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
@@ -131,7 +131,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     WebResource resource = super.resource();
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
-    verify(storageManager, never()).addDocument(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(Matchers.<Class<? extends Entity>> any(), anyString(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
@@ -149,7 +149,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     WebResource resource = super.resource();
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
-    verify(storageManager, never()).addDocument(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
 
   }
@@ -166,7 +166,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     WebResource resource = super.resource();
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
-    verify(storageManager, never()).addDocument(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     assertEquals(ClientResponse.Status.INTERNAL_SERVER_ERROR, clientResponse.getClientResponseStatus());
   }
 
@@ -176,7 +176,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     setupSearchManager(searchResult);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    doThrow(IOException.class).when(storageManager).addDocument(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    doThrow(IOException.class).when(storageManager).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
 
     FacetedSearchParameters searchParameters = createSearchParameters(typeString, null, TERM);
 
@@ -288,7 +288,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetUnknownId() {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(SearchResult.class, id)).thenReturn(null);
+    when(storageManager.getEntity(SearchResult.class, id)).thenReturn(null);
 
     WebResource resource = super.resource();
     ClientResponse response = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
@@ -304,7 +304,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     searchResult.setSearchType(unknownType);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(SearchResult.class, id)).thenReturn(searchResult);
+    when(storageManager.getEntity(SearchResult.class, id)).thenReturn(searchResult);
 
     WebResource resource = super.resource();
     ClientResponse response = resource.path("search").path(id).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
@@ -372,7 +372,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
       personList.add(person);
 
       idList.add(personId);
-      when(storageManager.getDocument(Person.class, personId)).thenReturn(person);
+      when(storageManager.getEntity(Person.class, personId)).thenReturn(person);
     }
   }
 
@@ -383,7 +383,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     when(result.getSearchType()).thenReturn("person");
     when(result.getIds()).thenReturn(idList);
     when(result.getFacets()).thenReturn(facets);
-    when(storageManager.getDocument(SearchResult.class, id)).thenReturn(result);
+    when(storageManager.getEntity(SearchResult.class, id)).thenReturn(result);
   }
 
   @SuppressWarnings("unchecked")

@@ -75,7 +75,7 @@ public class SearchResource {
       Class<? extends Entity> baseType = registry.getBaseClass(type);
       String core = registry.getINameForType(baseType);
       SearchResult result = searchManager.search(type, core, searchParameters);
-      storageManager.addDocument(SearchResult.class, result);
+      storageManager.addEntity(SearchResult.class, result);
       String queryId = result.getId();
       return Response.created(new URI(queryId)).build();
     } catch (FacetDoesNotExistException ex) {
@@ -99,7 +99,7 @@ public class SearchResource {
       @Context UriInfo uriInfo) {
 
     // Retrieve result
-    SearchResult result = storageManager.getDocument(SearchResult.class, queryId);
+    SearchResult result = storageManager.getEntity(SearchResult.class, queryId);
     if (result == null) {
       LOG.error("GET - no results for id '{}'", queryId);
       throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -158,7 +158,7 @@ public class SearchResource {
     // TODO get all at once
     for (int index = lo; index < hi; index++) {
       String id = ids.get(index);
-      list.add(storageManager.getDocument(type, id));
+      list.add(storageManager.getEntity(type, id));
     }
     return list;
   }
