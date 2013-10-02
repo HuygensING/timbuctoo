@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.DomainEntity;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.Relation;
 
 public interface VariationStorage extends BasicStorage {
@@ -13,12 +13,7 @@ public interface VariationStorage extends BasicStorage {
   <T extends Entity> List<T> getAllVariations(Class<T> type, String id) throws IOException;
 
   /**
-   * Get the given variation of a document.
-   * @param type
-   * @param id
-   * @param variation
-   * @return
-   * @throws IOException 
+   * Get the given variation of an entity.
    */
   <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) throws IOException;
 

@@ -11,8 +11,8 @@ public class EntityRef {
   /**
    * Utility for creating instances.
    */
-  public static <T extends Entity> EntityRef newInstance(String itype, String xtype, T document) {
-    return new EntityRef(itype, xtype, document.getId(), document.getDisplayName());
+  public static <T extends Entity> EntityRef newInstance(String itype, String xtype, T entity) {
+    return new EntityRef(itype, xtype, entity.getId(), entity.getDisplayName());
   }
 
   private String itype;

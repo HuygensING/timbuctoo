@@ -7,8 +7,8 @@ import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.DomainEntity;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.BasicStorage;
@@ -32,7 +32,7 @@ import com.mongodb.ServerAddress;
 
 /**
  * Delegates storage operation to plain storage or variation storage.
- * Variation storage is used for all domain documents.
+ * Variation storage is used for all domain entities.
  */
 @Singleton
 public class MongoStorageFacade implements VariationStorage {

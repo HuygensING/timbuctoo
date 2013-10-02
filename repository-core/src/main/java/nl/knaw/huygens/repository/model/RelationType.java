@@ -3,7 +3,7 @@ package nl.knaw.huygens.repository.model;
 import nl.knaw.huygens.repository.annotations.IDPrefix;
 
 /**
- * The type of a relation between domain documents.
+ * The type of a relation between domain entities.
  *
  * (This resembles an RDF predicate.)
  */
