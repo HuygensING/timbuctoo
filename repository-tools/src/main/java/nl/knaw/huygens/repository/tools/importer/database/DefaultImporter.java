@@ -44,12 +44,12 @@ public abstract class DefaultImporter {
   // --- storage -------------------------------------------------------
 
   protected <T extends Entity> T getDocument(Class<T> type, String id) {
-    return storageManager.getDocument(type, id);
+    return storageManager.getEntity(type, id);
   }
 
   protected <T extends Entity> String addDocument(Class<T> type, T document, boolean isComplete) {
     try {
-      storageManager.addDocumentWithoutPersisting(type, document, isComplete);
+      storageManager.addEntityWithoutPersisting(type, document, isComplete);
       return document.getId();
     } catch (IOException e) {
       handleError("Failed to add %s; %s", document.getDisplayName(), e.getMessage());
@@ -59,7 +59,7 @@ public abstract class DefaultImporter {
 
   protected <T extends Entity> T modDocument(Class<T> type, T document) {
     try {
-      storageManager.modifyDocumentWithoutPersisting(type, document);
+      storageManager.modifyEntityWithoutPersisting(type, document);
       return document;
     } catch (IOException e) {
       handleError("Failed to modify %s; %s", document.getDisplayName(), e.getMessage());

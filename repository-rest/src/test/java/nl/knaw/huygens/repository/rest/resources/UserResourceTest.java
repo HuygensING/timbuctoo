@@ -91,7 +91,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     User expected = createUser("test", "test");
     expected.setId(USER_ID);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(expected);
+    when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
     User actual = webResource.path("/resources/user").path(USER_ID).header("Authorization", "bearer 12333322abef").get(User.class);
 
@@ -106,7 +106,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     WebResource webResource = super.resource();
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(null);
+    when(storageManager.getEntity(User.class, USER_ID)).thenReturn(null);
 
     ClientResponse clientResponse = webResource.path("/resources/user").path(USER_ID).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
 
@@ -121,7 +121,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     User expected = createUser("test", "test");
     expected.setId(USER_ID);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(expected);
+    when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
     User actual = webResource.path("/resources/user/me").header("Authorization", "bearer 12333322abef").get(User.class);
 
@@ -138,7 +138,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     User expected = createUser("test", "test");
     expected.setId(USER_ID);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(expected);
+    when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
     User actual = webResource.path("/resources/user/me").header("Authorization", "bearer 12333322abef").get(User.class);
 
@@ -158,7 +158,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     User expected = createUser("test", "test");
     expected.setId(USER_ID);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(expected);
+    when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
     final User admin = createUser("admin", "admin");
     admin.email = "admin@admin.com";
@@ -173,7 +173,7 @@ public class UserResourceTest extends WebServiceTestSetup {
         createdUsers.put(USER_ID, user);
         return null;
       }
-    }).when(storageManager).addDocument(any(Class.class), any(User.class));
+    }).when(storageManager).addEntity(any(Class.class), any(User.class));
 
     doAnswer(new Answer<User>() {
       @Override
@@ -186,7 +186,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
         return createdUsers.get(USER_ID);
       }
-    }).when(storageManager).searchDocument(any(Class.class), any(User.class));
+    }).when(storageManager).searchEntity(any(Class.class), any(User.class));
 
     User actual = webResource.path("/resources/user/me").header("Authorization", "bearer 12333322abef").get(User.class);
 
@@ -232,7 +232,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     original.setId(USER_ID);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(original);
+    when(storageManager.getEntity(User.class, USER_ID)).thenReturn(original);
 
     WebResource webResource = super.resource();
 
@@ -260,7 +260,7 @@ public class UserResourceTest extends WebServiceTestSetup {
         // only if the document version does not exist an IOException is thrown.
         throw new IOException();
       }
-    }).when(storageManager).modifyDocument(any(Class.class), any(User.class));
+    }).when(storageManager).modifyEntity(any(Class.class), any(User.class));
 
     WebResource webResource = super.resource();
 
@@ -278,7 +278,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     user.setId(USER_ID);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(null);
+    when(storageManager.getEntity(User.class, USER_ID)).thenReturn(null);
 
     WebResource webResource = super.resource();
 
@@ -294,7 +294,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     user.setId(USER_ID);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(null);
+    when(storageManager.getEntity(User.class, USER_ID)).thenReturn(null);
 
     setUserUnauthorized();
 
@@ -313,7 +313,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     User expected = createUser("test", "test");
     expected.setId(USER_ID);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(expected);
+    when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
     ClientResponse clientResponse = webResource.path("/resources/user").path(USER_ID).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
 
@@ -326,7 +326,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     WebResource webResource = super.resource();
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(null);
+    when(storageManager.getEntity(User.class, USER_ID)).thenReturn(null);
 
     ClientResponse clientResponse = webResource.path("/resources/user").path(USER_ID).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
 
@@ -341,7 +341,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     User expected = createUser("test", "test");
     expected.setId(USER_ID);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(expected);
+    when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
     ClientResponse clientResponse = webResource.path("/resources/user").path(USER_ID).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
 
@@ -355,7 +355,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     User expected = createUser("test", "test");
     expected.setId(USER_ID);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    when(storageManager.getDocument(User.class, USER_ID)).thenReturn(expected);
+    when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
     setUserUnauthorized();
 
     ClientResponse clientResponse = webResource.path("/resources/user").path(USER_ID).delete(ClientResponse.class);

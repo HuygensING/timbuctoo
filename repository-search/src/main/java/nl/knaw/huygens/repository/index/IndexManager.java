@@ -17,11 +17,11 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 /**
- * This manager is responsible for handling document changes on the index.
+ * This manager is responsible for handling entity changes on the index.
  *
  * The manager uses the Solr cores defined in the configuration file.
- * Each core corresponds to a primitive document type and stores data
- * for all subclasses of that document type.
+ * Each core corresponds to a primitive entity type and stores data
+ * for all subclasses of that entity type.
  * Relations are basic infrastructure and need not be specified.
  *
  * Since we are using the 'commitWithin' feature of Solr, there's no need
@@ -37,7 +37,7 @@ public class IndexManager {
 
   private final DocTypeRegistry registry;
   private final LocalSolrServer server;
-  private Map<Class<? extends Entity>, DocumentIndexer<? extends Entity>> indexers;
+  private Map<Class<? extends Entity>, EntityIndexer<? extends Entity>> indexers;
 
   @Inject
   public IndexManager(Configuration config, DocTypeRegistry registry, LocalSolrServer server, StorageManager storageManager, RelationManager relationManager) {
@@ -53,16 +53,16 @@ public class IndexManager {
     for (String doctype : config.getSettings("indexeddoctypes")) {
       Class<? extends Entity> type = registry.getTypeForIName(doctype);
       if (type == null) {
-        LOG.error("Configuration: '{}' is not a document type", doctype);
+        LOG.error("Configuration: '{}' is not a entity type", doctype);
         error = true;
       } else if (type != registry.getBaseClass(type)) {
-        LOG.error("Configuration: '{}' is not a primitive document type", doctype);
+        LOG.error("Configuration: '{}' is not a primitive entity type", doctype);
         error = true;
       } else if (indexers.containsKey(type)) {
         LOG.warn("Configuration: ignoring entry '{}' in indexeddoctypes", doctype);
       } else {
         String core = type.getSimpleName().toLowerCase();
-        indexers.put(type, DomainDocumentIndexer.newInstance(storageManager, server, core));
+        indexers.put(type, DomainEntityIndexer.newInstance(storageManager, server, core));
       }
     }
     if (error) {
@@ -70,10 +70,10 @@ public class IndexManager {
     }
   }
 
-  private <T extends Entity> DocumentIndexer<T> indexerForType(Class<T> type) {
+  private <T extends Entity> EntityIndexer<T> indexerForType(Class<T> type) {
     @SuppressWarnings("unchecked")
-    DocumentIndexer<T> indexer = (DocumentIndexer<T>) indexers.get(type);
-    return (indexer != null) ? indexer : new NoDocumentIndexer<T>();
+    EntityIndexer<T> indexer = (EntityIndexer<T>) indexers.get(type);
+    return (indexer != null) ? indexer : new NoEntityIndexer<T>();
   }
 
   public <T extends Entity> void addDocument(Class<T> type, String id) throws IndexException {
@@ -100,7 +100,7 @@ public class IndexManager {
     try {
       server.deleteAll();
     } catch (Exception e) {
-      throw new IndexException("Failed to delete all documents from index", e);
+      throw new IndexException("Failed to delete all entities from index", e);
     }
   }
 

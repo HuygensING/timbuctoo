@@ -51,12 +51,12 @@ public class UserSecurityContextCreatorTest {
 
     SecurityInformation securityInformation = createSecurityInformation(applicationName, displayName, userId);
 
-    when(storageManager.searchDocument(Matchers.<Class<User>> any(), any(User.class))).thenReturn(user);
+    when(storageManager.searchEntity(Matchers.<Class<User>> any(), any(User.class))).thenReturn(user);
 
     instance.createSecurityContext(securityInformation);
 
-    verify(storageManager, only()).searchDocument(Matchers.<Class<User>> any(), any(User.class));
-    verify(storageManager, never()).addDocument(Matchers.<Class<User>> any(), any(User.class));
+    verify(storageManager, only()).searchEntity(Matchers.<Class<User>> any(), any(User.class));
+    verify(storageManager, never()).addEntity(Matchers.<Class<User>> any(), any(User.class));
 
   }
 
@@ -89,12 +89,12 @@ public class UserSecurityContextCreatorTest {
     User user = createUser(applicationName, displayName, userId);
     user.setRoles(Lists.newArrayList("UNVERIFIED_USER"));
 
-    when(storageManager.searchDocument(Matchers.<Class<User>> any(), any(User.class))).thenReturn(null, user);
+    when(storageManager.searchEntity(Matchers.<Class<User>> any(), any(User.class))).thenReturn(null, user);
 
     instance.createSecurityContext(securityInformation);
 
-    verify(storageManager, times(2)).searchDocument(Matchers.<Class<User>> any(), any(User.class));
-    verify(storageManager, times(1)).addDocument(Matchers.<Class<User>> any(), any(User.class));
+    verify(storageManager, times(2)).searchEntity(Matchers.<Class<User>> any(), any(User.class));
+    verify(storageManager, times(1)).addEntity(Matchers.<Class<User>> any(), any(User.class));
   }
 
   @Test

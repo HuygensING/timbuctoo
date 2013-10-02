@@ -20,7 +20,7 @@ public class GenericImporter extends GenericDataHandler {
     Progress progress = new Progress();
     for (T object : objects) {
       progress.step();
-      storageManager.addDocument(type, object);
+      storageManager.addEntity(type, object);
     }
     progress.done();
   }

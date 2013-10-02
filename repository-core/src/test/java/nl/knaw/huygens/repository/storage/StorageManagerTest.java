@@ -77,7 +77,7 @@ public class StorageManagerTest {
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     when(docTypeRegistry.getINameForType(type)).thenReturn("generaltestdoc");
 
-    instance.addDocument(type, doc);
+    instance.addEntity(type, doc);
 
     verifyAddDocument(type, doc, times(1), times(1), times(1));
   }
@@ -89,7 +89,7 @@ public class StorageManagerTest {
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     when(docTypeRegistry.getINameForType(type)).thenReturn("generaltestdoc");
 
-    instance.addDocument(type, doc, false);
+    instance.addEntity(type, doc, false);
 
     verifyAddDocument(type, doc, times(1), times(1), never());
   }
@@ -101,7 +101,7 @@ public class StorageManagerTest {
 
     Class<TestSystemDocument> type = TestSystemDocument.class;
 
-    instance.addDocument(type, doc);
+    instance.addEntity(type, doc);
 
     verifyAddDocument(type, doc, times(1), never(), never());
   }
@@ -114,7 +114,7 @@ public class StorageManagerTest {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     doThrow(IOException.class).when(storage).addItem(type, doc);
 
-    instance.addDocument(type, doc);
+    instance.addEntity(type, doc);
   }
 
   @Test
@@ -125,7 +125,7 @@ public class StorageManagerTest {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     doThrow(PersistenceException.class).when(persistenceWrapper).persistObject(anyString(), anyString());
 
-    instance.addDocument(type, doc);
+    instance.addEntity(type, doc);
 
     verifyAddDocument(type, doc, times(1), times(1), times(1));
   }
@@ -144,7 +144,7 @@ public class StorageManagerTest {
     doc.name = "test";
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
-    instance.addDocumentWithoutPersisting(type, doc, true);
+    instance.addEntityWithoutPersisting(type, doc, true);
 
     verifyAddDocument(type, doc, times(1), never(), times(1));
   }
@@ -155,7 +155,7 @@ public class StorageManagerTest {
     doc.name = "test";
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
-    instance.addDocumentWithoutPersisting(type, doc, false);
+    instance.addEntityWithoutPersisting(type, doc, false);
 
     verifyAddDocument(type, doc, times(1), never(), never());
   }
@@ -171,7 +171,7 @@ public class StorageManagerTest {
 
     when(storage.getItem(type, id)).thenReturn(doc);
 
-    Entity actualDoc = instance.getDocument(type, id);
+    Entity actualDoc = instance.getEntity(type, id);
 
     assertEquals(id, actualDoc.getId());
     assertEquals("test", actualDoc.getDisplayName());
@@ -184,7 +184,7 @@ public class StorageManagerTest {
 
     when(storage.getItem(type, id)).thenReturn(null);
 
-    assertNull(instance.getDocument(type, id));
+    assertNull(instance.getEntity(type, id));
   }
 
   @SuppressWarnings("unchecked")
@@ -195,7 +195,7 @@ public class StorageManagerTest {
 
     when(storage.getItem(type, id)).thenThrow(IOException.class);
 
-    assertNull(instance.getDocument(type, id));
+    assertNull(instance.getEntity(type, id));
   }
 
   @Test
@@ -289,7 +289,7 @@ public class StorageManagerTest {
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
-    instance.modifyDocument(type, expectedDoc);
+    instance.modifyEntity(type, expectedDoc);
     verifyModifyDocument(type, expectedDoc, times(1), times(1), times(1));
   }
 
@@ -301,7 +301,7 @@ public class StorageManagerTest {
 
     Class<TestSystemDocument> type = TestSystemDocument.class;
 
-    instance.modifyDocument(type, expectedDoc);
+    instance.modifyEntity(type, expectedDoc);
     verifyModifyDocument(type, expectedDoc, times(1), never(), never());
   }
 
@@ -314,7 +314,7 @@ public class StorageManagerTest {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     doThrow(IOException.class).when(storage).updateItem(type, doc.getId(), doc);
 
-    instance.modifyDocument(type, doc);
+    instance.modifyEntity(type, doc);
   }
 
   @Test
@@ -325,7 +325,7 @@ public class StorageManagerTest {
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
-    instance.modifyDocument(type, expectedDoc);
+    instance.modifyEntity(type, expectedDoc);
     verifyModifyDocument(type, expectedDoc, times(1), times(1), times(1));
   }
 
@@ -346,7 +346,7 @@ public class StorageManagerTest {
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
-    instance.modifyDocumentWithoutPersisting(type, expectedDoc);
+    instance.modifyEntityWithoutPersisting(type, expectedDoc);
     verifyModifyDocument(type, expectedDoc, times(1), never(), times(1));
   }
 
@@ -363,7 +363,7 @@ public class StorageManagerTest {
 
     when(docTypeRegistry.getINameForType(Mockito.<Class<? extends Entity>> any())).thenReturn(typeString);
 
-    instance.removeDocument(type, inputDoc);
+    instance.removeEntity(type, inputDoc);
     verify(storage).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
     verify(producer).send(ActionType.INDEX_DEL, typeString, id);
   }
@@ -377,7 +377,7 @@ public class StorageManagerTest {
 
     Class<TestSystemDocument> type = TestSystemDocument.class;
 
-    instance.removeDocument(type, inputDoc);
+    instance.removeEntity(type, inputDoc);
     verify(storage, times(1)).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
     verify(producer, never()).send(any(ActionType.class), anyString(), anyString());
   }
@@ -391,7 +391,7 @@ public class StorageManagerTest {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     doThrow(IOException.class).when(storage).deleteItem(type, doc.getId(), doc.getLastChange());
 
-    instance.removeDocument(type, doc);
+    instance.removeEntity(type, doc);
   }
 
   @Test

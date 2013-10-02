@@ -3,9 +3,9 @@ package nl.knaw.huygens.repository.index;
 import nl.knaw.huygens.repository.model.Entity;
 
 /**
- * DocumentIndexer that does nothing...
+ * An {@code EntityIndexer} that does nothing...
  */
-class NoDocumentIndexer<T extends Entity> implements DocumentIndexer<T> {
+class NoEntityIndexer<T extends Entity> implements EntityIndexer<T> {
 
   @Override
   public void add(Class<T> type, String id) throws IndexException {}

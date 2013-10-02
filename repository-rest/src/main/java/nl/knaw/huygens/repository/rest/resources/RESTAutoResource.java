@@ -100,7 +100,7 @@ public class RESTAutoResource {
 
     @SuppressWarnings("unchecked")
     T typedDoc = (T) input;
-    storageManager.addDocument(type, typedDoc);
+    storageManager.addEntity(type, typedDoc);
 
     String location = uriInfo.getBaseUri().toString() + "resources/" + entityType + "/" + input.getId();
     return Response.status(Status.CREATED).header("Location", location).build();
@@ -117,7 +117,7 @@ public class RESTAutoResource {
       String id //
   ) {
     Class<? extends Entity> type = getDocType(entityType);
-    Entity document = checkNotNull(storageManager.getDocument(type, id), Status.NOT_FOUND);
+    Entity document = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
 
     if (document instanceof DomainEntity) {
       try {
@@ -155,7 +155,7 @@ public class RESTAutoResource {
     try {
       @SuppressWarnings("unchecked")
       T typedDoc = (T) input;
-      storageManager.modifyDocument(type, typedDoc);
+      storageManager.modifyEntity(type, typedDoc);
     } catch (IOException ex) {
       // only if the document version does not exist an IOException is thrown.
       throw new WebApplicationException(Status.NOT_FOUND);
@@ -174,8 +174,8 @@ public class RESTAutoResource {
   ) throws IOException {
     @SuppressWarnings("unchecked")
     Class<T> type = (Class<T>) getDocType(entityType);
-    T typedDoc = checkNotNull(storageManager.getDocument(type, id), Status.NOT_FOUND);
-    storageManager.removeDocument(type, typedDoc);
+    T typedDoc = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
+    storageManager.removeEntity(type, typedDoc);
     return Response.status(Status.OK).build();
   }
 

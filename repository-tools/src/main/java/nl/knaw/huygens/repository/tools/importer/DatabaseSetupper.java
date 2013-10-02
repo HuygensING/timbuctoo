@@ -78,7 +78,7 @@ public class DatabaseSetupper {
     admin.groups = Lists.newArrayList("administrator");
     admin.firstName = "Joe";
     admin.lastName = "Administrator";
-    storageManager.addDocument(User.class, admin);
+    storageManager.addEntity(User.class, admin);
     System.out.println("Added default user.");
   }
 
