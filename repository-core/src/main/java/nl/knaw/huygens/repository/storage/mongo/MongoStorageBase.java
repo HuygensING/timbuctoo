@@ -59,7 +59,7 @@ public class MongoStorageBase {
   public static class Counter {
     @JsonProperty("_id")
     public String id;
-    public int next;
+    public long next;
   }
 
 }
