@@ -54,6 +54,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
 
   public MongoStorage(DocTypeRegistry registry, StorageConfiguration conf, Mongo m, DB loanedDB) {
     super(registry);
+    dbName = conf.getDbName();
     mongo = m;
     db = loanedDB;
     initializeDB(conf);
@@ -62,7 +63,6 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   private void initializeDB(StorageConfiguration conf) {
     counterCol = JacksonDBCollection.wrap(db.getCollection(COUNTER_COLLECTION_NAME), Counter.class, String.class);
     documentCollections = conf.getDocumentTypes();
-    // versionedDocumentTypes = conf.getVersionedTypes();
   }
 
   @Override
