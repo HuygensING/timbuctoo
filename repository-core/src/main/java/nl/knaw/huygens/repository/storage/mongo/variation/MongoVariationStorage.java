@@ -398,9 +398,9 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   public int countRelations(Relation relation) {
     DBCollection col = db.getCollection("relation");
     BasicDBObject query = new BasicDBObject();
-    query.append("^typeRefId", relation.getTypeRefId());
-    query.append("^sourceRefId", relation.getSourceRefId());
-    query.append("^targetRefId", relation.getTargetRefId());
+    query.append("^typeId", relation.getTypeId());
+    query.append("^sourceId", relation.getSourceId());
+    query.append("^targetId", relation.getTargetId());
     return (int) col.count(query);
   }
 
