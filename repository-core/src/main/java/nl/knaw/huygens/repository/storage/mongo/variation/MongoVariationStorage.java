@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.DomainEntity;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.GenericDBRef;
@@ -278,7 +278,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     q.put("^rev", item.getRev());
     DBObject existingNode = col.findOne(q);
     if (existingNode == null) {
-      throw new IOException("No document was found for ID " + id + " and revision " + String.valueOf(item.getRev()) + " !");
+      throw new IOException("No entity was found for ID " + id + " and revision " + String.valueOf(item.getRev()) + " !");
     }
     JsonNode updatedNode = inducer.induce(item, type, existingNode);
     ((ObjectNode) updatedNode).put("^rev", item.getRev() + 1);
@@ -302,7 +302,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     BasicDBObject q = new BasicDBObject("_id", id);
     DBObject existingNode = col.findOne(q);
     if (existingNode == null) {
-      throw new IOException("No document was found for ID " + id + "!");
+      throw new IOException("No entity was found for ID " + id + "!");
     }
     ObjectNode node;
     try {
@@ -373,13 +373,13 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   @Override
   public <T extends Entity> int removeAll(Class<T> type) {
-    // Only for system documents...
+    // Only for system entities...
     return 0;
   }
 
   @Override
   public <T extends Entity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
-    // Only for system documents...
+    // Only for system entities...
     return 0;
   }
 

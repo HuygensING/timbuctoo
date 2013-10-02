@@ -35,7 +35,7 @@ public class ConfigValidator {
   private void validateDocTypes(String configKey) {
     for (String type : config.getSettings(configKey)) {
       if (registry.getTypeForIName(type) == null) {
-        System.err.printf("Configuration key '%s': '%s' is not a document type%n", configKey, type);
+        System.err.printf("Configuration key '%s': '%s' is not an entity type%n", configKey, type);
         error = true;
       }
     }

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * A relation between domain documents.
+ * A relation between domain entities.
  *
  * (This resembles an RDF statement.)
  * 

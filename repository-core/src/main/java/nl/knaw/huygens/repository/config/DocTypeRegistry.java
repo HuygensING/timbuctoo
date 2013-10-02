@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.repository.annotations.DoNotRegister;
-import nl.knaw.huygens.repository.annotations.DocumentTypeName;
+import nl.knaw.huygens.repository.annotations.EntityTypeName;
 import nl.knaw.huygens.repository.model.Entity;
 
 import org.apache.commons.lang.StringUtils;
@@ -21,28 +21,28 @@ import com.google.common.reflect.ClassPath.ClassInfo;
 import com.google.inject.Singleton;
 
 /**
- * The document registry contains properties of document classes.
+ * The document registry contains properties of entity classes.
  *
- * We distinguish two types of documents:<ul>
- * <li>System documents are for internal use in the repository;
+ * We distinguish two types of entities:<ul>
+ * <li>System entities are for internal use in the repository;
  * they are not versioned and do not have variations.</li>
- * <li>Domain documents are used for modeling user entities;
+ * <li>Domain entities are used for modeling user entities;
  * they are versioned and may have variations.</li>
  * </ul>
  *
  * <p>The document registry scans specified Java packages for concrete
- * (i.e. not abstract) classes that subclass {@code Document}.
+ * (i.e. not abstract) classes that subclass {@code Entity}.
  * The developer has the option to prevent registration by providing
  * a {@code DoNotRegister} annotation on a class.</p>
  *
  * <p>The use of classes as type tokens is connected to type erasure
  * of Java generics. In addition to type tokens we use two string
- * representations of document types:
+ * representations of entity types:
  * - internal names, which are used, for instance, for indicating
- * document types in JSON (so as to hide implementation details),
+ * entity types in JSON (so as to hide implementation details),
  * for Solr core names, and for Mongo collection names.
  * - external names, which are used in the REST API for indicating
- * document collections.
+ * entity collections.
  * Internal names are simply detailed a rule: the lower case form
  * of the simple class name (the last part of the fully qualified
  * class name). External names are determined as the plural of the
@@ -121,8 +121,8 @@ public class DocTypeRegistry {
   }
 
   private String getExternalName(Class<? extends Entity> type) {
-    if (type.isAnnotationPresent(DocumentTypeName.class)) {
-      return type.getAnnotation(DocumentTypeName.class).value();
+    if (type.isAnnotationPresent(EntityTypeName.class)) {
+      return type.getAnnotation(EntityTypeName.class).value();
     } else {
       return getInternalName(type) + "s";
     }

@@ -3,12 +3,12 @@ package nl.knaw.huygens.repository.model;
 import java.util.Date;
 import java.util.List;
 
-import nl.knaw.huygens.repository.annotations.DocumentTypeName;
+import nl.knaw.huygens.repository.annotations.EntityTypeName;
 import nl.knaw.huygens.repository.annotations.IDPrefix;
 import nl.knaw.huygens.repository.facet.FacetCount;
 
 @IDPrefix("QURY")
-@DocumentTypeName("search")
+@EntityTypeName("search")
 public class SearchResult extends SystemEntity implements Persistent {
 
   public static final String DATE_FIELD = "date";
