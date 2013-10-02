@@ -33,28 +33,28 @@ public class StorageUtils {
     return String.format("%s%012d", getIDPrefix(type), counter);
   }
 
-  public static <T extends Entity> List<T> readFromIterator(StorageIterator<T> it, int offset, int limit) {
+  public static <T extends Entity> List<T> readFromIterator(StorageIterator<T> iterator, int offset, int limit) {
     if (offset > 0) {
-      it.skip(offset);
+      iterator.skip(offset);
     }
-    return it.getSome(limit);
+    return iterator.getSome(limit);
   }
 
-  public static <T extends Entity> List<T> resolveIterator(StorageIterator<T> it, int limit) {
-    return resolveIterator(it, 0, limit);
+  public static <T extends Entity> List<T> resolveIterator(StorageIterator<T> iterator, int limit) {
+    return resolveIterator(iterator, 0, limit);
   }
 
-  public static <T extends Entity> List<T> resolveIterator(StorageIterator<T> it, int offset, int limit) {
+  public static <T extends Entity> List<T> resolveIterator(StorageIterator<T> iterator, int offset, int limit) {
     if (offset > 0) {
-      it.skip(offset);
+      iterator.skip(offset);
     }
-    List<T> rv = it.getSome(limit);
-    it.close();
+    List<T> rv = iterator.getSome(limit);
+    iterator.close();
     return rv;
   }
 
-  public static <T extends Entity> List<T> readFromIterator(StorageIterator<T> it, int limit) {
-    return readFromIterator(it, 0, limit);
+  public static <T extends Entity> List<T> readFromIterator(StorageIterator<T> iterator, int limit) {
+    return readFromIterator(iterator, 0, limit);
   }
 
   public static void sortDocumentsByLastChange(List<Entity> docs) {
