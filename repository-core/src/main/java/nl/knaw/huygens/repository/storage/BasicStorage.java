@@ -34,7 +34,10 @@ public interface BasicStorage {
 
   <T extends Document> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids);
 
-  <T extends Document> void addItem(Class<T> type, T item) throws IOException;
+  /**
+   * Adds the specified document to the storage; returns its assigned id.
+   */
+  <T extends Document> String addItem(Class<T> type, T item) throws IOException;
 
   <T extends Document> void updateItem(Class<T> type, String id, T item) throws IOException;
 

@@ -259,7 +259,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   // -------------------------------------------------------------------
 
   @Override
-  public <T extends Document> void addItem(Class<T> type, T item) throws IOException {
+  public <T extends Document> String addItem(Class<T> type, T item) throws IOException {
     if (item.getId() == null) {
       setNextId(type, item);
     }
@@ -268,6 +268,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
     col.insert(insertedItem);
     addInitialVersion(type, item.getId(), insertedItem);
+    return item.getId();
   }
 
   @Override

@@ -163,21 +163,19 @@ public class StorageManager {
   /* A bit of code duplication, but I think it is more readable than calling this method from addDocument and then persisting it.
    * This code is needed, because of issue #1774 in Redmine. It contains the question if the persistent identifier should be added autmaticallly. 
    */
-  public <T extends Document> void addDocumentWithoutPersisting(Class<T> type, T doc, boolean isComplete) throws IOException {
-    storage.addItem(type, doc);
+  public <T extends Document> String addDocumentWithoutPersisting(Class<T> type, T doc, boolean isComplete) throws IOException {
+    String id = storage.addItem(type, doc);
     if (DomainDocument.class.isAssignableFrom(type) && isComplete) {
-      sendIndexMessage(ActionType.INDEX_ADD, docTypeRegistry.getINameForType(type), doc.getId());
+      sendIndexMessage(ActionType.INDEX_ADD, docTypeRegistry.getINameForType(type), id);
     }
+    return id;
   }
 
   /**
    * A convenience method for ${@code addDocument(type, doc, true)}
-   * @param type
-   * @param doc
-   * @throws IOException
    */
-  public <T extends Document> void addDocument(Class<T> type, T doc) throws IOException {
-    addDocument(type, doc, true);
+  public <T extends Document> String addDocument(Class<T> type, T doc) throws IOException {
+    return addDocument(type, doc, true);
   }
 
   /**
@@ -190,16 +188,15 @@ public class StorageManager {
    * when this boolean is true the document will be indexed
    * @throws IOException when thrown by storage
    */
-  public <T extends Document> void addDocument(Class<T> type, T doc, boolean isComplete) throws IOException {
-    storage.addItem(type, doc);
-
+  public <T extends Document> String addDocument(Class<T> type, T doc, boolean isComplete) throws IOException {
+    String id = storage.addItem(type, doc);
     if (DomainDocument.class.isAssignableFrom(type)) {
       persistDocumentVersion(type, doc);
-
       if (isComplete) {
-        sendIndexMessage(ActionType.INDEX_ADD, docTypeRegistry.getINameForType(type), doc.getId());
+        sendIndexMessage(ActionType.INDEX_ADD, docTypeRegistry.getINameForType(type), id);
       }
     }
+    return id;
   }
 
   private <T extends Document> void persistDocumentVersion(Class<T> type, T doc) {
