@@ -124,11 +124,11 @@ public class RelationManager {
         LOG.error("Missing relation type ref");
         return null;
       }
-      if (relation.getSourceRefType() == null || relation.getSourceRefId() == null) {
+      if (relation.getSourceType() == null || relation.getSourceId() == null) {
         LOG.error("Missing source ref");
         return null;
       }
-      if (relation.getTargetRef() == null) {
+      if (relation.getTargetType() == null || relation.getTargetId() == null) {
         LOG.error("Missing target ref");
         return null;
       }
@@ -137,7 +137,7 @@ public class RelationManager {
         LOG.error("Unknown relation type {}", relation.getTypeRef().getId());
         return null;
       }
-      String iname = relation.getSourceRefType();
+      String iname = relation.getSourceType();
       Class<? extends Document> actualType = registry.getTypeForIName(iname);
       if (!relationType.getSourceDocType().isAssignableFrom(actualType)) {
         LOG.error("Incompatible source type {}", iname);
