@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import nl.knaw.huygens.repository.annotations.IDPrefix;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.util.Change;
@@ -301,7 +300,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
     // return the new object, create if no object exists:
     Counter newCounter = counterCol.findAndModify(idFinder, null, null, false, counterIncrement, true, true);
 
-    String newId = type.getAnnotation(IDPrefix.class).value() + String.format("%1$010d", newCounter.next);
+    String newId = StorageUtils.formatEntityId(type, newCounter.next);
     item.setId(newId);
   }
 

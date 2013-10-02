@@ -9,7 +9,7 @@ import com.google.common.collect.Maps;
 /**
  * Denotes a language, catering for ISO 639-2 and 639-1 codes.
  */
-@IDPrefix("LAN")
+@IDPrefix("LANG")
 public class Language extends DomainDocument {
 
   /** Codes, e.g. "iso_639_2". */

@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * (it's a different variation we retrieve), so "just" indexing is
  * too simple a concept: we need an index for a VRE.
  */
-@IDPrefix("REL")
+@IDPrefix("RELA")
 public class Relation extends DomainDocument {
 
   /** A reference to the 'active' participant of the relation (resembles rdf:subject). */

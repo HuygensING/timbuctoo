@@ -9,7 +9,7 @@ import nl.knaw.huygens.repository.model.SystemDocument;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@IDPrefix("TSD")
+@IDPrefix("TSTD")
 public class TestSystemDocument extends SystemDocument {
 
   private String name;

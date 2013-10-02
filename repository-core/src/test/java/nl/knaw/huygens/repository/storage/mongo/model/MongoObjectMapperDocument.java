@@ -9,8 +9,9 @@ import nl.knaw.huygens.repository.model.SystemDocument;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@IDPrefix("TSD")
+@IDPrefix("TSTD")
 public class MongoObjectMapperDocument extends SystemDocument {
+  
   private String name;
   private String testValue1;
   private String testValue2;
@@ -32,7 +33,6 @@ public class MongoObjectMapperDocument extends SystemDocument {
   @JsonProperty("!currentVariation")
   public void setCurrentVariation(String currentVariation) {
     // TODO Auto-generated method stub
-
   }
 
   @Override
