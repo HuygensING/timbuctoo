@@ -240,8 +240,10 @@ public class VariationReducer {
       if (fV.isArray()) {
         ArrayNode ary = (ArrayNode) fV;
         fetchAndAssignMatchingValue(variationName, rv, k, ary);
-      } else if (k.startsWith("!")) {} else {
-        throw new VariationException("Unknown variation value for key " + k);
+      } else if (k.startsWith("!")) {
+        // Ignore properties starting with a "!"
+      } else {
+        throw new VariationException("Unknown variation value for key: \"" + k + "\"");
       }
     }
   }
