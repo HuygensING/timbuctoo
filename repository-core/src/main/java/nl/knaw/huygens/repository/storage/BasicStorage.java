@@ -35,7 +35,7 @@ public interface BasicStorage {
   <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids);
 
   /**
-   * Adds the specified document to the storage; returns its assigned id.
+   * Adds the specified entity to the storage; returns its assigned id.
    */
   <T extends Entity> String addItem(Class<T> type, T item) throws IOException;
 
@@ -55,14 +55,14 @@ public interface BasicStorage {
 
   /**
    * Removes all system douments with the specified type.
-   * @return The number of documents removed.
+   * @return The number of entities removed.
    */
   <T extends Entity> int removeAll(Class<T> type);
 
   /**
-   * Removes system documents that have a value of the specified date field
+   * Removes system entities that have a value of the specified date field
    * that is older than the specified date.
-   * @return The number of documents removed.
+   * @return The number of entities removed.
    */
   <T extends Entity> int removeByDate(Class<T> type, String dateField, Date dateValue);
 

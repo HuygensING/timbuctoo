@@ -18,8 +18,8 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.messages.ActionType;
 import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.messages.Producer;
-import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.DomainEntity;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.persistence.PersistenceWrapper;
@@ -118,8 +118,8 @@ public class StorageManager {
   }
 
   /**
-   * Returns a single document matching the non-null fields of
-   * the specified document, or null if no such document exists.
+   * Returns a single entity matching the non-null fields of
+   * the specified entity, or null if no such entity exists.
    */
   public <T extends Entity> T searchDocument(Class<T> type, T example) {
     try {
@@ -180,13 +180,13 @@ public class StorageManager {
   }
 
   /**
-   * Stores an item into the database. When no exception is thrown and the document is of the type DomainDocument, the document is persisted. 
-   * If the boolean isComplete is true the document will be indexed as well.
+   * Stores an item into the database. When no exception is thrown and the entity is of the type DomainEntity, the entity is persisted. 
+   * If the boolean isComplete is true the entity will be indexed as well.
    * 
-   * @param type should be a DomainDocument
+   * @param type should be a DomainEntity
    * @param doc should be of a the type used in type.
-   * @param isComplete marks if the document contains all it's references and relations, 
-   * when this boolean is true the document will be indexed
+   * @param isComplete marks if the entity contains all it's references and relations, 
+   * when this boolean is true the entity will be indexed
    * @throws IOException when thrown by storage
    */
   public <T extends Entity> String addDocument(Class<T> type, T doc, boolean isComplete) throws IOException {
@@ -245,10 +245,10 @@ public class StorageManager {
 
   /**
    * Removes all the objects of type <T>, that have no persistent identifier.
-   * The idea behind this method is that {@code DomainDocument}s without persistent identifier are not validated yet.
-   * After a bulk import non of the imported documents will have a persistent identifier, until a user has agreed with the imported collection.  
+   * The idea behind this method is that domain entities without persistent identifier are not validated yet.
+   * After a bulk import non of the imported entity will have a persistent identifier, until a user has agreed with the imported collection.  
    * 
-   * @param <T> extends {@code DomainDocument}, because {@code SystemDocument}s have no persistent identifiers.
+   * @param <T> extends {@code DomainEntity}, because system entities have no persistent identifiers.
    * @param type the type all of the objects should removed permanently from.
    */
   public <T extends DomainEntity> void removePermanently(Class<T> type) {

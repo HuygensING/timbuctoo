@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.Lists;
 
-// Annotation determines to which subclass the document has to be resolved.
+// Annotation determines to which subclass the entity has to be resolved.
 // @see: http://wiki.fasterxml.com/JacksonPolymorphicDeserialization
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public abstract class Entity {
@@ -31,7 +31,7 @@ public abstract class Entity {
   private String currentVariation;
 
   /**
-   * Returns the name to be displayed for identification of this document.
+   * Returns the name to be displayed for identification of this entity.
    */
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")

@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * <p>This annotation allows explicit specification of the name to be used for
- * identifying a document type in the data store.</p>
+ * identifying an entity type in the data store.</p>
  *
  * <p>By default the name is the class name, with words separated with underscores,
  * in lowercase, and pluralized by adding an 's' character. For example:</p>
@@ -19,10 +19,10 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DocumentTypeName {
+public @interface EntityTypeName {
 
   /**
-   * Returns the document type name.
+   * Returns the entity type name.
    */
   String value();
 

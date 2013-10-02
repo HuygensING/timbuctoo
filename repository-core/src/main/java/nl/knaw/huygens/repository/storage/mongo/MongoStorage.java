@@ -37,8 +37,6 @@ import com.mongodb.util.JSON;
 
 public class MongoStorage extends MongoStorageBase implements BasicStorage {
 
-  // private Set<String> versionedDocumentTypes;
-
   public MongoStorage(DocTypeRegistry registry, StorageConfiguration conf) throws UnknownHostException, MongoException {
     super(registry);
     dbName = conf.getDbName();
@@ -190,11 +188,11 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   //
   //  ** The code below is temporarily retained because it contains ideas about versioning **
   //
-  //  public <T extends Document> void addItems(Class<T> type, List<T> items) throws IOException {
+  //  public <T extends Entity> void addItems(Class<T> type, List<T> items) throws IOException {
   //    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
   //    boolean shouldVersion = versionedDocumentTypes.contains(col.getName());
   //
-  //    // Create the changes objects for all these documents:
+  //    // Create the changes objects for all these entities:
   //    List<MongoChanges<T>> changes = Lists.newArrayListWithCapacity(items.size());
   //    int lastId = 0;
   //    for (T item : items) {
@@ -249,7 +247,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
 
     T oldItem = col.findAndModify(DBQuery.is("_id", id).is("^rev", oldRev), newItem);
     if (oldItem == null) {
-      throw new IOException("The document was modified since you loaded it!");
+      throw new IOException("The entity was modified since you loaded it!");
     }
   }
 
@@ -264,13 +262,13 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   public <T extends Entity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     // This needs to be updated once mongo-jackson-mapper fixes their wrapper:
-    // Update the actual document first:
+    // Update the actual entity first:
     BasicDBObject settings = new BasicDBObject("^deleted", true);
     DBObject newLastChange = MongoUtils.getObjectForDoc(change);
     settings.put("^lastChange", newLastChange);
     BasicDBObject update = new BasicDBObject("$set", settings);
     update.put("$inc", new BasicDBObject("^rev", 1));
-    // This returns the previous version of the document (!)
+    // This returns the previous version of the entity (!)
     // NB: we don't check the rev prop here. This is because deletion will
     // always work;
     // we simply set the delete prop to true.

@@ -1,7 +1,7 @@
 package nl.knaw.huygens.repository.model;
 
 /**
- * A reference to a {@code Document} instance,
+ * A reference to an {@code Entity} instance,
  * allowing it to be retrieved from the storage.
  */
 public class Reference {
