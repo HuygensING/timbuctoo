@@ -7,7 +7,7 @@ import nl.knaw.huygens.repository.annotations.IDPrefix;
  *
  * (This resembles an RDF predicate.)
  */
-@IDPrefix("RLT")
+@IDPrefix("RELT")
 public class RelationType extends SystemDocument {
 
   /** The name that uniquely identifies this relation type. */

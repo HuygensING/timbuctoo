@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import nl.knaw.huygens.repository.annotations.IDPrefix;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
@@ -18,6 +17,7 @@ import nl.knaw.huygens.repository.storage.GenericDBRef;
 import nl.knaw.huygens.repository.storage.JsonViews;
 import nl.knaw.huygens.repository.storage.StorageConfiguration;
 import nl.knaw.huygens.repository.storage.StorageIterator;
+import nl.knaw.huygens.repository.storage.StorageUtils;
 import nl.knaw.huygens.repository.storage.VariationStorage;
 import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
 import nl.knaw.huygens.repository.storage.mongo.MongoStorageBase;
@@ -367,20 +367,8 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     // return the new object, create if no object exists:
     Counter newCounter = counterCol.findAndModify(idFinder, null, null, false, counterIncrement, true, true);
 
-    String newId = getClassPrefix(cls) + String.format("%1$010d", newCounter.next);
+    String newId = StorageUtils.formatEntityId(cls, newCounter.next);
     item.setId(newId);
-  }
-
-  private String getClassPrefix(Class<?> cls) {
-    while (cls != null && !cls.equals(Document.class)) {
-      IDPrefix annotation = cls.getAnnotation(IDPrefix.class);
-      if (annotation != null) {
-        return annotation.value();
-      }
-      cls = cls.getSuperclass();
-    }
-    // We don't know what this is supposed to be, return "UNK" for unknown...
-    return "UNK";
   }
 
   @Override

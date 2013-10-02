@@ -44,7 +44,7 @@ public class RESTAutoResource {
   private final Logger LOG = LoggerFactory.getLogger(RESTAutoResource.class);
 
   private static final String ID_PARAM = "id";
-  private static final String ID_PATH = "/{id: [a-zA-Z][a-zA-Z][a-zA-Z]\\d+}";
+  private static final String ID_PATH = "/{id: [a-zA-Z]{4}\\d+}";
 
   public static final String ENTITY_PARAM = "entityType";
 
