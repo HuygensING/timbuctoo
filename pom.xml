@@ -36,6 +36,7 @@
     <activemq.version>5.7.0</activemq.version>
     <commons.configuration.version>1.9</commons.configuration.version>
     <guice.version>3.0</guice.version>
+    <hamcrest-library.version>1.3</hamcrest-library.version>
     <jackson.version>2.1.1</jackson.version>
     <javax.validation.version>1.0.0.GA</javax.validation.version>
     <jersey.version>1.16</jersey.version>
