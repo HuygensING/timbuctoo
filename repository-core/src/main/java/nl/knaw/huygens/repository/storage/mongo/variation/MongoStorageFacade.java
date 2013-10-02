@@ -102,8 +102,8 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public <T extends Document> void addItem(Class<T> type, T item) throws IOException {
-    getStorageFor(type).addItem(type, item);
+  public <T extends Document> String addItem(Class<T> type, T item) throws IOException {
+    return getStorageFor(type).addItem(type, item);
   }
 
   @Override

@@ -70,13 +70,11 @@ public class RelationManager {
     }
     Relation relation = builder.build();
     if (relation != null) {
-      // if (relationType.isSymmetric()) System.out.println(relation.getDisplayName());
       try {
         if (storageManager.countRelations(relation) > 0) {
-          System.out.printf(">>> Duplicate relation %s%n", relation.getDisplayName());
+          LOG.info("Duplicate relation {}", relation.getDisplayName());
         } else {
-          storageManager.addDocumentWithoutPersisting(Relation.class, relation, true);
-          return relation.getId();
+          return storageManager.addDocumentWithoutPersisting(Relation.class, relation, true);
         }
       } catch (IOException e) {
         LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
@@ -88,6 +86,8 @@ public class RelationManager {
   public RelationBuilder getBuilder() {
     return new RelationBuilder();
   }
+
+  // -------------------------------------------------------------------
 
   public class RelationBuilder {
     private Relation relation;
