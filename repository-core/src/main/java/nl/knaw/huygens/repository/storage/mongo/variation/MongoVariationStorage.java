@@ -415,4 +415,9 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     // TODO Auto-generated method stub
   }
 
+  // Test only, an ugly hack to  be able to mock the counter collection
+  void setCounterCollection(JacksonDBCollection<MongoStorageBase.Counter, String> collection) {
+    counterCol = collection;
+  }
+
 }
