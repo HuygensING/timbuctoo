@@ -72,13 +72,12 @@ public class RelationManager {
     if (relation != null) {
       // if (relationType.isSymmetric()) System.out.println(relation.getDisplayName());
       try {
-        //        if (stored.contains(relation)) {
-        //          System.out.printf("Duplicate relation %s%n", relation.getDisplayName());
-        //        } else {
-        storageManager.addDocumentWithoutPersisting(Relation.class, relation, true);
-        //          stored.add(relation);
-        return relation.getId();
-        //        }
+        if (storageManager.countRelations(relation) > 0) {
+          System.out.printf(">>> Duplicate relation %s%n", relation.getDisplayName());
+        } else {
+          storageManager.addDocumentWithoutPersisting(Relation.class, relation, true);
+          return relation.getId();
+        }
       } catch (IOException e) {
         LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
       }
@@ -125,7 +124,7 @@ public class RelationManager {
         LOG.error("Missing relation type ref");
         return null;
       }
-      if (relation.getSourceRef() == null) {
+      if (relation.getSourceRefType() == null || relation.getSourceRefId() == null) {
         LOG.error("Missing source ref");
         return null;
       }
@@ -138,7 +137,7 @@ public class RelationManager {
         LOG.error("Unknown relation type {}", relation.getTypeRef().getId());
         return null;
       }
-      String iname = relation.getSourceRef().getType();
+      String iname = relation.getSourceRefType();
       Class<? extends Document> actualType = registry.getTypeForIName(iname);
       if (!relationType.getSourceDocType().isAssignableFrom(actualType)) {
         LOG.error("Incompatible source type {}", iname);
