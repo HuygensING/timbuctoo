@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.repository.facet.FacetType;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.search.model.ComplexAnnotatedClass;
 import nl.knaw.huygens.repository.search.model.ComplexAnnotatedClassNoneFaceted;
 import nl.knaw.huygens.repository.search.model.ComplexAnnotatedClassNotAllFaceted;
@@ -78,7 +78,7 @@ public class FacetFinderTest {
     testFindFacets(expectedFacets, NonAnnotatedSubClass.class);
   }
 
-  private void testFindFacets(Map<String, FacetInfo> expectedFacets, Class<? extends Document> type) {
+  private void testFindFacets(Map<String, FacetInfo> expectedFacets, Class<? extends Entity> type) {
     Map<String, FacetInfo> actualFacets = instance.findFacets(type);
 
     verifyKeys(expectedFacets, actualFacets);

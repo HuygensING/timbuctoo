@@ -6,7 +6,7 @@ import static org.junit.Assert.assertThat;
 import java.util.HashSet;
 import java.util.Set;
 
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.search.model.ClassWithInheritedFullTextSearchFields;
 import nl.knaw.huygens.repository.search.model.ClassWithMupltipleFullTestSearchFields;
 import nl.knaw.huygens.repository.search.model.ClassWithMupltipleFullTestSearchFieldsNotAllFTS;
@@ -63,7 +63,7 @@ public class FullTextSearchFieldFinderTest {
     testFindFullTextSearchField(ComplexAnnotatedClassNoneFaceted.class, expected);
   }
 
-  private void testFindFullTextSearchField(Class<? extends Document> type, Set<String> expected) {
+  private void testFindFullTextSearchField(Class<? extends Entity> type, Set<String> expected) {
     Set<String> actual = instance.findFields(type);
     assertThat(actual, equalTo(expected));
   }

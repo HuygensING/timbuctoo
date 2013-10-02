@@ -4,7 +4,7 @@ import nl.knaw.huygens.repository.annotations.IDPrefix;
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
 
 @IDPrefix("KEYW")
-public class Keyword extends DomainDocument {
+public class Keyword extends DomainEntity {
 
   private String type;
   private String value;

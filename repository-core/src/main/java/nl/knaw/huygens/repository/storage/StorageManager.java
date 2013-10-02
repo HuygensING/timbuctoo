@@ -18,8 +18,8 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.messages.ActionType;
 import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.messages.Producer;
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.model.Entity;
+import nl.knaw.huygens.repository.model.DomainEntity;
 import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.persistence.PersistenceWrapper;
@@ -38,7 +38,7 @@ public class StorageManager {
   private static final Logger LOG = LoggerFactory.getLogger(StorageManager.class);
 
   private VariationStorage storage;
-  private Map<Class<? extends Document>, Map<Class<? extends Document>, List<List<String>>>> annotationCache;
+  private Map<Class<? extends Entity>, Map<Class<? extends Entity>, List<List<String>>>> annotationCache;
   private Set<String> documentTypes;
 
   private final DocTypeRegistry docTypeRegistry;
@@ -107,7 +107,7 @@ public class StorageManager {
 
   // -------------------------------------------------------------------
 
-  public <T extends Document> T getDocument(Class<T> type, String id) {
+  public <T extends Entity> T getDocument(Class<T> type, String id) {
     try {
       return storage.getItem(type, id);
     } catch (IOException e) {
@@ -121,7 +121,7 @@ public class StorageManager {
    * Returns a single document matching the non-null fields of
    * the specified document, or null if no such document exists.
    */
-  public <T extends Document> T searchDocument(Class<T> type, T example) {
+  public <T extends Entity> T searchDocument(Class<T> type, T example) {
     try {
       return storage.searchItem(type, example);
     } catch (IOException e) {
@@ -130,7 +130,7 @@ public class StorageManager {
     }
   }
 
-  public <T extends DomainDocument> T getCompleteVariation(Class<T> type, String id, String variation) {
+  public <T extends DomainEntity> T getCompleteVariation(Class<T> type, String id, String variation) {
     try {
       return storage.getVariation(type, id, variation);
     } catch (Exception e) {
@@ -139,7 +139,7 @@ public class StorageManager {
     }
   }
 
-  public <T extends Document> List<T> getAllVariations(Class<T> type, String id) {
+  public <T extends Entity> List<T> getAllVariations(Class<T> type, String id) {
     try {
       return storage.getAllVariations(type, id);
     } catch (IOException e) {
@@ -148,11 +148,11 @@ public class StorageManager {
     }
   }
 
-  public <T extends Document> StorageIterator<T> getAll(Class<T> type) {
+  public <T extends Entity> StorageIterator<T> getAll(Class<T> type) {
     return storage.getAllByType(type);
   }
 
-  public <T extends Document> RevisionChanges<T> getVersions(Class<T> type, String id) {
+  public <T extends Entity> RevisionChanges<T> getVersions(Class<T> type, String id) {
     try {
       return storage.getAllRevisions(type, id);
     } catch (IOException e) {
@@ -164,9 +164,9 @@ public class StorageManager {
   /* A bit of code duplication, but I think it is more readable than calling this method from addDocument and then persisting it.
    * This code is needed, because of issue #1774 in Redmine. It contains the question if the persistent identifier should be added autmaticallly. 
    */
-  public <T extends Document> String addDocumentWithoutPersisting(Class<T> type, T doc, boolean isComplete) throws IOException {
+  public <T extends Entity> String addDocumentWithoutPersisting(Class<T> type, T doc, boolean isComplete) throws IOException {
     String id = storage.addItem(type, doc);
-    if (DomainDocument.class.isAssignableFrom(type) && isComplete) {
+    if (DomainEntity.class.isAssignableFrom(type) && isComplete) {
       sendIndexMessage(ActionType.INDEX_ADD, docTypeRegistry.getINameForType(type), id);
     }
     return id;
@@ -175,7 +175,7 @@ public class StorageManager {
   /**
    * A convenience method for ${@code addDocument(type, doc, true)}
    */
-  public <T extends Document> String addDocument(Class<T> type, T doc) throws IOException {
+  public <T extends Entity> String addDocument(Class<T> type, T doc) throws IOException {
     return addDocument(type, doc, true);
   }
 
@@ -189,9 +189,9 @@ public class StorageManager {
    * when this boolean is true the document will be indexed
    * @throws IOException when thrown by storage
    */
-  public <T extends Document> String addDocument(Class<T> type, T doc, boolean isComplete) throws IOException {
+  public <T extends Entity> String addDocument(Class<T> type, T doc, boolean isComplete) throws IOException {
     String id = storage.addItem(type, doc);
-    if (DomainDocument.class.isAssignableFrom(type)) {
+    if (DomainEntity.class.isAssignableFrom(type)) {
       persistDocumentVersion(type, doc);
       if (isComplete) {
         sendIndexMessage(ActionType.INDEX_ADD, docTypeRegistry.getINameForType(type), id);
@@ -200,10 +200,10 @@ public class StorageManager {
     return id;
   }
 
-  private <T extends Document> void persistDocumentVersion(Class<T> type, T doc) {
+  private <T extends Entity> void persistDocumentVersion(Class<T> type, T doc) {
     try {
       // TODO make persistent id dependent on version.
-      Class<? extends Document> baseType = docTypeRegistry.getBaseClass(type);
+      Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(type);
       String collectionId = docTypeRegistry.getINameForType(baseType);
       String pid = persistenceWrapper.persistObject(collectionId, doc.getId());
       storage.setPID(type, pid, doc.getId());
@@ -212,25 +212,25 @@ public class StorageManager {
     }
   }
 
-  public <T extends Document> void modifyDocumentWithoutPersisting(Class<T> type, T doc) throws IOException {
+  public <T extends Entity> void modifyDocumentWithoutPersisting(Class<T> type, T doc) throws IOException {
     storage.updateItem(type, doc.getId(), doc);
-    if (DomainDocument.class.isAssignableFrom(type)) {
+    if (DomainEntity.class.isAssignableFrom(type)) {
       sendIndexMessage(ActionType.INDEX_MOD, docTypeRegistry.getINameForType(type), doc.getId());
     }
   }
 
-  public <T extends Document> void modifyDocument(Class<T> type, T doc) throws IOException {
+  public <T extends Entity> void modifyDocument(Class<T> type, T doc) throws IOException {
     storage.updateItem(type, doc.getId(), doc);
-    if (DomainDocument.class.isAssignableFrom(type)) {
+    if (DomainEntity.class.isAssignableFrom(type)) {
       persistDocumentVersion(type, doc);
       sendIndexMessage(ActionType.INDEX_MOD, docTypeRegistry.getINameForType(type), doc.getId());
     }
   }
 
-  public <T extends Document> void removeDocument(Class<T> type, T doc) throws IOException {
+  public <T extends Entity> void removeDocument(Class<T> type, T doc) throws IOException {
     storage.deleteItem(type, doc.getId(), doc.getLastChange());
     //TODO do something with the PID.
-    if (DomainDocument.class.isAssignableFrom(type)) {
+    if (DomainEntity.class.isAssignableFrom(type)) {
       sendIndexMessage(ActionType.INDEX_DEL, docTypeRegistry.getINameForType(type), doc.getId());
     }
   }
@@ -251,7 +251,7 @@ public class StorageManager {
    * @param <T> extends {@code DomainDocument}, because {@code SystemDocument}s have no persistent identifiers.
    * @param type the type all of the objects should removed permanently from.
    */
-  public <T extends DomainDocument> void removePermanently(Class<T> type) {
+  public <T extends DomainEntity> void removePermanently(Class<T> type) {
     Collection<String> ids = storage.getAllIdsWithoutPIDOfType(type);
 
     String typeString = docTypeRegistry.getINameForType(type);
@@ -270,28 +270,28 @@ public class StorageManager {
     }
   }
 
-  public <T extends Document> StorageIterator<T> getByMultipleIds(Class<T> type, List<String> ids) {
+  public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, List<String> ids) {
     return storage.getByMultipleIds(type, ids);
   }
 
-  public List<Document> getLastChanged(int limit) {
+  public List<Entity> getLastChanged(int limit) {
     try {
       return storage.getLastChanged(limit);
     } catch (IOException e) {
       LOG.error("Error while handling {}", limit);
-      return Collections.<Document> emptyList();
+      return Collections.<Entity> emptyList();
     }
   }
 
-  public <T extends Document> List<T> getAllLimited(Class<T> type, int offset, int limit) {
+  public <T extends Entity> List<T> getAllLimited(Class<T> type, int offset, int limit) {
     if (limit == 0) {
       return Collections.<T> emptyList();
     }
     return StorageUtils.resolveIterator(storage.getAllByType(type), offset, limit);
   }
 
-  public <X extends Document, T extends Document> Map<List<String>, List<String>> getReferringDocs(Class<X> referringType, Class<T> referredType, String... referredIds) {
-    Map<Class<? extends Document>, List<List<String>>> mappings = annotationCache.get(referringType);
+  public <X extends Entity, T extends Entity> Map<List<String>, List<String>> getReferringDocs(Class<X> referringType, Class<T> referredType, String... referredIds) {
+    Map<Class<? extends Entity>, List<List<String>>> mappings = annotationCache.get(referringType);
     if (mappings == null || mappings.isEmpty()) {
       return Collections.emptyMap();
     }
@@ -313,13 +313,13 @@ public class StorageManager {
   private void fillAnnotationCache() {
     annotationCache = Maps.newHashMap();
     for (String docType : documentTypes) {
-      Class<? extends Document> cls = docTypeRegistry.getTypeForIName(docType);
+      Class<? extends Entity> cls = docTypeRegistry.getTypeForIName(docType);
       annotationCache.put(cls, getAllRelatedDocumentAnnotations(cls));
     }
   }
 
   public void ensureIndices() {
-    for (Class<? extends Document> cls : annotationCache.keySet()) {
+    for (Class<? extends Entity> cls : annotationCache.keySet()) {
       Collection<List<List<String>>> accessors = annotationCache.get(cls).values();
       // Make into one list:
       List<List<String>> accessorList = Lists.newArrayList();
@@ -330,10 +330,10 @@ public class StorageManager {
     }
   }
 
-  private Map<Class<? extends Document>, List<List<String>>> getAllRelatedDocumentAnnotations(Class<? extends Document> refDocType) {
+  private Map<Class<? extends Entity>, List<List<String>>> getAllRelatedDocumentAnnotations(Class<? extends Entity> refDocType) {
     Annotation[] annotations = refDocType.getAnnotations();
 
-    Map<Class<? extends Document>, List<List<String>>> rv = Maps.newHashMap();
+    Map<Class<? extends Entity>, List<List<String>>> rv = Maps.newHashMap();
 
     for (Annotation ann : annotations) {
       // Single annotation:
@@ -351,8 +351,8 @@ public class StorageManager {
     return rv;
   }
 
-  private void parseSingleAnnotation(Map<Class<? extends Document>, List<List<String>>> rv, RelatedDocument relDocAnnot) {
-    Class<? extends Document> relatedType = relDocAnnot.type();
+  private void parseSingleAnnotation(Map<Class<? extends Entity>, List<List<String>>> rv, RelatedDocument relDocAnnot) {
+    Class<? extends Entity> relatedType = relDocAnnot.type();
     List<String> accessorList = Lists.newArrayList(relDocAnnot.accessors());
     if (!rv.containsKey(relatedType)) {
       List<List<String>> listOfLists = Lists.newArrayList();

@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.util.List;
 
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.Reference;
 
 import org.bson.BSONObject;
@@ -19,7 +19,7 @@ import com.mongodb.DBObject;
 
 public class MongoDiffTest {
 
-  public static class Foo extends Document {
+  public static class Foo extends Entity {
     public static class Baz {
       public int x;
       public int y;

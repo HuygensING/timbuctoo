@@ -5,7 +5,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
 import nl.knaw.huygens.repository.facet.IndexAnnotations;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.solr.FacetInfo;
 
 import com.google.common.collect.Maps;
@@ -15,7 +15,7 @@ class FacetFinder {
   private static final Class<IndexAnnotation> INDEX_ANNOTATION_CLASS = IndexAnnotation.class;
 
   @SuppressWarnings("unchecked")
-  public Map<String, FacetInfo> findFacets(Class<? extends Document> type) {
+  public Map<String, FacetInfo> findFacets(Class<? extends Entity> type) {
     Map<String, FacetInfo> facetMap = Maps.newHashMap();
 
     Method[] methods = type.getMethods();
@@ -35,8 +35,8 @@ class FacetFinder {
     }
 
     Class<?> superclass = type.getSuperclass();
-    if (!Document.class.equals(superclass)) {
-      facetMap.putAll(findFacets((Class<? extends Document>) type.getSuperclass()));
+    if (!Entity.class.equals(superclass)) {
+      facetMap.putAll(findFacets((Class<? extends Entity>) type.getSuperclass()));
     }
 
     return facetMap;

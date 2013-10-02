@@ -4,7 +4,7 @@ import nl.knaw.huygens.repository.annotations.IDPrefix;
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
 
 @IDPrefix("PLAC")
-public class Place extends DomainDocument {
+public class Place extends DomainEntity {
 
   public String name;
   public String latitude;

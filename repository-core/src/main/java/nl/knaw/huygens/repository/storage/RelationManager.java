@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.Reference;
 import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.model.RelationType;
@@ -106,7 +106,7 @@ public class RelationManager {
       return this;
     }
 
-    public RelationBuilder source(Class<? extends Document> typeToken, String id) {
+    public RelationBuilder source(Class<? extends Entity> typeToken, String id) {
       return source(new Reference(typeToken, id));
     }
 
@@ -115,7 +115,7 @@ public class RelationManager {
       return this;
     }
 
-    public RelationBuilder target(Class<? extends Document> typeToken, String id) {
+    public RelationBuilder target(Class<? extends Entity> typeToken, String id) {
       return target(new Reference(typeToken, id));
     }
 
@@ -138,7 +138,7 @@ public class RelationManager {
         return null;
       }
       String iname = relation.getSourceType();
-      Class<? extends Document> actualType = registry.getTypeForIName(iname);
+      Class<? extends Entity> actualType = registry.getTypeForIName(iname);
       if (!relationType.getSourceDocType().isAssignableFrom(actualType)) {
         LOG.error("Incompatible source type {}", iname);
         return null;

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.rest.providers.HTMLGenerator;
 import nl.knaw.huygens.repository.rest.providers.ReferenceSerializer;
 import nl.knaw.huygens.repository.rest.providers.model.GeneralTestDoc;
@@ -51,7 +51,7 @@ public class HTMLGeneratorTest {
     gen = new HTMLGenerator(realGen);
   }
 
-  private String generateHtml(Document doc) throws JsonGenerationException, JsonMappingException, IOException {
+  private String generateHtml(Entity doc) throws JsonGenerationException, JsonMappingException, IOException {
     mapper.writeValue(gen, doc);
     return writer.getBuffer().toString();
   }

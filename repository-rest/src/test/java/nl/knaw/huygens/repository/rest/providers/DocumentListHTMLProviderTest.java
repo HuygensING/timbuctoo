@@ -6,7 +6,7 @@ import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.User;
 import nl.knaw.huygens.repository.rest.providers.DocumentListHTMLProvider;
 
@@ -16,11 +16,11 @@ import org.junit.Test;
 public class DocumentListHTMLProviderTest {
 
   public static class Resource {
-    public Document getDocument() {
+    public Entity getDocument() {
       return null;
     }
 
-    public List<? extends Document> getGenericDocumentList() {
+    public List<? extends Entity> getGenericDocumentList() {
       return null;
     }
 
@@ -28,7 +28,7 @@ public class DocumentListHTMLProviderTest {
       return null;
     }
 
-    public List<Document> getDocumentList() {
+    public List<Entity> getDocumentList() {
       return null;
     }
 

@@ -8,9 +8,9 @@ import java.util.Set;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.facet.FacetCount;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.DocumentRef;
-import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.model.Entity;
+import nl.knaw.huygens.repository.model.EntityRef;
+import nl.knaw.huygens.repository.model.DomainEntity;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.solr.FacetInfo;
 import nl.knaw.huygens.solr.FacetParameter;
@@ -46,11 +46,11 @@ public class SearchManager {
     this.sortableFieldFinder = new SortableFieldFinder();
   }
 
-  public Set<String> findSortableFields(Class<? extends Document> type) {
+  public Set<String> findSortableFields(Class<? extends Entity> type) {
     return sortableFieldFinder.findFields(type);
   }
 
-  public void addRelationsTo(DomainDocument document) throws SolrServerException {
+  public void addRelationsTo(DomainEntity document) throws SolrServerException {
     String term = String.format("dynamic_k_source_id:%s", document.getId());
     String[] fields = { "dynamic_k_type_name", "dynamic_k_target_type", "dynamic_k_target_id", "dynamic_k_target_name" };
     QueryResponse response = server.search("relation", term, fields);
@@ -60,7 +60,7 @@ public class SearchManager {
       String xname = docTypeRegistry.getXNameForIName(iname);
       String id = getFieldValue(doc, "dynamic_k_target_id");
       String displayName = getFieldValue(doc, "dynamic_k_target_name");
-      DocumentRef ref = new DocumentRef(iname, xname, id, displayName);
+      EntityRef ref = new EntityRef(iname, xname, id, displayName);
       document.addRelation(typeName, ref);
     }
   }
@@ -73,7 +73,7 @@ public class SearchManager {
     throw new SolrServerException("Unexpected field type " + value.getClass());
   }
 
-  public SearchResult search(Class<? extends Document> type, String core, FacetedSearchParameters searchParameters) throws SolrServerException, FacetDoesNotExistException {
+  public SearchResult search(Class<? extends Entity> type, String core, FacetedSearchParameters searchParameters) throws SolrServerException, FacetDoesNotExistException {
     Map<String, FacetInfo> facetInfoMap = facetFinder.findFacets(type);
     Set<String> fullTextSearchFields = fullTextSearchFieldFinder.findFields(type);
     String searchTerm = createSearchTerm(type, searchParameters, facetInfoMap.keySet(), fullTextSearchFields);
@@ -93,7 +93,7 @@ public class SearchManager {
     return searchResult;
   }
 
-  private String createSearchTerm(Class<? extends Document> type, FacetedSearchParameters searchParameters, Set<String> existingFacets, Set<String> fullTextSearchFields)
+  private String createSearchTerm(Class<? extends Entity> type, FacetedSearchParameters searchParameters, Set<String> existingFacets, Set<String> fullTextSearchFields)
       throws FacetDoesNotExistException {
     List<FacetParameter> facetValues = searchParameters.getFacetValues();
     boolean usesFacets = facetValues != null && !facetValues.isEmpty();

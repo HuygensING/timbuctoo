@@ -1,9 +1,9 @@
 package nl.knaw.huygens.repository.index;
 
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 // T must be a base type
-public interface DocumentIndexer<T extends Document> {
+public interface DocumentIndexer<T extends Entity> {
 
   void add(Class<T> docType, String docId) throws IndexException;
 

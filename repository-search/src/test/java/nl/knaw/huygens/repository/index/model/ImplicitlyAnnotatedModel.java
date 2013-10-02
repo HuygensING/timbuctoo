@@ -1,11 +1,11 @@
 package nl.knaw.huygens.repository.index.model;
 
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ImplicitlyAnnotatedModel extends Document {
+public class ImplicitlyAnnotatedModel extends Entity {
 
   @Override
   public String getId() {

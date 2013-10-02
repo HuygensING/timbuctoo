@@ -4,13 +4,13 @@ import java.util.List;
 
 import nl.knaw.huygens.repository.annotations.IDPrefix;
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
-import nl.knaw.huygens.repository.model.SystemDocument;
+import nl.knaw.huygens.repository.model.SystemEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("TSTD")
-public class MongoObjectMapperDocument extends SystemDocument {
+public class MongoObjectMapperDocument extends SystemEntity {
   
   private String name;
   private String testValue1;
@@ -20,7 +20,7 @@ public class MongoObjectMapperDocument extends SystemDocument {
   private String propWithAnnotatedAccessors;
 
   private List<String> primitiveTestCollection;
-  private List<? extends SystemDocument> nonPrimitiveTestCollection;
+  private List<? extends SystemEntity> nonPrimitiveTestCollection;
 
   @Override
   @JsonProperty("!currentVariation")
@@ -92,11 +92,11 @@ public class MongoObjectMapperDocument extends SystemDocument {
     this.primitiveTestCollection = primitiveTestCollection;
   }
 
-  public List<? extends SystemDocument> getNonPrimitiveTestCollection() {
+  public List<? extends SystemEntity> getNonPrimitiveTestCollection() {
     return nonPrimitiveTestCollection;
   }
 
-  public void setNonPrimitiveTestCollection(List<? extends SystemDocument> nonPrimitiveTestCollection) {
+  public void setNonPrimitiveTestCollection(List<? extends SystemEntity> nonPrimitiveTestCollection) {
     this.nonPrimitiveTestCollection = nonPrimitiveTestCollection;
   }
 

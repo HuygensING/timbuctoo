@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.storage.mongo.variation.DBJsonNode;
 
 import org.mongojack.internal.stream.JacksonDBObject;
@@ -44,15 +44,15 @@ public class VariationInducer {
     writerWithView = mapper.writerWithView(view);
   }
 
-  public <T extends Document> JsonNode induce(T item, Class<T> cls) throws VariationException {
+  public <T extends Entity> JsonNode induce(T item, Class<T> cls) throws VariationException {
     return induce(item, cls, (ObjectNode) null);
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Document> JsonNode induce(T item, Class<T> cls, DBObject existingItem) throws VariationException {
+  public <T extends Entity> JsonNode induce(T item, Class<T> cls, DBObject existingItem) throws VariationException {
     ObjectNode o;
     if (existingItem == null) {
-      List<Class<? extends Document>> classIds = VariationUtils.getAllClasses(cls);
+      List<Class<? extends Entity>> classIds = VariationUtils.getAllClasses(cls);
       o = createNode(null, cls, classIds);
     } else if (existingItem instanceof JacksonDBObject) {
       o = (ObjectNode) (((JacksonDBObject<JsonNode>) existingItem).getObject());
@@ -64,11 +64,11 @@ public class VariationInducer {
     return induce(item, cls, o);
   }
 
-  private <T extends Document> ObjectNode createNode(ObjectNode o, Class<T> cls, List<Class<? extends Document>> allClasses) {
+  private <T extends Entity> ObjectNode createNode(ObjectNode o, Class<T> cls, List<Class<? extends Entity>> allClasses) {
     if (o == null) {
       o = mapper.createObjectNode();
     }
-    for (Class<? extends Document> someCls : allClasses) {
+    for (Class<? extends Entity> someCls : allClasses) {
       String classId = VariationUtils.getClassId(someCls);
       if (!o.has(classId)) {
         o.put(classId, mapper.createObjectNode());
@@ -77,18 +77,18 @@ public class VariationInducer {
     return o;
   }
 
-  public <T extends Document> JsonNode induce(T item, Class<T> cls, ObjectNode existingItem) throws VariationException {
+  public <T extends Entity> JsonNode induce(T item, Class<T> cls, ObjectNode existingItem) throws VariationException {
     if (cls == null || item == null) {
       throw new IllegalArgumentException();
     }
     String variationId = VariationUtils.getVariationName(cls);
-    List<Class<? extends Document>> allClasses = VariationUtils.getAllClasses(cls);
+    List<Class<? extends Entity>> allClasses = VariationUtils.getAllClasses(cls);
     existingItem = createNode(existingItem, cls, allClasses);
     int size = allClasses.size();
     int i = size;
     Map<String, Object> finishedKeys = Maps.newHashMap();
     while (i-- > 0) {
-      Class<? extends Document> someCls = allClasses.get(i);
+      Class<? extends Entity> someCls = allClasses.get(i);
       String classId = VariationUtils.getClassId(someCls);
       JsonNode obj = existingItem.get(classId);
       if (!obj.isObject()) {

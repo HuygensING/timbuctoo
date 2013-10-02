@@ -16,7 +16,7 @@ import com.google.common.collect.Lists;
 // Annotation determines to which subclass the document has to be resolved.
 // @see: http://wiki.fasterxml.com/JacksonPolymorphicDeserialization
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
-public abstract class Document {
+public abstract class Entity {
 
   @NotNull
   @Pattern(regexp = "[A-Z]{3}\\d{10}")
@@ -108,7 +108,7 @@ public abstract class Document {
     this.variations = variations;
   }
 
-  public void addVariation(Class<? extends Document> refType, String refId) {
+  public void addVariation(Class<? extends Entity> refType, String refId) {
     variations.add(new Reference(refType, refId));
   }
 

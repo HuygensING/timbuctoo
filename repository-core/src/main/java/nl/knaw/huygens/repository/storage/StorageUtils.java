@@ -5,7 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import nl.knaw.huygens.repository.annotations.IDPrefix;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 public class StorageUtils {
 
@@ -15,7 +15,7 @@ public class StorageUtils {
    * Returns the prefix of an entity id.
    */
   public static String getIDPrefix(Class<?> type) {
-    if (type != null && Document.class.isAssignableFrom(type)) {
+    if (type != null && Entity.class.isAssignableFrom(type)) {
       IDPrefix annotation = type.getAnnotation(IDPrefix.class);
       if (annotation != null) {
         return annotation.value();
@@ -29,22 +29,22 @@ public class StorageUtils {
   /**
    * Returns a formatted entity id.
    */
-  public static String formatEntityId(Class<? extends Document> type, long counter) {
+  public static String formatEntityId(Class<? extends Entity> type, long counter) {
     return String.format("%s%012d", getIDPrefix(type), counter);
   }
 
-  public static <T extends Document> List<T> readFromIterator(StorageIterator<T> it, int offset, int limit) {
+  public static <T extends Entity> List<T> readFromIterator(StorageIterator<T> it, int offset, int limit) {
     if (offset > 0) {
       it.skip(offset);
     }
     return it.getSome(limit);
   }
 
-  public static <T extends Document> List<T> resolveIterator(StorageIterator<T> it, int limit) {
+  public static <T extends Entity> List<T> resolveIterator(StorageIterator<T> it, int limit) {
     return resolveIterator(it, 0, limit);
   }
 
-  public static <T extends Document> List<T> resolveIterator(StorageIterator<T> it, int offset, int limit) {
+  public static <T extends Entity> List<T> resolveIterator(StorageIterator<T> it, int offset, int limit) {
     if (offset > 0) {
       it.skip(offset);
     }
@@ -53,14 +53,14 @@ public class StorageUtils {
     return rv;
   }
 
-  public static <T extends Document> List<T> readFromIterator(StorageIterator<T> it, int limit) {
+  public static <T extends Entity> List<T> readFromIterator(StorageIterator<T> it, int limit) {
     return readFromIterator(it, 0, limit);
   }
 
-  public static void sortDocumentsByLastChange(List<Document> docs) {
-    Collections.sort(docs, new Comparator<Document>() {
+  public static void sortDocumentsByLastChange(List<Entity> docs) {
+    Collections.sort(docs, new Comparator<Entity>() {
       @Override
-      public int compare(Document o1, Document o2) {
+      public int compare(Entity o1, Entity o2) {
         long o1s = o1 != null && o1.getLastChange() != null ? o1.getLastChange().dateStamp : 0;
         long o2s = o2 != null && o2.getLastChange() != null ? o2.getLastChange().dateStamp : 0;
         long d = o2s - o1s;

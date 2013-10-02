@@ -6,7 +6,7 @@ import nl.knaw.huygens.repository.facet.FacetType;
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
 import nl.knaw.huygens.repository.facet.IndexAnnotations;
 import nl.knaw.huygens.repository.model.Archiver;
-import nl.knaw.huygens.repository.model.DocumentRef;
+import nl.knaw.huygens.repository.model.EntityRef;
 import nl.knaw.huygens.repository.model.util.PeriodHelper;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -29,15 +29,15 @@ public class ATLGArchiver extends Archiver {
   /** ING Forms: "History/functions/occupations/activities"; text searchable */
   private String history;
   /** ING Forms: "Title(s) related archive(s)" */
-  private List<DocumentRef> relatedArchives;
+  private List<EntityRef> relatedArchives;
   /** ING Forms: "Title(s) related creator(s)" */
-  private List<DocumentRef> relatedArchivers;
+  private List<EntityRef> relatedArchivers;
   /** ING Forms: "Keyword(s) geography"; place facet */
-  private List<DocumentRef> placeKeywords;
+  private List<EntityRef> placeKeywords;
   /** ING Forms: "Keyword(s) subject"; subject facet */
-  private List<DocumentRef> subjectKeywords;
+  private List<EntityRef> subjectKeywords;
   /** ING Forms: "Keyword(s) person"; person facet */
-  private List<DocumentRef> persons;
+  private List<EntityRef> persons;
   /** ING Forms: "Remarks"; text searchable */
   private String notes;
   /** ING Forms: "Literature" */
@@ -133,70 +133,70 @@ public class ATLGArchiver extends Archiver {
     this.history = history;
   }
 
-  public List<DocumentRef> getRelatedArchives() {
+  public List<EntityRef> getRelatedArchives() {
     return relatedArchives;
   }
 
-  public void setRelatedArchives(List<DocumentRef> refs) {
+  public void setRelatedArchives(List<EntityRef> refs) {
     relatedArchives = refs;
   }
 
-  public void addRelatedArchive(DocumentRef ref) {
+  public void addRelatedArchive(EntityRef ref) {
     relatedArchives.add(ref);
   }
 
-  public List<DocumentRef> getRelatedArchivers() {
+  public List<EntityRef> getRelatedArchivers() {
     return relatedArchivers;
   }
 
-  public void setRelatedArchivers(List<DocumentRef> refs) {
+  public void setRelatedArchivers(List<EntityRef> refs) {
     relatedArchivers = refs;
   }
 
-  public void addRelatedArchiver(DocumentRef ref) {
+  public void addRelatedArchiver(EntityRef ref) {
     relatedArchivers.add(ref);
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<DocumentRef> getPlaceKeywords() {
+  public List<EntityRef> getPlaceKeywords() {
     return placeKeywords;
   }
 
-  public void setPlaceKeywords(List<DocumentRef> keywords) {
+  public void setPlaceKeywords(List<EntityRef> keywords) {
     placeKeywords = keywords;
   }
 
-  public void addPlaceKeyword(DocumentRef keyword) {
+  public void addPlaceKeyword(EntityRef keyword) {
     if (keyword != null) {
       placeKeywords.add(keyword);
     }
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<DocumentRef> getSubjectKeywords() {
+  public List<EntityRef> getSubjectKeywords() {
     return subjectKeywords;
   }
 
-  public void setSubjectKeywords(List<DocumentRef> keywords) {
+  public void setSubjectKeywords(List<EntityRef> keywords) {
     subjectKeywords = keywords;
   }
 
-  public void addSubjectKeyword(DocumentRef keyword) {
+  public void addSubjectKeyword(EntityRef keyword) {
     if (keyword != null) {
       subjectKeywords.add(keyword);
     }
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<DocumentRef> getPersons() {
+  public List<EntityRef> getPersons() {
     return persons;
   }
 
-  public void setPersons(List<DocumentRef> persons) {
+  public void setPersons(List<EntityRef> persons) {
     this.persons = persons;
   }
 
-  public void addPerson(DocumentRef person) {
+  public void addPerson(EntityRef person) {
     if (person != null) {
       persons.add(person);
     }

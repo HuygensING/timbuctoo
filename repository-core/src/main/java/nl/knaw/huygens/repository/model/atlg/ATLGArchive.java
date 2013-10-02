@@ -6,7 +6,7 @@ import nl.knaw.huygens.repository.facet.FacetType;
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
 import nl.knaw.huygens.repository.facet.IndexAnnotations;
 import nl.knaw.huygens.repository.model.Archive;
-import nl.knaw.huygens.repository.model.DocumentRef;
+import nl.knaw.huygens.repository.model.EntityRef;
 import nl.knaw.huygens.repository.model.util.PeriodHelper;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -43,15 +43,15 @@ public class ATLGArchive extends Archive {
   /** ING Forms: "Additional finding aid" */
   private String findingAid;
   /** ING Forms: "Name(s) of Creator(s)" */
-  private List<DocumentRef> creators;
+  private List<EntityRef> creators;
   /** ING Forms: "Scope and content" */
   private String scope;
   /** ING Forms: "Keyword(s) geography"; place facet */
-  private List<DocumentRef> placeKeywords;
+  private List<EntityRef> placeKeywords;
   /** ING Forms: "Keyword(s) subject"; subject facet */
-  private List<DocumentRef> subjectKeywords;
+  private List<EntityRef> subjectKeywords;
   /** ING Forms: "Keyword(s) person"; person facet */
-  private List<DocumentRef> persons;
+  private List<EntityRef> persons;
   /** ING Forms: "Remarks"; text searchable */
   private String notes;
   /** ING Forms: "Record made by-" */
@@ -59,11 +59,11 @@ public class ATLGArchive extends Archive {
   /** ING Forms: "Reminders" */
   private String reminders;
   /** ING Forms: "Title related overhead level of description" */
-  private List<DocumentRef> overheadArchives;
+  private List<EntityRef> overheadArchives;
   /** ING Forms: "Title(s) related underlying level(s) of description" */
-  private List<DocumentRef> underlyingArchives;
+  private List<EntityRef> underlyingArchives;
   /** ING Forms: "Other related units of description" */
-  private List<DocumentRef> relatedUnitArchives;
+  private List<EntityRef> relatedUnitArchives;
 
   public ATLGArchive() {
     countries = Lists.newArrayList();
@@ -228,15 +228,15 @@ public class ATLGArchive extends Archive {
     this.findingAid = findingAid;
   }
 
-  public List<DocumentRef> getCreators() {
+  public List<EntityRef> getCreators() {
     return creators;
   }
 
-  public void setCreators(List<DocumentRef> creators) {
+  public void setCreators(List<EntityRef> creators) {
     this.creators = creators;
   }
 
-  public void addCreator(DocumentRef creator) {
+  public void addCreator(EntityRef creator) {
     creators.add(creator);
   }
 
@@ -249,45 +249,45 @@ public class ATLGArchive extends Archive {
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<DocumentRef> getPlaceKeywords() {
+  public List<EntityRef> getPlaceKeywords() {
     return placeKeywords;
   }
 
-  public void setPlaceKeywords(List<DocumentRef> keywords) {
+  public void setPlaceKeywords(List<EntityRef> keywords) {
     placeKeywords = keywords;
   }
 
-  public void addPlaceKeyword(DocumentRef keyword) {
+  public void addPlaceKeyword(EntityRef keyword) {
     if (keyword != null) {
       placeKeywords.add(keyword);
     }
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<DocumentRef> getSubjectKeywords() {
+  public List<EntityRef> getSubjectKeywords() {
     return subjectKeywords;
   }
 
-  public void setSubjectKeywords(List<DocumentRef> keywords) {
+  public void setSubjectKeywords(List<EntityRef> keywords) {
     subjectKeywords = keywords;
   }
 
-  public void addSubjectKeyword(DocumentRef keyword) {
+  public void addSubjectKeyword(EntityRef keyword) {
     if (keyword != null) {
       subjectKeywords.add(keyword);
     }
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<DocumentRef> getPersons() {
+  public List<EntityRef> getPersons() {
     return persons;
   }
 
-  public void setPersons(List<DocumentRef> persons) {
+  public void setPersons(List<EntityRef> persons) {
     this.persons = persons;
   }
 
-  public void addPerson(DocumentRef person) {
+  public void addPerson(EntityRef person) {
     if (person != null) {
       persons.add(person);
     }
@@ -318,39 +318,39 @@ public class ATLGArchive extends Archive {
     this.reminders = reminders;
   }
 
-  public List<DocumentRef> getOverheadArchives() {
+  public List<EntityRef> getOverheadArchives() {
     return overheadArchives;
   }
 
-  public void setOverheadArchives(List<DocumentRef> archives) {
+  public void setOverheadArchives(List<EntityRef> archives) {
     overheadArchives = archives;
   }
 
-  public void addOverheadArchive(DocumentRef archive) {
+  public void addOverheadArchive(EntityRef archive) {
     overheadArchives.add(archive);
   }
 
-  public List<DocumentRef> getUnderlyingArchives() {
+  public List<EntityRef> getUnderlyingArchives() {
     return underlyingArchives;
   }
 
-  public void setUnderlyingArchives(List<DocumentRef> archives) {
+  public void setUnderlyingArchives(List<EntityRef> archives) {
     underlyingArchives = archives;
   }
 
-  public void addUnderlyingArchive(DocumentRef archive) {
+  public void addUnderlyingArchive(EntityRef archive) {
     underlyingArchives.add(archive);
   }
 
-  public List<DocumentRef> getRelatedUnitArchives() {
+  public List<EntityRef> getRelatedUnitArchives() {
     return relatedUnitArchives;
   }
 
-  public void setRelatedUnitArchives(List<DocumentRef> archives) {
+  public void setRelatedUnitArchives(List<EntityRef> archives) {
     relatedUnitArchives = archives;
   }
 
-  public void addRelatedUnitArchive(DocumentRef archive) {
+  public void addRelatedUnitArchive(EntityRef archive) {
     relatedUnitArchives.add(archive);
   }
 

@@ -8,7 +8,7 @@ import nl.knaw.huygens.repository.model.util.PersonName;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @IDPrefix("PERS")
-public class Person extends DomainDocument {
+public class Person extends DomainEntity {
 
   private PersonName name;
   private Datable birthDate;

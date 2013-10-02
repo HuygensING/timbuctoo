@@ -1,12 +1,12 @@
 package nl.knaw.huygens.repository.index.model;
 
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ModelWithOverriddenIndexAnnotation extends Document {
+public class ModelWithOverriddenIndexAnnotation extends Entity {
 
   @Override
   @JsonIgnore

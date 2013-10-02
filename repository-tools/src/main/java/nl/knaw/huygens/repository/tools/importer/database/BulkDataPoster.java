@@ -6,7 +6,7 @@ import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.repository.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.repository.model.raa.RAACivilServant;
@@ -45,19 +45,19 @@ public class BulkDataPoster {
     System.out.printf("post took %d seconds", (end - start) / 1000);
   }
 
-  protected static <T extends Document> void sendData(DocTypeRegistry registry, Class<T> type, Class<T[]> typeArray) throws Exception {
+  protected static <T extends Entity> void sendData(DocTypeRegistry registry, Class<T> type, Class<T[]> typeArray) throws Exception {
     System.out.printf("%n=== Post documents of type '%s'%n", type.getSimpleName());
     T[] docs = readFile(type, typeArray, new File("testdata" + File.separator + type.getSimpleName() + ".json"));
     postData(type, docs, registry.getXNameForType(type));
   }
 
-  protected static <T extends Document> T[] readFile(Class<T> type, Class<T[]> typeArray, File fileToRead) throws Exception {
+  protected static <T extends Entity> T[] readFile(Class<T> type, Class<T[]> typeArray, File fileToRead) throws Exception {
     ObjectMapper mapper = new ObjectMapper();
     mapper.enableDefaultTyping(DefaultTyping.OBJECT_AND_NON_CONCRETE, As.PROPERTY);
     return mapper.readValue(fileToRead, typeArray);
   }
 
-  protected static <T extends Document> void postData(Class<T> type, T[] documents, String collection) {
+  protected static <T extends Entity> void postData(Class<T> type, T[] documents, String collection) {
     Client client = Client.create();
     WebResource resource = client.resource(URL).path(SERVICE_PATH).path(collection).path("all");
     Progress progress = new Progress();

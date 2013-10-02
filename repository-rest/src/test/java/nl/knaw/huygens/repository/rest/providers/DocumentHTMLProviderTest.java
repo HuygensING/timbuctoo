@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 
 import javax.ws.rs.core.MediaType;
 
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.User;
 import nl.knaw.huygens.repository.rest.providers.DocumentHTMLProvider;
 
@@ -27,8 +27,8 @@ public class DocumentHTMLProviderTest {
 
   @Test
   public void documentIsWritable() {
-    assertIsWritable(true, Document.class, MediaType.TEXT_HTML_TYPE);
-    assertIsWritable(false, Document.class, MediaType.APPLICATION_JSON_TYPE);
+    assertIsWritable(true, Entity.class, MediaType.TEXT_HTML_TYPE);
+    assertIsWritable(false, Entity.class, MediaType.APPLICATION_JSON_TYPE);
   }
 
   @Test

@@ -17,7 +17,7 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.facet.FacetCount;
 import nl.knaw.huygens.repository.facet.FacetCount.Option;
 import nl.knaw.huygens.repository.index.LocalSolrServer;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.model.atlg.ATLGPerson;
@@ -71,7 +71,7 @@ public class SearchManagerTest {
     List<String> documentIds = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
-    Class<? extends Document> type = ATLGPerson.class;
+    Class<? extends Entity> type = ATLGPerson.class;
 
     testSearch(type, documentIds, SEARCH_TERM, docTypeRegistry.getINameForType(type), facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(),
         EXPECTED_TERM, TYPE_STRING);
@@ -181,7 +181,7 @@ public class SearchManagerTest {
     testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm, TYPE_STRING);
   }
 
-  private void testSearch(Class<? extends Document> type, List<String> documentIds, String searchTerm, String typeString, List<String> facetNames, List<String> fullTextSearchNames,
+  private void testSearch(Class<? extends Entity> type, List<String> documentIds, String searchTerm, String typeString, List<String> facetNames, List<String> fullTextSearchNames,
       int numberOfFacetValues, List<FacetParameter> facetParameters, String expectedTerm, String searchCore) throws SolrServerException, FacetDoesNotExistException {
     FacetedSearchParameters searchParameters = new FacetedSearchParameters();
     searchParameters.setTerm(searchTerm);

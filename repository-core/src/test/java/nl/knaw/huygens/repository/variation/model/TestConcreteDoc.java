@@ -1,11 +1,11 @@
 package nl.knaw.huygens.repository.variation.model;
 
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
-import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.model.DomainEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class TestConcreteDoc extends DomainDocument {
+public class TestConcreteDoc extends DomainEntity {
 
   public String name;
 
