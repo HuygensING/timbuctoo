@@ -9,6 +9,7 @@ import java.util.List;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.BasicStorage;
 import nl.knaw.huygens.repository.storage.GenericDBRef;
@@ -173,6 +174,11 @@ public class MongoStorageFacade implements VariationStorage {
   @Override
   public <T extends DomainDocument> T getRevision(Class<T> type, String id, int revisionId) throws IOException {
     throw new UnsupportedOperationException("Method not available for this type");
+  }
+
+  @Override
+  public int countRelations(Relation relation) {
+    return variationStorage.countRelations(relation);
   }
 
 }

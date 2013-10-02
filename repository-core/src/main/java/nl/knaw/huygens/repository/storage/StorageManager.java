@@ -20,6 +20,7 @@ import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.messages.Producer;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.persistence.PersistenceWrapper;
 
@@ -109,6 +110,7 @@ public class StorageManager {
     try {
       return storage.getItem(type, id);
     } catch (IOException e) {
+      System.err.println(e.getMessage());
       LOG.error("Error while handling {} {}", type.getName(), id);
       return null;
     }
@@ -332,6 +334,10 @@ public class StorageManager {
       rv.put(relatedType, listOfLists);
     }
     rv.get(relatedType).add(accessorList);
+  }
+
+  public int countRelations(Relation relation) {
+    return storage.countRelations(relation);
   }
 
 }

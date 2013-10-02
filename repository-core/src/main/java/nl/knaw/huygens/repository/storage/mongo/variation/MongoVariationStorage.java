@@ -12,6 +12,7 @@ import nl.knaw.huygens.repository.annotations.IDPrefix;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Document;
 import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.GenericDBRef;
 import nl.knaw.huygens.repository.storage.JsonViews;
@@ -391,6 +392,16 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   public <T extends Document> int removeByDate(Class<T> type, String dateField, Date dateValue) {
     // Only for system documents...
     return 0;
+  }
+
+  @Override
+  public int countRelations(Relation relation) {
+    DBCollection col = db.getCollection("relation");
+    BasicDBObject query = new BasicDBObject();
+    query.append("^typeRefId", relation.getTypeRefId());
+    query.append("^sourceRefId", relation.getSourceRefId());
+    query.append("^targetRefId", relation.getTargetRefId());
+    return (int) col.count(query);
   }
 
 }

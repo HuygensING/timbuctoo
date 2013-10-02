@@ -2,6 +2,9 @@ package nl.knaw.huygens.repository.model;
 
 import nl.knaw.huygens.repository.annotations.IDPrefix;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * A relation between domain documents.
  *
@@ -23,58 +26,142 @@ import nl.knaw.huygens.repository.annotations.IDPrefix;
 public class Relation extends DomainDocument {
 
   /** A reference to the 'active' participant of the relation (resembles rdf:subject). */
-  private Reference sourceRef;
+  private String sourceRefType;
+  private String sourceRefId;
   /** A reference to the property or characteristic of the subject (resembles rdf:predicate). */
-  private Reference typeRef;
+  private String typeRefType;
+  private String typeRefId;
   /** A reference to the 'passive' participant of the relation (resembles rdf:object). */
-  private Reference targetRef;
+  private String targetRefType;
+  private String targetRefId;
 
   // For deserialization...
   public Relation() {}
 
   public Relation(Reference sourceRef, Reference typeRef, Reference targetRef) {
     // TODO validate consistency
-    this.sourceRef = sourceRef;
-    this.typeRef = typeRef;
-    this.targetRef = targetRef;
+    setSourceRef(sourceRef);
+    setTypeRef(typeRef);
+    setTargetRef(targetRef);
   }
 
   @Override
   public String getDisplayName() {
-    return String.format("(%s, %s, %s)", sourceRef, typeRef, targetRef);
+    return String.format("({%s,%s}, {%s,%s}, {%s,%s})", sourceRefType, sourceRefId, typeRefType, typeRefId, targetRefType, targetRefId);
   }
 
+  @JsonIgnore
   public Reference getSourceRef() {
-    return sourceRef;
+    Reference reference = new Reference();
+    reference.setType(sourceRefType);
+    reference.setId(sourceRefId);
+    return reference;
   }
 
-  public void setSourceRef(Reference sourceRef) {
-    this.sourceRef = sourceRef;
+  @JsonIgnore
+  public void setSourceRef(Reference reference) {
+    sourceRefType = reference.getType();
+    sourceRefId = reference.getId();
   }
 
+  @JsonProperty("^sourceRefType")
+  public String getSourceRefType() {
+    return sourceRefType;
+  }
+
+  @JsonProperty("^sourceRefType")
+  public void setSourceRefType(String sourceRefType) {
+    this.sourceRefType = sourceRefType;
+  }
+
+  @JsonProperty("^sourceRefId")
+  public String getSourceRefId() {
+    return sourceRefId;
+  }
+
+  @JsonProperty("^sourceRefId")
+  public void setSourceRefId(String sourceRefId) {
+    this.sourceRefId = sourceRefId;
+  }
+
+  @JsonIgnore
   public Reference getTypeRef() {
-    return typeRef;
+    Reference reference = new Reference();
+    reference.setType(typeRefType);
+    reference.setId(typeRefId);
+    return reference;
   }
 
-  public void setTypeRef(Reference typeRef) {
-    this.typeRef = typeRef;
+  @JsonIgnore
+  public void setTypeRef(Reference reference) {
+    typeRefType = reference.getType();
+    typeRefId = reference.getId();
   }
 
+  @JsonProperty("^typeRefType")
+  public String getTypeRefType() {
+    return typeRefType;
+  }
+
+  @JsonProperty("^typeRefType")
+  public void setTypeRefType(String typeRefType) {
+    this.typeRefType = typeRefType;
+  }
+
+  @JsonProperty("^typeRefId")
+  public String getTypeRefId() {
+    return typeRefId;
+  }
+
+  @JsonProperty("^typeRefId")
+  public void setTypeRefId(String typeRefId) {
+    this.typeRefId = typeRefId;
+  }
+
+  @JsonIgnore
   public Reference getTargetRef() {
-    return targetRef;
+    Reference reference = new Reference();
+    reference.setType(targetRefType);
+    reference.setId(targetRefId);
+    return reference;
   }
 
-  public void setTargetRef(Reference targetRef) {
-    this.targetRef = targetRef;
+  @JsonIgnore
+  public void setTargetRef(Reference reference) {
+    targetRefType = reference.getType();
+    targetRefId = reference.getId();
+  }
+
+  @JsonProperty("^targetRefType")
+  public String getTargetRefType() {
+    return targetRefType;
+  }
+
+  @JsonProperty("^targetRefType")
+  public void setTargetRefType(String targetRefType) {
+    this.targetRefType = targetRefType;
+  }
+
+  @JsonProperty("^targetRefId")
+  public String getTargetRefId() {
+    return targetRefId;
+  }
+
+  @JsonProperty("^targetRefId")
+  public void setTargetRefId(String targetRefId) {
+    this.targetRefId = targetRefId;
   }
 
   @Override
   public boolean equals(Object object) {
     if (object instanceof Relation) {
       Relation that = (Relation) object;
-      return (this.typeRef == null ? that.typeRef == null : this.typeRef.equals(that.typeRef)) //
-          && (this.sourceRef == null ? that.sourceRef == null : this.sourceRef.equals(that.sourceRef)) //
-          && (this.targetRef == null ? that.targetRef == null : this.targetRef.equals(that.targetRef));
+      return (this.typeRefType == null ? that.typeRefType == null : this.typeRefType.equals(that.typeRefType)) //
+          && (this.typeRefId == null ? that.typeRefId == null : this.typeRefId.equals(that.typeRefId)) //
+          && (this.sourceRefType == null ? that.sourceRefType == null : this.sourceRefType.equals(that.sourceRefType)) //
+          && (this.sourceRefId == null ? that.sourceRefId == null : this.sourceRefId.equals(that.sourceRefId)) //
+          && (this.targetRefType == null ? that.targetRefType == null : this.targetRefType.equals(that.targetRefType)) //
+          && (this.targetRefId == null ? that.targetRefId == null : this.targetRefId.equals(that.targetRefId));
     }
     return false;
   }
@@ -82,9 +169,12 @@ public class Relation extends DomainDocument {
   @Override
   public int hashCode() {
     int result = 17;
-    result = 31 * result + (typeRef == null ? 0 : typeRef.hashCode());
-    result = 31 * result + (sourceRef == null ? 0 : sourceRef.hashCode());
-    result = 31 * result + (targetRef == null ? 0 : targetRef.hashCode());
+    result = 31 * result + (typeRefType == null ? 0 : typeRefType.hashCode());
+    result = 31 * result + (typeRefId == null ? 0 : typeRefId.hashCode());
+    result = 31 * result + (sourceRefType == null ? 0 : sourceRefType.hashCode());
+    result = 31 * result + (sourceRefId == null ? 0 : sourceRefId.hashCode());
+    result = 31 * result + (targetRefType == null ? 0 : targetRefType.hashCode());
+    result = 31 * result + (targetRefId == null ? 0 : targetRefId.hashCode());
     return result;
   }
 
