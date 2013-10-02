@@ -23,10 +23,6 @@ public interface BasicStorage {
 
   /**
    * Searches on the non-null properties of the example object.
-   * @param type
-   * @param example
-   * @return
-   * @throws IOException
    */
   <T extends Entity> T searchItem(Class<T> type, T example) throws IOException;
 

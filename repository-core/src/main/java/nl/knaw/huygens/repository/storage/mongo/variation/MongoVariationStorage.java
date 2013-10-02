@@ -90,7 +90,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     treeDecoderFactory = new TreeDecoderFactory();
     collectionCache = Maps.newHashMap();
     counterCol = JacksonDBCollection.wrap(db.getCollection(COUNTER_COLLECTION_NAME), Counter.class, String.class);
-    documentCollections = conf.getDocumentTypes();
+    entityCollections = conf.getEntityTypes();
     inducer = new VariationInducer();
     inducer.setView(JsonViews.DBView.class);
     reducer = new VariationReducer(docTypeRegistry);
@@ -167,7 +167,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   @Override
   public List<Entity> getLastChanged(int limit) throws IOException {
     List<DBObject> changedDocs = Lists.newArrayList();
-    for (String colName : documentCollections) {
+    for (String colName : entityCollections) {
       DBCollection col = db.getCollection(colName);
       DBCursor docs = col.find().sort(new BasicDBObject("^lastChange.dateStamp", -1)).limit(limit);
       changedDocs.addAll(docs.toArray());

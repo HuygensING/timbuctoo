@@ -16,7 +16,7 @@ public class StorageConfiguration {
   private String user;
   private String password;
   private String key;
-  private Set<String> documentTypes;
+  private Set<String> entityTypes;
   private Set<String> versionedTypes;
 
   public StorageConfiguration(String host, int port, String dbName, String user, String password, String type) {
@@ -36,7 +36,7 @@ public class StorageConfiguration {
     password = conf.getSetting("database.password", null);
     key = Joiner.on(":").useForNull("null").join(host, port, dbName, user, password);
     String docTypes = conf.getSetting("doctypes");
-    documentTypes = Sets.newHashSet(docTypes.split(","));
+    entityTypes = Sets.newHashSet(docTypes.split(","));
     String versionedDocTypes = conf.getSetting("versioneddoctypes", docTypes);
     versionedTypes = Sets.newHashSet(versionedDocTypes.split(","));
   }
@@ -69,8 +69,8 @@ public class StorageConfiguration {
     return key;
   }
 
-  public Set<String> getDocumentTypes() {
-    return documentTypes;
+  public Set<String> getEntityTypes() {
+    return entityTypes;
   }
 
   public Set<String> getVersionedTypes() {
