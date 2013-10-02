@@ -21,6 +21,7 @@ import org.mongojack.JacksonDBCollection;
 
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
@@ -80,5 +81,18 @@ public abstract class MongoStorageTestBase {
     } catch (IOException e) {
       fail(e.getMessage());
     }
+  }
+
+  protected DBCursor createDBCursorWithOneValue(DBObject dbObject) {
+    DBCursor cursor = mock(DBCursor.class);
+    when(cursor.hasNext()).thenReturn(true, false);
+    when(cursor.next()).thenReturn(dbObject);
+    return cursor;
+  }
+
+  protected DBCursor createCursorWithoutValues() {
+    DBCursor cursor = mock(DBCursor.class);
+    when(cursor.hasNext()).thenReturn(false);
+    return cursor;
   }
 }
