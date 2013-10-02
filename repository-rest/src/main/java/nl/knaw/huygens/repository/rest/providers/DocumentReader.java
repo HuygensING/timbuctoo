@@ -21,7 +21,7 @@ import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.rest.resources.RESTAutoResource;
 
 import org.slf4j.Logger;
@@ -37,7 +37,7 @@ import com.google.inject.Inject;
  */
 @Provider
 @Consumes(MediaType.APPLICATION_JSON)
-public class DocumentReader implements MessageBodyReader<Document> {
+public class DocumentReader implements MessageBodyReader<Entity> {
 
   private final Logger LOG = LoggerFactory.getLogger(DocumentReader.class);
 
@@ -55,12 +55,12 @@ public class DocumentReader implements MessageBodyReader<Document> {
 
   @Override
   public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-    return type.equals(Document.class) && mediaType.isCompatible(MediaType.APPLICATION_JSON_TYPE);
+    return type.equals(Entity.class) && mediaType.isCompatible(MediaType.APPLICATION_JSON_TYPE);
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public Document readFrom(Class<Document> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
+  public Entity readFrom(Class<Entity> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
       throws IOException, WebApplicationException {
 
     String entityType = uriInfo.getPathParameters().getFirst(RESTAutoResource.ENTITY_PARAM);
@@ -74,10 +74,10 @@ public class DocumentReader implements MessageBodyReader<Document> {
       throw new WebApplicationException(Status.NOT_FOUND);
     }
 
-    Document doc = null;
+    Entity doc = null;
 
     try {
-      doc = (Document) jsonProvider.readFrom((Class<Object>) cls, cls, annotations, mediaType, httpHeaders, entityStream);
+      doc = (Entity) jsonProvider.readFrom((Class<Object>) cls, cls, annotations, mediaType, httpHeaders, entityStream);
     } catch (IllegalArgumentException e) {
       LOG.error(e.getMessage());
     }
@@ -87,7 +87,7 @@ public class DocumentReader implements MessageBodyReader<Document> {
       throw new WebApplicationException(Status.BAD_REQUEST);
     }
 
-    Set<ConstraintViolation<Document>> validationErrors = validator.validate(doc);
+    Set<ConstraintViolation<Entity>> validationErrors = validator.validate(doc);
 
     //If we are posting a document we don't is some not null fields missing a value, these fields are possibly auto generated.
     if (!validationErrors.isEmpty() && !"POST".equals(request.getMethod())) {

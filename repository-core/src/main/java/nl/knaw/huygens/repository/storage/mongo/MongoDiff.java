@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
@@ -12,7 +12,7 @@ import org.bson.BasicBSONObject;
 import com.google.common.collect.Sets;
 
 public class MongoDiff {
-  public static <T extends Document> BSONObject diffDocuments(T d1, T d2) throws IOException {
+  public static <T extends Entity> BSONObject diffDocuments(T d1, T d2) throws IOException {
     return diff(MongoUtils.getObjectForDoc(d1), MongoUtils.getObjectForDoc(d2), false);
   }
 

@@ -4,13 +4,13 @@ import java.util.Date;
 
 import nl.knaw.huygens.repository.annotations.IDPrefix;
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
-import nl.knaw.huygens.repository.model.SystemDocument;
+import nl.knaw.huygens.repository.model.SystemEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("TSTD")
-public class TestSystemDocument extends SystemDocument {
+public class TestSystemDocument extends SystemEntity {
 
   private String name;
   private String testValue1;

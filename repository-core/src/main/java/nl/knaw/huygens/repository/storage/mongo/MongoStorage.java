@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.BasicStorage;
 import nl.knaw.huygens.repository.storage.GenericDBRef;
@@ -65,13 +65,13 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   }
 
   @Override
-  public <T extends Document> T getItem(Class<T> type, String id) {
+  public <T extends Entity> T getItem(Class<T> type, String id) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     return col.findOneById(id);
   }
 
   @Override
-  public <T extends Document> T searchItem(Class<T> type, T example) throws IOException {
+  public <T extends Entity> T searchItem(Class<T> type, T example) throws IOException {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     BasicDBObject query = new BasicDBObject();
 
@@ -87,27 +87,27 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   }
 
   @Override
-  public <T extends Document> StorageIterator<T> getAllByType(Class<T> cls) {
+  public <T extends Entity> StorageIterator<T> getAllByType(Class<T> cls) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
     return new MongoDBIteratorWrapper<T>(col.find());
   }
 
   @Override
-  public <T extends Document> MongoChanges<T> getAllRevisions(Class<T> type, String id) {
+  public <T extends Entity> MongoChanges<T> getAllRevisions(Class<T> type, String id) {
     return MongoUtils.getVersioningCollection(db, type).findOneById(id);
   }
 
   @Override
-  public <T extends Document> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
+  public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     return new MongoDBIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)));
   }
 
   @Override
-  public List<Document> getLastChanged(int limit) {
-    List<Document> changedDocs = Lists.newArrayList();
+  public List<Entity> getLastChanged(int limit) {
+    List<Entity> changedDocs = Lists.newArrayList();
     for (String colName : documentCollections) {
-      JacksonDBCollection<? extends Document, String> col = MongoUtils.getCollection(db, docTypeRegistry.getTypeForIName(colName));
+      JacksonDBCollection<? extends Entity, String> col = MongoUtils.getCollection(db, docTypeRegistry.getTypeForIName(colName));
       changedDocs.addAll(col.find().sort(new BasicDBObject("^lastChange.dateStamp", -1)).limit(limit).toArray());
     }
 
@@ -116,7 +116,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   }
 
   @Override
-  public <T extends Document> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs) {
+  public <T extends Entity> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs) {
     Set<String> mongoRefs = Sets.newHashSetWithExpectedSize(refs.size());
     for (GenericDBRef<T> ref : refs) {
       mongoRefs.add(ref.id);
@@ -140,7 +140,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   }
 
   @Override
-  public <T extends Document> List<String> getIdsForQuery(Class<T> cls, List<String> accessors, String[] ids) {
+  public <T extends Entity> List<String> getIdsForQuery(Class<T> cls, List<String> accessors, String[] ids) {
     JacksonDBCollection<T, String> collection = MongoUtils.getCollection(db, cls);
     String queryStr = getQueryStr(accessors);
     DBObject query;
@@ -162,7 +162,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   }
 
   @Override
-  public <T extends Document> void ensureIndex(Class<T> cls, List<List<String>> accessorList) {
+  public <T extends Entity> void ensureIndex(Class<T> cls, List<List<String>> accessorList) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
     for (List<String> accessors : accessorList) {
       col.ensureIndex(getQueryStr(accessors));
@@ -178,7 +178,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
 
   // TODO make unit test: add & retrieve
   @Override
-  public <T extends Document> String addItem(Class<T> type, T item) throws IOException {
+  public <T extends Entity> String addItem(Class<T> type, T item) throws IOException {
     item.setCreation(item.getLastChange());
     if (item.getId() == null) {
       setNextId(type, item);
@@ -229,7 +229,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   //  }
 
   @Override
-  public <T extends Document> void updateItem(Class<T> type, String id, T item) throws IOException {
+  public <T extends Entity> void updateItem(Class<T> type, String id, T item) throws IOException {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
 
     int oldRev = item.getRev();
@@ -254,14 +254,14 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   }
 
   @Override
-  public <T extends Document> void setPID(Class<T> type, String pid, String id) {
+  public <T extends Entity> void setPID(Class<T> type, String pid, String id) {
     BasicDBObject query = new BasicDBObject("_id", id);
     BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
     MongoUtils.getCollection(db, type).update(query, update);
   }
 
   @Override
-  public <T extends Document> void deleteItem(Class<T> type, String id, Change change) throws IOException {
+  public <T extends Entity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     // This needs to be updated once mongo-jackson-mapper fixes their wrapper:
     // Update the actual document first:
@@ -278,13 +278,13 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   }
 
   @Override
-  public <T extends Document> int removeAll(Class<T> type) {
+  public <T extends Entity> int removeAll(Class<T> type) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     return col.remove(new BasicDBObject()).getN();
   }
 
   @Override
-  public <T extends Document> int removeByDate(Class<T> type, String dateField, Date dateValue) {
+  public <T extends Entity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     Query query = DBQuery.lessThan(dateField, dateValue);
     return col.remove(query).getN();
@@ -292,7 +292,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
 
   // -------------------------------------------------------------------
 
-  private <T extends Document> void setNextId(Class<T> type, T item) {
+  private <T extends Entity> void setNextId(Class<T> type, T item) {
     BasicDBObject idFinder = new BasicDBObject("_id", docTypeRegistry.getINameForType(type));
     BasicDBObject counterIncrement = new BasicDBObject("$inc", new BasicDBObject("next", 1));
 

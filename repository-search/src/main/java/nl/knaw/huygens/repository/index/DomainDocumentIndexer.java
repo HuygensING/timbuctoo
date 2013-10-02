@@ -2,7 +2,7 @@ package nl.knaw.huygens.repository.index;
 
 import java.util.List;
 
-import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.model.DomainEntity;
 import nl.knaw.huygens.repository.storage.StorageManager;
 
 import org.apache.solr.common.SolrInputDocument;
@@ -10,7 +10,7 @@ import org.apache.solr.common.SolrInputDocument;
 /**
  * Used for talking to a specific index on the Solr Server that matches the
  * class used as a generic parameter. Takes care of converting POJO objects
- * (that extend {@link nl.knaw.huygens.repository.model.Document
+ * (that extend {@link nl.knaw.huygens.repository.model.Entity
  * <code>Document</code>}) to {@link org.apache.solr.common.SolrInputDocument
  * <code>SolrInputDocument</code>}s.
  * 
@@ -25,12 +25,12 @@ import org.apache.solr.common.SolrInputDocument;
  *          The generic parameter specifying what kind of POJO objects are used,
  *          and (implicitly) which index to index them in.
  */
-class DomainDocumentIndexer<T extends DomainDocument> implements DocumentIndexer<T> {
+class DomainDocumentIndexer<T extends DomainEntity> implements DocumentIndexer<T> {
 
   /**
    * Creates a new {@code DomainDocumentIndexer} instance.
    */
-  public static <U extends DomainDocument> DomainDocumentIndexer<U> newInstance(StorageManager storageManager, LocalSolrServer server, String core) {
+  public static <U extends DomainEntity> DomainDocumentIndexer<U> newInstance(StorageManager storageManager, LocalSolrServer server, String core) {
     return new DomainDocumentIndexer<U>(storageManager, server, core);
   }
 
@@ -57,7 +57,7 @@ class DomainDocumentIndexer<T extends DomainDocument> implements DocumentIndexer
   }
 
   /**
-   * Add a {@link nl.knaw.huygens.repository.model.Document
+   * Add a {@link nl.knaw.huygens.repository.model.Entity
    * <code>Document</code>} to the index.
    * 
    * @param entities
@@ -76,7 +76,7 @@ class DomainDocumentIndexer<T extends DomainDocument> implements DocumentIndexer
   }
 
   /**
-   * Update a {@link nl.knaw.huygens.repository.model.Document
+   * Update a {@link nl.knaw.huygens.repository.model.Entity
    * <code>Document</code>} already in the index. The existing document will be
    * found using the ID of the entity you pass.
    * 
@@ -96,7 +96,7 @@ class DomainDocumentIndexer<T extends DomainDocument> implements DocumentIndexer
   }
 
   /**
-   * Remove a {@link nl.knaw.huygens.repository.model.Document
+   * Remove a {@link nl.knaw.huygens.repository.model.Entity
    * <code>Document</code>} from the index.
    * 
    * @param docId

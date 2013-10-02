@@ -2,7 +2,7 @@ package nl.knaw.huygens.repository.config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.repository.variation.model.TestBaseDoc;
 import nl.knaw.huygens.repository.variation.model.TestConcreteDoc;
@@ -68,7 +68,7 @@ public class DocTypeRegistryTest {
   @Test
   public void testGetCollectionIdForARegisteredClass() {
     DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
-    Class<? extends Document> baseType = registry.getBaseClass(TestConcreteDoc.class);
+    Class<? extends Entity> baseType = registry.getBaseClass(TestConcreteDoc.class);
     assertEquals("testconcretedoc", registry.getINameForType(baseType));
   }
 

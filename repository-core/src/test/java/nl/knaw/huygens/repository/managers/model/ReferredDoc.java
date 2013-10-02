@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
-public class ReferredDoc extends Document {
+public class ReferredDoc extends Entity {
 
   @Override
   @JsonProperty("!currentVariation")

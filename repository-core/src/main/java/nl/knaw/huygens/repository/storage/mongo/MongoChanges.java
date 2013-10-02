@@ -2,7 +2,7 @@ package nl.knaw.huygens.repository.storage.mongo;
 
 import java.util.List;
 
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.storage.JsonViews;
 import nl.knaw.huygens.repository.storage.RevisionChanges;
 
@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
 
-public class MongoChanges<T extends Document> implements RevisionChanges<T> {
+public class MongoChanges<T extends Entity> implements RevisionChanges<T> {
   public MongoChanges(String id, T item) {
     this._id = id;
     this.versions = Lists.newArrayListWithExpectedSize(1);

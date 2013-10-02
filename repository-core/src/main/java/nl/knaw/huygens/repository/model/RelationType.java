@@ -8,14 +8,14 @@ import nl.knaw.huygens.repository.annotations.IDPrefix;
  * (This resembles an RDF predicate.)
  */
 @IDPrefix("RELT")
-public class RelationType extends SystemDocument {
+public class RelationType extends SystemEntity {
 
   /** The name that uniquely identifies this relation type. */
   private String relTypeName;
   /** The type token of the 'active' participant of the relation. */
-  private Class<? extends DomainDocument> sourceDocType;
+  private Class<? extends DomainEntity> sourceDocType;
   /** The type token of the 'passive' participant of the relation. */
-  private Class<? extends DomainDocument> targetDocType;
+  private Class<? extends DomainEntity> targetDocType;
   /** If source and target doc types are the same, is relation(A,A) allowed? */
   private boolean reflexive;
   /** If source and target doc types are the same, does relation(A,B) imply relation(B,A)? */
@@ -24,7 +24,7 @@ public class RelationType extends SystemDocument {
   // For deserialization...
   public RelationType() {}
 
-  public RelationType(String typeName, Class<? extends DomainDocument> sourceDocType, Class<? extends DomainDocument> targetDocType) {
+  public RelationType(String typeName, Class<? extends DomainEntity> sourceDocType, Class<? extends DomainEntity> targetDocType) {
     this.relTypeName = typeName;
     this.sourceDocType = sourceDocType;
     this.targetDocType = targetDocType;
@@ -32,7 +32,7 @@ public class RelationType extends SystemDocument {
     this.symmetric = false;
   }
 
-  public RelationType(String typeName, Class<? extends DomainDocument> docType) {
+  public RelationType(String typeName, Class<? extends DomainEntity> docType) {
     this(typeName, docType, docType);
   }
 
@@ -49,19 +49,19 @@ public class RelationType extends SystemDocument {
     this.relTypeName = typeName;
   }
 
-  public Class<? extends DomainDocument> getSourceDocType() {
+  public Class<? extends DomainEntity> getSourceDocType() {
     return sourceDocType;
   }
 
-  public void setSourceDocType(Class<? extends DomainDocument> sourceDocType) {
+  public void setSourceDocType(Class<? extends DomainEntity> sourceDocType) {
     this.sourceDocType = sourceDocType;
   }
 
-  public Class<? extends DomainDocument> getTargetDocType() {
+  public Class<? extends DomainEntity> getTargetDocType() {
     return targetDocType;
   }
 
-  public void setTargetDocType(Class<? extends DomainDocument> targetDocType) {
+  public void setTargetDocType(Class<? extends DomainEntity> targetDocType) {
     this.targetDocType = targetDocType;
   }
 

@@ -2,13 +2,13 @@ package nl.knaw.huygens.repository.managers.model;
 
 import nl.knaw.huygens.repository.annotations.RelatedDocument;
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @RelatedDocument(type = ReferredDoc.class, accessors = { "referedDoc" })
-public class ReferringDoc extends Document {
+public class ReferringDoc extends Entity {
 
   private ReferredDoc referedDoc;
 

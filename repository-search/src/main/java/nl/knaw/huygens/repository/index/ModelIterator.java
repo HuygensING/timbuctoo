@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
 import nl.knaw.huygens.repository.facet.IndexAnnotations;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 public class ModelIterator {
 
@@ -25,7 +25,7 @@ public class ModelIterator {
     }
   }
 
-  public void processClass(AnnotatedMethodProcessor proc, Class<? extends Document> cls) {
+  public void processClass(AnnotatedMethodProcessor proc, Class<? extends Entity> cls) {
     for (Method method : cls.getMethods()) {
       if (hasIndexAnnotations(method)) {
         processMethod(proc, method, method.getAnnotations());
@@ -52,7 +52,7 @@ public class ModelIterator {
       }
     } catch (NoSuchMethodException e) {} catch (SecurityException e) {}
 
-    if (firstAnnotedMethod == null && (cls != Document.class)) {
+    if (firstAnnotedMethod == null && (cls != Entity.class)) {
       firstAnnotedMethod = getFirstIndexAnnotedMethod(overridingMethod, cls);
     }
     return firstAnnotedMethod;

@@ -5,7 +5,7 @@ import java.util.List;
 import nl.knaw.huygens.repository.facet.FacetType;
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
 import nl.knaw.huygens.repository.facet.IndexAnnotations;
-import nl.knaw.huygens.repository.model.DocumentRef;
+import nl.knaw.huygens.repository.model.EntityRef;
 import nl.knaw.huygens.repository.model.Legislation;
 
 import com.google.common.collect.Lists;
@@ -27,13 +27,13 @@ public class ATLGLegislation extends Legislation {
   /** ING Forms: "Date 2" */
   private String date2;
   /** ING Forms: "Keyword(s) geography"; place facet */
-  private List<DocumentRef> placeKeywords;
+  private List<EntityRef> placeKeywords;
   /** ING Forms: "Keyword(s) Group classification"; subject facet */
-  private List<DocumentRef> groupKeywords;
+  private List<EntityRef> groupKeywords;
   /** ING Forms: "Keyword(s) other subject"; subject facet */
-  private List<DocumentRef> otherKeywords;
+  private List<EntityRef> otherKeywords;
   /** ING Forms: "Keyword(s) person"; person facet */
-  private List<DocumentRef> persons;
+  private List<EntityRef> persons;
   /** ING Forms: "Summary of contents"; text searchable */
   private String contents;
   /** ING Forms: "See also" */
@@ -131,60 +131,60 @@ public class ATLGLegislation extends Legislation {
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<DocumentRef> getPlaceKeywords() {
+  public List<EntityRef> getPlaceKeywords() {
     return placeKeywords;
   }
 
-  public void setPlaceKeywords(List<DocumentRef> keywords) {
+  public void setPlaceKeywords(List<EntityRef> keywords) {
     placeKeywords = keywords;
   }
 
-  public void addPlaceKeyword(DocumentRef keyword) {
+  public void addPlaceKeyword(EntityRef keyword) {
     if (keyword != null) {
       placeKeywords.add(keyword);
     }
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<DocumentRef> getGroupKeywords() {
+  public List<EntityRef> getGroupKeywords() {
     return groupKeywords;
   }
 
-  public void setGroupKeywords(List<DocumentRef> keywords) {
+  public void setGroupKeywords(List<EntityRef> keywords) {
     groupKeywords = keywords;
   }
 
-  public void addGroupKeyword(DocumentRef keyword) {
+  public void addGroupKeyword(EntityRef keyword) {
     if (keyword != null) {
       groupKeywords.add(keyword);
     }
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<DocumentRef> getOtherKeywords() {
+  public List<EntityRef> getOtherKeywords() {
     return otherKeywords;
   }
 
-  public void setOtherKeywords(List<DocumentRef> keywords) {
+  public void setOtherKeywords(List<EntityRef> keywords) {
     otherKeywords = keywords;
   }
 
-  public void addOtherKeyword(DocumentRef keyword) {
+  public void addOtherKeyword(EntityRef keyword) {
     if (keyword != null) {
       otherKeywords.add(keyword);
     }
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<DocumentRef> getPersons() {
+  public List<EntityRef> getPersons() {
     return persons;
   }
 
-  public void setPersons(List<DocumentRef> persons) {
+  public void setPersons(List<EntityRef> persons) {
     this.persons = persons;
   }
 
-  public void addPerson(DocumentRef person) {
+  public void addPerson(EntityRef person) {
     if (person != null) {
       persons.add(person);
     }

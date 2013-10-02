@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 public abstract class GenericDataHandler {
 
@@ -24,7 +24,7 @@ public abstract class GenericDataHandler {
   protected String query;
 
   private Map<String, List<String>> objectMapping;
-  public <T extends Document> void importData(String configFile, Class<T> type) throws Exception {
+  public <T extends Entity> void importData(String configFile, Class<T> type) throws Exception {
     System.out.printf("%n=== Import documents of type '%s'%n", type.getSimpleName());
 
     readMapping(configFile);
@@ -65,6 +65,6 @@ public abstract class GenericDataHandler {
     return values;
   }
 
-  protected abstract <T extends Document> void save(Class<T> type, List<T> objects) throws IOException;
+  protected abstract <T extends Entity> void save(Class<T> type, List<T> objects) throws IOException;
 
 }

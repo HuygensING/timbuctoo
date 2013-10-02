@@ -7,7 +7,7 @@ import nl.knaw.huygens.repository.messages.Action;
 import nl.knaw.huygens.repository.messages.ActionType;
 import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.messages.Consumer;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,7 @@ public class IndexService implements Runnable {
         if (action != null) {
           ActionType actionType = action.getActionType();
           String typeString = action.getTypeString();
-          Class<? extends Document> type = registry.getTypeForIName(typeString);
+          Class<? extends Entity> type = registry.getTypeForIName(typeString);
           String id = action.getId();
 
           switch (actionType) {

@@ -14,7 +14,7 @@ public class Reference {
   // For deserialization...
   public Reference() {}
 
-  public Reference(Class<? extends Document> typeToken, String id) {
+  public Reference(Class<? extends Entity> typeToken, String id) {
     this.type = typeToken.getSimpleName().toLowerCase();
     this.id = id;
   }

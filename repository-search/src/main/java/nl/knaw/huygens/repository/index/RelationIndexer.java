@@ -3,7 +3,7 @@ package nl.knaw.huygens.repository.index;
 import java.io.IOException;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.Reference;
 import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.model.RelationType;
@@ -77,15 +77,15 @@ class RelationIndexer implements DocumentIndexer<Relation> {
     solrDoc.addField("dynamic_k_source_type", sourceRef.getType());
     solrDoc.addField("dynamic_k_source_id", sourceRef.getId());
     // target document
-    Document targetDoc = getDocument(targetRef);
+    Entity targetDoc = getDocument(targetRef);
     solrDoc.addField("dynamic_k_target_type", targetRef.getType());
     solrDoc.addField("dynamic_k_target_id", targetRef.getId());
     solrDoc.addField("dynamic_k_target_name", targetDoc.getDisplayName());
     server.add(CORE, solrDoc);
   }
 
-  private Document getDocument(Reference reference) {
-    Class<? extends Document> type = registry.getTypeForIName(reference.getType());
+  private Entity getDocument(Reference reference) {
+    Class<? extends Entity> type = registry.getTypeForIName(reference.getType());
     return storageManager.getDocument(type, reference.getId());
   }
 

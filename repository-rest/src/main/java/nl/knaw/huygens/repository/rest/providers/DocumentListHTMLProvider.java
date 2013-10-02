@@ -16,7 +16,7 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
@@ -29,7 +29,7 @@ import com.google.inject.name.Named;
 @Provider
 @Produces(MediaType.TEXT_HTML)
 @Singleton
-public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extends Document>> {
+public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extends Entity>> {
 
   private final HTMLProviderHelper helper;
 
@@ -65,22 +65,22 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
         }
       }
     }
-    return type != null && Document.class.isAssignableFrom(type);
+    return type != null && Entity.class.isAssignableFrom(type);
   }
 
   @Override
-  public long getSize(List<? extends Document> docs, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+  public long getSize(List<? extends Entity> docs, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
     return -1;
   }
 
   @Override
-  public void writeTo(List<? extends Document> docs, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out)
+  public void writeTo(List<? extends Entity> docs, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out)
       throws IOException, WebApplicationException {
     helper.writeHeader(out, getTitle(docs));
 
     JsonGenerator jgen = helper.getGenerator(out);
     ObjectWriter writer = helper.getObjectWriter(annotations);
-    for (Document doc : docs) {
+    for (Entity doc : docs) {
       helper.write(out, "<h2>");
       helper.write(out, getDocTitle(doc));
       helper.write(out, "</h2>");
@@ -90,7 +90,7 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
     helper.writeFooter(out);
   }
 
-  private String getTitle(List<? extends Document> docs) {
+  private String getTitle(List<? extends Entity> docs) {
     if (docs == null || docs.isEmpty()) {
       return "No documents";
     } else {
@@ -99,7 +99,7 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
     }
   }
 
-  private String getDocTitle(Document doc) {
+  private String getDocTitle(Entity doc) {
     String name = doc.getDisplayName();
     return (name != null) ? StringEscapeUtils.escapeHtml(name) : "";
   }

@@ -9,7 +9,7 @@ import nl.knaw.huygens.repository.facet.FacetCount;
 
 @IDPrefix("QURY")
 @DocumentTypeName("search")
-public class SearchResult extends SystemDocument implements Persistent {
+public class SearchResult extends SystemEntity implements Persistent {
 
   public static final String DATE_FIELD = "date";
 

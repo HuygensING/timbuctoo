@@ -7,8 +7,8 @@ import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.model.Entity;
+import nl.knaw.huygens.repository.model.DomainEntity;
 import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.BasicStorage;
@@ -77,102 +77,102 @@ public class MongoStorageFacade implements VariationStorage {
 
   // -------------------------------------------------------------------
 
-  private BasicStorage getStorageFor(Class<? extends Document> type) {
-    return DomainDocument.class.isAssignableFrom(type) ? variationStorage : plainStorage;
+  private BasicStorage getStorageFor(Class<? extends Entity> type) {
+    return DomainEntity.class.isAssignableFrom(type) ? variationStorage : plainStorage;
   }
 
   @Override
-  public <T extends Document> void ensureIndex(Class<T> type, List<List<String>> accessors) {
+  public <T extends Entity> void ensureIndex(Class<T> type, List<List<String>> accessors) {
     getStorageFor(type).ensureIndex(type, accessors);
   }
 
   @Override
-  public <T extends Document> T getItem(Class<T> type, String id) throws IOException {
+  public <T extends Entity> T getItem(Class<T> type, String id) throws IOException {
     return getStorageFor(type).getItem(type, id);
   }
 
   @Override
-  public <T extends Document> StorageIterator<T> getAllByType(Class<T> type) {
+  public <T extends Entity> StorageIterator<T> getAllByType(Class<T> type) {
     return getStorageFor(type).getAllByType(type);
   }
 
   @Override
-  public <T extends Document> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
+  public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
     return getStorageFor(type).getByMultipleIds(type, ids);
   }
 
   @Override
-  public <T extends Document> String addItem(Class<T> type, T item) throws IOException {
+  public <T extends Entity> String addItem(Class<T> type, T item) throws IOException {
     return getStorageFor(type).addItem(type, item);
   }
 
   @Override
-  public <T extends Document> void updateItem(Class<T> type, String id, T item) throws IOException {
+  public <T extends Entity> void updateItem(Class<T> type, String id, T item) throws IOException {
     getStorageFor(type).updateItem(type, id, item);
   }
 
   @Override
-  public <T extends Document> void setPID(Class<T> cls, String pid, String id) {
+  public <T extends Entity> void setPID(Class<T> cls, String pid, String id) {
     getStorageFor(cls).setPID(cls, pid, id);
   }
 
   @Override
-  public <T extends Document> void deleteItem(Class<T> type, String id, Change change) throws IOException {
+  public <T extends Entity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
     getStorageFor(type).deleteItem(type, id, change);
   }
 
   @Override
-  public <T extends Document> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
+  public <T extends Entity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
     return getStorageFor(type).getAllRevisions(type, id);
   }
 
   @Override
-  public List<Document> getLastChanged(int limit) throws IOException {
+  public List<Entity> getLastChanged(int limit) throws IOException {
     return variationStorage.getLastChanged(limit);
   }
 
   @Override
-  public <T extends Document> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs) {
+  public <T extends Entity> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs) {
     getStorageFor(type).fetchAll(type, refs);
   }
 
   @Override
-  public <T extends Document> List<String> getIdsForQuery(Class<T> type, List<String> accessors, String[] id) {
+  public <T extends Entity> List<String> getIdsForQuery(Class<T> type, List<String> accessors, String[] id) {
     return getStorageFor(type).getIdsForQuery(type, accessors, id);
   }
 
   @Override
-  public <T extends Document> T searchItem(Class<T> type, T item) throws IOException {
+  public <T extends Entity> T searchItem(Class<T> type, T item) throws IOException {
     return getStorageFor(type).searchItem(type, item);
   }
 
   @Override
-  public <T extends Document> int removeAll(Class<T> type) {
+  public <T extends Entity> int removeAll(Class<T> type) {
     return getStorageFor(type).removeAll(type);
   }
 
   @Override
-  public <T extends Document> int removeByDate(Class<T> type, String dateField, Date dateValue) {
+  public <T extends Entity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
     return getStorageFor(type).removeByDate(type, dateField, dateValue);
   }
 
   // -------------------------------------------------------------------
 
   @Override
-  public <T extends DomainDocument> T getVariation(Class<T> type, String id, String variation) throws IOException {
+  public <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) throws IOException {
     return variationStorage.getVariation(type, id, variation);
   }
 
   @Override
-  public <T extends Document> List<T> getAllVariations(Class<T> type, String id) throws IOException {
-    if (DomainDocument.class.isAssignableFrom(type)) {
+  public <T extends Entity> List<T> getAllVariations(Class<T> type, String id) throws IOException {
+    if (DomainEntity.class.isAssignableFrom(type)) {
       return variationStorage.getAllVariations(type, id);
     }
     throw new UnsupportedOperationException("Method not available for this type");
   }
 
   @Override
-  public <T extends DomainDocument> T getRevision(Class<T> type, String id, int revisionId) throws IOException {
+  public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revisionId) throws IOException {
     throw new UnsupportedOperationException("Method not available for this type");
   }
 
@@ -180,12 +180,12 @@ public class MongoStorageFacade implements VariationStorage {
     return variationStorage.countRelations(relation);
   }
 
-  public <T extends DomainDocument> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) {
+  public <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) {
     return variationStorage.getAllIdsWithoutPIDOfType(type);
   }
 
   @Override
-  public <T extends DomainDocument> void removePermanently(Class<T> type, Collection<String> ids) {
+  public <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids) {
     variationStorage.removePermanently(type, ids);
   }
 

@@ -14,7 +14,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.User;
 import nl.knaw.huygens.repository.storage.StorageManager;
 
@@ -60,7 +60,7 @@ public class DatabaseSetupper {
       importCleaner();
     }
     for (String model : config.getSettings("doctypes")) {
-      Class<? extends Document> cls = docTypeRegistry.getTypeForIName(model);
+      Class<? extends Entity> cls = docTypeRegistry.getTypeForIName(model);
       importer.bulkImport(cls, true, vreId, vreName);
     }
     System.out.println("Creating indices...");

@@ -13,7 +13,7 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -24,7 +24,7 @@ import com.google.inject.name.Named;
 @Provider
 @Produces(MediaType.TEXT_HTML)
 @Singleton
-public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
+public class DocumentHTMLProvider implements MessageBodyWriter<Entity> {
 
   private final HTMLProviderHelper helper;
 
@@ -35,16 +35,16 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Document> {
 
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-    return helper.accept(mediaType) && Document.class.isAssignableFrom(type);
+    return helper.accept(mediaType) && Entity.class.isAssignableFrom(type);
   }
 
   @Override
-  public long getSize(Document doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+  public long getSize(Entity doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
     return -1;
   }
 
   @Override
-  public void writeTo(Document doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException,
+  public void writeTo(Entity doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException,
       WebApplicationException {
     helper.writeHeader(out, doc.getDisplayName());
 

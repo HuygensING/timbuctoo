@@ -11,8 +11,8 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.IndexManager;
 import nl.knaw.huygens.repository.index.IndexService;
 import nl.knaw.huygens.repository.messages.Broker;
-import nl.knaw.huygens.repository.model.DocumentRef;
-import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.model.EntityRef;
+import nl.knaw.huygens.repository.model.DomainEntity;
 import nl.knaw.huygens.repository.model.Reference;
 import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.model.RelationType;
@@ -130,10 +130,10 @@ public class AtlantischeGidsImporter extends DefaultImporter {
   private final File inputDir;
 
   private final Graph graph = new Graph();
-  private final Map<DocumentRef, DocumentRef> docRefMap = Maps.newHashMap();
-  private final Map<String, DocumentRef> keywordDocRefMap = Maps.newHashMap();
+  private final Map<EntityRef, EntityRef> docRefMap = Maps.newHashMap();
+  private final Map<String, EntityRef> keywordDocRefMap = Maps.newHashMap();
   private final Map<String, Reference> keywordRefMap = Maps.newHashMap();
-  private final Map<String, DocumentRef> personDocRefMap = Maps.newHashMap();
+  private final Map<String, EntityRef> personDocRefMap = Maps.newHashMap();
   private final Map<String, Reference> personRefMap = Maps.newHashMap();
 
   private Reference isCreatorRef;
@@ -163,12 +163,12 @@ public class AtlantischeGidsImporter extends DefaultImporter {
   private Graph convertGraph(Graph graph) {
     Graph result = new Graph();
     for (Vertex vertex : graph.getVertices()) {
-      DocumentRef srce = docRefMap.get(vertex.getDocumentRef());
+      EntityRef srce = docRefMap.get(vertex.getDocumentRef());
       if (srce == null) {
         throw new RuntimeException("Unable to resolve srce node " + vertex.getDocumentRef());
       }
       for (Edge edge : vertex.getEdges()) {
-        DocumentRef dest = docRefMap.get(edge.getDest());
+        EntityRef dest = docRefMap.get(edge.getDest());
         if (dest == null) {
           throw new RuntimeException("Unable to resolve dest node " + edge.getDest());
         }
@@ -221,15 +221,15 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     addDocument(RelationType.class, type, true);
     isCreatorRef = new Reference(RelationType.class, type.getId());
 
-    type = new RelationType("has_keyword", DomainDocument.class, ATLGKeyword.class);
+    type = new RelationType("has_keyword", DomainEntity.class, ATLGKeyword.class);
     addDocument(RelationType.class, type, true);
     hasKeywordRef = new Reference(RelationType.class, type.getId());
 
-    type = new RelationType("has_person", DomainDocument.class, ATLGPerson.class);
+    type = new RelationType("has_person", DomainEntity.class, ATLGPerson.class);
     addDocument(RelationType.class, type, true);
     hasPersonRef = new Reference(RelationType.class, type.getId());
 
-    type = new RelationType("has_place", DomainDocument.class, ATLGKeyword.class);
+    type = new RelationType("has_place", DomainEntity.class, ATLGKeyword.class);
     addDocument(RelationType.class, type, true);
     hasPlaceRef = new Reference(RelationType.class, type.getId());
   }
@@ -445,7 +445,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       for (ArchiefMatEntry entry : readJsonValue(file, ArchiefMatEntry[].class)) {
         ArchiefMat object = entry.archiefmat;
         String id = object._id;
-        DocumentRef key = newDocumentRef(ATLGArchive.class, id);
+        EntityRef key = newDocumentRef(ATLGArchive.class, id);
         if (docRefMap.containsKey(key)) {
           handleError("[%s] Duplicate entry %s", file.getName(), key);
         } else {
@@ -554,7 +554,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     for (String archiveId : archiveIds) {
       ATLGArchive archive = getDocument(ATLGArchive.class, archiveId);
       String filename = archive.getOrigFilename();
-      List<DocumentRef> oldRefs = archive.getOverheadArchives();
+      List<EntityRef> oldRefs = archive.getOverheadArchives();
       if (oldRefs != null && oldRefs.size() != 0) {
         archive.setOverheadArchives(resolveRefs(filename, "overhead archive", oldRefs));
       }
@@ -588,10 +588,10 @@ public class AtlantischeGidsImporter extends DefaultImporter {
    * Resolve the id's of the document references.
    * Duplicates are removed, but the order of the references is preserved.
    */
-  private List<DocumentRef> resolveRefs(String filename, String type, List<DocumentRef> oldRefs) {
-    List<DocumentRef> newRefs = Lists.newArrayList();
-    for (DocumentRef oldRef : oldRefs) {
-      DocumentRef newRef = docRefMap.get(oldRef);
+  private List<EntityRef> resolveRefs(String filename, String type, List<EntityRef> oldRefs) {
+    List<EntityRef> newRefs = Lists.newArrayList();
+    for (EntityRef oldRef : oldRefs) {
+      EntityRef newRef = docRefMap.get(oldRef);
       if (newRef == null) {
         handleError("[%s] No %s for id %s", filename, type, oldRef.getId());
       } else if (newRefs.contains(newRef)) {
@@ -615,7 +615,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       for (CreatorEntry entry : entries) {
         Creator creator = entry.creator;
         String id = creator._id;
-        DocumentRef key = newDocumentRef(ATLGArchiver.class, id);
+        EntityRef key = newDocumentRef(ATLGArchiver.class, id);
         if (docRefMap.containsKey(key)) {
           handleError("[%s] Duplicate entry %s", file.getName(), key);
         } else {
@@ -625,7 +625,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
           // this looks awfully smart: this creator has created a number of archives
           // what remains is to create a new graph with references converted
           // then a simple lookup allows one to set the relarions in the objects
-          for (DocumentRef ref : archiver.getRelatedArchives()) {
+          for (EntityRef ref : archiver.getRelatedArchives()) {
             graph.addEdge(key, ref, "created");
             graph.addEdge(ref, key, "created_by");
           }
@@ -703,11 +703,11 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       ATLGArchiver archiver = getDocument(ATLGArchiver.class, id);
       Reference sourceRef = new Reference(ATLGArchiver.class, id);
       String filename = archiver.getOrigFilename();
-      List<DocumentRef> oldRefs = archiver.getRelatedArchives();
+      List<EntityRef> oldRefs = archiver.getRelatedArchives();
       if (oldRefs != null && oldRefs.size() != 0) {
-        List<DocumentRef> newRefs = resolveRefs(filename, "related archives", oldRefs);
+        List<EntityRef> newRefs = resolveRefs(filename, "related archives", oldRefs);
         archiver.setRelatedArchives(newRefs);
-        for (DocumentRef archiveRef : newRefs) {
+        for (EntityRef archiveRef : newRefs) {
           Reference targetRef = new Reference(ATLGArchive.class, archiveRef.getId());
           Relation relation = new Relation(sourceRef, isCreatorRef, targetRef);
           addDocument(Relation.class, relation, true);
@@ -1023,13 +1023,13 @@ public class AtlantischeGidsImporter extends DefaultImporter {
   // --- property graphs - primitive -----------------------------------
 
   public static class Graph {
-    private final Map<DocumentRef, Vertex> vertices = Maps.newHashMap();
+    private final Map<EntityRef, Vertex> vertices = Maps.newHashMap();
 
     public Collection<Vertex> getVertices() {
       return vertices.values();
     }
 
-    private Vertex getVertex(DocumentRef ref) {
+    private Vertex getVertex(EntityRef ref) {
       Vertex vertex = vertices.get(ref);
       if (vertex == null) {
         vertex = new Vertex(ref);
@@ -1038,24 +1038,24 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       return vertex;
     }
 
-    public void addEdge(DocumentRef srce, DocumentRef dest, String type) {
+    public void addEdge(EntityRef srce, EntityRef dest, String type) {
       getVertex(srce).getEdgeTo(dest).addType(type);
     }
 
-    public void addEdge(DocumentRef srce, DocumentRef dest, Set<String> types) {
+    public void addEdge(EntityRef srce, EntityRef dest, Set<String> types) {
       getVertex(srce).getEdgeTo(dest).setTypes(types);
     }
   }
 
   public static class Vertex {
-    private final Map<DocumentRef, Edge> adjacencies = Maps.newHashMap();
-    private final DocumentRef ref;
+    private final Map<EntityRef, Edge> adjacencies = Maps.newHashMap();
+    private final EntityRef ref;
 
-    public Vertex(DocumentRef ref) {
+    public Vertex(EntityRef ref) {
       this.ref = ref;
     }
 
-    public DocumentRef getDocumentRef() {
+    public EntityRef getDocumentRef() {
       return ref;
     }
 
@@ -1063,7 +1063,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       return adjacencies.values();
     }
 
-    public Edge getEdgeTo(DocumentRef dest) {
+    public Edge getEdgeTo(EntityRef dest) {
       Edge edge = adjacencies.get(dest);
       if (edge == null) {
         edge = new Edge(dest);
@@ -1075,13 +1075,13 @@ public class AtlantischeGidsImporter extends DefaultImporter {
 
   public static class Edge {
     private Set<String> types = Sets.newHashSet();
-    private final DocumentRef dest;
+    private final EntityRef dest;
 
-    public Edge(DocumentRef dest) {
+    public Edge(EntityRef dest) {
       this.dest = dest;
     }
 
-    public DocumentRef getDest() {
+    public EntityRef getDest() {
       return dest;
     }
 

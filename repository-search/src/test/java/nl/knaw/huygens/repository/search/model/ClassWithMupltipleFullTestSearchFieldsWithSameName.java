@@ -1,11 +1,11 @@
 package nl.knaw.huygens.repository.search.model;
 
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class ClassWithMupltipleFullTestSearchFieldsWithSameName extends Document {
+public class ClassWithMupltipleFullTestSearchFieldsWithSameName extends Entity {
 
   private String simpleIndexField;
 

@@ -1,10 +1,10 @@
 package nl.knaw.huygens.repository.storage;
 
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
-public class GenericDBRef<T extends Document> {
+public class GenericDBRef<T extends Entity> {
 
   private T item = null;
   public String type;

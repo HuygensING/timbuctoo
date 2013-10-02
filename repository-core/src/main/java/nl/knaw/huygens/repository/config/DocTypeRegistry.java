@@ -7,7 +7,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.repository.annotations.DoNotRegister;
 import nl.knaw.huygens.repository.annotations.DocumentTypeName;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 import org.apache.commons.lang.StringUtils;
 import org.scribe.utils.Preconditions;
@@ -54,11 +54,11 @@ public class DocTypeRegistry {
 
   private final Logger LOG = LoggerFactory.getLogger(DocTypeRegistry.class);
 
-  private final Map<Class<? extends Document>, String> type2iname = Maps.newHashMap();
-  private final Map<String, Class<? extends Document>> iname2type = Maps.newHashMap();
+  private final Map<Class<? extends Entity>, String> type2iname = Maps.newHashMap();
+  private final Map<String, Class<? extends Entity>> iname2type = Maps.newHashMap();
 
-  private final Map<Class<? extends Document>, String> type2xname = Maps.newHashMap();
-  private final Map<String, Class<? extends Document>> xname2type = Maps.newHashMap();
+  private final Map<Class<? extends Entity>, String> type2xname = Maps.newHashMap();
+  private final Map<String, Class<? extends Entity>> xname2type = Maps.newHashMap();
 
   private final Map<String, String> iname2xname = Maps.newHashMap();
 
@@ -84,21 +84,21 @@ public class DocTypeRegistry {
     for (ClassInfo info : classPath.getTopLevelClasses(packageName)) {
       Class<?> type = info.load();
       if (shouldRegisterClass(type)) {
-        registerClass((Class<? extends Document>) type);
+        registerClass((Class<? extends Entity>) type);
         LOG.info("Registered {}", type.getName());
       }
     }
   }
 
   private boolean shouldRegisterClass(Class<?> type) {
-    return Document.class.isAssignableFrom(type) //
+    return Entity.class.isAssignableFrom(type) //
         && !Modifier.isAbstract(type.getModifiers()) //
         && !type.isAnnotationPresent(DoNotRegister.class);
   }
 
   // -------------------------------------------------------------------
 
-  private void registerClass(Class<? extends Document> type) {
+  private void registerClass(Class<? extends Entity> type) {
     String iname = getInternalName(type);
     if (iname2type.containsKey(iname)) {
       throw new IllegalStateException("Duplicate internal type name " + iname);
@@ -116,11 +116,11 @@ public class DocTypeRegistry {
     iname2xname.put(iname, xname);
   }
 
-  private String getInternalName(Class<? extends Document> type) {
+  private String getInternalName(Class<? extends Entity> type) {
     return type.getSimpleName().toLowerCase();
   }
 
-  private String getExternalName(Class<? extends Document> type) {
+  private String getExternalName(Class<? extends Entity> type) {
     if (type.isAnnotationPresent(DocumentTypeName.class)) {
       return type.getAnnotation(DocumentTypeName.class).value();
     } else {
@@ -141,7 +141,7 @@ public class DocTypeRegistry {
    * Returns the internal type name for the specified type token,
    * or {@code null} if there is no such name.
    */
-  public String getINameForType(Class<? extends Document> type) {
+  public String getINameForType(Class<? extends Entity> type) {
     return type2iname.get(type);
   }
 
@@ -149,7 +149,7 @@ public class DocTypeRegistry {
    * Returns the type token for the specified internal type name,
    * or {@code null} if there is no such token.
    */
-  public Class<? extends Document> getTypeForIName(String iname) {
+  public Class<? extends Entity> getTypeForIName(String iname) {
     return iname2type.get(iname);
   }
 
@@ -157,7 +157,7 @@ public class DocTypeRegistry {
    * Returns the external type name for the specified type token,
    * or {@code null} if there is no such name.
    */
-  public String getXNameForType(Class<? extends Document> type) {
+  public String getXNameForType(Class<? extends Entity> type) {
     return type2xname.get(type);
   }
 
@@ -165,7 +165,7 @@ public class DocTypeRegistry {
    * Returns the type token for the specified external type name,
    * or {@code null} if there is no such token.
    */
-  public Class<? extends Document> getTypeForXName(String xname) {
+  public Class<? extends Entity> getTypeForXName(String xname) {
     return xname2type.get(xname);
   }
 
@@ -178,11 +178,11 @@ public class DocTypeRegistry {
   }
 
   @SuppressWarnings("unchecked")
-  public Class<? extends Document> getBaseClass(Class<? extends Document> type) {
-    Class<? extends Document> lastType = type;
+  public Class<? extends Entity> getBaseClass(Class<? extends Entity> type) {
+    Class<? extends Entity> lastType = type;
     while (type != null && !Modifier.isAbstract(type.getModifiers())) {
       lastType = type;
-      type = (Class<? extends Document>) type.getSuperclass();
+      type = (Class<? extends Entity>) type.getSuperclass();
     }
     return lastType;
   }

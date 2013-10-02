@@ -1,18 +1,18 @@
 package nl.knaw.huygens.repository.model;
 
 /**
- * A reference to a document, to be used in other documents.
+ * A reference to an entity, to be used in other entities.
  * The reference is partially denormalized by including the display name.
  *
  * It is an open question whether we should include the variation.
  */
-public class DocumentRef {
+public class EntityRef {
 
   /**
    * Utility for creating instances.
    */
-  public static <T extends Document> DocumentRef newInstance(String itype, String xtype, T document) {
-    return new DocumentRef(itype, xtype, document.getId(), document.getDisplayName());
+  public static <T extends Entity> EntityRef newInstance(String itype, String xtype, T document) {
+    return new EntityRef(itype, xtype, document.getId(), document.getDisplayName());
   }
 
   private String itype;
@@ -21,9 +21,9 @@ public class DocumentRef {
   private String displayName;
 
   // For deserialization...
-  public DocumentRef() {}
+  public EntityRef() {}
 
-  public DocumentRef(String itype, String xtype, String id, String displayName) {
+  public EntityRef(String itype, String xtype, String id, String displayName) {
     this.itype = itype;
     this.xtype = xtype;
     this.id = id;
@@ -64,8 +64,8 @@ public class DocumentRef {
 
   @Override
   public boolean equals(Object object) {
-    if (object instanceof DocumentRef) {
-      DocumentRef that = (DocumentRef) object;
+    if (object instanceof EntityRef) {
+      EntityRef that = (EntityRef) object;
       return (this.itype == null ? that.itype == null : this.itype.equals(that.itype)) //
           && (this.xtype == null ? that.xtype == null : this.xtype.equals(that.xtype)) //
           && (this.id == null ? that.id == null : this.id.equals(that.id)) //
