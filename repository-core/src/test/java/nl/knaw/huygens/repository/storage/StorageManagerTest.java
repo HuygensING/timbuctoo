@@ -32,8 +32,8 @@ import nl.knaw.huygens.repository.managers.model.ReferringDoc;
 import nl.knaw.huygens.repository.messages.ActionType;
 import nl.knaw.huygens.repository.messages.Broker;
 import nl.knaw.huygens.repository.messages.Producer;
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.model.Entity;
+import nl.knaw.huygens.repository.model.DomainEntity;
 import nl.knaw.huygens.repository.persistence.PersistenceWrapper;
 import nl.knaw.huygens.repository.storage.mongo.model.TestSystemDocument;
 import nl.knaw.huygens.repository.variation.model.GeneralTestDoc;
@@ -130,7 +130,7 @@ public class StorageManagerTest {
     verifyAddDocument(type, doc, times(1), times(1), times(1));
   }
 
-  protected <T extends Document> void verifyAddDocument(Class<T> type, T doc, VerificationMode storageVerification, VerificationMode persistenceVerification, VerificationMode indexingVerification)
+  protected <T extends Entity> void verifyAddDocument(Class<T> type, T doc, VerificationMode storageVerification, VerificationMode persistenceVerification, VerificationMode indexingVerification)
       throws IOException, PersistenceException, JMSException {
 
     verify(storage, storageVerification).addItem(type, doc);
@@ -171,7 +171,7 @@ public class StorageManagerTest {
 
     when(storage.getItem(type, id)).thenReturn(doc);
 
-    Document actualDoc = instance.getDocument(type, id);
+    Entity actualDoc = instance.getDocument(type, id);
 
     assertEquals(id, actualDoc.getId());
     assertEquals("test", actualDoc.getDisplayName());
@@ -210,7 +210,7 @@ public class StorageManagerTest {
 
     when(storage.getVariation(type, id, variation)).thenReturn(doc);
 
-    Document actualDoc = instance.getCompleteVariation(type, id, variation);
+    Entity actualDoc = instance.getCompleteVariation(type, id, variation);
 
     assertEquals(id, actualDoc.getId());
     assertEquals("test", actualDoc.getDisplayName());
@@ -329,7 +329,7 @@ public class StorageManagerTest {
     verifyModifyDocument(type, expectedDoc, times(1), times(1), times(1));
   }
 
-  protected <T extends Document> void verifyModifyDocument(Class<T> type, T expectedDoc, VerificationMode storageVerification, VerificationMode persistenceVerification,
+  protected <T extends Entity> void verifyModifyDocument(Class<T> type, T expectedDoc, VerificationMode storageVerification, VerificationMode persistenceVerification,
       VerificationMode indexVerification) throws IOException, PersistenceException, JMSException {
 
     verify(storage, storageVerification).updateItem(type, expectedDoc.getId(), expectedDoc);
@@ -361,7 +361,7 @@ public class StorageManagerTest {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     String typeString = "testconcretedoc";
 
-    when(docTypeRegistry.getINameForType(Mockito.<Class<? extends Document>> any())).thenReturn(typeString);
+    when(docTypeRegistry.getINameForType(Mockito.<Class<? extends Entity>> any())).thenReturn(typeString);
 
     instance.removeDocument(type, inputDoc);
     verify(storage).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
@@ -479,17 +479,17 @@ public class StorageManagerTest {
       instance.removePermanently(GeneralTestDoc.class);
     } finally {
       verify(producer, never()).send(any(ActionType.class), anyString(), anyString());
-      verify(storage, never()).removePermanently(Mockito.<Class<? extends DomainDocument>> any(), Mockito.<List<String>> any());
+      verify(storage, never()).removePermanently(Mockito.<Class<? extends DomainEntity>> any(), Mockito.<List<String>> any());
     }
   }
 
   @Test
   public void testGetLastChanged() throws IOException {
-    List<Document> lastChangeList = Lists.newArrayList(mock(Document.class), mock(Document.class), mock(Document.class));
+    List<Entity> lastChangeList = Lists.newArrayList(mock(Entity.class), mock(Entity.class), mock(Entity.class));
 
     when(storage.getLastChanged(anyInt())).thenReturn(lastChangeList);
 
-    List<Document> actualList = instance.getLastChanged(3);
+    List<Entity> actualList = instance.getLastChanged(3);
     assertEquals(3, actualList.size());
   }
 
@@ -498,7 +498,7 @@ public class StorageManagerTest {
   public void testGetLastChangedIOException() throws IOException {
     when(storage.getLastChanged(anyInt())).thenThrow(IOException.class);
 
-    List<Document> actualList = instance.getLastChanged(3);
+    List<Entity> actualList = instance.getLastChanged(3);
     assertTrue(actualList.isEmpty());
   }
 

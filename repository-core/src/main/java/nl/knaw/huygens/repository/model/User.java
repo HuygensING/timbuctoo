@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 @DoNotRegister
 @IDPrefix("USER")
-public class User extends SystemDocument {
+public class User extends SystemEntity {
 
   private String userId; // a unique id to identify the use.
   private String vreId; // the name of the VRE.

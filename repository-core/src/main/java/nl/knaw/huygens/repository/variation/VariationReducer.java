@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.Reference;
 import nl.knaw.huygens.repository.storage.mongo.MongoChanges;
 import nl.knaw.huygens.repository.storage.mongo.variation.DBJsonNode;
@@ -41,7 +41,7 @@ public class VariationReducer {
     this(registry, new ObjectMapper());
   }
 
-  public <T extends Document> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {
+  public <T extends Entity> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {
     if (obj == null) {
       return null;
     }
@@ -64,7 +64,7 @@ public class VariationReducer {
     return changes;
   }
 
-  public <T extends Document> T reduceRevision(Class<T> type, DBObject obj) throws IOException {
+  public <T extends Entity> T reduceRevision(Class<T> type, DBObject obj) throws IOException {
     if (obj == null) {
       return null;
     }
@@ -76,11 +76,11 @@ public class VariationReducer {
     return reduce(objectToReduce, type);
   }
 
-  public <T extends Document> T reduceDBObject(DBObject obj, Class<T> cls) throws IOException {
+  public <T extends Entity> T reduceDBObject(DBObject obj, Class<T> cls) throws IOException {
     return reduceDBObject(obj, cls, null);
   }
 
-  public <T extends Document> T reduceDBObject(DBObject obj, Class<T> cls, String variation) throws IOException {
+  public <T extends Entity> T reduceDBObject(DBObject obj, Class<T> cls, String variation) throws IOException {
     if (obj == null) {
       return null;
     }
@@ -88,7 +88,7 @@ public class VariationReducer {
     return reduce(tree, cls, variation);
   }
 
-  public <T extends Document> List<T> reduceDBObject(List<DBObject> nodes, Class<T> cls) throws IOException {
+  public <T extends Entity> List<T> reduceDBObject(List<DBObject> nodes, Class<T> cls) throws IOException {
     List<T> rv = Lists.newArrayListWithCapacity(nodes.size());
     for (DBObject n : nodes) {
       rv.add(reduceDBObject(n, cls));
@@ -96,7 +96,7 @@ public class VariationReducer {
     return rv;
   }
 
-  public <T extends Document> List<T> reduce(List<JsonNode> nodes, Class<T> cls) throws VariationException, JsonProcessingException {
+  public <T extends Entity> List<T> reduce(List<JsonNode> nodes, Class<T> cls) throws VariationException, JsonProcessingException {
     List<T> rv = Lists.newArrayListWithCapacity(nodes.size());
     for (JsonNode n : nodes) {
       rv.add(reduce(n, cls));
@@ -104,11 +104,11 @@ public class VariationReducer {
     return rv;
   }
 
-  public <T extends Document> T reduce(JsonNode node, Class<T> cls) throws VariationException, JsonProcessingException {
+  public <T extends Entity> T reduce(JsonNode node, Class<T> cls) throws VariationException, JsonProcessingException {
     return reduce(node, cls, null);
   }
 
-  public <T extends Document> T reduce(JsonNode node, Class<T> cls, String requestedVariation) throws VariationException, JsonProcessingException {
+  public <T extends Entity> T reduce(JsonNode node, Class<T> cls, String requestedVariation) throws VariationException, JsonProcessingException {
     final String classVariation = VariationUtils.getVariationName(cls);
     String idPrefix = classVariation + "-";
     List<JsonNode> specificData = Lists.newArrayListWithExpectedSize(1);
@@ -125,7 +125,7 @@ public class VariationReducer {
     variationToRetrieve = getVariationToRetrieve(classVariation, defaultVariationNode, requestedVariation, types);
 
     ObjectNode rv = mapper.createObjectNode();
-    for (Class<? extends Document> someCls : VariationUtils.getAllClasses(cls)) {
+    for (Class<? extends Entity> someCls : VariationUtils.getAllClasses(cls)) {
       String id = VariationUtils.getClassId(someCls);
       JsonNode data = node.get(id);
       if (data != null) {
@@ -173,7 +173,7 @@ public class VariationReducer {
   private List<Reference> getVariations(List<String> typeStrings, String id) throws VariationException {
     List<Reference> references = Lists.<Reference> newLinkedList();
     for (String typeString : typeStrings) {
-      Class<? extends Document> type = converter.getClass(typeString);
+      Class<? extends Entity> type = converter.getClass(typeString);
       if (typeString.contains("-")) {
         // project specific classes don't have any variation
         references.add(new Reference(type, id));
@@ -304,7 +304,7 @@ public class VariationReducer {
    * Example2:  if cls is Scientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
    * Example3:  if cls is ProjectAScientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
    */
-  public <T extends Document> List<T> getAllForDBObject(DBObject item, Class<T> cls) throws IOException {
+  public <T extends Entity> List<T> getAllForDBObject(DBObject item, Class<T> cls) throws IOException {
     JsonNode jsonNode = convertToTree(item);
     Iterator<String> fieldNames = jsonNode.fieldNames();
     List<T> rv = Lists.newArrayList();

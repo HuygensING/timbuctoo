@@ -9,14 +9,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.util.Datable;
 import nl.knaw.huygens.repository.model.util.PersonName;
 import nl.knaw.huygens.repository.model.util.PersonNameComponent.Type;
 
 import org.apache.commons.lang.StringUtils;
 
-public class GenericResultSetConverter<T extends Document> {
+public class GenericResultSetConverter<T extends Entity> {
   private Map<String, List<String>> propertyMapping;
   private Class<T> type;
 

@@ -10,7 +10,7 @@ import com.google.common.collect.Maps;
  * Denotes a language, catering for ISO 639-2 and 639-1 codes.
  */
 @IDPrefix("LANG")
-public class Language extends DomainDocument {
+public class Language extends DomainEntity {
 
   /** Codes, e.g. "iso_639_2". */
   private Map<String, String> codes;

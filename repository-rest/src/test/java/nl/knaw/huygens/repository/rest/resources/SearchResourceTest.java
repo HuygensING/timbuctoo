@@ -19,7 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
 import nl.knaw.huygens.repository.facet.FacetCount;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.Person;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.search.FacetDoesNotExistException;
@@ -50,7 +50,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Before
   public void setUpSortableFields() {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    when(searchManager.findSortableFields(Matchers.<Class<? extends Document>> any())).thenReturn(SORTABLE_FIELDS);
+    when(searchManager.findSortableFields(Matchers.<Class<? extends Entity>> any())).thenReturn(SORTABLE_FIELDS);
   }
 
   @Test
@@ -100,7 +100,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addDocument(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
-    verify(searchManager, never()).search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class));
+    verify(searchManager, never()).search(Matchers.<Class<? extends Entity>> any(), anyString(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
   }
@@ -116,7 +116,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addDocument(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
-    verify(searchManager, never()).search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class));
+    verify(searchManager, never()).search(Matchers.<Class<? extends Entity>> any(), anyString(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
@@ -132,7 +132,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addDocument(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
-    verify(searchManager, never()).search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class));
+    verify(searchManager, never()).search(Matchers.<Class<? extends Entity>> any(), anyString(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
@@ -140,7 +140,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostUnknownFacets() throws SolrServerException, FacetDoesNotExistException, IOException {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    doThrow(FacetDoesNotExistException.class).when(searchManager).search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class));
+    doThrow(FacetDoesNotExistException.class).when(searchManager).search(Matchers.<Class<? extends Entity>> any(), anyString(), any(FacetedSearchParameters.class));
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
@@ -157,7 +157,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostSearchManagerThrowsAnException() throws IOException, SolrServerException, FacetDoesNotExistException {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    doThrow(Exception.class).when(searchManager).search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class));
+    doThrow(Exception.class).when(searchManager).search(Matchers.<Class<? extends Entity>> any(), anyString(), any(FacetedSearchParameters.class));
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
@@ -314,7 +314,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   private void setupSearchManager(SearchResult searchResult) throws SolrServerException, FacetDoesNotExistException {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    when(searchManager.search(Matchers.<Class<? extends Document>> any(), anyString(), any(FacetedSearchParameters.class))).thenReturn(searchResult);
+    when(searchManager.search(Matchers.<Class<? extends Entity>> any(), anyString(), any(FacetedSearchParameters.class))).thenReturn(searchResult);
   }
 
   private SearchResult createPostSearchResult() {

@@ -10,7 +10,7 @@ import java.util.Date;
 
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.StorageManager;
 
@@ -30,7 +30,7 @@ public class DbImporter {
     storageManager = manager;
   }
 
-  public <T extends Document> void bulkImport(Class<T> type, boolean setChange, String vreId, String vreName) {
+  public <T extends Entity> void bulkImport(Class<T> type, boolean setChange, String vreId, String vreName) {
     ObjectMapper mapper = new ObjectMapper();
     MongoJacksonMapperModule.configure(mapper);
     try {

@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.storage.StorageConfiguration;
 
 import org.junit.Before;
@@ -75,7 +75,7 @@ public abstract class MongoStorageTestBase {
     assertEquals(expectedSize, db.getCollection(collectionName).getCount());
   }
 
-  protected <T extends Document> void assertEqualDocs(T expected, T actual) {
+  protected <T extends Entity> void assertEqualDocs(T expected, T actual) {
     try {
       assertNull(MongoDiff.diffDocuments(expected, actual));
     } catch (IOException e) {

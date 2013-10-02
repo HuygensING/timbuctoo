@@ -5,7 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Set;
 
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.search.model.ClassWithNamedSortableFields;
 import nl.knaw.huygens.repository.search.model.ClassWithUnNamedSortableFields;
 import nl.knaw.huygens.repository.search.model.ComplexAnnotatedClass;
@@ -41,7 +41,7 @@ public class SortableFieldFinderTest {
     testFindSortableFields(expected, ClassWithUnNamedSortableFields.class);
   }
 
-  private void testFindSortableFields(Set<String> expected, Class<? extends Document> type) {
+  private void testFindSortableFields(Set<String> expected, Class<? extends Entity> type) {
     Set<String> actual = instance.findFields(type);
     assertThat(actual, equalTo(expected));
   }

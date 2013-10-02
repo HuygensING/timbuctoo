@@ -1,13 +1,13 @@
 package nl.knaw.huygens.repository.tools.importer.database;
 
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.util.Datable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class DocumentExtensionWithDatableField extends Document {
+public class DocumentExtensionWithDatableField extends Entity {
 
   public DocumentExtensionWithDatableField() {
 

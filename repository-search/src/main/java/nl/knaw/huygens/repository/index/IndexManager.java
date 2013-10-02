@@ -4,7 +4,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.storage.RelationManager;
 import nl.knaw.huygens.repository.storage.StorageManager;
@@ -37,7 +37,7 @@ public class IndexManager {
 
   private final DocTypeRegistry registry;
   private final LocalSolrServer server;
-  private Map<Class<? extends Document>, DocumentIndexer<? extends Document>> indexers;
+  private Map<Class<? extends Entity>, DocumentIndexer<? extends Entity>> indexers;
 
   @Inject
   public IndexManager(Configuration config, DocTypeRegistry registry, LocalSolrServer server, StorageManager storageManager, RelationManager relationManager) {
@@ -51,7 +51,7 @@ public class IndexManager {
     indexers = Maps.newHashMap();
     indexers.put(Relation.class, new RelationIndexer(registry, server, storageManager, relationManager));
     for (String doctype : config.getSettings("indexeddoctypes")) {
-      Class<? extends Document> type = registry.getTypeForIName(doctype);
+      Class<? extends Entity> type = registry.getTypeForIName(doctype);
       if (type == null) {
         LOG.error("Configuration: '{}' is not a document type", doctype);
         error = true;
@@ -70,29 +70,29 @@ public class IndexManager {
     }
   }
 
-  private <T extends Document> DocumentIndexer<T> indexerForType(Class<T> type) {
+  private <T extends Entity> DocumentIndexer<T> indexerForType(Class<T> type) {
     @SuppressWarnings("unchecked")
     DocumentIndexer<T> indexer = (DocumentIndexer<T>) indexers.get(type);
     return (indexer != null) ? indexer : new NoDocumentIndexer<T>();
   }
 
-  public <T extends Document> void addDocument(Class<T> type, String id) throws IndexException {
+  public <T extends Entity> void addDocument(Class<T> type, String id) throws IndexException {
     addBaseDocument(registry.getBaseClass(type), id);
   }
 
-  private <T extends Document> void addBaseDocument(Class<T> type, String id) throws IndexException {
+  private <T extends Entity> void addBaseDocument(Class<T> type, String id) throws IndexException {
     indexerForType(type).add(type, id);
   }
 
-  public <T extends Document> void updateDocument(Class<T> type, String id) throws IndexException {
+  public <T extends Entity> void updateDocument(Class<T> type, String id) throws IndexException {
     updateBaseDocument(registry.getBaseClass(type), id);
   }
 
-  private <T extends Document> void updateBaseDocument(Class<T> type, String id) throws IndexException {
+  private <T extends Entity> void updateBaseDocument(Class<T> type, String id) throws IndexException {
     indexerForType(type).modify(type, id);
   }
 
-  public <T extends Document> void deleteDocument(Class<T> type, String id) throws IndexException {
+  public <T extends Entity> void deleteDocument(Class<T> type, String id) throws IndexException {
     indexerForType(registry.getBaseClass(type)).remove(id);
   }
 

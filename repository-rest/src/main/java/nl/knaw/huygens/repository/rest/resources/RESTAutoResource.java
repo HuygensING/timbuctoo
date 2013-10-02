@@ -22,8 +22,8 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.model.Entity;
+import nl.knaw.huygens.repository.model.DomainEntity;
 import nl.knaw.huygens.repository.search.SearchManager;
 import nl.knaw.huygens.repository.storage.JsonViews;
 import nl.knaw.huygens.repository.storage.StorageManager;
@@ -64,7 +64,7 @@ public class RESTAutoResource {
   @GET
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
-  public List<? extends Document> getAllDocs( //
+  public List<? extends Entity> getAllDocs( //
       @PathParam(ENTITY_PARAM)
       String entityType, //
       @QueryParam("rows")
@@ -73,7 +73,7 @@ public class RESTAutoResource {
       @QueryParam("start")
       int start //
   ) {
-    Class<? extends Document> type = getDocType(entityType);
+    Class<? extends Entity> type = getDocType(entityType);
     return storageManager.getAllLimited(type, start, rows);
   }
 
@@ -81,16 +81,16 @@ public class RESTAutoResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
-  public <T extends Document> Response post( //
+  public <T extends Entity> Response post( //
       @PathParam(ENTITY_PARAM)
       String entityType, //
-      Document input, //
+      Entity input, //
       @Context
       UriInfo uriInfo //
   ) throws IOException {
     @SuppressWarnings("unchecked")
     Class<T> type = (Class<T>) getDocType(entityType);
-    Class<? extends Document> inputType = input.getClass();
+    Class<? extends Entity> inputType = input.getClass();
 
     //TODO: find a better way to test if input type is the same as the entity type.
     //@see redmine issue #1419
@@ -110,18 +110,18 @@ public class RESTAutoResource {
   @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
-  public Document getDoc( //
+  public Entity getDoc( //
       @PathParam(ENTITY_PARAM)
       String entityType, //
       @PathParam(ID_PARAM)
       String id //
   ) {
-    Class<? extends Document> type = getDocType(entityType);
-    Document document = checkNotNull(storageManager.getDocument(type, id), Status.NOT_FOUND);
+    Class<? extends Entity> type = getDocType(entityType);
+    Entity document = checkNotNull(storageManager.getDocument(type, id), Status.NOT_FOUND);
 
-    if (document instanceof DomainDocument) {
+    if (document instanceof DomainEntity) {
       try {
-        searchManager.addRelationsTo((DomainDocument) document);
+        searchManager.addRelationsTo((DomainEntity) document);
       } catch (SolrServerException e) {
         LOG.error(e.getMessage());
         throw new WebApplicationException(Status.NOT_FOUND);
@@ -135,16 +135,16 @@ public class RESTAutoResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
-  public <T extends Document> void putDoc( //
+  public <T extends Entity> void putDoc( //
       @PathParam(ENTITY_PARAM)
       String entityType, //
       @PathParam(ID_PARAM)
       String id, //
-      Document input //
+      Entity input //
   ) throws IOException {
     @SuppressWarnings("unchecked")
     Class<T> type = (Class<T>) getDocType(entityType);
-    Class<? extends Document> inputType = input.getClass();
+    Class<? extends Entity> inputType = input.getClass();
 
     //TODO: find a better way to test if input type is the same as the entity type.
     //@see redmine issue #1419
@@ -166,7 +166,7 @@ public class RESTAutoResource {
   @Path(ID_PATH)
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
-  public <T extends Document> Response delete( //
+  public <T extends Entity> Response delete( //
       @PathParam(ENTITY_PARAM)
       String entityType, //
       @PathParam(ID_PARAM)
@@ -183,7 +183,7 @@ public class RESTAutoResource {
   @Path(ID_PATH + "/{variation: \\w+}")
   @JsonView(JsonViews.WebView.class)
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
-  public DomainDocument getDocOfVariation( //
+  public DomainEntity getDocOfVariation( //
       @PathParam(ENTITY_PARAM)
       String entityType, //
       @PathParam(ID_PARAM)
@@ -192,14 +192,14 @@ public class RESTAutoResource {
       String variation //
   ) {
     @SuppressWarnings("unchecked")
-    Class<? extends DomainDocument> type = (Class<? extends DomainDocument>) getDocType(entityType);
+    Class<? extends DomainEntity> type = (Class<? extends DomainEntity>) getDocType(entityType);
     return checkNotNull(storageManager.getCompleteVariation(type, id, variation), Status.NOT_FOUND);
   }
 
   // -------------------------------------------------------------------
 
-  private Class<? extends Document> getDocType(String entityType) {
-    Class<? extends Document> type = docTypeRegistry.getTypeForXName(entityType);
+  private Class<? extends Entity> getDocType(String entityType) {
+    Class<? extends Entity> type = docTypeRegistry.getTypeForXName(entityType);
     if (type == null) {
       LOG.error("Cannot convert '{}' to a document type", entityType);
       throw new WebApplicationException(Status.NOT_FOUND);

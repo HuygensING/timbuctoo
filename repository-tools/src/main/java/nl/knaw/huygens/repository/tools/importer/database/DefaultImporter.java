@@ -3,8 +3,8 @@ package nl.knaw.huygens.repository.tools.importer.database;
 import java.io.IOException;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.DocumentRef;
+import nl.knaw.huygens.repository.model.Entity;
+import nl.knaw.huygens.repository.model.EntityRef;
 import nl.knaw.huygens.repository.storage.StorageManager;
 
 public abstract class DefaultImporter {
@@ -43,11 +43,11 @@ public abstract class DefaultImporter {
 
   // --- storage -------------------------------------------------------
 
-  protected <T extends Document> T getDocument(Class<T> type, String id) {
+  protected <T extends Entity> T getDocument(Class<T> type, String id) {
     return storageManager.getDocument(type, id);
   }
 
-  protected <T extends Document> String addDocument(Class<T> type, T document, boolean isComplete) {
+  protected <T extends Entity> String addDocument(Class<T> type, T document, boolean isComplete) {
     try {
       storageManager.addDocumentWithoutPersisting(type, document, isComplete);
       return document.getId();
@@ -57,7 +57,7 @@ public abstract class DefaultImporter {
     }
   }
 
-  protected <T extends Document> T modDocument(Class<T> type, T document) {
+  protected <T extends Entity> T modDocument(Class<T> type, T document) {
     try {
       storageManager.modifyDocumentWithoutPersisting(type, document);
       return document;
@@ -69,16 +69,16 @@ public abstract class DefaultImporter {
 
   // -------------------------------------------------------------------
 
-  protected <T extends Document> DocumentRef newDocumentRef(Class<T> type, T document) {
+  protected <T extends Entity> EntityRef newDocumentRef(Class<T> type, T document) {
     String itype = docTypeRegistry.getINameForType(type);
     String xtype = docTypeRegistry.getXNameForType(type);
-    return new DocumentRef(itype, xtype, document.getId(), document.getDisplayName());
+    return new EntityRef(itype, xtype, document.getId(), document.getDisplayName());
   }
 
-  protected <T extends Document> DocumentRef newDocumentRef(Class<T> type, String id) {
+  protected <T extends Entity> EntityRef newDocumentRef(Class<T> type, String id) {
     String itype = docTypeRegistry.getINameForType(type);
     String xtype = docTypeRegistry.getXNameForType(type);
-    return new DocumentRef(itype, xtype, id, null);
+    return new EntityRef(itype, xtype, id, null);
   }
 
 }

@@ -2,7 +2,7 @@ package nl.knaw.huygens.repository.storage;
 
 import static org.junit.Assert.assertEquals;
 import nl.knaw.huygens.repository.annotations.IDPrefix;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 import org.junit.Test;
 
@@ -12,7 +12,7 @@ public class StorageUtilsTest {
   public void testGetIdPrefix() {
     assertEquals(StorageUtils.UNKNOWN_ID_PREFIX, StorageUtils.getIDPrefix(null));
     assertEquals(StorageUtils.UNKNOWN_ID_PREFIX, StorageUtils.getIDPrefix(String.class));
-    assertEquals(StorageUtils.UNKNOWN_ID_PREFIX, StorageUtils.getIDPrefix(Document.class));
+    assertEquals(StorageUtils.UNKNOWN_ID_PREFIX, StorageUtils.getIDPrefix(Entity.class));
     assertEquals("PERS", StorageUtils.getIDPrefix(Person.class));
     assertEquals("PERS", StorageUtils.getIDPrefix(XPerson.class));
   }
@@ -28,7 +28,7 @@ public class StorageUtilsTest {
   // -------------------------------------------------------------------
 
   @IDPrefix("PERS")
-  private static class Person extends Document {
+  private static class Person extends Entity {
     @Override
     public String getDisplayName() {
       return null;

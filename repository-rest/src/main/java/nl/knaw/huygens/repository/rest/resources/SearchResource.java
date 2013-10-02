@@ -23,7 +23,7 @@ import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.repository.annotations.APIDesc;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.SearchResult;
 import nl.knaw.huygens.repository.search.FacetDoesNotExistException;
 import nl.knaw.huygens.repository.search.SearchManager;
@@ -63,7 +63,7 @@ public class SearchResource {
       LOG.error("POST - type: '{}', q: '{}'", typeString, q);
       throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
-    Class<? extends Document> type = registry.getTypeForIName(typeString);
+    Class<? extends Entity> type = registry.getTypeForIName(typeString);
     if (type == null) {
       LOG.error("POST - no type {}", typeString);
       throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -72,7 +72,7 @@ public class SearchResource {
     // Process
     try {
       // FIX the `SearchResource shouldn't know the relation between types and cores
-      Class<? extends Document> baseType = registry.getBaseClass(type);
+      Class<? extends Entity> baseType = registry.getBaseClass(type);
       String core = registry.getINameForType(baseType);
       SearchResult result = searchManager.search(type, core, searchParameters);
       storageManager.addDocument(SearchResult.class, result);
@@ -106,7 +106,7 @@ public class SearchResource {
     }
 
     // Process
-    Class<? extends Document> type = registry.getTypeForIName(result.getSearchType());
+    Class<? extends Entity> type = registry.getTypeForIName(result.getSearchType());
     if (type == null) {
       LOG.error("GET - no document type for '{}'", result.getSearchType());
       throw new WebApplicationException(Response.Status.BAD_REQUEST);
@@ -153,7 +153,7 @@ public class SearchResource {
     return Math.min(Math.max(value, minValue), maxValue);
   }
 
-  private <T extends Document> List<T> convert(Class<T> type, List<String> ids, int lo, int hi) {
+  private <T extends Entity> List<T> convert(Class<T> type, List<String> ids, int lo, int hi) {
     List<T> list = Lists.newArrayList();
     // TODO get all at once
     for (int index = lo; index < hi; index++) {

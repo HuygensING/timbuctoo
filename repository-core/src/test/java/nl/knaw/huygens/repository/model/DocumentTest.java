@@ -8,7 +8,7 @@ public class DocumentTest {
 
   @Test
   public void testTypeName() {
-    Document doc = new ModelWithOverriddenIndexAnnotations();
+    Entity doc = new ModelWithOverriddenIndexAnnotations();
     assertEquals("ModelWithOverriddenIndexAnnotations", doc.getClass().getSimpleName());
   }
 

@@ -5,7 +5,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
 import nl.knaw.huygens.repository.facet.IndexAnnotations;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 import com.google.common.collect.Sets;
 
@@ -21,7 +21,7 @@ public abstract class AbstractFieldFinder {
   protected abstract void addField(Set<String> fields, IndexAnnotation indexAnnotation);
 
   @SuppressWarnings("unchecked")
-  public Set<String> findFields(Class<? extends Document> type) {
+  public Set<String> findFields(Class<? extends Entity> type) {
     Set<String> fieldList = Sets.newHashSet();
 
     Method[] methods = type.getMethods();
@@ -41,8 +41,8 @@ public abstract class AbstractFieldFinder {
     }
 
     Class<?> superclass = type.getSuperclass();
-    if (!Document.class.equals(superclass)) {
-      fieldList.addAll(findFields((Class<? extends Document>) type.getSuperclass()));
+    if (!Entity.class.equals(superclass)) {
+      fieldList.addAll(findFields((Class<? extends Entity>) type.getSuperclass()));
     }
 
     return fieldList;

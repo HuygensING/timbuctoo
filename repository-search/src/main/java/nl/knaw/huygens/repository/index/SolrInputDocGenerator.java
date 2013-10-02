@@ -9,7 +9,7 @@ import java.util.Set;
 import nl.knaw.huygens.repository.facet.CustomIndexer;
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
 import nl.knaw.huygens.repository.facet.CustomIndexer.NoopIndexer;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -20,14 +20,14 @@ import com.google.common.collect.Sets;
 
 public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
   private SolrInputDocument doc;
-  private Document instance;
+  private Entity instance;
 
-  public SolrInputDocGenerator(Document instance) {
+  public SolrInputDocGenerator(Entity instance) {
     this.doc = new SolrInputDocument();
     this.instance = instance;
   }
 
-  public SolrInputDocGenerator(Document instance, SolrInputDocument solrDoc) {
+  public SolrInputDocGenerator(Entity instance, SolrInputDocument solrDoc) {
     this.doc = solrDoc;
     this.instance = instance;
   }
@@ -68,7 +68,7 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
   /**
    * Index this part of the item.
    */
-  private void indexMethodOnce(SolrInputDocument doc, Document instance, Method m, IndexAnnotation argData) {
+  private void indexMethodOnce(SolrInputDocument doc, Entity instance, Method m, IndexAnnotation argData) {
     // Determine index field name:
     Class<? extends CustomIndexer> indexClass = argData.customIndexer();
     CustomIndexer indexer;

@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
-import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.model.Entity;
+import nl.knaw.huygens.repository.model.DomainEntity;
 import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.model.util.Change;
 import nl.knaw.huygens.repository.storage.GenericDBRef;
@@ -60,7 +60,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   private TreeEncoderFactory treeEncoderFactory;
   private TreeDecoderFactory treeDecoderFactory;
 
-  private Map<Class<? extends Document>, DBCollection> collectionCache;
+  private Map<Class<? extends Entity>, DBCollection> collectionCache;
 
   public MongoVariationStorage(DocTypeRegistry registry, StorageConfiguration conf) throws UnknownHostException, MongoException {
     super(registry);
@@ -97,7 +97,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Document> T getItem(Class<T> type, String id) throws VariationException, IOException {
+  public <T extends Entity> T getItem(Class<T> type, String id) throws VariationException, IOException {
     DBCollection col = getVariationCollection(type);
     DBObject query = new BasicDBObject("_id", id);
     addClassNotNull(type, query);
@@ -105,18 +105,18 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Document> T searchItem(Class<T> type, T example) throws IOException {
+  public <T extends Entity> T searchItem(Class<T> type, T example) throws IOException {
     throw new NotImplementedException("This method is not intended to get used.");
   }
 
-  private <T extends Document> void addClassNotNull(Class<T> type, DBObject query) {
+  private <T extends Entity> void addClassNotNull(Class<T> type, DBObject query) {
     String classType = VariationUtils.getClassId(type);
     BasicDBObject notNull = new BasicDBObject("$ne", null);
     query.put(classType, notNull);
   }
 
   @Override
-  public <T extends Document> List<T> getAllVariations(Class<T> type, String id) throws VariationException, IOException {
+  public <T extends Entity> List<T> getAllVariations(Class<T> type, String id) throws VariationException, IOException {
     DBCollection col = getVariationCollection(type);
     DBObject query = new BasicDBObject("_id", id);
     DBObject item = col.findOne(query);
@@ -124,7 +124,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends DomainDocument> T getVariation(Class<T> type, String id, String variation) throws IOException {
+  public <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) throws IOException {
     DBCollection col = getVariationCollection(type);
     DBObject query = new BasicDBObject("_id", id);
     addClassNotNull(type, query);
@@ -132,7 +132,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Document> StorageIterator<T> getAllByType(Class<T> cls) {
+  public <T extends Entity> StorageIterator<T> getAllByType(Class<T> cls) {
     DBCollection col = getVariationCollection(cls);
     String classType = VariationUtils.getClassId(cls);
     BasicDBObject notNull = new BasicDBObject("$ne", null);
@@ -141,7 +141,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Document> MongoChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
+  public <T extends Entity> MongoChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
     DBCollection col = getRawVersionCollection(type);
     DBObject query = new BasicDBObject("_id", id);
 
@@ -151,7 +151,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends DomainDocument> T getRevision(Class<T> type, String id, int revisionId) throws IOException {
+  public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revisionId) throws IOException {
     DBCollection col = getRawVersionCollection(type);
     DBObject query = new BasicDBObject("_id", id);
     query.put("versions.^rev", revisionId);
@@ -159,13 +159,13 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Document> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
+  public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
     DBCollection col = getVariationCollection(type);
     return new MongoDBVariationIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)), reducer, type);
   }
 
   @Override
-  public List<Document> getLastChanged(int limit) throws IOException {
+  public List<Entity> getLastChanged(int limit) throws IOException {
     List<DBObject> changedDocs = Lists.newArrayList();
     for (String colName : documentCollections) {
       DBCollection col = db.getCollection(colName);
@@ -175,11 +175,11 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     }
 
     MongoUtils.sortDocumentsByLastChange(changedDocs);
-    return reducer.reduceDBObject(changedDocs.subList(0, limit), Document.class);
+    return reducer.reduceDBObject(changedDocs.subList(0, limit), Entity.class);
   }
 
   @Override
-  public <T extends Document> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs) {
+  public <T extends Entity> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs) {
     Set<String> mongoRefs = Sets.newHashSetWithExpectedSize(refs.size());
     for (GenericDBRef<T> ref : refs) {
       mongoRefs.add(ref.id);
@@ -201,7 +201,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Document> List<String> getIdsForQuery(Class<T> cls, List<String> accessors, String[] ids) {
+  public <T extends Entity> List<String> getIdsForQuery(Class<T> cls, List<String> accessors, String[] ids) {
     DBCollection collection = getVariationCollection(cls);
     String queryStr = getQueryStr(accessors);
     DBObject query;
@@ -223,7 +223,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Document> void ensureIndex(Class<T> type, List<List<String>> accessorList) {
+  public <T extends Entity> void ensureIndex(Class<T> type, List<List<String>> accessorList) {
     DBCollection col = getVariationCollection(type);
     for (List<String> accessors : accessorList) {
       col.ensureIndex(getQueryStr(accessors));
@@ -234,10 +234,10 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     return Joiner.on(".").join(accessors) + ".id";
   }
 
-  protected <T extends Document> DBCollection getVariationCollection(Class<T> type) {
+  protected <T extends Entity> DBCollection getVariationCollection(Class<T> type) {
     DBCollection col;
     if (!collectionCache.containsKey(type)) {
-      Class<? extends Document> baseType = docTypeRegistry.getBaseClass(type);
+      Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(type);
       col = db.getCollection(docTypeRegistry.getINameForType(baseType));
       col.setDBDecoderFactory(treeDecoderFactory);
       col.setDBEncoderFactory(treeEncoderFactory);
@@ -248,8 +248,8 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     return col;
   }
 
-  protected <T extends Document> DBCollection getRawVersionCollection(Class<T> type) {
-    Class<? extends Document> baseType = docTypeRegistry.getBaseClass(type);
+  protected <T extends Entity> DBCollection getRawVersionCollection(Class<T> type) {
+    Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(type);
     DBCollection col = db.getCollection(docTypeRegistry.getINameForType(baseType) + "-versions");
     col.setDBDecoderFactory(treeDecoderFactory);
     col.setDBEncoderFactory(treeEncoderFactory);
@@ -259,7 +259,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   // -------------------------------------------------------------------
 
   @Override
-  public <T extends Document> String addItem(Class<T> type, T item) throws IOException {
+  public <T extends Entity> String addItem(Class<T> type, T item) throws IOException {
     if (item.getId() == null) {
       setNextId(type, item);
     }
@@ -272,7 +272,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Document> void updateItem(Class<T> type, String id, T item) throws IOException {
+  public <T extends Entity> void updateItem(Class<T> type, String id, T item) throws IOException {
     DBCollection col = getVariationCollection(type);
     BasicDBObject q = new BasicDBObject("_id", id);
     q.put("^rev", item.getRev());
@@ -288,7 +288,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Document> void setPID(Class<T> cls, String pid, String id) {
+  public <T extends Entity> void setPID(Class<T> cls, String pid, String id) {
     BasicDBObject query = new BasicDBObject("_id", id);
     BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
     DBCollection col = getVariationCollection(cls);
@@ -297,7 +297,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Document> void deleteItem(Class<T> type, String id, Change change) throws IOException {
+  public <T extends Entity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
     DBCollection col = getVariationCollection(type);
     BasicDBObject q = new BasicDBObject("_id", id);
     DBObject existingNode = col.findOne(q);
@@ -325,7 +325,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     addVersion(type, id, updatedNode);
   }
 
-  private <T extends Document> void addInitialVersion(Class<T> cls, String id, JacksonDBObject<JsonNode> initialVersion) {
+  private <T extends Entity> void addInitialVersion(Class<T> cls, String id, JacksonDBObject<JsonNode> initialVersion) {
     DBCollection col = getRawVersionCollection(cls);
     JsonNode actualVersion = initialVersion.getObject();
 
@@ -340,7 +340,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     col.insert(new JacksonDBObject<JsonNode>(itemNode, JsonNode.class));
   }
 
-  private <T extends Document> void addVersion(Class<T> cls, String id, JacksonDBObject<JsonNode> newVersion) {
+  private <T extends Entity> void addVersion(Class<T> cls, String id, JacksonDBObject<JsonNode> newVersion) {
     DBCollection col = getRawVersionCollection(cls);
     JsonNode actualVersion = newVersion.getObject();
 
@@ -358,8 +358,8 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     return treeEncoderFactory.getObjectMapper();
   }
 
-  private <T extends Document> void setNextId(Class<T> cls, T item) {
-    Class<? extends Document> baseType = docTypeRegistry.getBaseClass(cls);
+  private <T extends Entity> void setNextId(Class<T> cls, T item) {
+    Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(cls);
     BasicDBObject idFinder = new BasicDBObject("_id", docTypeRegistry.getINameForType(baseType));
     BasicDBObject counterIncrement = new BasicDBObject("$inc", new BasicDBObject("next", 1));
 
@@ -372,13 +372,13 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Document> int removeAll(Class<T> type) {
+  public <T extends Entity> int removeAll(Class<T> type) {
     // Only for system documents...
     return 0;
   }
 
   @Override
-  public <T extends Document> int removeByDate(Class<T> type, String dateField, Date dateValue) {
+  public <T extends Entity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
     // Only for system documents...
     return 0;
   }
@@ -394,7 +394,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends DomainDocument> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) {
+  public <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) {
     DBCollection col = getVariationCollection(type);
 
     String typeName = VariationUtils.getClassId(type);
@@ -415,7 +415,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends DomainDocument> void removePermanently(Class<T> type, Collection<String> ids) {
+  public <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids) {
     DBCollection col = getVariationCollection(type);
 
     DBObject query = DBQuery.in("_id", ids);

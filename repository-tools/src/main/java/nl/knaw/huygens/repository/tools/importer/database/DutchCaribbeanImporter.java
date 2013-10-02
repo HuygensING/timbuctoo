@@ -8,7 +8,7 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.IndexManager;
 import nl.knaw.huygens.repository.index.IndexService;
 import nl.knaw.huygens.repository.messages.Broker;
-import nl.knaw.huygens.repository.model.DomainDocument;
+import nl.knaw.huygens.repository.model.DomainEntity;
 import nl.knaw.huygens.repository.model.Reference;
 import nl.knaw.huygens.repository.model.RelationType;
 import nl.knaw.huygens.repository.model.atlg.ATLGArchive;
@@ -211,22 +211,22 @@ public class DutchCaribbeanImporter extends DefaultImporter {
 
   private void setupRelationTypes() {
     isCreatorRef = addRelationType("is_creator_of", ATLGArchiver.class, ATLGArchive.class);
-    hasKeywordRef = addRelationType("has_keyword", DomainDocument.class, ATLGKeyword.class);
-    hasPersonRef = addRelationType("has_person", DomainDocument.class, ATLGPerson.class);
-    hasPlaceRef = addRelationType("has_place", DomainDocument.class, ATLGKeyword.class);
+    hasKeywordRef = addRelationType("has_keyword", DomainEntity.class, ATLGKeyword.class);
+    hasPersonRef = addRelationType("has_person", DomainEntity.class, ATLGPerson.class);
+    hasPlaceRef = addRelationType("has_place", DomainEntity.class, ATLGKeyword.class);
     hasParentArchive = addRelationType("has_parent_archive", ATLGArchive.class, ATLGArchive.class);
     hasSiblingArchive = addRelationType("has_sibling_archive", ATLGArchive.class, ATLGArchive.class, true);
     hasChildArchive = addRelationType("has_child_archive", ATLGArchive.class, ATLGArchive.class);
   }
 
-  private Reference addRelationType(String name, Class<? extends DomainDocument> sourceType, Class<? extends DomainDocument> targetType, boolean symmetric) {
+  private Reference addRelationType(String name, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean symmetric) {
     RelationType type = new RelationType(name, sourceType, targetType);
     type.setSymmetric(symmetric);
     addDocument(RelationType.class, type, false); // no need to index
     return new Reference(RelationType.class, type.getId());
   }
 
-  private Reference addRelationType(String name, Class<? extends DomainDocument> sourceType, Class<? extends DomainDocument> targetType) {
+  private Reference addRelationType(String name, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) {
     return addRelationType(name, sourceType, targetType, false);
   }
 

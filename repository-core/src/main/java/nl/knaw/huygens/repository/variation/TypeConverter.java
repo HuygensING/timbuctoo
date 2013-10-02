@@ -1,7 +1,7 @@
 package nl.knaw.huygens.repository.variation;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 /**
  * Converts between (domain) model type tokens and variation names.
@@ -16,7 +16,7 @@ class TypeConverter {
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Document> Class<? extends T> getClass(String id) {
+  public <T extends Entity> Class<? extends T> getClass(String id) {
     return (Class<? extends T>) registry.getTypeForIName(normalize(id));
   }
 

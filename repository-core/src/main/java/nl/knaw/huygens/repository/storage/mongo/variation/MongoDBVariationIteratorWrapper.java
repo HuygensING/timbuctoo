@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.storage.StorageIterator;
 import nl.knaw.huygens.repository.variation.VariationReducer;
 
@@ -12,7 +12,7 @@ import com.google.common.collect.Lists;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
-public class MongoDBVariationIteratorWrapper<T extends Document> implements StorageIterator<T> {
+public class MongoDBVariationIteratorWrapper<T extends Entity> implements StorageIterator<T> {
 
   private final DBCursor delegate;
   private final VariationReducer reducer;

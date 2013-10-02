@@ -13,7 +13,7 @@ import nl.knaw.huygens.repository.index.model.ModelWithOverriddenIndexAnnotation
 import nl.knaw.huygens.repository.index.model.ModelWithOverriddenIndexAnnotations;
 import nl.knaw.huygens.repository.index.model.SubModel;
 import nl.knaw.huygens.repository.index.model.SubModelWithIndexAnnotations;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +29,7 @@ public class ModelIteratorTest {
     instance = new ModelIterator();
   }
 
-  private void assertNumberOfIndexAnnotations(int expected, Class<? extends Document> type) {
+  private void assertNumberOfIndexAnnotations(int expected, Class<? extends Entity> type) {
     instance.processClass(processor, type);
     Assert.assertEquals(expected, processor.getNumberOfIndexAnnotations());
   }
@@ -66,7 +66,7 @@ public class ModelIteratorTest {
 
   @Test
   public void testProcessClassModelWithOverriddenIndexAnnotation() throws NoSuchMethodException, SecurityException {
-    Class<? extends Document> cls = ModelWithOverriddenIndexAnnotation.class;
+    Class<? extends Entity> cls = ModelWithOverriddenIndexAnnotation.class;
     instance.processClass(processor, cls);
     Method method = cls.getMethod("getDisplayName", (Class[]) null);
     IndexAnnotation expectedAnnotation = method.getAnnotation(IndexAnnotation.class);

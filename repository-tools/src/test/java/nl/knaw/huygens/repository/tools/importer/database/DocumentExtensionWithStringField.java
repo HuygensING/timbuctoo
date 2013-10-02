@@ -1,12 +1,12 @@
 package nl.knaw.huygens.repository.tools.importer.database;
 
 import nl.knaw.huygens.repository.facet.IndexAnnotation;
-import nl.knaw.huygens.repository.model.Document;
+import nl.knaw.huygens.repository.model.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class DocumentExtensionWithStringField extends Document {
+public class DocumentExtensionWithStringField extends Entity {
 
   public DocumentExtensionWithStringField() {}
 
