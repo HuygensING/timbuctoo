@@ -25,7 +25,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.google.inject.Inject;
 
-@Path("resources/user")
+@Path("resources/users")
 public class UserResource {
   private static final String ID_REGEX = "/{id:USER\\d+}";
   private static final String UNVERIFIED_USER_ROLE = "UNVERIFIED_USER";
@@ -42,7 +42,6 @@ public class UserResource {
   }
 
   @GET
-  @Path("/all")
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
   public List<User> getAll(@QueryParam("rows")
