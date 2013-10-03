@@ -76,8 +76,6 @@ public class BulkImporter {
         csvImporter.handleFile(resourceDir + "testdata/ckcc-persons.txt", 9, false);
       }
 
-      storageManager.ensureIndices();
-
       // Signal we're done
       sendEndOfDataMessage(broker);
 
