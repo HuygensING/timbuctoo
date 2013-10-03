@@ -230,32 +230,28 @@ public class StorageManager {
   }
 
   /**
-   * Removes all the objects of type <T>, that have no persistent identifier.
+   * Retrieves all the id's of type {@code <T>} that does not have a persistent id. 
+   * 
+   * @param type the type of the id's that should be retrieved
+   * @return a collection with all the ids.
+   * @throws IOException when the storage layer throws an exception it will be forwarded.
+   */
+  public <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
+    return storage.getAllIdsWithoutPIDOfType(type);
+  }
+
+  /**
+   * Removes all the objects of type <T>, that is included in collection of id's.
    * The idea behind this method is that domain entities without persistent identifier are not validated yet.
    * After a bulk import non of the imported entity will have a persistent identifier, until a user has agreed with the imported collection.  
    * 
    * @param <T> extends {@code DomainEntity}, because system entities have no persistent identifiers.
-   * @param type the type all of the objects should removed permanently from.
-   * @throws IOException 
+   * @param type the type all of the objects should removed permanently from
+   * @param ids the id's to remove permanently
+   * @throws IOException when the storage layer throws an exception it will be forwarded
    */
-  public <T extends DomainEntity> void removePermanently(Class<T> type) throws IOException {
-    Collection<String> ids = storage.getAllIdsWithoutPIDOfType(type);
-
-    String typeString = docTypeRegistry.getINameForType(type);
-
-    for (String id : ids) {
-      sendIndexMessage(ActionType.INDEX_DEL, typeString, id);
-    }
-
-    try {
-      storage.removePermanently(type, ids);
-    } catch (IOException ex) {
-      //roll back
-      for (String id : ids) {
-        sendIndexMessage(ActionType.INDEX_ADD, typeString, id);
-      }
-      throw ex;
-    }
+  public <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids) throws IOException {
+    storage.removePermanently(type, ids);
   }
 
   public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, List<String> ids) {
