@@ -1,6 +1,7 @@
 package nl.knaw.huygens.repository.tools.importer.database;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -77,7 +78,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       broker.start();
 
       storageManager = injector.getInstance(StorageManager.class);
-      storageManager.clear();
+      removeUnpersistentEntities(storageManager);
 
       indexManager = injector.getInstance(IndexManager.class);
       indexManager.deleteAllDocuments();
@@ -103,6 +104,10 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       time = (System.currentTimeMillis() - start) / 1000;
       System.out.printf("%n=== Used %d seconds%n", time);
 
+    } catch (Exception ex) {
+      System.err.println("exception: " + ex);
+      ex.printStackTrace();
+      throw ex;
     } finally {
       // Close resources
       if (indexManager != null) {
@@ -117,6 +122,23 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       // If the application is not explicitly closed a finalizer thread of Guice keeps running.
       System.exit(0);
     }
+  }
+
+  protected static void removeUnpersistentEntities(StorageManager storageManager) throws IOException {
+    storageManager.clear();
+    System.out.println("remove nonpersistent items.");
+    //    removeClass(ATLGArchive.class, storageManager);
+    //    removeClass(ATLGArchiver.class, storageManager);
+    //    removeClass(ATLGKeyword.class, storageManager);
+    //    removeClass(ATLGLegislation.class, storageManager);
+    //    removeClass(ATLGPerson.class, storageManager);
+
+    //TODO find a way to remove relations.
+  }
+
+  private static void removeClass(Class<? extends DomainEntity> type, StorageManager storageManager) throws IOException {
+    Collection<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
+    storageManager.removePermanently(type, ids);
   }
 
   // -------------------------------------------------------------------
