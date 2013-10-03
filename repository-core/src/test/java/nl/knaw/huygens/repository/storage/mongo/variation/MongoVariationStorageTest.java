@@ -8,6 +8,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -343,7 +344,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetAllIdsWithoutPIDOfType() {
+  public void testGetAllIdsWithoutPIDOfType() throws IOException {
     DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
     query.put("^pid", null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
@@ -365,7 +366,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetAllIdsWithoutPIDOfTypeMultipleFound() {
+  public void testGetAllIdsWithoutPIDOfTypeMultipleFound() throws IOException {
     DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
     query.put("^pid", null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
@@ -394,7 +395,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetAllIdsWithoutPIDOfTypeNoneFound() {
+  public void testGetAllIdsWithoutPIDOfTypeNoneFound() throws IOException {
     DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
     query.put("^pid", null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
@@ -410,8 +411,48 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     verify(db).getCollection("testconcretedoc");
   }
 
+  @Test(expected = IOException.class)
+  public void testGetAllIdsWithoutPIDFindThrowsException() throws IOException {
+    DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
+    query.put("^pid", null);
+    DBObject columnsToShow = new BasicDBObject("_id", 1);
+
+    doThrow(MongoException.class).when(anyCollection).find(query, columnsToShow);
+
+    storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+  }
+
+  @Test(expected = IOException.class)
+  public void testGetAllIdsWithoutPIDCursorNextThrowsException() throws IOException {
+    DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
+    query.put("^pid", null);
+    DBObject columnsToShow = new BasicDBObject("_id", 1);
+
+    DBCursor cursor = mock(DBCursor.class);
+    when(cursor.hasNext()).thenReturn(true);
+    doThrow(MongoException.class).when(cursor).next();
+
+    when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
+
+    storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+  }
+
+  @Test(expected = IOException.class)
+  public void testGetAllIdsWithoutPIDCursorHasNextThrowsException() throws IOException {
+    DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
+    query.put("^pid", null);
+    DBObject columnsToShow = new BasicDBObject("_id", 1);
+
+    DBCursor cursor = mock(DBCursor.class);
+    doThrow(MongoException.class).when(cursor).hasNext();
+
+    when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
+
+    storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+  }
+
   @Test
-  public void testRemovePermanently() {
+  public void testRemovePermanently() throws IOException {
     List<String> ids = Lists.newArrayList("TCD000000001", "TCD000000003", "TCD000000005");
     DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
     query.put("^pid", null);
@@ -420,6 +461,17 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     verify(anyCollection).remove(query);
     verify(db).getCollection("testconcretedoc");
+  }
+
+  @Test(expected = IOException.class)
+  public void testRemovePemanentlyDBThrowsException() throws IOException {
+    List<String> ids = Lists.newArrayList("TCD000000001", "TCD000000003", "TCD000000005");
+    DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
+    query.put("^pid", null);
+    doThrow(MongoException.class).when(anyCollection).remove(query);
+
+    storage.removePermanently(TestConcreteDoc.class, ids);
+
   }
 
   private List<TestConcreteDoc> createTestDocListWithIds(String idBase, String... names) {
