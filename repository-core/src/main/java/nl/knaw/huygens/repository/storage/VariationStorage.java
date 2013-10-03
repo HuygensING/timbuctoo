@@ -28,11 +28,11 @@ public interface VariationStorage extends BasicStorage {
   /**
    * Returns all the ids of objects of type <T>, that are not persisted.
    */
-  <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type);
+  <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException;
 
   /**
    * Permanently removes the objects from the database.
    */
-  <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids);
+  <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids) throws IOException;
 
 }
