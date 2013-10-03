@@ -11,8 +11,8 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.index.IndexManager;
 import nl.knaw.huygens.repository.index.IndexService;
 import nl.knaw.huygens.repository.messages.Broker;
-import nl.knaw.huygens.repository.model.EntityRef;
 import nl.knaw.huygens.repository.model.DomainEntity;
+import nl.knaw.huygens.repository.model.EntityRef;
 import nl.knaw.huygens.repository.model.Reference;
 import nl.knaw.huygens.repository.model.Relation;
 import nl.knaw.huygens.repository.model.RelationType;
@@ -91,8 +91,6 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
       RelationManager relationManager = new RelationManager(registry, storageManager);
       new AtlantischeGidsImporter(registry, relationManager, storageManager, importDirName).importAll();
-
-      storageManager.ensureIndices();
 
       // Signal we're done
       BulkImporter.sendEndOfDataMessage(broker);

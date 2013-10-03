@@ -63,9 +63,6 @@ public class DatabaseSetupper {
       Class<? extends Entity> cls = docTypeRegistry.getTypeForIName(model);
       importer.bulkImport(cls, true, vreId, vreName);
     }
-    System.out.println("Creating indices...");
-    storageManager.ensureIndices();
-    System.out.println("Created indices.");
     createAdminUser();
     System.out.println("Done.");
     return 0;
