@@ -45,7 +45,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   private static final String TERM = "dynamic_t_name:Huygens";
   private static final String LOCATION_HEADER = "Location";
   private String typeString = "person";
-  private String id = "QRY0000000001";
+  private String id = "QURY0000000001";
 
   @Before
   public void setUpSortableFields() {

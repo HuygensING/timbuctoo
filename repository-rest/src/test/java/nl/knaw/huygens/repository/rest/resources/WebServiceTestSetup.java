@@ -37,7 +37,7 @@ import com.sun.jersey.test.framework.WebAppDescriptor;
  */
 public abstract class WebServiceTestSetup extends JerseyTest {
 
-  protected static final String USER_ID = "USR000000001";
+  protected static final String USER_ID = "USER000000001";
   protected static final String VRE_ID = "vreID";
   protected static Injector injector;
   private static ResourceTestModule resourceTestModule;
