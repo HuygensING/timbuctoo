@@ -57,17 +57,17 @@ public class BulkDataPoster {
     return mapper.readValue(fileToRead, typeArray);
   }
 
-  protected static <T extends Entity> void postData(Class<T> type, T[] documents, String collection) {
+  protected static <T extends Entity> void postData(Class<T> type, T[] entities, String collection) {
     Client client = Client.create();
     WebResource resource = client.resource(URL).path(SERVICE_PATH).path(collection).path("all");
     Progress progress = new Progress();
-    for (T document : documents) {
+    for (T entity : entities) {
       progress.step();
-      ClientResponse response = resource.type(MediaType.APPLICATION_JSON).header("Authorization", "bearer " + ACCESS_TOKEN).post(ClientResponse.class, document);
+      ClientResponse response = resource.type(MediaType.APPLICATION_JSON).header("Authorization", "bearer " + ACCESS_TOKEN).post(ClientResponse.class, entity);
       if (!ClientResponse.Status.CREATED.equals(response.getClientResponseStatus())) {
         System.out.println("uri: " + resource.getURI());
         System.out.println("response: " + response.getClientResponseStatus());
-        System.out.println("doc: " + document.getDisplayName());
+        System.out.println("doc: " + entity.getDisplayName());
         break;
       }
     }
