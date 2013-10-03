@@ -34,6 +34,11 @@ public class Relation extends DomainEntity {
   /** A reference to the 'passive' participant of the relation (resembles rdf:object). */
   private String targetType;
   private String targetId;
+  /**
+   * Do we accept the existence of this relation? As such it also controls
+   * the visibility of this relation for VRE's.
+   */
+  private boolean accepted = true;
 
   // For deserialization...
   public Relation() {}
@@ -46,7 +51,7 @@ public class Relation extends DomainEntity {
 
   @Override
   public String getDisplayName() {
-    return String.format("({%s,%s}, {%s,%s}, {%s,%s})", sourceType, sourceId, typeType, typeId, targetType, targetId);
+    return String.format("(%s: {%s,%s} --> {%s,%s})", typeId, sourceType, sourceId, targetType, targetId);
   }
 
   @JsonIgnore
@@ -149,6 +154,14 @@ public class Relation extends DomainEntity {
   @JsonProperty("^targetId")
   public void setTargetId(String targetRefId) {
     this.targetId = targetRefId;
+  }
+
+  public boolean isAccepted() {
+    return accepted;
+  }
+
+  public void setAccepted(boolean accepted) {
+    this.accepted = accepted;
   }
 
   @Override
