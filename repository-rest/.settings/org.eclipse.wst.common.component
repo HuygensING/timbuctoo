@@ -3,19 +3,19 @@
         <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
-        <dependent-module archiveName="repository-core-1.0.5-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-core/repository-core">
+        <dependent-module archiveName="repository-core-1.0.6-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-core/repository-core">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="repository-persistence-1.0.5-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-persistence/repository-persistence">
+        <dependent-module archiveName="repository-persistence-1.0.6-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-persistence/repository-persistence">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="repository-search-1.0.5-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-search/repository-search">
+        <dependent-module archiveName="repository-search-1.0.6-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-search/repository-search">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="repository-security-1.0.5-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-security/repository-security">
+        <dependent-module archiveName="repository-security-1.0.6-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-security/repository-security">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="repository-services-1.0.5-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-services/repository-services">
+        <dependent-module archiveName="repository-services-1.0.6-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-services/repository-services">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <dependent-module deploy-path="/" handle="module:/overlay/prj/repository-dev-config-war?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
