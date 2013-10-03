@@ -250,8 +250,9 @@ public class StorageManager {
    * 
    * @param <T> extends {@code DomainEntity}, because system entities have no persistent identifiers.
    * @param type the type all of the objects should removed permanently from.
+   * @throws IOException 
    */
-  public <T extends DomainEntity> void removePermanently(Class<T> type) {
+  public <T extends DomainEntity> void removePermanently(Class<T> type) throws IOException {
     Collection<String> ids = storage.getAllIdsWithoutPIDOfType(type);
 
     String typeString = docTypeRegistry.getINameForType(type);
@@ -262,11 +263,12 @@ public class StorageManager {
 
     try {
       storage.removePermanently(type, ids);
-    } finally {
+    } catch (IOException ex) {
       //roll back
       for (String id : ids) {
         sendIndexMessage(ActionType.INDEX_ADD, typeString, id);
       }
+      throw ex;
     }
   }
 
