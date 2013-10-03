@@ -119,6 +119,11 @@ public class RelationManager {
       return target(new Reference(typeToken, id));
     }
 
+    public RelationBuilder accept(boolean accepted) {
+      relation.setAccepted(accepted);
+      return this;
+    }
+
     public Relation build() {
       if (relation.getTypeRef() == null) {
         LOG.error("Missing relation type ref");
