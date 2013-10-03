@@ -82,8 +82,6 @@ public class DutchCaribbeanImporter extends DefaultImporter {
       RelationManager relationManager = new RelationManager(registry, storageManager);
       new DutchCaribbeanImporter(registry, relationManager, storageManager, importDirName).importAll();
 
-      storageManager.ensureIndices();
-
       // Signal we're done
       BulkImporter.sendEndOfDataMessage(broker);
 
