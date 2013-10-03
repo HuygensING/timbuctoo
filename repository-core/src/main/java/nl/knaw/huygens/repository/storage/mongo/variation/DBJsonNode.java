@@ -14,6 +14,7 @@ import com.mongodb.DBObject;
 
 public class DBJsonNode implements DBObject {
   private final JsonNode delegate;
+  private boolean isPartialObject = false;
 
   public DBJsonNode(JsonNode obj) {
     this.delegate = obj;
@@ -30,7 +31,8 @@ public class DBJsonNode implements DBObject {
   }
 
   @Override
-  public void putAll(@SuppressWarnings("rawtypes") Map m) {
+  public void putAll(@SuppressWarnings("rawtypes")
+  Map m) {
     throw new UnsupportedOperationException();
   }
 
@@ -120,12 +122,12 @@ public class DBJsonNode implements DBObject {
 
   @Override
   public void markAsPartialObject() {
-    throw new UnsupportedOperationException();
+    isPartialObject = true;
   }
 
   @Override
   public boolean isPartialObject() {
-    return false;
+    return isPartialObject;
   }
 
   public JsonNode getDelegate() {

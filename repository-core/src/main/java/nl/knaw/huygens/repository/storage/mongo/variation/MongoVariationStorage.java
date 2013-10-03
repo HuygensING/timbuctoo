@@ -31,6 +31,8 @@ import org.apache.commons.lang.NotImplementedException;
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
 import org.mongojack.internal.stream.JacksonDBObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,6 +53,8 @@ import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
 public class MongoVariationStorage extends MongoStorageBase implements VariationStorage {
+
+  private final Logger LOG = LoggerFactory.getLogger(getClass());
 
   private VariationInducer inducer;
   private VariationReducer reducer;
@@ -394,7 +398,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) {
+  public <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
     DBCollection col = getVariationCollection(type);
 
     String typeName = VariationUtils.getClassId(type);
@@ -402,25 +406,35 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     query.put("^pid", null);
 
     DBObject columnsToShow = new BasicDBObject("_id", 1);
-
-    DBCursor cursor = col.find(query, columnsToShow);
-
     Set<String> returnValue = Sets.newHashSet();
 
-    while (cursor.hasNext()) {
-      returnValue.add((String) cursor.next().get("_id"));
+    try {
+      DBCursor cursor = col.find(query, columnsToShow);
+
+      while (cursor.hasNext()) {
+        returnValue.add((String) cursor.next().get("_id"));
+      }
+
+    } catch (MongoException ex) {
+      LOG.error("Error while retrieving objects without pid of type {}", type);
+      throw new IOException(ex);
     }
 
     return returnValue;
   }
 
   @Override
-  public <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids) {
+  public <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids) throws IOException {
     DBCollection col = getVariationCollection(type);
 
     DBObject query = DBQuery.in("_id", ids);
     query.put("^pid", null);
-    col.remove(query);
+    try {
+      col.remove(query);
+    } catch (MongoException ex) {
+      LOG.error("Error while removing objects with the ids '{}' of type '{}'", ids, type);
+      throw new IOException(ex);
+    }
   }
 
   // Test only, an ugly hack to be able to mock the counter collection
