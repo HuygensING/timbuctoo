@@ -216,19 +216,19 @@ public class AtlantischeGidsImporter extends DefaultImporter {
 
   private void importRelationTypes() {
     RelationType type = new RelationType("is_creator_of", ATLGArchiver.class, ATLGArchive.class);
-    addDocument(RelationType.class, type, true);
+    addEntity(RelationType.class, type, true);
     isCreatorRef = new Reference(RelationType.class, type.getId());
 
     type = new RelationType("has_keyword", DomainEntity.class, ATLGKeyword.class);
-    addDocument(RelationType.class, type, true);
+    addEntity(RelationType.class, type, true);
     hasKeywordRef = new Reference(RelationType.class, type.getId());
 
     type = new RelationType("has_person", DomainEntity.class, ATLGPerson.class);
-    addDocument(RelationType.class, type, true);
+    addEntity(RelationType.class, type, true);
     hasPersonRef = new Reference(RelationType.class, type.getId());
 
     type = new RelationType("has_place", DomainEntity.class, ATLGKeyword.class);
-    addDocument(RelationType.class, type, true);
+    addEntity(RelationType.class, type, true);
     hasPlaceRef = new Reference(RelationType.class, type.getId());
   }
 
@@ -244,7 +244,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     RelationBuilder builder = relationManager.getBuilder();
     Relation relation = builder.source(sourceRef).type(relTypeRef).target(targetRef).build();
     if (relation != null) {
-      addDocument(Relation.class, relation, true);
+      addEntity(Relation.class, relation, true);
     }
   }
 
@@ -261,9 +261,9 @@ public class AtlantischeGidsImporter extends DefaultImporter {
         System.err.printf("## [%s] Duplicate keyword id %s%n", KEYWORD_FILE, jsonId);
       } else {
         ATLGKeyword keyword = convert(xkeyword);
-        String storedId = addDocument(ATLGKeyword.class, keyword, true);
+        String storedId = addEntity(ATLGKeyword.class, keyword, true);
         keywordRefMap.put(jsonId, new Reference(ATLGKeyword.class, storedId));
-        keywordDocRefMap.put(jsonId, newDocumentRef(ATLGKeyword.class, keyword));
+        keywordDocRefMap.put(jsonId, newEntityRef(ATLGKeyword.class, keyword));
       }
     }
   }
@@ -305,9 +305,9 @@ public class AtlantischeGidsImporter extends DefaultImporter {
         handleError("[%s] Duplicate person id %s", PERSON_FILE, jsonId);
       } else {
         ATLGPerson person = convert(xperson);
-        String storedId = addDocument(ATLGPerson.class, person, true);
+        String storedId = addEntity(ATLGPerson.class, person, true);
         personRefMap.put(jsonId, new Reference(ATLGPerson.class, storedId));
-        personDocRefMap.put(jsonId, newDocumentRef(ATLGPerson.class, person));
+        personDocRefMap.put(jsonId, newEntityRef(ATLGPerson.class, person));
       }
     }
   }
@@ -358,7 +358,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
           handleError("[%s] Duplicate wetgeving id %s", file.getName(), jsonId);
         } else {
           ATLGLegislation legislation = convert(wetgeving);
-          String storedId = addDocument(ATLGLegislation.class, legislation, true);
+          String storedId = addEntity(ATLGLegislation.class, legislation, true);
           Reference legislationRef = new Reference(ATLGLegislation.class, storedId);
           addLegislationRelations(legislationRef, wetgeving);
           refs.add(jsonId);
@@ -443,13 +443,13 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       for (ArchiefMatEntry entry : readJsonValue(file, ArchiefMatEntry[].class)) {
         ArchiefMat object = entry.archiefmat;
         String id = object._id;
-        EntityRef key = newDocumentRef(ATLGArchive.class, id);
+        EntityRef key = newEntityRef(ATLGArchive.class, id);
         if (docRefMap.containsKey(key)) {
           handleError("[%s] Duplicate entry %s", file.getName(), key);
         } else {
           ATLGArchive archive = convert(object);
-          addDocument(ATLGArchive.class, archive, false);
-          docRefMap.put(key, newDocumentRef(ATLGArchive.class, archive));
+          addEntity(ATLGArchive.class, archive, false);
+          docRefMap.put(key, newEntityRef(ATLGArchive.class, archive));
           ids.add(archive.getId());
           tokens.increment(archive.getIndexedRefCode());
         }
@@ -521,15 +521,15 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       for (XRelated item : archiefmat.related) {
         if ("overhead_title".equals(item.type)) {
           for (String id : item.ids) {
-            archive.addOverheadArchive(newDocumentRef(ATLGArchive.class, id));
+            archive.addOverheadArchive(newEntityRef(ATLGArchive.class, id));
           }
         } else if ("underlying_levels_titels".equals(item.type)) {
           for (String id : item.ids) {
-            archive.addUnderlyingArchive(newDocumentRef(ATLGArchive.class, id));
+            archive.addUnderlyingArchive(newEntityRef(ATLGArchive.class, id));
           }
         } else if ("unit".equals(item.type)) {
           for (String id : item.ids) {
-            archive.addRelatedUnitArchive(newDocumentRef(ATLGArchive.class, id));
+            archive.addRelatedUnitArchive(newEntityRef(ATLGArchive.class, id));
           }
         } else {
           handleError("Ignoring field 'related' with type '%s'", item.type);
@@ -550,7 +550,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
 
   private void resolveArchiveRefs(List<String> archiveIds, Graph newGraph) throws Exception {
     for (String archiveId : archiveIds) {
-      ATLGArchive archive = getDocument(ATLGArchive.class, archiveId);
+      ATLGArchive archive = getEntity(ATLGArchive.class, archiveId);
       String filename = archive.getOrigFilename();
       List<EntityRef> oldRefs = archive.getOverheadArchives();
       if (oldRefs != null && oldRefs.size() != 0) {
@@ -566,7 +566,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       }
 
       // boolean first = true;
-      Vertex vertex = newGraph.getVertex(newDocumentRef(ATLGArchive.class, archive));
+      Vertex vertex = newGraph.getVertex(newEntityRef(ATLGArchive.class, archive));
       for (Edge edge : vertex.getEdges()) {
         if (edge.containsType("created_by")) {
           // if (first) {
@@ -578,12 +578,12 @@ public class AtlantischeGidsImporter extends DefaultImporter {
         }
       }
 
-      modDocument(ATLGArchive.class, archive);
+      modEntity(ATLGArchive.class, archive);
     }
   }
 
   /**
-   * Resolve the id's of the document references.
+   * Resolve the id's of the entity references.
    * Duplicates are removed, but the order of the references is preserved.
    */
   private List<EntityRef> resolveRefs(String filename, String type, List<EntityRef> oldRefs) {
@@ -613,13 +613,13 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       for (CreatorEntry entry : entries) {
         Creator creator = entry.creator;
         String id = creator._id;
-        EntityRef key = newDocumentRef(ATLGArchiver.class, id);
+        EntityRef key = newEntityRef(ATLGArchiver.class, id);
         if (docRefMap.containsKey(key)) {
           handleError("[%s] Duplicate entry %s", file.getName(), key);
         } else {
           ATLGArchiver archiver = convert(creator);
-          addDocument(ATLGArchiver.class, archiver, false);
-          docRefMap.put(key, newDocumentRef(ATLGArchiver.class, archiver));
+          addEntity(ATLGArchiver.class, archiver, false);
+          docRefMap.put(key, newEntityRef(ATLGArchiver.class, archiver));
           // this looks awfully smart: this creator has created a number of archives
           // what remains is to create a new graph with references converted
           // then a simple lookup allows one to set the relarions in the objects
@@ -677,11 +677,11 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       for (XRelated item : creator.related) {
         if ("archive".equals(item.type)) {
           for (String id : item.ids) {
-            archiver.addRelatedArchive(newDocumentRef(ATLGArchive.class, id));
+            archiver.addRelatedArchive(newEntityRef(ATLGArchive.class, id));
           }
         } else if ("creator".equals(item.type)) {
           for (String id : item.ids) {
-            archiver.addRelatedArchiver(newDocumentRef(ATLGArchiver.class, id));
+            archiver.addRelatedArchiver(newEntityRef(ATLGArchiver.class, id));
           }
         } else {
           handleError("Ignoring field 'related' with type '%s'", item.type);
@@ -698,7 +698,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
 
   private void resolveArchiverRefs(List<String> archiverIds) throws Exception {
     for (String id : archiverIds) {
-      ATLGArchiver archiver = getDocument(ATLGArchiver.class, id);
+      ATLGArchiver archiver = getEntity(ATLGArchiver.class, id);
       Reference sourceRef = new Reference(ATLGArchiver.class, id);
       String filename = archiver.getOrigFilename();
       List<EntityRef> oldRefs = archiver.getRelatedArchives();
@@ -708,14 +708,14 @@ public class AtlantischeGidsImporter extends DefaultImporter {
         for (EntityRef archiveRef : newRefs) {
           Reference targetRef = new Reference(ATLGArchive.class, archiveRef.getId());
           Relation relation = new Relation(sourceRef, isCreatorRef, targetRef);
-          addDocument(Relation.class, relation, true);
+          addEntity(Relation.class, relation, true);
         }
       }
       oldRefs = archiver.getRelatedArchivers();
       if (oldRefs != null && oldRefs.size() != 0) {
         archiver.setRelatedArchivers(resolveRefs(filename, "related archivers", oldRefs));
       }
-      modDocument(ATLGArchiver.class, archiver);
+      modEntity(ATLGArchiver.class, archiver);
     }
   }
 
