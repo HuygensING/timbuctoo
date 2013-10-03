@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.jms.JMSException;
 
@@ -44,7 +43,6 @@ public class StorageManagerTest {
 
   private StorageManager instance;
   private VariationStorage storage;
-  private Set<String> documentTypes;
   private Broker broker;
   private DocTypeRegistry docTypeRegistry;
   private PersistenceWrapper persistenceWrapper;
@@ -53,18 +51,17 @@ public class StorageManagerTest {
   @Before
   public void SetUp() throws JMSException {
     storage = mock(VariationStorage.class);
-    documentTypes = new HashSet<String>();
     broker = mock(Broker.class);
     producer = mock(Producer.class);
     when(broker.newProducer(anyString(), anyString())).thenReturn(producer);
     docTypeRegistry = mock(DocTypeRegistry.class);
     persistenceWrapper = mock(PersistenceWrapper.class);
-    instance = new StorageManager(storage, documentTypes, broker, docTypeRegistry, persistenceWrapper);
+    instance = new StorageManager(storage, broker, docTypeRegistry, persistenceWrapper);
   }
 
   @Test
   public void testAddDocumentDomainDocument() throws IOException, PersistenceException, JMSException {
-    String id = "GTD000000001";
+    String id = "TEST000123000123";
     GeneralTestDoc doc = new GeneralTestDoc(id);
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     when(docTypeRegistry.getINameForType(type)).thenReturn("generaltestdoc");
@@ -76,7 +73,7 @@ public class StorageManagerTest {
 
   @Test
   public void testAddDocumentDomainDocumentInComplete() throws JMSException, PersistenceException, IOException {
-    String id = "GTD000000001";
+    String id = "TEST000123000123";
     GeneralTestDoc doc = new GeneralTestDoc(id);
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     when(docTypeRegistry.getINameForType(type)).thenReturn("generaltestdoc");
@@ -89,7 +86,7 @@ public class StorageManagerTest {
   @Test
   public void testAddDocumentSystemDocument() throws IOException, PersistenceException, JMSException {
     TestSystemDocument doc = new TestSystemDocument();
-    doc.setId("TSD0000000001");
+    doc.setId("TEST000123000123");
 
     Class<TestSystemDocument> type = TestSystemDocument.class;
 
