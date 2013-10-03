@@ -27,6 +27,7 @@ import com.google.inject.Inject;
 
 @Path("resources/user")
 public class UserResource {
+  private static final String ID_REGEX = "/{id:USER\\d+}";
   private static final String UNVERIFIED_USER_ROLE = "UNVERIFIED_USER";
   private static final String USER_ROLE = "USER";
   private static final String ADMIN_ROLE = "ADMIN";
@@ -44,15 +45,19 @@ public class UserResource {
   @Path("/all")
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
-  public List<User> getAll(@QueryParam("rows") @DefaultValue("200") int rows, @QueryParam("start") int start) {
+  public List<User> getAll(@QueryParam("rows")
+  @DefaultValue("200")
+  int rows, @QueryParam("start")
+  int start) {
     return storageManager.getAllLimited(User.class, start, rows);
   }
 
   @GET
-  @Path("/{id:USR\\d+}")
+  @Path(ID_REGEX)
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
-  public User get(@PathParam(ID_PARAM) String id) {
+  public User get(@PathParam(ID_PARAM)
+  String id) {
     User user = storageManager.getEntity(User.class, id);
 
     if (user == null) {
@@ -66,15 +71,17 @@ public class UserResource {
   @Path("/me")
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed({ ADMIN_ROLE, USER_ROLE, UNVERIFIED_USER_ROLE })
-  public User getMyUserData(@QueryParam("id") String id) {
+  public User getMyUserData(@QueryParam("id")
+  String id) {
     return storageManager.getEntity(User.class, id);
   }
 
   @PUT
-  @Path("/{id:USR\\d+}")
+  @Path(ID_REGEX)
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
-  public Response put(@PathParam(ID_PARAM) String id, User user) throws IOException {
+  public Response put(@PathParam(ID_PARAM)
+  String id, User user) throws IOException {
     try {
       storageManager.modifyEntity(User.class, user);
     } catch (IOException ex) {
@@ -104,10 +111,11 @@ public class UserResource {
   }
 
   @DELETE
-  @Path("/{id:USR\\d+}")
+  @Path(ID_REGEX)
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
-  public Response delete(@PathParam(ID_PARAM) String id) throws IOException {
+  public Response delete(@PathParam(ID_PARAM)
+  String id) throws IOException {
     User user = storageManager.getEntity(User.class, id);
 
     if (user == null) {
