@@ -43,39 +43,39 @@ public abstract class DefaultImporter {
 
   // --- storage -------------------------------------------------------
 
-  protected <T extends Entity> T getDocument(Class<T> type, String id) {
+  protected <T extends Entity> T getEntity(Class<T> type, String id) {
     return storageManager.getEntity(type, id);
   }
 
-  protected <T extends Entity> String addDocument(Class<T> type, T document, boolean isComplete) {
+  protected <T extends Entity> String addEntity(Class<T> type, T entity, boolean isComplete) {
     try {
-      storageManager.addEntityWithoutPersisting(type, document, isComplete);
-      return document.getId();
+      storageManager.addEntityWithoutPersisting(type, entity, isComplete);
+      return entity.getId();
     } catch (IOException e) {
-      handleError("Failed to add %s; %s", document.getDisplayName(), e.getMessage());
+      handleError("Failed to add %s; %s", entity.getDisplayName(), e.getMessage());
       return null;
     }
   }
 
-  protected <T extends Entity> T modDocument(Class<T> type, T document) {
+  protected <T extends Entity> T modEntity(Class<T> type, T entity) {
     try {
-      storageManager.modifyEntityWithoutPersisting(type, document);
-      return document;
+      storageManager.modifyEntityWithoutPersisting(type, entity);
+      return entity;
     } catch (IOException e) {
-      handleError("Failed to modify %s; %s", document.getDisplayName(), e.getMessage());
+      handleError("Failed to modify %s; %s", entity.getDisplayName(), e.getMessage());
       return null;
     }
   }
 
   // -------------------------------------------------------------------
 
-  protected <T extends Entity> EntityRef newDocumentRef(Class<T> type, T document) {
+  protected <T extends Entity> EntityRef newEntityRef(Class<T> type, T entity) {
     String itype = docTypeRegistry.getINameForType(type);
     String xtype = docTypeRegistry.getXNameForType(type);
-    return new EntityRef(itype, xtype, document.getId(), document.getDisplayName());
+    return new EntityRef(itype, xtype, entity.getId(), entity.getDisplayName());
   }
 
-  protected <T extends Entity> EntityRef newDocumentRef(Class<T> type, String id) {
+  protected <T extends Entity> EntityRef newEntityRef(Class<T> type, String id) {
     String itype = docTypeRegistry.getINameForType(type);
     String xtype = docTypeRegistry.getXNameForType(type);
     return new EntityRef(itype, xtype, id, null);

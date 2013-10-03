@@ -220,7 +220,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private Reference addRelationType(String name, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean symmetric) {
     RelationType type = new RelationType(name, sourceType, targetType);
     type.setSymmetric(symmetric);
-    addDocument(RelationType.class, type, false); // no need to index
+    addEntity(RelationType.class, type, false); // no need to index
     return new Reference(RelationType.class, type.getId());
   }
 
@@ -257,7 +257,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
         handleError("[%s] Duplicate keyword id %s", KEYWORD_FILE, jsonId);
       } else {
         ATLGKeyword keyword = convert(xkeyword);
-        String storedId = addDocument(ATLGKeyword.class, keyword, true);
+        String storedId = addEntity(ATLGKeyword.class, keyword, true);
         referenceMap.put(jsonId, new Reference(ATLGKeyword.class, storedId));
       }
     }
@@ -300,7 +300,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
         handleError("[%s] Duplicate person id %s", PERSON_FILE, jsonId);
       } else {
         ATLGPerson person = convert(xperson);
-        String storedId = addDocument(ATLGPerson.class, person, true);
+        String storedId = addEntity(ATLGPerson.class, person, true);
         referenceMap.put(jsonId, new Reference(ATLGPerson.class, storedId));
       }
     }
@@ -351,7 +351,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
           handleError("[%s] Duplicate wetgeving id %s", file.getName(), jsonId);
         } else {
           ATLGLegislation legislation = convert(wetgeving);
-          String storedId = addDocument(ATLGLegislation.class, legislation, false);
+          String storedId = addEntity(ATLGLegislation.class, legislation, false);
           referenceMap.put(jsonId, new Reference(ATLGLegislation.class, storedId));
         }
       }
@@ -423,7 +423,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
           handleError("[%s] Duplicate entry %s", file.getName(), jsonId);
         } else {
           ATLGArchive archive = convert(archiefmat);
-          String storedId = addDocument(ATLGArchive.class, archive, false);
+          String storedId = addEntity(ATLGArchive.class, archive, false);
           referenceMap.put(jsonId, new Reference(ATLGArchive.class, storedId));
         }
       }
@@ -519,7 +519,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
           handleError("[%s] Duplicate entry %s", file.getName(), jsonId);
         } else {
           ATLGArchiver archiver = convert(creator);
-          String storedId = addDocument(ATLGArchiver.class, archiver, false);
+          String storedId = addEntity(ATLGArchiver.class, archiver, false);
           referenceMap.put(jsonId, new Reference(ATLGArchiver.class, storedId));
         }
       }
