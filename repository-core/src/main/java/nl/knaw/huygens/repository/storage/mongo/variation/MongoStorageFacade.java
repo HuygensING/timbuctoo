@@ -180,12 +180,12 @@ public class MongoStorageFacade implements VariationStorage {
     return variationStorage.countRelations(relation);
   }
 
-  public <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) {
+  public <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
     return variationStorage.getAllIdsWithoutPIDOfType(type);
   }
 
   @Override
-  public <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids) {
+  public <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids) throws IOException {
     variationStorage.removePermanently(type, ids);
   }
 

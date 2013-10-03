@@ -383,7 +383,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testRemovePermanently() throws JMSException {
+  public void testRemovePermanently() throws JMSException, IOException {
     String id1 = "PER0000000001";
     String id2 = "PER0000000002";
     String id3 = "PER0000000005";
@@ -402,10 +402,14 @@ public class StorageManagerTest {
     verify(producer, times(1)).send(action, typeString, id3);
 
     verify(storage, times(1)).removePermanently(type, ids);
+
+    verify(producer, never()).send(ActionType.INDEX_ADD, typeString, id1);
+    verify(producer, never()).send(ActionType.INDEX_ADD, typeString, id2);
+    verify(producer, never()).send(ActionType.INDEX_ADD, typeString, id3);
   }
 
   @Test(expected = RuntimeException.class)
-  public void testRemovePermanentlyJMSException() throws JMSException {
+  public void testRemovePermanentlyJMSException() throws JMSException, IOException {
     String id1 = "PER0000000001";
     String id2 = "PER0000000002";
     String id3 = "PER0000000005";
@@ -422,12 +426,13 @@ public class StorageManagerTest {
     } finally {
       verify(producer, times(1)).send(ActionType.INDEX_DEL, typeString, id1);
       verify(storage, never()).removePermanently(type, ids);
+      verify(producer, never()).send(ActionType.INDEX_ADD, typeString, id1);
     }
 
   }
 
   @Test(expected = IOException.class)
-  public void testRemovePermanentlyStorageDeleteException() throws JMSException {
+  public void testRemovePermanentlyStorageDeleteException() throws JMSException, IOException {
     String id1 = "PER0000000001";
     String id2 = "PER0000000002";
     String id3 = "PER0000000005";
@@ -436,7 +441,6 @@ public class StorageManagerTest {
 
     ArrayList<String> ids = Lists.newArrayList(id1, id2, id3);
 
-    //doThrow(IOException.class).when(storage).getAllIdsWithOutPIDOfType(type);
     when(storage.getAllIdsWithoutPIDOfType(type)).thenReturn(ids);
     doThrow(IOException.class).when(storage).removePermanently(type, ids);
     when(docTypeRegistry.getINameForType(type)).thenReturn(typeString);
@@ -460,7 +464,7 @@ public class StorageManagerTest {
   }
 
   @Test(expected = IOException.class)
-  public void testRemovePermanentlyStorageGetException() throws JMSException {
+  public void testRemovePermanentlyStorageGetException() throws JMSException, IOException {
     doThrow(IOException.class).when(storage).getAllIdsWithoutPIDOfType(GeneralTestDoc.class);
 
     try {
