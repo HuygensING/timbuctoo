@@ -88,16 +88,23 @@ public class SearchResource {
   }
 
   @GET
-  @Path("/{id: QRY\\d+}")
+  @Path("/{id: QURY\\d+}")
   @APIDesc("Returns (paged) search results")
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
   public Response get( //
-      @PathParam("id") String queryId, //
-      @QueryParam("start") @DefaultValue("0") final int start, //
-      @QueryParam("rows") @DefaultValue("10") final int rows, //
-      @Context UriInfo uriInfo) {
+      @PathParam("id")
+      String queryId, //
+      @QueryParam("start")
+      @DefaultValue("0")
+      final int start, //
+      @QueryParam("rows")
+      @DefaultValue("10")
+      final int rows, //
+      @Context
+      UriInfo uriInfo) {
 
+    System.out.println("query get");
     // Retrieve result
     SearchResult result = storageManager.getEntity(SearchResult.class, queryId);
     if (result == null) {

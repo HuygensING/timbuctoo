@@ -86,6 +86,8 @@
       data: {'start': start, 'rows': rows},
       contentType: 'application/json; charset=utf-8',
       success: function (data) {
+    	console.log(data);
+    	//console.log(data.results);
         var html = '<table><tr><th>Id</th><th>Name</th></tr>';
         $.each(data.results, function (i, item) {
           html += '<tr><td><a href="' + resultUrl + item._id + '">' + item._id + '</a></td><td>' + item.titleEng + '</td></tr>';
