@@ -50,8 +50,8 @@ public class SearchManager {
     return sortableFieldFinder.findFields(type);
   }
 
-  public void addRelationsTo(DomainEntity document) throws SolrServerException {
-    String term = String.format("dynamic_k_source_id:%s", document.getId());
+  public void addRelationsTo(DomainEntity entity) throws SolrServerException {
+    String term = String.format("dynamic_k_source_id:%s", entity.getId());
     String[] fields = { "dynamic_k_type_name", "dynamic_k_target_type", "dynamic_k_target_id", "dynamic_k_target_name" };
     QueryResponse response = server.search("relation", term, fields);
     for (SolrDocument doc : response.getResults()) {
@@ -61,7 +61,7 @@ public class SearchManager {
       String id = getFieldValue(doc, "dynamic_k_target_id");
       String displayName = getFieldValue(doc, "dynamic_k_target_name");
       EntityRef ref = new EntityRef(iname, xname, id, displayName);
-      document.addRelation(typeName, ref);
+      entity.addRelation(typeName, ref);
     }
   }
 

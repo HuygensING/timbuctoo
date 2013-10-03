@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import javax.jms.JMSException;
 
@@ -31,26 +30,17 @@ public class StorageManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(StorageManager.class);
 
-  private VariationStorage storage;
-
   private final DocTypeRegistry docTypeRegistry;
+  private final VariationStorage storage;
+  private final PersistenceWrapper persistenceWrapper;
   private final Producer producer;
-  private PersistenceWrapper persistenceWrapper;
 
   @Inject
-  public StorageManager(StorageConfiguration storageConf, VariationStorage storage, Broker broker, DocTypeRegistry registry, PersistenceWrapper persistenceWrapper) {
+  public StorageManager(VariationStorage storage, Broker broker, DocTypeRegistry registry, PersistenceWrapper persistenceWrapper) {
     docTypeRegistry = registry;
-    producer = setupProducer(broker);
     this.storage = storage;
     this.persistenceWrapper = persistenceWrapper;
-  }
-
-  // Test-only!
-  protected StorageManager(VariationStorage storage, Set<String> entityTypes, Broker broker, DocTypeRegistry registry, PersistenceWrapper persistenceWrapper) {
-    docTypeRegistry = registry;
     producer = setupProducer(broker);
-    this.storage = storage;
-    this.persistenceWrapper = persistenceWrapper;
   }
 
   /**
