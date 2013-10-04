@@ -9,6 +9,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.repository.config.Configuration;
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
+import nl.knaw.huygens.repository.index.IndexException;
 import nl.knaw.huygens.repository.index.IndexManager;
 import nl.knaw.huygens.repository.index.IndexService;
 import nl.knaw.huygens.repository.messages.Broker;
@@ -78,9 +79,9 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       broker.start();
 
       storageManager = injector.getInstance(StorageManager.class);
-      removeUnpersistentEntities(storageManager);
-
       indexManager = injector.getInstance(IndexManager.class);
+      removeUnpersistentEntities(storageManager, indexManager);
+
       indexManager.deleteAllDocuments();
 
       IndexService service = injector.getInstance(IndexService.class);
@@ -124,21 +125,23 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     }
   }
 
-  protected static void removeUnpersistentEntities(StorageManager storageManager) throws IOException {
-    storageManager.clear();
+  protected static void removeUnpersistentEntities(StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
     System.out.println("remove nonpersistent items.");
-    //    removeClass(ATLGArchive.class, storageManager);
-    //    removeClass(ATLGArchiver.class, storageManager);
-    //    removeClass(ATLGKeyword.class, storageManager);
-    //    removeClass(ATLGLegislation.class, storageManager);
-    //    removeClass(ATLGPerson.class, storageManager);
-
-    //TODO find a way to remove relations.
+    removeAllFromClass(ATLGArchive.class, storageManager, indexManager);
+    removeAllFromClass(ATLGArchiver.class, storageManager, indexManager);
+    removeAllFromClass(ATLGKeyword.class, storageManager, indexManager);
+    removeAllFromClass(ATLGLegislation.class, storageManager, indexManager);
+    removeAllFromClass(ATLGPerson.class, storageManager, indexManager);
   }
 
-  private static void removeClass(Class<? extends DomainEntity> type, StorageManager storageManager) throws IOException {
+  private static void removeAllFromClass(Class<? extends DomainEntity> type, StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
     Collection<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
     storageManager.removePermanently(type, ids);
+    indexManager.deleteDocuments(type, Lists.newArrayList(ids));
+    //Remove relations
+    Collection<String> relationIds = storageManager.getRelationIds(ids);
+    storageManager.removePermanently(Relation.class, relationIds);
+    indexManager.deleteDocuments(Relation.class, Lists.newArrayList(ids));
   }
 
   // -------------------------------------------------------------------
