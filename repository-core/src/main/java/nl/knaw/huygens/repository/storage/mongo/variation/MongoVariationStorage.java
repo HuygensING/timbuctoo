@@ -398,6 +398,30 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
+  public Collection<String> getRelationIds(Collection<String> ids) throws IOException {
+    DBCollection col = db.getCollection("relation");
+
+    DBObject query = DBQuery.or(DBQuery.in("^sourceId", ids), DBQuery.in("^targetId", ids));
+    query.put("^pid", null);
+    DBObject columnsToShow = new BasicDBObject("_id", 1);
+
+    Set<String> releationIds = Sets.newHashSet();
+
+    try {
+      DBCursor cursor = col.find(query, columnsToShow);
+
+      while (cursor.hasNext()) {
+        releationIds.add((String) cursor.next().get("_id"));
+      }
+    } catch (MongoException ex) {
+      LOG.error("Error while retrieving relation id's without pid relating to {}", ids);
+      throw new IOException(ex);
+    }
+
+    return releationIds;
+  }
+
+  @Override
   public <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
     DBCollection col = getVariationCollection(type);
 
