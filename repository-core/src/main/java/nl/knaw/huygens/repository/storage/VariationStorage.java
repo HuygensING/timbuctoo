@@ -26,6 +26,16 @@ public interface VariationStorage extends BasicStorage {
   int countRelations(Relation relation);
 
   /**
+   * Returns the id's of the relations, connected to the entities with the input id's.
+   * The input id's can be the source id as well as the target id of the Relation. 
+   * 
+   * @param ids a collection of id's to find the relations for
+   * @return a collection of id's of the corresponding relations
+   * @throws IOException wrapped exception around the database exceptions
+   */
+  Collection<String> getRelationIds(Collection<String> ids) throws IOException;
+
+  /**
    * Returns all the ids of objects of type <T>, that are not persisted.
    */
   <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException;

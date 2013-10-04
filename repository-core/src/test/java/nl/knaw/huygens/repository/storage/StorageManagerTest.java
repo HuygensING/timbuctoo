@@ -16,7 +16,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 
 import javax.jms.JMSException;
@@ -437,6 +436,24 @@ public class StorageManagerTest {
     doThrow(IOException.class).when(storage).getAllIdsWithoutPIDOfType(type);
 
     instance.getAllIdsWithoutPIDOfType(type);
+  }
+
+  @Test
+  public void testGetRelationIds() throws IOException {
+    List<String> ids = Lists.newArrayList("PER0000000001", "PER0000000002", "PER0000000005");
+
+    storage.getRelationIds(ids);
+
+    verify(storage).getRelationIds(ids);
+  }
+
+  @Test(expected = IOException.class)
+  public void testGetRelationIdsStorageThrowsException() throws IOException {
+    List<String> ids = Lists.newArrayList("PER0000000001", "PER0000000002", "PER0000000005");
+
+    doThrow(IOException.class).when(storage).getRelationIds(ids);
+
+    storage.getRelationIds(ids);
   }
 
   @Test

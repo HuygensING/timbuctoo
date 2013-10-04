@@ -452,6 +452,94 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
+  public void testGetRelationIds() throws IOException {
+    List<String> inputIds = Lists.newArrayList(DEFAULT_ID, "TCD000000002", "TCD000000003");
+
+    DBObject query = createRelatedToQuery(inputIds);
+    query.put("^pid", null);
+
+    DBObject columnsToShow = new BasicDBObject("_id", 1);
+
+    String relationId1 = "RELA000000000001";
+    String relationId2 = "RELA000000000002";
+    String relationId3 = "RELA000000000003";
+
+    DBObject dbObject1 = createDBJsonNode(createSimpleMap("_id", relationId1));
+    DBObject dbObject2 = createDBJsonNode(createSimpleMap("_id", relationId2));
+    DBObject dbObject3 = createDBJsonNode(createSimpleMap("_id", relationId3));
+
+    DBCursor cursor = mock(DBCursor.class);
+    when(cursor.next()).thenReturn(dbObject1, dbObject2, dbObject3);
+    when(cursor.hasNext()).thenReturn(true, true, true, false);
+
+    when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
+
+    try {
+      Collection<String> relationsIds = storage.getRelationIds(inputIds);
+
+      assertTrue(relationsIds.contains(relationId1));
+      assertTrue(relationsIds.contains(relationId2));
+      assertTrue(relationsIds.contains(relationId3));
+    } finally {
+      verify(anyCollection).find(query, columnsToShow);
+      verify(db).getCollection("relation");
+    }
+  }
+
+  @Test(expected = IOException.class)
+  public void testGetRelationFindThrowsException() throws IOException {
+    List<String> inputIds = Lists.newArrayList(DEFAULT_ID, "TCD000000002", "TCD000000003");
+    doThrow(MongoException.class).when(anyCollection).find(any(DBObject.class), any(DBObject.class));
+
+    storage.getRelationIds(inputIds);
+  }
+
+  @Test(expected = IOException.class)
+  public void testGetRelationCursorNextThrowsException() throws IOException {
+    List<String> inputIds = Lists.newArrayList(DEFAULT_ID, "TCD000000002", "TCD000000003");
+
+    DBObject query = createRelatedToQuery(inputIds);
+    query.put("^pid", null);
+
+    DBObject columnsToShow = new BasicDBObject("_id", 1);
+
+    DBCursor cursor = mock(DBCursor.class);
+    when(cursor.hasNext()).thenReturn(true);
+    doThrow(MongoException.class).when(cursor).next();
+
+    when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
+
+    storage.getRelationIds(inputIds);
+
+  }
+
+  @Test(expected = IOException.class)
+  public void testGetRelationCursorHasNextThrowsException() throws IOException {
+    List<String> inputIds = Lists.newArrayList(DEFAULT_ID, "TCD000000002", "TCD000000003");
+
+    DBObject query = createRelatedToQuery(inputIds);
+    query.put("^pid", null);
+
+    DBObject columnsToShow = new BasicDBObject("_id", 1);
+
+    DBCursor cursor = mock(DBCursor.class);
+    doThrow(MongoException.class).when(cursor).hasNext();
+
+    when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
+
+    storage.getRelationIds(inputIds);
+  }
+
+  protected DBObject createRelatedToQuery(List<String> inputIds) {
+    //You can not use DBQuery.or or DBQuery.in in tests, because the equals will fail.
+    BasicDBObject inCollection = new BasicDBObject("$in", inputIds);
+    DBObject sourceIdIn = new BasicDBObject("^sourceId", inCollection);
+    DBObject targetIdIn = new BasicDBObject("^targetId", inCollection);
+    DBObject query = new BasicDBObject("$or", Lists.newArrayList(sourceIdIn, targetIdIn));
+    return query;
+  }
+
+  @Test
   public void testRemovePermanently() throws IOException {
     List<String> ids = Lists.newArrayList("TCD000000001", "TCD000000003", "TCD000000005");
     DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
