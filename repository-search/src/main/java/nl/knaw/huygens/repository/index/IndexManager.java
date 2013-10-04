@@ -1,5 +1,6 @@
 package nl.knaw.huygens.repository.index;
 
+import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.repository.config.Configuration;
@@ -94,6 +95,10 @@ public class IndexManager {
 
   public <T extends Entity> void deleteDocument(Class<T> type, String id) throws IndexException {
     indexerForType(registry.getBaseClass(type)).remove(id);
+  }
+
+  public <T extends Entity> void deleteDocuments(Class<T> type, List<String> ids) throws IndexException {
+    indexerForType(type).remove(ids);
   }
 
   public void deleteAllDocuments() throws IndexException {

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.repository.index;
 
 import java.io.IOException;
+import java.util.List;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Entity;
@@ -101,6 +102,20 @@ class RelationIndexer implements EntityIndexer<Relation> {
       server.deleteByQuery(CORE, query);
     } catch (Exception e) {
       throw new IndexException(e);
+    }
+  }
+
+  @Override
+  public void remove(List<String> ids) throws IndexException {
+    //TODO find a good way to remove multiple ids.
+    //    try {
+    //      server.deleteByQuery(CORE, );
+    //    } catch (Exception e) {
+    //      throw new IndexException(e);
+    //    }
+
+    for (String id : ids) {
+      remove(id);
     }
   }
 

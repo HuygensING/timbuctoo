@@ -1,5 +1,7 @@
 package nl.knaw.huygens.repository.index;
 
+import java.util.List;
+
 import nl.knaw.huygens.repository.model.Entity;
 
 /**
@@ -15,6 +17,9 @@ class NoEntityIndexer<T extends Entity> implements EntityIndexer<T> {
 
   @Override
   public void remove(String id) {}
+
+  @Override
+  public void remove(List<String> ids) {}
 
   @Override
   public void removeAll() {}
