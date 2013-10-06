@@ -6,8 +6,9 @@ import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.model.Entity;
 import nl.knaw.huygens.repository.model.EntityRef;
 import nl.knaw.huygens.repository.storage.StorageManager;
+import nl.knaw.huygens.repository.tools.ToolBase;
 
-public abstract class DefaultImporter {
+public abstract class DefaultImporter extends ToolBase {
 
   protected final DocTypeRegistry docTypeRegistry;
   private final StorageManager storageManager;
