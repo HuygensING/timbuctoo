@@ -109,7 +109,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
       changedDocs.addAll(col.find().sort(new BasicDBObject("^lastChange.dateStamp", -1)).limit(limit).toArray());
     }
 
-    StorageUtils.sortDocumentsByLastChange(changedDocs);
+    StorageUtils.sortEntitiesByLastChange(changedDocs);
     return changedDocs.subList(0, limit);
   }
 
