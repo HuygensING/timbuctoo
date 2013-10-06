@@ -28,7 +28,7 @@ public class DocTypeRegistryTest {
   }
 
   @Test(expected = IllegalStateException.class)
-  public void testDocumentTypeNamesMustBeDifferent() {
+  public void testEntityTypeNamesMustBeDifferent() {
     new DocTypeRegistry(MODEL_PACKAGE + " " + MODEL_PACKAGE);
   }
 
@@ -43,7 +43,7 @@ public class DocTypeRegistryTest {
   public void testGetTypeForXName() {
     DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGE);
     assertEquals(GeneralTestDoc.class, registry.getTypeForXName("generaltestdocs"));
-    // TestExtraBaseDoc has @DocumentTypeName("testextrabasedoc")
+    // TestExtraBaseDoc has @EntityTypeName("testextrabasedoc")
     assertEquals(TestExtraBaseDoc.class, registry.getTypeForXName("testextrabasedoc"));
   }
 

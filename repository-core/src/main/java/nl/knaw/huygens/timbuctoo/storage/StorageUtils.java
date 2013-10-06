@@ -57,7 +57,7 @@ public class StorageUtils {
     return readFromIterator(iterator, 0, limit);
   }
 
-  public static void sortDocumentsByLastChange(List<Entity> docs) {
+  public static void sortEntitiesByLastChange(List<Entity> docs) {
     Collections.sort(docs, new Comparator<Entity>() {
       @Override
       public int compare(Entity o1, Entity o2) {

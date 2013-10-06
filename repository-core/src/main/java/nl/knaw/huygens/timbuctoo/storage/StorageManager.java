@@ -137,7 +137,7 @@ public class StorageManager {
     }
   }
 
-  /* A bit of code duplication, but I think it is more readable than calling this method from addDocument and then persisting it.
+  /* A bit of code duplication, but I think it is more readable than calling this method from addEntity and then persisting it.
    * This code is needed, because of issue #1774 in Redmine. It contains the question if the persistent identifier should be added autmaticallly. 
    */
   public <T extends Entity> String addEntityWithoutPersisting(Class<T> type, T doc, boolean isComplete) throws IOException {
