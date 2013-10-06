@@ -167,7 +167,7 @@
           <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
           <programs>
             <program>
-              <mainClass>nl.knaw.huygens.repository.tools.importer.database.AtlantischeGidsImporter</mainClass>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.database.AtlantischeGidsImporter</mainClass>
               <name>atlgImport</name>
             </program>
           </programs>

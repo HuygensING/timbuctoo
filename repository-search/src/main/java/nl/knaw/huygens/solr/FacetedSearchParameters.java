@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
 public class FacetedSearchParameters {
+
   private String term = "*";
   private String sort = SolrFields.SCORE;
   private String sortDir = "asc";

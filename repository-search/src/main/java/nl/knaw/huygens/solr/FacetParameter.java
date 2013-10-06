@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Lists;
 
 public class FacetParameter {
+
   String name = "";
   List<String> values = Lists.newArrayList();
 

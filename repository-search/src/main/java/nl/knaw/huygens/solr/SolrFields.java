@@ -1,6 +1,7 @@
 package nl.knaw.huygens.solr;
 
 public class SolrFields {
+
   public static final String SORT_PREFIX = "sort_";
 
   public static final String UNKNOWN_VALUE = "unknown";

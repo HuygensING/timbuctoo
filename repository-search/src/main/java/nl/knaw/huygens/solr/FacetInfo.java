@@ -1,8 +1,9 @@
 package nl.knaw.huygens.solr;
 
-import nl.knaw.huygens.repository.facet.FacetType;
+import nl.knaw.huygens.timbuctoo.facet.FacetType;
 
 public class FacetInfo {
+
   String name = "";
   String title = "";
   FacetType type = FacetType.LIST;
