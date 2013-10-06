@@ -1,4 +1,4 @@
-package nl.knaw.huygens.repository.rest.model;
+package nl.knaw.huygens.repository.rest.util;
 
 import java.util.List;
 
@@ -6,7 +6,6 @@ import javax.ws.rs.core.Application;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
 import nl.knaw.huygens.repository.rest.resources.RESTAutoResource;
-import nl.knaw.huygens.repository.rest.util.JAXUtils;
 import nl.knaw.huygens.repository.rest.util.JAXUtils.API;
 
 import com.google.common.collect.Lists;
