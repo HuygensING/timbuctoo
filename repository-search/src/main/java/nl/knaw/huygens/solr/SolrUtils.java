@@ -10,6 +10,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 public class SolrUtils {
+
   // Special Lucene characters: + - & | ! ( ) { } [ ] ^ " ~ * ? : \
   private static final Pattern SPECIAL = Pattern.compile("[+\\-&|!(){}\\[\\]\\^\"~*?:\\\\]");
 
