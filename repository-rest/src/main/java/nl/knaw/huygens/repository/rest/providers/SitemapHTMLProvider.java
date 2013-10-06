@@ -13,7 +13,7 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
 import nl.knaw.huygens.repository.config.DocTypeRegistry;
-import nl.knaw.huygens.repository.rest.model.Sitemap;
+import nl.knaw.huygens.repository.rest.util.Sitemap;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectWriter;
