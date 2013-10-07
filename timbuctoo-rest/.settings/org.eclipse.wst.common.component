@@ -1,27 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
-    <wb-module deploy-name="repository-rest">
+    <wb-module deploy-name="timbuctoo-rest">
         <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
-        <dependent-module archiveName="repository-persistence-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-persistence/repository-persistence">
+        <dependent-module archiveName="repository-core-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-core/timbuctoo-core">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="repository-search-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-search/repository-search">
+        <dependent-module archiveName="repository-persistence-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-persistence/timbuctoo-persistence">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="repository-security-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-security/repository-security">
+        <dependent-module archiveName="repository-search-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-search/timbuctoo-search">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="repository-services-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-services/repository-services">
+        <dependent-module archiveName="repository-security-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-security/timbuctoo-security">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module deploy-path="/" handle="module:/overlay/prj/repository-war-config-dev?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
+        <dependent-module archiveName="repository-services-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-services/timbuctoo-services">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module deploy-path="/" handle="module:/overlay/prj/timbuctoo-war-config-dev?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
             <dependency-type>consumes</dependency-type>
         </dependent-module>
         <dependent-module deploy-path="/" handle="module:/overlay/slf/?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
             <dependency-type>consumes</dependency-type>
         </dependent-module>
-        <property name="java-output-path" value="/repository-rest/target/classes"/>
+        <property name="java-output-path" value="/timbuctoo-rest/target/classes"/>
         <property name="context-root" value="repository-rest"/>
     </wb-module>
 </project-modules>
