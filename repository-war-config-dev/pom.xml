@@ -10,22 +10,20 @@
 	<version>1.0.7-SNAPSHOT</version>
   </parent>
 
-  <artifactId>repository-dev-config-war</artifactId>
+  <artifactId>repository-war-config-dev</artifactId>
   <packaging>war</packaging>
 
-  <name>repository-dev-config-war</name>
+  <name>repository-war-config-dev</name>
   <description>Configuration project for the dev environment</description>
 
   <properties>
-	<maven-bundle-plugin.version>2.3.4</maven-bundle-plugin.version>
 	<maven-war-plugin.version>2.1.1</maven-war-plugin.version>
-	<servlet-api.version>2.5</servlet-api.version>
   </properties>
 
   <dependencies>
 	<dependency>
 	  <groupId>javax.servlet</groupId>
-	  <artifactId>servlet-api</artifactId>
+	  <artifactId>javax.servlet-api</artifactId>
 	  <version>${servlet-api.version}</version>
 	</dependency>
   </dependencies>
