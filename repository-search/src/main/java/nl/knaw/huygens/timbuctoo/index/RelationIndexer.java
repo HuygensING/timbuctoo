@@ -96,9 +96,14 @@ class RelationIndexer implements EntityIndexer<Relation> {
   }
 
   @Override
-  public void remove(String id) throws IndexException {
+  public void remove(String sourceId) throws IndexException {
+    /*
+     * deleteById cannot be used, because the id's of the relations are composed from the id's 
+     * of the source and target entity. In the query the source id is used 
+     * to delete all the relations of a certain entity.
+     */
     try {
-      String query = String.format("id:%s*", id);
+      String query = String.format("id:%s*", sourceId);
       server.deleteByQuery(CORE, query);
     } catch (Exception e) {
       throw new IndexException(e);
