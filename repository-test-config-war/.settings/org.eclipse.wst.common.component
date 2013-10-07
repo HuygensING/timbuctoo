@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
-    <wb-module deploy-name="repository-war-config-prod">
+    <wb-module deploy-name="repository-test-config-war">
         <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
-        <property name="java-output-path" value="/repository-war-config-prod/target/classes"/>
-        <property name="context-root" value="repository-prod-config-war"/>
+        <property name="context-root" value="repository-test-config-war"/>
+        <property name="java-output-path" value="/repository-test-config-war/target/classes"/>
     </wb-module>
 </project-modules>
