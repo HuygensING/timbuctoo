@@ -10,10 +10,10 @@
 	<version>1.0.7-SNAPSHOT</version>
   </parent>
 
-  <artifactId>repository-dev-config-war</artifactId>
+  <artifactId>repository-war-config-dev</artifactId>
   <packaging>war</packaging>
 
-  <name>repository-dev-config-war</name>
+  <name>repository-war-config-dev</name>
   <description>Configuration project for the dev environment</description>
 
   <properties>
