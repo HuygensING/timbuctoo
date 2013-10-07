@@ -67,7 +67,7 @@ public class DocTypeRegistry {
 
     ClassPath classPath = getClassPath();
     for (String packageName : StringUtils.split(packageNames)) {
-      registerPackage(classPath, packageName);
+      registerPackage(classPath, packageName.replaceFirst("^timbuctoo", "nl.knaw.huygens.timbuctoo"));
     }
   }
 
