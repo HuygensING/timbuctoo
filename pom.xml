@@ -24,9 +24,9 @@
     <module>repository-security</module>
     <module>repository-services</module>
     <module>repository-tools</module>
-    <module>repository-dev-config-war</module>
-    <module>repository-test-config-war</module>
-    <module>repository-prod-config-war</module>
+    <module>repository-war-config-dev</module>
+    <module>repository-war-config-test</module>
+    <module>repository-war-config-prod</module>
     <module>repository-tools-config</module>
   </modules>
   
