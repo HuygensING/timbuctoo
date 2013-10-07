@@ -24,6 +24,7 @@ import javax.ws.rs.core.UriInfo;
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -155,6 +156,7 @@ public class RESTAutoResource {
     try {
       @SuppressWarnings("unchecked")
       T typedDoc = (T) input;
+      checkWritable(typedDoc, Status.FORBIDDEN);
       storageManager.modifyEntity(type, typedDoc);
     } catch (IOException ex) {
       // only if the document version does not exist an IOException is thrown.
@@ -175,6 +177,7 @@ public class RESTAutoResource {
     @SuppressWarnings("unchecked")
     Class<T> type = (Class<T>) getDocType(entityType);
     T typedDoc = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
+    checkWritable(typedDoc, Status.FORBIDDEN);
     storageManager.removeEntity(type, typedDoc);
     return Response.status(Status.OK).build();
   }
@@ -216,6 +219,18 @@ public class RESTAutoResource {
       throw new WebApplicationException(status);
     }
     return reference;
+  }
+
+  private <T extends Entity> void checkWritable(T reference, Status status) {
+    if (reference instanceof SystemEntity) {
+
+    } else if (reference instanceof DomainEntity) {
+      if (!((DomainEntity) reference).isWritable()) {
+        throw new WebApplicationException(status);
+      }
+    } else {
+      throw new WebApplicationException(status);
+    }
   }
 
 }

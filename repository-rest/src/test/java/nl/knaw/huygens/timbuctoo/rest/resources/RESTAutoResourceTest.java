@@ -91,10 +91,24 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
     String id = "TEST000000000001";
     TestConcreteDoc doc = new TestConcreteDoc(id);
+    doc.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
     ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void testPutDocExistingDocumentWithoutPID() throws IOException {
+    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+
+    String id = "TEST000000000001";
+    TestConcreteDoc doc = new TestConcreteDoc(id);
+    when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
+
+    ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
   }
 
   @Test()
@@ -164,6 +178,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
     String id = "NULL000000000001";
     TestConcreteDoc doc = new TestConcreteDoc(id);
+    doc.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
     doAnswer(new Answer<Object>() {
@@ -287,10 +302,23 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
 
     String id = "TEST000000000001";
     TestConcreteDoc doc = new TestConcreteDoc(id);
+    doc.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
     when(getStorageManager().getEntity(TestConcreteDoc.class, id)).thenReturn(doc);
 
     ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
+  }
+
+  @Test
+  public void testDeleteDocumentWithoutPID() throws IOException {
+    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+
+    String id = "TEST000000000001";
+    TestConcreteDoc doc = new TestConcreteDoc(id);
+    when(getStorageManager().getEntity(TestConcreteDoc.class, id)).thenReturn(doc);
+
+    ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
+    assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
   }
 
   @Test
