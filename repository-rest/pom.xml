@@ -219,7 +219,7 @@
       <dependencies>
         <dependency>
           <groupId>repository</groupId>
-          <artifactId>repository-dev-config-war</artifactId>
+          <artifactId>repository-war-config-dev</artifactId>
           <version>${project.version}</version>
           <type>war</type>
           <scope>runtime</scope>
@@ -231,7 +231,7 @@
       <dependencies>
         <dependency>
           <groupId>repository</groupId>
-          <artifactId>repository-test-config-war</artifactId>
+          <artifactId>repository-war-config-test</artifactId>
           <version>${project.version}</version>
           <type>war</type>
           <scope>runtime</scope>
@@ -243,7 +243,7 @@
       <dependencies>
         <dependency>
           <groupId>repository</groupId>
-          <artifactId>repository-prod-config-war</artifactId>
+          <artifactId>repository-war-config-prod</artifactId>
           <version>${project.version}</version>
           <type>war</type>
           <scope>runtime</scope>
