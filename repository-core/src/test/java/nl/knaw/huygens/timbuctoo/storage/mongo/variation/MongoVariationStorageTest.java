@@ -54,7 +54,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @BeforeClass
   public static void setUpDocTypeRegistry() {
-    registry = new DocTypeRegistry("nl.knaw.huygens.timbuctoo.variation.model nl.knaw.huygens.timbuctoo.variation.model.projecta nl.knaw.huygens.timbuctoo.variation.model.projectb");
+    registry = new DocTypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
   }
 
   @Test

@@ -20,7 +20,7 @@ import org.junit.Test;
  */
 public class DocTypeRegistryTest {
 
-  private static final String MODEL_PACKAGE = "nl.knaw.huygens.timbuctoo.variation.model";
+  private static final String MODEL_PACKAGE = "timbuctoo.variation.model";
 
   @Test(expected = IllegalArgumentException.class)
   public void testPackageNamesMustnotBeNull() {
