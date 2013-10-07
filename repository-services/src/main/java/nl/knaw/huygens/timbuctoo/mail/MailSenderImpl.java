@@ -21,11 +21,8 @@ import com.google.inject.name.Named;
 public class MailSenderImpl implements MailSender {
 
   private static final String CONTENT_CHAR_SET = "utf-8";
-
   private static final String TRANSPORT_TYPE = "smtp";
-
   private static final String POST_PROPERTY = "mail.smtp.port";
-
   private static final String HOST_PROPERTY = "mail.smtp.host";
 
   private static final Logger LOG = LoggerFactory.getLogger(MailSenderImpl.class);
@@ -45,31 +42,21 @@ public class MailSenderImpl implements MailSender {
     emailProperties.setProperty(POST_PROPERTY, port);
 
     session = Session.getInstance(emailProperties);
-
   }
 
-  /* (non-Javadoc)
-   * @see nl.knaw.huygens.timbuctoo.mail.MailSender#sendMail(java.lang.String, java.lang.String, java.lang.String)
-   */
   @Override
   public void sendMail(String recipients, String subject, String content) {
-
     MimeMessage message = createMessage(recipients, subject, content);
-
-    Transport transport;
     try {
-      transport = session.getTransport(TRANSPORT_TYPE);
+      Transport transport = session.getTransport(TRANSPORT_TYPE);
       transport.connect();
       transport.sendMessage(message, message.getAllRecipients());
       transport.close();
     } catch (NoSuchProviderException e) {
-      e.printStackTrace();
       LOG.error(e.getMessage());
     } catch (MessagingException e) {
-      e.printStackTrace();
       LOG.error(e.getMessage());
     }
-
   }
 
   private MimeMessage createMessage(String recipients, String subject, String content) {
@@ -81,10 +68,8 @@ public class MailSenderImpl implements MailSender {
       message.setText(content, CONTENT_CHAR_SET);
       message.setSentDate(new Date());
     } catch (AddressException e) {
-      e.printStackTrace();
       LOG.error(e.getMessage());
     } catch (MessagingException e) {
-      e.printStackTrace();
       LOG.error(e.getMessage());
     }
     return message;
@@ -94,4 +79,5 @@ public class MailSenderImpl implements MailSender {
     MailSender mailer = new MailSenderImpl("spinner.knaw.nl", "25", "noreply@huygens.knaw.nl");
     mailer.sendMail("martijn.maas@huygens.knaw.nl", "test", "dit is een test");
   }
+
 }

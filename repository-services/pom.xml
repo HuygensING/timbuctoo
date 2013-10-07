@@ -45,6 +45,16 @@
       </exclusions>
     </dependency>
     <!-- ## End of main libraries ## -->
+    
+    <!-- ## Test dependencies ## -->
+    <!-- JUnit test framework -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- ## End of test libraries ## -->
   </dependencies>
 
 </project>
