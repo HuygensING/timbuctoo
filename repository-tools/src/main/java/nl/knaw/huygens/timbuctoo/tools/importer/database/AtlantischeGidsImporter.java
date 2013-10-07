@@ -95,12 +95,12 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       new AtlantischeGidsImporter(registry, relationManager, storageManager, importDirName).importAll();
 
       // Signal we're done
-      BulkImporter.sendEndOfDataMessage(broker);
+      sendEndOfDataMessage(broker);
 
       long time = (System.currentTimeMillis() - start) / 1000;
       System.out.printf("%n=== Used %d seconds%n%n", time);
 
-      BulkImporter.waitForCompletion(thread, 5 * 60 * 1000);
+      waitForCompletion(thread, 5 * 60 * 1000);
 
       time = (System.currentTimeMillis() - start) / 1000;
       System.out.printf("%n=== Used %d seconds%n", time);
