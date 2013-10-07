@@ -3,9 +3,6 @@
         <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
-        <dependent-module archiveName="repository-core-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-core/repository-core">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
         <dependent-module archiveName="repository-persistence-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/repository-persistence/repository-persistence">
             <dependency-type>uses</dependency-type>
         </dependent-module>
