@@ -49,7 +49,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
 
   public static void main(String[] args) throws Exception {
 
-    // Handle commandline argfuments
+    // Handle commandline arguments
     String importDirName = (args.length > 0) ? args[0] : "../../AtlantischeGids/work/";
     System.out.println("Import directory: " + importDirName);
     String configFileName = (args.length > 1) ? args[1] : "config.xml";
@@ -83,12 +83,12 @@ public class DutchCaribbeanImporter extends DefaultImporter {
       new DutchCaribbeanImporter(registry, relationManager, storageManager, importDirName).importAll();
 
       // Signal we're done
-      BulkImporter.sendEndOfDataMessage(broker);
+      sendEndOfDataMessage(broker);
 
       long time = (System.currentTimeMillis() - start) / 1000;
       System.out.printf("%n=== Used %d seconds%n%n", time);
 
-      BulkImporter.waitForCompletion(thread, 5 * 60 * 1000);
+      waitForCompletion(thread, 5 * 60 * 1000);
 
       time = (System.currentTimeMillis() - start) / 1000;
       System.out.printf("%n=== Used %d seconds%n", time);
