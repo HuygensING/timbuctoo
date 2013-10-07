@@ -72,7 +72,7 @@ public class RelationManager {
     if (relation != null) {
       try {
         if (storageManager.countRelations(relation) > 0) {
-          LOG.info("Duplicate relation {}", relation.getDisplayName());
+          LOG.info("Ignored duplicate {}", relation.getDisplayName());
         } else {
           return storageManager.addEntityWithoutPersisting(Relation.class, relation, true);
         }

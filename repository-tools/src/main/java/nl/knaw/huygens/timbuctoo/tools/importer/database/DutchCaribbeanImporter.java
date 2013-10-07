@@ -124,12 +124,13 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private final Map<String, Reference> archiveRefMap = Maps.newHashMap();
   private final Map<String, Reference> archiverRefMap = Maps.newHashMap();
 
-  Reference isCreatorRef;
-  Reference hasKeywordRef;
-  Reference hasPersonRef;
-  Reference hasPlaceRef;
-  Reference hasParentArchive;
-  Reference hasSiblingArchive;
+  private Reference isCreatorRef;
+  private Reference hasKeywordRef;
+  private Reference hasPersonRef;
+  private Reference hasPlaceRef;
+  private Reference hasParentArchive;
+  private Reference hasSiblingArchive;
+  private Reference hasSiblingArchiver;
 
   public DutchCaribbeanImporter(DocTypeRegistry registry, RelationManager relationManager, StorageManager storageManager, String inputDirName) {
     super(registry, storageManager);
@@ -213,6 +214,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
     hasPlaceRef = addRelationType("has_place", DomainEntity.class, ATLGKeyword.class);
     hasParentArchive = addRelationType("has_parent_archive", ATLGArchive.class, ATLGArchive.class);
     hasSiblingArchive = addRelationType("has_sibling_archive", ATLGArchive.class, ATLGArchive.class, true);
+    hasSiblingArchiver = addRelationType("has_sibling_archiver", ATLGArchiver.class, ATLGArchiver.class, true);
   }
 
   private Reference addRelationType(String name, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean symmetric) {
@@ -243,8 +245,6 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   }
 
   // --- Keywords ------------------------------------------------------
-
-  // **WR** OK
 
   private static final String KEYWORD_DIR = "keywords";
   private static final String KEYWORD_FILE = "keywords.json";
@@ -288,8 +288,6 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   }
 
   // --- Persons -------------------------------------------------------
-
-  // **WR** OK
 
   private static final String PERSON_DIR = "keywords";
   private static final String PERSON_FILE = "persons.json";
@@ -341,8 +339,6 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   }
 
   // --- Legislation ---------------------------------------------------
-
-  // **WR** OK
 
   private static final String WETGEVING_DIR = "wetgeving";
 
@@ -419,8 +415,6 @@ public class DutchCaribbeanImporter extends DefaultImporter {
 
   // --- Archives ------------------------------------------------------
 
-  // **WR** OK
-
   private static final String ARCHIEFMAT_DIR = "archiefmat";
 
   private void importArchives(Map<String, Reference> referenceMap) throws Exception {
@@ -466,20 +460,13 @@ public class DutchCaribbeanImporter extends DefaultImporter {
     archive.setNotes(archiefmat.notes);
     archive.setMadeBy(archiefmat.made_by);
     archive.setReminders(archiefmat.Aantekeningen);
-
     // Ignored fields
-    if (archiefmat.creators != null) {
-      for (String creator : archiefmat.creators) {
-        handleError("[%s] Ignoring implied creator: '%s'", archiefmat.orig_filename, creator);
-      }
-    }
     if (archiefmat.relation != null) {
       handleError("[%s] Ignoring field 'relation': '%s'", archiefmat.orig_filename, archiefmat.relation);
     }
     if (archiefmat.em != null) {
       handleError("[%s] Ignoring field 'em': '%s'", archiefmat.orig_filename, archiefmat.em);
     }
-
     return archive;
   }
 
@@ -515,10 +502,11 @@ public class DutchCaribbeanImporter extends DefaultImporter {
           // symmetric, stored in canonical form
           addRegularRelations(reference, hasSiblingArchive, archiveRefMap, item.ids);
         } else {
-          handleError("[%s] Ignoring field 'related' with type '%s'", archiefmat.orig_filename, item.type);
+          handleError("[%s] Ignoring field 'archiefmat.related' with type '%s'", archiefmat.orig_filename, item.type);
         }
       }
     }
+    addInverseRelations(reference, isCreatorRef, archiverRefMap, archiefmat.creators);
   }
 
   // --- Archivers -----------------------------------------------------
@@ -532,7 +520,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
         Creator creator = entry.creator;
         String jsonId = creator._id;
         if (referenceMap.containsKey(jsonId)) {
-          handleError("[%s] Duplicate entry %s", file.getName(), jsonId);
+          handleError("[%s] Duplicate 'creator' id %s", file.getName(), jsonId);
         } else {
           ATLGArchiver archiver = convert(creator);
           String storedId = addEntity(ATLGArchiver.class, archiver, false);
@@ -553,13 +541,6 @@ public class DutchCaribbeanImporter extends DefaultImporter {
     }
     archiver.setPeriodDescription(creator.period_description);
     archiver.setHistory(creator.his_func);
-    if (creator.related_archives != null) {
-      handleError("[%s] Ignoring field 'related_archives'", creator.orig_filename);
-    }
-    if (creator.related_creators != null) {
-      handleError("[%s] Ignoring field 'related_creators'", creator.orig_filename);
-    }
-
     archiver.setNotes(creator.notes);
     archiver.setLiterature(creator.literatuur);
     archiver.setMadeBy(creator.made_by);
@@ -568,6 +549,10 @@ public class DutchCaribbeanImporter extends DefaultImporter {
       for (String type : creator.types) {
         archiver.addType(type);
       }
+    }
+    // Ignored fields; should have been preprocessed
+    if (creator.related_archives != null) {
+      handleError("[%s] Ignoring field 'creator.related_archives'", creator.orig_filename);
     }
     return archiver;
   }
@@ -578,6 +563,9 @@ public class DutchCaribbeanImporter extends DefaultImporter {
       for (CreatorEntry entry : readJsonValue(file, CreatorEntry[].class)) {
         Creator creator = entry.creator;
         Reference reference = referenceMap.get(creator._id);
+        if (reference == null) {
+          throw new IllegalStateException("Failed to retrieve archive " + creator._id);
+        }
         addArchiverRelations(reference, creator);
       }
     }
@@ -588,6 +576,22 @@ public class DutchCaribbeanImporter extends DefaultImporter {
     addRegularRelations(reference, hasPlaceRef, keywordRefMap, creator.geography);
     addRegularRelations(reference, hasKeywordRef, keywordRefMap, creator.keywords);
     addRegularRelations(reference, hasPersonRef, personRefMap, creator.persons);
+
+    if (creator.related != null) {
+      for (XRelated item : creator.related) {
+        if ("archive".equals(item.type)) {
+          // isCreatedByRef relation is implied
+          addRegularRelations(reference, isCreatorRef, archiveRefMap, item.ids);
+        } else if ("creator".equals(item.type)) {
+          // symmetric, stored in canonical form
+          addRegularRelations(reference, hasSiblingArchiver, archiverRefMap, item.ids);
+        } else {
+          handleError("[%s] Ignoring field 'creator.related' with type '%s'", creator.orig_filename, item.type);
+        }
+      }
+    }
+    // symmetric, stored in canonical form
+    addRegularRelations(reference, hasSiblingArchiver, archiverRefMap, creator.related_creators);
   }
 
   // -------------------------------------------------------------------
