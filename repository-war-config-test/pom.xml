@@ -17,13 +17,12 @@
 
   <properties>
     <maven-war-plugin.version>2.1.1</maven-war-plugin.version>
-    <servlet-api.version>2.5</servlet-api.version>
   </properties>
 
   <dependencies>
       <dependency>
           <groupId>javax.servlet</groupId>
-          <artifactId>servlet-api</artifactId>
+          <artifactId>javax.servlet-api</artifactId>
           <version>${servlet-api.version}</version>
       </dependency>
   </dependencies>
