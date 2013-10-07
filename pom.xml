@@ -7,9 +7,9 @@
   <artifactId>repository</artifactId>
   <version>1.0.7-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>datarepository</name>
+  <name>datatimbuctoo</name>
   <description>Back-end software that provides different front-ends to share data and variations on that data.</description>
-  <url>http://repository.huygens.knaw.nl/static/search.html</url>
+  <url>http://timbuctoo.huygens.knaw.nl/static/search.html</url>
   <organization>
     <name>Huygens ING</name>
     <url>http://www.huygens.knaw.nl/</url>
@@ -17,17 +17,17 @@
   <inceptionYear>2013</inceptionYear>
 
   <modules>
-    <module>repository-core</module>
-    <module>repository-persistence</module>
-    <module>repository-rest</module>
-    <module>repository-search</module>
-    <module>repository-security</module>
-    <module>repository-services</module>
-    <module>repository-tools</module>
-    <module>repository-war-config-dev</module>
-    <module>repository-war-config-test</module>
-    <module>repository-war-config-prod</module>
-    <module>repository-tools-config</module>
+    <module>timbuctoo-core</module>
+    <module>timbuctoo-persistence</module>
+    <module>timbuctoo-rest</module>
+    <module>timbuctoo-search</module>
+    <module>timbuctoo-security</module>
+    <module>timbuctoo-services</module>
+    <module>timbuctoo-tools</module>
+    <module>timbuctoo-war-config-dev</module>
+    <module>timbuctoo-war-config-test</module>
+    <module>timbuctoo-war-config-prod</module>
+    <module>timbuctoo-tools-config</module>
   </modules>
   
   <properties>
@@ -64,7 +64,7 @@
     </repository>
     <repository>
       <id>apache</id>
-      <url>https://repository.apache.org/content/repositories/public/</url>
+      <url>https://timbuctoo.apache.org/content/repositories/public/</url>
     </repository>
     <repository>
       <id>oracle</id>
@@ -72,11 +72,11 @@
     </repository>
     <repository>
       <id>surfconext</id>
-      <url>https://build.surfconext.nl/repository/public/releases/</url>
+      <url>https://build.surfconext.nl/timbuctoo/public/releases/</url>
     </repository>
     <repository>
       <id>Huygens</id>
-      <url>http://maven.huygens.knaw.nl/repository/</url>
+      <url>http://maven.huygens.knaw.nl/timbuctoo/</url>
       <releases>
         <enabled>true</enabled>
         <updatePolicy>always</updatePolicy>
