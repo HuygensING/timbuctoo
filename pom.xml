@@ -7,9 +7,9 @@
   <artifactId>repository</artifactId>
   <version>1.0.7-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>datatimbuctoo</name>
+  <name>datarepository</name>
   <description>Back-end software that provides different front-ends to share data and variations on that data.</description>
-  <url>http://timbuctoo.huygens.knaw.nl/static/search.html</url>
+  <url>http://repository.huygens.knaw.nl/static/search.html</url>
   <organization>
     <name>Huygens ING</name>
     <url>http://www.huygens.knaw.nl/</url>
