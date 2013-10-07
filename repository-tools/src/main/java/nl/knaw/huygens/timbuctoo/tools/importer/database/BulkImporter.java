@@ -1,15 +1,11 @@
 package nl.knaw.huygens.timbuctoo.tools.importer.database;
 
-import javax.jms.JMSException;
-
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.index.IndexService;
-import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
-import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.timbuctoo.model.raa.RAACivilServant;
@@ -77,12 +73,12 @@ public class BulkImporter {
       }
 
       // Signal we're done
-      sendEndOfDataMessage(broker);
+      DefaultImporter.sendEndOfDataMessage(broker);
 
       long time = (System.currentTimeMillis() - start) / 1000;
       System.out.printf("%n=== Used %d seconds%n%n", time);
 
-      waitForCompletion(thread, 5 * 60 * 1000);
+      DefaultImporter.waitForCompletion(thread, 5 * 60 * 1000);
 
       time = (System.currentTimeMillis() - start) / 1000;
       System.out.printf("%n=== Used %d seconds%n", time);
@@ -97,25 +93,6 @@ public class BulkImporter {
       }
       if (broker != null) {
         broker.close();
-      }
-    }
-  }
-
-  public static void sendEndOfDataMessage(Broker broker) throws JMSException {
-    Producer producer = broker.newProducer(Broker.INDEX_QUEUE, "ImporterProducer");
-    producer.send(ActionType.INDEX_END, "", "");
-    producer.close();
-  }
-
-  public static void waitForCompletion(Thread thread, long patience) throws InterruptedException {
-    long targetTime = System.currentTimeMillis() + patience;
-    while (thread.isAlive()) {
-      System.out.println("... indexing");
-      thread.join(2500);
-      if (System.currentTimeMillis() > targetTime && thread.isAlive()) {
-        System.out.println("... tired of waiting!");
-        thread.interrupt();
-        thread.join();
       }
     }
   }
