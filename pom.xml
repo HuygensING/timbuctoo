@@ -20,8 +20,6 @@
     <module>timbuctoo-core</module>
     <module>timbuctoo-rest</module>
     <module>timbuctoo-search</module>
-    <module>timbuctoo-security</module>
-    <module>timbuctoo-services</module>
     <module>timbuctoo-tools</module>
     <module>timbuctoo-war-config-dev</module>
     <module>timbuctoo-war-config-test</module>
