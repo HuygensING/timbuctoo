@@ -12,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
-import nl.knaw.huygens.timbuctoo.storage.GenericDBRef;
 import nl.knaw.huygens.timbuctoo.storage.RevisionChanges;
 import nl.knaw.huygens.timbuctoo.storage.StorageConfiguration;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -124,11 +123,6 @@ public class MongoStorageFacade implements VariationStorage {
   @Override
   public <T extends Entity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
     return getStorageFor(type).getAllRevisions(type, id);
-  }
-
-  @Override
-  public <T extends Entity> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs) {
-    getStorageFor(type).fetchAll(type, refs);
   }
 
   @Override

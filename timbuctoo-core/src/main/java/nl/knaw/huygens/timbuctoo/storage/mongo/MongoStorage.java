@@ -12,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
-import nl.knaw.huygens.timbuctoo.storage.GenericDBRef;
 import nl.knaw.huygens.timbuctoo.storage.StorageConfiguration;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageUtils;
@@ -25,8 +24,6 @@ import org.mongojack.JacksonDBCollection;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
@@ -99,30 +96,6 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     return new MongoDBIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)));
-  }
-
-  @Override
-  public <T extends Entity> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs) {
-    Set<String> mongoRefs = Sets.newHashSetWithExpectedSize(refs.size());
-    for (GenericDBRef<T> ref : refs) {
-      mongoRefs.add(ref.id);
-    }
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
-    Map<String, T> results = Maps.newHashMapWithExpectedSize(mongoRefs.size());
-    DBCursor<T> resultCursor = col.find(DBQuery.in("_id", mongoRefs));
-    try {
-      while (resultCursor.hasNext()) {
-        T doc = resultCursor.next();
-        results.put(doc.getId(), doc);
-      }
-    } finally {
-      resultCursor.close();
-    }
-    for (GenericDBRef<T> ref : refs) {
-      if (ref.getItem() == null) {
-        ref.setItem(results.get(ref.id));
-      }
-    }
   }
 
   @Override
