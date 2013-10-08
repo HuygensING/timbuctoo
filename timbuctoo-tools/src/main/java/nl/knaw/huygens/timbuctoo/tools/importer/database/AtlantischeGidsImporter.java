@@ -31,10 +31,10 @@ import nl.knaw.huygens.timbuctoo.storage.RelationManager.RelationBuilder;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
-import nl.knaw.huygens.timbuctoo.tools.util.Files;
 import nl.knaw.huygens.timbuctoo.tools.util.Token;
 import nl.knaw.huygens.timbuctoo.tools.util.TokenHandler;
 import nl.knaw.huygens.timbuctoo.tools.util.Tokens;
+import nl.knaw.huygens.timbuctoo.util.Files;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
