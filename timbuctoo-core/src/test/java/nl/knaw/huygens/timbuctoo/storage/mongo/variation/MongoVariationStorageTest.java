@@ -267,23 +267,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     verify(anyCollection).find(query);
   }
 
-  @Ignore
-  @Test
-  //FIXME: should not throw an exception
-  public void testGetLastChanged() throws IOException {
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    for (TestConcreteDoc item : createTestDocListWithIds("TCD", "test1", "test2", "test3")) {
-      storage.addItem(type, item);
-    }
-
-    assertEquals(2, storage.getLastChanged(2).size());
-  }
-
-  @Test(expected = IndexOutOfBoundsException.class)
-  public void testGetLastChangedMoreThanFound() throws IOException {
-    storage.getLastChanged(2);
-  }
-
   @Test
   @Ignore(value = "Code not used at this moment.")
   public void testFetchAll() {

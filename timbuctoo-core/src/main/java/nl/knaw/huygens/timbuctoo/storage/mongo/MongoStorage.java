@@ -102,18 +102,6 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   }
 
   @Override
-  public List<Entity> getLastChanged(int limit) {
-    List<Entity> changedDocs = Lists.newArrayList();
-    for (String colName : entityCollections) {
-      JacksonDBCollection<? extends Entity, String> col = MongoUtils.getCollection(db, docTypeRegistry.getTypeForIName(colName));
-      changedDocs.addAll(col.find().sort(new BasicDBObject("^lastChange.dateStamp", -1)).limit(limit).toArray());
-    }
-
-    StorageUtils.sortEntitiesByLastChange(changedDocs);
-    return changedDocs.subList(0, limit);
-  }
-
-  @Override
   public <T extends Entity> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs) {
     Set<String> mongoRefs = Sets.newHashSetWithExpectedSize(refs.size());
     for (GenericDBRef<T> ref : refs) {

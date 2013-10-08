@@ -457,25 +457,6 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testGetLastChanged() throws IOException {
-    List<Entity> lastChangeList = Lists.newArrayList(mock(Entity.class), mock(Entity.class), mock(Entity.class));
-
-    when(storage.getLastChanged(anyInt())).thenReturn(lastChangeList);
-
-    List<Entity> actualList = instance.getLastChanged(3);
-    assertEquals(3, actualList.size());
-  }
-
-  @SuppressWarnings("unchecked")
-  @Test()
-  public void testGetLastChangedIOException() throws IOException {
-    when(storage.getLastChanged(anyInt())).thenThrow(IOException.class);
-
-    List<Entity> actualList = instance.getLastChanged(3);
-    assertTrue(actualList.isEmpty());
-  }
-
-  @Test
   public void testGetAllLimited() {
     List<TestConcreteDoc> limitedList = Lists.newArrayList(mock(TestConcreteDoc.class), mock(TestConcreteDoc.class), mock(TestConcreteDoc.class));
 

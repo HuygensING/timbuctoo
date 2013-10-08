@@ -21,7 +21,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageUtils;
 import nl.knaw.huygens.timbuctoo.storage.VariationStorage;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoChanges;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorageBase;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoUtils;
 import nl.knaw.huygens.timbuctoo.variation.VariationException;
 import nl.knaw.huygens.timbuctoo.variation.VariationInducer;
 import nl.knaw.huygens.timbuctoo.variation.VariationReducer;
@@ -166,20 +165,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
     DBCollection col = getVariationCollection(type);
     return new MongoDBVariationIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)), reducer, type);
-  }
-
-  @Override
-  public List<Entity> getLastChanged(int limit) throws IOException {
-    List<DBObject> changedDocs = Lists.newArrayList();
-    for (String colName : entityCollections) {
-      DBCollection col = db.getCollection(colName);
-      DBCursor docs = col.find().sort(new BasicDBObject("^lastChange.dateStamp", -1)).limit(limit);
-      changedDocs.addAll(docs.toArray());
-      docs.close();
-    }
-
-    MongoUtils.sortDocumentsByLastChange(changedDocs);
-    return reducer.reduceDBObject(changedDocs.subList(0, limit), Entity.class);
   }
 
   @Override
