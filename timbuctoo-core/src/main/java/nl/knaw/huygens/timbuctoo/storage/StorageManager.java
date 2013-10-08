@@ -260,15 +260,6 @@ public class StorageManager {
     return storage.getByMultipleIds(type, ids);
   }
 
-  public List<Entity> getLastChanged(int limit) {
-    try {
-      return storage.getLastChanged(limit);
-    } catch (IOException e) {
-      LOG.error("Error while handling {}", limit);
-      return Collections.<Entity> emptyList();
-    }
-  }
-
   public <T extends Entity> List<T> getAllLimited(Class<T> type, int offset, int limit) {
     if (limit == 0) {
       return Collections.<T> emptyList();

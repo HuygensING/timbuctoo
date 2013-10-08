@@ -43,8 +43,6 @@ public interface BasicStorage {
 
   <T extends Entity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException;
 
-  List<Entity> getLastChanged(int limit) throws IOException;
-
   <T extends Entity> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs);
 
   <T extends Entity> List<String> getIdsForQuery(Class<T> type, List<String> accessors, String[] id);

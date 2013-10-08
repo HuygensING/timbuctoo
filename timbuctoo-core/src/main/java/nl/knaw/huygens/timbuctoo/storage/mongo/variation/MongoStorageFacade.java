@@ -127,11 +127,6 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public List<Entity> getLastChanged(int limit) throws IOException {
-    return variationStorage.getLastChanged(limit);
-  }
-
-  @Override
   public <T extends Entity> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs) {
     getStorageFor(type).fetchAll(type, refs);
   }
