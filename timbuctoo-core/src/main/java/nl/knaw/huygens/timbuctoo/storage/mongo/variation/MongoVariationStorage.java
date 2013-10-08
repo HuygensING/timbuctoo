@@ -13,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.GenericDBRef;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageConfiguration;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -165,28 +164,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
     DBCollection col = getVariationCollection(type);
     return new MongoDBVariationIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)), reducer, type);
-  }
-
-  @Override
-  public <T extends Entity> void fetchAll(Class<T> type, List<GenericDBRef<T>> refs) {
-    Set<String> mongoRefs = Sets.newHashSetWithExpectedSize(refs.size());
-    for (GenericDBRef<T> ref : refs) {
-      mongoRefs.add(ref.id);
-    }
-    DBCollection col = getVariationCollection(type);
-    Map<String, T> results = Maps.newHashMapWithExpectedSize(mongoRefs.size());
-    DBCursor resultCursor = col.find(DBQuery.in("_id", mongoRefs));
-    MongoDBVariationIteratorWrapper<T> it = new MongoDBVariationIteratorWrapper<T>(resultCursor, reducer, type);
-    while (it.hasNext()) {
-      T doc = it.next();
-      results.put(doc.getId(), doc);
-    }
-    it.close();
-    for (GenericDBRef<T> ref : refs) {
-      if (ref.getItem() == null) {
-        ref.setItem(results.get(ref.id));
-      }
-    }
   }
 
   @Override
