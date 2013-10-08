@@ -17,7 +17,7 @@
     <!-- Core project -->
     <dependency>
       <groupId>timbuctoo</groupId>
-      <artifactId>repository-core</artifactId>
+      <artifactId>timbuctoo-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <!-- Search project -->
