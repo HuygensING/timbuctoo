@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.util;
+package nl.knaw.huygens.timbuctoo.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
