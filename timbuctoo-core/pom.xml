@@ -11,29 +11,18 @@
   <name>Timbuctoo core</name>
   <description>The core that provides the variation and the database connection.</description>
   <dependencies>
-    <!-- ## Project dependencies ## -->
-    <dependency>
-      <groupId>timbuctoo</groupId>
-      <artifactId>timbuctoo-persistence</artifactId>
-      <version>1.0.7-SNAPSHOT</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>jackson-annotations</artifactId>
-          <groupId>com.fasterxml.jackson.core</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jackson-databind</artifactId>
-          <groupId>com.fasterxml.jackson.core</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jackson-core</artifactId>
-          <groupId>com.fasterxml.jackson.core</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!-- ## End of project dependencies ## -->
-
     <!-- ## Main dependencies ## -->
+    <!-- Handle persistency server client -->
+    <dependency>
+      <groupId>handle.net</groupId>
+      <artifactId>handle-client</artifactId>
+      <version>7.1</version>
+    </dependency>
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>huygens-persistence</artifactId>
+      <version>1.0.1</version>
+    </dependency>
     <!-- Apache ActiveMQ -->
     <dependency>
       <groupId>org.apache.activemq</groupId>
