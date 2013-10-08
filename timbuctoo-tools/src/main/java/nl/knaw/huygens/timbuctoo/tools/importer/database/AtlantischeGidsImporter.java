@@ -240,19 +240,19 @@ public class AtlantischeGidsImporter extends DefaultImporter {
   // --- relations -----------------------------------------------------
 
   private void importRelationTypes() {
-    RelationType type = new RelationType("is_creator_of", ATLGArchiver.class, ATLGArchive.class);
+    RelationType type = new RelationType("is_creator_of", "is_created_by", ATLGArchiver.class, ATLGArchive.class);
     addEntity(RelationType.class, type, true);
     isCreatorRef = new Reference(RelationType.class, type.getId());
 
-    type = new RelationType("has_keyword", DomainEntity.class, ATLGKeyword.class);
+    type = new RelationType("has_keyword", "is_keyword_of", DomainEntity.class, ATLGKeyword.class);
     addEntity(RelationType.class, type, true);
     hasKeywordRef = new Reference(RelationType.class, type.getId());
 
-    type = new RelationType("has_person", DomainEntity.class, ATLGPerson.class);
+    type = new RelationType("has_person", "is_person_of", DomainEntity.class, ATLGPerson.class);
     addEntity(RelationType.class, type, true);
     hasPersonRef = new Reference(RelationType.class, type.getId());
 
-    type = new RelationType("has_place", DomainEntity.class, ATLGKeyword.class);
+    type = new RelationType("has_place", "is_place_of", DomainEntity.class, ATLGKeyword.class);
     addEntity(RelationType.class, type, true);
     hasPlaceRef = new Reference(RelationType.class, type.getId());
   }

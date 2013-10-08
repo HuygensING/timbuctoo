@@ -10,8 +10,10 @@ import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 @IDPrefix("RELT")
 public class RelationType extends SystemEntity {
 
-  /** The name that uniquely identifies this relation type. */
-  private String relTypeName;
+  /** The name of this relation type. */
+  private String regularName;
+  /** The name of this relation type when source and target are interchanged. */
+  private String inverseName;
   /** The type token of the 'active' participant of the relation. */
   private Class<? extends DomainEntity> sourceDocType;
   /** The type token of the 'passive' participant of the relation. */
@@ -24,29 +26,38 @@ public class RelationType extends SystemEntity {
   // For deserialization...
   public RelationType() {}
 
-  public RelationType(String typeName, Class<? extends DomainEntity> sourceDocType, Class<? extends DomainEntity> targetDocType) {
-    this.relTypeName = typeName;
+  public RelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceDocType, Class<? extends DomainEntity> targetDocType) {
+    this.regularName = regularName;
+    this.inverseName = inverseName;
     this.sourceDocType = sourceDocType;
     this.targetDocType = targetDocType;
     this.reflexive = sourceDocType.equals(targetDocType);
     this.symmetric = false;
   }
 
-  public RelationType(String typeName, Class<? extends DomainEntity> docType) {
-    this(typeName, docType, docType);
+  public RelationType(String name, Class<? extends DomainEntity> docType) {
+    this(name, name, docType, docType);
   }
 
   @Override
   public String getDisplayName() {
-    return relTypeName;
+    return regularName;
   }
 
-  public String getRelTypeName() {
-    return relTypeName;
+  public String getRegularName() {
+    return regularName;
   }
 
-  public void setRelTypeName(String typeName) {
-    this.relTypeName = typeName;
+  public void setRegularName(String name) {
+    regularName = name;
+  }
+
+  public String getInverseName() {
+    return inverseName;
+  }
+
+  public void setInverseName(String inverseName) {
+    this.inverseName = inverseName;
   }
 
   public Class<? extends DomainEntity> getSourceDocType() {
