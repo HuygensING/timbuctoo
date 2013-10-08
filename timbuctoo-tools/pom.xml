@@ -15,12 +15,12 @@
   <dependencies>
     <!-- ## Repository packages ## -->
     <dependency>
-      <groupId>repository</groupId>
-      <artifactId>repository-core</artifactId>
+      <groupId>timbuctoo</groupId>
+      <artifactId>timbuctoo-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>repository</groupId>
+      <groupId>timbuctoo</groupId>
       <artifactId>repository-search</artifactId>
       <version>${project.version}</version>
     </dependency>
