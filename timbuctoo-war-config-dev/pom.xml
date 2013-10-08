@@ -10,10 +10,10 @@
 	<version>1.0.7-SNAPSHOT</version>
   </parent>
 
-  <artifactId>repository-war-config-dev</artifactId>
+  <artifactId>timbuctoo-war-config-dev</artifactId>
   <packaging>war</packaging>
 
-  <name>repository-war-config-dev</name>
+  <name>Timbuctoo development configuration war</name>
   <description>Configuration project for the dev environment</description>
 
   <properties>

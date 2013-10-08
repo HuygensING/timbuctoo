@@ -6,13 +6,16 @@
         <dependent-module archiveName="timbuctoo-core-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-core/timbuctoo-core">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="repository-search-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-search/timbuctoo-search">
+        <dependent-module archiveName="timbuctoo-persistence-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-persistence/timbuctoo-persistence">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="repository-security-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-security/timbuctoo-security">
+        <dependent-module archiveName="timbuctoo-search-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-search/timbuctoo-search">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="repository-services-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-services/timbuctoo-services">
+        <dependent-module archiveName="timbuctoo-security-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-security/timbuctoo-security">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="timbuctoo-services-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-services/timbuctoo-services">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <dependent-module deploy-path="/" handle="module:/overlay/prj/timbuctoo-war-config-dev?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
@@ -22,6 +25,6 @@
             <dependency-type>consumes</dependency-type>
         </dependent-module>
         <property name="java-output-path" value="/timbuctoo-rest/target/classes"/>
-        <property name="context-root" value="repository-rest"/>
+        <property name="context-root" value="timbuctoo-rest"/>
     </wb-module>
 </project-modules>

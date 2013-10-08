@@ -5,6 +5,7 @@
     <artifactId>timbuctoo</artifactId>
     <version>1.0.7-SNAPSHOT</version>
   </parent>
-  <artifactId>repository-tools-config</artifactId>
+  <artifactId>timbuctoo-tools-config</artifactId>
   <description>Config module for the tools module.</description>
+  <name>Timbuctoo tools configuration</name>
 </project>

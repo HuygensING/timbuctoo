@@ -9,10 +9,10 @@
     <version>1.0.7-SNAPSHOT</version>
   </parent>
 
-  <artifactId>repository-war-config-test</artifactId>
+  <artifactId>timbuctoo-war-config-test</artifactId>
   <packaging>war</packaging>
 
-  <name>repository-war-config-test</name>
+  <name>Timbuctoo test configuration war</name>
   <description>Configuration project for the test environment</description>
 
   <properties>

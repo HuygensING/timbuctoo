@@ -7,8 +7,8 @@
     <artifactId>timbuctoo</artifactId>
     <version>1.0.7-SNAPSHOT</version>
   </parent>
-  <artifactId>repository-search</artifactId>
-  <name>repository search</name>
+  <artifactId>timbuctoo-search</artifactId>
+  <name>Timbuctoo search</name>
 
   <dependencies>
     <!-- ## Project dependencies ## -->

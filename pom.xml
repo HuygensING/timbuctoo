@@ -7,7 +7,7 @@
   <artifactId>timbuctoo</artifactId>
   <version>1.0.7-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>datarepository</name>
+  <name>Timbuctoo</name>
   <description>Back-end software that provides different front-ends to share data and variations on that data.</description>
   <url>http://repository.huygens.knaw.nl/static/search.html</url>
   <organization>
@@ -108,7 +108,7 @@
 
   <ciManagement>
     <system>cruisecontrolrb</system>
-    <url>http://cruisecontrol.huygens.knaw.nl/projects/repository</url>
+    <url>http://cruisecontrol.huygens.knaw.nl/projects/timbuctoo</url>
   </ciManagement>
 
   <developers>
