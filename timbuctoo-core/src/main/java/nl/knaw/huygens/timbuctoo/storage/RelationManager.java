@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
 import java.io.IOException;
-import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -13,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -46,18 +44,6 @@ public class RelationManager {
   public RelationType getRelationType(Reference reference) {
     Preconditions.checkArgument(reference.getType().equals("relationtype"), "got type %s", reference.getType());
     return getRelationType(reference.getId());
-  }
-
-  public List<RelationType> getSynonyms(RelationType type) {
-    return Lists.newArrayList(type);
-  }
-
-  public List<RelationType> getInverses(RelationType type) {
-    if (type.isSymmetric()) {
-      return Lists.newArrayList(type);
-    } else {
-      return Lists.newArrayList();
-    }
   }
 
   public String storeRelation(Reference sourceRef, Reference relTypeRef, Reference targetRef) {
