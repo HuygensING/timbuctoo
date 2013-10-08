@@ -73,7 +73,7 @@ class RelationIndexer implements EntityIndexer<Relation> {
     solrDoc.addField("id", id + relationType.getId());
     // relation type
     solrDoc.addField("dynamic_k_type_id", relationType.getId());
-    solrDoc.addField("dynamic_k_type_name", relationType.getRelTypeName());
+    solrDoc.addField("dynamic_k_type_name", relationType.getRegularName());
     // source entity
     solrDoc.addField("dynamic_k_source_type", sourceRef.getType());
     solrDoc.addField("dynamic_k_source_id", sourceRef.getId());

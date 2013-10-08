@@ -208,24 +208,24 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   // --- relations -----------------------------------------------------
 
   private void setupRelationTypes() {
-    isCreatorRef = addRelationType("is_creator_of", ATLGArchiver.class, ATLGArchive.class);
-    hasKeywordRef = addRelationType("has_keyword", DomainEntity.class, ATLGKeyword.class);
-    hasPersonRef = addRelationType("has_person", DomainEntity.class, ATLGPerson.class);
-    hasPlaceRef = addRelationType("has_place", DomainEntity.class, ATLGKeyword.class);
-    hasParentArchive = addRelationType("has_parent_archive", ATLGArchive.class, ATLGArchive.class);
-    hasSiblingArchive = addRelationType("has_sibling_archive", ATLGArchive.class, ATLGArchive.class, true);
-    hasSiblingArchiver = addRelationType("has_sibling_archiver", ATLGArchiver.class, ATLGArchiver.class, true);
+    isCreatorRef = addRelationType("is_creator_of", "is_created_by", ATLGArchiver.class, ATLGArchive.class);
+    hasKeywordRef = addRelationType("has_keyword", "is_keyword_of", DomainEntity.class, ATLGKeyword.class);
+    hasPersonRef = addRelationType("has_person", "is_person_of", DomainEntity.class, ATLGPerson.class);
+    hasPlaceRef = addRelationType("has_place", "is_place_of", DomainEntity.class, ATLGKeyword.class);
+    hasParentArchive = addRelationType("has_parent_archive", "has_child_archive", ATLGArchive.class, ATLGArchive.class);
+    hasSiblingArchive = addRelationType("has_sibling_archive", "has_sibling_archive", ATLGArchive.class, ATLGArchive.class, true);
+    hasSiblingArchiver = addRelationType("has_sibling_archiver", "has_sibling_archiver", ATLGArchiver.class, ATLGArchiver.class, true);
   }
 
-  private Reference addRelationType(String name, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean symmetric) {
-    RelationType type = new RelationType(name, sourceType, targetType);
+  private Reference addRelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean symmetric) {
+    RelationType type = new RelationType(regularName, inverseName, sourceType, targetType);
     type.setSymmetric(symmetric);
     addEntity(RelationType.class, type, false); // no need to index
     return new Reference(RelationType.class, type.getId());
   }
 
-  private Reference addRelationType(String name, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) {
-    return addRelationType(name, sourceType, targetType, false);
+  private Reference addRelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) {
+    return addRelationType(regularName, inverseName, sourceType, targetType, false);
   }
 
   private void addRegularRelations(Reference sourceRef, Reference relTypeRef, Map<String, Reference> map, String[] keys) {
