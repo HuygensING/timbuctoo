@@ -13,8 +13,8 @@
   <dependencies>
     <!-- ## Project dependencies ## -->
   	<dependency>
-  	  <groupId>repository</groupId>
-  	  <artifactId>repository-core</artifactId>
+  	  <groupId>timbuctoo</groupId>
+  	  <artifactId>timbuctoo-core</artifactId>
       <version>${project.version}</version>
   	</dependency>
     <!-- ## End of project dependencies ## -->
