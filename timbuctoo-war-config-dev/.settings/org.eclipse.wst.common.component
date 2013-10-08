@@ -3,6 +3,6 @@
         <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <property name="java-output-path" value="/timbuctoo-war-config-dev/target/classes"/>
-        <property name="context-root" value="repository-war-config-dev"/>
+        <property name="context-root" value="timbuctoo-war-config-dev"/>
     </wb-module>
 </project-modules>
