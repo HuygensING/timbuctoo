@@ -4,8 +4,8 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>repository</artifactId>
-    <groupId>repository</groupId>
+    <artifactId>timbuctoo</artifactId>
+    <groupId>timbuctoo</groupId>
     <version>1.0.7-SNAPSHOT</version>
   </parent>
 

@@ -3,8 +3,8 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>repository</groupId>
-  <artifactId>repository</artifactId>
+  <groupId>timbuctoo</groupId>
+  <artifactId>timbuctoo</artifactId>
   <version>1.0.7-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>datarepository</name>
@@ -64,7 +64,7 @@
     </repository>
     <repository>
       <id>apache</id>
-      <url>https://timbuctoo.apache.org/content/repositories/public/</url>
+      <url>https://repository.apache.org/content/repositories/public/</url>
     </repository>
     <repository>
       <id>oracle</id>
@@ -72,11 +72,11 @@
     </repository>
     <repository>
       <id>surfconext</id>
-      <url>https://build.surfconext.nl/timbuctoo/public/releases/</url>
+      <url>https://build.surfconext.nl/repository/public/releases/</url>
     </repository>
     <repository>
       <id>Huygens</id>
-      <url>http://maven.huygens.knaw.nl/timbuctoo/</url>
+      <url>http://maven.huygens.knaw.nl/repository/</url>
       <releases>
         <enabled>true</enabled>
         <updatePolicy>always</updatePolicy>

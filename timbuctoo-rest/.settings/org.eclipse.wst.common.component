@@ -6,9 +6,6 @@
         <dependent-module archiveName="repository-core-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-core/timbuctoo-core">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="repository-persistence-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-persistence/timbuctoo-persistence">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
         <dependent-module archiveName="repository-search-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-search/timbuctoo-search">
             <dependency-type>uses</dependency-type>
         </dependent-module>
