@@ -56,24 +56,20 @@ class RelationIndexer implements EntityIndexer<Relation> {
     try {
       Reference sourceRef = relation.getSourceRef();
       Reference targetRef = relation.getTargetRef();
-      for (RelationType type : relationManager.getSynonyms(relType)) {
-        doAdd(docId + "-n-", type, sourceRef, targetRef);
-      }
-      for (RelationType type : relationManager.getInverses(relType)) {
-        doAdd(docId + "-i-", type, targetRef, sourceRef);
-      }
+      doAdd(docId + "-r", relType.getId(), relType.getRegularName(), sourceRef, targetRef);
+      doAdd(docId + "-i", relType.getId(), relType.getInverseName(), targetRef, sourceRef);
     } catch (Exception e) {
       LOG.error(e.getMessage());
       throw new IndexException("Failed to index relation");
     }
   }
 
-  private void doAdd(String id, RelationType relationType, Reference sourceRef, Reference targetRef) throws SolrServerException, IOException {
+  private void doAdd(String docId, String relTypeId, String relTypeName, Reference sourceRef, Reference targetRef) throws SolrServerException, IOException {
     SolrInputDocument solrDoc = new SolrInputDocument();
-    solrDoc.addField("id", id + relationType.getId());
+    solrDoc.addField("id", docId);
     // relation type
-    solrDoc.addField("dynamic_k_type_id", relationType.getId());
-    solrDoc.addField("dynamic_k_type_name", relationType.getRegularName());
+    solrDoc.addField("dynamic_k_type_id", relTypeId);
+    solrDoc.addField("dynamic_k_type_name", relTypeName);
     // source entity
     solrDoc.addField("dynamic_k_source_type", sourceRef.getType());
     solrDoc.addField("dynamic_k_source_id", sourceRef.getId());
