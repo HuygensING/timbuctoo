@@ -8,13 +8,13 @@
     <version>1.0.7-SNAPSHOT</version>
   </parent>
   <artifactId>timbuctoo-core</artifactId>
-  <name>The core module</name>
+  <name>Timbuctoo core</name>
   <description>The core that provides the variation and the database connection.</description>
   <dependencies>
     <!-- ## Project dependencies ## -->
     <dependency>
-      <groupId>repository</groupId>
-      <artifactId>repository-persistence</artifactId>
+      <groupId>timbuctoo</groupId>
+      <artifactId>timbuctoo-persistence</artifactId>
       <version>1.0.7-SNAPSHOT</version>
       <exclusions>
         <exclusion>

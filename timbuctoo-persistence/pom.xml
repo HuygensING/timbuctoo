@@ -5,8 +5,8 @@
     <artifactId>timbuctoo</artifactId>
     <version>1.0.7-SNAPSHOT</version>
   </parent>
-  <artifactId>repository-persistence</artifactId>
-  <name>repository persistence</name>
+  <artifactId>timbuctoo-persistence</artifactId>
+  <name>Timbuctoo persistence</name>
   <dependencies>
     <!-- ## Main dependencies ## -->
     <!-- Handle persistency server client -->

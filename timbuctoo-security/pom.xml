@@ -8,8 +8,8 @@
     <version>1.0.7-SNAPSHOT</version>
   </parent>
 
-  <artifactId>repository-security</artifactId>
-  <name>repository security</name>
+  <artifactId>timbuctoo-security</artifactId>
+  <name>Timbuctoo security</name>
   <description>Contains all the classes that have something to do with securing the rest service.</description>
 
   <properties>

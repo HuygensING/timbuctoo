@@ -7,8 +7,8 @@
     <version>1.0.7-SNAPSHOT</version>
   </parent>
 
-  <artifactId>repository-services</artifactId>
-  <name>repository services</name>
+  <artifactId>timbuctoo-services</artifactId>
+  <name>Timbuctoo services</name>
   <description>A module that contains serveral service that should be extracted somewhere in time.</description>
 
   <dependencies>
