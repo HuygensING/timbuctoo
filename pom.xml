@@ -18,7 +18,6 @@
 
   <modules>
     <module>timbuctoo-core</module>
-    <module>timbuctoo-persistence</module>
     <module>timbuctoo-rest</module>
     <module>timbuctoo-search</module>
     <module>timbuctoo-security</module>
