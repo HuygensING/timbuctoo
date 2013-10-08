@@ -3,10 +3,10 @@
         <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
-        <dependent-module archiveName="timbuctoo-core-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-core/timbuctoo-core">
+        <dependent-module archiveName="timbuctoo-core-2.0.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-core/timbuctoo-core">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="timbuctoo-search-1.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-search/timbuctoo-search">
+        <dependent-module archiveName="timbuctoo-search-2.0.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-search/timbuctoo-search">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <dependent-module deploy-path="/" handle="module:/overlay/prj/timbuctoo-war-config-dev?includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
