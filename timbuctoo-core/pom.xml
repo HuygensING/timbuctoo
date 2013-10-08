@@ -10,6 +10,7 @@
   <artifactId>timbuctoo-core</artifactId>
   <name>Timbuctoo core</name>
   <description>The core that provides the variation and the database connection.</description>
+
   <dependencies>
     <!-- ## Main dependencies ## -->
     <!-- Handle persistency server client -->
@@ -129,38 +130,6 @@
     </dependency>
 
     <!-- ## End of main dependencies ## -->
-
-    <!-- ## Test dependencies ## -->
-    <!-- JUnit test framework -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>hamcrest-core</artifactId>
-          <groupId>org.hamcrest</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <!-- Mockito mocking framework -->
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>${mockito.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>hamcrest-core</artifactId>
-          <groupId>org.hamcrest</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>${mockito.version}</version>
-    </dependency>
-    <!-- ## End of test dependencies ## -->
   </dependencies>
+
 </project>
