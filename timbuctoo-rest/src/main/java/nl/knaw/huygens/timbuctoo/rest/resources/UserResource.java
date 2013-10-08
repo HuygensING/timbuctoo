@@ -28,7 +28,7 @@ import com.google.inject.Inject;
 @Path("resources/users")
 public class UserResource {
 
-  private static final String ID_REGEX = "/{id:USER\\d+}";
+  private static final String ID_REGEX = "/{id:" + User.ID_PREFIX + "\\d+}";
   private static final String UNVERIFIED_USER_ROLE = "UNVERIFIED_USER";
   private static final String USER_ROLE = "USER";
   private static final String ADMIN_ROLE = "ADMIN";

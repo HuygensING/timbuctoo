@@ -14,8 +14,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * When the User-class is not registered, the class will not be found by the RESTAutoResource and the User will only be available through the UserResource. 
  */
 @DoNotRegister
-@IDPrefix("USER")
+@IDPrefix(User.ID_PREFIX)
 public class User extends SystemEntity {
+
+  // Unique definition of prefix; also used in UserResource
+  public static final String ID_PREFIX = "USER";
 
   private String userId; // a unique id to identify the use.
   private String vreId; // the name of the VRE.
