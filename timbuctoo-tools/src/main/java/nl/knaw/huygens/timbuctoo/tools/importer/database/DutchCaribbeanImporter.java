@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.tools.importer.database;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.File;
 import java.util.Map;
 
@@ -30,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -412,7 +413,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   }
 
   private void addLegislationRelations(Reference reference, Wetgeving wetgeving) {
-    Preconditions.checkNotNull(reference, "Missing legislation reference");
+    checkNotNull(reference, "Missing legislation reference");
     addRegularRelations(reference, hasPlaceRef, keywordRefMap, wetgeving.geography);
     addRegularRelations(reference, hasKeywordRef, keywordRefMap, wetgeving.keywords);
     addRegularRelations(reference, hasKeywordRef, keywordRefMap, wetgeving.keywords_extra);
@@ -491,7 +492,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   }
 
   private void addArchiveRelations(Reference reference, ArchiefMat archiefmat) {
-    Preconditions.checkNotNull(reference, "Missing archive reference");
+    checkNotNull(reference, "Missing archive reference");
     addRegularRelations(reference, hasPlaceRef, keywordRefMap, archiefmat.geography);
     addRegularRelations(reference, hasKeywordRef, keywordRefMap, archiefmat.keywords);
     addRegularRelations(reference, hasPersonRef, personRefMap, archiefmat.persons);
@@ -578,7 +579,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   }
 
   private void addArchiverRelations(Reference reference, Creator creator) {
-    Preconditions.checkNotNull(reference, "Missing archiver reference");
+    checkNotNull(reference, "Missing archiver reference");
     addRegularRelations(reference, hasPlaceRef, keywordRefMap, creator.geography);
     addRegularRelations(reference, hasKeywordRef, keywordRefMap, creator.keywords);
     addRegularRelations(reference, hasPersonRef, personRefMap, creator.persons);

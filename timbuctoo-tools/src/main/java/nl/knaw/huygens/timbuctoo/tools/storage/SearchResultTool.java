@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.tools.storage;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Date;
 
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
@@ -17,7 +19,6 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.configuration.ConfigurationException;
 
-import com.google.common.base.Preconditions;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -72,7 +73,7 @@ public class SearchResultTool {
   }
 
   private void execute(boolean verbose, boolean delete, Date date) {
-    Preconditions.checkNotNull(storageManager);
+    checkNotNull(storageManager);
     try {
       displayStatus(verbose);
       if (delete) {

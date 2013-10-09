@@ -1,5 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -15,7 +18,6 @@ import nl.knaw.huygens.timbuctoo.util.CSVImporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -79,7 +81,7 @@ public class RelationManager {
    * or {@code null} if it does not exist.
    */
   public RelationType getRelationType(Reference reference) {
-    Preconditions.checkArgument(reference.getType().equals("relationtype"), "got type %s", reference.getType());
+    checkArgument(reference.getType().equals("relationtype"), "got type %s", reference.getType());
     return getRelationTypeById(reference.getId());
   }
 
@@ -136,7 +138,7 @@ public class RelationManager {
       } else {
         @SuppressWarnings("unchecked")
         Class<? extends DomainEntity> type = (Class<? extends DomainEntity>) registry.getTypeForIName(iname);
-        Preconditions.checkState(type != null, "'%s' is not a domain entity", typeName);
+        checkState(type != null, "'%s' is not a domain entity", typeName);
         return type;
       }
     }
