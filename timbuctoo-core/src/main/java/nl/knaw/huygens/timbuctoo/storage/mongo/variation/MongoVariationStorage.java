@@ -45,7 +45,6 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
-import com.mongodb.MongoOptions;
 
 public class MongoVariationStorage extends MongoStorageBase implements VariationStorage {
 
@@ -53,7 +52,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   private VariationInducer inducer;
   private VariationReducer reducer;
-  private MongoOptions options;
 
   private ObjectMapper objectMapper;
   private TreeEncoderFactory treeEncoderFactory;
@@ -61,9 +59,8 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   private Map<Class<? extends Entity>, DBCollection> collectionCache;
 
-  public MongoVariationStorage(DocTypeRegistry registry, StorageConfiguration conf, Mongo m, DB db, MongoOptions options) throws UnknownHostException, MongoException {
+  public MongoVariationStorage(DocTypeRegistry registry, StorageConfiguration conf, Mongo m, DB db) throws UnknownHostException, MongoException {
     super(registry);
-    this.options = options;
     dbName = conf.getDbName();
     this.mongo = m;
     this.db = db;
@@ -209,12 +206,10 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Entity> void setPID(Class<T> cls, String pid, String id) {
+  public <T extends Entity> void setPID(Class<T> cls, String id, String pid) {
     BasicDBObject query = new BasicDBObject("_id", id);
     BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
-    DBCollection col = getVariationCollection(cls);
-
-    col.update(query, update);
+    getVariationCollection(cls).update(query, update);
   }
 
   @Override

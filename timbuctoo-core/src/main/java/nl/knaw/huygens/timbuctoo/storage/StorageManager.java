@@ -191,7 +191,7 @@ public class StorageManager {
       Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(type);
       String collectionId = docTypeRegistry.getINameForType(baseType);
       String pid = persistenceWrapper.persistObject(collectionId, doc.getId());
-      storage.setPID(type, pid, doc.getId());
+      storage.setPID(type, doc.getId(), pid);
     } catch (PersistenceException e) {
       LOG.error("Error while handling {} {}", type.getName(), doc.getId());
     }
