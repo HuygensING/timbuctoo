@@ -36,8 +36,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mongodb.BasicDBObject;
@@ -48,7 +46,6 @@ import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
-import com.mongodb.ServerAddress;
 
 public class MongoVariationStorage extends MongoStorageBase implements VariationStorage {
 
@@ -63,19 +60,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   private TreeDecoderFactory treeDecoderFactory;
 
   private Map<Class<? extends Entity>, DBCollection> collectionCache;
-
-  public MongoVariationStorage(DocTypeRegistry registry, StorageConfiguration conf) throws UnknownHostException, MongoException {
-    super(registry);
-    dbName = conf.getDbName();
-    options = new MongoOptions();
-    options.safe = true;
-    mongo = new Mongo(new ServerAddress(conf.getHost(), conf.getPort()), options);
-    db = mongo.getDB(dbName);
-    if (conf.requiresAuth()) {
-      db.authenticate(conf.getUser(), conf.getPassword().toCharArray());
-    }
-    initializeVariationCollections(conf);
-  }
 
   public MongoVariationStorage(DocTypeRegistry registry, StorageConfiguration conf, Mongo m, DB db, MongoOptions options) throws UnknownHostException, MongoException {
     super(registry);
@@ -169,40 +153,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   @Override
   public <T extends Entity> T findItem(Class<T> type, T example) throws IOException {
     throw new NotImplementedException("This method is not intended to get used.");
-  }
-
-  @Override
-  public <T extends Entity> List<String> getIdsForQuery(Class<T> cls, List<String> accessors, String[] ids) {
-    DBCollection collection = getVariationCollection(cls);
-    String queryStr = getQueryStr(accessors);
-    DBObject query;
-    if (ids.length == 1) {
-      query = new BasicDBObject(queryStr, ids[0]);
-    } else {
-      query = DBQuery.in(queryStr, (Object[]) ids);
-    }
-    List<String> items = Lists.newArrayList();
-    DBCursor resultCursor = collection.find(query, new BasicDBObject());
-    try {
-      while (resultCursor.hasNext()) {
-        items.add((String) resultCursor.next().get("_id"));
-      }
-    } finally {
-      resultCursor.close();
-    }
-    return items;
-  }
-
-  @Override
-  public <T extends Entity> void ensureIndex(Class<T> type, List<List<String>> accessorList) {
-    DBCollection col = getVariationCollection(type);
-    for (List<String> accessors : accessorList) {
-      col.ensureIndex(getQueryStr(accessors));
-    }
-  }
-
-  private String getQueryStr(List<String> accessors) {
-    return Joiner.on(".").join(accessors) + ".id";
   }
 
   protected <T extends Entity> DBCollection getVariationCollection(Class<T> type) {
