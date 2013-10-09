@@ -37,7 +37,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mongodb.BasicDBObject;
@@ -150,28 +149,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
     DBCollection col = getVariationCollection(type);
     return new MongoDBVariationIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)), reducer, type);
-  }
-
-  @Override
-  public <T extends Entity> List<String> getIdsForQuery(Class<T> cls, List<String> accessors, String[] ids) {
-    DBCollection collection = getVariationCollection(cls);
-    String queryStr = getQueryStr(accessors);
-    DBObject query;
-    if (ids.length == 1) {
-      query = new BasicDBObject(queryStr, ids[0]);
-    } else {
-      query = DBQuery.in(queryStr, (Object[]) ids);
-    }
-    List<String> items = Lists.newArrayList();
-    DBCursor resultCursor = collection.find(query, new BasicDBObject());
-    try {
-      while (resultCursor.hasNext()) {
-        items.add((String) resultCursor.next().get("_id"));
-      }
-    } finally {
-      resultCursor.close();
-    }
-    return items;
   }
 
   @Override
