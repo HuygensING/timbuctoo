@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
@@ -24,23 +23,9 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
-import com.mongodb.MongoException;
-import com.mongodb.WriteConcern;
 import com.mongodb.util.JSON;
 
 public class MongoStorage extends MongoStorageBase implements BasicStorage {
-
-  public MongoStorage(DocTypeRegistry registry, StorageConfiguration conf) throws UnknownHostException, MongoException {
-    super(registry);
-    dbName = conf.getDbName();
-    mongo = new Mongo(conf.getHost(), conf.getPort());
-    db = mongo.getDB(dbName);
-    if (conf.requiresAuth()) {
-      db.authenticate(conf.getUser(), conf.getPassword().toCharArray());
-    }
-    db.setWriteConcern(WriteConcern.SAFE);
-    initializeDB(conf);
-  }
 
   public MongoStorage(DocTypeRegistry registry, StorageConfiguration conf, Mongo m, DB loanedDB) {
     super(registry);
@@ -101,7 +86,6 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
 
   // -------------------------------------------------------------------
 
-  // TODO make unit test: add & retrieve
   @Override
   public <T extends Entity> String addItem(Class<T> type, T item) throws IOException {
     item.setCreation(item.getLastChange());
