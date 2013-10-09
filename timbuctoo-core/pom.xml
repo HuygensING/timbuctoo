@@ -58,13 +58,6 @@
       </exclusions>
     </dependency>
 
-    <!-- Guava -->
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>14.0</version>
-    </dependency>
-
     <!-- Guice -->
     <dependency>
       <groupId>com.google.inject</groupId>
