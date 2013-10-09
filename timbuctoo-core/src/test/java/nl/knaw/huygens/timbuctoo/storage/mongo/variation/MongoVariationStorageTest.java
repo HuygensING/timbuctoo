@@ -283,13 +283,11 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllByType() throws IOException {
-
     storage.getAllByType(ProjectBGeneralTestDoc.class);
 
     DBObject query = new BasicDBObject("projectb-projectbgeneraltestdoc", new BasicDBObject("$ne", null));
 
     verify(anyCollection).find(query);
-
   }
 
   @Test
@@ -297,7 +295,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     storage.getAllRevisions(TestConcreteDoc.class, DEFAULT_ID);
 
     verify(anyCollection).findOne(new BasicDBObject("_id", DEFAULT_ID));
-
   }
 
   @Test
@@ -329,10 +326,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     query.put("^pid", null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
-    Map<String, Object> map1 = Maps.newHashMap();
     String id1 = "TSD0000000001";
-    map1.put("_id", id1);
-    DBObject dbObject = createDBJsonNode(map1);
+    DBObject dbObject = createDBJsonNode(createSimpleMap("_id", id1));
 
     DBCursor cursor = createDBCursorWithOneValue(dbObject);
     when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
@@ -550,7 +545,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
     DBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
 
-    storage.setPID(type, pid, DEFAULT_ID);
+    storage.setPID(type, DEFAULT_ID, pid);
 
     verify(anyCollection).update(query, update);
     verify(db).getCollection("testconcretedoc");
@@ -567,7 +562,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     doThrow(MongoException.class).when(anyCollection).update(query, update);
 
     try {
-      storage.setPID(type, pid, DEFAULT_ID);
+      storage.setPID(type, DEFAULT_ID, pid);
     } finally {
       verify(db).getCollection("testconcretedoc");
     }
@@ -644,16 +639,15 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   protected Map<String, Object> createValueMap(String name, String variation) {
-    Map<String, Object> nameMap = Maps.newHashMap();
-    nameMap.put("v", name);
-    nameMap.put("a", new String[] { variation });
-    return nameMap;
+    Map<String, Object> map = Maps.newHashMap();
+    map.put("v", name);
+    map.put("a", new String[] { variation });
+    return map;
   }
 
   private Map<String, Object> createSimpleMap(String id, Object value) {
     Map<String, Object> map = Maps.newHashMap();
     map.put(id, value);
-
     return map;
   }
 
@@ -670,19 +664,16 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Override
   protected void setupStorage() throws UnknownHostException, MongoException {
-    storage = new MongoVariationStorage(registry, storageConfiguration, this.mongo, this.db, this.mongoOptions);
+    storage = new MongoVariationStorage(registry, storageConfiguration, mongo, db);
     storage.setCounterCollection(counterCol);
   }
 
   /**
    * Creates a JsonNode from a map. This is used is several tests.
-   * @param map
-   * @return
    */
   private DBJsonNode createDBJsonNode(Map<String, Object> map) {
     ObjectMapper mapper = new ObjectMapper();
-
-    DBJsonNode dbObject = new DBJsonNode(mapper.valueToTree(map));
-    return dbObject;
+    return new DBJsonNode(mapper.valueToTree(map));
   }
+
 }

@@ -55,7 +55,7 @@ public class MongoStorageFacade implements VariationStorage {
       db.authenticate(conf.getUser(), conf.getPassword().toCharArray());
     }
     plainStorage = new MongoStorage(registry, conf, mongo, db);
-    variationStorage = new MongoVariationStorage(registry, conf, mongo, db, options);
+    variationStorage = new MongoVariationStorage(registry, conf, mongo, db);
   }
 
   @Override
@@ -116,8 +116,8 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public <T extends Entity> void setPID(Class<T> cls, String pid, String id) {
-    getStorageFor(cls).setPID(cls, pid, id);
+  public <T extends Entity> void setPID(Class<T> cls, String id, String pid) {
+    getStorageFor(cls).setPID(cls, id, pid);
   }
 
   @Override
