@@ -17,6 +17,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 
 import org.slf4j.Logger;
@@ -94,10 +95,10 @@ public class StorageManager {
   }
 
   /**
-   * Returns a single entity matching the non-null fields of
+   * Returns a single system entity matching the non-null fields of
    * the specified entity, or null if no such entity exists.
    */
-  public <T extends Entity> T searchEntity(Class<T> type, T example) {
+  public <T extends SystemEntity> T findEntity(Class<T> type, T example) {
     try {
       return storage.findItem(type, example);
     } catch (IOException e) {

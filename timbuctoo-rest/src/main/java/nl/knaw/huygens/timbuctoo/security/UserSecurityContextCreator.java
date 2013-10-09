@@ -73,7 +73,7 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
 
   private User findUser(final User example) {
 
-    return storageManager.searchEntity(User.class, example);
+    return storageManager.findEntity(User.class, example);
   }
 
 }

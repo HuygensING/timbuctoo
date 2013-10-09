@@ -72,7 +72,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     user.setRoles(userRoles);
     user.setVreId(VRE_ID);
 
-    when(storageManager.searchEntity(any(Class.class), any(User.class))).thenReturn(user);
+    when(storageManager.findEntity(any(Class.class), any(User.class))).thenReturn(user);
   }
 
   @After
