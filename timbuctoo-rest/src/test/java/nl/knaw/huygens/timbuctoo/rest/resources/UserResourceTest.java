@@ -188,7 +188,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
         return createdUsers.get(USER_ID);
       }
-    }).when(storageManager).searchEntity(any(Class.class), any(User.class));
+    }).when(storageManager).findEntity(any(Class.class), any(User.class));
 
     User actual = webResource.path(RESOURCES_USER).path("me").header("Authorization", "bearer 12333322abef").get(User.class);
 
