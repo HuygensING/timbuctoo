@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.config;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.Map;
@@ -10,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.apache.commons.lang.StringUtils;
-import org.scribe.utils.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +64,7 @@ public class DocTypeRegistry {
   private final Map<String, String> iname2xname = Maps.newHashMap();
 
   public DocTypeRegistry(String packageNames) {
-    Preconditions.checkNotNull(packageNames, "'packageNames' must not be null");
+    checkArgument(packageNames != null, "'packageNames' must not be null");
 
     ClassPath classPath = getClassPath();
     for (String packageName : StringUtils.split(packageNames)) {
