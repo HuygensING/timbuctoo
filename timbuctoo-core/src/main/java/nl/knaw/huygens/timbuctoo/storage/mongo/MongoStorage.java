@@ -16,14 +16,12 @@ import nl.knaw.huygens.timbuctoo.storage.StorageConfiguration;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageUtils;
 
-import org.mongojack.DBCursor;
 import org.mongojack.DBQuery;
 import org.mongojack.DBQuery.Query;
 import org.mongojack.JacksonDBCollection;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
@@ -96,28 +94,6 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     return new MongoDBIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)));
-  }
-
-  @Override
-  public <T extends Entity> List<String> getIdsForQuery(Class<T> cls, List<String> accessors, String[] ids) {
-    JacksonDBCollection<T, String> collection = MongoUtils.getCollection(db, cls);
-    String queryStr = getQueryStr(accessors);
-    DBObject query;
-    if (ids.length == 1) {
-      query = new BasicDBObject(queryStr, ids[0]);
-    } else {
-      query = DBQuery.in(queryStr, (Object[]) ids);
-    }
-    List<String> items = Lists.newArrayList();
-    DBCursor<T> resultCursor = collection.find(query, null);
-    try {
-      while (resultCursor.hasNext()) {
-        items.add(resultCursor.next().getId());
-      }
-    } finally {
-      resultCursor.close();
-    }
-    return items;
   }
 
   @Override

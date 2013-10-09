@@ -260,7 +260,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     when(anyCollection.findOne(query)).thenReturn(null);
 
-    TestConcreteDoc actual = storage.getVariation(TestConcreteDoc.class, DEFAULT_ID, "projecta");
+    String variation = "projecta";
+    TestConcreteDoc actual = storage.getVariation(TestConcreteDoc.class, DEFAULT_ID, variation);
     assertNull(actual);
 
   }
@@ -311,12 +312,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
 
     verify(anyCollection).find(query);
-  }
-
-  @Test
-  @Ignore(value = "Code not used at this moment.")
-  public void testGetIdsForQuery() {
-    fail("Yet to be implemented");
   }
 
   @Test
