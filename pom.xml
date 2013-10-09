@@ -116,6 +116,7 @@
     <jdk.version>1.6</jdk.version>
     <activemq.version>5.7.0</activemq.version>
     <commons.configuration.version>1.9</commons.configuration.version>
+    <guava.version>15.0</guava.version>
     <guice.version>3.0</guice.version>
     <hamcrest-library.version>1.3</hamcrest-library.version>
     <jackson.version>2.1.1</jackson.version>
@@ -130,7 +131,15 @@
   </properties>
 
   <dependencies>
+    <!-- Guava -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
+    </dependency>
+
     <!-- ## Test dependencies ## -->
+
     <!-- JUnit test framework -->
     <dependency>
       <groupId>junit</groupId>
@@ -172,7 +181,6 @@
       <version>${hamcrest-library.version}</version>
       <scope>test</scope>
     </dependency>
-    <!-- ## End test dependencies ## -->
   </dependencies>
 
   <build>
