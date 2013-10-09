@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,7 +20,6 @@ import org.mongojack.DBQuery.Query;
 import org.mongojack.JacksonDBCollection;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Joiner;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
@@ -94,18 +92,6 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     return new MongoDBIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)));
-  }
-
-  @Override
-  public <T extends Entity> void ensureIndex(Class<T> cls, List<List<String>> accessorList) {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
-    for (List<String> accessors : accessorList) {
-      col.ensureIndex(getQueryStr(accessors));
-    }
-  }
-
-  private String getQueryStr(List<String> accessors) {
-    return Joiner.on(".").join(accessors) + ".id";
   }
 
   // -------------------------------------------------------------------

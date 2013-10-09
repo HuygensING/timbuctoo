@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.storage;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -16,8 +15,6 @@ public interface BasicStorage {
    * Closes the underlying storage.
    */
   void close();
-
-  <T extends Entity> void ensureIndex(Class<T> type, List<List<String>> accessorList);
 
   <T extends Entity> T getItem(Class<T> type, String id) throws IOException;
 
