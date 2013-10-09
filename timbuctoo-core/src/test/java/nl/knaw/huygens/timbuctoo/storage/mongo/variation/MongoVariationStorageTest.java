@@ -542,6 +542,37 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   }
 
+  @Test
+  public void testSetPID() {
+    Class<ProjectAGeneralTestDoc> type = ProjectAGeneralTestDoc.class;
+
+    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
+    String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
+    DBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
+
+    storage.setPID(type, pid, DEFAULT_ID);
+
+    verify(anyCollection).update(query, update);
+    verify(db).getCollection("testconcretedoc");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testSetPIDMongoException() {
+    Class<ProjectAGeneralTestDoc> type = ProjectAGeneralTestDoc.class;
+
+    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
+    String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
+    DBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
+
+    doThrow(MongoException.class).when(anyCollection).update(query, update);
+
+    try {
+      storage.setPID(type, pid, DEFAULT_ID);
+    } finally {
+      verify(db).getCollection("testconcretedoc");
+    }
+  }
+
   private TestConcreteDoc createTestDoc(String name) {
     return createTestDoc(null, name);
   }
