@@ -81,11 +81,6 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public <T extends Entity> void ensureIndex(Class<T> type, List<List<String>> accessors) {
-    getStorageFor(type).ensureIndex(type, accessors);
-  }
-
-  @Override
   public <T extends Entity> T getItem(Class<T> type, String id) throws IOException {
     return getStorageFor(type).getItem(type, id);
   }

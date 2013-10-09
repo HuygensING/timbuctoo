@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo.variation;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
@@ -30,7 +29,6 @@ import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBGeneralTestDoc;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -312,42 +310,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
 
     verify(anyCollection).find(query);
-  }
-
-  @Test
-  @Ignore("Related indexes are not used at the moment")
-  public void testEnsureIndex() throws IOException {
-    fail("Yet to be implemented");
-  }
-
-  @Test
-  @Ignore("Related indexes are not used at the moment")
-  public void testEnsureIndexNothingToIndex() {
-    fail("Yet to be implemented");
-  }
-
-  @Test
-  @Ignore("Related indexes are not used at the moment")
-  public void testEnsureIndexEmptyAccessorList() {
-    fail("Yet to be implemented");
-  }
-
-  @Test
-  @Ignore("Related indexes are not used at the moment")
-  public void testEnsureIndexAccessorListIsNull() {
-    fail("Yet to be implemented");
-  }
-
-  @Test
-  @Ignore("Related indexes are not used at the moment")
-  public void testEnsureIndexTypeIsNull() {
-    fail("Yet to be implemented");
-  }
-
-  @Test
-  @Ignore("Related indexes are not used at the moment")
-  public void testEnsureIndexDoesNotExist() {
-    fail("Yet to be implemented");
   }
 
   @Test
