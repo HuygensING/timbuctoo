@@ -49,7 +49,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testSearchItemOneSearchProperty() throws IOException {
+  public void testFindItemOneSearchProperty() throws IOException {
     String name = "doc1";
     TestSystemDocument example = new TestSystemDocument();
     example.setName(name);
@@ -63,12 +63,12 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = new BasicDBObject("name", name);
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
-    storage.searchItem(TYPE, example);
+    storage.findItem(TYPE, example);
 
   }
 
   @Test
-  public void testSearchItemMultipleSearchProperties() throws IOException {
+  public void testFindItemMultipleSearchProperties() throws IOException {
     TestSystemDocument example = new TestSystemDocument();
     String name = "doc2";
     example.setName(name);
@@ -86,11 +86,11 @@ public class MongoStorageTest extends MongoStorageTestBase {
     query.put("testValue1", testValue1);
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
-    storage.searchItem(TYPE, example);
+    storage.findItem(TYPE, example);
   }
 
   @Test
-  public void testSearchItemMultipleFound() throws IOException {
+  public void testFindItemMultipleFound() throws IOException {
     TestSystemDocument example = new TestSystemDocument();
     String testValue = "testValue";
     example.setTestValue1(testValue);
@@ -120,14 +120,14 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = new BasicDBObject("testValue1", testValue);
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
-    TestSystemDocument actual = storage.searchItem(TYPE, example);
+    TestSystemDocument actual = storage.findItem(TYPE, example);
 
     assertEquals(name1, actual.getName());
     assertEquals(testValue, actual.getTestValue1());
   }
 
   @Test
-  public void testSearchItemNothingFound() throws IOException {
+  public void testFindItemNothingFound() throws IOException {
     TestSystemDocument example = new TestSystemDocument();
     String name = "nonExisting";
     example.setName(name);
@@ -137,11 +137,11 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = new BasicDBObject("name", name);
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
-    storage.searchItem(TYPE, example);
+    storage.findItem(TYPE, example);
   }
 
   @Test
-  public void testSearchItemUnknownCollection() throws IOException {
+  public void testFindItemUnknownCollection() throws IOException {
     TestSystemDocument example = new TestSystemDocument();
     example.setName("nonExisting");
 
@@ -150,7 +150,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = new BasicDBObject("name", "nonExisting");
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
-    storage.searchItem(TYPE, example);
+    storage.findItem(TYPE, example);
   }
 
   @Test

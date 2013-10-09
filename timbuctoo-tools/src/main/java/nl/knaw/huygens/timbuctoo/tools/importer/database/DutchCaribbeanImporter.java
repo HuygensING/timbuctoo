@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.index.IndexService;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.atlg.ATLGArchive;
@@ -27,6 +26,8 @@ import nl.knaw.huygens.timbuctoo.util.Files;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
@@ -46,6 +47,8 @@ import com.google.inject.Injector;
  * Future versions of this importer must use a more subtle approach.
  */
 public class DutchCaribbeanImporter extends DefaultImporter {
+
+  private static final Logger LOG = LoggerFactory.getLogger(DutchCaribbeanImporter.class);
 
   public static void main(String[] args) throws Exception {
 
@@ -80,7 +83,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
 
       DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
       RelationManager relationManager = new RelationManager(registry, storageManager);
-      new DutchCaribbeanImporter(registry, relationManager, storageManager, importDirName).importAll();
+      new DutchCaribbeanImporter(registry, storageManager, relationManager, importDirName).importAll();
 
       // Signal we're done
       sendEndOfDataMessage(broker);
@@ -93,6 +96,9 @@ public class DutchCaribbeanImporter extends DefaultImporter {
       time = (System.currentTimeMillis() - start) / 1000;
       System.out.printf("%n=== Used %d seconds%n", time);
 
+    } catch (Exception e) {
+      // for debugging
+      e.printStackTrace();
     } finally {
       // Close resources
       if (indexManager != null) {
@@ -132,8 +138,8 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private Reference hasSiblingArchive;
   private Reference hasSiblingArchiver;
 
-  public DutchCaribbeanImporter(DocTypeRegistry registry, RelationManager relationManager, StorageManager storageManager, String inputDirName) {
-    super(registry, storageManager);
+  public DutchCaribbeanImporter(DocTypeRegistry registry, StorageManager storageManager, RelationManager relationManager, String inputDirName) {
+    super(registry, storageManager, relationManager);
     objectMapper = new ObjectMapper();
     this.relationManager = relationManager;
     inputDir = new File(inputDirName);
@@ -208,24 +214,24 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   // --- relations -----------------------------------------------------
 
   private void setupRelationTypes() {
-    isCreatorRef = addRelationType("is_creator_of", "is_created_by", ATLGArchiver.class, ATLGArchive.class);
-    hasKeywordRef = addRelationType("has_keyword", "is_keyword_of", DomainEntity.class, ATLGKeyword.class);
-    hasPersonRef = addRelationType("has_person", "is_person_of", DomainEntity.class, ATLGPerson.class);
-    hasPlaceRef = addRelationType("has_place", "is_place_of", DomainEntity.class, ATLGKeyword.class);
-    hasParentArchive = addRelationType("has_parent_archive", "has_child_archive", ATLGArchive.class, ATLGArchive.class);
-    hasSiblingArchive = addRelationType("has_sibling_archive", "has_sibling_archive", ATLGArchive.class, ATLGArchive.class, true);
-    hasSiblingArchiver = addRelationType("has_sibling_archiver", "has_sibling_archiver", ATLGArchiver.class, ATLGArchiver.class, true);
+    isCreatorRef = retrieveRelationType("is_creator_of");
+    hasKeywordRef = retrieveRelationType("has_keyword");
+    hasPersonRef = retrieveRelationType("has_person");
+    hasPlaceRef = retrieveRelationType("has_place");
+    hasParentArchive = retrieveRelationType("has_parent_archive");
+    hasSiblingArchive = retrieveRelationType("has_sibling_archive");
+    hasSiblingArchiver = retrieveRelationType("has_sibling_archiver");
   }
 
-  private Reference addRelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean symmetric) {
-    RelationType type = new RelationType(regularName, inverseName, sourceType, targetType);
-    type.setSymmetric(symmetric);
-    addEntity(RelationType.class, type, false); // no need to index
-    return new Reference(RelationType.class, type.getId());
-  }
-
-  private Reference addRelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) {
-    return addRelationType(regularName, inverseName, sourceType, targetType, false);
+  private Reference retrieveRelationType(String name) {
+    RelationType type = relationManager.getRelationTypeByName(name);
+    if (type != null) {
+      LOG.debug("Retrieved {}", type.getDisplayName());
+      return new Reference(RelationType.class, type.getId());
+    } else {
+      LOG.error("Failed to retrieve relation type {}", name);
+      throw new IllegalStateException("Initialization error");
+    }
   }
 
   private void addRegularRelations(Reference sourceRef, Reference relTypeRef, Map<String, Reference> map, String[] keys) {

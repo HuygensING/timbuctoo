@@ -165,7 +165,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
   private Reference hasPlaceRef;
 
   public AtlantischeGidsImporter(DocTypeRegistry registry, RelationManager relationManager, StorageManager storageManager, String inputDirName) {
-    super(registry, storageManager);
+    super(registry, storageManager, null);
     objectMapper = new ObjectMapper();
     this.relationManager = relationManager;
     inputDir = new File(inputDirName);

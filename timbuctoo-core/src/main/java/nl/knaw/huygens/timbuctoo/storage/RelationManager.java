@@ -1,12 +1,17 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.util.CSVImporter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,21 +34,89 @@ public class RelationManager {
     this.storageManager = storageManager;
   }
 
+  public void doRead() throws IOException {
+    InputStream stream = RelationManager.class.getClassLoader().getResourceAsStream("relationtype-defs.txt");
+    RelationTypeImporter importer = new RelationTypeImporter();
+    importer.handleFile(stream, 6, false);
+  }
+
+  private class RelationTypeImporter extends CSVImporter {
+
+    public RelationTypeImporter() {
+      super(new PrintWriter(System.err), ';', '"', 4);
+    }
+
+    @Override
+    protected void handleLine(String[] items) {
+      String regularName = items[0];
+      String inverseName = items[1];
+      Class<? extends DomainEntity> sourceType = convert(items[2].toLowerCase());
+      Class<? extends DomainEntity> targetType = convert(items[3].toLowerCase());
+      // boolean reflexive = Boolean.parseBoolean(items[4]);
+      boolean symmetric = Boolean.parseBoolean(items[5]);
+      if (getRelationTypeByName(regularName) != null) {
+        System.out.printf("Relation type '%s' already exists%n", regularName);
+        // check for consistency
+      } else {
+        addRelationType(regularName, inverseName, sourceType, targetType, symmetric);
+      }
+    }
+
+    private Class<? extends DomainEntity> convert(String typeName) {
+      String iname = typeName.toLowerCase();
+      if (iname.equals("domainentity")) {
+        return DomainEntity.class;
+      } else {
+        @SuppressWarnings("unchecked")
+        Class<? extends DomainEntity> type = (Class<? extends DomainEntity>) registry.getTypeForIName(typeName);
+        // TODO check for null
+        return type;
+      }
+    }
+  }
+
+  public void importRelationTypes(File file) {
+    try {
+      doRead();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void addRelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean symmetric) {
+    RelationType type = new RelationType(regularName, inverseName, sourceType, targetType);
+    type.setReflexive(false);
+    type.setSymmetric(symmetric);
+    try {
+      storageManager.addEntityWithoutPersisting(RelationType.class, type, false); // don't index
+    } catch (IOException e) {
+      LOG.error("Failed to add {}; {}", type.getDisplayName(), e.getMessage());
+    }
+  }
+
+  /**
+   * Returns the relation type with the specified name,
+   * or {@code null} if it does not exist.
+   */
+  public RelationType getRelationTypeByName(String name) {
+    return storageManager.findEntity(RelationType.class, "regularName", name);
+  }
+
   /**
    * Returns the relation type with the specified id,
-   * or null if it does not exist.
+   * or {@code null} if it does not exist.
    */
-  public RelationType getRelationType(String id) {
+  public RelationType getRelationTypeById(String id) {
     return storageManager.getEntity(RelationType.class, id);
   }
 
   /**
    * Returns the relation type with the specified reference,
-   * or null if it does not exist.
+   * or {@code null} if it does not exist.
    */
   public RelationType getRelationType(Reference reference) {
     Preconditions.checkArgument(reference.getType().equals("relationtype"), "got type %s", reference.getType());
-    return getRelationType(reference.getId());
+    return getRelationTypeById(reference.getId());
   }
 
   public String storeRelation(Reference sourceRef, Reference relTypeRef, Reference targetRef) {

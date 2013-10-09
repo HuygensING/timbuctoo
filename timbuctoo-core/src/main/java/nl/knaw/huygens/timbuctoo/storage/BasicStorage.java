@@ -18,14 +18,19 @@ public interface BasicStorage {
 
   <T extends Entity> T getItem(Class<T> type, String id) throws IOException;
 
-  /**
-   * Searches on the non-null properties of the example object.
-   */
-  <T extends Entity> T searchItem(Class<T> type, T example) throws IOException;
-
   <T extends Entity> StorageIterator<T> getAllByType(Class<T> type);
 
   <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids);
+
+  /**
+   * Find a system entity which has the specified key/value pair
+   */
+  <T extends Entity> T findItem(Class<T> type, String property, String value) throws IOException;
+
+  /**
+   * Find a system entity which has the non-null properties of the example object.
+   */
+  <T extends Entity> T findItem(Class<T> type, T example) throws IOException;
 
   /**
    * Adds the specified entity to the storage; returns its assigned id.

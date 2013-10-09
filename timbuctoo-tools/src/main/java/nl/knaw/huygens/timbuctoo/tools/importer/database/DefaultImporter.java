@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.tools.importer.database;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.jms.JMSException;
@@ -10,10 +11,13 @@ import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.EntityRef;
+import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.ToolBase;
 
 public abstract class DefaultImporter extends ToolBase {
+
+  private static final String RELATION_TYPE_FILE = "src/main/resources/relationtype-defs.json";
 
   protected final DocTypeRegistry docTypeRegistry;
   private final StorageManager storageManager;
@@ -21,11 +25,23 @@ public abstract class DefaultImporter extends ToolBase {
   private String prevMessage;
   private int errors;
 
-  public DefaultImporter(DocTypeRegistry registry, StorageManager storageManager) {
+  public DefaultImporter(DocTypeRegistry registry, StorageManager storageManager, RelationManager relationManager) {
     this.docTypeRegistry = registry;
     this.storageManager = storageManager;
     prevMessage = "";
     errors = 0;
+    setup(relationManager);
+  }
+
+  private void setup(RelationManager relationManager) {
+    if (relationManager != null) {
+      File file = new File(RELATION_TYPE_FILE);
+      if (file.canRead()) {
+        relationManager.importRelationTypes(file);
+      } else {
+        throw new IllegalStateException("Cannot read " + RELATION_TYPE_FILE);
+      }
+    }
   }
 
   // --- error handling ------------------------------------------------
