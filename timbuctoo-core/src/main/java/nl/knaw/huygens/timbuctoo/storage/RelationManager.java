@@ -3,10 +3,15 @@ package nl.knaw.huygens.timbuctoo.storage;
 import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.model.atlg.ATLGArchive;
+import nl.knaw.huygens.timbuctoo.model.atlg.ATLGArchiver;
+import nl.knaw.huygens.timbuctoo.model.atlg.ATLGKeyword;
+import nl.knaw.huygens.timbuctoo.model.atlg.ATLGPerson;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,21 +34,50 @@ public class RelationManager {
     this.storageManager = storageManager;
   }
 
+  public void importRelationTypes() {
+    addRelationType("is_creator_of", "is_created_by", ATLGArchiver.class, ATLGArchive.class, false);
+    addRelationType("has_keyword", "is_keyword_of", DomainEntity.class, ATLGKeyword.class, false);
+    addRelationType("has_person", "is_person_of", DomainEntity.class, ATLGPerson.class, false);
+    addRelationType("has_place", "is_place_of", DomainEntity.class, ATLGKeyword.class, false);
+    addRelationType("has_parent_archive", "has_child_archive", ATLGArchive.class, ATLGArchive.class, false);
+    addRelationType("has_sibling_archive", "has_sibling_archive", ATLGArchive.class, ATLGArchive.class, true);
+    addRelationType("has_sibling_archiver", "has_sibling_archiver", ATLGArchiver.class, ATLGArchiver.class, true);
+  }
+
+  private void addRelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean symmetric) {
+    RelationType type = new RelationType(regularName, inverseName, sourceType, targetType);
+    type.setReflexive(false);
+    type.setSymmetric(symmetric);
+    try {
+      storageManager.addEntityWithoutPersisting(RelationType.class, type, false); // don't index
+    } catch (IOException e) {
+      LOG.error("Failed to add {}; {}", type.getDisplayName(), e.getMessage());
+    }
+  }
+
+  /**
+   * Returns the relation type with the specified name,
+   * or {@code null} if it does not exist.
+   */
+  public RelationType getRelationTypeByName(String name) {
+    return storageManager.findEntity(RelationType.class, "regularName", name);
+  }
+
   /**
    * Returns the relation type with the specified id,
-   * or null if it does not exist.
+   * or {@code null} if it does not exist.
    */
-  public RelationType getRelationType(String id) {
+  public RelationType getRelationTypeById(String id) {
     return storageManager.getEntity(RelationType.class, id);
   }
 
   /**
    * Returns the relation type with the specified reference,
-   * or null if it does not exist.
+   * or {@code null} if it does not exist.
    */
   public RelationType getRelationType(Reference reference) {
     Preconditions.checkArgument(reference.getType().equals("relationtype"), "got type %s", reference.getType());
-    return getRelationType(reference.getId());
+    return getRelationTypeById(reference.getId());
   }
 
   public String storeRelation(Reference sourceRef, Reference relTypeRef, Reference targetRef) {

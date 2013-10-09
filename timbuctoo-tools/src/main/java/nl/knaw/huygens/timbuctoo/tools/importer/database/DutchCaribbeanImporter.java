@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.index.IndexService;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.atlg.ATLGArchive;
@@ -117,7 +116,6 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private static final String[] JSON_EXTENSION = { "json" };
 
   private final ObjectMapper objectMapper;
-  private final StorageManager storageManager;
   private final RelationManager relationManager;
   private final File inputDir;
 
@@ -139,7 +137,6 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   public DutchCaribbeanImporter(DocTypeRegistry registry, StorageManager storageManager, RelationManager relationManager, String inputDirName) {
     super(registry, storageManager);
     objectMapper = new ObjectMapper();
-    this.storageManager = storageManager;
     this.relationManager = relationManager;
     inputDir = new File(inputDirName);
     System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());
@@ -213,41 +210,24 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   // --- relations -----------------------------------------------------
 
   private void setupRelationTypes() {
-    addRelationType("is_creator_of", "is_created_by", ATLGArchiver.class, ATLGArchive.class);
-    isCreatorRef = verifyRelationType("is_creator_of");
-    addRelationType("has_keyword", "is_keyword_of", DomainEntity.class, ATLGKeyword.class);
-    hasKeywordRef = verifyRelationType("has_keyword");
-    addRelationType("has_person", "is_person_of", DomainEntity.class, ATLGPerson.class);
-    hasPersonRef = verifyRelationType("has_person");
-    addRelationType("has_place", "is_place_of", DomainEntity.class, ATLGKeyword.class);
-    hasPlaceRef = verifyRelationType("has_place");
-    addRelationType("has_parent_archive", "has_child_archive", ATLGArchive.class, ATLGArchive.class);
-    hasParentArchive = verifyRelationType("has_parent_archive");
-    addRelationType("has_sibling_archive", "has_sibling_archive", ATLGArchive.class, ATLGArchive.class, true);
-    hasSiblingArchive = verifyRelationType("has_sibling_archive");
-    addRelationType("has_sibling_archiver", "has_sibling_archiver", ATLGArchiver.class, ATLGArchiver.class, true);
-    hasSiblingArchiver = verifyRelationType("has_sibling_archiver");
+    relationManager.importRelationTypes();
+    isCreatorRef = retrieveRelationType("is_creator_of");
+    hasKeywordRef = retrieveRelationType("has_keyword");
+    hasPersonRef = retrieveRelationType("has_person");
+    hasPlaceRef = retrieveRelationType("has_place");
+    hasParentArchive = retrieveRelationType("has_parent_archive");
+    hasSiblingArchive = retrieveRelationType("has_sibling_archive");
+    hasSiblingArchiver = retrieveRelationType("has_sibling_archiver");
   }
 
-  private Reference verifyRelationType(String name) {
-    RelationType type = storageManager.findEntity(RelationType.class, "regularName", name);
+  private Reference retrieveRelationType(String name) {
+    RelationType type = relationManager.getRelationTypeByName(name);
     if (type != null) {
       System.out.printf("Retrieved '%s'%n", type.getDisplayName());
       return new Reference(RelationType.class, type.getId());
     } else {
       throw new IllegalStateException("Failed to retrieve relation type " + name);
     }
-  }
-
-  private Reference addRelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean symmetric) {
-    RelationType type = new RelationType(regularName, inverseName, sourceType, targetType);
-    type.setSymmetric(symmetric);
-    addEntity(RelationType.class, type, false); // no need to index
-    return new Reference(RelationType.class, type.getId());
-  }
-
-  private Reference addRelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) {
-    return addRelationType(regularName, inverseName, sourceType, targetType, false);
   }
 
   private void addRegularRelations(Reference sourceRef, Reference relTypeRef, Map<String, Reference> map, String[] keys) {
