@@ -48,7 +48,6 @@ import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
-import com.mongodb.ServerAddress;
 
 public class MongoVariationStorage extends MongoStorageBase implements VariationStorage {
 
@@ -63,19 +62,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   private TreeDecoderFactory treeDecoderFactory;
 
   private Map<Class<? extends Entity>, DBCollection> collectionCache;
-
-  public MongoVariationStorage(DocTypeRegistry registry, StorageConfiguration conf) throws UnknownHostException, MongoException {
-    super(registry);
-    dbName = conf.getDbName();
-    options = new MongoOptions();
-    options.safe = true;
-    mongo = new Mongo(new ServerAddress(conf.getHost(), conf.getPort()), options);
-    db = mongo.getDB(dbName);
-    if (conf.requiresAuth()) {
-      db.authenticate(conf.getUser(), conf.getPassword().toCharArray());
-    }
-    initializeVariationCollections(conf);
-  }
 
   public MongoVariationStorage(DocTypeRegistry registry, StorageConfiguration conf, Mongo m, DB db, MongoOptions options) throws UnknownHostException, MongoException {
     super(registry);
