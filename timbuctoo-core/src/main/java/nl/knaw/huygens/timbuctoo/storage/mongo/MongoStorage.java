@@ -170,6 +170,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   }
 
   @Override
+  //TODO Is this still the right way to delete a SystemEntity?
   public <T extends Entity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     // This needs to be updated once mongo-jackson-mapper fixes their wrapper:
