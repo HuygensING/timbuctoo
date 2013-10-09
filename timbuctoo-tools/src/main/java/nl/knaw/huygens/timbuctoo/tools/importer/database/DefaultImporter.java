@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.tools.importer.database;
 
-import java.io.File;
 import java.io.IOException;
 
 import javax.jms.JMSException;
@@ -17,10 +16,11 @@ import nl.knaw.huygens.timbuctoo.tools.ToolBase;
 
 public abstract class DefaultImporter extends ToolBase {
 
-  private static final String RELATION_TYPE_FILE = "src/main/resources/relationtype-defs.json";
+  /** File with {@code RelationType} definitions; must be present on classpath. */
+  private static final String RELATION_TYPE_DEFS = "relationtype-defs.txt";
 
   protected final DocTypeRegistry docTypeRegistry;
-  private final StorageManager storageManager;
+  protected final StorageManager storageManager;
 
   private String prevMessage;
   private int errors;
@@ -35,12 +35,7 @@ public abstract class DefaultImporter extends ToolBase {
 
   private void setup(RelationManager relationManager) {
     if (relationManager != null) {
-      File file = new File(RELATION_TYPE_FILE);
-      if (file.canRead()) {
-        relationManager.importRelationTypes(file);
-      } else {
-        throw new IllegalStateException("Cannot read " + RELATION_TYPE_FILE);
-      }
+      relationManager.importRelationTypes(RELATION_TYPE_DEFS);
     }
   }
 
