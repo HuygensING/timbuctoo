@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.tools.util.CSVImporter;
+import nl.knaw.huygens.timbuctoo.util.CSVImporter;
 
 /**
  * Imports languages from a CSV file.
