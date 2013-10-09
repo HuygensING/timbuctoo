@@ -33,13 +33,6 @@
       </exclusions>
     </dependency>
 
-    <!-- Guice -->
-    <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-      <version>${guice.version}</version>
-    </dependency>
-    
     <!-- default servlet api, needed to run the LocalSolrServer -->
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -54,16 +47,20 @@
       <version>${solr.version}</version>
       <exclusions>
         <exclusion>
-          <artifactId>commons-lang</artifactId>
           <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.restlet.jee</groupId>
           <artifactId>org.restlet</artifactId>
-          <groupId>org.restlet.jee</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>org.restlet.ext.servlet</artifactId>
           <groupId>org.restlet.jee</groupId>
+          <artifactId>org.restlet.ext.servlet</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
