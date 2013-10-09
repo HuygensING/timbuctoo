@@ -74,7 +74,7 @@ public class UserResourceFilterFactory implements ResourceFilterFactory {
       example.setVreId(vreId);
       example.setRoles(Lists.newArrayList(ADMIN_ROLE));
 
-      User admin = storageManager.searchEntity(User.class, example);
+      User admin = storageManager.findEntity(User.class, example);
 
       StringBuilder contentbuilder = new StringBuilder("Beste admin,\n");
       contentbuilder.append(user.displayName);
