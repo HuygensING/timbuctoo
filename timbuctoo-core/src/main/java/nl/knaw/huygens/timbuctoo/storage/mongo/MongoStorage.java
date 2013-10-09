@@ -1,10 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,35 +14,18 @@ import nl.knaw.huygens.timbuctoo.storage.StorageConfiguration;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageUtils;
 
-import org.mongojack.DBCursor;
 import org.mongojack.DBQuery;
 import org.mongojack.DBQuery.Query;
 import org.mongojack.JacksonDBCollection;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
-import com.mongodb.MongoException;
-import com.mongodb.WriteConcern;
 import com.mongodb.util.JSON;
 
 public class MongoStorage extends MongoStorageBase implements BasicStorage {
-
-  public MongoStorage(DocTypeRegistry registry, StorageConfiguration conf) throws UnknownHostException, MongoException {
-    super(registry);
-    dbName = conf.getDbName();
-    mongo = new Mongo(conf.getHost(), conf.getPort());
-    db = mongo.getDB(dbName);
-    if (conf.requiresAuth()) {
-      db.authenticate(conf.getUser(), conf.getPassword().toCharArray());
-    }
-    db.setWriteConcern(WriteConcern.SAFE);
-    initializeDB(conf);
-  }
 
   public MongoStorage(DocTypeRegistry registry, StorageConfiguration conf, Mongo m, DB loanedDB) {
     super(registry);
@@ -103,43 +84,8 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
     return col.findOne(query);
   }
 
-  @Override
-  public <T extends Entity> List<String> getIdsForQuery(Class<T> cls, List<String> accessors, String[] ids) {
-    JacksonDBCollection<T, String> collection = MongoUtils.getCollection(db, cls);
-    String queryStr = getQueryStr(accessors);
-    DBObject query;
-    if (ids.length == 1) {
-      query = new BasicDBObject(queryStr, ids[0]);
-    } else {
-      query = DBQuery.in(queryStr, (Object[]) ids);
-    }
-    List<String> items = Lists.newArrayList();
-    DBCursor<T> resultCursor = collection.find(query, null);
-    try {
-      while (resultCursor.hasNext()) {
-        items.add(resultCursor.next().getId());
-      }
-    } finally {
-      resultCursor.close();
-    }
-    return items;
-  }
-
-  @Override
-  public <T extends Entity> void ensureIndex(Class<T> cls, List<List<String>> accessorList) {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
-    for (List<String> accessors : accessorList) {
-      col.ensureIndex(getQueryStr(accessors));
-    }
-  }
-
-  private String getQueryStr(List<String> accessors) {
-    return Joiner.on(".").join(accessors) + ".id";
-  }
-
   // -------------------------------------------------------------------
 
-  // TODO make unit test: add & retrieve
   @Override
   public <T extends Entity> String addItem(Class<T> type, T item) throws IOException {
     item.setCreation(item.getLastChange());
