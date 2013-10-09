@@ -88,8 +88,16 @@ public class StorageManager {
     try {
       return storage.getItem(type, id);
     } catch (IOException e) {
-      System.err.println(e.getMessage());
       LOG.error("Error while handling {} {}", type.getName(), id);
+      return null;
+    }
+  }
+
+  public <T extends SystemEntity> T findEntity(Class<T> type, String property, String value) {
+    try {
+      return storage.findItem(type, property, value);
+    } catch (IOException e) {
+      LOG.error("Error while handling {}", type.getName());
       return null;
     }
   }
