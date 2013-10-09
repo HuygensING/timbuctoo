@@ -1,0 +1,11 @@
+--
+-- Definition of relation types
+-- Format: regularName;inverseName;sourceType;targetType;reflexive;symmetric
+--
+is_creator_of;is_created_by;ATLGArchiver;ATLGArchive;false;false
+has_keyword;is_keyword_of;DomainEntity;ATLGKeyword;false;false
+has_person;is_person_of;DomainEntity;ATLGPerson;false;false
+has_place;is_place_of;DomainEntity;ATLGKeyword;false;false
+has_parent_archive;has_child_archive;ATLGArchive;ATLGArchive;false;false
+has_sibling_archive;has_sibling_archive;ATLGArchive;ATLGArchive;false;true
+has_sibling_archiver;has_sibling_archiver;ATLGArchiver;ATLGArchiver;false;true

@@ -1,6 +1,9 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -8,10 +11,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.model.atlg.ATLGArchive;
-import nl.knaw.huygens.timbuctoo.model.atlg.ATLGArchiver;
-import nl.knaw.huygens.timbuctoo.model.atlg.ATLGKeyword;
-import nl.knaw.huygens.timbuctoo.model.atlg.ATLGPerson;
+import nl.knaw.huygens.timbuctoo.util.CSVImporter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,14 +34,53 @@ public class RelationManager {
     this.storageManager = storageManager;
   }
 
-  public void importRelationTypes() {
-    addRelationType("is_creator_of", "is_created_by", ATLGArchiver.class, ATLGArchive.class, false);
-    addRelationType("has_keyword", "is_keyword_of", DomainEntity.class, ATLGKeyword.class, false);
-    addRelationType("has_person", "is_person_of", DomainEntity.class, ATLGPerson.class, false);
-    addRelationType("has_place", "is_place_of", DomainEntity.class, ATLGKeyword.class, false);
-    addRelationType("has_parent_archive", "has_child_archive", ATLGArchive.class, ATLGArchive.class, false);
-    addRelationType("has_sibling_archive", "has_sibling_archive", ATLGArchive.class, ATLGArchive.class, true);
-    addRelationType("has_sibling_archiver", "has_sibling_archiver", ATLGArchiver.class, ATLGArchiver.class, true);
+  public void doRead() throws IOException {
+    InputStream stream = RelationManager.class.getClassLoader().getResourceAsStream("relationtype-defs.txt");
+    RelationTypeImporter importer = new RelationTypeImporter();
+    importer.handleFile(stream, 6, false);
+  }
+
+  private class RelationTypeImporter extends CSVImporter {
+
+    public RelationTypeImporter() {
+      super(new PrintWriter(System.err), ';', '"', 4);
+    }
+
+    @Override
+    protected void handleLine(String[] items) {
+      String regularName = items[0];
+      String inverseName = items[1];
+      Class<? extends DomainEntity> sourceType = convert(items[2].toLowerCase());
+      Class<? extends DomainEntity> targetType = convert(items[3].toLowerCase());
+      // boolean reflexive = Boolean.parseBoolean(items[4]);
+      boolean symmetric = Boolean.parseBoolean(items[5]);
+      if (getRelationTypeByName(regularName) != null) {
+        System.out.printf("Relation type '%s' already exists%n", regularName);
+        // check for consistency
+      } else {
+        addRelationType(regularName, inverseName, sourceType, targetType, symmetric);
+      }
+    }
+
+    private Class<? extends DomainEntity> convert(String typeName) {
+      String iname = typeName.toLowerCase();
+      if (iname.equals("domainentity")) {
+        return DomainEntity.class;
+      } else {
+        @SuppressWarnings("unchecked")
+        Class<? extends DomainEntity> type = (Class<? extends DomainEntity>) registry.getTypeForIName(typeName);
+        // TODO check for null
+        return type;
+      }
+    }
+  }
+
+  public void importRelationTypes(File file) {
+    try {
+      doRead();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private void addRelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean symmetric) {

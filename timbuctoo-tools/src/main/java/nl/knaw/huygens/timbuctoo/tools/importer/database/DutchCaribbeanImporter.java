@@ -26,6 +26,8 @@ import nl.knaw.huygens.timbuctoo.util.Files;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
@@ -45,6 +47,8 @@ import com.google.inject.Injector;
  * Future versions of this importer must use a more subtle approach.
  */
 public class DutchCaribbeanImporter extends DefaultImporter {
+
+  private static final Logger LOG = LoggerFactory.getLogger(DutchCaribbeanImporter.class);
 
   public static void main(String[] args) throws Exception {
 
@@ -135,7 +139,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private Reference hasSiblingArchiver;
 
   public DutchCaribbeanImporter(DocTypeRegistry registry, StorageManager storageManager, RelationManager relationManager, String inputDirName) {
-    super(registry, storageManager);
+    super(registry, storageManager, relationManager);
     objectMapper = new ObjectMapper();
     this.relationManager = relationManager;
     inputDir = new File(inputDirName);
@@ -210,7 +214,6 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   // --- relations -----------------------------------------------------
 
   private void setupRelationTypes() {
-    relationManager.importRelationTypes();
     isCreatorRef = retrieveRelationType("is_creator_of");
     hasKeywordRef = retrieveRelationType("has_keyword");
     hasPersonRef = retrieveRelationType("has_person");
@@ -223,10 +226,11 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private Reference retrieveRelationType(String name) {
     RelationType type = relationManager.getRelationTypeByName(name);
     if (type != null) {
-      System.out.printf("Retrieved '%s'%n", type.getDisplayName());
+      LOG.debug("Retrieved {}", type.getDisplayName());
       return new Reference(RelationType.class, type.getId());
     } else {
-      throw new IllegalStateException("Failed to retrieve relation type " + name);
+      LOG.error("Failed to retrieve relation type {}", name);
+      throw new IllegalStateException("Initialization error");
     }
   }
 
