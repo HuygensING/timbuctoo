@@ -344,6 +344,63 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
+  public void testDeleteItem() throws IOException {
+    TestSystemDocument docToDelete = new TestSystemDocument();
+    docToDelete.setId(DEFAULT_ID);
+    docToDelete.setName("test");
+
+    storage.deleteItem(TestSystemDocument.class, DEFAULT_ID, docToDelete.getLastChange());
+
+    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
+    DBObject updateDeleted = new BasicDBObject("^deleted", true);
+    updateDeleted.put("^lastChange", null);
+    DBObject update = new BasicDBObject();
+    update.put("$set", updateDeleted);
+    update.put("$inc", new BasicDBObject("^rev", 1));
+
+    verify(anyCollection).findAndModify(query, null, null, false, update, false, false);
+
+  }
+
+  @Test
+  public void testDeleteItemNotFound() throws IOException {
+    TestSystemDocument docToDelete = new TestSystemDocument();
+    docToDelete.setId(DEFAULT_ID);
+    docToDelete.setName("test");
+
+    storage.deleteItem(TestSystemDocument.class, DEFAULT_ID, docToDelete.getLastChange());
+
+    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
+    DBObject updateDeleted = new BasicDBObject("^deleted", true);
+    updateDeleted.put("^lastChange", null);
+    DBObject update = new BasicDBObject();
+    update.put("$set", updateDeleted);
+    update.put("$inc", new BasicDBObject("^rev", 1));
+
+    verify(anyCollection).findAndModify(query, null, null, false, update, false, false);
+
+  }
+
+  @Test(expected = MongoException.class)
+  public void testDeleteItemMongoException() throws IOException {
+    TestSystemDocument docToDelete = new TestSystemDocument();
+    docToDelete.setId(DEFAULT_ID);
+    docToDelete.setName("test");
+
+    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
+    DBObject updateDeleted = new BasicDBObject("^deleted", true);
+    updateDeleted.put("^lastChange", null);
+    DBObject update = new BasicDBObject();
+    update.put("$set", updateDeleted);
+    update.put("$inc", new BasicDBObject("^rev", 1));
+
+    doThrow(MongoException.class).when(anyCollection).findAndModify(query, null, null, false, update, false, false);
+
+    storage.deleteItem(TestSystemDocument.class, DEFAULT_ID, docToDelete.getLastChange());
+
+  }
+
+  @Test
   public void testEmpty() throws IOException {
     storage.empty();
 
