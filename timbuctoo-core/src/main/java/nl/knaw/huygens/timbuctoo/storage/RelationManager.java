@@ -47,9 +47,9 @@ public class RelationManager {
     }
   }
 
-  private void addRelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean symmetric) {
+  private void addRelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean reflexive, boolean symmetric) {
     RelationType type = new RelationType(regularName, inverseName, sourceType, targetType);
-    type.setReflexive(false);
+    type.setReflexive(reflexive);
     type.setSymmetric(symmetric);
     try {
       storageManager.addEntityWithoutPersisting(RelationType.class, type, false); // don't index
@@ -118,15 +118,14 @@ public class RelationManager {
     protected void handleLine(String[] items) {
       String regularName = items[0];
       String inverseName = items[1];
-      Class<? extends DomainEntity> sourceType = convert(items[2].toLowerCase());
-      Class<? extends DomainEntity> targetType = convert(items[3].toLowerCase());
-      // boolean reflexive = Boolean.parseBoolean(items[4]);
+      Class<? extends DomainEntity> sourceType = convert(items[2]);
+      Class<? extends DomainEntity> targetType = convert(items[3]);
+      boolean reflexive = Boolean.parseBoolean(items[4]);
       boolean symmetric = Boolean.parseBoolean(items[5]);
       if (getRelationTypeByName(regularName) != null) {
         LOG.info("Relation type '{}' already exists", regularName);
-        // TODO check for consistency
       } else {
-        addRelationType(regularName, inverseName, sourceType, targetType, symmetric);
+        addRelationType(regularName, inverseName, sourceType, targetType, reflexive, symmetric);
       }
     }
 
@@ -136,8 +135,8 @@ public class RelationManager {
         return DomainEntity.class;
       } else {
         @SuppressWarnings("unchecked")
-        Class<? extends DomainEntity> type = (Class<? extends DomainEntity>) registry.getTypeForIName(typeName);
-        // TODO check for null
+        Class<? extends DomainEntity> type = (Class<? extends DomainEntity>) registry.getTypeForIName(iname);
+        Preconditions.checkState(type != null, "'%s' is not a domain entity", typeName);
         return type;
       }
     }
