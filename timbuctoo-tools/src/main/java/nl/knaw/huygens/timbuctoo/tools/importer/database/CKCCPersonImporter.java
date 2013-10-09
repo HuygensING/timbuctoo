@@ -12,7 +12,7 @@ import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.tools.util.CSVImporter;
+import nl.knaw.huygens.timbuctoo.util.CSVImporter;
 
 /**
  * Imports CKCC person data from a CSV file.
