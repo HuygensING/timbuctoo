@@ -80,7 +80,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
 
       DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
       RelationManager relationManager = new RelationManager(registry, storageManager);
-      new DutchCaribbeanImporter(registry, relationManager, storageManager, importDirName).importAll();
+      new DutchCaribbeanImporter(registry, storageManager, relationManager, importDirName).importAll();
 
       // Signal we're done
       sendEndOfDataMessage(broker);
@@ -93,6 +93,9 @@ public class DutchCaribbeanImporter extends DefaultImporter {
       time = (System.currentTimeMillis() - start) / 1000;
       System.out.printf("%n=== Used %d seconds%n", time);
 
+    } catch (Exception e) {
+      // for debugging
+      e.printStackTrace();
     } finally {
       // Close resources
       if (indexManager != null) {
@@ -114,6 +117,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private static final String[] JSON_EXTENSION = { "json" };
 
   private final ObjectMapper objectMapper;
+  private final StorageManager storageManager;
   private final RelationManager relationManager;
   private final File inputDir;
 
@@ -132,9 +136,10 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private Reference hasSiblingArchive;
   private Reference hasSiblingArchiver;
 
-  public DutchCaribbeanImporter(DocTypeRegistry registry, RelationManager relationManager, StorageManager storageManager, String inputDirName) {
+  public DutchCaribbeanImporter(DocTypeRegistry registry, StorageManager storageManager, RelationManager relationManager, String inputDirName) {
     super(registry, storageManager);
     objectMapper = new ObjectMapper();
+    this.storageManager = storageManager;
     this.relationManager = relationManager;
     inputDir = new File(inputDirName);
     System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());
@@ -208,13 +213,30 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   // --- relations -----------------------------------------------------
 
   private void setupRelationTypes() {
-    isCreatorRef = addRelationType("is_creator_of", "is_created_by", ATLGArchiver.class, ATLGArchive.class);
-    hasKeywordRef = addRelationType("has_keyword", "is_keyword_of", DomainEntity.class, ATLGKeyword.class);
-    hasPersonRef = addRelationType("has_person", "is_person_of", DomainEntity.class, ATLGPerson.class);
-    hasPlaceRef = addRelationType("has_place", "is_place_of", DomainEntity.class, ATLGKeyword.class);
-    hasParentArchive = addRelationType("has_parent_archive", "has_child_archive", ATLGArchive.class, ATLGArchive.class);
-    hasSiblingArchive = addRelationType("has_sibling_archive", "has_sibling_archive", ATLGArchive.class, ATLGArchive.class, true);
-    hasSiblingArchiver = addRelationType("has_sibling_archiver", "has_sibling_archiver", ATLGArchiver.class, ATLGArchiver.class, true);
+    addRelationType("is_creator_of", "is_created_by", ATLGArchiver.class, ATLGArchive.class);
+    isCreatorRef = verifyRelationType("is_creator_of");
+    addRelationType("has_keyword", "is_keyword_of", DomainEntity.class, ATLGKeyword.class);
+    hasKeywordRef = verifyRelationType("has_keyword");
+    addRelationType("has_person", "is_person_of", DomainEntity.class, ATLGPerson.class);
+    hasPersonRef = verifyRelationType("has_person");
+    addRelationType("has_place", "is_place_of", DomainEntity.class, ATLGKeyword.class);
+    hasPlaceRef = verifyRelationType("has_place");
+    addRelationType("has_parent_archive", "has_child_archive", ATLGArchive.class, ATLGArchive.class);
+    hasParentArchive = verifyRelationType("has_parent_archive");
+    addRelationType("has_sibling_archive", "has_sibling_archive", ATLGArchive.class, ATLGArchive.class, true);
+    hasSiblingArchive = verifyRelationType("has_sibling_archive");
+    addRelationType("has_sibling_archiver", "has_sibling_archiver", ATLGArchiver.class, ATLGArchiver.class, true);
+    hasSiblingArchiver = verifyRelationType("has_sibling_archiver");
+  }
+
+  private Reference verifyRelationType(String name) {
+    RelationType type = storageManager.findEntity(RelationType.class, "regularName", name);
+    if (type != null) {
+      System.out.printf("Retrieved '%s'%n", type.getDisplayName());
+      return new Reference(RelationType.class, type.getId());
+    } else {
+      throw new IllegalStateException("Failed to retrieve relation type " + name);
+    }
   }
 
   private Reference addRelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean symmetric) {

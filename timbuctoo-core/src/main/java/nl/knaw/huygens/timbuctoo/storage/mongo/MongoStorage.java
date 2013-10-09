@@ -83,9 +83,10 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   }
 
   @Override
-  public <T extends Entity> T findItem(Class<T> type, String property, String value) throws IOException {
-    // TODO Auto-generated method stub
-    return null;
+  public <T extends Entity> T findItem(Class<T> type, String key, String value) throws IOException {
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
+    BasicDBObject query = new BasicDBObject(key, value);
+    return col.findOne(query);
   }
 
   @Override
@@ -94,13 +95,11 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
     BasicDBObject query = new BasicDBObject();
 
     Map<String, Object> searchProperties = new MongoObjectMapper().mapObject(type, example);
-
     Set<String> keys = searchProperties.keySet();
 
     for (String key : keys) {
       query.put(key, searchProperties.get(key));
     }
-
     return col.findOne(query);
   }
 
