@@ -99,7 +99,7 @@ public class StorageManager {
    */
   public <T extends Entity> T searchEntity(Class<T> type, T example) {
     try {
-      return storage.searchItem(type, example);
+      return storage.findItem(type, example);
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), example.getId());
       return null;

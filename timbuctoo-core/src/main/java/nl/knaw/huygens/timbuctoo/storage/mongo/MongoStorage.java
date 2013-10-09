@@ -66,22 +66,6 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   }
 
   @Override
-  public <T extends Entity> T searchItem(Class<T> type, T example) throws IOException {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
-    BasicDBObject query = new BasicDBObject();
-
-    Map<String, Object> searchProperties = new MongoObjectMapper().mapObject(type, example);
-
-    Set<String> keys = searchProperties.keySet();
-
-    for (String key : keys) {
-      query.put(key, searchProperties.get(key));
-    }
-
-    return col.findOne(query);
-  }
-
-  @Override
   public <T extends Entity> StorageIterator<T> getAllByType(Class<T> cls) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
     return new MongoDBIteratorWrapper<T>(col.find());
@@ -96,6 +80,28 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     return new MongoDBIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)));
+  }
+
+  @Override
+  public <T extends Entity> T findItem(Class<T> type, String property, String value) throws IOException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public <T extends Entity> T findItem(Class<T> type, T example) throws IOException {
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
+    BasicDBObject query = new BasicDBObject();
+
+    Map<String, Object> searchProperties = new MongoObjectMapper().mapObject(type, example);
+
+    Set<String> keys = searchProperties.keySet();
+
+    for (String key : keys) {
+      query.put(key, searchProperties.get(key));
+    }
+
+    return col.findOne(query);
   }
 
   @Override

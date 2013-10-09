@@ -106,11 +106,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     return reducer.reduceDBObject(col.findOne(query), type);
   }
 
-  @Override
-  public <T extends Entity> T searchItem(Class<T> type, T example) throws IOException {
-    throw new NotImplementedException("This method is not intended to get used.");
-  }
-
   private <T extends Entity> void addClassNotNull(Class<T> type, DBObject query) {
     String classType = VariationUtils.getClassId(type);
     BasicDBObject notNull = new BasicDBObject("$ne", null);
@@ -164,6 +159,16 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
     DBCollection col = getVariationCollection(type);
     return new MongoDBVariationIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)), reducer, type);
+  }
+
+  @Override
+  public <T extends Entity> T findItem(Class<T> type, String property, String value) throws IOException {
+    throw new NotImplementedException("This method is not intended to get used.");
+  }
+
+  @Override
+  public <T extends Entity> T findItem(Class<T> type, T example) throws IOException {
+    throw new NotImplementedException("This method is not intended to get used.");
   }
 
   @Override
