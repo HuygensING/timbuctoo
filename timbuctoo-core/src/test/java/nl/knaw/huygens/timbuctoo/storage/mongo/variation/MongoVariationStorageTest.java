@@ -16,7 +16,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -237,6 +236,53 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
+  public void testGetVariation() throws IOException {
+    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
+    query.put("testconcretedoc", new BasicDBObject("$ne", null));
+
+    String name = "name";
+    DBObject projectAGeneralTestDBNode = createProjectAGeneralTestDBObject(DEFAULT_ID, name, "value1", "value2");
+
+    when(anyCollection.findOne(query)).thenReturn(projectAGeneralTestDBNode);
+
+    String variation = "projecta";
+    TestConcreteDoc actual = storage.getVariation(TestConcreteDoc.class, DEFAULT_ID, variation);
+
+    assertEquals(name, actual.name);
+    assertEquals(DEFAULT_ID, actual.getId());
+    assertEquals(variation, actual.getCurrentVariation());
+  }
+
+  @Test
+  public void testGetVariationItemNonExisting() throws IOException {
+    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
+    query.put("testconcretedoc", new BasicDBObject("$ne", null));
+
+    when(anyCollection.findOne(query)).thenReturn(null);
+
+    TestConcreteDoc actual = storage.getVariation(TestConcreteDoc.class, DEFAULT_ID, "projecta");
+    assertNull(actual);
+
+  }
+
+  @Test
+  public void testGetVariationVariationNonExisting() throws IOException {
+    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
+    query.put("testconcretedoc", new BasicDBObject("$ne", null));
+
+    String name = "name";
+    DBObject projectAGeneralTestDBNode = createProjectAGeneralTestDBObject(DEFAULT_ID, name, "value1", "value2");
+
+    when(anyCollection.findOne(query)).thenReturn(projectAGeneralTestDBNode);
+
+    TestConcreteDoc actual = storage.getVariation(TestConcreteDoc.class, DEFAULT_ID, "projectb");
+
+    assertEquals(name, actual.name);
+    assertEquals(DEFAULT_ID, actual.getId());
+    assertEquals("projecta", actual.getCurrentVariation());
+  }
+
+  @Test
   public void testGetAllByType() throws IOException {
 
     storage.getAllByType(ProjectBGeneralTestDoc.class);
@@ -265,12 +311,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
 
     verify(anyCollection).find(query);
-  }
-
-  @Test
-  @Ignore(value = "Code not used at this moment.")
-  public void testFetchAll() {
-    fail("Yet to be implemented");
   }
 
   @Test
@@ -545,16 +585,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   }
 
-  private List<TestConcreteDoc> createTestDocListWithIds(String idBase, String... names) {
-    List<TestConcreteDoc> docs = new ArrayList<TestConcreteDoc>();
-    int counter = 1;
-    for (String name : names) {
-      docs.add(createTestDoc((idBase + counter), name));
-      counter++;
-    }
-    return docs;
-  }
-
   private TestConcreteDoc createTestDoc(String name) {
     return createTestDoc(null, name);
   }
@@ -580,7 +610,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     Map<String, Object> map = createDefaultMap(id);
     Map<String, Object> testConcreteDocMap = createTestConcreteDocMap(name, "model");
 
-    Map<String, Object> generalTestDocMap = createGeneralTestDocMap(generalTestDocValue);
+    Map<String, Object> generalTestDocMap = createGeneralTestDocMap(generalTestDocValue, "model");
 
     map.put("testconcretedoc", testConcreteDocMap);
     map.put("generaltestdoc", generalTestDocMap);
@@ -588,10 +618,30 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     return createDBJsonNode(map);
   }
 
-  private Map<String, Object> createGeneralTestDocMap(String generalTestDocValue) {
+  private DBObject createProjectAGeneralTestDBObject(String id, String name, String generalTestDocValue, String projectAGeneralTestDocValue) {
+    Map<String, Object> map = createDefaultMap(id);
+    Map<String, Object> testConcreteDocMap = createTestConcreteDocMap(name, "projecta");
+    Map<String, Object> generalTestDocMap = createGeneralTestDocMap(generalTestDocValue, "projecta");
+    Map<String, Object> projectAGeneralTestDocMap = createProjectAGeneralTestDocMap(projectAGeneralTestDocValue);
+
+    map.put("testconcretedoc", testConcreteDocMap);
+    map.put("generaltestdoc", generalTestDocMap);
+    map.put("projecta-projectageneraltestdoc", projectAGeneralTestDocMap);
+
+    return createDBJsonNode(map);
+  }
+
+  private Map<String, Object> createProjectAGeneralTestDocMap(String projectAGeneralTestDocValue) {
     Map<String, Object> generalTestDocMap = Maps.newHashMap();
-    generalTestDocMap.put("generalTestDocValue", new Object[] { createValueMap(generalTestDocValue, "model") });
-    generalTestDocMap.put("!defaultVRE", "model");
+    generalTestDocMap.put("projectAGeneralTestDocValue", projectAGeneralTestDocValue);
+
+    return generalTestDocMap;
+  }
+
+  private Map<String, Object> createGeneralTestDocMap(String generalTestDocValue, String variation) {
+    Map<String, Object> generalTestDocMap = Maps.newHashMap();
+    generalTestDocMap.put("generalTestDocValue", new Object[] { createValueMap(generalTestDocValue, variation) });
+    generalTestDocMap.put("!defaultVRE", variation);
     return generalTestDocMap;
   }
 
@@ -601,7 +651,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     Map<String, Object> testConcreteDocMap = Maps.newHashMap();
     testConcreteDocMap.put("name", new Object[] { nameMap });
-    testConcreteDocMap.put("!defaultVRE", "model");
+    testConcreteDocMap.put("!defaultVRE", variation);
     return testConcreteDocMap;
   }
 
