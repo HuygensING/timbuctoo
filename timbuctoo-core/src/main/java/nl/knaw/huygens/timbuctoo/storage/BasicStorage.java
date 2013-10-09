@@ -46,7 +46,7 @@ public interface BasicStorage {
   <T extends Entity> List<String> getIdsForQuery(Class<T> type, List<String> accessors, String[] id);
 
   /**
-   * Removes all system douments with the specified type.
+   * Removes all system entities with the specified type.
    * @return The number of entities removed.
    */
   <T extends Entity> int removeAll(Class<T> type);
