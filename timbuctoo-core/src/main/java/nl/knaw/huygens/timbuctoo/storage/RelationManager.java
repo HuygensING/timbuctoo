@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -34,50 +33,15 @@ public class RelationManager {
     this.storageManager = storageManager;
   }
 
-  public void doRead() throws IOException {
-    InputStream stream = RelationManager.class.getClassLoader().getResourceAsStream("relationtype-defs.txt");
-    RelationTypeImporter importer = new RelationTypeImporter();
-    importer.handleFile(stream, 6, false);
-  }
-
-  private class RelationTypeImporter extends CSVImporter {
-
-    public RelationTypeImporter() {
-      super(new PrintWriter(System.err), ';', '"', 4);
-    }
-
-    @Override
-    protected void handleLine(String[] items) {
-      String regularName = items[0];
-      String inverseName = items[1];
-      Class<? extends DomainEntity> sourceType = convert(items[2].toLowerCase());
-      Class<? extends DomainEntity> targetType = convert(items[3].toLowerCase());
-      // boolean reflexive = Boolean.parseBoolean(items[4]);
-      boolean symmetric = Boolean.parseBoolean(items[5]);
-      if (getRelationTypeByName(regularName) != null) {
-        System.out.printf("Relation type '%s' already exists%n", regularName);
-        // check for consistency
-      } else {
-        addRelationType(regularName, inverseName, sourceType, targetType, symmetric);
-      }
-    }
-
-    private Class<? extends DomainEntity> convert(String typeName) {
-      String iname = typeName.toLowerCase();
-      if (iname.equals("domainentity")) {
-        return DomainEntity.class;
-      } else {
-        @SuppressWarnings("unchecked")
-        Class<? extends DomainEntity> type = (Class<? extends DomainEntity>) registry.getTypeForIName(typeName);
-        // TODO check for null
-        return type;
-      }
-    }
-  }
-
-  public void importRelationTypes(File file) {
+  /**
+   * Reads {@code RelationType} definitions from the specified file
+   * which must be present on the classpath.
+   */
+  public void importRelationTypes(String fileName) {
     try {
-      doRead();
+      InputStream stream = RelationManager.class.getClassLoader().getResourceAsStream(fileName);
+      RelationTypeImporter importer = new RelationTypeImporter();
+      importer.handleFile(stream, 6, false);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -142,11 +106,48 @@ public class RelationManager {
     return null;
   }
 
-  public RelationBuilder getBuilder() {
-    return new RelationBuilder();
+  // -------------------------------------------------------------------
+
+  private class RelationTypeImporter extends CSVImporter {
+
+    public RelationTypeImporter() {
+      super(new PrintWriter(System.err), ';', '"', 4);
+    }
+
+    @Override
+    protected void handleLine(String[] items) {
+      String regularName = items[0];
+      String inverseName = items[1];
+      Class<? extends DomainEntity> sourceType = convert(items[2].toLowerCase());
+      Class<? extends DomainEntity> targetType = convert(items[3].toLowerCase());
+      // boolean reflexive = Boolean.parseBoolean(items[4]);
+      boolean symmetric = Boolean.parseBoolean(items[5]);
+      if (getRelationTypeByName(regularName) != null) {
+        LOG.info("Relation type '{}' already exists", regularName);
+        // TODO check for consistency
+      } else {
+        addRelationType(regularName, inverseName, sourceType, targetType, symmetric);
+      }
+    }
+
+    private Class<? extends DomainEntity> convert(String typeName) {
+      String iname = typeName.toLowerCase();
+      if (iname.equals("domainentity")) {
+        return DomainEntity.class;
+      } else {
+        @SuppressWarnings("unchecked")
+        Class<? extends DomainEntity> type = (Class<? extends DomainEntity>) registry.getTypeForIName(typeName);
+        // TODO check for null
+        return type;
+      }
+    }
   }
 
   // -------------------------------------------------------------------
+
+  public RelationBuilder getBuilder() {
+    return new RelationBuilder();
+  }
 
   public class RelationBuilder {
     private Relation relation;
