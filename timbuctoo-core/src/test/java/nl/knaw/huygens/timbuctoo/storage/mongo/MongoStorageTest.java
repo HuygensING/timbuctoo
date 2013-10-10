@@ -12,9 +12,11 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.mongo.model.TestSystemDocument;
 
 import org.junit.BeforeClass;
@@ -22,6 +24,7 @@ import org.junit.Test;
 import org.mongojack.internal.stream.JacksonDBObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
@@ -35,7 +38,7 @@ import com.mongodb.WriteResult;
  */
 public class MongoStorageTest extends MongoStorageTestBase {
 
-  private static final String DEFAULT_ID = "TSD0000000001";
+  private static final String DEFAULT_ID = "TSTD000000000001";
 
   private static final Class<TestSystemDocument> TYPE = TestSystemDocument.class;
 
@@ -344,6 +347,62 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
+  public void testGetByMultipleIdsOneFound() throws IOException {
+    List<String> ids = Lists.newArrayList(DEFAULT_ID, "TSD000000000002", "TSD000000000004");
+
+    Map<String, Object> testSystemDocumentMap = createDefaultMap(0, DEFAULT_ID);
+    testSystemDocumentMap.put("testValue1", "test");
+    DBObject dbObject = createDBObject(testSystemDocumentMap);
+
+    DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
+
+    DBCursor cursor = createDBCursorWithOneValue(dbObject);
+    when(anyCollection.find(query)).thenReturn(cursor);
+
+    StorageIterator<TestSystemDocument> iterator = storage.getByMultipleIds(TestSystemDocument.class, ids);
+
+    assertEquals(1, iterator.size());
+  }
+
+  @Test
+  public void testGetByMultipleIdsMultipleFound() throws IOException {
+    Class<TestSystemDocument> type = TestSystemDocument.class;
+    String id2 = "TSD000000000002";
+    List<String> ids = Lists.newArrayList(DEFAULT_ID, id2, "TSD000000000004");
+
+    DBObject object1 = createDBObject(createDefaultMap(1, DEFAULT_ID));
+    DBObject object2 = createDBObject(createDefaultMap(1, id2));
+    DBCursor cursor = mock(DBCursor.class);
+    when(cursor.hasNext()).thenReturn(true, true, false);
+    when(cursor.next()).thenReturn(object1, object2);
+    when(cursor.count()).thenReturn(2);
+
+    DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
+
+    when(anyCollection.find(query)).thenReturn(cursor);
+
+    StorageIterator<TestSystemDocument> iterator = storage.getByMultipleIds(type, ids);
+
+    assertEquals(2, iterator.size());
+  }
+
+  @Test
+  public void testGetByMultipleIdsNoneFound() throws IOException {
+    Class<TestSystemDocument> type = TestSystemDocument.class;
+    List<String> ids = Lists.newArrayList(DEFAULT_ID, "TSD000000000002", "TSD000000000004");
+
+    DBCursor cursor = createCursorWithoutValues();
+
+    DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
+
+    when(anyCollection.find(query)).thenReturn(cursor);
+
+    StorageIterator<TestSystemDocument> iterator = storage.getByMultipleIds(type, ids);
+
+    assertEquals(iterator.size(), 0);
+  }
+
+  @Test
   public void testDeleteItem() throws IOException {
     TestSystemDocument docToDelete = new TestSystemDocument();
     docToDelete.setId(DEFAULT_ID);
@@ -471,11 +530,11 @@ public class MongoStorageTest extends MongoStorageTestBase {
     return new Date(date.getTime() + millis);
   }
 
-  protected Map<String, Object> createDefaultMap(int reference, String id) {
+  protected Map<String, Object> createDefaultMap(int revision, String id) {
     Map<String, Object> testSystemDocumentMap = Maps.newHashMap();
     testSystemDocumentMap.put("_id", id);
     // TODO remove when the SystemDocuments and DomainDocuments are better separated   
-    testSystemDocumentMap.put("^rev", reference);
+    testSystemDocumentMap.put("^rev", revision);
     testSystemDocumentMap.put("^lastChange", null);
     testSystemDocumentMap.put("^creation", null);
     testSystemDocumentMap.put("^pid", null);
