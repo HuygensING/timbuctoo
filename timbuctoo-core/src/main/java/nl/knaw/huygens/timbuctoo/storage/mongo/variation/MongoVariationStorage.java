@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo.variation;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -285,18 +284,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
     String newId = StorageUtils.formatEntityId(cls, newCounter.next);
     item.setId(newId);
-  }
-
-  @Override
-  public <T extends Entity> int removeAll(Class<T> type) {
-    // Only for system entities...
-    return 0;
-  }
-
-  @Override
-  public <T extends Entity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
-    // Only for system entities...
-    return 0;
   }
 
   @Override

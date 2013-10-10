@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 public interface BasicStorage {
@@ -45,17 +46,19 @@ public interface BasicStorage {
 
   <T extends Entity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException;
 
+  // -------------------------------------------------------------------
+
   /**
    * Removes all system entities with the specified type.
    * @return The number of entities removed.
    */
-  <T extends Entity> int removeAll(Class<T> type);
+  <T extends SystemEntity> int removeAll(Class<T> type);
 
   /**
    * Removes system entities that have a value of the specified date field
    * that is older than the specified date.
    * @return The number of entities removed.
    */
-  <T extends Entity> int removeByDate(Class<T> type, String dateField, Date dateValue);
+  <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue);
 
 }
