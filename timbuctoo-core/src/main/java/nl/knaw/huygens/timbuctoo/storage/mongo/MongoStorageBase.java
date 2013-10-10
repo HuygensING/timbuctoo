@@ -29,14 +29,17 @@ public class MongoStorageBase {
   protected final DocTypeRegistry docTypeRegistry;
 
   protected Mongo mongo;
-  protected String dbName;
   protected DB db;
+  protected String dbName;
 
   protected JacksonDBCollection<Counter, String> counterCol;
   protected Set<String> entityCollections;
 
-  public MongoStorageBase(DocTypeRegistry registry) {
+  public MongoStorageBase(DocTypeRegistry registry, Mongo mongo, DB db, String dbName) {
     docTypeRegistry = registry;
+    this.mongo = mongo;
+    this.db = db;
+    this.dbName = dbName;
   }
 
   public void empty() {

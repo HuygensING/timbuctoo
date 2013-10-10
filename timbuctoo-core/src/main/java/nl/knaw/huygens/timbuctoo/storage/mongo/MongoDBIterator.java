@@ -6,11 +6,11 @@ import nl.knaw.huygens.timbuctoo.storage.AbstractStorageIterator;
 
 import org.mongojack.DBCursor;
 
-public class MongoDBIteratorWrapper<T> extends AbstractStorageIterator<T> {
+class MongoDBIterator<T> extends AbstractStorageIterator<T> {
 
   protected DBCursor<T> cursor;
 
-  public MongoDBIteratorWrapper(DBCursor<T> delegate) {
+  public MongoDBIterator(DBCursor<T> delegate) {
     super(delegate);
     cursor = delegate;
   }

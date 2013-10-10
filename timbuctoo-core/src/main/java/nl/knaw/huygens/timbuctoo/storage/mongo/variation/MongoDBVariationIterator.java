@@ -12,14 +12,14 @@ import com.google.common.collect.Lists;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
-public class MongoDBVariationIteratorWrapper<T extends Entity> implements StorageIterator<T> {
+class MongoDBVariationIterator<T extends Entity> implements StorageIterator<T> {
 
   private final DBCursor delegate;
   private final VariationReducer reducer;
   private final Class<T> cls;
   private boolean closed;
 
-  public MongoDBVariationIteratorWrapper(DBCursor delegate, VariationReducer reducer, Class<T> cls) {
+  public MongoDBVariationIterator(DBCursor delegate, VariationReducer reducer, Class<T> cls) {
     this.delegate = delegate;
     this.reducer = reducer;
     this.cls = cls;
