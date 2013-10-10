@@ -14,7 +14,6 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.StorageUtils;
 import nl.knaw.huygens.timbuctoo.storage.VariationStorage;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoChanges;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorageBase;
@@ -250,19 +249,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     return treeEncoderFactory.getObjectMapper();
   }
 
-  private <T extends Entity> void setNextId(Class<T> type, T item) {
-    Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(type);
-    BasicDBObject idFinder = new BasicDBObject("_id", docTypeRegistry.getINameForType(baseType));
-    BasicDBObject counterIncrement = new BasicDBObject("$inc", new BasicDBObject("next", 1));
-
-    // Find by id, return all fields, use default sort, increment the counter,
-    // return the new object, create if no object exists:
-    Counter newCounter = counterCol.findAndModify(idFinder, null, null, false, counterIncrement, true, true);
-
-    String newId = StorageUtils.formatEntityId(type, newCounter.next);
-    item.setId(newId);
-  }
-
   @Override
   public int countRelations(Relation relation) {
     DBCollection col = db.getCollection("relation");
@@ -339,7 +325,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   // Test only, an ugly hack to be able to mock the counter collection
   void setCounterCollection(JacksonDBCollection<MongoStorageBase.Counter, String> collection) {
-    counterCol = collection;
+    counters = collection;
   }
 
 }
