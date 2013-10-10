@@ -464,7 +464,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   @Override
   protected void setupStorage() {
     storage = new MongoStorage(registry, mongo, db, DB_NAME);
-    storage.counterCol = counterCol;
+    storage.counters = counterCol;
   }
 
 }
