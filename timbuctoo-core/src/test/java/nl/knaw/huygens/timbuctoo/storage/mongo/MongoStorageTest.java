@@ -64,7 +64,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
     storage.findItem(TYPE, example);
-
   }
 
   @Test
@@ -196,7 +195,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
       verify(anyCollection).findAndModify(any(DBObject.class), any(DBObject.class), any(DBObject.class), anyBoolean(), any(DBObject.class), anyBoolean(), anyBoolean());
       //verify(anyCollection).findAndModify(query, null, null, false, newDBObject, false, false);
     }
-
   }
 
   @Test(expected = IOException.class)
@@ -277,7 +275,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
     doThrow(MongoException.class).when(anyCollection).insert(any(DBObject.class));
 
     storage.addItem(TYPE, doc);
-
   }
 
   @Test
@@ -309,7 +306,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
     storage.getItem(TYPE, null);
-
   }
 
   @Test
@@ -359,7 +355,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
     update.put("$inc", new BasicDBObject("^rev", 1));
 
     verify(anyCollection).findAndModify(query, null, null, false, update, false, false);
-
   }
 
   @Test
@@ -378,7 +373,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
     update.put("$inc", new BasicDBObject("^rev", 1));
 
     verify(anyCollection).findAndModify(query, null, null, false, update, false, false);
-
   }
 
   @Test(expected = MongoException.class)
@@ -397,7 +391,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
     doThrow(MongoException.class).when(anyCollection).findAndModify(query, null, null, false, update, false, false);
 
     storage.deleteItem(TestSystemDocument.class, DEFAULT_ID, docToDelete.getLastChange());
-
   }
 
   @Test
@@ -411,7 +404,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testRemoveAll() throws IOException {
-
     WriteResult writeResult = mock(WriteResult.class);
     when(writeResult.getN()).thenReturn(3);
 

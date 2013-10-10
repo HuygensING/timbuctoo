@@ -31,8 +31,8 @@ public class MongoDBIteratorWrapper<T> extends AbstractStorageIterator<T> {
   }
 
   @Override
-  public List<T> getSome(int count) {
-    return cursor.toArray(count);
+  public List<T> getSome(int limit) {
+    return cursor.toArray(limit);
   }
 
 }

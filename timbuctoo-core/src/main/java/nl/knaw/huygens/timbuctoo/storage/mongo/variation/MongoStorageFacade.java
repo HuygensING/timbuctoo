@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
 import nl.knaw.huygens.timbuctoo.storage.RevisionChanges;
@@ -131,12 +132,12 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public <T extends Entity> int removeAll(Class<T> type) {
+  public <T extends SystemEntity> int removeAll(Class<T> type) {
     return getStorageFor(type).removeAll(type);
   }
 
   @Override
-  public <T extends Entity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
+  public <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
     return getStorageFor(type).removeByDate(type, dateField, dateValue);
   }
 

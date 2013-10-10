@@ -1,14 +1,19 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import java.util.Date;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
+import org.mongojack.DBQuery;
+import org.mongojack.DBQuery.Query;
 import org.mongojack.JacksonDBCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
 
@@ -52,6 +57,19 @@ public class MongoStorageBase {
 
   public void resetDB(DB db) {
     this.db = db;
+  }
+
+  // -------------------------------------------------------------------
+
+  public <T extends SystemEntity> int removeAll(Class<T> type) {
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
+    return col.remove(new BasicDBObject()).getN();
+  }
+
+  public <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
+    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
+    Query query = DBQuery.lessThan(dateField, dateValue);
+    return col.remove(query).getN();
   }
 
   // -------------------------------------------------------------------

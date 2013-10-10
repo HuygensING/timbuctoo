@@ -50,9 +50,9 @@ public class MongoDBVariationIteratorWrapper<T extends Entity> implements Storag
   }
 
   @Override
-  public List<T> getSome(int count) {
-    List<T> rv = Lists.newArrayListWithCapacity(count);
-    while (count-- > 0 && delegate.hasNext()) {
+  public List<T> getSome(int limit) {
+    List<T> list = Lists.newArrayList();
+    while (limit-- > 0 && delegate.hasNext()) {
       DBObject next;
       try {
         next = delegate.next();
@@ -63,13 +63,13 @@ public class MongoDBVariationIteratorWrapper<T extends Entity> implements Storag
       }
 
       try {
-        rv.add(reducer.reduceDBObject(next, cls));
+        list.add(reducer.reduceDBObject(next, cls));
       } catch (IOException e) {
         e.printStackTrace();
-        rv.add(null);
+        list.add(null);
       }
     }
-    return rv;
+    return list;
   }
 
   @Override
