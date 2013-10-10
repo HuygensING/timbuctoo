@@ -53,6 +53,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   }
 
   @Override
+  //TODO do we still want to use versions for SystemEntities?
   public <T extends Entity> MongoChanges<T> getAllRevisions(Class<T> type, String id) {
     return MongoUtils.getVersioningCollection(db, type).findOneById(id);
   }

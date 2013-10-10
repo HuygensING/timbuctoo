@@ -87,12 +87,14 @@ public abstract class MongoStorageTestBase {
     DBCursor cursor = mock(DBCursor.class);
     when(cursor.hasNext()).thenReturn(true, false);
     when(cursor.next()).thenReturn(dbObject);
+    when(cursor.count()).thenReturn(1);
     return cursor;
   }
 
   protected DBCursor createCursorWithoutValues() {
     DBCursor cursor = mock(DBCursor.class);
     when(cursor.hasNext()).thenReturn(false);
+    when(cursor.count()).thenReturn(0);
     return cursor;
   }
 }
