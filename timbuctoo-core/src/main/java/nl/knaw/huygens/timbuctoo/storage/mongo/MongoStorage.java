@@ -7,10 +7,10 @@ import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
-import nl.knaw.huygens.timbuctoo.storage.StorageConfiguration;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageUtils;
 
+import org.mongojack.DBCursor;
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
 
@@ -23,37 +23,30 @@ import com.mongodb.util.JSON;
 
 public class MongoStorage extends MongoStorageBase implements BasicStorage {
 
-  public MongoStorage(DocTypeRegistry registry, StorageConfiguration conf, Mongo mongo, DB db) {
-    super(registry, mongo, db, conf.getDbName());
-    initializeDB(conf);
-  }
-
-  private void initializeDB(StorageConfiguration conf) {
-    counterCol = JacksonDBCollection.wrap(db.getCollection(COUNTER_COLLECTION_NAME), Counter.class, String.class);
-    entityCollections = conf.getEntityTypes();
+  public MongoStorage(DocTypeRegistry registry, Mongo mongo, DB db, String dbName) {
+    super(registry, mongo, db, dbName);
   }
 
   @Override
   public <T extends Entity> T getItem(Class<T> type, String id) {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
-    return col.findOneById(id);
+    return getCollection(type).findOneById(id);
   }
 
   @Override
-  public <T extends Entity> StorageIterator<T> getAllByType(Class<T> cls) {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
-    return new MongoDBIterator<T>(col.find());
+  public <T extends Entity> StorageIterator<T> getAllByType(Class<T> type) {
+    DBCursor<T> cursor = getCollection(type).find();
+    return new MongoDBIterator<T>(cursor);
   }
 
   @Override
   public <T extends Entity> MongoChanges<T> getAllRevisions(Class<T> type, String id) {
-    return MongoUtils.getVersioningCollection(db, type).findOneById(id);
+    return getVersioningCollection(type).findOneById(id);
   }
 
   @Override
   public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
-    return new MongoDBIterator<T>(col.find(DBQuery.in("_id", ids)));
+    DBCursor<T> cursor = getCollection(type).find(DBQuery.in("_id", ids));
+    return new MongoDBIterator<T>(cursor);
   }
 
   // -------------------------------------------------------------------
@@ -64,7 +57,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
     if (item.getId() == null) {
       setNextId(type, item);
     }
-    MongoUtils.getCollection(db, type).insert(item);
+    getCollection(type).insert(item);
     return item.getId();
   }
 
@@ -72,7 +65,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   //  ** The code below is temporarily retained because it contains ideas about versioning **
   //
   //  public <T extends Entity> void addItems(Class<T> type, List<T> items) throws IOException {
-  //    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
+  //    JacksonDBCollection<T, String> col = getCollection(type);
   //    boolean shouldVersion = versionedDocumentTypes.contains(col.getName());
   //
   //    // Create the changes objects for all these entities:
@@ -105,13 +98,13 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   //    col.insert(items);
   //    // Insert the changes:
   //    if (shouldVersion) {
-  //      MongoUtils.getVersioningCollection(db, type).insert(changes);
+  //      getVersioningCollection(type).insert(changes);
   //    }
   //  }
 
   @Override
   public <T extends Entity> void updateItem(Class<T> type, String id, T item) throws IOException {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
+    JacksonDBCollection<T, String> col = getCollection(type);
 
     int oldRev = item.getRev();
     item.setRev(oldRev + 1);
@@ -138,13 +131,12 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   public <T extends Entity> void setPID(Class<T> type, String id, String pid) {
     BasicDBObject query = new BasicDBObject("_id", id);
     BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
-    MongoUtils.getCollection(db, type).update(query, update);
+    getCollection(type).update(query, update);
   }
 
   @Override
   //TODO Is this still the right way to delete a SystemEntity?
   public <T extends Entity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     // This needs to be updated once mongo-jackson-mapper fixes their wrapper:
     // Update the actual entity first:
     BasicDBObject settings = new BasicDBObject("^deleted", true);
@@ -154,9 +146,8 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
     update.put("$inc", new BasicDBObject("^rev", 1));
     // This returns the previous version of the entity (!)
     // NB: we don't check the rev prop here. This is because deletion will
-    // always work;
-    // we simply set the delete prop to true.
-    col.findAndModify(DBQuery.is("_id", id), update);
+    // always work; we simply set the delete prop to true.
+    getCollection(type).findAndModify(DBQuery.is("_id", id), update);
   }
 
   // -------------------------------------------------------------------
