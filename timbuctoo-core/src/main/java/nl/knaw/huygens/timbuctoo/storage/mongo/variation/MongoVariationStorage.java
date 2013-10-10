@@ -58,11 +58,8 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   private Map<Class<? extends Entity>, DBCollection> collectionCache;
 
-  public MongoVariationStorage(DocTypeRegistry registry, StorageConfiguration conf, Mongo m, DB db) throws UnknownHostException, MongoException {
-    super(registry);
-    dbName = conf.getDbName();
-    this.mongo = m;
-    this.db = db;
+  public MongoVariationStorage(DocTypeRegistry registry, StorageConfiguration conf, Mongo mongo, DB db) throws UnknownHostException, MongoException {
+    super(registry, mongo, db, conf.getDbName());
     initializeVariationCollections(conf);
   }
 
@@ -114,7 +111,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     String classType = VariationUtils.getClassId(cls);
     BasicDBObject notNull = new BasicDBObject("$ne", null);
     BasicDBObject query = new BasicDBObject(classType, notNull);
-    return new MongoDBVariationIteratorWrapper<T>(col.find(query), reducer, cls);
+    return new MongoDBVariationIterator<T>(col.find(query), reducer, cls);
   }
 
   @Override
@@ -138,7 +135,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   @Override
   public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
     DBCollection col = getVariationCollection(type);
-    return new MongoDBVariationIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)), reducer, type);
+    return new MongoDBVariationIterator<T>(col.find(DBQuery.in("_id", ids)), reducer, type);
   }
 
   @Override

@@ -25,11 +25,8 @@ import com.mongodb.util.JSON;
 
 public class MongoStorage extends MongoStorageBase implements BasicStorage {
 
-  public MongoStorage(DocTypeRegistry registry, StorageConfiguration conf, Mongo m, DB loanedDB) {
-    super(registry);
-    dbName = conf.getDbName();
-    mongo = m;
-    db = loanedDB;
+  public MongoStorage(DocTypeRegistry registry, StorageConfiguration conf, Mongo mongo, DB db) {
+    super(registry, mongo, db, conf.getDbName());
     initializeDB(conf);
   }
 
@@ -47,7 +44,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   @Override
   public <T extends Entity> StorageIterator<T> getAllByType(Class<T> cls) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, cls);
-    return new MongoDBIteratorWrapper<T>(col.find());
+    return new MongoDBIterator<T>(col.find());
   }
 
   @Override
@@ -58,7 +55,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   @Override
   public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
-    return new MongoDBIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)));
+    return new MongoDBIterator<T>(col.find(DBQuery.in("_id", ids)));
   }
 
   @Override
