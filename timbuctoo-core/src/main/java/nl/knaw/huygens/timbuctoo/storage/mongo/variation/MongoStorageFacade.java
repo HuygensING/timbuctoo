@@ -55,8 +55,8 @@ public class MongoStorageFacade implements VariationStorage {
     if (conf.requiresAuth()) {
       db.authenticate(conf.getUser(), conf.getPassword().toCharArray());
     }
-    plainStorage = new MongoStorage(registry, conf, mongo, db);
-    variationStorage = new MongoVariationStorage(registry, conf, mongo, db);
+    plainStorage = new MongoStorage(registry, mongo, db, conf.getDbName());
+    variationStorage = new MongoVariationStorage(registry, mongo, db, conf.getDbName());
   }
 
   @Override

@@ -458,13 +458,12 @@ public class MongoStorageTest extends MongoStorageTestBase {
     JacksonDBObject<TestSystemDocument> dbObject = new JacksonDBObject<TestSystemDocument>();
     dbObject.putAll(map);
     dbObject.setObject(doc);
-
     return dbObject;
   }
 
   @Override
   protected void setupStorage() {
-    storage = new MongoStorage(registry, storageConfiguration, this.mongo, this.db);
+    storage = new MongoStorage(registry, mongo, db, DB_NAME);
     storage.counterCol = counterCol;
   }
 

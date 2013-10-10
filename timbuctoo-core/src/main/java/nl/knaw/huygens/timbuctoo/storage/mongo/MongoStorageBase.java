@@ -3,9 +3,9 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
-import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.mongojack.DBQuery;
@@ -25,23 +25,20 @@ import com.mongodb.Mongo;
 public class MongoStorageBase {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoStorageBase.class);
-
-  protected static final String COUNTER_COLLECTION_NAME = "counters";
+  private static final String COUNTER_COLLECTION_NAME = "counters";
 
   protected final DocTypeRegistry docTypeRegistry;
-
-  protected Mongo mongo;
+  private final Mongo mongo;
   protected DB db;
-  protected String dbName;
-
+  private final String dbName;
   protected JacksonDBCollection<Counter, String> counterCol;
-  protected Set<String> entityCollections;
 
   public MongoStorageBase(DocTypeRegistry registry, Mongo mongo, DB db, String dbName) {
     docTypeRegistry = registry;
     this.mongo = mongo;
     this.db = db;
     this.dbName = dbName;
+    counterCol = JacksonDBCollection.wrap(db.getCollection(COUNTER_COLLECTION_NAME), Counter.class, String.class);
   }
 
   public void empty() {
@@ -62,6 +59,16 @@ public class MongoStorageBase {
 
   public void resetDB(DB db) {
     this.db = db;
+  }
+
+  // -------------------------------------------------------------------
+
+  protected <T extends Entity> JacksonDBCollection<T, String> getCollection(Class<T> type) {
+    return MongoUtils.getCollection(db, type);
+  }
+
+  protected <T extends Entity> JacksonDBCollection<MongoChanges<T>, String> getVersioningCollection(Class<T> type) {
+    return MongoUtils.getVersioningCollection(db, type);
   }
 
   // -------------------------------------------------------------------

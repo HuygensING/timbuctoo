@@ -13,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
-import nl.knaw.huygens.timbuctoo.storage.StorageConfiguration;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageUtils;
 import nl.knaw.huygens.timbuctoo.storage.VariationStorage;
@@ -46,32 +45,24 @@ import com.mongodb.MongoException;
 
 public class MongoVariationStorage extends MongoStorageBase implements VariationStorage {
 
-  private final Logger LOG = LoggerFactory.getLogger(getClass());
+  private static final Logger LOG = LoggerFactory.getLogger(MongoVariationStorage.class);
 
-  private VariationInducer inducer;
-  private VariationReducer reducer;
+  private final ObjectMapper objectMapper;
+  private final TreeEncoderFactory treeEncoderFactory;
+  private final TreeDecoderFactory treeDecoderFactory;
+  private final Map<Class<? extends Entity>, DBCollection> collectionCache;
+  private final VariationInducer inducer;
+  private final VariationReducer reducer;
 
-  private ObjectMapper objectMapper;
-  private TreeEncoderFactory treeEncoderFactory;
-  private TreeDecoderFactory treeDecoderFactory;
-
-  private Map<Class<? extends Entity>, DBCollection> collectionCache;
-
-  public MongoVariationStorage(DocTypeRegistry registry, StorageConfiguration conf, Mongo mongo, DB db) throws UnknownHostException, MongoException {
-    super(registry, mongo, db, conf.getDbName());
-    initializeVariationCollections(conf);
-  }
-
-  private void initializeVariationCollections(StorageConfiguration conf) {
+  public MongoVariationStorage(DocTypeRegistry registry, Mongo mongo, DB db, String dbName) throws UnknownHostException, MongoException {
+    super(registry, mongo, db, dbName);
     objectMapper = new ObjectMapper();
     treeEncoderFactory = new TreeEncoderFactory(objectMapper);
     treeDecoderFactory = new TreeDecoderFactory();
     collectionCache = Maps.newHashMap();
-    counterCol = JacksonDBCollection.wrap(db.getCollection(COUNTER_COLLECTION_NAME), Counter.class, String.class);
-    entityCollections = conf.getEntityTypes();
     inducer = new VariationInducer();
     inducer.setView(JsonViews.DBView.class);
-    reducer = new VariationReducer(docTypeRegistry);
+    reducer = new VariationReducer(registry);
   }
 
   @Override
@@ -259,8 +250,8 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     return treeEncoderFactory.getObjectMapper();
   }
 
-  private <T extends Entity> void setNextId(Class<T> cls, T item) {
-    Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(cls);
+  private <T extends Entity> void setNextId(Class<T> type, T item) {
+    Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(type);
     BasicDBObject idFinder = new BasicDBObject("_id", docTypeRegistry.getINameForType(baseType));
     BasicDBObject counterIncrement = new BasicDBObject("$inc", new BasicDBObject("next", 1));
 
@@ -268,7 +259,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     // return the new object, create if no object exists:
     Counter newCounter = counterCol.findAndModify(idFinder, null, null, false, counterIncrement, true, true);
 
-    String newId = StorageUtils.formatEntityId(cls, newCounter.next);
+    String newId = StorageUtils.formatEntityId(type, newCounter.next);
     item.setId(newId);
   }
 
