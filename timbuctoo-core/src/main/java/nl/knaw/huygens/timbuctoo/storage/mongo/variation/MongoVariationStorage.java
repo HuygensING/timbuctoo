@@ -24,7 +24,6 @@ import nl.knaw.huygens.timbuctoo.variation.VariationInducer;
 import nl.knaw.huygens.timbuctoo.variation.VariationReducer;
 import nl.knaw.huygens.timbuctoo.variation.VariationUtils;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
 import org.mongojack.internal.stream.JacksonDBObject;
@@ -136,16 +135,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
     DBCollection col = getVariationCollection(type);
     return new MongoDBVariationIterator<T>(col.find(DBQuery.in("_id", ids)), reducer, type);
-  }
-
-  @Override
-  public <T extends Entity> T findItem(Class<T> type, String property, String value) throws IOException {
-    throw new NotImplementedException("This method is not intended to get used.");
-  }
-
-  @Override
-  public <T extends Entity> T findItem(Class<T> type, T example) throws IOException {
-    throw new NotImplementedException("This method is not intended to get used.");
   }
 
   protected <T extends Entity> DBCollection getVariationCollection(Class<T> type) {

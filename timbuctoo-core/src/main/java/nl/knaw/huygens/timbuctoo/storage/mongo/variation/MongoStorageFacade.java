@@ -97,12 +97,12 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public <T extends Entity> T findItem(Class<T> type, String property, String value) throws IOException {
+  public <T extends SystemEntity> T findItem(Class<T> type, String property, String value) throws IOException {
     return getStorageFor(type).findItem(type, property, value);
   }
 
   @Override
-  public <T extends Entity> T findItem(Class<T> type, T item) throws IOException {
+  public <T extends SystemEntity> T findItem(Class<T> type, T item) throws IOException {
     return getStorageFor(type).findItem(type, item);
   }
 

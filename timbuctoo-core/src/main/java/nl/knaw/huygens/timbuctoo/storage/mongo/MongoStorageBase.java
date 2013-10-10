@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import java.io.IOException;
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
@@ -63,6 +65,17 @@ public class MongoStorageBase {
   }
 
   // -------------------------------------------------------------------
+
+  public <T extends SystemEntity> T findItem(Class<T> type, String key, String value) throws IOException {
+    BasicDBObject query = new BasicDBObject(key, value);
+    return MongoUtils.getCollection(db, type).findOne(query);
+  }
+
+  public <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException {
+    Map<String, Object> properties = new MongoObjectMapper().mapObject(type, example);
+    BasicDBObject query = new BasicDBObject(properties);
+    return MongoUtils.getCollection(db, type).findOne(query);
+  }
 
   public <T extends SystemEntity> int removeAll(Class<T> type) {
     JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
