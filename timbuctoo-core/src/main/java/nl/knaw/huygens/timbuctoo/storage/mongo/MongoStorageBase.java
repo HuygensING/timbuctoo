@@ -7,7 +7,7 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-import nl.knaw.huygens.timbuctoo.storage.StorageUtils;
+import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
 
 import org.mongojack.DBQuery;
 import org.mongojack.DBQuery.Query;
@@ -15,7 +15,6 @@ import org.mongojack.JacksonDBCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
@@ -23,29 +22,29 @@ import com.mongodb.Mongo;
 /**
  * Implementation base for Mongo storage classes.
  */
-public class MongoStorageBase {
+public abstract class MongoStorageBase implements BasicStorage {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoStorageBase.class);
-  private static final String COUNTER_COLLECTION_NAME = "counters";
 
   protected final DocTypeRegistry docTypeRegistry;
   private final Mongo mongo;
-  protected DB db;
   private final String dbName;
-  protected JacksonDBCollection<Counter, String> counters;
+  protected DB db;
+  private EntityIds entityIds;
 
   public MongoStorageBase(DocTypeRegistry registry, Mongo mongo, DB db, String dbName) {
-    docTypeRegistry = registry;
+    this.docTypeRegistry = registry;
     this.mongo = mongo;
-    this.db = db;
     this.dbName = dbName;
-    counters = JacksonDBCollection.wrap(db.getCollection(COUNTER_COLLECTION_NAME), Counter.class, String.class);
+    this.db = db;
+    this.entityIds = new EntityIds(db, docTypeRegistry);
   }
 
   public void empty() {
     db.cleanCursors(true);
     mongo.dropDatabase(dbName);
     db = mongo.getDB(dbName);
+    entityIds = new EntityIds(db, docTypeRegistry);
   }
 
   public void close() {
@@ -62,7 +61,45 @@ public class MongoStorageBase {
     this.db = db;
   }
 
-  // ---- support ------------------------------------------------------
+  public void setEntityIds(EntityIds entityIds) {
+    this.entityIds = entityIds;
+  }
+
+  // --- entities ------------------------------------------------------
+
+  // TODO
+
+  // --- system entities -----------------------------------------------
+
+  @Override
+  public <T extends SystemEntity> T findItemByKey(Class<T> type, String key, String value) throws IOException {
+    BasicDBObject query = new BasicDBObject(key, value);
+    return getCollection(type).findOne(query);
+  }
+
+  @Override
+  public <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException {
+    Map<String, Object> properties = new MongoObjectMapper().mapObject(type, example);
+    BasicDBObject query = new BasicDBObject(properties);
+    return getCollection(type).findOne(query);
+  }
+
+  @Override
+  public <T extends SystemEntity> int removeAll(Class<T> type) {
+    return getCollection(type).remove(new BasicDBObject()).getN();
+  }
+
+  @Override
+  public <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
+    Query query = DBQuery.lessThan(dateField, dateValue);
+    return getCollection(type).remove(query).getN();
+  }
+
+  // --- domain entities -----------------------------------------------
+
+  // TODO
+
+  // --- support -------------------------------------------------------
 
   protected <T extends Entity> JacksonDBCollection<T, String> getCollection(Class<T> type) {
     return MongoUtils.getCollection(db, type);
@@ -77,47 +114,7 @@ public class MongoStorageBase {
    * for the collection in which the entity is stored.
    */
   protected <T extends Entity> void setNextId(Class<T> type, T entity) {
-    // This works for both system and domain entities
-    Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(type);
-    BasicDBObject idFinder = new BasicDBObject("_id", docTypeRegistry.getINameForType(baseType));
-    BasicDBObject counterIncrement = new BasicDBObject("$inc", new BasicDBObject("next", 1));
-
-    // Find by id, return all fields, use default sort, increment the counter,
-    // return the new object, create if no object exists:
-    Counter counter = counters.findAndModify(idFinder, null, null, false, counterIncrement, true, true);
-
-    String id = StorageUtils.formatEntityId(type, counter.next);
-    entity.setId(id);
-  }
-
-  // --- system entities -----------------------------------------------
-
-  public <T extends SystemEntity> T findItemByKey(Class<T> type, String key, String value) throws IOException {
-    BasicDBObject query = new BasicDBObject(key, value);
-    return getCollection(type).findOne(query);
-  }
-
-  public <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException {
-    Map<String, Object> properties = new MongoObjectMapper().mapObject(type, example);
-    BasicDBObject query = new BasicDBObject(properties);
-    return getCollection(type).findOne(query);
-  }
-
-  public <T extends SystemEntity> int removeAll(Class<T> type) {
-    return getCollection(type).remove(new BasicDBObject()).getN();
-  }
-
-  public <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
-    Query query = DBQuery.lessThan(dateField, dateValue);
-    return getCollection(type).remove(query).getN();
-  }
-
-  // -------------------------------------------------------------------
-
-  public static class Counter {
-    @JsonProperty("_id")
-    public String id;
-    public long next;
+    entity.setId(entityIds.getNextId(type));
   }
 
 }

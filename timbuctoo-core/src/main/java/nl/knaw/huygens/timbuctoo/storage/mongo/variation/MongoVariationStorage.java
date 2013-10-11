@@ -23,7 +23,6 @@ import nl.knaw.huygens.timbuctoo.variation.VariationReducer;
 import nl.knaw.huygens.timbuctoo.variation.VariationUtils;
 
 import org.mongojack.DBQuery;
-import org.mongojack.JacksonDBCollection;
 import org.mongojack.internal.stream.JacksonDBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -321,11 +320,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
       LOG.error("Error while removing objects with the ids '{}' of type '{}'", ids, type);
       throw new IOException(ex);
     }
-  }
-
-  // Test only, an ugly hack to be able to mock the counter collection
-  void setCounterCollection(JacksonDBCollection<MongoStorageBase.Counter, String> collection) {
-    counters = collection;
   }
 
 }
