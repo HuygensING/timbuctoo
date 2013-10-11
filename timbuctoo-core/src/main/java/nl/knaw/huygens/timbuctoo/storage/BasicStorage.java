@@ -39,9 +39,9 @@ public interface BasicStorage {
   // -------------------------------------------------------------------
 
   /**
-   * Find a system entity which has the specified key/value pair
+   * Find a system entity which has the specified key/value pair.
    */
-  <T extends SystemEntity> T findItemByKey(Class<T> type, String property, String value) throws IOException;
+  <T extends SystemEntity> T findItemByKey(Class<T> type, String key, String value) throws IOException;
 
   /**
    * Find a system entity which has the non-null properties of the example object.
