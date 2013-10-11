@@ -15,6 +15,6 @@ public interface StorageIterator<T> extends Iterator<T> {
 
   void skip(int count);
 
-  List<T> getSome(int count);
+  List<T> getSome(int limit);
 
 }

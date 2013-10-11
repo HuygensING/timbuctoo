@@ -664,7 +664,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Override
   protected void setupStorage() throws UnknownHostException, MongoException {
-    storage = new MongoVariationStorage(registry, storageConfiguration, mongo, db);
+    storage = new MongoVariationStorage(registry, mongo, db, DB_NAME);
     storage.setCounterCollection(counterCol);
   }
 

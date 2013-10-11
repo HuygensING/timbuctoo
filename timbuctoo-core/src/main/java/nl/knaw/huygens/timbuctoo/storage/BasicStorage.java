@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 public interface BasicStorage {
@@ -23,16 +24,6 @@ public interface BasicStorage {
   <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids);
 
   /**
-   * Find a system entity which has the specified key/value pair
-   */
-  <T extends Entity> T findItem(Class<T> type, String property, String value) throws IOException;
-
-  /**
-   * Find a system entity which has the non-null properties of the example object.
-   */
-  <T extends Entity> T findItem(Class<T> type, T example) throws IOException;
-
-  /**
    * Adds the specified entity to the storage; returns its assigned id.
    */
   <T extends Entity> String addItem(Class<T> type, T item) throws IOException;
@@ -45,17 +36,29 @@ public interface BasicStorage {
 
   <T extends Entity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException;
 
+  // -------------------------------------------------------------------
+
+  /**
+   * Find a system entity which has the specified key/value pair
+   */
+  <T extends SystemEntity> T findItem(Class<T> type, String property, String value) throws IOException;
+
+  /**
+   * Find a system entity which has the non-null properties of the example object.
+   */
+  <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException;
+
   /**
    * Removes all system entities with the specified type.
    * @return The number of entities removed.
    */
-  <T extends Entity> int removeAll(Class<T> type);
+  <T extends SystemEntity> int removeAll(Class<T> type);
 
   /**
    * Removes system entities that have a value of the specified date field
    * that is older than the specified date.
    * @return The number of entities removed.
    */
-  <T extends Entity> int removeByDate(Class<T> type, String dateField, Date dateValue);
+  <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue);
 
 }

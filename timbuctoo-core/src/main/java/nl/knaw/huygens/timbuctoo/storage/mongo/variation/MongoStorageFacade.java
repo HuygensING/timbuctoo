@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
 import nl.knaw.huygens.timbuctoo.storage.RevisionChanges;
@@ -54,8 +55,8 @@ public class MongoStorageFacade implements VariationStorage {
     if (conf.requiresAuth()) {
       db.authenticate(conf.getUser(), conf.getPassword().toCharArray());
     }
-    plainStorage = new MongoStorage(registry, conf, mongo, db);
-    variationStorage = new MongoVariationStorage(registry, conf, mongo, db);
+    plainStorage = new MongoStorage(registry, mongo, db, conf.getDbName());
+    variationStorage = new MongoVariationStorage(registry, mongo, db, conf.getDbName());
   }
 
   @Override
@@ -96,12 +97,12 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public <T extends Entity> T findItem(Class<T> type, String property, String value) throws IOException {
+  public <T extends SystemEntity> T findItem(Class<T> type, String property, String value) throws IOException {
     return getStorageFor(type).findItem(type, property, value);
   }
 
   @Override
-  public <T extends Entity> T findItem(Class<T> type, T item) throws IOException {
+  public <T extends SystemEntity> T findItem(Class<T> type, T item) throws IOException {
     return getStorageFor(type).findItem(type, item);
   }
 
@@ -131,12 +132,12 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public <T extends Entity> int removeAll(Class<T> type) {
+  public <T extends SystemEntity> int removeAll(Class<T> type) {
     return getStorageFor(type).removeAll(type);
   }
 
   @Override
-  public <T extends Entity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
+  public <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
     return getStorageFor(type).removeByDate(type, dateField, dateValue);
   }
 
