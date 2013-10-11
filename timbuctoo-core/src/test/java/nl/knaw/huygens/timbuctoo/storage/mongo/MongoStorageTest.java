@@ -6,7 +6,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -49,6 +48,12 @@ public class MongoStorageTest extends MongoStorageTestBase {
   @BeforeClass
   public static void setUpDocTypeRegistry() {
     registry = new DocTypeRegistry(TYPE.getPackage().getName());
+  }
+
+  @Override
+  protected void setupStorage() {
+    storage = new MongoStorage(registry, mongo, db, DB_NAME);
+    storage.setEntityIds(entityIds);
   }
 
   @Test
@@ -276,7 +281,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.addItem(TYPE, doc);
 
     verify(anyCollection).insert(any(DBObject.class));
-    verify(counterCol).findAndModify(any(DBObject.class), any(DBObject.class), any(DBObject.class), anyBoolean(), any(DBObject.class), anyBoolean(), anyBoolean());
   }
 
   @Test
@@ -289,7 +293,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.addItem(TYPE, doc);
 
     verify(anyCollection).insert(any(DBObject.class));
-    verify(counterCol, never()).findAndModify(any(DBObject.class), any(DBObject.class), any(DBObject.class), anyBoolean(), any(DBObject.class), anyBoolean(), anyBoolean());
   }
 
   @Test(expected = MongoException.class)
@@ -477,15 +480,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testEmpty() throws IOException {
-    storage.empty();
-
-    verify(db).cleanCursors(true);
-    verify(mongo).dropDatabase(DB_NAME);
-    verify(mongo).getDB(DB_NAME);
-  }
-
-  @Test
   public void testRemoveAll() throws IOException {
     WriteResult writeResult = mock(WriteResult.class);
     when(writeResult.getN()).thenReturn(3);
@@ -573,12 +567,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
     dbObject.putAll(map);
     dbObject.setObject(doc);
     return dbObject;
-  }
-
-  @Override
-  protected void setupStorage() {
-    storage = new MongoStorage(registry, mongo, db, DB_NAME);
-    storage.counters = counterCol;
   }
 
 }

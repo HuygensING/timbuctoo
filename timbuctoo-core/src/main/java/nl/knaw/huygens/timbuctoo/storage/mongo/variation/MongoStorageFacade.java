@@ -39,8 +39,8 @@ public class MongoStorageFacade implements VariationStorage {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoStorageFacade.class);
 
-  private final String dbName;
   private final Mongo mongo;
+  private final String dbName;
   private DB db;
   private final MongoStorage plainStorage;
   private final MongoVariationStorage variationStorage;
@@ -55,8 +55,8 @@ public class MongoStorageFacade implements VariationStorage {
     if (conf.requiresAuth()) {
       db.authenticate(conf.getUser(), conf.getPassword().toCharArray());
     }
-    plainStorage = new MongoStorage(registry, mongo, db, conf.getDbName());
-    variationStorage = new MongoVariationStorage(registry, mongo, db, conf.getDbName());
+    plainStorage = new MongoStorage(registry, mongo, db, dbName);
+    variationStorage = new MongoVariationStorage(registry, mongo, db, dbName);
   }
 
   @Override

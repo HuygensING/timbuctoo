@@ -36,7 +36,7 @@ public interface BasicStorage {
 
   <T extends Entity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException;
 
-  // -------------------------------------------------------------------
+  // --- system entities -----------------------------------------------
 
   /**
    * Find a system entity which has the specified key/value pair.

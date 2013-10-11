@@ -21,7 +21,7 @@ public interface VariationStorage extends BasicStorage {
 
   /**
    * Counts the number of stored relations with non-null fields
-   * as in the specified {@Relation} instance.
+   * as in the specified {@code Relation} instance.
    */
   int countRelations(Relation relation);
 

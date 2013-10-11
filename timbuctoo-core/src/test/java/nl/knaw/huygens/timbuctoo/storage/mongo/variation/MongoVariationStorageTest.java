@@ -54,6 +54,12 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     registry = new DocTypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
   }
 
+  @Override
+  protected void setupStorage() throws UnknownHostException, MongoException {
+    storage = new MongoVariationStorage(registry, mongo, db, DB_NAME);
+    storage.setEntityIds(entityIds);
+  }
+
   @Test
   public void testAddItem() throws IOException {
     TestConcreteDoc input = createTestDoc("test");
@@ -660,12 +666,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     map.put("^pid", null);
     map.put("^deleted", false);
     return map;
-  }
-
-  @Override
-  protected void setupStorage() throws UnknownHostException, MongoException {
-    storage = new MongoVariationStorage(registry, mongo, db, DB_NAME);
-    storage.setCounterCollection(counterCol);
   }
 
   /**

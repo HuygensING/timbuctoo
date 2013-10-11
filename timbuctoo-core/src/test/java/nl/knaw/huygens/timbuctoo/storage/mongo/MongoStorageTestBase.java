@@ -2,8 +2,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -16,7 +14,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageConfiguration;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.mongojack.JacksonDBCollection;
 
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -33,8 +30,7 @@ public abstract class MongoStorageTestBase {
   protected DB db;
   protected Mongo mongo;
   protected DBCollection anyCollection;
-  protected JacksonDBCollection<MongoStorageBase.Counter, String> counterCol;
-  protected MongoStorageBase.Counter counter;
+  protected EntityIds entityIds;
   protected MongoOptions mongoOptions;
 
   public MongoStorageTestBase() {
@@ -51,20 +47,14 @@ public abstract class MongoStorageTestBase {
     when(storageConfiguration.getPassword()).thenReturn("test");
   }
 
-  @SuppressWarnings("unchecked")
   @Before
   public void setUp() throws UnknownHostException, MongoException {
-    counter = new MongoStorageBase.Counter();
-    counter.id = "test";
-    counter.next = 1;
     anyCollection = mock(DBCollection.class);
-    counterCol = mock(JacksonDBCollection.class);
-    when(counterCol.findAndModify(any(DBObject.class), any(DBObject.class), any(DBObject.class), anyBoolean(), any(DBObject.class), anyBoolean(), anyBoolean())).thenReturn(counter);
+    entityIds = mock(EntityIds.class);
     db = mock(DB.class);
     when(db.getCollection(anyString())).thenReturn(anyCollection);
     mongo = mock(Mongo.class);
     setupStorage();
-
   }
 
   protected abstract void setupStorage() throws UnknownHostException, MongoException;
