@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.model;
 
 import java.util.List;
+import java.util.Objects;
 
 import nl.knaw.huygens.timbuctoo.annotations.DoNotRegister;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
@@ -57,6 +58,23 @@ public class User extends SystemEntity {
 
   public void setRoles(List<String> roles) {
     this.roles = roles;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof User)) {
+      return false;
+    }
+
+    User other = (User) obj;
+
+    return Objects.equals(other.userId, userId) && Objects.equals(other.vreId, vreId);
+
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(userId, vreId);
   }
 
 }
