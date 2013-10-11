@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -69,11 +68,6 @@ public abstract class MongoStorageTestBase {
   }
 
   protected abstract void setupStorage() throws UnknownHostException, MongoException;
-
-  @Deprecated
-  protected void verifyCollectionSize(long expectedSize, String collectionName, DB db) {
-    assertEquals(expectedSize, db.getCollection(collectionName).getCount());
-  }
 
   protected <T extends Entity> void assertEqualDocs(T expected, T actual) {
     try {

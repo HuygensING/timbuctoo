@@ -156,6 +156,30 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
+  public void testFindItemByKey() throws IOException {
+
+    Map<String, Object> map = createDefaultMap(0, DEFAULT_ID);
+    String key = "name";
+    String value = "test";
+    map.put(key, value);
+    map.put("testValue1", null);
+    map.put("testValue2", null);
+    map.put("propAnnotated", null);
+    map.put("pwaa", null);
+    map.put("date", null);
+
+    DBCursor cursor = createDBCursorWithOneValue(createDBObject(map));
+
+    DBObject query = new BasicDBObject(key, value);
+
+    when(anyCollection.find(query, null)).thenReturn(cursor);
+
+    storage.findItemByKey(TestSystemDocument.class, key, value);
+
+    verify(anyCollection).find(query, null);
+  }
+
+  @Test
   public void testUpdateItem() throws IOException {
     TestSystemDocument newDoc = new TestSystemDocument();
     newDoc.setId(DEFAULT_ID);
@@ -531,7 +555,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     testSystemDocumentMap.put("^creation", null);
     testSystemDocumentMap.put("^pid", null);
     testSystemDocumentMap.put("^deleted", false);
-    testSystemDocumentMap.put("@class", "nl.knaw.huygens.timbuctoo.storage.mongo.model.TestSystemDocument");
+    testSystemDocumentMap.put("@class", TestSystemDocument.class.getName());
     testSystemDocumentMap.put("@variations", new Object[0]);
     testSystemDocumentMap.put("!currentVariation", null);
     return testSystemDocumentMap;
