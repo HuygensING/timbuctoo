@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo.variation;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,9 +13,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
-import nl.knaw.huygens.timbuctoo.storage.StorageConfiguration;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.StorageUtils;
 import nl.knaw.huygens.timbuctoo.storage.VariationStorage;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoChanges;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorageBase;
@@ -25,7 +22,6 @@ import nl.knaw.huygens.timbuctoo.variation.VariationInducer;
 import nl.knaw.huygens.timbuctoo.variation.VariationReducer;
 import nl.knaw.huygens.timbuctoo.variation.VariationUtils;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
 import org.mongojack.internal.stream.JacksonDBObject;
@@ -48,35 +44,24 @@ import com.mongodb.MongoException;
 
 public class MongoVariationStorage extends MongoStorageBase implements VariationStorage {
 
-  private final Logger LOG = LoggerFactory.getLogger(getClass());
+  private static final Logger LOG = LoggerFactory.getLogger(MongoVariationStorage.class);
 
-  private VariationInducer inducer;
-  private VariationReducer reducer;
+  private final ObjectMapper objectMapper;
+  private final TreeEncoderFactory treeEncoderFactory;
+  private final TreeDecoderFactory treeDecoderFactory;
+  private final Map<Class<? extends Entity>, DBCollection> collectionCache;
+  private final VariationInducer inducer;
+  private final VariationReducer reducer;
 
-  private ObjectMapper objectMapper;
-  private TreeEncoderFactory treeEncoderFactory;
-  private TreeDecoderFactory treeDecoderFactory;
-
-  private Map<Class<? extends Entity>, DBCollection> collectionCache;
-
-  public MongoVariationStorage(DocTypeRegistry registry, StorageConfiguration conf, Mongo m, DB db) throws UnknownHostException, MongoException {
-    super(registry);
-    dbName = conf.getDbName();
-    this.mongo = m;
-    this.db = db;
-    initializeVariationCollections(conf);
-  }
-
-  private void initializeVariationCollections(StorageConfiguration conf) {
+  public MongoVariationStorage(DocTypeRegistry registry, Mongo mongo, DB db, String dbName) throws UnknownHostException, MongoException {
+    super(registry, mongo, db, dbName);
     objectMapper = new ObjectMapper();
     treeEncoderFactory = new TreeEncoderFactory(objectMapper);
     treeDecoderFactory = new TreeDecoderFactory();
     collectionCache = Maps.newHashMap();
-    counterCol = JacksonDBCollection.wrap(db.getCollection(COUNTER_COLLECTION_NAME), Counter.class, String.class);
-    entityCollections = conf.getEntityTypes();
     inducer = new VariationInducer();
     inducer.setView(JsonViews.DBView.class);
-    reducer = new VariationReducer(docTypeRegistry);
+    reducer = new VariationReducer(registry);
   }
 
   @Override
@@ -115,7 +100,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     String classType = VariationUtils.getClassId(cls);
     BasicDBObject notNull = new BasicDBObject("$ne", null);
     BasicDBObject query = new BasicDBObject(classType, notNull);
-    return new MongoDBVariationIteratorWrapper<T>(col.find(query), reducer, cls);
+    return new MongoDBVariationIterator<T>(col.find(query), reducer, cls);
   }
 
   @Override
@@ -139,17 +124,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   @Override
   public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
     DBCollection col = getVariationCollection(type);
-    return new MongoDBVariationIteratorWrapper<T>(col.find(DBQuery.in("_id", ids)), reducer, type);
-  }
-
-  @Override
-  public <T extends Entity> T findItem(Class<T> type, String property, String value) throws IOException {
-    throw new NotImplementedException("This method is not intended to get used.");
-  }
-
-  @Override
-  public <T extends Entity> T findItem(Class<T> type, T example) throws IOException {
-    throw new NotImplementedException("This method is not intended to get used.");
+    return new MongoDBVariationIterator<T>(col.find(DBQuery.in("_id", ids)), reducer, type);
   }
 
   protected <T extends Entity> DBCollection getVariationCollection(Class<T> type) {
@@ -274,31 +249,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     return treeEncoderFactory.getObjectMapper();
   }
 
-  private <T extends Entity> void setNextId(Class<T> cls, T item) {
-    Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(cls);
-    BasicDBObject idFinder = new BasicDBObject("_id", docTypeRegistry.getINameForType(baseType));
-    BasicDBObject counterIncrement = new BasicDBObject("$inc", new BasicDBObject("next", 1));
-
-    // Find by id, return all fields, use default sort, increment the counter,
-    // return the new object, create if no object exists:
-    Counter newCounter = counterCol.findAndModify(idFinder, null, null, false, counterIncrement, true, true);
-
-    String newId = StorageUtils.formatEntityId(cls, newCounter.next);
-    item.setId(newId);
-  }
-
-  @Override
-  public <T extends Entity> int removeAll(Class<T> type) {
-    // Only for system entities...
-    return 0;
-  }
-
-  @Override
-  public <T extends Entity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
-    // Only for system entities...
-    return 0;
-  }
-
   @Override
   public int countRelations(Relation relation) {
     DBCollection col = db.getCollection("relation");
@@ -375,7 +325,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   // Test only, an ugly hack to be able to mock the counter collection
   void setCounterCollection(JacksonDBCollection<MongoStorageBase.Counter, String> collection) {
-    counterCol = collection;
+    counters = collection;
   }
 
 }
