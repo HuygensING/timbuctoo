@@ -2,12 +2,9 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -50,27 +47,6 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
     DBCursor<T> cursor = getCollection(type).find(DBQuery.in("_id", ids));
     return new MongoDBIterator<T>(cursor);
-  }
-
-  @Override
-  public <T extends SystemEntity> T findItemByKey(Class<T> type, String key, String value) throws IOException {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
-    BasicDBObject query = new BasicDBObject(key, value);
-    return col.findOne(query);
-  }
-
-  @Override
-  public <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
-    BasicDBObject query = new BasicDBObject();
-
-    Map<String, Object> searchProperties = new MongoObjectMapper().mapObject(type, example);
-    Set<String> keys = searchProperties.keySet();
-
-    for (String key : keys) {
-      query.put(key, searchProperties.get(key));
-    }
-    return col.findOne(query);
   }
 
   // -------------------------------------------------------------------

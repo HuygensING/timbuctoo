@@ -92,26 +92,24 @@ public class MongoStorageBase {
 
   // --- system entities -----------------------------------------------
 
-  public <T extends SystemEntity> T findItem(Class<T> type, String key, String value) throws IOException {
+  public <T extends SystemEntity> T findItemByKey(Class<T> type, String key, String value) throws IOException {
     BasicDBObject query = new BasicDBObject(key, value);
-    return MongoUtils.getCollection(db, type).findOne(query);
+    return getCollection(type).findOne(query);
   }
 
   public <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException {
     Map<String, Object> properties = new MongoObjectMapper().mapObject(type, example);
     BasicDBObject query = new BasicDBObject(properties);
-    return MongoUtils.getCollection(db, type).findOne(query);
+    return getCollection(type).findOne(query);
   }
 
   public <T extends SystemEntity> int removeAll(Class<T> type) {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
-    return col.remove(new BasicDBObject()).getN();
+    return getCollection(type).remove(new BasicDBObject()).getN();
   }
 
   public <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
-    JacksonDBCollection<T, String> col = MongoUtils.getCollection(db, type);
     Query query = DBQuery.lessThan(dateField, dateValue);
-    return col.remove(query).getN();
+    return getCollection(type).remove(query).getN();
   }
 
   // -------------------------------------------------------------------
