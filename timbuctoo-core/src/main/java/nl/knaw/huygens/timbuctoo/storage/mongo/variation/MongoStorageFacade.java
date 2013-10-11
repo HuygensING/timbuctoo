@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -14,7 +15,6 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
 import nl.knaw.huygens.timbuctoo.storage.RevisionChanges;
-import nl.knaw.huygens.timbuctoo.storage.StorageConfiguration;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.VariationStorage;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
@@ -46,15 +46,23 @@ public class MongoStorageFacade implements VariationStorage {
   private final MongoVariationStorage variationStorage;
 
   @Inject
-  public MongoStorageFacade(DocTypeRegistry registry, StorageConfiguration conf) throws UnknownHostException, MongoException {
-    dbName = conf.getDbName();
+  public MongoStorageFacade(DocTypeRegistry registry, Configuration config) throws UnknownHostException, MongoException {
     MongoOptions options = new MongoOptions();
     options.safe = true;
-    mongo = new Mongo(new ServerAddress(conf.getHost(), conf.getPort()), options);
+
+    String host = config.getSetting("database.host", "localhost");
+    int port = config.getIntSetting("database.port", 27017);
+    mongo = new Mongo(new ServerAddress(host, port), options);
+
+    dbName = config.getSetting("database.name");
     db = mongo.getDB(dbName);
-    if (conf.requiresAuth()) {
-      db.authenticate(conf.getUser(), conf.getPassword().toCharArray());
+
+    String user = config.getSetting("database.user");
+    if (!user.isEmpty()) {
+      String password = config.getSetting("database.password");
+      db.authenticate(user, password.toCharArray());
     }
+
     plainStorage = new MongoStorage(registry, mongo, db, dbName);
     variationStorage = new MongoVariationStorage(registry, mongo, db, dbName);
   }

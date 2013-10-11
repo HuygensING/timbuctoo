@@ -9,11 +9,10 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.StorageConfiguration;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -26,7 +25,7 @@ import com.mongodb.MongoOptions;
 public abstract class MongoStorageTestBase {
 
   protected static final String DB_NAME = "test";
-  protected static StorageConfiguration storageConfiguration;
+  protected static Configuration config;
   protected DB db;
   protected Mongo mongo;
   protected DBCollection anyCollection;
@@ -35,16 +34,6 @@ public abstract class MongoStorageTestBase {
 
   public MongoStorageTestBase() {
     super();
-  }
-
-  @BeforeClass
-  public static void setUpStorageConfiguration() {
-    storageConfiguration = mock(StorageConfiguration.class);
-    when(storageConfiguration.getDbName()).thenReturn(DB_NAME);
-    when(storageConfiguration.getHost()).thenReturn("127.0.0.1");
-    when(storageConfiguration.getPort()).thenReturn(27017);
-    when(storageConfiguration.getUser()).thenReturn("test");
-    when(storageConfiguration.getPassword()).thenReturn("test");
   }
 
   @Before
