@@ -15,7 +15,6 @@ import java.security.Principal;
 
 import nl.knaw.huygens.security.SecurityInformation;
 import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import org.junit.After;
@@ -49,14 +48,17 @@ public class UserSecurityContextCreatorTest {
     String userId = "test123";
 
     User user = createUser(applicationName, displayName, userId);
+    User example = new User();
+    example.setUserId(userId);
+    example.setVreId(applicationName);
 
     SecurityInformation securityInformation = createSecurityInformation(applicationName, displayName, userId);
 
-    when(storageManager.findEntity(Matchers.<Class<User>> any(), any(User.class))).thenReturn(user);
+    when(storageManager.findEntity(User.class, example)).thenReturn(user);
 
     instance.createSecurityContext(securityInformation);
 
-    verify(storageManager, only()).findEntity(Matchers.<Class<User>> any(), any(User.class));
+    verify(storageManager, only()).findEntity(User.class, example);
     verify(storageManager, never()).addEntity(Matchers.<Class<User>> any(), any(User.class));
   }
 
@@ -88,6 +90,10 @@ public class UserSecurityContextCreatorTest {
     SecurityInformation securityInformation = createSecurityInformation(applicationName, displayName, userId);
     User user = createUser(applicationName, displayName, userId);
     user.setRoles(Lists.newArrayList("UNVERIFIED_USER"));
+
+    User example = new User();
+    example.setUserId(userId);
+    example.setVreId(applicationName);
 
     when(storageManager.findEntity(Matchers.<Class<User>> any(), any(User.class))).thenReturn(null, user);
 

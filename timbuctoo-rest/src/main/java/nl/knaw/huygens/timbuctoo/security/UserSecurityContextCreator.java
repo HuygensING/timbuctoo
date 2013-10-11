@@ -16,7 +16,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 public class UserSecurityContextCreator implements SecurityContextCreator {
-	
+
   private static final Logger LOG = LoggerFactory.getLogger(UserSecurityContextCreator.class);
   private static final String NEW_USER = "NEW_USER";
   private static final String UNVERIFIED_USER_ROLE = "UNVERIFIED_USER";
@@ -37,11 +37,11 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
     User example = new User();
     example.setVreId(securityInformation.getApplicationName());
     example.setUserId(securityInformation.getPrincipal().getName());
-    example.displayName = securityInformation.getDisplayName();
 
     User user = findUser(example);
 
     if (user == null) {
+      example.displayName = securityInformation.getDisplayName();
       user = createUser(example);
     }
 
