@@ -157,11 +157,8 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public <T extends Entity> List<T> getAllVariations(Class<T> type, String id) throws IOException {
-    if (DomainEntity.class.isAssignableFrom(type)) {
-      return variationStorage.getAllVariations(type, id);
-    }
-    throw new UnsupportedOperationException("Method not available for this type");
+  public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws IOException {
+    return variationStorage.getAllVariations(type, id);
   }
 
   @Override

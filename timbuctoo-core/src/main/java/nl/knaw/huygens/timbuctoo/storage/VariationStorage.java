@@ -5,12 +5,11 @@ import java.util.Collection;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 
 public interface VariationStorage extends BasicStorage {
 
-  <T extends Entity> List<T> getAllVariations(Class<T> type, String id) throws IOException;
+  <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws IOException;
 
   /**
    * Get the given variation of an entity.
