@@ -1,11 +1,11 @@
 package nl.knaw.huygens.timbuctoo.search.model;
 
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class ClassWithMupltipleFullTestSearchFields extends Entity {
+public class ClassWithMupltipleFullTestSearchFields extends DomainEntity {
 
   private String simpleIndexField;
 
