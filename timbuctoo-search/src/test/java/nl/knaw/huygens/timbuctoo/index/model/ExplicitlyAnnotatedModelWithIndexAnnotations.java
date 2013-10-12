@@ -2,12 +2,12 @@ package nl.knaw.huygens.timbuctoo.index.model;
 
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
-import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ExplicitlyAnnotatedModelWithIndexAnnotations extends Entity {
+public class ExplicitlyAnnotatedModelWithIndexAnnotations extends DomainEntity {
 
   @Override
   @IndexAnnotation(fieldName = "id")
