@@ -3,30 +3,34 @@ package nl.knaw.huygens.timbuctoo.persistence;
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
 
+import org.apache.commons.lang.StringUtils;
+
 public class PersistenceWrapper {
 
-  private PersistenceManager persistenceManager;
-  private String baseUrl;
+  private final PersistenceManager manager;
+  private final String baseUrl;
 
   public PersistenceWrapper(String baseUrl, PersistenceManager persistenceManager) {
-    this.baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
-    this.persistenceManager = persistenceManager;
+    this.baseUrl = StringUtils.chomp(baseUrl, "/");
+    this.manager = persistenceManager;
   }
 
   public String persistUrl(String url) throws PersistenceException {
-    return persistenceManager.persistURL(url);
+    return manager.persistURL(url);
   }
 
   public String getPersistentUrl(String persistentId) throws PersistenceException {
-    return persistenceManager.getPersistentURL(persistentId);
+    return manager.getPersistentURL(persistentId);
   }
 
-  public String persistObject(String collectionId, String objectId) throws PersistenceException {
-    String url = createUrl(collectionId, objectId);
-    return persistenceManager.persistURL(url);
+  public String persistObject(String collection, String objectId) throws PersistenceException {
+    String url = createUrl(collection, objectId);
+    return manager.persistURL(url);
   }
 
-  private String createUrl(String collectionId, String id) {
-    return baseUrl + "resources/" + collectionId + "/" + id;
+  private String createUrl(String collection, String id) {
+    // FIX implicit dependence on rest module
+    return String.format("%s/%s/%s/%s", baseUrl, "resources", collection, id);
   }
+
 }
