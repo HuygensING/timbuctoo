@@ -66,7 +66,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   private <T extends Entity> void addClassNotNull(Class<T> type, DBObject query) {
-    String classType = VariationUtils.getClassId(type);
+    String classType = VariationUtils.typeToVariationName(type);
     BasicDBObject notNull = new BasicDBObject("$ne", null);
     query.put(classType, notNull);
   }
@@ -90,7 +90,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   @Override
   public <T extends Entity> StorageIterator<T> getAllByType(Class<T> cls) {
     DBCollection col = getVariationCollection(cls);
-    String classType = VariationUtils.getClassId(cls);
+    String classType = VariationUtils.typeToVariationName(cls);
     BasicDBObject notNull = new BasicDBObject("$ne", null);
     BasicDBObject query = new BasicDBObject(classType, notNull);
     return new MongoDBVariationIterator<T>(col.find(query), reducer, cls);
@@ -280,7 +280,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   public <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
     DBCollection col = getVariationCollection(type);
 
-    String typeName = VariationUtils.getClassId(type);
+    String typeName = VariationUtils.typeToVariationName(type);
     DBObject query = new BasicDBObject(typeName, new BasicDBObject("$ne", null));
     query.put("^pid", null);
 
