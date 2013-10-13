@@ -31,14 +31,14 @@ public class StorageManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(StorageManager.class);
 
-  private final DocTypeRegistry docTypeRegistry;
+  private final DocTypeRegistry registry;
   private final VariationStorage storage;
   private final PersistenceWrapper persistenceWrapper;
   private final Producer producer;
 
   @Inject
   public StorageManager(VariationStorage storage, Broker broker, DocTypeRegistry registry, PersistenceWrapper persistenceWrapper) {
-    docTypeRegistry = registry;
+    this.registry = registry;
     this.storage = storage;
     this.persistenceWrapper = persistenceWrapper;
     producer = setupProducer(broker);
@@ -152,7 +152,7 @@ public class StorageManager {
   public <T extends Entity> String addEntityWithoutPersisting(Class<T> type, T doc, boolean isComplete) throws IOException {
     String id = storage.addItem(type, doc);
     if (DomainEntity.class.isAssignableFrom(type) && isComplete) {
-      sendIndexMessage(ActionType.INDEX_ADD, docTypeRegistry.getINameForType(type), id);
+      sendIndexMessage(ActionType.INDEX_ADD, registry.getINameForType(type), id);
     }
     return id;
   }
@@ -181,7 +181,7 @@ public class StorageManager {
       Class<? extends DomainEntity> domainType = (Class<? extends DomainEntity>) type;
       persistEntityVersion(domainType, id);
       if (isComplete) {
-        sendIndexMessage(ActionType.INDEX_ADD, docTypeRegistry.getINameForType(type), id);
+        sendIndexMessage(ActionType.INDEX_ADD, registry.getINameForType(type), id);
       }
     }
     return id;
@@ -190,9 +190,8 @@ public class StorageManager {
   private <T extends DomainEntity> void persistEntityVersion(Class<T> type, String id) {
     try {
       // TODO make persistent id dependent on version.
-      Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(type);
-      String collectionId = docTypeRegistry.getINameForType(baseType);
-      String pid = persistenceWrapper.persistObject(collectionId, id);
+      String collection = registry.getXNameForType(registry.getBaseClass(type));
+      String pid = persistenceWrapper.persistObject(collection, id);
       storage.setPID(type, id, pid);
     } catch (PersistenceException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
@@ -202,7 +201,7 @@ public class StorageManager {
   public <T extends Entity> void modifyEntityWithoutPersisting(Class<T> type, T doc) throws IOException {
     storage.updateItem(type, doc.getId(), doc);
     if (DomainEntity.class.isAssignableFrom(type)) {
-      sendIndexMessage(ActionType.INDEX_MOD, docTypeRegistry.getINameForType(type), doc.getId());
+      sendIndexMessage(ActionType.INDEX_MOD, registry.getINameForType(type), doc.getId());
     }
   }
 
@@ -212,7 +211,7 @@ public class StorageManager {
       @SuppressWarnings("unchecked")
       Class<? extends DomainEntity> domainType = (Class<? extends DomainEntity>) type;
       persistEntityVersion(domainType, doc.getId());
-      sendIndexMessage(ActionType.INDEX_MOD, docTypeRegistry.getINameForType(type), doc.getId());
+      sendIndexMessage(ActionType.INDEX_MOD, registry.getINameForType(type), doc.getId());
     }
   }
 
@@ -220,7 +219,7 @@ public class StorageManager {
     storage.deleteItem(type, doc.getId(), doc.getLastChange());
     //TODO do something with the PID.
     if (DomainEntity.class.isAssignableFrom(type)) {
-      sendIndexMessage(ActionType.INDEX_DEL, docTypeRegistry.getINameForType(type), doc.getId());
+      sendIndexMessage(ActionType.INDEX_DEL, registry.getINameForType(type), doc.getId());
     }
   }
 
