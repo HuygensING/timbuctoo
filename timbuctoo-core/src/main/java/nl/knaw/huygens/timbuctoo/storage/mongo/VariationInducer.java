@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation;
+package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.mongo.variation.DBJsonNode;
 
 import org.mongojack.internal.stream.JacksonDBObject;
 

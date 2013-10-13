@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation;
+package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.lang.reflect.Modifier;
 import java.util.List;

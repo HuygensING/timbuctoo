@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.mongo.variation;
+package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -17,7 +17,6 @@ import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
 import nl.knaw.huygens.timbuctoo.storage.RevisionChanges;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.VariationStorage;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

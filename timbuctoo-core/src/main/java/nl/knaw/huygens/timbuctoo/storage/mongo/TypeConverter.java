@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation;
+package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;

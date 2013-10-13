@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation;
+package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static org.junit.Assert.assertEquals;
 

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.mongo.variation;
+package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
 import java.util.Collections;
