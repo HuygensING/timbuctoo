@@ -30,8 +30,6 @@ public interface BasicStorage {
 
   <T extends Entity> void updateItem(Class<T> type, String id, T item) throws IOException;
 
-  <T extends Entity> void setPID(Class<T> type, String id, String pid);
-
   <T extends Entity> void deleteItem(Class<T> type, String id, Change change) throws IOException;
 
   <T extends Entity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException;

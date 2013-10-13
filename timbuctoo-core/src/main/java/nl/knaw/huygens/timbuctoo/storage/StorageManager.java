@@ -177,7 +177,9 @@ public class StorageManager {
   public <T extends Entity> String addEntity(Class<T> type, T doc, boolean isComplete) throws IOException {
     String id = storage.addItem(type, doc);
     if (DomainEntity.class.isAssignableFrom(type)) {
-      persistEntityVersion(type, id);
+      @SuppressWarnings("unchecked")
+      Class<? extends DomainEntity> domainType = (Class<? extends DomainEntity>) type;
+      persistEntityVersion(domainType, id);
       if (isComplete) {
         sendIndexMessage(ActionType.INDEX_ADD, docTypeRegistry.getINameForType(type), id);
       }
@@ -185,7 +187,7 @@ public class StorageManager {
     return id;
   }
 
-  private <T extends Entity> void persistEntityVersion(Class<T> type, String id) {
+  private <T extends DomainEntity> void persistEntityVersion(Class<T> type, String id) {
     try {
       // TODO make persistent id dependent on version.
       Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(type);
@@ -207,7 +209,9 @@ public class StorageManager {
   public <T extends Entity> void modifyEntity(Class<T> type, T doc) throws IOException {
     storage.updateItem(type, doc.getId(), doc);
     if (DomainEntity.class.isAssignableFrom(type)) {
-      persistEntityVersion(type, doc.getId());
+      @SuppressWarnings("unchecked")
+      Class<? extends DomainEntity> domainType = (Class<? extends DomainEntity>) type;
+      persistEntityVersion(domainType, doc.getId());
       sendIndexMessage(ActionType.INDEX_MOD, docTypeRegistry.getINameForType(type), doc.getId());
     }
   }

@@ -12,7 +12,18 @@ import com.google.common.collect.Maps;
 @JsonIgnoreProperties("@isWritable")
 public abstract class DomainEntity extends Entity {
 
+  private String pid; // the persistent identifier.
   private Map<String, List<EntityRef>> relations = Maps.newHashMap();
+
+  @JsonProperty("^pid")
+  public String getPid() {
+    return pid;
+  }
+
+  @JsonProperty("^pid")
+  public void setPid(String pid) {
+    this.pid = pid;
+  }
 
   @JsonProperty("@relations")
   public Map<String, List<EntityRef>> getRelations() {

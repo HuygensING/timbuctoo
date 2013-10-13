@@ -26,7 +26,6 @@ public abstract class Entity {
   private Change lastChange;
   private Change creation;
   private boolean _deleted;
-  private String pid; // the persistent identifier.
   private List<Reference> variations = Lists.newArrayList();
   private String currentVariation;
 
@@ -86,16 +85,6 @@ public abstract class Entity {
   @JsonProperty("^deleted")
   public void setDeleted(boolean deleted) {
     this._deleted = deleted;
-  }
-
-  @JsonProperty("^pid")
-  public String getPid() {
-    return pid;
-  }
-
-  @JsonProperty("^pid")
-  public void setPid(String pid) {
-    this.pid = pid;
   }
 
   @JsonProperty("@variations")

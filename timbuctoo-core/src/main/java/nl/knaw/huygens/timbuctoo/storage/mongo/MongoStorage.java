@@ -128,13 +128,6 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   }
 
   @Override
-  public <T extends Entity> void setPID(Class<T> type, String id, String pid) {
-    BasicDBObject query = new BasicDBObject("_id", id);
-    BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
-    getCollection(type).update(query, update);
-  }
-
-  @Override
   //TODO Is this still the right way to delete a SystemEntity?
   public <T extends Entity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
     // This needs to be updated once mongo-jackson-mapper fixes their wrapper:
