@@ -177,7 +177,7 @@ public class StorageManager {
   public <T extends Entity> String addEntity(Class<T> type, T doc, boolean isComplete) throws IOException {
     String id = storage.addItem(type, doc);
     if (DomainEntity.class.isAssignableFrom(type)) {
-      persistEntityVersion(type, doc);
+      persistEntityVersion(type, id);
       if (isComplete) {
         sendIndexMessage(ActionType.INDEX_ADD, docTypeRegistry.getINameForType(type), id);
       }
@@ -185,15 +185,15 @@ public class StorageManager {
     return id;
   }
 
-  private <T extends Entity> void persistEntityVersion(Class<T> type, T doc) {
+  private <T extends Entity> void persistEntityVersion(Class<T> type, String id) {
     try {
       // TODO make persistent id dependent on version.
       Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(type);
       String collectionId = docTypeRegistry.getINameForType(baseType);
-      String pid = persistenceWrapper.persistObject(collectionId, doc.getId());
-      storage.setPID(type, doc.getId(), pid);
+      String pid = persistenceWrapper.persistObject(collectionId, id);
+      storage.setPID(type, id, pid);
     } catch (PersistenceException e) {
-      LOG.error("Error while handling {} {}", type.getName(), doc.getId());
+      LOG.error("Error while handling {} {}", type.getName(), id);
     }
   }
 
@@ -207,7 +207,7 @@ public class StorageManager {
   public <T extends Entity> void modifyEntity(Class<T> type, T doc) throws IOException {
     storage.updateItem(type, doc.getId(), doc);
     if (DomainEntity.class.isAssignableFrom(type)) {
-      persistEntityVersion(type, doc);
+      persistEntityVersion(type, doc.getId());
       sendIndexMessage(ActionType.INDEX_MOD, docTypeRegistry.getINameForType(type), doc.getId());
     }
   }
