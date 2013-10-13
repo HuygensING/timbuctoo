@@ -25,7 +25,7 @@ public class MongoUtilsTest {
 
   @Test
   public void testGetVersioningCollectionName() {
-    assertEquals("foo-versions", MongoUtils.getVersioningCollectionName(Foo.class));
+    assertEquals("foo_versions", MongoUtils.getVersioningCollectionName(Foo.class));
   }
 
   @Test
@@ -52,9 +52,9 @@ public class MongoUtilsTest {
   public void testGetVersioningCollection() {
     DB db = Mockito.mock(DB.class);
     DBCollection col = Mockito.mock(DBCollection.class);
-    when(db.getCollection("foo-versions")).thenReturn(col);
+    when(db.getCollection("foo_versions")).thenReturn(col);
     MongoUtils.getVersioningCollection(db, Foo.class);
-    verify(db).getCollection("foo-versions");
+    verify(db).getCollection("foo_versions");
   }
 
 }

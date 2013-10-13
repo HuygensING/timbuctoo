@@ -46,7 +46,7 @@ public class MongoUtils {
   }
 
   public static String getVersioningCollectionName(Class<? extends Entity> type) {
-    return getCollectionName(type) + "-versions";
+    return getCollectionName(type) + "_versions";
   }
 
   public static <T extends Entity> JacksonDBCollection<T, String> getCollection(DB db, Class<T> cls) {

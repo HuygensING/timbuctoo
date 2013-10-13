@@ -17,6 +17,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.VariationStorage;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoChanges;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorageBase;
+import nl.knaw.huygens.timbuctoo.storage.mongo.MongoUtils;
 import nl.knaw.huygens.timbuctoo.variation.VariationException;
 import nl.knaw.huygens.timbuctoo.variation.VariationInducer;
 import nl.knaw.huygens.timbuctoo.variation.VariationReducer;
@@ -142,7 +143,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   protected <T extends Entity> DBCollection getRawVersionCollection(Class<T> type) {
     Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(type);
-    DBCollection col = db.getCollection(docTypeRegistry.getINameForType(baseType) + "-versions");
+    DBCollection col = db.getCollection(MongoUtils.getVersioningCollectionName(baseType));
     col.setDBDecoderFactory(treeDecoderFactory);
     col.setDBEncoderFactory(treeEncoderFactory);
     return col;
