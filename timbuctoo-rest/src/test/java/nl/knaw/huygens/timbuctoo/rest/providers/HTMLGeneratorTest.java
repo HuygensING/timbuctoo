@@ -79,7 +79,6 @@ public class HTMLGeneratorTest {
     assertContains(html, "Rev", "0");
     assertContains(html, "Last Change", "none");
     assertContains(html, "Creation", "none");
-    assertContains(html, "Pid", "none");
     assertContains(html, "Variations", "");
     assertContains(html, "Prop Annotated", "anonProp");
     assertContains(html, "Pwaa", "propWithAnnotatedAccessors");
