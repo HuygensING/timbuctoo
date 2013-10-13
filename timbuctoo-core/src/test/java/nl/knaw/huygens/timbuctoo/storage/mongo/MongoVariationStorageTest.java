@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.mongo.variation;
+package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorageTestBase;
-import nl.knaw.huygens.timbuctoo.variation.VariationException;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestDocWithIDPrefix;

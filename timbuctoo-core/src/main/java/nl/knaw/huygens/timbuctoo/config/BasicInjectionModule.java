@@ -4,7 +4,7 @@ import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.persistence.PersistenceManagerFactory;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.storage.VariationStorage;
-import nl.knaw.huygens.timbuctoo.storage.mongo.variation.MongoStorageFacade;
+import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorageFacade;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;

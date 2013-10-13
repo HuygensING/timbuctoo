@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.mongo.variation;
+package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -15,13 +15,6 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.VariationStorage;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoChanges;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorageBase;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoUtils;
-import nl.knaw.huygens.timbuctoo.variation.VariationException;
-import nl.knaw.huygens.timbuctoo.variation.VariationInducer;
-import nl.knaw.huygens.timbuctoo.variation.VariationReducer;
-import nl.knaw.huygens.timbuctoo.variation.VariationUtils;
 
 import org.mongojack.DBQuery;
 import org.mongojack.internal.stream.JacksonDBObject;

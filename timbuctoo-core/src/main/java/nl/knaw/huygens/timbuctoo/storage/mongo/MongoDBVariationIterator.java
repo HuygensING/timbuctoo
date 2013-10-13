@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.mongo.variation;
+package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
 import java.util.List;
@@ -6,7 +6,6 @@ import java.util.NoSuchElementException;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.variation.VariationReducer;
 
 import com.google.common.collect.Lists;
 import com.mongodb.DBCursor;
