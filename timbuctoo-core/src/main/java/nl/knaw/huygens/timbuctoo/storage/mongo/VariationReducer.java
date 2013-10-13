@@ -26,12 +26,12 @@ public class VariationReducer {
 
   private static final String VERSIONS_FIELD = "versions";
 
-  private final TypeConverter converter;
+  private final DocTypeRegistry registry;
   private final ObjectMapper mapper;
   private static final Logger LOG = LoggerFactory.getLogger(VariationReducer.class);
 
   public VariationReducer(DocTypeRegistry registry, ObjectMapper mapper) {
-    converter = new TypeConverter(registry);
+    this.registry = registry;
     this.mapper = mapper;
   }
 
@@ -111,7 +111,7 @@ public class VariationReducer {
     String idPrefix = classVariation + "-";
     List<JsonNode> specificData = Lists.newArrayListWithExpectedSize(1);
     List<String> types = getTypes(node);
-    String requestedClassId = VariationUtils.getClassId(cls);
+    String requestedClassId = VariationUtils.typeToVariationName(cls);
 
     String variationToRetrieve = null;
     JsonNode defaultVariationNode = null;
@@ -124,7 +124,7 @@ public class VariationReducer {
 
     ObjectNode rv = mapper.createObjectNode();
     for (Class<? extends Entity> someCls : VariationUtils.getAllClasses(cls)) {
-      String id = VariationUtils.getClassId(someCls);
+      String id = VariationUtils.typeToVariationName(someCls);
       JsonNode data = node.get(id);
       if (data != null) {
         if (id.startsWith(idPrefix)) {
@@ -171,7 +171,7 @@ public class VariationReducer {
   private List<Reference> getVariations(List<String> typeStrings, String id) throws VariationException {
     List<Reference> references = Lists.<Reference> newLinkedList();
     for (String typeString : typeStrings) {
-      Class<? extends Entity> type = converter.getClass(typeString);
+      Class<? extends Entity> type = VariationUtils.variationNameToType(registry, typeString);
       if (typeString.contains("-")) {
         // project specific classes don't have any variation
         references.add(new Reference(type, id));
@@ -311,7 +311,7 @@ public class VariationReducer {
       if (!name.startsWith("^") && !name.startsWith("_")) {
         JsonNode subNode = jsonNode.get(name);
         if (subNode != null && subNode.isObject()) {
-          Class<? extends T> indicatedClass = converter.getClass(name);
+          Class<? extends T> indicatedClass = VariationUtils.variationNameToType(registry, name);
           rv.add(reduce(jsonNode, indicatedClass));
         }
       }

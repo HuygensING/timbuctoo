@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import com.google.common.collect.Lists;
@@ -30,7 +31,10 @@ public class VariationUtils {
     return rv;
   }
 
-  public static String getClassId(Class<?> cls) {
+  // Conversion between (domain) model type tokens and variation names.
+  // The conversion rules are used by VariationReducer and VariationInducer only.
+
+  public static String typeToVariationName(Class<?> cls) {
     String clsId = cls.getSimpleName().toLowerCase();
     String variationName = getVariationName(cls);
     if (variationName.equals(BASE_MODEL_PACKAGE_VARIATION)) {
@@ -38,4 +42,14 @@ public class VariationUtils {
     }
     return variationName + "-" + clsId;
   }
+
+  @SuppressWarnings("unchecked")
+  public static <T extends Entity> Class<? extends T> variationNameToType(DocTypeRegistry registry, String id) {
+    return (Class<? extends T>) registry.getTypeForIName(normalize(id));
+  }
+
+  private static String normalize(String typeString) {
+    return typeString.replaceFirst("[a-z]*-", "");
+  }
+
 }

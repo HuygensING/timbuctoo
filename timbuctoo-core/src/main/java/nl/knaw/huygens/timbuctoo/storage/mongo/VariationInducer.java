@@ -69,7 +69,7 @@ public class VariationInducer {
       o = mapper.createObjectNode();
     }
     for (Class<? extends Entity> someCls : allClasses) {
-      String classId = VariationUtils.getClassId(someCls);
+      String classId = VariationUtils.typeToVariationName(someCls);
       if (!o.has(classId)) {
         o.put(classId, mapper.createObjectNode());
       }
@@ -89,7 +89,7 @@ public class VariationInducer {
     Map<String, Object> finishedKeys = Maps.newHashMap();
     while (i-- > 0) {
       Class<? extends Entity> someCls = allClasses.get(i);
-      String classId = VariationUtils.getClassId(someCls);
+      String classId = VariationUtils.typeToVariationName(someCls);
       JsonNode obj = existingItem.get(classId);
       if (!obj.isObject()) {
         throw new VariationException("Variation object (" + classId + ") is not an object?");
