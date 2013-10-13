@@ -505,37 +505,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
     verify(anyCollection).remove(query);
   }
 
-  @Test
-  public void testSetPID() {
-    Class<TestSystemDocument> type = TestSystemDocument.class;
-
-    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
-    String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
-    DBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
-
-    storage.setPID(type, DEFAULT_ID, pid);
-
-    verify(anyCollection).update(query, update, false, false, null);
-    verify(db).getCollection("testsystemdocument");
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testSetPIDMongoException() {
-    Class<TestSystemDocument> type = TestSystemDocument.class;
-
-    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
-    String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
-    DBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
-
-    doThrow(MongoException.class).when(anyCollection).update(query, update, false, false, null);
-
-    try {
-      storage.setPID(type, DEFAULT_ID, pid);
-    } finally {
-      verify(db).getCollection("testsystemdocument");
-    }
-  }
-
   private Date offsetDate(Date date, long millis) {
     return new Date(date.getTime() + millis);
   }

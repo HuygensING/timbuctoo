@@ -174,13 +174,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Entity> void setPID(Class<T> cls, String id, String pid) {
-    BasicDBObject query = new BasicDBObject("_id", id);
-    BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
-    getVariationCollection(cls).update(query, update);
-  }
-
-  @Override
   public <T extends Entity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
     DBCollection col = getVariationCollection(type);
     BasicDBObject q = new BasicDBObject("_id", id);
@@ -274,6 +267,13 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     }
 
     return releationIds;
+  }
+
+  @Override
+  public <T extends DomainEntity> void setPID(Class<T> cls, String id, String pid) {
+    BasicDBObject query = new BasicDBObject("_id", id);
+    BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
+    getVariationCollection(cls).update(query, update);
   }
 
   @Override

@@ -34,6 +34,8 @@ public interface VariationStorage extends BasicStorage {
    */
   Collection<String> getRelationIds(Collection<String> ids) throws IOException;
 
+  <T extends DomainEntity> void setPID(Class<T> type, String id, String pid);
+
   /**
    * Returns all the ids of objects of type <T>, that are not persisted.
    */
