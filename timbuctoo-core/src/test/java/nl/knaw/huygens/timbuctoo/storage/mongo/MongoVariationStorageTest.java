@@ -324,7 +324,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBCursor cursor = createDBCursorWithOneValue(dbObject);
     when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
 
-    Collection<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+    List<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
 
     assertTrue(ids.contains(id1));
 
@@ -351,7 +351,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
 
-    Collection<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+    List<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
 
     assertTrue(ids.contains(id1));
     assertTrue(ids.contains(id2));
@@ -370,7 +370,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBCursor cursor = createCursorWithoutValues();
     when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
 
-    Collection<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+    List<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
 
     assertTrue(ids.isEmpty());
 

@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mongodb.BasicDBObject;
@@ -271,29 +272,25 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
-    DBCollection col = getVariationCollection(type);
-
-    String typeName = VariationUtils.typeToVariationName(type);
-    DBObject query = new BasicDBObject(typeName, new BasicDBObject("$ne", null));
-    query.put("^pid", null);
-
-    DBObject columnsToShow = new BasicDBObject("_id", 1);
-    Set<String> returnValue = Sets.newHashSet();
+  public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
+    List<String> list = Lists.newArrayList();
 
     try {
-      DBCursor cursor = col.find(query, columnsToShow);
+      String typeName = VariationUtils.typeToVariationName(type);
+      DBObject query = new BasicDBObject(typeName, new BasicDBObject("$ne", null));
+      query.put("^pid", null);
+      DBObject columnsToShow = new BasicDBObject("_id", 1);
 
+      DBCursor cursor = getVariationCollection(type).find(query, columnsToShow);
       while (cursor.hasNext()) {
-        returnValue.add((String) cursor.next().get("_id"));
+        list.add((String) cursor.next().get("_id"));
       }
-
-    } catch (MongoException ex) {
+    } catch (MongoException e) {
       LOG.error("Error while retrieving objects without pid of type {}", type);
-      throw new IOException(ex);
+      throw new IOException(e);
     }
 
-    return returnValue;
+    return list;
   }
 
   @Override
