@@ -99,11 +99,6 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
-    return getStorageFor(type).getByMultipleIds(type, ids);
-  }
-
-  @Override
   public <T extends SystemEntity> T findItemByKey(Class<T> type, String key, String value) throws IOException {
     return getStorageFor(type).findItemByKey(type, key, value);
   }

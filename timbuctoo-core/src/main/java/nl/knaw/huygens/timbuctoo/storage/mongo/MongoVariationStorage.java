@@ -114,12 +114,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     return reducer.reduceRevision(type, col.findOne(query));
   }
 
-  @Override
-  public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
-    DBCollection col = getVariationCollection(type);
-    return new MongoDBVariationIterator<T>(col.find(DBQuery.in("_id", ids)), reducer, type);
-  }
-
   protected <T extends Entity> DBCollection getVariationCollection(Class<T> type) {
     DBCollection col;
     if (!collectionCache.containsKey(type)) {

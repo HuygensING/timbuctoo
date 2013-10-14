@@ -11,11 +11,9 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.mongo.model.TestSystemDocument;
 
 import org.junit.BeforeClass;
@@ -23,7 +21,6 @@ import org.junit.Test;
 import org.mongojack.internal.stream.JacksonDBObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
@@ -367,62 +364,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
     when(anyCollection.find()).thenReturn(cursor);
 
     storage.getAllByType(TYPE);
-  }
-
-  @Test
-  public void testGetByMultipleIdsOneFound() throws IOException {
-    List<String> ids = Lists.newArrayList(DEFAULT_ID, "TSD000000000002", "TSD000000000004");
-
-    Map<String, Object> testSystemDocumentMap = createDefaultMap(0, DEFAULT_ID);
-    testSystemDocumentMap.put("testValue1", "test");
-    DBObject dbObject = createDBObject(testSystemDocumentMap);
-
-    DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
-
-    DBCursor cursor = createDBCursorWithOneValue(dbObject);
-    when(anyCollection.find(query)).thenReturn(cursor);
-
-    StorageIterator<TestSystemDocument> iterator = storage.getByMultipleIds(TestSystemDocument.class, ids);
-
-    assertEquals(1, iterator.size());
-  }
-
-  @Test
-  public void testGetByMultipleIdsMultipleFound() throws IOException {
-    Class<TestSystemDocument> type = TestSystemDocument.class;
-    String id2 = "TSD000000000002";
-    List<String> ids = Lists.newArrayList(DEFAULT_ID, id2, "TSD000000000004");
-
-    DBObject object1 = createDBObject(createDefaultMap(1, DEFAULT_ID));
-    DBObject object2 = createDBObject(createDefaultMap(1, id2));
-    DBCursor cursor = mock(DBCursor.class);
-    when(cursor.hasNext()).thenReturn(true, true, false);
-    when(cursor.next()).thenReturn(object1, object2);
-    when(cursor.count()).thenReturn(2);
-
-    DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
-
-    when(anyCollection.find(query)).thenReturn(cursor);
-
-    StorageIterator<TestSystemDocument> iterator = storage.getByMultipleIds(type, ids);
-
-    assertEquals(2, iterator.size());
-  }
-
-  @Test
-  public void testGetByMultipleIdsNoneFound() throws IOException {
-    Class<TestSystemDocument> type = TestSystemDocument.class;
-    List<String> ids = Lists.newArrayList(DEFAULT_ID, "TSD000000000002", "TSD000000000004");
-
-    DBCursor cursor = createCursorWithoutValues();
-
-    DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
-
-    when(anyCollection.find(query)).thenReturn(cursor);
-
-    StorageIterator<TestSystemDocument> iterator = storage.getByMultipleIds(type, ids);
-
-    assertEquals(iterator.size(), 0);
   }
 
   @Test

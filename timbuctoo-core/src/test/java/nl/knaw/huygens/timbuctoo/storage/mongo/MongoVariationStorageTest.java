@@ -302,18 +302,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetByMultipleIds() throws IOException {
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    List<String> ids = Lists.newArrayList("TCD1", "TCD2", "TCD3");
-
-    storage.getByMultipleIds(type, ids);
-
-    DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
-
-    verify(anyCollection).find(query);
-  }
-
-  @Test
   public void testGetRevision() throws IOException {
     int revisionId = 0;
     storage.getRevision(ProjectAGeneralTestDoc.class, DEFAULT_ID, revisionId);

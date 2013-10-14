@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Date;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -20,8 +19,6 @@ public interface BasicStorage {
   <T extends Entity> T getItem(Class<T> type, String id) throws IOException;
 
   <T extends Entity> StorageIterator<T> getAllByType(Class<T> type);
-
-  <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids);
 
   /**
    * Adds the specified entity to the storage; returns its assigned id.

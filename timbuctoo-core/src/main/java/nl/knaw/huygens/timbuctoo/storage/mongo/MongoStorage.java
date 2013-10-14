@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
-import java.util.Collection;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -41,12 +40,6 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   //TODO do we still want to use versions for SystemEntities?
   public <T extends Entity> MongoChanges<T> getAllRevisions(Class<T> type, String id) {
     return getVersioningCollection(type).findOneById(id);
-  }
-
-  @Override
-  public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
-    DBCursor<T> cursor = getCollection(type).find(DBQuery.in("_id", ids));
-    return new MongoDBIterator<T>(cursor);
   }
 
   // -------------------------------------------------------------------
