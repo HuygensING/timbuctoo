@@ -5,7 +5,6 @@ import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -27,7 +26,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -241,30 +239,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public Collection<String> getRelationIds(Collection<String> ids) throws IOException {
-    DBCollection col = db.getCollection("relation");
-
-    DBObject query = DBQuery.or(DBQuery.in("^sourceId", ids), DBQuery.in("^targetId", ids));
-    query.put("^pid", null);
-    DBObject columnsToShow = new BasicDBObject("_id", 1);
-
-    Set<String> releationIds = Sets.newHashSet();
-
-    try {
-      DBCursor cursor = col.find(query, columnsToShow);
-
-      while (cursor.hasNext()) {
-        releationIds.add((String) cursor.next().get("_id"));
-      }
-    } catch (MongoException ex) {
-      LOG.error("Error while retrieving relation id's without pid relating to {}", ids);
-      throw new IOException(ex);
-    }
-
-    return releationIds;
-  }
-
-  @Override
   public <T extends DomainEntity> void setPID(Class<T> cls, String id, String pid) {
     BasicDBObject query = new BasicDBObject("_id", id);
     BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
@@ -291,6 +265,26 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     }
 
     return list;
+  }
+
+  @Override
+  public List<String> getRelationIds(List<String> ids) throws IOException {
+    List<String> releationIds = Lists.newArrayList();
+
+    try {
+      DBObject query = DBQuery.or(DBQuery.in("^sourceId", ids), DBQuery.in("^targetId", ids));
+      DBObject columnsToShow = new BasicDBObject("_id", 1);
+
+      DBCursor cursor = db.getCollection("relation").find(query, columnsToShow);
+      while (cursor.hasNext()) {
+        releationIds.add((String) cursor.next().get("_id"));
+      }
+    } catch (MongoException ex) {
+      LOG.error("Error while retrieving relation id's without pid relating to {}", ids);
+      throw new IOException(ex);
+    }
+
+    return releationIds;
   }
 
   @Override

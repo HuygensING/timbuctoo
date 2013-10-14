@@ -246,11 +246,11 @@ public class StorageManager {
    * Returns the id's of the relations, connected to the entities with the input id's.
    * The input id's can be the source id as well as the target id of the Relation. 
    * 
-   * @param ids a collection of id's to find the relations for
-   * @return a collection of id's of the corresponding relations
+   * @param ids a list of id's to find the relations for
+   * @return a list of id's of the corresponding relations
    * @throws IOException re-throws the IOExceptions of the storage
    */
-  public Collection<String> getRelationIds(Collection<String> ids) throws IOException {
+  public List<String> getRelationIds(List<String> ids) throws IOException {
     return storage.getRelationIds(ids);
   }
 
