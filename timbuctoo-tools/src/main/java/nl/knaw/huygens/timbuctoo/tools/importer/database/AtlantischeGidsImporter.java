@@ -135,13 +135,13 @@ public class AtlantischeGidsImporter extends DefaultImporter {
   }
 
   private static void removeAllFromClass(Class<? extends DomainEntity> type, StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
-    Collection<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
-    storageManager.removePermanently(type, ids);
-    indexManager.deleteDocuments(type, Lists.newArrayList(ids));
+    List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
+    storageManager.removeNonPersistent(type, ids);
+    indexManager.deleteDocuments(type, ids);
     //Remove relations
-    Collection<String> relationIds = storageManager.getRelationIds(ids);
-    storageManager.removePermanently(Relation.class, relationIds);
-    indexManager.deleteDocuments(Relation.class, Lists.newArrayList(ids));
+    List<String> relationIds = storageManager.getRelationIds(ids);
+    storageManager.removeNonPersistent(Relation.class, relationIds);
+    indexManager.deleteDocuments(Relation.class, ids);
   }
 
   // -------------------------------------------------------------------

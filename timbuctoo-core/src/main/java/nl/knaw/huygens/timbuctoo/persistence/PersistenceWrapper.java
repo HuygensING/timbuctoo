@@ -3,7 +3,8 @@ package nl.knaw.huygens.timbuctoo.persistence;
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
 
-import org.apache.commons.lang.StringUtils;
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Joiner;
 
 public class PersistenceWrapper {
 
@@ -11,7 +12,7 @@ public class PersistenceWrapper {
   private final String baseUrl;
 
   public PersistenceWrapper(String baseUrl, PersistenceManager persistenceManager) {
-    this.baseUrl = StringUtils.chomp(baseUrl, "/");
+    this.baseUrl = CharMatcher.is('/').trimTrailingFrom(baseUrl);
     this.manager = persistenceManager;
   }
 
@@ -29,8 +30,8 @@ public class PersistenceWrapper {
   }
 
   private String createUrl(String collection, String id) {
-    // FIX implicit dependence on rest module
-    return String.format("%s/%s/%s/%s", baseUrl, "resources", collection, id);
+    // FIXME implicit dependence on rest module
+    return Joiner.on('/').join(baseUrl, "resources", collection, id);
   }
 
 }
