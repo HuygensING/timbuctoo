@@ -15,7 +15,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -423,8 +422,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     List<String> inputIds = Lists.newArrayList(DEFAULT_ID, "TCD000000002", "TCD000000003");
 
     DBObject query = createRelatedToQuery(inputIds);
-    query.put("^pid", null);
-
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
     String relationId1 = "RELA000000000001";
@@ -442,7 +439,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
 
     try {
-      Collection<String> relationsIds = storage.getRelationIds(inputIds);
+      List<String> relationsIds = storage.getRelationIds(inputIds);
 
       assertTrue(relationsIds.contains(relationId1));
       assertTrue(relationsIds.contains(relationId2));
@@ -466,8 +463,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     List<String> inputIds = Lists.newArrayList(DEFAULT_ID, "TCD000000002", "TCD000000003");
 
     DBObject query = createRelatedToQuery(inputIds);
-    query.put("^pid", null);
-
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
     DBCursor cursor = mock(DBCursor.class);
@@ -485,8 +480,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     List<String> inputIds = Lists.newArrayList(DEFAULT_ID, "TCD000000002", "TCD000000003");
 
     DBObject query = createRelatedToQuery(inputIds);
-    query.put("^pid", null);
-
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
     DBCursor cursor = mock(DBCursor.class);

@@ -171,7 +171,7 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public Collection<String> getRelationIds(Collection<String> ids) throws IOException {
+  public List<String> getRelationIds(List<String> ids) throws IOException {
     return variationStorage.getRelationIds(ids);
   }
 

@@ -139,9 +139,9 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     storageManager.removePermanently(type, ids);
     indexManager.deleteDocuments(type, ids);
     //Remove relations
-    Collection<String> relationIds = storageManager.getRelationIds(ids);
+    List<String> relationIds = storageManager.getRelationIds(ids);
     storageManager.removePermanently(Relation.class, relationIds);
-    indexManager.deleteDocuments(Relation.class, Lists.newArrayList(ids));
+    indexManager.deleteDocuments(Relation.class, ids);
   }
 
   // -------------------------------------------------------------------
