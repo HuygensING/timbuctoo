@@ -37,12 +37,12 @@ public class PersistenceWrapperTest {
     verify(persistenceManager).persistURL("http://test.nl/resources/test/1234");
   }
 
-  @SuppressWarnings("unchecked")
   @Test(expected = PersistenceException.class)
   public void testPersistObjectException() throws PersistenceException {
-    when(persistenceManager.persistURL(anyString())).thenThrow(PersistenceException.class);
+    when(persistenceManager.persistURL(anyString())).thenThrow(new PersistenceException("error"));
 
     PersistenceWrapper persistenceWrapper = createInstance("http://test.nl/");
     persistenceWrapper.persistObject("test", "1234");
   }
+
 }
