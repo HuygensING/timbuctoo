@@ -268,10 +268,6 @@ public class StorageManager {
     storage.removePermanently(type, ids);
   }
 
-  public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, List<String> ids) {
-    return storage.getByMultipleIds(type, ids);
-  }
-
   public <T extends Entity> List<T> getAllLimited(Class<T> type, int offset, int limit) {
     if (limit == 0) {
       return Collections.<T> emptyList();
