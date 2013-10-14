@@ -235,10 +235,10 @@ public class StorageManager {
    * Retrieves all the id's of type {@code <T>} that does not have a persistent id. 
    * 
    * @param type the type of the id's that should be retrieved
-   * @return a collection with all the ids.
+   * @return a list with all the ids.
    * @throws IOException when the storage layer throws an exception it will be forwarded.
    */
-  public <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
+  public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
     return storage.getAllIdsWithoutPIDOfType(type);
   }
 

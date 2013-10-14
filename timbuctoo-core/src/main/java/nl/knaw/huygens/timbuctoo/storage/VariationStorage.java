@@ -24,6 +24,19 @@ public interface VariationStorage extends BasicStorage {
    */
   int countRelations(Relation relation);
 
+  <T extends DomainEntity> void setPID(Class<T> type, String id, String pid);
+
+  /**
+   * Returns the id's of the domain entities of the specified type, that are not persisted.
+   * 
+   * Note that by design the method does not return variations of a type
+   * that already has been persisted.
+   * For example, if {@code Person} is a primitive type and a variation
+   * {@code XyzPerson} of an existing entity has been added, this method
+   * will not retrieve the id of that entity.
+   */
+  <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException;
+
   /**
    * Returns the id's of the relations, connected to the entities with the input id's.
    * The input id's can be the source id as well as the target id of the Relation. 
@@ -33,13 +46,6 @@ public interface VariationStorage extends BasicStorage {
    * @throws IOException wrapped exception around the database exceptions
    */
   Collection<String> getRelationIds(Collection<String> ids) throws IOException;
-
-  <T extends DomainEntity> void setPID(Class<T> type, String id, String pid);
-
-  /**
-   * Returns all the ids of objects of type <T>, that are not persisted.
-   */
-  <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException;
 
   /**
    * Permanently removes the objects from the database.

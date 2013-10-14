@@ -161,18 +161,18 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public Collection<String> getRelationIds(Collection<String> ids) throws IOException {
-    return variationStorage.getRelationIds(ids);
-  }
-
-  @Override
   public <T extends DomainEntity> void setPID(Class<T> cls, String id, String pid) {
     variationStorage.setPID(cls, id, pid);
   }
 
   @Override
-  public <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
+  public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
     return variationStorage.getAllIdsWithoutPIDOfType(type);
+  }
+
+  @Override
+  public Collection<String> getRelationIds(Collection<String> ids) throws IOException {
+    return variationStorage.getRelationIds(ids);
   }
 
   @Override

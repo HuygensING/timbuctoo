@@ -15,7 +15,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.jms.JMSException;
@@ -425,7 +424,7 @@ public class StorageManagerTest {
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     when(storage.getAllIdsWithoutPIDOfType(type)).thenReturn(expected);
 
-    Collection<String> actual = instance.getAllIdsWithoutPIDOfType(type);
+    List<String> actual = instance.getAllIdsWithoutPIDOfType(type);
 
     assertEquals(expected, actual);
   }
