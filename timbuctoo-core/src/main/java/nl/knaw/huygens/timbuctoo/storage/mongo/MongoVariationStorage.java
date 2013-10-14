@@ -238,6 +238,14 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
+  public StorageIterator<Relation> getRelationsOf(Class<? extends DomainEntity> type, String id) throws IOException {
+    String name = VariationUtils.typeToVariationName(Relation.class);
+    DBObject query = DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id)).notEquals(name, null);
+    DBCursor cursor = getVariationCollection(Relation.class).find(query);
+    return new MongoDBVariationIterator<Relation>(cursor, reducer, Relation.class);
+  }
+
+  @Override
   public <T extends DomainEntity> void setPID(Class<T> cls, String id, String pid) {
     BasicDBObject query = new BasicDBObject("_id", id);
     BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
