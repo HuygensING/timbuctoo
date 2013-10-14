@@ -160,6 +160,11 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
+  public StorageIterator<Relation> getRelationsOf(Class<? extends DomainEntity> type, String id) throws IOException {
+    return variationStorage.getRelationsOf(type, id);
+  }
+
+  @Override
   public <T extends DomainEntity> void setPID(Class<T> cls, String id, String pid) {
     variationStorage.setPID(cls, id, pid);
   }
