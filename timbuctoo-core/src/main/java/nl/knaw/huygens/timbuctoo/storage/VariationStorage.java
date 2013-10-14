@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -48,8 +47,8 @@ public interface VariationStorage extends BasicStorage {
   List<String> getRelationIds(List<String> ids) throws IOException;
 
   /**
-   * Permanently removes the objects from the database.
+   * Removes non-persistent domain entities with the specified type and id's..
    */
-  <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids) throws IOException;
+  <T extends DomainEntity> void removeNonPersistent(Class<T> type, List<String> ids) throws IOException;
 
 }

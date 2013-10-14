@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -255,7 +254,7 @@ public class StorageManager {
   }
 
   /**
-   * Removes all the objects of type <T>, that is included in collection of id's.
+   * Removes non-persistent domain entities with the specified type and id's..
    * The idea behind this method is that domain entities without persistent identifier are not validated yet.
    * After a bulk import non of the imported entity will have a persistent identifier, until a user has agreed with the imported collection.  
    * 
@@ -264,8 +263,8 @@ public class StorageManager {
    * @param ids the id's to remove permanently
    * @throws IOException when the storage layer throws an exception it will be forwarded
    */
-  public <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids) throws IOException {
-    storage.removePermanently(type, ids);
+  public <T extends DomainEntity> void removeNonPersistent(Class<T> type, List<String> ids) throws IOException {
+    storage.removeNonPersistent(type, ids);
   }
 
   public <T extends Entity> List<T> getAllLimited(Class<T> type, int offset, int limit) {

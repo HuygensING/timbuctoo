@@ -505,7 +505,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
     query.put("^pid", null);
 
-    storage.removePermanently(TestConcreteDoc.class, ids);
+    storage.removeNonPersistent(TestConcreteDoc.class, ids);
 
     verify(anyCollection).remove(query);
     verify(db).getCollection("testconcretedoc");
@@ -518,7 +518,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     query.put("^pid", null);
     doThrow(MongoException.class).when(anyCollection).remove(query);
 
-    storage.removePermanently(TestConcreteDoc.class, ids);
+    storage.removeNonPersistent(TestConcreteDoc.class, ids);
 
   }
 
