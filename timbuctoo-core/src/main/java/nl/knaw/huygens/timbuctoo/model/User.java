@@ -1,12 +1,12 @@
 package nl.knaw.huygens.timbuctoo.model;
 
 import java.util.List;
-import java.util.Objects;
 
 import nl.knaw.huygens.timbuctoo.annotations.DoNotRegister;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Objects;
 
 /*
  * Make sure the User-class is not registered by the DocumentTypeRegistry. The reason is that User has it's own resource class with it's specific authorization.
@@ -68,13 +68,13 @@ public class User extends SystemEntity {
 
     User other = (User) obj;
 
-    return Objects.equals(other.userId, userId) && Objects.equals(other.vreId, vreId);
+    return Objects.equal(other.userId, userId) && Objects.equal(other.vreId, vreId);
 
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(userId, vreId);
+    //Google Objects
+    return Objects.hashCode(userId, vreId);
   }
-
 }
