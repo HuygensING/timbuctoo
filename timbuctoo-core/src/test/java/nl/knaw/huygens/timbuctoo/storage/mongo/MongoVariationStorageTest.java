@@ -15,7 +15,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -302,18 +301,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetByMultipleIds() throws IOException {
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    List<String> ids = Lists.newArrayList("TCD1", "TCD2", "TCD3");
-
-    storage.getByMultipleIds(type, ids);
-
-    DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
-
-    verify(anyCollection).find(query);
-  }
-
-  @Test
   public void testGetRevision() throws IOException {
     int revisionId = 0;
     storage.getRevision(ProjectAGeneralTestDoc.class, DEFAULT_ID, revisionId);
@@ -336,7 +323,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBCursor cursor = createDBCursorWithOneValue(dbObject);
     when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
 
-    Collection<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+    List<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
 
     assertTrue(ids.contains(id1));
 
@@ -363,7 +350,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
 
-    Collection<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+    List<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
 
     assertTrue(ids.contains(id1));
     assertTrue(ids.contains(id2));
@@ -382,7 +369,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBCursor cursor = createCursorWithoutValues();
     when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
 
-    Collection<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+    List<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
 
     assertTrue(ids.isEmpty());
 
@@ -435,8 +422,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     List<String> inputIds = Lists.newArrayList(DEFAULT_ID, "TCD000000002", "TCD000000003");
 
     DBObject query = createRelatedToQuery(inputIds);
-    query.put("^pid", null);
-
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
     String relationId1 = "RELA000000000001";
@@ -454,7 +439,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
 
     try {
-      Collection<String> relationsIds = storage.getRelationIds(inputIds);
+      List<String> relationsIds = storage.getRelationIds(inputIds);
 
       assertTrue(relationsIds.contains(relationId1));
       assertTrue(relationsIds.contains(relationId2));
@@ -478,8 +463,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     List<String> inputIds = Lists.newArrayList(DEFAULT_ID, "TCD000000002", "TCD000000003");
 
     DBObject query = createRelatedToQuery(inputIds);
-    query.put("^pid", null);
-
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
     DBCursor cursor = mock(DBCursor.class);
@@ -497,8 +480,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     List<String> inputIds = Lists.newArrayList(DEFAULT_ID, "TCD000000002", "TCD000000003");
 
     DBObject query = createRelatedToQuery(inputIds);
-    query.put("^pid", null);
-
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
     DBCursor cursor = mock(DBCursor.class);
@@ -524,7 +505,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
     query.put("^pid", null);
 
-    storage.removePermanently(TestConcreteDoc.class, ids);
+    storage.removeNonPersistent(TestConcreteDoc.class, ids);
 
     verify(anyCollection).remove(query);
     verify(db).getCollection("testconcretedoc");
@@ -537,7 +518,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     query.put("^pid", null);
     doThrow(MongoException.class).when(anyCollection).remove(query);
 
-    storage.removePermanently(TestConcreteDoc.class, ids);
+    storage.removeNonPersistent(TestConcreteDoc.class, ids);
 
   }
 

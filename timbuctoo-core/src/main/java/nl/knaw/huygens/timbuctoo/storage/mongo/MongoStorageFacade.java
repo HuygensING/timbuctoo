@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -99,11 +98,6 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
-    return getStorageFor(type).getByMultipleIds(type, ids);
-  }
-
-  @Override
   public <T extends SystemEntity> T findItemByKey(Class<T> type, String key, String value) throws IOException {
     return getStorageFor(type).findItemByKey(type, key, value);
   }
@@ -166,23 +160,23 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public Collection<String> getRelationIds(Collection<String> ids) throws IOException {
-    return variationStorage.getRelationIds(ids);
-  }
-
-  @Override
   public <T extends DomainEntity> void setPID(Class<T> cls, String id, String pid) {
     variationStorage.setPID(cls, id, pid);
   }
 
   @Override
-  public <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
+  public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
     return variationStorage.getAllIdsWithoutPIDOfType(type);
   }
 
   @Override
-  public <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids) throws IOException {
-    variationStorage.removePermanently(type, ids);
+  public List<String> getRelationIds(List<String> ids) throws IOException {
+    return variationStorage.getRelationIds(ids);
+  }
+
+  @Override
+  public <T extends DomainEntity> void removeNonPersistent(Class<T> type, List<String> ids) throws IOException {
+    variationStorage.removeNonPersistent(type, ids);
   }
 
 }

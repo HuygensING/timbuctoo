@@ -2,10 +2,8 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -25,8 +23,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -112,12 +110,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     DBObject query = new BasicDBObject("_id", id);
     query.put("versions.^rev", revisionId);
     return reducer.reduceRevision(type, col.findOne(query));
-  }
-
-  @Override
-  public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, Collection<String> ids) {
-    DBCollection col = getVariationCollection(type);
-    return new MongoDBVariationIterator<T>(col.find(DBQuery.in("_id", ids)), reducer, type);
   }
 
   protected <T extends Entity> DBCollection getVariationCollection(Class<T> type) {
@@ -246,30 +238,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public Collection<String> getRelationIds(Collection<String> ids) throws IOException {
-    DBCollection col = db.getCollection("relation");
-
-    DBObject query = DBQuery.or(DBQuery.in("^sourceId", ids), DBQuery.in("^targetId", ids));
-    query.put("^pid", null);
-    DBObject columnsToShow = new BasicDBObject("_id", 1);
-
-    Set<String> releationIds = Sets.newHashSet();
-
-    try {
-      DBCursor cursor = col.find(query, columnsToShow);
-
-      while (cursor.hasNext()) {
-        releationIds.add((String) cursor.next().get("_id"));
-      }
-    } catch (MongoException ex) {
-      LOG.error("Error while retrieving relation id's without pid relating to {}", ids);
-      throw new IOException(ex);
-    }
-
-    return releationIds;
-  }
-
-  @Override
   public <T extends DomainEntity> void setPID(Class<T> cls, String id, String pid) {
     BasicDBObject query = new BasicDBObject("_id", id);
     BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
@@ -277,42 +245,56 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
-    DBCollection col = getVariationCollection(type);
-
-    String typeName = VariationUtils.typeToVariationName(type);
-    DBObject query = new BasicDBObject(typeName, new BasicDBObject("$ne", null));
-    query.put("^pid", null);
-
-    DBObject columnsToShow = new BasicDBObject("_id", 1);
-    Set<String> returnValue = Sets.newHashSet();
+  public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
+    List<String> list = Lists.newArrayList();
 
     try {
-      DBCursor cursor = col.find(query, columnsToShow);
+      String typeName = VariationUtils.typeToVariationName(type);
+      DBObject query = new BasicDBObject(typeName, new BasicDBObject("$ne", null));
+      query.put("^pid", null);
+      DBObject columnsToShow = new BasicDBObject("_id", 1);
 
+      DBCursor cursor = getVariationCollection(type).find(query, columnsToShow);
       while (cursor.hasNext()) {
-        returnValue.add((String) cursor.next().get("_id"));
+        list.add((String) cursor.next().get("_id"));
       }
-
-    } catch (MongoException ex) {
+    } catch (MongoException e) {
       LOG.error("Error while retrieving objects without pid of type {}", type);
-      throw new IOException(ex);
+      throw new IOException(e);
     }
 
-    return returnValue;
+    return list;
   }
 
   @Override
-  public <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids) throws IOException {
-    DBCollection col = getVariationCollection(type);
+  public List<String> getRelationIds(List<String> ids) throws IOException {
+    List<String> releationIds = Lists.newArrayList();
 
-    DBObject query = DBQuery.in("_id", ids);
-    query.put("^pid", null);
     try {
-      col.remove(query);
-    } catch (MongoException ex) {
-      LOG.error("Error while removing objects with the ids '{}' of type '{}'", ids, type);
-      throw new IOException(ex);
+      DBObject query = DBQuery.or(DBQuery.in("^sourceId", ids), DBQuery.in("^targetId", ids));
+      DBObject columnsToShow = new BasicDBObject("_id", 1);
+
+      DBCursor cursor = db.getCollection("relation").find(query, columnsToShow);
+      while (cursor.hasNext()) {
+        releationIds.add((String) cursor.next().get("_id"));
+      }
+    } catch (MongoException e) {
+      LOG.error("Error while retrieving relation id's without pid relating to {}", ids);
+      throw new IOException(e);
+    }
+
+    return releationIds;
+  }
+
+  @Override
+  public <T extends DomainEntity> void removeNonPersistent(Class<T> type, List<String> ids) throws IOException {
+    try {
+      DBObject query = DBQuery.in("_id", ids);
+      query.put("^pid", null);
+      getVariationCollection(type).remove(query);
+    } catch (MongoException e) {
+      LOG.error("Error while removing entities of type '{}'", type);
+      throw new IOException(e);
     }
   }
 

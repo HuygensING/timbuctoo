@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -24,26 +23,32 @@ public interface VariationStorage extends BasicStorage {
    */
   int countRelations(Relation relation);
 
+  <T extends DomainEntity> void setPID(Class<T> type, String id, String pid);
+
+  /**
+   * Returns the id's of the domain entities of the specified type, that are not persisted.
+   * 
+   * Note that by design the method does not return variations of a type
+   * that already has been persisted.
+   * For example, if {@code Person} is a primitive type and a variation
+   * {@code XyzPerson} of an existing entity has been added, this method
+   * will not retrieve the id of that entity.
+   */
+  <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException;
+
   /**
    * Returns the id's of the relations, connected to the entities with the input id's.
    * The input id's can be the source id as well as the target id of the Relation. 
    * 
-   * @param ids a collection of id's to find the relations for
-   * @return a collection of id's of the corresponding relations
+   * @param ids a list of id's to find the relations for
+   * @return a list of id's of the corresponding relations
    * @throws IOException wrapped exception around the database exceptions
    */
-  Collection<String> getRelationIds(Collection<String> ids) throws IOException;
-
-  <T extends DomainEntity> void setPID(Class<T> type, String id, String pid);
+  List<String> getRelationIds(List<String> ids) throws IOException;
 
   /**
-   * Returns all the ids of objects of type <T>, that are not persisted.
+   * Removes non-persistent domain entities with the specified type and id's..
    */
-  <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException;
-
-  /**
-   * Permanently removes the objects from the database.
-   */
-  <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids) throws IOException;
+  <T extends DomainEntity> void removeNonPersistent(Class<T> type, List<String> ids) throws IOException;
 
 }

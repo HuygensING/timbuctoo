@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -235,10 +234,10 @@ public class StorageManager {
    * Retrieves all the id's of type {@code <T>} that does not have a persistent id. 
    * 
    * @param type the type of the id's that should be retrieved
-   * @return a collection with all the ids.
+   * @return a list with all the ids.
    * @throws IOException when the storage layer throws an exception it will be forwarded.
    */
-  public <T extends DomainEntity> Collection<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
+  public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
     return storage.getAllIdsWithoutPIDOfType(type);
   }
 
@@ -246,16 +245,16 @@ public class StorageManager {
    * Returns the id's of the relations, connected to the entities with the input id's.
    * The input id's can be the source id as well as the target id of the Relation. 
    * 
-   * @param ids a collection of id's to find the relations for
-   * @return a collection of id's of the corresponding relations
+   * @param ids a list of id's to find the relations for
+   * @return a list of id's of the corresponding relations
    * @throws IOException re-throws the IOExceptions of the storage
    */
-  public Collection<String> getRelationIds(Collection<String> ids) throws IOException {
+  public List<String> getRelationIds(List<String> ids) throws IOException {
     return storage.getRelationIds(ids);
   }
 
   /**
-   * Removes all the objects of type <T>, that is included in collection of id's.
+   * Removes non-persistent domain entities with the specified type and id's..
    * The idea behind this method is that domain entities without persistent identifier are not validated yet.
    * After a bulk import non of the imported entity will have a persistent identifier, until a user has agreed with the imported collection.  
    * 
@@ -264,12 +263,8 @@ public class StorageManager {
    * @param ids the id's to remove permanently
    * @throws IOException when the storage layer throws an exception it will be forwarded
    */
-  public <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids) throws IOException {
-    storage.removePermanently(type, ids);
-  }
-
-  public <T extends Entity> StorageIterator<T> getByMultipleIds(Class<T> type, List<String> ids) {
-    return storage.getByMultipleIds(type, ids);
+  public <T extends DomainEntity> void removeNonPersistent(Class<T> type, List<String> ids) throws IOException {
+    storage.removeNonPersistent(type, ids);
   }
 
   public <T extends Entity> List<T> getAllLimited(Class<T> type, int offset, int limit) {

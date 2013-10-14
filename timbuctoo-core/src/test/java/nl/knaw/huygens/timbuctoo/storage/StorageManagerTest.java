@@ -15,7 +15,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.jms.JMSException;
@@ -393,9 +392,9 @@ public class StorageManagerTest {
     ArrayList<String> ids = Lists.newArrayList(id1, id2, id3);
     when(docTypeRegistry.getINameForType(type)).thenReturn(typeString);
 
-    instance.removePermanently(type, ids);
+    instance.removeNonPersistent(type, ids);
 
-    verify(storage, times(1)).removePermanently(type, ids);
+    verify(storage, times(1)).removeNonPersistent(type, ids);
   }
 
   @Test(expected = IOException.class)
@@ -408,13 +407,13 @@ public class StorageManagerTest {
 
     ArrayList<String> ids = Lists.newArrayList(id1, id2, id3);
 
-    doThrow(IOException.class).when(storage).removePermanently(type, ids);
+    doThrow(IOException.class).when(storage).removeNonPersistent(type, ids);
     when(docTypeRegistry.getINameForType(type)).thenReturn(typeString);
 
     try {
-      instance.removePermanently(type, ids);
+      instance.removeNonPersistent(type, ids);
     } finally {
-      verify(storage, times(1)).removePermanently(type, ids);
+      verify(storage, times(1)).removeNonPersistent(type, ids);
     }
   }
 
@@ -425,7 +424,7 @@ public class StorageManagerTest {
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     when(storage.getAllIdsWithoutPIDOfType(type)).thenReturn(expected);
 
-    Collection<String> actual = instance.getAllIdsWithoutPIDOfType(type);
+    List<String> actual = instance.getAllIdsWithoutPIDOfType(type);
 
     assertEquals(expected, actual);
   }
