@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -176,8 +175,8 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids) throws IOException {
-    variationStorage.removePermanently(type, ids);
+  public <T extends DomainEntity> void removeNonPersistent(Class<T> type, List<String> ids) throws IOException {
+    variationStorage.removeNonPersistent(type, ids);
   }
 
 }

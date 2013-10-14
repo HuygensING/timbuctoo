@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -279,25 +278,23 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
       while (cursor.hasNext()) {
         releationIds.add((String) cursor.next().get("_id"));
       }
-    } catch (MongoException ex) {
+    } catch (MongoException e) {
       LOG.error("Error while retrieving relation id's without pid relating to {}", ids);
-      throw new IOException(ex);
+      throw new IOException(e);
     }
 
     return releationIds;
   }
 
   @Override
-  public <T extends DomainEntity> void removePermanently(Class<T> type, Collection<String> ids) throws IOException {
-    DBCollection col = getVariationCollection(type);
-
-    DBObject query = DBQuery.in("_id", ids);
-    query.put("^pid", null);
+  public <T extends DomainEntity> void removeNonPersistent(Class<T> type, List<String> ids) throws IOException {
     try {
-      col.remove(query);
-    } catch (MongoException ex) {
-      LOG.error("Error while removing objects with the ids '{}' of type '{}'", ids, type);
-      throw new IOException(ex);
+      DBObject query = DBQuery.in("_id", ids);
+      query.put("^pid", null);
+      getVariationCollection(type).remove(query);
+    } catch (MongoException e) {
+      LOG.error("Error while removing entities of type '{}'", type);
+      throw new IOException(e);
     }
   }
 
