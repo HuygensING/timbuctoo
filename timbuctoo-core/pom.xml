@@ -13,16 +13,10 @@
 
   <dependencies>
     <!-- ## Main dependencies ## -->
-    <!-- Handle persistency server client -->
-    <dependency>
-      <groupId>handle.net</groupId>
-      <artifactId>handle-client</artifactId>
-      <version>7.1</version>
-    </dependency>
     <dependency>
       <groupId>nl.knaw.huygens</groupId>
       <artifactId>huygens-persistence</artifactId>
-      <version>1.0.1</version>
+      <version>1.0.3</version>
     </dependency>
     <!-- Apache ActiveMQ -->
     <dependency>
