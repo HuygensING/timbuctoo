@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.persistence;
 
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
+import nl.knaw.huygens.timbuctoo.config.Paths;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
@@ -30,8 +31,7 @@ public class PersistenceWrapper {
   }
 
   private String createUrl(String collection, String id) {
-    // FIXME implicit dependence on rest module
-    return Joiner.on('/').join(baseUrl, "resources", collection, id);
+    return Joiner.on('/').join(baseUrl, Paths.DOMAIN_PREFIX, collection, id);
   }
 
 }
