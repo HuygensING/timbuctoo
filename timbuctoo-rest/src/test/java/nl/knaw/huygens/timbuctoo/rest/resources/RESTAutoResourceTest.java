@@ -240,7 +240,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
   public void testPost() throws IOException {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
-    TestConcreteDoc doc = new TestConcreteDoc();
+    TestConcreteDoc doc = new TestConcreteDoc("id");
     doc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
