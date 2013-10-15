@@ -316,7 +316,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
     ClientResponse clientResponse = webResource.path(RESOURCES_USER).path(USER_ID).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
 
-    assertEquals(ClientResponse.Status.OK, clientResponse.getClientResponseStatus());
+    assertEquals(ClientResponse.Status.NO_CONTENT, clientResponse.getClientResponseStatus());
   }
 
   @Test

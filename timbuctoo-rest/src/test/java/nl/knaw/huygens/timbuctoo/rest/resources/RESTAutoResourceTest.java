@@ -306,7 +306,7 @@ public class RESTAutoResourceTest extends WebServiceTestSetup {
     when(getStorageManager().getEntity(TestConcreteDoc.class, id)).thenReturn(doc);
 
     ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
-    assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
+    assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
   }
 
   @Test

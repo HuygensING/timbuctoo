@@ -124,6 +124,6 @@ public class UserResource {
 
     storageManager.removeEntity(User.class, user);
 
-    return Response.status(Response.Status.OK).build();
+    return Response.status(Response.Status.NO_CONTENT).build();
   }
 }
