@@ -9,11 +9,12 @@ import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.rest.util.Sitemap;
 
 import com.google.inject.Inject;
 
-@Path("api")
+@Path(Paths.SYSTEM_PREFIX + "/api")
 public class SitemapResource {
 
   private final DocTypeRegistry registry;

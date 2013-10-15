@@ -15,7 +15,7 @@
 <script type="text/javascript">
 	$(document).ready(function(){
 		var id = readUserId();
-		var url = 'http://'+ window.config.serverUri +'/repository/resources/user/'+id;
+		var url = 'http://'+ window.config.serverUri +'/repository/system/user/'+id;
 		if(id){
 			var accessToken = readCookie('access_token');
 			var form = $('#editForm')

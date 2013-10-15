@@ -11,6 +11,7 @@ import nl.knaw.huygens.security.AuthorizationHandler;
 import nl.knaw.huygens.security.SecurityInformation;
 import nl.knaw.huygens.security.SecurityResourceFilterFactory;
 import nl.knaw.huygens.security.UnauthorizedException;
+import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -103,7 +104,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   }
 
   protected WebResource autoResource() {
-    return resource().path("resources");
+    return resource().path(Paths.DOMAIN_PREFIX);
   }
 
   @SuppressWarnings("unchecked")
