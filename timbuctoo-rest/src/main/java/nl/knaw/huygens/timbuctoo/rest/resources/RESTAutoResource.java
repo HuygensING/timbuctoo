@@ -179,7 +179,7 @@ public class RESTAutoResource {
     T typedDoc = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
     checkWritable(typedDoc, Status.FORBIDDEN);
     storageManager.removeEntity(type, typedDoc);
-    return Response.status(Status.OK).build();
+    return Response.status(Status.NO_CONTENT).build();
   }
 
   @GET
