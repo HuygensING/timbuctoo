@@ -17,7 +17,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
@@ -71,7 +70,7 @@ public class SearchResource {
 
     // Process
     try {
-      // FIX the `SearchResource shouldn't know the relation between types and cores
+      // FIXME SearchResource shouldn't know the relation between types and cores
       Class<? extends Entity> baseType = registry.getBaseClass(type);
       String core = registry.getINameForType(baseType);
       SearchResult result = searchManager.search(type, core, searchParameters);
@@ -88,7 +87,7 @@ public class SearchResource {
   }
 
   @GET
-  @Path("/{id: QURY\\d+}")
+  @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}")
   @APIDesc("Returns (paged) search results")
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
@@ -104,7 +103,6 @@ public class SearchResource {
       @Context
       UriInfo uriInfo) {
 
-    System.out.println("query get");
     // Retrieve result
     SearchResult result = storageManager.getEntity(SearchResult.class, queryId);
     if (result == null) {
@@ -115,7 +113,7 @@ public class SearchResource {
     // Process
     Class<? extends Entity> type = registry.getTypeForIName(result.getSearchType());
     if (type == null) {
-      LOG.error("GET - no document type for '{}'", result.getSearchType());
+      LOG.error("GET - no entity type for '{}'", result.getSearchType());
       throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
     List<String> ids = result.getIds();
@@ -130,37 +128,34 @@ public class SearchResource {
     returnValue.put("facets", result.getFacets());
     returnValue.put("numFound", ids.size());
     returnValue.put("ids", idsToGet);
-    returnValue.put("results", convert(type, ids, lo, hi));
+    returnValue.put("results", retrieve(type, ids, lo, hi));
     returnValue.put("start", lo);
     returnValue.put("rows", idsToGet.size());
     returnValue.put("sortableFields", sortableFields);
 
     LOG.debug("path: {}", uriInfo.getAbsolutePath());
 
-    UriBuilder prevUriBuilder = uriInfo.getAbsolutePathBuilder();
-    UriBuilder nextUriBuilder = uriInfo.getAbsolutePathBuilder();
-
     if (start > 0) {
+      UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
       int prevStart = Math.max(start - rows, 0);
-      prevUriBuilder.queryParam("start", prevStart).queryParam("rows", rows);
-      returnValue.put("_prev", prevUriBuilder.build());
+      uriBuilder.queryParam("start", prevStart).queryParam("rows", rows);
+      returnValue.put("_prev", uriBuilder.build());
     }
 
     if (hi < ids.size()) {
-      nextUriBuilder.queryParam("start", start + rows).queryParam("rows", rows);
-      returnValue.put("_next", nextUriBuilder.build());
+      UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
+      uriBuilder.queryParam("start", start + rows).queryParam("rows", rows);
+      returnValue.put("_next", uriBuilder.build());
     }
 
-    ResponseBuilder response = Response.ok(returnValue);
-
-    return response.build();
+    return Response.ok(returnValue).build();
   }
 
   private int toRange(int value, int minValue, int maxValue) {
     return Math.min(Math.max(value, minValue), maxValue);
   }
 
-  private <T extends Entity> List<T> convert(Class<T> type, List<String> ids, int lo, int hi) {
+  private <T extends Entity> List<T> retrieve(Class<T> type, List<String> ids, int lo, int hi) {
     List<T> list = Lists.newArrayList();
     // TODO get all at once
     for (int index = lo; index < hi; index++) {
