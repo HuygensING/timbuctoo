@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.Paths;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
@@ -18,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.jaxrs.json.annotation.EndpointConfig;
 import com.fasterxml.jackson.jaxrs.json.util.AnnotationBundleKey;
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
@@ -35,7 +37,7 @@ public class HTMLProviderHelper {
     this.registry = registry;
     writers = Maps.newHashMap();
     factory = new JsonFactory();
-    preamble = createPreamble(stylesheetLink, publicURL);
+    preamble = createPreamble(publicURL, stylesheetLink);
   }
 
   /**
@@ -45,14 +47,15 @@ public class HTMLProviderHelper {
     return MediaType.TEXT_HTML_TYPE.equals(mediaType);
   }
 
-  private String createPreamble(String stylesheetLink, String publicURL) {
-    String value = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">";
-    if (!Strings.isNullOrEmpty(stylesheetLink)) {
-      value += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + publicURL + stylesheetLink + "\"/>";
+  private String createPreamble(String publicURL, String stylesheet) {
+    StringBuilder builder = new StringBuilder();
+    builder.append("<!DOCTYPE html>\n<html>\n<head>\n<meta charset=|UTF-8|>\n");
+    if (!Strings.isNullOrEmpty(stylesheet)) {
+      builder.append("<link rel=|stylesheet| type=|text/css| href=|").append(publicURL).append(stylesheet).append("|/>\n");
     }
-    //Makes it easier to redirect the links of the references.
-    value += "<base href=\"" + publicURL + "/resources/\">";
-    return value;
+    // Make it easier to redirect the links of the references.
+    builder.append("<base href=|").append(publicURL).append('/').append(Paths.DOMAIN_PREFIX).append("|>\n");
+    return CharMatcher.is('|').replaceFrom(builder, '"');
   }
 
   /**
@@ -68,14 +71,14 @@ public class HTMLProviderHelper {
   public void writeHeader(OutputStream out, String title) throws IOException {
     write(out, preamble);
     String text = (title != null) ? StringEscapeUtils.escapeHtml(title) : "";
-    write(out, String.format("<title>%1$s</title></head><body><h1>%1$s</h1>", text));
+    write(out, String.format("<title>%1$s</title>\n</head>\n<body>\n<h1>%1$s</h1>", text));
   }
 
   /**
    * Writes the footer to the output stream.
    */
   public void writeFooter(OutputStream out) throws IOException {
-    write(out, "</body></html>");
+    write(out, "</body>\n</html>\n");
   }
 
   /**

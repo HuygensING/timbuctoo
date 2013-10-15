@@ -47,8 +47,8 @@ public class DocumentHTMLProviderTest {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     provider.writeTo(new User(), User.class, null, User.class.getAnnotations(), MediaType.TEXT_HTML_TYPE, null, out);
     String value = out.toString();
-    Assert.assertTrue(value.startsWith("<!DOCTYPE html><html><head>"));
-    Assert.assertTrue(value.endsWith("</body></html>"));
+    Assert.assertTrue(value.startsWith("<!DOCTYPE html>\n<html>\n<head>\n"));
+    Assert.assertTrue(value.endsWith("</body>\n</html>\n"));
   }
 
 }
