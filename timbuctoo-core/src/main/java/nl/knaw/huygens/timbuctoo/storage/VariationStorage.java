@@ -23,6 +23,12 @@ public interface VariationStorage extends BasicStorage {
    */
   int countRelations(Relation relation);
 
+  /**
+   * Returns an iterator for all relations involving the specified domain entity,
+   * either as 'source' or as 'target' (or both).
+   */
+  StorageIterator<Relation> getRelationsOf(Class<? extends DomainEntity> type, String id) throws IOException;
+
   <T extends DomainEntity> void setPID(Class<T> type, String id, String pid);
 
   /**
@@ -37,8 +43,8 @@ public interface VariationStorage extends BasicStorage {
   <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException;
 
   /**
-   * Returns the id's of the relations, connected to the entities with the input id's.
-   * The input id's can be the source id as well as the target id of the Relation. 
+   * Returns the id's of all relations involving the entities with the specified id's,
+   * either as 'source' or as 'target' (or both).
    * 
    * @param ids a list of id's to find the relations for
    * @return a list of id's of the corresponding relations

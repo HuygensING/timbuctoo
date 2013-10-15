@@ -14,7 +14,10 @@ import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.EntityRef;
+import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
@@ -90,6 +93,38 @@ public class StorageManager {
       LOG.error("Error while handling {} {}", type.getName(), id);
       return null;
     }
+  }
+
+  public <T extends DomainEntity> T getEntityWithRelations(Class<T> type, String id) {
+    try {
+      T entity = storage.getItem(type, id);
+      StorageIterator<Relation> iterator = storage.getRelationsOf(type, id);
+      while (iterator.hasNext()) {
+        Relation relation = iterator.next();
+        RelationType relType = getEntity(RelationType.class, relation.getTypeRef().getId());
+        if (relation.getSourceId().equals(id)) {
+          Reference reference = relation.getTargetRef();
+          entity.addRelation(relType.getRegularName(), getEntityRef(reference));
+        } else if (relation.getTargetId().equals(id)) {
+          Reference reference = relation.getSourceRef();
+          entity.addRelation(relType.getInverseName(), getEntityRef(reference));
+        } else {
+          // impossible
+        }
+      }
+      return entity;
+    } catch (IOException e) {
+      LOG.error("Error while handling {} {}", type.getName(), id);
+      return null;
+    }
+  }
+
+  public EntityRef getEntityRef(Reference reference) {
+    String iname = reference.getType();
+    String xname = registry.getXNameForIName(iname);
+    Class<? extends Entity> type = registry.getTypeForIName(iname);
+    Entity entity = getEntity(type, reference.getId());
+    return new EntityRef(iname, xname, reference.getId(), entity.getDisplayName());
   }
 
   public <T extends SystemEntity> T findEntity(Class<T> type, String key, String value) {
