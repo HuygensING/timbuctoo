@@ -1,0 +1,25 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>timbuctoo</groupId>
+    <artifactId>timbuctoo</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>timbuctoo-solr</artifactId>
+  <name>Timbuctoo Solr</name>
+  <description>Module for Solr configuration and custom filters.</description>
+
+  <dependencies>
+    <!-- <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-core</artifactId>
+      <version>4.5.0</version>
+    </dependency> -->
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-analyzers-common</artifactId>
+      <version>4.5.0</version>
+    </dependency>
+  </dependencies>
+</project>
