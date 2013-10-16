@@ -11,11 +11,6 @@
   <description>Module for Solr configuration and custom filters.</description>
 
   <dependencies>
-    <!-- <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-core</artifactId>
-      <version>4.5.0</version>
-    </dependency> -->
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-analyzers-common</artifactId>
