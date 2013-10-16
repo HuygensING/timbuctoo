@@ -89,19 +89,13 @@ public class SearchResource {
   @GET
   @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}")
   @APIDesc("Returns (paged) search results")
-  @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
+  @Produces({ MediaType.APPLICATION_JSON })
   @JsonView(JsonViews.WebView.class)
   public Response get( //
-      @PathParam("id")
-      String queryId, //
-      @QueryParam("start")
-      @DefaultValue("0")
-      final int start, //
-      @QueryParam("rows")
-      @DefaultValue("10")
-      final int rows, //
-      @Context
-      UriInfo uriInfo) {
+      @PathParam("id") String queryId, //
+      @QueryParam("start") @DefaultValue("0") final int start, //
+      @QueryParam("rows") @DefaultValue("10") final int rows, //
+      @Context UriInfo uriInfo) {
 
     // Retrieve result
     SearchResult result = storageManager.getEntity(SearchResult.class, queryId);
@@ -123,7 +117,7 @@ public class SearchResource {
     List<String> idsToGet = ids.subList(lo, hi);
     Set<String> sortableFields = searchManager.findSortableFields(type);
 
-    Map<String, Object> returnValue = Maps.newConcurrentMap();
+    Map<String, Object> returnValue = Maps.newHashMap();
     returnValue.put("term", result.getTerm());
     returnValue.put("facets", result.getFacets());
     returnValue.put("numFound", ids.size());
