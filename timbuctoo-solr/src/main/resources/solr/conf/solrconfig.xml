@@ -70,6 +70,8 @@
   <!--
   <lib dir="../../contrib/extraction/lib" />
     -->
+    
+  <lib dir="../lib" regex=".*\.jar" />
 
 
   <!-- Data Directory
