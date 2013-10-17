@@ -26,6 +26,15 @@
         <configuration>
           <descriptor>/src/main/assembly/zipConfig.xml</descriptor>
         </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
