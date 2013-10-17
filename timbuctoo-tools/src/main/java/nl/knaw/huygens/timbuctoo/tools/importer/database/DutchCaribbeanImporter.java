@@ -12,12 +12,12 @@ import nl.knaw.huygens.timbuctoo.index.IndexService;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.model.atlg.ATLGArchive;
-import nl.knaw.huygens.timbuctoo.model.atlg.ATLGArchiver;
-import nl.knaw.huygens.timbuctoo.model.atlg.ATLGKeyword;
-import nl.knaw.huygens.timbuctoo.model.atlg.ATLGLegislation;
-import nl.knaw.huygens.timbuctoo.model.atlg.ATLGPerson;
 import nl.knaw.huygens.timbuctoo.model.atlg.XRelated;
+import nl.knaw.huygens.timbuctoo.model.dcar.DCARArchive;
+import nl.knaw.huygens.timbuctoo.model.dcar.DCARArchiver;
+import nl.knaw.huygens.timbuctoo.model.dcar.DCARKeyword;
+import nl.knaw.huygens.timbuctoo.model.dcar.DCARLegislation;
+import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
@@ -37,7 +37,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 /**
- * Imports data of the "Atlantische Gids" project.
+ * Imports data of the "Dutch Caribbean" project.
  * 
  * Usage:
  *  java  -cp [specs]  nl.knaw.huygens.timbuctoo.importer.database.DutchCaribbeanImporter  importDirName  configFileName
@@ -263,15 +263,15 @@ public class DutchCaribbeanImporter extends DefaultImporter {
       if (referenceMap.containsKey(jsonId)) {
         handleError("[%s] Duplicate keyword id %s", KEYWORD_FILE, jsonId);
       } else {
-        ATLGKeyword keyword = convert(xkeyword);
-        String storedId = addEntity(ATLGKeyword.class, keyword, true);
-        referenceMap.put(jsonId, new Reference(ATLGKeyword.class, storedId));
+        DCARKeyword keyword = convert(xkeyword);
+        String storedId = addEntity(DCARKeyword.class, keyword, true);
+        referenceMap.put(jsonId, new Reference(DCARKeyword.class, storedId));
       }
     }
   }
 
-  private ATLGKeyword convert(XKeyword xkeyword) {
-    ATLGKeyword keyword = new ATLGKeyword();
+  private DCARKeyword convert(XKeyword xkeyword) {
+    DCARKeyword keyword = new DCARKeyword();
 
     String type = xkeyword.type;
     keyword.setType(type);
@@ -306,15 +306,15 @@ public class DutchCaribbeanImporter extends DefaultImporter {
       if (referenceMap.containsKey(jsonId)) {
         handleError("[%s] Duplicate person id %s", PERSON_FILE, jsonId);
       } else {
-        ATLGPerson person = convert(xperson);
-        String storedId = addEntity(ATLGPerson.class, person, true);
-        referenceMap.put(jsonId, new Reference(ATLGPerson.class, storedId));
+        DCARPerson person = convert(xperson);
+        String storedId = addEntity(DCARPerson.class, person, true);
+        referenceMap.put(jsonId, new Reference(DCARPerson.class, storedId));
       }
     }
   }
 
-  private ATLGPerson convert(XPerson xperson) {
-    ATLGPerson person = new ATLGPerson();
+  private DCARPerson convert(XPerson xperson) {
+    DCARPerson person = new DCARPerson();
 
     PersonName name = new PersonName();
     if (xperson.voorl != null) {
@@ -358,16 +358,16 @@ public class DutchCaribbeanImporter extends DefaultImporter {
         if (referenceMap.containsKey(jsonId)) {
           handleError("[%s] Duplicate 'wetgeving' id %s", file.getName(), jsonId);
         } else {
-          ATLGLegislation legislation = convert(wetgeving);
-          String storedId = addEntity(ATLGLegislation.class, legislation, false);
-          referenceMap.put(jsonId, new Reference(ATLGLegislation.class, storedId));
+          DCARLegislation legislation = convert(wetgeving);
+          String storedId = addEntity(DCARLegislation.class, legislation, false);
+          referenceMap.put(jsonId, new Reference(DCARLegislation.class, storedId));
         }
       }
     }
   }
 
-  private ATLGLegislation convert(Wetgeving wetgeving) {
-    ATLGLegislation legislation = new ATLGLegislation();
+  private DCARLegislation convert(Wetgeving wetgeving) {
+    DCARLegislation legislation = new DCARLegislation();
     legislation.setOrigFilename(wetgeving.orig_filename);
     legislation.setReference(wetgeving.reference);
     legislation.setPages(wetgeving.pages);
@@ -433,16 +433,16 @@ public class DutchCaribbeanImporter extends DefaultImporter {
         if (referenceMap.containsKey(jsonId)) {
           handleError("[%s] Duplicate 'archiefmat' id %s", file.getName(), jsonId);
         } else {
-          ATLGArchive archive = convert(archiefmat);
-          String storedId = addEntity(ATLGArchive.class, archive, false);
-          referenceMap.put(jsonId, new Reference(ATLGArchive.class, storedId));
+          DCARArchive archive = convert(archiefmat);
+          String storedId = addEntity(DCARArchive.class, archive, false);
+          referenceMap.put(jsonId, new Reference(DCARArchive.class, storedId));
         }
       }
     }
   }
 
-  private ATLGArchive convert(ArchiefMat archiefmat) {
-    ATLGArchive archive = new ATLGArchive();
+  private DCARArchive convert(ArchiefMat archiefmat) {
+    DCARArchive archive = new DCARArchive();
     archive.setOrigFilename(archiefmat.orig_filename);
     if (archiefmat.countries != null) {
       for (String country : archiefmat.countries) {
@@ -529,16 +529,16 @@ public class DutchCaribbeanImporter extends DefaultImporter {
         if (referenceMap.containsKey(jsonId)) {
           handleError("[%s] Duplicate 'creator' id %s", file.getName(), jsonId);
         } else {
-          ATLGArchiver archiver = convert(creator);
-          String storedId = addEntity(ATLGArchiver.class, archiver, false);
-          referenceMap.put(jsonId, new Reference(ATLGArchiver.class, storedId));
+          DCARArchiver archiver = convert(creator);
+          String storedId = addEntity(DCARArchiver.class, archiver, false);
+          referenceMap.put(jsonId, new Reference(DCARArchiver.class, storedId));
         }
       }
     }
   }
 
-  private ATLGArchiver convert(Creator creator) {
-    ATLGArchiver archiver = new ATLGArchiver();
+  private DCARArchiver convert(Creator creator) {
+    DCARArchiver archiver = new DCARArchiver();
     archiver.setOrigFilename(creator.orig_filename);
     archiver.setNameNld(creator.name);
     archiver.setNameEng(creator.name_english);
