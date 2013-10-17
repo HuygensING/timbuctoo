@@ -40,7 +40,7 @@ import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 
 /**
- * A REST resource for adressing collections of documents.
+ * A REST resource for adressing collections of domain entities.
  */
 @Path(Paths.DOMAIN_PREFIX + "/{entityType: [a-zA-Z]+}")
 public class RESTAutoResource {
