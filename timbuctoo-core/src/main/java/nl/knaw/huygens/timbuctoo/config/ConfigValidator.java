@@ -2,8 +2,6 @@ package nl.knaw.huygens.timbuctoo.config;
 
 import java.io.File;
 
-import com.google.common.base.Strings;
-
 /**
  * Validates the Configuration of the Repository Project.
  */
@@ -52,7 +50,6 @@ public class ConfigValidator {
   // TODO make this part of Configuration
   private String getSolrDir(Configuration config) {
     String path = config.getSetting("solr.directory");
-    return Strings.isNullOrEmpty(path) ? config.pathInUserHome("repository/solr") : path;
+    return config.getBooleanSetting("solr.use_user_home") ? config.pathInUserHome(path) : path;
   }
-
 }
