@@ -47,7 +47,7 @@ public class DocumentReader implements MessageBodyReader<Entity> {
   private Request request;
 
   @Inject
-  private DocTypeRegistry docTypeRegistry;
+  private DocTypeRegistry typeRegistry;
   @Inject
   private JacksonJsonProvider jsonProvider;
   @Inject
@@ -68,7 +68,7 @@ public class DocumentReader implements MessageBodyReader<Entity> {
       LOG.error("Missing path parameter '{}'", RESTAutoResource.ENTITY_PARAM);
       throw new WebApplicationException(Status.NOT_FOUND);
     }
-    Class<?> cls = docTypeRegistry.getTypeForXName(entityType);
+    Class<?> cls = typeRegistry.getTypeForXName(entityType);
     if (cls == null) {
       LOG.error("Cannot convert '{}' to a document type", entityType);
       throw new WebApplicationException(Status.NOT_FOUND);

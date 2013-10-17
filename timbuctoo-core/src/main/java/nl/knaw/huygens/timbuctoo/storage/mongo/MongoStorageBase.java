@@ -26,25 +26,25 @@ public abstract class MongoStorageBase implements BasicStorage {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoStorageBase.class);
 
-  protected final DocTypeRegistry docTypeRegistry;
+  protected final DocTypeRegistry typeRegistry;
   private final Mongo mongo;
   private final String dbName;
   protected DB db;
   private EntityIds entityIds;
 
   public MongoStorageBase(DocTypeRegistry registry, Mongo mongo, DB db, String dbName) {
-    this.docTypeRegistry = registry;
+    this.typeRegistry = registry;
     this.mongo = mongo;
     this.dbName = dbName;
     this.db = db;
-    this.entityIds = new EntityIds(db, docTypeRegistry);
+    this.entityIds = new EntityIds(db, typeRegistry);
   }
 
   public void empty() {
     db.cleanCursors(true);
     mongo.dropDatabase(dbName);
     db = mongo.getDB(dbName);
-    entityIds = new EntityIds(db, docTypeRegistry);
+    entityIds = new EntityIds(db, typeRegistry);
   }
 
   public void close() {

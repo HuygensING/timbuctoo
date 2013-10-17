@@ -48,14 +48,14 @@ public class SearchManagerTest {
 
   private SearchManager instance;
   private LocalSolrServer solrInstance;
-  private DocTypeRegistry docTypeRegistry;
+  private DocTypeRegistry typeRegistry;
 
   @Before
   public void setUp() {
     solrInstance = mock(LocalSolrServer.class);
-    docTypeRegistry = new DocTypeRegistry(Person.class.getPackage().getName() + " " + ATLGPerson.class.getPackage().getName() + " "
+    typeRegistry = new DocTypeRegistry(Person.class.getPackage().getName() + " " + ATLGPerson.class.getPackage().getName() + " "
         + ClassWithMupltipleFullTestSearchFields.class.getPackage().getName());
-    instance = new SearchManager(solrInstance, docTypeRegistry);
+    instance = new SearchManager(solrInstance, typeRegistry);
   }
 
   @Test
@@ -74,7 +74,7 @@ public class SearchManagerTest {
     int numberOfFacetValues = 1;
     Class<? extends Entity> type = ATLGPerson.class;
 
-    testSearch(type, documentIds, SEARCH_TERM, docTypeRegistry.getINameForType(type), facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(),
+    testSearch(type, documentIds, SEARCH_TERM, typeRegistry.getINameForType(type), facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(),
         EXPECTED_TERM, TYPE_STRING);
   }
 
