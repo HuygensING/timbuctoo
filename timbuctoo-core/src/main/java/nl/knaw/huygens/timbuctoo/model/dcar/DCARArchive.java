@@ -16,64 +16,74 @@ public class DCARArchive extends Archive {
 
   /** Migration: Name of source file */
   private String origFilename;
+
   /** ING Forms: "Ref. code country"; refcode facet */
   private List<String> countries;
+
   /** ING Forms: "Ref. code repository"; refcode facet */
   private String refCodeArchive;
+
   /** ING Forms: "Reference code" */
   private String refCode;
+
   /** ING Forms: "Code or indication of sub-fonds" */
   private String subCode;
+
   /** ING Forms: "Indication of series, Nos." */
   private String series;
+
   /** ING Forms: "Item, No." */
   private String itemNo;
+
   /** ING Forms: "Title" */
   private String titleNld;
+
   /** ING Forms: "English title"; text searchable */
   private String titleEng;
+
   /** ING Forms: "Begin date"; date facet */
   private String beginDate;
+
   /** ING Forms: "End date"; date facet */
   private String endDate;
+
   /** ING Forms: "Period description" */
   private String periodDescription;
+
   /** ING Forms: "Extent" */
   private String extent;
+
   /** ING Forms: "Additional finding aid" */
   private String findingAid;
-  /** ING Forms: "Name(s) of Creator(s)" */
-  private List<EntityRef> creators;
+
+  /** ING Forms: "Name(s) of Creator(s)"; as relation */
+
   /** ING Forms: "Scope and content" */
   private String scope;
-  /** ING Forms: "Keyword(s) geography"; place facet */
-  private List<EntityRef> placeKeywords;
-  /** ING Forms: "Keyword(s) subject"; subject facet */
-  private List<EntityRef> subjectKeywords;
-  /** ING Forms: "Keyword(s) person"; person facet */
-  private List<EntityRef> persons;
+
+  /** ING Forms: "Keyword(s) geography"; as relation; place facet */
+
+  /** ING Forms: "Keyword(s) subject"; as relation; subject facet */
+
+  /** ING Forms: "Keyword(s) person"; as relation; person facet */
+
   /** ING Forms: "Remarks"; text searchable */
   private String notes;
+
   /** ING Forms: "Record made by-" */
   private String madeBy;
+
   /** ING Forms: "Reminders" */
   private String reminders;
-  /** ING Forms: "Title related overhead level of description" */
-  private List<EntityRef> overheadArchives;
-  /** ING Forms: "Title(s) related underlying level(s) of description" */
-  private List<EntityRef> underlyingArchives;
-  /** ING Forms: "Other related units of description" */
-  private List<EntityRef> relatedUnitArchives;
+
+  /** ING Forms: "Title related overhead level of description; as relation" */
+
+  /** ING Forms: "Title(s) related underlying level(s) of description; as relation" */
+
+  /** ING Forms: "Other related units of description; as relation" */
 
   public DCARArchive() {
     countries = Lists.newArrayList();
-    creators = Lists.newArrayList();
-    placeKeywords = Lists.newArrayList();
-    subjectKeywords = Lists.newArrayList();
-    persons = Lists.newArrayList();
-    overheadArchives = Lists.newArrayList();
-    underlyingArchives = Lists.newArrayList();
-    relatedUnitArchives = Lists.newArrayList();
   }
 
   @Override
@@ -228,16 +238,9 @@ public class DCARArchive extends Archive {
     this.findingAid = findingAid;
   }
 
+  @JsonIgnore
   public List<EntityRef> getCreators() {
-    return creators;
-  }
-
-  public void setCreators(List<EntityRef> creators) {
-    this.creators = creators;
-  }
-
-  public void addCreator(EntityRef creator) {
-    creators.add(creator);
+    return getRelations().get("is_created_by");
   }
 
   public String getScope() {
@@ -248,49 +251,22 @@ public class DCARArchive extends Archive {
     this.scope = scope;
   }
 
+  @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPlaceKeywords() {
-    return placeKeywords;
+    return getRelations().get("has_place");
   }
 
-  public void setPlaceKeywords(List<EntityRef> keywords) {
-    placeKeywords = keywords;
-  }
-
-  public void addPlaceKeyword(EntityRef keyword) {
-    if (keyword != null) {
-      placeKeywords.add(keyword);
-    }
-  }
-
+  @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getSubjectKeywords() {
-    return subjectKeywords;
+    return getRelations().get("has_keyword");
   }
 
-  public void setSubjectKeywords(List<EntityRef> keywords) {
-    subjectKeywords = keywords;
-  }
-
-  public void addSubjectKeyword(EntityRef keyword) {
-    if (keyword != null) {
-      subjectKeywords.add(keyword);
-    }
-  }
-
+  @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPersons() {
-    return persons;
-  }
-
-  public void setPersons(List<EntityRef> persons) {
-    this.persons = persons;
-  }
-
-  public void addPerson(EntityRef person) {
-    if (person != null) {
-      persons.add(person);
-    }
+    return getRelations().get("has_person");
   }
 
   @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false)
@@ -318,40 +294,19 @@ public class DCARArchive extends Archive {
     this.reminders = reminders;
   }
 
+  @JsonIgnore
   public List<EntityRef> getOverheadArchives() {
-    return overheadArchives;
+    return getRelations().get("has_parent_archive");
   }
 
-  public void setOverheadArchives(List<EntityRef> archives) {
-    overheadArchives = archives;
-  }
-
-  public void addOverheadArchive(EntityRef archive) {
-    overheadArchives.add(archive);
-  }
-
+  @JsonIgnore
   public List<EntityRef> getUnderlyingArchives() {
-    return underlyingArchives;
+    return getRelations().get("has_child_archive");
   }
 
-  public void setUnderlyingArchives(List<EntityRef> archives) {
-    underlyingArchives = archives;
-  }
-
-  public void addUnderlyingArchive(EntityRef archive) {
-    underlyingArchives.add(archive);
-  }
-
+  @JsonIgnore
   public List<EntityRef> getRelatedUnitArchives() {
-    return relatedUnitArchives;
-  }
-
-  public void setRelatedUnitArchives(List<EntityRef> archives) {
-    relatedUnitArchives = archives;
-  }
-
-  public void addRelatedUnitArchive(EntityRef archive) {
-    relatedUnitArchives.add(archive);
+    return getRelations().get("has_sibling_archive");
   }
 
 }
