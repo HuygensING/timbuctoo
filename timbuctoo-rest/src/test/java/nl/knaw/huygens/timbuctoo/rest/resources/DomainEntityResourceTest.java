@@ -32,7 +32,7 @@ import com.google.common.collect.Sets;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 
-public class RESTAutoResourceTest extends WebServiceTestSetup {
+public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   private static final String USER_ROLE = "USER";
 

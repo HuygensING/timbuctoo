@@ -22,7 +22,7 @@ import javax.ws.rs.ext.Provider;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.rest.resources.RESTAutoResource;
+import nl.knaw.huygens.timbuctoo.rest.resources.DomainEntityResource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ import com.google.inject.Inject;
 
 /**
  * A {@code Provider} that converts a stream to a (@code Document} instance.
- * Note that the request path parameter {@code RESTAutoResource.ENTITY_PARAM}
+ * Note that the request path parameter {@code DomainEntityResource.ENTITY_PARAM}
  * is used, which contains an external document type name, e.g., "persons".
  */
 @Provider
@@ -63,9 +63,9 @@ public class DocumentReader implements MessageBodyReader<Entity> {
   public Entity readFrom(Class<Entity> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException,
       WebApplicationException {
 
-    String entityType = uriInfo.getPathParameters().getFirst(RESTAutoResource.ENTITY_PARAM);
+    String entityType = uriInfo.getPathParameters().getFirst(DomainEntityResource.ENTITY_PARAM);
     if (entityType == null) {
-      LOG.error("Missing path parameter '{}'", RESTAutoResource.ENTITY_PARAM);
+      LOG.error("Missing path parameter '{}'", DomainEntityResource.ENTITY_PARAM);
       throw new WebApplicationException(Status.NOT_FOUND);
     }
     Class<?> cls = typeRegistry.getTypeForXName(entityType);
