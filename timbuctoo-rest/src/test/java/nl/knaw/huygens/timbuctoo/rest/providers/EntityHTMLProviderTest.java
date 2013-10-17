@@ -11,15 +11,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class DocumentHTMLProviderTest {
+public class EntityHTMLProviderTest {
 
   private static final String PUBLIC_URL = "http://nl.knaw.huygens/test";
 
-  private DocumentHTMLProvider provider;
+  private EntityHTMLProvider provider;
 
   @Before
   public void setup() {
-    provider = new DocumentHTMLProvider(null, "link", PUBLIC_URL);
+    provider = new EntityHTMLProvider(null, "link", PUBLIC_URL);
   }
 
   private void assertIsWritable(boolean expected, Class<?> type, MediaType mediaType) {
@@ -40,8 +40,8 @@ public class DocumentHTMLProviderTest {
 
   @Test
   public void otherClassIsWritable() {
-    assertIsWritable(false, DocumentHTMLProvider.class, MediaType.TEXT_HTML_TYPE);
-    assertIsWritable(false, DocumentHTMLProvider.class, MediaType.APPLICATION_JSON_TYPE);
+    assertIsWritable(false, EntityHTMLProvider.class, MediaType.TEXT_HTML_TYPE);
+    assertIsWritable(false, EntityHTMLProvider.class, MediaType.APPLICATION_JSON_TYPE);
   }
 
   @Test

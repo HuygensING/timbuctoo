@@ -18,7 +18,7 @@ import org.junit.Test;
  * 
  * TODO: remove the dependency of the model-package, in these tests.
  */
-public class DocTypeRegistryTest {
+public class TypeRegistryTest {
 
   private static final String MODEL_PACKAGE = "timbuctoo.variation.model";
 

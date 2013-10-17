@@ -24,12 +24,12 @@ import com.google.inject.name.Named;
 @Provider
 @Produces(MediaType.TEXT_HTML)
 @Singleton
-public class DocumentHTMLProvider implements MessageBodyWriter<Entity> {
+public class EntityHTMLProvider implements MessageBodyWriter<Entity> {
 
   private final HTMLProviderHelper helper;
 
   @Inject
-  public DocumentHTMLProvider(TypeRegistry registry, @Named("html.defaultstylesheet")
+  public EntityHTMLProvider(TypeRegistry registry, @Named("html.defaultstylesheet")
   String stylesheetLink, @Named("public_url")
   String publicURL) {
     helper = new HTMLProviderHelper(registry, stylesheetLink, publicURL);

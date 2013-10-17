@@ -29,12 +29,12 @@ import com.google.inject.name.Named;
 @Provider
 @Produces(MediaType.TEXT_HTML)
 @Singleton
-public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extends Entity>> {
+public class EntityListHTMLProvider implements MessageBodyWriter<List<? extends Entity>> {
 
   private final HTMLProviderHelper helper;
 
   @Inject
-  public DocumentListHTMLProvider(TypeRegistry registry, @Named("html.defaultstylesheet")
+  public EntityListHTMLProvider(TypeRegistry registry, @Named("html.defaultstylesheet")
   String stylesheetLink, @Named("public_url")
   String publicURL) {
     helper = new HTMLProviderHelper(registry, stylesheetLink, publicURL);
