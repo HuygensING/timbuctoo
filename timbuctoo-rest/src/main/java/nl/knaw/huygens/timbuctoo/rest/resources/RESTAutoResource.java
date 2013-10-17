@@ -22,6 +22,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
@@ -34,12 +35,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 
 /**
  * A REST resource for adressing collections of documents.
  */
-@Path("resources/{entityType: [a-zA-Z]+}")
+@Path(Paths.DOMAIN_PREFIX + "/{entityType: [a-zA-Z]+}")
 public class RESTAutoResource {
 
   private final Logger LOG = LoggerFactory.getLogger(RESTAutoResource.class);
@@ -103,7 +106,8 @@ public class RESTAutoResource {
     T typedDoc = (T) input;
     storageManager.addEntity(type, typedDoc);
 
-    String location = uriInfo.getBaseUri().toString() + "resources/" + entityType + "/" + input.getId();
+    String baseUri = CharMatcher.is('/').trimTrailingFrom(uriInfo.getBaseUri().toString());
+    String location = Joiner.on('/').join(baseUri, Paths.DOMAIN_PREFIX, entityType, input.getId());
     return Response.status(Status.CREATED).header("Location", location).build();
   }
 

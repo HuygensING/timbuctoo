@@ -7,9 +7,12 @@ import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 
-@IDPrefix("QURY")
+@IDPrefix(SearchResult.ID_PREFIX)
 @EntityTypeName("search")
 public class SearchResult extends SystemEntity implements Persistent {
+
+  // Unique definition of prefix; also used in SearchResource
+  public static final String ID_PREFIX = "QURY";
 
   public static final String DATE_FIELD = "date";
 

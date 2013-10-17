@@ -54,7 +54,7 @@ public class HTMLProviderHelper {
       builder.append("<link rel=|stylesheet| type=|text/css| href=|").append(publicURL).append(stylesheet).append("|/>\n");
     }
     // Make it easier to redirect the links of the references.
-    builder.append("<base href=|").append(publicURL).append('/').append(Paths.DOMAIN_PREFIX).append("|>\n");
+    builder.append("<base href=|").append(publicURL).append('/').append(Paths.DOMAIN_PREFIX).append("/|>\n");
     return CharMatcher.is('|').replaceFrom(builder, '"');
   }
 

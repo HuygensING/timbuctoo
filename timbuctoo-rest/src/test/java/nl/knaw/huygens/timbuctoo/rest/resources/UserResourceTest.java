@@ -13,6 +13,7 @@ import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
+import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -29,7 +30,7 @@ import com.sun.jersey.api.client.WebResource;
 
 public class UserResourceTest extends WebServiceTestSetup {
 
-  private static final String RESOURCES_USER = "/resources/users";
+  private static final String USERS_RESOURCE = "/" + Paths.SYSTEM_PREFIX + "/users";
   private static final String OTHER_USER_ID = "otherUserId";
   private static final String USER_ROLE = "USER";
   private static final String ADMIN_ROLE = "ADMIN";
@@ -44,7 +45,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     when(storageManager.getAllLimited(User.class, 0, 200)).thenReturn(expectedList);
 
     GenericType<List<User>> genericType = new GenericType<List<User>>() {};
-    List<User> actualList = webResource.path(RESOURCES_USER).header("Authorization", "bearer 12333322abef").get(genericType);
+    List<User> actualList = webResource.path(USERS_RESOURCE).header("Authorization", "bearer 12333322abef").get(genericType);
 
     assertEquals(expectedList.size(), actualList.size());
   }
@@ -59,7 +60,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     when(storageManager.getAllLimited(User.class, 0, 200)).thenReturn(expectedList);
 
     GenericType<List<User>> genericType = new GenericType<List<User>>() {};
-    List<User> actualList = webResource.path(RESOURCES_USER).header("Authorization", "bearer 12333322abef").get(genericType);
+    List<User> actualList = webResource.path(USERS_RESOURCE).header("Authorization", "bearer 12333322abef").get(genericType);
 
     assertEquals(expectedList.size(), actualList.size());
   }
@@ -69,7 +70,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUpUserRoles(USER_ID, null);
     WebResource webResource = super.resource();
 
-    ClientResponse clientResponse = webResource.path(RESOURCES_USER).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
+    ClientResponse clientResponse = webResource.path(USERS_RESOURCE).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.FORBIDDEN, clientResponse.getClientResponseStatus());
   }
@@ -80,7 +81,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
     setUserUnauthorized();
 
-    ClientResponse clientResponse = webResource.path(RESOURCES_USER).get(ClientResponse.class);
+    ClientResponse clientResponse = webResource.path(USERS_RESOURCE).get(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.UNAUTHORIZED, clientResponse.getClientResponseStatus());
   }
@@ -95,7 +96,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
-    User actual = webResource.path(RESOURCES_USER).path(USER_ID).header("Authorization", "bearer 12333322abef").get(User.class);
+    User actual = webResource.path(USERS_RESOURCE).path(USER_ID).header("Authorization", "bearer 12333322abef").get(User.class);
 
     assertEquals(expected.getId(), actual.getId());
     assertEquals(expected.firstName, actual.firstName);
@@ -110,7 +111,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(null);
 
-    ClientResponse clientResponse = webResource.path(RESOURCES_USER).path(USER_ID).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
+    ClientResponse clientResponse = webResource.path(USERS_RESOURCE).path(USER_ID).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
   }
@@ -125,7 +126,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
-    User actual = webResource.path(RESOURCES_USER).path("me").header("Authorization", "bearer 12333322abef").get(User.class);
+    User actual = webResource.path(USERS_RESOURCE).path("me").header("Authorization", "bearer 12333322abef").get(User.class);
 
     assertEquals(expected.getId(), actual.getId());
     assertEquals(expected.firstName, actual.firstName);
@@ -142,7 +143,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
-    User actual = webResource.path(RESOURCES_USER).path("me").header("Authorization", "bearer 12333322abef").get(User.class);
+    User actual = webResource.path(USERS_RESOURCE).path("me").header("Authorization", "bearer 12333322abef").get(User.class);
 
     assertEquals(expected.getId(), actual.getId());
     assertEquals(expected.firstName, actual.firstName);
@@ -190,7 +191,7 @@ public class UserResourceTest extends WebServiceTestSetup {
       }
     }).when(storageManager).findEntity(any(Class.class), any(User.class));
 
-    User actual = webResource.path(RESOURCES_USER).path("me").header("Authorization", "bearer 12333322abef").get(User.class);
+    User actual = webResource.path(USERS_RESOURCE).path("me").header("Authorization", "bearer 12333322abef").get(User.class);
 
     assertEquals(expected.getId(), actual.getId());
     assertEquals(expected.firstName, actual.firstName);
@@ -204,7 +205,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUpUserRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE));
     WebResource webResource = super.resource();
 
-    ClientResponse clientResponse = webResource.path(RESOURCES_USER).path(USER_ID).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
+    ClientResponse clientResponse = webResource.path(USERS_RESOURCE).path(USER_ID).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.FORBIDDEN, clientResponse.getClientResponseStatus());
   }
@@ -214,7 +215,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     WebResource webResource = super.resource();
 
     setUserUnauthorized();
-    ClientResponse clientResponse = webResource.path(RESOURCES_USER).path(USER_ID).get(ClientResponse.class);
+    ClientResponse clientResponse = webResource.path(USERS_RESOURCE).path(USER_ID).get(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.UNAUTHORIZED, clientResponse.getClientResponseStatus());
 
@@ -238,7 +239,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
     WebResource webResource = super.resource();
 
-    ClientResponse clientResponse = webResource.path(RESOURCES_USER).path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, user);
+    ClientResponse clientResponse = webResource.path(USERS_RESOURCE).path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, user);
 
     assertEquals(ClientResponse.Status.NO_CONTENT, clientResponse.getClientResponseStatus());
 
@@ -265,7 +266,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
     WebResource webResource = super.resource();
 
-    ClientResponse clientResponse = webResource.path(RESOURCES_USER).path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, user);
+    ClientResponse clientResponse = webResource.path(USERS_RESOURCE).path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, user);
 
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
   }
@@ -282,7 +283,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
     WebResource webResource = super.resource();
 
-    ClientResponse clientResponse = webResource.path(RESOURCES_USER).path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, user);
+    ClientResponse clientResponse = webResource.path(USERS_RESOURCE).path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, user);
 
     assertEquals(ClientResponse.Status.FORBIDDEN, clientResponse.getClientResponseStatus());
   }
@@ -299,7 +300,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
     WebResource webResource = super.resource();
 
-    ClientResponse clientResponse = webResource.path(RESOURCES_USER).path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, user);
+    ClientResponse clientResponse = webResource.path(USERS_RESOURCE).path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, user);
 
     assertEquals(ClientResponse.Status.UNAUTHORIZED, clientResponse.getClientResponseStatus());
   }
@@ -314,7 +315,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
-    ClientResponse clientResponse = webResource.path(RESOURCES_USER).path(USER_ID).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
+    ClientResponse clientResponse = webResource.path(USERS_RESOURCE).path(USER_ID).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.NO_CONTENT, clientResponse.getClientResponseStatus());
   }
@@ -327,7 +328,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(null);
 
-    ClientResponse clientResponse = webResource.path(RESOURCES_USER).path(USER_ID).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
+    ClientResponse clientResponse = webResource.path(USERS_RESOURCE).path(USER_ID).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
   }
@@ -342,7 +343,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
-    ClientResponse clientResponse = webResource.path(RESOURCES_USER).path(USER_ID).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
+    ClientResponse clientResponse = webResource.path(USERS_RESOURCE).path(USER_ID).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.FORBIDDEN, clientResponse.getClientResponseStatus());
   }
@@ -357,7 +358,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
     setUserUnauthorized();
 
-    ClientResponse clientResponse = webResource.path(RESOURCES_USER).path(USER_ID).delete(ClientResponse.class);
+    ClientResponse clientResponse = webResource.path(USERS_RESOURCE).path(USER_ID).delete(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.UNAUTHORIZED, clientResponse.getClientResponseStatus());
   }
