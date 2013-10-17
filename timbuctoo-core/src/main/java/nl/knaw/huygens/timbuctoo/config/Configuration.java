@@ -95,6 +95,11 @@ public class Configuration {
     return rv;
   }
 
+  public String getSolrDir() {
+    String path = this.getSetting("solr.directory");
+    return this.getBooleanSetting("solr.use_user_home") ? this.pathInUserHome(path) : path;
+  }
+
   public String pathInUserHome(String path) {
     path = Character.toString(path.charAt(0)).equals("/") ? path : "/" + path;
     return System.getProperty("user.home") + path;
