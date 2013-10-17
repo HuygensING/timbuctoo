@@ -40,16 +40,11 @@ public class ConfigValidator {
   }
 
   private void validateSolrDirectory() {
-    File dir = new File(getSolrDir(config));
+    File dir = new File(config.getSolrDir());
     if (!dir.isDirectory()) {
       System.err.printf("Solr directory '%s' does not exist%n", dir.getAbsolutePath());
       error = true;
     }
   }
 
-  // TODO make this part of Configuration
-  private String getSolrDir(Configuration config) {
-    String path = config.getSetting("solr.directory");
-    return config.getBooleanSetting("solr.use_user_home") ? config.pathInUserHome(path) : path;
-  }
 }

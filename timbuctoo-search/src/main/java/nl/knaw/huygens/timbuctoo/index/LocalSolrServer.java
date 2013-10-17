@@ -59,8 +59,7 @@ public class LocalSolrServer {
 
   @Inject
   public LocalSolrServer( //
-      Configuration config, @Named("solr.directory")
-      String configuredSolrDir, //
+      Configuration config, //
       @Named("indexeddoctypes")
       String coreNameList, //
       @Named("solr.commit_within")
@@ -68,7 +67,7 @@ public class LocalSolrServer {
   ) {
 
     try {
-      String solrDir = getSolrDir(config, configuredSolrDir);
+      String solrDir = config.getSolrDir();
       LOG.info("Solr directory: {}", solrDir);
       commitWithin = stringToInt(commitWithinSpec, 10 * 1000);
       LOG.info("Maximum time before a commit: {} seconds", commitWithin / 1000);
@@ -76,7 +75,6 @@ public class LocalSolrServer {
       File configFile = new File(new File(solrDir, "conf"), "solr.xml");
       container = new CoreContainer(solrDir, configFile);
       solrServers = Maps.newHashMap();
-      System.out.println("solrDir: " + solrDir);
       solrServers.put("relation", createServer(container, "relation", solrDir));
       for (String coreName : coreNameList.split(",")) {
         // solrServers.put(coreName, new EmbeddedSolrServer(container, coreName));
@@ -116,10 +114,6 @@ public class LocalSolrServer {
     SolrCore core = container.create(descriptor);
     container.register(coreName, core, true);
     return new EmbeddedSolrServer(container, coreName);
-  }
-
-  private String getSolrDir(Configuration config, String path) {
-    return config.getBooleanSetting("solr.use_user_home") ? config.pathInUserHome(path) : path;
   }
 
   public void add(String core, SolrInputDocument doc) throws SolrServerException, IOException {
