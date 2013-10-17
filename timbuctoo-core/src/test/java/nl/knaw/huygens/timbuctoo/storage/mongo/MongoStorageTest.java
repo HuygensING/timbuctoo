@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.storage.mongo.model.TestSystemDocument;
 
 import org.junit.BeforeClass;
@@ -38,13 +38,13 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   private static final Class<TestSystemDocument> TYPE = TestSystemDocument.class;
 
-  private static DocTypeRegistry registry;
+  private static TypeRegistry registry;
 
   private MongoStorage storage;
 
   @BeforeClass
   public static void setUpDocTypeRegistry() {
-    registry = new DocTypeRegistry(TYPE.getPackage().getName());
+    registry = new TypeRegistry(TYPE.getPackage().getName());
   }
 
   @Override

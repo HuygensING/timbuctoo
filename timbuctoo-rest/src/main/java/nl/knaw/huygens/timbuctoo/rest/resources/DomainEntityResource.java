@@ -21,7 +21,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -51,12 +51,12 @@ public class DomainEntityResource {
 
   public static final String ENTITY_PARAM = "entityName";
 
-  private final DocTypeRegistry typeRegistry;
+  private final TypeRegistry typeRegistry;
   private final StorageManager storageManager;
   private final SearchManager searchManager;
 
   @Inject
-  public DomainEntityResource(DocTypeRegistry registry, StorageManager storageManager, SearchManager searchManager) {
+  public DomainEntityResource(TypeRegistry registry, StorageManager storageManager, SearchManager searchManager) {
     typeRegistry = registry;
     this.storageManager = storageManager;
     this.searchManager = searchManager;

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
@@ -36,12 +36,12 @@ public class IndexManager {
 
   private final Logger LOG = LoggerFactory.getLogger(IndexManager.class);
 
-  private final DocTypeRegistry registry;
+  private final TypeRegistry registry;
   private final LocalSolrServer server;
   private Map<Class<? extends Entity>, EntityIndexer<? extends Entity>> indexers;
 
   @Inject
-  public IndexManager(Configuration config, DocTypeRegistry registry, LocalSolrServer server, StorageManager storageManager, RelationManager relationManager) {
+  public IndexManager(Configuration config, TypeRegistry registry, LocalSolrServer server, StorageManager storageManager, RelationManager relationManager) {
     this.registry = registry;
     this.server = server;
     setupIndexers(config, storageManager, relationManager);

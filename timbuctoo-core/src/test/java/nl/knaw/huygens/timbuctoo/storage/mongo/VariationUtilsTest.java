@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.variation.model.TestExtraBaseDoc;
 
 import org.junit.BeforeClass;
@@ -10,11 +10,11 @@ import org.junit.Test;
 
 public class VariationUtilsTest {
 
-  private static DocTypeRegistry registry;
+  private static TypeRegistry registry;
 
   @BeforeClass
   public static void setUpRegistry() {
-    registry = new DocTypeRegistry("nl.knaw.huygens.timbuctoo.variation.model");
+    registry = new TypeRegistry("nl.knaw.huygens.timbuctoo.variation.model");
   }
 
   @Test

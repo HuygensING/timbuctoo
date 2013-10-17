@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import javax.jms.JMSException;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
@@ -19,13 +19,13 @@ public abstract class DefaultImporter extends ToolBase {
   /** File with {@code RelationType} definitions; must be present on classpath. */
   private static final String RELATION_TYPE_DEFS = "relationtype-defs.txt";
 
-  protected final DocTypeRegistry typeRegistry;
+  protected final TypeRegistry typeRegistry;
   protected final StorageManager storageManager;
 
   private String prevMessage;
   private int errors;
 
-  public DefaultImporter(DocTypeRegistry registry, StorageManager storageManager, RelationManager relationManager) {
+  public DefaultImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager) {
     this.typeRegistry = registry;
     this.storageManager = storageManager;
     prevMessage = "";

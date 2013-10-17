@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.StorageUtils;
 
@@ -21,13 +21,13 @@ public class EntityIds {
 
   private static final String ID_COLLECTION_NAME = "counters";
 
-  private final DocTypeRegistry typeRegistry;
+  private final TypeRegistry typeRegistry;
   // The counters are stored in a collection, of course
   private final JacksonDBCollection<Counter, String> counters;
   // A cache to avoid repeated inspection of entity classes
   private final LoadingCache<Class<? extends Entity>, String> counterIdCache;
 
-  public EntityIds(DB db, DocTypeRegistry registry) {
+  public EntityIds(DB db, TypeRegistry registry) {
     typeRegistry = registry;
     counters = JacksonDBCollection.wrap(db.getCollection(ID_COLLECTION_NAME), Counter.class, String.class);
     counterIdCache = CacheBuilder.newBuilder().build(new CacheLoader<Class<? extends Entity>, String>() {

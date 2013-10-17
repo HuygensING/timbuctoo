@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.rest.providers;
 import java.io.IOException;
 import java.io.StringWriter;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.rest.providers.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.rest.providers.model.TestConcreteDoc;
@@ -38,7 +38,7 @@ public class HTMLGeneratorTest {
 
   @Before
   public void setUp() throws Exception {
-    DocTypeRegistry registry = new DocTypeRegistry(MODEL_PACKAGES);
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGES);
     SimpleModule module = new SimpleModule();
     module.addSerializer(new ReferenceSerializer(registry));
     mapper = new ObjectMapper();

@@ -9,7 +9,7 @@ import nl.knaw.huygens.solr.FacetInfo;
 import nl.knaw.huygens.solr.FacetParameter;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 import nl.knaw.huygens.solr.SolrUtils;
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.index.LocalSolrServer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -34,11 +34,11 @@ public class SearchManager {
   private final LocalSolrServer server;
   private final FacetFinder facetFinder;
   private final AbstractFieldFinder fullTextSearchFieldFinder;
-  private final DocTypeRegistry typeRegistry;
+  private final TypeRegistry typeRegistry;
   private final SortableFieldFinder sortableFieldFinder;
 
   @Inject
-  public SearchManager(LocalSolrServer server, DocTypeRegistry registry) {
+  public SearchManager(LocalSolrServer server, TypeRegistry registry) {
     this.server = server;
     this.facetFinder = new FacetFinder();
     this.fullTextSearchFieldFinder = new FullTextSearchFieldFinder();

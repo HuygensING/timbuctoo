@@ -20,7 +20,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.rest.resources.DomainEntityResource;
 
@@ -47,7 +47,7 @@ public class DocumentReader implements MessageBodyReader<Entity> {
   private Request request;
 
   @Inject
-  private DocTypeRegistry typeRegistry;
+  private TypeRegistry typeRegistry;
   @Inject
   private JacksonJsonProvider jsonProvider;
   @Inject

@@ -18,7 +18,7 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestDocWithIDPrefix;
@@ -42,13 +42,13 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   private static final String DEFAULT_ID = "TCD000000001";
 
-  private static DocTypeRegistry registry;
+  private static TypeRegistry registry;
 
   private MongoVariationStorage storage;
 
   @BeforeClass
   public static void setUpDocTypeRegistry() {
-    registry = new DocTypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
+    registry = new TypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
   }
 
   @Override

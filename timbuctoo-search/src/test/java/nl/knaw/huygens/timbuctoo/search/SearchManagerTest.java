@@ -15,7 +15,7 @@ import java.util.List;
 
 import nl.knaw.huygens.solr.FacetParameter;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount.Option;
 import nl.knaw.huygens.timbuctoo.index.LocalSolrServer;
@@ -48,12 +48,12 @@ public class SearchManagerTest {
 
   private SearchManager instance;
   private LocalSolrServer solrInstance;
-  private DocTypeRegistry typeRegistry;
+  private TypeRegistry typeRegistry;
 
   @Before
   public void setUp() {
     solrInstance = mock(LocalSolrServer.class);
-    typeRegistry = new DocTypeRegistry(Person.class.getPackage().getName() + " " + ATLGPerson.class.getPackage().getName() + " "
+    typeRegistry = new TypeRegistry(Person.class.getPackage().getName() + " " + ATLGPerson.class.getPackage().getName() + " "
         + ClassWithMupltipleFullTestSearchFields.class.getPackage().getName());
     instance = new SearchManager(solrInstance, typeRegistry);
   }

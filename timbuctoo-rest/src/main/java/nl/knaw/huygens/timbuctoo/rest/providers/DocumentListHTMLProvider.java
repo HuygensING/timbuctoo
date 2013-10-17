@@ -15,7 +15,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -34,7 +34,7 @@ public class DocumentListHTMLProvider implements MessageBodyWriter<List<? extend
   private final HTMLProviderHelper helper;
 
   @Inject
-  public DocumentListHTMLProvider(DocTypeRegistry registry, @Named("html.defaultstylesheet")
+  public DocumentListHTMLProvider(TypeRegistry registry, @Named("html.defaultstylesheet")
   String stylesheetLink, @Named("public_url")
   String publicURL) {
     helper = new HTMLProviderHelper(registry, stylesheetLink, publicURL);

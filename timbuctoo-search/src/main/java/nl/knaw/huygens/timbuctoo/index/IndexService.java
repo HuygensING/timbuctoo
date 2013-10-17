@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.index;
 
 import javax.jms.JMSException;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
@@ -21,12 +21,12 @@ public class IndexService implements Runnable {
 
   private final IndexManager manager;
   private final Consumer consumer;
-  private DocTypeRegistry registry;
+  private TypeRegistry registry;
 
   private volatile boolean running;
 
   @Inject
-  public IndexService(IndexManager manager, Broker broker, DocTypeRegistry registry) throws JMSException {
+  public IndexService(IndexManager manager, Broker broker, TypeRegistry registry) throws JMSException {
     this.manager = manager;
     this.consumer = broker.newConsumer(Broker.INDEX_QUEUE, "IndexServiceConsumer");
     this.registry = registry;

@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -44,7 +44,7 @@ public class MongoStorageFacade implements VariationStorage {
   private final MongoVariationStorage variationStorage;
 
   @Inject
-  public MongoStorageFacade(DocTypeRegistry registry, Configuration config) throws UnknownHostException, MongoException {
+  public MongoStorageFacade(TypeRegistry registry, Configuration config) throws UnknownHostException, MongoException {
     MongoOptions options = new MongoOptions();
     options.safe = true;
 

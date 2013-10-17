@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
@@ -21,7 +21,7 @@ import com.mongodb.util.JSON;
 
 public class MongoStorage extends MongoStorageBase implements BasicStorage {
 
-  public MongoStorage(DocTypeRegistry registry, Mongo mongo, DB db, String dbName) {
+  public MongoStorage(TypeRegistry registry, Mongo mongo, DB db, String dbName) {
     super(registry, mongo, db, dbName);
   }
 

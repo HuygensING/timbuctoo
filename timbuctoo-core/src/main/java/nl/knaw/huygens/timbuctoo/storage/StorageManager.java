@@ -8,7 +8,7 @@ import java.util.List;
 import javax.jms.JMSException;
 
 import nl.knaw.huygens.persistence.PersistenceException;
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
@@ -33,13 +33,13 @@ public class StorageManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(StorageManager.class);
 
-  private final DocTypeRegistry registry;
+  private final TypeRegistry registry;
   private final VariationStorage storage;
   private final PersistenceWrapper persistenceWrapper;
   private final Producer producer;
 
   @Inject
-  public StorageManager(VariationStorage storage, Broker broker, DocTypeRegistry registry, PersistenceWrapper persistenceWrapper) {
+  public StorageManager(VariationStorage storage, Broker broker, TypeRegistry registry, PersistenceWrapper persistenceWrapper) {
     this.registry = registry;
     this.storage = storage;
     this.persistenceWrapper = persistenceWrapper;

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
@@ -26,13 +26,13 @@ public abstract class MongoStorageBase implements BasicStorage {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoStorageBase.class);
 
-  protected final DocTypeRegistry typeRegistry;
+  protected final TypeRegistry typeRegistry;
   private final Mongo mongo;
   private final String dbName;
   protected DB db;
   private EntityIds entityIds;
 
-  public MongoStorageBase(DocTypeRegistry registry, Mongo mongo, DB db, String dbName) {
+  public MongoStorageBase(TypeRegistry registry, Mongo mongo, DB db, String dbName) {
     this.typeRegistry = registry;
     this.mongo = mongo;
     this.dbName = dbName;

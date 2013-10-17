@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.ws.rs.core.Application;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.rest.resources.DomainEntityResource;
 import nl.knaw.huygens.timbuctoo.rest.util.JAXUtils.API;
 
@@ -17,7 +17,7 @@ public class Sitemap {
 
   private static final String ENTITY_REGEXP = "\\{" + DomainEntityResource.ENTITY_PARAM + "\\}";
 
-  public Sitemap(Application application, DocTypeRegistry registry) {
+  public Sitemap(Application application, TypeRegistry registry) {
     availableAPIList = Lists.newArrayList();
     for (Class<?> cls : application.getClasses()) {
       List<API> apis = JAXUtils.generateAPIs(cls);
