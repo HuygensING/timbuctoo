@@ -8,58 +8,71 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.model.Legislation;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
 public class DCARLegislation extends Legislation {
 
   /** Migration: Name of source file */
   private String origFilename;
+
   /** ING Forms: "Reference"; text searchable */
   private String reference;
+
   /** ING Forms: "Pages" */
   private String pages;
+
   /** ING Forms: "Short title" */
   private String titleNld;
+
   /** ING Forms: "English title"; text searchable */
   private String titleEng;
+
   /** ING Forms: "Date" */
   private String date1;
+
   /** ING Forms: "Date 2" */
   private String date2;
-  /** ING Forms: "Keyword(s) geography"; place facet */
-  private List<EntityRef> placeKeywords;
-  /** ING Forms: "Keyword(s) Group classification"; subject facet */
-  private List<EntityRef> groupKeywords;
-  /** ING Forms: "Keyword(s) other subject"; subject facet */
-  private List<EntityRef> otherKeywords;
-  /** ING Forms: "Keyword(s) person"; person facet */
-  private List<EntityRef> persons;
+
+  /** ING Forms: "Keyword(s) geography"; as relation ; place facet */
+
+  /** ING Forms: "Keyword(s) Group classification"; as relation; subject facet */
+
+  /** ING Forms: "Keyword(s) other subject"; as relation; subject facet */
+
+  /** ING Forms: "Keyword(s) person"; as relation; person facet */
+
   /** ING Forms: "Summary of contents"; text searchable */
   private String contents;
+
   /** ING Forms: "See also" */
   private List<String> seeAlso;
+
   /** ING Forms: "Earlier/later publications" */
   private List<String> otherPublications;
+
   /** ING Forms: "Original archival source" */
   private String originalArchivalSource;
+
   /** ING Forms: "Link archival database" */
   private String linkArchivalDBase;
+
   /** ING Forms: "Remarks" */
   private String remarks;
+
   /** ING Forms: "Scan" */
   private String scan;
+
   /** ING Forms: "Parts to scan" */
   private String partsToScan;
+
   /** ING Forms: "Record made by-" */
   private String madeBy;
+
   /** ING Forms: "Reminders" */
   private String reminders;
 
   public DCARLegislation() {
-    placeKeywords = Lists.newArrayList();
-    groupKeywords = Lists.newArrayList();
-    otherKeywords = Lists.newArrayList();
-    persons = Lists.newArrayList();
     seeAlso = Lists.newArrayList();
     otherPublications = Lists.newArrayList();
   }
@@ -130,64 +143,22 @@ public class DCARLegislation extends Legislation {
     this.date2 = date2;
   }
 
+  @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPlaceKeywords() {
-    return placeKeywords;
+    return getRelations().get("has_place");
   }
 
-  public void setPlaceKeywords(List<EntityRef> keywords) {
-    placeKeywords = keywords;
-  }
-
-  public void addPlaceKeyword(EntityRef keyword) {
-    if (keyword != null) {
-      placeKeywords.add(keyword);
-    }
-  }
-
+  @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getGroupKeywords() {
-    return groupKeywords;
+  public List<EntityRef> getSubjectKeywords() {
+    return getRelations().get("has_keyword");
   }
 
-  public void setGroupKeywords(List<EntityRef> keywords) {
-    groupKeywords = keywords;
-  }
-
-  public void addGroupKeyword(EntityRef keyword) {
-    if (keyword != null) {
-      groupKeywords.add(keyword);
-    }
-  }
-
-  @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getOtherKeywords() {
-    return otherKeywords;
-  }
-
-  public void setOtherKeywords(List<EntityRef> keywords) {
-    otherKeywords = keywords;
-  }
-
-  public void addOtherKeyword(EntityRef keyword) {
-    if (keyword != null) {
-      otherKeywords.add(keyword);
-    }
-  }
-
+  @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPersons() {
-    return persons;
-  }
-
-  public void setPersons(List<EntityRef> persons) {
-    this.persons = persons;
-  }
-
-  public void addPerson(EntityRef person) {
-    if (person != null) {
-      persons.add(person);
-    }
+    return getRelations().get("has_person");
   }
 
   @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false)

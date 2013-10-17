@@ -17,47 +17,54 @@ public class DCARArchiver extends Archiver {
 
   /** Migration: Name of source file */
   private String origFilename;
+
   /** ING Forms: "Name" */
   private String nameNld;
+
   /** ING Forms: "English name"; text searchable */
   public String nameEng;
+
   /** ING Forms: "Begin date"; date facet */
   private String beginDate;
+
   /** ING Forms: "End date"; date facet */
   private String endDate;
+
   /** ING Forms: "Period description" */
   private String periodDescription;
+
   /** ING Forms: "History/functions/occupations/activities"; text searchable */
   private String history;
-  /** ING Forms: "Title(s) related archive(s)" */
-  private List<EntityRef> relatedArchives;
-  /** ING Forms: "Title(s) related creator(s)" */
-  private List<EntityRef> relatedArchivers;
-  /** ING Forms: "Keyword(s) geography"; place facet */
-  private List<EntityRef> placeKeywords;
-  /** ING Forms: "Keyword(s) subject"; subject facet */
-  private List<EntityRef> subjectKeywords;
-  /** ING Forms: "Keyword(s) person"; person facet */
-  private List<EntityRef> persons;
+
+  /** ING Forms: "Title(s) related archive(s); as relation " */
+
+  /** ING Forms: "Title(s) related creator(s); as relation " */
+
+  /** ING Forms: "Keyword(s) geography"; as relation ; place facet */
+
+  /** ING Forms: "Keyword(s) subject"; as relation ; subject facet */
+
+  /** ING Forms: "Keyword(s) person"; as relation ; person facet */
+
   /** ING Forms: "Remarks"; text searchable */
   private String notes;
+
   /** ING Forms: "Literature" */
   private String literature;
+
   /** ING Forms: "Record made by-" */
   private String madeBy;
+
   /** ING Forms: "Reminders" ??? */
   private String reminders;
+
   /** ING Forms: "Binnenkomende relaties" */
   private XRelated[] related;
+
   /** ING Forms: ??? ("person", "family") */
   private List<String> types;
 
   public DCARArchiver() {
-    relatedArchives = Lists.newArrayList();
-    relatedArchivers = Lists.newArrayList();
-    placeKeywords = Lists.newArrayList();
-    subjectKeywords = Lists.newArrayList();
-    persons = Lists.newArrayList();
     types = Lists.newArrayList();
   }
 
@@ -134,73 +141,32 @@ public class DCARArchiver extends Archiver {
     this.history = history;
   }
 
+  @JsonIgnore
   public List<EntityRef> getRelatedArchives() {
-    return relatedArchives;
+    return getRelations().get("is_creator_of");
   }
 
-  public void setRelatedArchives(List<EntityRef> refs) {
-    relatedArchives = refs;
-  }
-
-  public void addRelatedArchive(EntityRef ref) {
-    relatedArchives.add(ref);
-  }
-
+  @JsonIgnore
   public List<EntityRef> getRelatedArchivers() {
-    return relatedArchivers;
+    return getRelations().get("has_sibling_archiver");
   }
 
-  public void setRelatedArchivers(List<EntityRef> refs) {
-    relatedArchivers = refs;
-  }
-
-  public void addRelatedArchiver(EntityRef ref) {
-    relatedArchivers.add(ref);
-  }
-
+  @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPlaceKeywords() {
-    return placeKeywords;
+    return getRelations().get("has_place");
   }
 
-  public void setPlaceKeywords(List<EntityRef> keywords) {
-    placeKeywords = keywords;
-  }
-
-  public void addPlaceKeyword(EntityRef keyword) {
-    if (keyword != null) {
-      placeKeywords.add(keyword);
-    }
-  }
-
+  @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getSubjectKeywords() {
-    return subjectKeywords;
+    return getRelations().get("has_keyword");
   }
 
-  public void setSubjectKeywords(List<EntityRef> keywords) {
-    subjectKeywords = keywords;
-  }
-
-  public void addSubjectKeyword(EntityRef keyword) {
-    if (keyword != null) {
-      subjectKeywords.add(keyword);
-    }
-  }
-
+  @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPersons() {
-    return persons;
-  }
-
-  public void setPersons(List<EntityRef> persons) {
-    this.persons = persons;
-  }
-
-  public void addPerson(EntityRef person) {
-    if (person != null) {
-      persons.add(person);
-    }
+    return getRelations().get("has_person");
   }
 
   @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false)
