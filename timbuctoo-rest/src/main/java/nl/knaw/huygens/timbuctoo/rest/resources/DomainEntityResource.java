@@ -42,9 +42,9 @@ import com.google.inject.Inject;
  * A REST resource for adressing collections of domain entities.
  */
 @Path(Paths.DOMAIN_PREFIX + "/{entityName: [a-zA-Z]+}")
-public class RESTAutoResource {
+public class DomainEntityResource {
 
-  private final Logger LOG = LoggerFactory.getLogger(RESTAutoResource.class);
+  private final Logger LOG = LoggerFactory.getLogger(DomainEntityResource.class);
 
   private static final String ID_PARAM = "id";
   private static final String ID_PATH = "/{id: [a-zA-Z]{4}\\d+}";
@@ -56,7 +56,7 @@ public class RESTAutoResource {
   private final SearchManager searchManager;
 
   @Inject
-  public RESTAutoResource(DocTypeRegistry registry, StorageManager storageManager, SearchManager searchManager) {
+  public DomainEntityResource(DocTypeRegistry registry, StorageManager storageManager, SearchManager searchManager) {
     typeRegistry = registry;
     this.storageManager = storageManager;
     this.searchManager = searchManager;
@@ -68,13 +68,9 @@ public class RESTAutoResource {
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
   public List<? extends DomainEntity> getAllDocs( //
-      @PathParam(ENTITY_PARAM)
-      String entityName, //
-      @QueryParam("rows")
-      @DefaultValue("200")
-      int rows, //
-      @QueryParam("start")
-      int start //
+      @PathParam(ENTITY_PARAM) String entityName, //
+      @QueryParam("rows") @DefaultValue("200") int rows, //
+      @QueryParam("start") @DefaultValue("0") int start //
   ) {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     return storageManager.getAllLimited(type, start, rows);
@@ -85,11 +81,9 @@ public class RESTAutoResource {
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
   public <T extends DomainEntity> Response post( //
-      @PathParam(ENTITY_PARAM)
-      String entityName, //
+      @PathParam(ENTITY_PARAM) String entityName, //
       DomainEntity input, //
-      @Context
-      UriInfo uriInfo //
+      @Context UriInfo uriInfo //
   ) throws IOException {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     if (type != input.getClass()) {
@@ -108,10 +102,8 @@ public class RESTAutoResource {
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
   public DomainEntity getDoc( //
-      @PathParam(ENTITY_PARAM)
-      String entityName, //
-      @PathParam(ID_PARAM)
-      String id //
+      @PathParam(ENTITY_PARAM) String entityName, //
+      @PathParam(ID_PARAM) String id //
   ) {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
@@ -131,10 +123,8 @@ public class RESTAutoResource {
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
   public <T extends DomainEntity> void putDoc( //
-      @PathParam(ENTITY_PARAM)
-      String entityName, //
-      @PathParam(ID_PARAM)
-      String id, //
+      @PathParam(ENTITY_PARAM) String entityName, //
+      @PathParam(ID_PARAM) String id, //
       DomainEntity input //
   ) throws IOException {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
@@ -145,7 +135,7 @@ public class RESTAutoResource {
     try {
       checkWritable(input, Status.FORBIDDEN);
       storageManager.modifyEntity((Class<T>) type, (T) input);
-    } catch (IOException ex) {
+    } catch (IOException e) {
       // only if the entity version does not exist an IOException is thrown.
       throw new WebApplicationException(Status.NOT_FOUND);
     }
@@ -156,10 +146,8 @@ public class RESTAutoResource {
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
   public <T extends DomainEntity> Response delete( //
-      @PathParam(ENTITY_PARAM)
-      String entityName, //
-      @PathParam(ID_PARAM)
-      String id //
+      @PathParam(ENTITY_PARAM) String entityName, //
+      @PathParam(ID_PARAM) String id //
   ) throws IOException {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     DomainEntity typedDoc = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
@@ -173,12 +161,9 @@ public class RESTAutoResource {
   @JsonView(JsonViews.WebView.class)
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   public DomainEntity getDocOfVariation( //
-      @PathParam(ENTITY_PARAM)
-      String entityName, //
-      @PathParam(ID_PARAM)
-      String id, //
-      @PathParam("variation")
-      String variation //
+      @PathParam(ENTITY_PARAM) String entityName, //
+      @PathParam(ID_PARAM) String id, //
+      @PathParam("variation") String variation //
   ) {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     return checkNotNull(storageManager.getCompleteVariation(type, id, variation), Status.NOT_FOUND);

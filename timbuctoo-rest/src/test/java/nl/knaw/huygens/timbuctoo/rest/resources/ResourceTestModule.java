@@ -65,7 +65,7 @@ class ResourceTestModule extends JerseyServletModule {
 
   @Override
   protected void configureServlets() {
-    bind(RESTAutoResource.class);
+    bind(DomainEntityResource.class);
     super.configureServlets();
   }
 
