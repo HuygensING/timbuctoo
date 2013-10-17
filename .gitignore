@@ -3,3 +3,4 @@ reports/*
 target/*
 **/target/*
 .classpath
+/bin
