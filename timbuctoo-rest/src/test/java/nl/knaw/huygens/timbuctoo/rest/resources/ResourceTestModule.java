@@ -32,7 +32,7 @@ class ResourceTestModule extends JerseyServletModule {
   private static final String M1B = "nl.knaw.huygens.timbuctoo.rest.providers.model.projectb";
   private static final String PACKAGES = M0 + " " + M1 + " " + M1A + " " + M1B;
 
-  private DocTypeRegistry docTypeRegistry;
+  private DocTypeRegistry typeRegistry;
   private StorageManager storageManager;
   private JacksonJsonProvider jsonProvider;
   private Validator validator;
@@ -43,7 +43,7 @@ class ResourceTestModule extends JerseyServletModule {
   private AuthorizationHandler authorizationHandler;
 
   public ResourceTestModule() {
-    docTypeRegistry = new DocTypeRegistry(PACKAGES);
+    typeRegistry = new DocTypeRegistry(PACKAGES);
     storageManager = mock(StorageManager.class);
     jsonProvider = mock(JacksonJsonProvider.class);
     validator = mock(Validator.class);
@@ -76,7 +76,7 @@ class ResourceTestModule extends JerseyServletModule {
 
   @Provides
   public DocTypeRegistry providesDocumentTypeRegister() {
-    return this.docTypeRegistry;
+    return this.typeRegistry;
   }
 
   @Singleton
