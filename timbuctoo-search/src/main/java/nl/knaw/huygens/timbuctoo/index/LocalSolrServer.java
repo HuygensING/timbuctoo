@@ -28,7 +28,6 @@ import org.apache.solr.core.SolrCore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -77,6 +76,7 @@ public class LocalSolrServer {
       File configFile = new File(new File(solrDir, "conf"), "solr.xml");
       container = new CoreContainer(solrDir, configFile);
       solrServers = Maps.newHashMap();
+      System.out.println("solrDir: " + solrDir);
       solrServers.put("relation", createServer(container, "relation", solrDir));
       for (String coreName : coreNameList.split(",")) {
         // solrServers.put(coreName, new EmbeddedSolrServer(container, coreName));
@@ -119,7 +119,7 @@ public class LocalSolrServer {
   }
 
   private String getSolrDir(Configuration config, String path) {
-    return Strings.isNullOrEmpty(path) ? config.pathInUserHome("repository/solr") : path;
+    return config.getBooleanSetting("solr.use_user_home") ? config.pathInUserHome(path) : path;
   }
 
   public void add(String core, SolrInputDocument doc) throws SolrServerException, IOException {
