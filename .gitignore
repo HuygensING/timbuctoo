@@ -2,3 +2,4 @@ build/*
 reports/*
 target/*
 **/target/*
+.classpath
