@@ -35,7 +35,6 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
     }
 
     User example = new User();
-    example.setVreId(securityInformation.getApplicationName());
     example.setUserId(securityInformation.getPrincipal().getName());
 
     User user = findUser(example);

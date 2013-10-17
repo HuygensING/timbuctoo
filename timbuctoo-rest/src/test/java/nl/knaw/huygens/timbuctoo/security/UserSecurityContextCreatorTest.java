@@ -50,7 +50,6 @@ public class UserSecurityContextCreatorTest {
     User user = createUser(applicationName, displayName, userId);
     User example = new User();
     example.setUserId(userId);
-    example.setVreId(applicationName);
 
     SecurityInformation securityInformation = createSecurityInformation(applicationName, displayName, userId);
 
@@ -93,7 +92,6 @@ public class UserSecurityContextCreatorTest {
 
     User example = new User();
     example.setUserId(userId);
-    example.setVreId(applicationName);
 
     when(storageManager.findEntity(Matchers.<Class<User>> any(), any(User.class))).thenReturn(null, user);
 
