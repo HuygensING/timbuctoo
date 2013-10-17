@@ -42,7 +42,7 @@ import com.google.inject.Inject;
 /**
  * A REST resource for adressing collections of domain entities.
  */
-@Path(Paths.DOMAIN_PREFIX + "/{entityType: [a-zA-Z]+}")
+@Path(Paths.DOMAIN_PREFIX + "/{entityName: [a-zA-Z]+}")
 public class RESTAutoResource {
 
   private final Logger LOG = LoggerFactory.getLogger(RESTAutoResource.class);
@@ -50,15 +50,15 @@ public class RESTAutoResource {
   private static final String ID_PARAM = "id";
   private static final String ID_PATH = "/{id: [a-zA-Z]{4}\\d+}";
 
-  public static final String ENTITY_PARAM = "entityType";
+  public static final String ENTITY_PARAM = "entityName";
 
-  private final DocTypeRegistry docTypeRegistry;
+  private final DocTypeRegistry typeRegistry;
   private final StorageManager storageManager;
   private final SearchManager searchManager;
 
   @Inject
   public RESTAutoResource(DocTypeRegistry registry, StorageManager storageManager, SearchManager searchManager) {
-    docTypeRegistry = registry;
+    typeRegistry = registry;
     this.storageManager = storageManager;
     this.searchManager = searchManager;
   }
@@ -68,16 +68,16 @@ public class RESTAutoResource {
   @GET
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
-  public List<? extends Entity> getAllDocs( //
+  public List<? extends DomainEntity> getAllDocs( //
       @PathParam(ENTITY_PARAM)
-      String entityType, //
+      String entityName, //
       @QueryParam("rows")
       @DefaultValue("200")
       int rows, //
       @QueryParam("start")
       int start //
   ) {
-    Class<? extends Entity> type = getDocType(entityType);
+    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     return storageManager.getAllLimited(type, start, rows);
   }
 
@@ -87,18 +87,14 @@ public class RESTAutoResource {
   @RolesAllowed("USER")
   public <T extends Entity> Response post( //
       @PathParam(ENTITY_PARAM)
-      String entityType, //
+      String entityName, //
       Entity input, //
       @Context
       UriInfo uriInfo //
   ) throws IOException {
     @SuppressWarnings("unchecked")
-    Class<T> type = (Class<T>) getDocType(entityType);
-    Class<? extends Entity> inputType = input.getClass();
-
-    //TODO: find a better way to test if input type is the same as the entity type.
-    //@see redmine issue #1419
-    if (!type.isAssignableFrom(inputType) || !inputType.isAssignableFrom(type)) {
+    Class<T> type = (Class<T>) getDocType(entityName);
+    if (type != input.getClass()) {
       throw new WebApplicationException(Status.BAD_REQUEST);
     }
 
@@ -107,7 +103,7 @@ public class RESTAutoResource {
     storageManager.addEntity(type, typedDoc);
 
     String baseUri = CharMatcher.is('/').trimTrailingFrom(uriInfo.getBaseUri().toString());
-    String location = Joiner.on('/').join(baseUri, Paths.DOMAIN_PREFIX, entityType, input.getId());
+    String location = Joiner.on('/').join(baseUri, Paths.DOMAIN_PREFIX, entityName, input.getId());
     return Response.status(Status.CREATED).header("Location", location).build();
   }
 
@@ -115,24 +111,22 @@ public class RESTAutoResource {
   @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
-  public Entity getDoc( //
+  public DomainEntity getDoc( //
       @PathParam(ENTITY_PARAM)
-      String entityType, //
+      String entityName, //
       @PathParam(ID_PARAM)
       String id //
   ) {
-    Class<? extends Entity> type = getDocType(entityType);
-    Entity document = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
+    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
+    DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
 
-    if (document instanceof DomainEntity) {
-      try {
-        searchManager.addRelationsTo((DomainEntity) document);
-      } catch (SolrServerException e) {
-        LOG.error(e.getMessage());
-        throw new WebApplicationException(Status.NOT_FOUND);
-      }
+    try {
+      searchManager.addRelationsTo((DomainEntity) entity);
+    } catch (SolrServerException e) {
+      LOG.error(e.getMessage());
+      throw new WebApplicationException(Status.NOT_FOUND);
     }
-    return document;
+    return entity;
   }
 
   @PUT
@@ -142,18 +136,14 @@ public class RESTAutoResource {
   @RolesAllowed("USER")
   public <T extends Entity> void putDoc( //
       @PathParam(ENTITY_PARAM)
-      String entityType, //
+      String entityName, //
       @PathParam(ID_PARAM)
       String id, //
       Entity input //
   ) throws IOException {
     @SuppressWarnings("unchecked")
-    Class<T> type = (Class<T>) getDocType(entityType);
-    Class<? extends Entity> inputType = input.getClass();
-
-    //TODO: find a better way to test if input type is the same as the entity type.
-    //@see redmine issue #1419
-    if (!type.isAssignableFrom(inputType) || !inputType.isAssignableFrom(type)) {
+    Class<T> type = (Class<T>) getDocType(entityName);
+    if (type != input.getClass()) {
       throw new WebApplicationException(Status.BAD_REQUEST);
     }
 
@@ -163,7 +153,7 @@ public class RESTAutoResource {
       checkWritable(typedDoc, Status.FORBIDDEN);
       storageManager.modifyEntity(type, typedDoc);
     } catch (IOException ex) {
-      // only if the document version does not exist an IOException is thrown.
+      // only if the entity version does not exist an IOException is thrown.
       throw new WebApplicationException(Status.NOT_FOUND);
     }
   }
@@ -174,12 +164,12 @@ public class RESTAutoResource {
   @RolesAllowed("USER")
   public <T extends Entity> Response delete( //
       @PathParam(ENTITY_PARAM)
-      String entityType, //
+      String entityName, //
       @PathParam(ID_PARAM)
       String id //
   ) throws IOException {
     @SuppressWarnings("unchecked")
-    Class<T> type = (Class<T>) getDocType(entityType);
+    Class<T> type = (Class<T>) getDocType(entityName);
     T typedDoc = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
     checkWritable(typedDoc, Status.FORBIDDEN);
     storageManager.removeEntity(type, typedDoc);
@@ -192,23 +182,33 @@ public class RESTAutoResource {
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   public DomainEntity getDocOfVariation( //
       @PathParam(ENTITY_PARAM)
-      String entityType, //
+      String entityName, //
       @PathParam(ID_PARAM)
       String id, //
       @PathParam("variation")
       String variation //
   ) {
-    @SuppressWarnings("unchecked")
-    Class<? extends DomainEntity> type = (Class<? extends DomainEntity>) getDocType(entityType);
+    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     return checkNotNull(storageManager.getCompleteVariation(type, id, variation), Status.NOT_FOUND);
   }
 
   // -------------------------------------------------------------------
 
-  private Class<? extends Entity> getDocType(String entityType) {
-    Class<? extends Entity> type = docTypeRegistry.getTypeForXName(entityType);
+  @SuppressWarnings("unchecked")
+  private Class<? extends DomainEntity> getEntityType(String entityName, Status status) {
+    Class<? extends Entity> type = typeRegistry.getTypeForXName(entityName);
+    if (type != null && DomainEntity.class.isAssignableFrom(type)) {
+      return (Class<? extends DomainEntity>) type;
+    } else {
+      LOG.error("'{}' is not a domain entity name", entityName);
+      throw new WebApplicationException(status);
+    }
+  }
+
+  private Class<? extends Entity> getDocType(String entityName) {
+    Class<? extends Entity> type = typeRegistry.getTypeForXName(entityName);
     if (type == null) {
-      LOG.error("Cannot convert '{}' to a document type", entityType);
+      LOG.error("Cannot convert '{}' to a entity type", entityName);
       throw new WebApplicationException(Status.NOT_FOUND);
     }
     return type;
