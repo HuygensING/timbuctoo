@@ -25,7 +25,6 @@ import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -85,22 +84,19 @@ public class RESTAutoResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
-  public <T extends Entity> Response post( //
+  public <T extends DomainEntity> Response post( //
       @PathParam(ENTITY_PARAM)
       String entityName, //
-      Entity input, //
+      DomainEntity input, //
       @Context
       UriInfo uriInfo //
   ) throws IOException {
-    @SuppressWarnings("unchecked")
-    Class<T> type = (Class<T>) getDocType(entityName);
+    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     if (type != input.getClass()) {
       throw new WebApplicationException(Status.BAD_REQUEST);
     }
 
-    @SuppressWarnings("unchecked")
-    T typedDoc = (T) input;
-    storageManager.addEntity(type, typedDoc);
+    storageManager.addEntity((Class<T>) type, (T) input);
 
     String baseUri = CharMatcher.is('/').trimTrailingFrom(uriInfo.getBaseUri().toString());
     String location = Joiner.on('/').join(baseUri, Paths.DOMAIN_PREFIX, entityName, input.getId());
@@ -134,24 +130,21 @@ public class RESTAutoResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
-  public <T extends Entity> void putDoc( //
+  public <T extends DomainEntity> void putDoc( //
       @PathParam(ENTITY_PARAM)
       String entityName, //
       @PathParam(ID_PARAM)
       String id, //
-      Entity input //
+      DomainEntity input //
   ) throws IOException {
-    @SuppressWarnings("unchecked")
-    Class<T> type = (Class<T>) getDocType(entityName);
+    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     if (type != input.getClass()) {
       throw new WebApplicationException(Status.BAD_REQUEST);
     }
 
     try {
-      @SuppressWarnings("unchecked")
-      T typedDoc = (T) input;
-      checkWritable(typedDoc, Status.FORBIDDEN);
-      storageManager.modifyEntity(type, typedDoc);
+      checkWritable(input, Status.FORBIDDEN);
+      storageManager.modifyEntity((Class<T>) type, (T) input);
     } catch (IOException ex) {
       // only if the entity version does not exist an IOException is thrown.
       throw new WebApplicationException(Status.NOT_FOUND);
@@ -162,17 +155,16 @@ public class RESTAutoResource {
   @Path(ID_PATH)
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
-  public <T extends Entity> Response delete( //
+  public <T extends DomainEntity> Response delete( //
       @PathParam(ENTITY_PARAM)
       String entityName, //
       @PathParam(ID_PARAM)
       String id //
   ) throws IOException {
-    @SuppressWarnings("unchecked")
-    Class<T> type = (Class<T>) getDocType(entityName);
-    T typedDoc = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
+    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
+    DomainEntity typedDoc = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
     checkWritable(typedDoc, Status.FORBIDDEN);
-    storageManager.removeEntity(type, typedDoc);
+    storageManager.removeEntity((Class<T>) type, (T) typedDoc);
     return Response.status(Status.NO_CONTENT).build();
   }
 
@@ -205,15 +197,6 @@ public class RESTAutoResource {
     }
   }
 
-  private Class<? extends Entity> getDocType(String entityName) {
-    Class<? extends Entity> type = typeRegistry.getTypeForXName(entityName);
-    if (type == null) {
-      LOG.error("Cannot convert '{}' to a entity type", entityName);
-      throw new WebApplicationException(Status.NOT_FOUND);
-    }
-    return type;
-  }
-
   /**
    * Checks the specified reference and throws a {@code WebApplicationException}
    * with the specified status if the reference is {@code null}.
@@ -225,14 +208,8 @@ public class RESTAutoResource {
     return reference;
   }
 
-  private <T extends Entity> void checkWritable(T reference, Status status) {
-    if (reference instanceof SystemEntity) {
-
-    } else if (reference instanceof DomainEntity) {
-      if (!((DomainEntity) reference).isWritable()) {
-        throw new WebApplicationException(status);
-      }
-    } else {
+  private void checkWritable(DomainEntity entity, Status status) {
+    if (!(entity).isWritable()) {
       throw new WebApplicationException(status);
     }
   }
