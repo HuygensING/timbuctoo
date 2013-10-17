@@ -68,13 +68,13 @@ public class User extends SystemEntity {
 
     User other = (User) obj;
 
-    return Objects.equal(other.userId, userId) && Objects.equal(other.vreId, vreId);
+    return Objects.equal(other.userId, userId);
 
   }
 
   @Override
   public int hashCode() {
     //Google Objects
-    return Objects.hashCode(userId, vreId);
+    return Objects.hashCode(userId);
   }
 }
