@@ -25,7 +25,6 @@ import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -40,9 +39,9 @@ import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 
 /**
- * A REST resource for adressing collections of documents.
+ * A REST resource for adressing collections of domain entities.
  */
-@Path(Paths.DOMAIN_PREFIX + "/{entityType: [a-zA-Z]+}")
+@Path(Paths.DOMAIN_PREFIX + "/{entityName: [a-zA-Z]+}")
 public class RESTAutoResource {
 
   private final Logger LOG = LoggerFactory.getLogger(RESTAutoResource.class);
@@ -50,15 +49,15 @@ public class RESTAutoResource {
   private static final String ID_PARAM = "id";
   private static final String ID_PATH = "/{id: [a-zA-Z]{4}\\d+}";
 
-  public static final String ENTITY_PARAM = "entityType";
+  public static final String ENTITY_PARAM = "entityName";
 
-  private final DocTypeRegistry docTypeRegistry;
+  private final DocTypeRegistry typeRegistry;
   private final StorageManager storageManager;
   private final SearchManager searchManager;
 
   @Inject
   public RESTAutoResource(DocTypeRegistry registry, StorageManager storageManager, SearchManager searchManager) {
-    docTypeRegistry = registry;
+    typeRegistry = registry;
     this.storageManager = storageManager;
     this.searchManager = searchManager;
   }
@@ -68,16 +67,16 @@ public class RESTAutoResource {
   @GET
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
-  public List<? extends Entity> getAllDocs( //
+  public List<? extends DomainEntity> getAllDocs( //
       @PathParam(ENTITY_PARAM)
-      String entityType, //
+      String entityName, //
       @QueryParam("rows")
       @DefaultValue("200")
       int rows, //
       @QueryParam("start")
       int start //
   ) {
-    Class<? extends Entity> type = getDocType(entityType);
+    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     return storageManager.getAllLimited(type, start, rows);
   }
 
@@ -85,29 +84,22 @@ public class RESTAutoResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
-  public <T extends Entity> Response post( //
+  public <T extends DomainEntity> Response post( //
       @PathParam(ENTITY_PARAM)
-      String entityType, //
-      Entity input, //
+      String entityName, //
+      DomainEntity input, //
       @Context
       UriInfo uriInfo //
   ) throws IOException {
-    @SuppressWarnings("unchecked")
-    Class<T> type = (Class<T>) getDocType(entityType);
-    Class<? extends Entity> inputType = input.getClass();
-
-    //TODO: find a better way to test if input type is the same as the entity type.
-    //@see redmine issue #1419
-    if (!type.isAssignableFrom(inputType) || !inputType.isAssignableFrom(type)) {
+    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
+    if (type != input.getClass()) {
       throw new WebApplicationException(Status.BAD_REQUEST);
     }
 
-    @SuppressWarnings("unchecked")
-    T typedDoc = (T) input;
-    storageManager.addEntity(type, typedDoc);
+    storageManager.addEntity((Class<T>) type, (T) input);
 
     String baseUri = CharMatcher.is('/').trimTrailingFrom(uriInfo.getBaseUri().toString());
-    String location = Joiner.on('/').join(baseUri, Paths.DOMAIN_PREFIX, entityType, input.getId());
+    String location = Joiner.on('/').join(baseUri, Paths.DOMAIN_PREFIX, entityName, input.getId());
     return Response.status(Status.CREATED).header("Location", location).build();
   }
 
@@ -115,24 +107,22 @@ public class RESTAutoResource {
   @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
-  public Entity getDoc( //
+  public DomainEntity getDoc( //
       @PathParam(ENTITY_PARAM)
-      String entityType, //
+      String entityName, //
       @PathParam(ID_PARAM)
       String id //
   ) {
-    Class<? extends Entity> type = getDocType(entityType);
-    Entity document = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
+    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
+    DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
 
-    if (document instanceof DomainEntity) {
-      try {
-        searchManager.addRelationsTo((DomainEntity) document);
-      } catch (SolrServerException e) {
-        LOG.error(e.getMessage());
-        throw new WebApplicationException(Status.NOT_FOUND);
-      }
+    try {
+      searchManager.addRelationsTo((DomainEntity) entity);
+    } catch (SolrServerException e) {
+      LOG.error(e.getMessage());
+      throw new WebApplicationException(Status.NOT_FOUND);
     }
-    return document;
+    return entity;
   }
 
   @PUT
@@ -140,30 +130,23 @@ public class RESTAutoResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
-  public <T extends Entity> void putDoc( //
+  public <T extends DomainEntity> void putDoc( //
       @PathParam(ENTITY_PARAM)
-      String entityType, //
+      String entityName, //
       @PathParam(ID_PARAM)
       String id, //
-      Entity input //
+      DomainEntity input //
   ) throws IOException {
-    @SuppressWarnings("unchecked")
-    Class<T> type = (Class<T>) getDocType(entityType);
-    Class<? extends Entity> inputType = input.getClass();
-
-    //TODO: find a better way to test if input type is the same as the entity type.
-    //@see redmine issue #1419
-    if (!type.isAssignableFrom(inputType) || !inputType.isAssignableFrom(type)) {
+    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
+    if (type != input.getClass()) {
       throw new WebApplicationException(Status.BAD_REQUEST);
     }
 
     try {
-      @SuppressWarnings("unchecked")
-      T typedDoc = (T) input;
-      checkWritable(typedDoc, Status.FORBIDDEN);
-      storageManager.modifyEntity(type, typedDoc);
+      checkWritable(input, Status.FORBIDDEN);
+      storageManager.modifyEntity((Class<T>) type, (T) input);
     } catch (IOException ex) {
-      // only if the document version does not exist an IOException is thrown.
+      // only if the entity version does not exist an IOException is thrown.
       throw new WebApplicationException(Status.NOT_FOUND);
     }
   }
@@ -172,17 +155,16 @@ public class RESTAutoResource {
   @Path(ID_PATH)
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
-  public <T extends Entity> Response delete( //
+  public <T extends DomainEntity> Response delete( //
       @PathParam(ENTITY_PARAM)
-      String entityType, //
+      String entityName, //
       @PathParam(ID_PARAM)
       String id //
   ) throws IOException {
-    @SuppressWarnings("unchecked")
-    Class<T> type = (Class<T>) getDocType(entityType);
-    T typedDoc = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
+    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
+    DomainEntity typedDoc = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
     checkWritable(typedDoc, Status.FORBIDDEN);
-    storageManager.removeEntity(type, typedDoc);
+    storageManager.removeEntity((Class<T>) type, (T) typedDoc);
     return Response.status(Status.NO_CONTENT).build();
   }
 
@@ -192,26 +174,27 @@ public class RESTAutoResource {
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   public DomainEntity getDocOfVariation( //
       @PathParam(ENTITY_PARAM)
-      String entityType, //
+      String entityName, //
       @PathParam(ID_PARAM)
       String id, //
       @PathParam("variation")
       String variation //
   ) {
-    @SuppressWarnings("unchecked")
-    Class<? extends DomainEntity> type = (Class<? extends DomainEntity>) getDocType(entityType);
+    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     return checkNotNull(storageManager.getCompleteVariation(type, id, variation), Status.NOT_FOUND);
   }
 
   // -------------------------------------------------------------------
 
-  private Class<? extends Entity> getDocType(String entityType) {
-    Class<? extends Entity> type = docTypeRegistry.getTypeForXName(entityType);
-    if (type == null) {
-      LOG.error("Cannot convert '{}' to a document type", entityType);
-      throw new WebApplicationException(Status.NOT_FOUND);
+  @SuppressWarnings("unchecked")
+  private Class<? extends DomainEntity> getEntityType(String entityName, Status status) {
+    Class<? extends Entity> type = typeRegistry.getTypeForXName(entityName);
+    if (type != null && DomainEntity.class.isAssignableFrom(type)) {
+      return (Class<? extends DomainEntity>) type;
+    } else {
+      LOG.error("'{}' is not a domain entity name", entityName);
+      throw new WebApplicationException(status);
     }
-    return type;
   }
 
   /**
@@ -225,14 +208,8 @@ public class RESTAutoResource {
     return reference;
   }
 
-  private <T extends Entity> void checkWritable(T reference, Status status) {
-    if (reference instanceof SystemEntity) {
-
-    } else if (reference instanceof DomainEntity) {
-      if (!((DomainEntity) reference).isWritable()) {
-        throw new WebApplicationException(status);
-      }
-    } else {
+  private void checkWritable(DomainEntity entity, Status status) {
+    if (!(entity).isWritable()) {
       throw new WebApplicationException(status);
     }
   }
