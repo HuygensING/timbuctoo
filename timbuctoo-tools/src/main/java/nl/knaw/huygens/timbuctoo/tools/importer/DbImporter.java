@@ -21,12 +21,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class DbImporter {
 
   private final Configuration conf;
-  private final DocTypeRegistry docTypeRegistry;
+  private final DocTypeRegistry typeRegistry;
   private final StorageManager storageManager;
 
   public DbImporter(Configuration conf, DocTypeRegistry registry, StorageManager manager) {
     this.conf = conf;
-    docTypeRegistry = registry;
+    typeRegistry = registry;
     storageManager = manager;
   }
 
@@ -35,7 +35,7 @@ public class DbImporter {
     MongoJacksonMapperModule.configure(mapper);
     try {
       System.out.printf("=== Importing documents of type '%s'%n", type.getSimpleName());
-      String collectionName = docTypeRegistry.getINameForType(type);
+      String collectionName = typeRegistry.getINameForType(type);
       BufferedReader input = createReader(collectionName);
       int count = 0;
       String line = null;

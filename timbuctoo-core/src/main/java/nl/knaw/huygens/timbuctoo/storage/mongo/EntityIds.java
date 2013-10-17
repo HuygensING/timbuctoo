@@ -21,20 +21,20 @@ public class EntityIds {
 
   private static final String ID_COLLECTION_NAME = "counters";
 
-  private final DocTypeRegistry docTypeRegistry;
+  private final DocTypeRegistry typeRegistry;
   // The counters are stored in a collection, of course
   private final JacksonDBCollection<Counter, String> counters;
   // A cache to avoid repeated inspection of entity classes
   private final LoadingCache<Class<? extends Entity>, String> counterIdCache;
 
   public EntityIds(DB db, DocTypeRegistry registry) {
-    docTypeRegistry = registry;
+    typeRegistry = registry;
     counters = JacksonDBCollection.wrap(db.getCollection(ID_COLLECTION_NAME), Counter.class, String.class);
     counterIdCache = CacheBuilder.newBuilder().build(new CacheLoader<Class<? extends Entity>, String>() {
       @Override
       public String load(Class<? extends Entity> type) {
-        Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(type);
-        return docTypeRegistry.getINameForType(baseType);
+        Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
+        return typeRegistry.getINameForType(baseType);
       }
     });
   }
