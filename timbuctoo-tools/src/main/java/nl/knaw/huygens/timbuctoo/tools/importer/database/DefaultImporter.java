@@ -19,14 +19,14 @@ public abstract class DefaultImporter extends ToolBase {
   /** File with {@code RelationType} definitions; must be present on classpath. */
   private static final String RELATION_TYPE_DEFS = "relationtype-defs.txt";
 
-  protected final DocTypeRegistry docTypeRegistry;
+  protected final DocTypeRegistry typeRegistry;
   protected final StorageManager storageManager;
 
   private String prevMessage;
   private int errors;
 
   public DefaultImporter(DocTypeRegistry registry, StorageManager storageManager, RelationManager relationManager) {
-    this.docTypeRegistry = registry;
+    this.typeRegistry = registry;
     this.storageManager = storageManager;
     prevMessage = "";
     errors = 0;
@@ -108,14 +108,14 @@ public abstract class DefaultImporter extends ToolBase {
   // -------------------------------------------------------------------
 
   protected <T extends Entity> EntityRef newEntityRef(Class<T> type, T entity) {
-    String itype = docTypeRegistry.getINameForType(type);
-    String xtype = docTypeRegistry.getXNameForType(type);
+    String itype = typeRegistry.getINameForType(type);
+    String xtype = typeRegistry.getXNameForType(type);
     return new EntityRef(itype, xtype, entity.getId(), entity.getDisplayName());
   }
 
   protected <T extends Entity> EntityRef newEntityRef(Class<T> type, String id) {
-    String itype = docTypeRegistry.getINameForType(type);
-    String xtype = docTypeRegistry.getXNameForType(type);
+    String itype = typeRegistry.getINameForType(type);
+    String xtype = typeRegistry.getXNameForType(type);
     return new EntityRef(itype, xtype, id, null);
   }
 

@@ -27,7 +27,7 @@ public class DatabaseSetupper {
   private static final String FILE_FILTER = ".tab";
 
   private final Configuration config;
-  private final DocTypeRegistry docTypeRegistry;
+  private final DocTypeRegistry typeRegistry;
   private final StorageManager storageManager;
   private final DbImporter importer;
   private File sourceDir;
@@ -39,7 +39,7 @@ public class DatabaseSetupper {
   @Inject
   public DatabaseSetupper(Configuration config, DocTypeRegistry registry, StorageManager storageManager, DbImporter importer) {
     this.config = config;
-    this.docTypeRegistry = registry;
+    this.typeRegistry = registry;
     this.storageManager = storageManager;
     this.importer = importer;
     initialize();
@@ -60,7 +60,7 @@ public class DatabaseSetupper {
       importCleaner();
     }
     for (String model : config.getSettings("doctypes")) {
-      Class<? extends Entity> cls = docTypeRegistry.getTypeForIName(model);
+      Class<? extends Entity> cls = typeRegistry.getTypeForIName(model);
       importer.bulkImport(cls, true, vreId, vreName);
     }
     createAdminUser();

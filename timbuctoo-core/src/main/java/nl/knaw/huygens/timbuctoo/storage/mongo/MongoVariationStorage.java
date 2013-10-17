@@ -115,8 +115,8 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   protected <T extends Entity> DBCollection getVariationCollection(Class<T> type) {
     DBCollection col;
     if (!collectionCache.containsKey(type)) {
-      Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(type);
-      col = db.getCollection(docTypeRegistry.getINameForType(baseType));
+      Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
+      col = db.getCollection(typeRegistry.getINameForType(baseType));
       col.setDBDecoderFactory(treeDecoderFactory);
       col.setDBEncoderFactory(treeEncoderFactory);
       collectionCache.put(type, col);
@@ -127,7 +127,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   protected <T extends Entity> DBCollection getRawVersionCollection(Class<T> type) {
-    Class<? extends Entity> baseType = docTypeRegistry.getBaseClass(type);
+    Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
     DBCollection col = db.getCollection(MongoUtils.getVersioningCollectionName(baseType));
     col.setDBDecoderFactory(treeDecoderFactory);
     col.setDBEncoderFactory(treeEncoderFactory);

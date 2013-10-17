@@ -42,7 +42,7 @@ public class StorageManagerTest {
   private StorageManager instance;
   private VariationStorage storage;
   private Broker broker;
-  private DocTypeRegistry docTypeRegistry;
+  private DocTypeRegistry typeRegistry;
   private PersistenceWrapper persistenceWrapper;
   private Producer producer;
 
@@ -52,9 +52,9 @@ public class StorageManagerTest {
     broker = mock(Broker.class);
     producer = mock(Producer.class);
     when(broker.newProducer(anyString(), anyString())).thenReturn(producer);
-    docTypeRegistry = mock(DocTypeRegistry.class);
+    typeRegistry = mock(DocTypeRegistry.class);
     persistenceWrapper = mock(PersistenceWrapper.class);
-    instance = new StorageManager(storage, broker, docTypeRegistry, persistenceWrapper);
+    instance = new StorageManager(storage, broker, typeRegistry, persistenceWrapper);
   }
 
   @Test
@@ -62,7 +62,7 @@ public class StorageManagerTest {
     String id = "TEST000123000123";
     GeneralTestDoc doc = new GeneralTestDoc(id);
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
-    when(docTypeRegistry.getINameForType(type)).thenReturn("generaltestdoc");
+    when(typeRegistry.getINameForType(type)).thenReturn("generaltestdoc");
 
     instance.addEntity(type, doc);
 
@@ -74,7 +74,7 @@ public class StorageManagerTest {
     String id = "TEST000123000123";
     GeneralTestDoc doc = new GeneralTestDoc(id);
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
-    when(docTypeRegistry.getINameForType(type)).thenReturn("generaltestdoc");
+    when(typeRegistry.getINameForType(type)).thenReturn("generaltestdoc");
 
     instance.addEntity(type, doc, false);
 
@@ -348,7 +348,7 @@ public class StorageManagerTest {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     String typeString = "testconcretedoc";
 
-    when(docTypeRegistry.getINameForType(Mockito.<Class<? extends Entity>> any())).thenReturn(typeString);
+    when(typeRegistry.getINameForType(Mockito.<Class<? extends Entity>> any())).thenReturn(typeString);
 
     instance.removeEntity(type, inputDoc);
     verify(storage).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
@@ -390,7 +390,7 @@ public class StorageManagerTest {
     String typeString = "generaltestdoc";
 
     ArrayList<String> ids = Lists.newArrayList(id1, id2, id3);
-    when(docTypeRegistry.getINameForType(type)).thenReturn(typeString);
+    when(typeRegistry.getINameForType(type)).thenReturn(typeString);
 
     instance.removeNonPersistent(type, ids);
 
@@ -408,7 +408,7 @@ public class StorageManagerTest {
     ArrayList<String> ids = Lists.newArrayList(id1, id2, id3);
 
     doThrow(IOException.class).when(storage).removeNonPersistent(type, ids);
-    when(docTypeRegistry.getINameForType(type)).thenReturn(typeString);
+    when(typeRegistry.getINameForType(type)).thenReturn(typeString);
 
     try {
       instance.removeNonPersistent(type, ids);

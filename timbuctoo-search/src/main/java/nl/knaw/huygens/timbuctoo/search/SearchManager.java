@@ -34,15 +34,15 @@ public class SearchManager {
   private final LocalSolrServer server;
   private final FacetFinder facetFinder;
   private final AbstractFieldFinder fullTextSearchFieldFinder;
-  private final DocTypeRegistry docTypeRegistry;
+  private final DocTypeRegistry typeRegistry;
   private final SortableFieldFinder sortableFieldFinder;
 
   @Inject
-  public SearchManager(LocalSolrServer server, DocTypeRegistry docTypeRegistry) {
+  public SearchManager(LocalSolrServer server, DocTypeRegistry registry) {
     this.server = server;
     this.facetFinder = new FacetFinder();
     this.fullTextSearchFieldFinder = new FullTextSearchFieldFinder();
-    this.docTypeRegistry = docTypeRegistry;
+    this.typeRegistry = registry;
     this.sortableFieldFinder = new SortableFieldFinder();
   }
 
@@ -57,7 +57,7 @@ public class SearchManager {
     for (SolrDocument doc : response.getResults()) {
       String typeName = getFieldValue(doc, "dynamic_k_type_name");
       String iname = getFieldValue(doc, "dynamic_k_target_type");
-      String xname = docTypeRegistry.getXNameForIName(iname);
+      String xname = typeRegistry.getXNameForIName(iname);
       String id = getFieldValue(doc, "dynamic_k_target_id");
       String displayName = getFieldValue(doc, "dynamic_k_target_name");
       EntityRef ref = new EntityRef(iname, xname, id, displayName);
@@ -87,7 +87,7 @@ public class SearchManager {
       ids.add(document.getFieldValue("id").toString());
     }
 
-    SearchResult searchResult = new SearchResult(ids, docTypeRegistry.getINameForType(type), searchTerm, searchParameters.getSort(), new Date());
+    SearchResult searchResult = new SearchResult(ids, typeRegistry.getINameForType(type), searchTerm, searchParameters.getSort(), new Date());
     searchResult.setFacets(facets);
 
     return searchResult;
