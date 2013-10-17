@@ -37,9 +37,9 @@ import com.google.inject.Inject;
  */
 @Provider
 @Consumes(MediaType.APPLICATION_JSON)
-public class DocumentReader implements MessageBodyReader<Entity> {
+public class EntityReader implements MessageBodyReader<Entity> {
 
-  private final Logger LOG = LoggerFactory.getLogger(DocumentReader.class);
+  private final Logger LOG = LoggerFactory.getLogger(EntityReader.class);
 
   @Context
   private UriInfo uriInfo;

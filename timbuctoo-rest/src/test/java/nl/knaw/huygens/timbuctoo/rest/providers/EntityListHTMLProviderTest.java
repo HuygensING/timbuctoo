@@ -12,7 +12,7 @@ import nl.knaw.huygens.timbuctoo.model.User;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class DocumentListHTMLProviderTest {
+public class EntityListHTMLProviderTest {
 
   public static class Resource {
     public Entity getDocument() {
@@ -41,7 +41,7 @@ public class DocumentListHTMLProviderTest {
   }
 
   private void assertIsWritable(boolean expected, String methodName, MediaType mediaType) {
-    DocumentListHTMLProvider provider = new DocumentListHTMLProvider(null, "link", "url");
+    EntityListHTMLProvider provider = new EntityListHTMLProvider(null, "link", "url");
     try {
       Method method = Resource.class.getMethod(methodName);
       Class<?> type = method.getReturnType();
