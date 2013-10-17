@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.index.IndexService;
@@ -90,7 +90,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
 
       long start = System.currentTimeMillis();
 
-      DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
+      TypeRegistry registry = injector.getInstance(TypeRegistry.class);
       RelationManager relationManager = new RelationManager(registry, storageManager);
       new AtlantischeGidsImporter(registry, relationManager, storageManager, importDirName).importAll();
 
@@ -164,7 +164,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
   private Reference hasPersonRef;
   private Reference hasPlaceRef;
 
-  public AtlantischeGidsImporter(DocTypeRegistry registry, RelationManager relationManager, StorageManager storageManager, String inputDirName) {
+  public AtlantischeGidsImporter(TypeRegistry registry, RelationManager relationManager, StorageManager storageManager, String inputDirName) {
     super(registry, storageManager, null);
     objectMapper = new ObjectMapper();
     this.relationManager = relationManager;

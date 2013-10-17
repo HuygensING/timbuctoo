@@ -9,7 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -21,10 +21,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class DbImporter {
 
   private final Configuration conf;
-  private final DocTypeRegistry typeRegistry;
+  private final TypeRegistry typeRegistry;
   private final StorageManager storageManager;
 
-  public DbImporter(Configuration conf, DocTypeRegistry registry, StorageManager manager) {
+  public DbImporter(Configuration conf, TypeRegistry registry, StorageManager manager) {
     this.conf = conf;
     typeRegistry = registry;
     storageManager = manager;

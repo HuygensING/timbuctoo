@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.tools.importer.database;
 
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.index.IndexService;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
@@ -60,7 +60,7 @@ public class BulkImporter {
       if (ATLG) {
         LanguageImporter languageImporter = new LanguageImporter(storageManager);
         languageImporter.handleFile("testdata/iso-639-2-language-codes.txt", 5, false);
-        DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
+        TypeRegistry registry = injector.getInstance(TypeRegistry.class);
         RelationManager relationManager = new RelationManager(registry, storageManager);
         new AtlantischeGidsImporter(registry, relationManager, storageManager, "../AtlantischeGids/work/").importAll();
       } else {

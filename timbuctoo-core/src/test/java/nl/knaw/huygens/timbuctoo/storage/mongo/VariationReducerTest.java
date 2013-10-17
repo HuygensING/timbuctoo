@@ -8,7 +8,7 @@ import static org.mockito.Mockito.mock;
 import java.io.IOException;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
@@ -34,7 +34,7 @@ public class VariationReducerTest {
 
   @Before
   public void setUp() {
-    DocTypeRegistry registry = mock(DocTypeRegistry.class);
+    TypeRegistry registry = mock(TypeRegistry.class);
     doReturn(TestConcreteDoc.class).when(registry).getTypeForIName("testconcretedoc");
     doReturn(TestInheritsFromTestBaseDoc.class).when(registry).getTypeForIName("testinheritsfromtestbasedoc");
     doReturn(GeneralTestDoc.class).when(registry).getTypeForIName("generaltestdoc");

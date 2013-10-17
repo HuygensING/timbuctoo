@@ -7,7 +7,7 @@ import javax.validation.Validator;
 
 import nl.knaw.huygens.security.AuthorizationHandler;
 import nl.knaw.huygens.security.SecurityContextCreator;
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.LocalSolrServer;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
@@ -32,7 +32,7 @@ class ResourceTestModule extends JerseyServletModule {
   private static final String M1B = "nl.knaw.huygens.timbuctoo.rest.providers.model.projectb";
   private static final String PACKAGES = M0 + " " + M1 + " " + M1A + " " + M1B;
 
-  private DocTypeRegistry typeRegistry;
+  private TypeRegistry typeRegistry;
   private StorageManager storageManager;
   private JacksonJsonProvider jsonProvider;
   private Validator validator;
@@ -43,7 +43,7 @@ class ResourceTestModule extends JerseyServletModule {
   private AuthorizationHandler authorizationHandler;
 
   public ResourceTestModule() {
-    typeRegistry = new DocTypeRegistry(PACKAGES);
+    typeRegistry = new TypeRegistry(PACKAGES);
     storageManager = mock(StorageManager.class);
     jsonProvider = mock(JacksonJsonProvider.class);
     validator = mock(Validator.class);
@@ -75,7 +75,7 @@ class ResourceTestModule extends JerseyServletModule {
   }
 
   @Provides
-  public DocTypeRegistry providesDocumentTypeRegister() {
+  public TypeRegistry providesDocumentTypeRegister() {
     return this.typeRegistry;
   }
 

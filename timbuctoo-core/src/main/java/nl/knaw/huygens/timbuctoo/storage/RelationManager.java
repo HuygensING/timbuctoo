@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
@@ -26,11 +26,11 @@ public class RelationManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(RelationManager.class);
 
-  private final DocTypeRegistry registry;
+  private final TypeRegistry registry;
   private final StorageManager storageManager;
 
   @Inject
-  public RelationManager(DocTypeRegistry registry, StorageManager storageManager) {
+  public RelationManager(TypeRegistry registry, StorageManager storageManager) {
     this.registry = registry;
     this.storageManager = storageManager;
   }

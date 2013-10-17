@@ -5,7 +5,7 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -44,7 +44,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   private final VariationInducer inducer;
   private final VariationReducer reducer;
 
-  public MongoVariationStorage(DocTypeRegistry registry, Mongo mongo, DB db, String dbName) throws UnknownHostException, MongoException {
+  public MongoVariationStorage(TypeRegistry registry, Mongo mongo, DB db, String dbName) throws UnknownHostException, MongoException {
     super(registry, mongo, db, dbName);
     objectMapper = new ObjectMapper();
     treeEncoderFactory = new TreeEncoderFactory(objectMapper);

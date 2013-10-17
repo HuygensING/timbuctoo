@@ -22,7 +22,7 @@ import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetDoesNotExistException;
@@ -48,7 +48,7 @@ public class SearchResource {
   @Inject
   private StorageManager storageManager;
   @Inject
-  private DocTypeRegistry registry;
+  private TypeRegistry registry;
 
   @POST
   @APIDesc("Searches the Solr index")

@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import com.google.common.collect.Lists;
@@ -44,7 +44,7 @@ public class VariationUtils {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T extends Entity> Class<? extends T> variationNameToType(DocTypeRegistry registry, String id) {
+  public static <T extends Entity> Class<? extends T> variationNameToType(TypeRegistry registry, String id) {
     return (Class<? extends T>) registry.getTypeForIName(normalize(id));
   }
 

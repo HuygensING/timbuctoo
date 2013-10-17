@@ -8,7 +8,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.rest.util.Sitemap;
 
@@ -17,10 +17,10 @@ import com.google.inject.Inject;
 @Path(Paths.SYSTEM_PREFIX + "/api")
 public class SitemapResource {
 
-  private final DocTypeRegistry registry;
+  private final TypeRegistry registry;
 
   @Inject
-  public SitemapResource(DocTypeRegistry registry) {
+  public SitemapResource(TypeRegistry registry) {
     this.registry = registry;
   }
 

@@ -7,7 +7,7 @@ import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -28,12 +28,12 @@ import com.google.common.collect.Maps;
  */
 public class HTMLProviderHelper {
 
-  private final DocTypeRegistry registry;
+  private final TypeRegistry registry;
   private final Map<AnnotationBundleKey, ObjectWriter> writers;
   private final JsonFactory factory;
   private final String preamble;
 
-  public HTMLProviderHelper(DocTypeRegistry registry, String stylesheetLink, String publicURL) {
+  public HTMLProviderHelper(TypeRegistry registry, String stylesheetLink, String publicURL) {
     this.registry = registry;
     writers = Maps.newHashMap();
     factory = new JsonFactory();

@@ -14,11 +14,11 @@ import com.google.inject.name.Names;
 public class BasicInjectionModule extends AbstractModule {
 
   protected final Configuration config;
-  private final DocTypeRegistry registry;
+  private final TypeRegistry registry;
 
   public BasicInjectionModule(Configuration config) {
     this.config = config;
-    registry = new DocTypeRegistry(config.getSetting("model-packages"));
+    registry = new TypeRegistry(config.getSetting("model-packages"));
     new ConfigValidator(config, registry).validate();
   }
 
@@ -26,7 +26,7 @@ public class BasicInjectionModule extends AbstractModule {
   protected void configure() {
     Names.bindProperties(binder(), config.getAll());
     bind(Configuration.class).toInstance(config);
-    bind(DocTypeRegistry.class).toInstance(registry);
+    bind(TypeRegistry.class).toInstance(registry);
 
     bind(VariationStorage.class).to(MongoStorageFacade.class);
   }

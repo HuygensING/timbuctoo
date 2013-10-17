@@ -20,7 +20,7 @@ import java.util.List;
 import javax.jms.JMSException;
 
 import nl.knaw.huygens.persistence.PersistenceException;
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
@@ -42,7 +42,7 @@ public class StorageManagerTest {
   private StorageManager instance;
   private VariationStorage storage;
   private Broker broker;
-  private DocTypeRegistry typeRegistry;
+  private TypeRegistry typeRegistry;
   private PersistenceWrapper persistenceWrapper;
   private Producer producer;
 
@@ -52,7 +52,7 @@ public class StorageManagerTest {
     broker = mock(Broker.class);
     producer = mock(Producer.class);
     when(broker.newProducer(anyString(), anyString())).thenReturn(producer);
-    typeRegistry = mock(DocTypeRegistry.class);
+    typeRegistry = mock(TypeRegistry.class);
     persistenceWrapper = mock(PersistenceWrapper.class);
     instance = new StorageManager(storage, broker, typeRegistry, persistenceWrapper);
   }

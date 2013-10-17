@@ -6,7 +6,7 @@ import java.io.File;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.index.IndexService;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
@@ -82,7 +82,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
 
       long start = System.currentTimeMillis();
 
-      DocTypeRegistry registry = injector.getInstance(DocTypeRegistry.class);
+      TypeRegistry registry = injector.getInstance(TypeRegistry.class);
       RelationManager relationManager = new RelationManager(registry, storageManager);
       new DutchCaribbeanImporter(registry, storageManager, relationManager, importDirName).importAll();
 
@@ -139,7 +139,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private Reference hasSiblingArchive;
   private Reference hasSiblingArchiver;
 
-  public DutchCaribbeanImporter(DocTypeRegistry registry, StorageManager storageManager, RelationManager relationManager, String inputDirName) {
+  public DutchCaribbeanImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, String inputDirName) {
     super(registry, storageManager, relationManager);
     objectMapper = new ObjectMapper();
     this.relationManager = relationManager;

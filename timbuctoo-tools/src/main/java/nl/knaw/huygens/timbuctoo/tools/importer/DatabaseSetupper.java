@@ -13,7 +13,7 @@ import java.io.OutputStreamWriter;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -27,7 +27,7 @@ public class DatabaseSetupper {
   private static final String FILE_FILTER = ".tab";
 
   private final Configuration config;
-  private final DocTypeRegistry typeRegistry;
+  private final TypeRegistry typeRegistry;
   private final StorageManager storageManager;
   private final DbImporter importer;
   private File sourceDir;
@@ -37,7 +37,7 @@ public class DatabaseSetupper {
   private String vreId;
 
   @Inject
-  public DatabaseSetupper(Configuration config, DocTypeRegistry registry, StorageManager storageManager, DbImporter importer) {
+  public DatabaseSetupper(Configuration config, TypeRegistry registry, StorageManager storageManager, DbImporter importer) {
     this.config = config;
     this.typeRegistry = registry;
     this.storageManager = storageManager;

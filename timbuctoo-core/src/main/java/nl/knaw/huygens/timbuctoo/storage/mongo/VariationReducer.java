@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 
@@ -26,16 +26,16 @@ public class VariationReducer {
 
   private static final String VERSIONS_FIELD = "versions";
 
-  private final DocTypeRegistry registry;
+  private final TypeRegistry registry;
   private final ObjectMapper mapper;
   private static final Logger LOG = LoggerFactory.getLogger(VariationReducer.class);
 
-  public VariationReducer(DocTypeRegistry registry, ObjectMapper mapper) {
+  public VariationReducer(TypeRegistry registry, ObjectMapper mapper) {
     this.registry = registry;
     this.mapper = mapper;
   }
 
-  public VariationReducer(DocTypeRegistry registry) {
+  public VariationReducer(TypeRegistry registry) {
     this(registry, new ObjectMapper());
   }
 

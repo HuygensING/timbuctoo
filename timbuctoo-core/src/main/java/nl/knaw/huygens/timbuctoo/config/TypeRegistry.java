@@ -51,9 +51,9 @@ import com.google.inject.Singleton;
  * name) or a name supplied in a class annotation.</p>
  */
 @Singleton
-public class DocTypeRegistry {
+public class TypeRegistry {
 
-  private final Logger LOG = LoggerFactory.getLogger(DocTypeRegistry.class);
+  private final Logger LOG = LoggerFactory.getLogger(TypeRegistry.class);
 
   private final Map<Class<? extends Entity>, String> type2iname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> iname2type = Maps.newHashMap();
@@ -63,7 +63,7 @@ public class DocTypeRegistry {
 
   private final Map<String, String> iname2xname = Maps.newHashMap();
 
-  public DocTypeRegistry(String packageNames) {
+  public TypeRegistry(String packageNames) {
     checkArgument(packageNames != null, "'packageNames' must not be null");
 
     ClassPath classPath = getClassPath();

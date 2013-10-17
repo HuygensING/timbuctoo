@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.index;
 import java.io.IOException;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -28,12 +28,12 @@ class RelationIndexer implements EntityIndexer<Relation> {
   private static final Logger LOG = LoggerFactory.getLogger(RelationIndexer.class);
   private static final String CORE = "relation";
 
-  private final DocTypeRegistry registry;
+  private final TypeRegistry registry;
   private final LocalSolrServer server;
   private final StorageManager storageManager;
   private final RelationManager relationManager;
 
-  public RelationIndexer(DocTypeRegistry registry, LocalSolrServer server, StorageManager storageManager, RelationManager relationManager) {
+  public RelationIndexer(TypeRegistry registry, LocalSolrServer server, StorageManager storageManager, RelationManager relationManager) {
     this.registry = registry;
     this.server = server;
     this.storageManager = storageManager;

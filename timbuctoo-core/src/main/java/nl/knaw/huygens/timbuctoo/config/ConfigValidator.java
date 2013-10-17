@@ -8,10 +8,10 @@ import java.io.File;
 public class ConfigValidator {
 
   private final Configuration config;
-  private final DocTypeRegistry registry;
+  private final TypeRegistry registry;
   private boolean error;
 
-  public ConfigValidator(Configuration config, DocTypeRegistry registry) {
+  public ConfigValidator(Configuration config, TypeRegistry registry) {
     this.config = config;
     this.registry = registry;
   }

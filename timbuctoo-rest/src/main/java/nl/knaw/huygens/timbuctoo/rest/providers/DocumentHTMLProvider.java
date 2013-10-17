@@ -12,7 +12,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import nl.knaw.huygens.timbuctoo.config.DocTypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -29,7 +29,7 @@ public class DocumentHTMLProvider implements MessageBodyWriter<Entity> {
   private final HTMLProviderHelper helper;
 
   @Inject
-  public DocumentHTMLProvider(DocTypeRegistry registry, @Named("html.defaultstylesheet")
+  public DocumentHTMLProvider(TypeRegistry registry, @Named("html.defaultstylesheet")
   String stylesheetLink, @Named("public_url")
   String publicURL) {
     helper = new HTMLProviderHelper(registry, stylesheetLink, publicURL);
