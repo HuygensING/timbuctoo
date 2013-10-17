@@ -17,6 +17,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -25,7 +26,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.google.inject.Inject;
 
-@Path("resources/users")
+@Path(Paths.SYSTEM_PREFIX + "/users")
 public class UserResource {
 
   private static final String ID_REGEX = "/{id:" + User.ID_PREFIX + "\\d+}";
@@ -33,8 +34,9 @@ public class UserResource {
   private static final String USER_ROLE = "USER";
   private static final String ADMIN_ROLE = "ADMIN";
   private static final String ID_PARAM = "id";
-  private StorageManager storageManager;
-  private MailSender mailSender;
+
+  private final StorageManager storageManager;
+  private final MailSender mailSender;
 
   @Inject
   public UserResource(StorageManager storageManager, MailSender mailSender) {

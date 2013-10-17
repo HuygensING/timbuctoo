@@ -13,11 +13,13 @@ import org.junit.Test;
 
 public class DocumentHTMLProviderTest {
 
+  private static final String PUBLIC_URL = "http://nl.knaw.huygens/test";
+
   private DocumentHTMLProvider provider;
 
   @Before
   public void setup() {
-    provider = new DocumentHTMLProvider(null, "link", "url");
+    provider = new DocumentHTMLProvider(null, "link", PUBLIC_URL);
   }
 
   private void assertIsWritable(boolean expected, Class<?> type, MediaType mediaType) {
@@ -48,6 +50,7 @@ public class DocumentHTMLProviderTest {
     provider.writeTo(new User(), User.class, null, User.class.getAnnotations(), MediaType.TEXT_HTML_TYPE, null, out);
     String value = out.toString();
     Assert.assertTrue(value.startsWith("<!DOCTYPE html>\n<html>\n<head>\n"));
+    Assert.assertTrue(value.contains("<base href=\"" + PUBLIC_URL + "/domain/\">"));
     Assert.assertTrue(value.endsWith("</body>\n</html>\n"));
   }
 
