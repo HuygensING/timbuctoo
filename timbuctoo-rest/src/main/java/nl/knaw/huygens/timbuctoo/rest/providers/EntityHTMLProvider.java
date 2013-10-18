@@ -29,15 +29,13 @@ public class EntityHTMLProvider implements MessageBodyWriter<Entity> {
   private final HTMLProviderHelper helper;
 
   @Inject
-  public EntityHTMLProvider(TypeRegistry registry, @Named("html.defaultstylesheet")
-  String stylesheetLink, @Named("public_url")
-  String publicURL) {
+  public EntityHTMLProvider(TypeRegistry registry, @Named("html.defaultstylesheet") String stylesheetLink, @Named("public_url") String publicURL) {
     helper = new HTMLProviderHelper(registry, stylesheetLink, publicURL);
   }
 
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-    return helper.accept(mediaType) && Entity.class.isAssignableFrom(type);
+    return helper.accept(mediaType) && TypeRegistry.isEntity(type);
   }
 
   @Override

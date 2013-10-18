@@ -94,7 +94,7 @@ public class TypeRegistry {
   }
 
   private boolean shouldRegisterClass(Class<?> type) {
-    return Entity.class.isAssignableFrom(type) //
+    return isEntity(type) //
         && !Modifier.isAbstract(type.getModifiers()) //
         && !type.isAnnotationPresent(DoNotRegister.class);
   }
@@ -229,7 +229,7 @@ public class TypeRegistry {
   }
 
   /**
-   * Forces the typecast of the specified class to a system entity type token.
+   * Forces the typecast of the specified class to a domain entity type token.
    */
   public static <T extends DomainEntity> Class<T> toDomainEntity(Class<?> cls) throws ClassCastException {
     if (isDomainEntity(cls)) {

@@ -21,8 +21,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
@@ -171,11 +171,10 @@ public class DomainEntityResource {
 
   // -------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked")
   private Class<? extends DomainEntity> getEntityType(String entityName, Status status) {
     Class<? extends Entity> type = typeRegistry.getTypeForXName(entityName);
-    if (type != null && DomainEntity.class.isAssignableFrom(type)) {
-      return (Class<? extends DomainEntity>) type;
+    if (type != null && TypeRegistry.isDomainEntity(type)) {
+      return TypeRegistry.toDomainEntity(type);
     } else {
       LOG.error("'{}' is not a domain entity name", entityName);
       throw new WebApplicationException(status);
