@@ -9,7 +9,9 @@ import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.annotations.DoNotRegister;
 import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -22,7 +24,7 @@ import com.google.common.reflect.ClassPath.ClassInfo;
 import com.google.inject.Singleton;
 
 /**
- * The document registry contains properties of entity classes.
+ * The type registry contains properties of entity classes.
  *
  * We distinguish two types of entities:<ul>
  * <li>System entities are for internal use in the repository;
@@ -31,7 +33,7 @@ import com.google.inject.Singleton;
  * they are versioned and may have variations.</li>
  * </ul>
  *
- * <p>The document registry scans specified Java packages for concrete
+ * <p>The type registry scans specified Java packages for concrete
  * (i.e. not abstract) classes that subclass {@code Entity}.
  * The developer has the option to prevent registration by providing
  * a {@code DoNotRegister} annotation on a class.</p>
@@ -186,6 +188,56 @@ public class TypeRegistry {
       type = (Class<? extends Entity>) type.getSuperclass();
     }
     return lastType;
+  }
+
+  // --- static utilities ----------------------------------------------
+
+  public static boolean isEntity(Class<?> cls) {
+    return Entity.class.isAssignableFrom(cls);
+  }
+
+  public static boolean isSystemEntity(Class<?> cls) {
+    return SystemEntity.class.isAssignableFrom(cls);
+  }
+
+  public static boolean isDomainEntity(Class<?> cls) {
+    return DomainEntity.class.isAssignableFrom(cls);
+  }
+
+  /**
+   * Forces the typecast of the specified class to an entity type token.
+   */
+  public static <T extends Entity> Class<T> toEntity(Class<?> cls) throws ClassCastException {
+    if (isEntity(cls)) {
+      @SuppressWarnings("unchecked")
+      Class<T> result = (Class<T>) cls;
+      return result;
+    }
+    throw new ClassCastException(cls.getName() + " is not an entity");
+  }
+
+  /**
+   * Forces the typecast of the specified class to a system entity type token.
+   */
+  public static <T extends SystemEntity> Class<T> toSystemEntity(Class<?> cls) throws ClassCastException {
+    if (isSystemEntity(cls)) {
+      @SuppressWarnings("unchecked")
+      Class<T> result = (Class<T>) cls;
+      return result;
+    }
+    throw new ClassCastException(cls.getName() + " is not a system entity");
+  }
+
+  /**
+   * Forces the typecast of the specified class to a system entity type token.
+   */
+  public static <T extends DomainEntity> Class<T> toDomainEntity(Class<?> cls) throws ClassCastException {
+    if (isDomainEntity(cls)) {
+      @SuppressWarnings("unchecked")
+      Class<T> result = (Class<T>) cls;
+      return result;
+    }
+    throw new ClassCastException(cls.getName() + " is not a domain entity");
   }
 
 }
