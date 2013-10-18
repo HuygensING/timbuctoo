@@ -34,9 +34,7 @@ public class EntityListHTMLProvider implements MessageBodyWriter<List<? extends 
   private final HTMLProviderHelper helper;
 
   @Inject
-  public EntityListHTMLProvider(TypeRegistry registry, @Named("html.defaultstylesheet")
-  String stylesheetLink, @Named("public_url")
-  String publicURL) {
+  public EntityListHTMLProvider(TypeRegistry registry, @Named("html.defaultstylesheet") String stylesheetLink, @Named("public_url") String publicURL) {
     helper = new HTMLProviderHelper(registry, stylesheetLink, publicURL);
   }
 
@@ -65,7 +63,7 @@ public class EntityListHTMLProvider implements MessageBodyWriter<List<? extends 
         }
       }
     }
-    return type != null && Entity.class.isAssignableFrom(type);
+    return type != null && TypeRegistry.isEntity(type);
   }
 
   @Override
