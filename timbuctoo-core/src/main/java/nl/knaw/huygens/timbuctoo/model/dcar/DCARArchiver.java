@@ -148,11 +148,13 @@ public class DCARArchiver extends Archiver {
   }
 
   @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_archive", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getRelatedArchives() {
     return getRelations().get(IS_CREATOR_OF.regular);
   }
 
   @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_related_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getRelatedArchivers() {
     return getRelations().get(HAS_SIBLING_ARCHIVER.regular);
   }
