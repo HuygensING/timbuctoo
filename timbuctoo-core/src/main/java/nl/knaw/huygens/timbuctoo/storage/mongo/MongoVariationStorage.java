@@ -55,6 +55,14 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     reducer = new VariationReducer(registry);
   }
 
+  public void createIndexes() {
+    DBCollection collection = db.getCollection("relation");
+    BasicDBObject object = new BasicDBObject();
+    object.append("^sourceId", 1);
+    object.append("^targetId", 1);
+    collection.ensureIndex(object);
+  }
+
   @Override
   public <T extends Entity> T getItem(Class<T> type, String id) throws VariationException, IOException {
     DBCollection col = getVariationCollection(type);
