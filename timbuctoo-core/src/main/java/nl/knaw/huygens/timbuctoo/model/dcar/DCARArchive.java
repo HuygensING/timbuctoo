@@ -246,6 +246,7 @@ public class DCARArchive extends Archive {
   }
 
   @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getCreators() {
     return getRelations().get(IS_CREATOR_OF.inverse);
   }
@@ -302,16 +303,19 @@ public class DCARArchive extends Archive {
   }
 
   @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_related_archive", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getOverheadArchives() {
     return getRelations().get(HAS_PARENT_ARCHIVE.regular);
   }
 
   @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_related_archive", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getUnderlyingArchives() {
     return getRelations().get(HAS_PARENT_ARCHIVE.inverse);
   }
 
   @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_related_archive", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getRelatedUnitArchives() {
     return getRelations().get(HAS_SIBLING_ARCHIVE.regular);
   }
