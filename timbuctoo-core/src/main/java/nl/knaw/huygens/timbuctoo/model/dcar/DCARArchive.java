@@ -1,5 +1,12 @@
 package nl.knaw.huygens.timbuctoo.model.dcar;
 
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_KEYWORD;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PARENT_ARCHIVE;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PERSON;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PLACE;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_SIBLING_ARCHIVE;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.IS_CREATOR_OF;
+
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.facet.FacetType;
@@ -240,7 +247,7 @@ public class DCARArchive extends Archive {
 
   @JsonIgnore
   public List<EntityRef> getCreators() {
-    return getRelations().get("is_created_by");
+    return getRelations().get(IS_CREATOR_OF.inverse);
   }
 
   public String getScope() {
@@ -254,19 +261,19 @@ public class DCARArchive extends Archive {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPlaceKeywords() {
-    return getRelations().get("has_place");
+    return getRelations().get(HAS_PLACE.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getSubjectKeywords() {
-    return getRelations().get("has_keyword");
+    return getRelations().get(HAS_KEYWORD.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPersons() {
-    return getRelations().get("has_person");
+    return getRelations().get(HAS_PERSON.regular);
   }
 
   @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false)
@@ -296,17 +303,17 @@ public class DCARArchive extends Archive {
 
   @JsonIgnore
   public List<EntityRef> getOverheadArchives() {
-    return getRelations().get("has_parent_archive");
+    return getRelations().get(HAS_PARENT_ARCHIVE.regular);
   }
 
   @JsonIgnore
   public List<EntityRef> getUnderlyingArchives() {
-    return getRelations().get("has_child_archive");
+    return getRelations().get(HAS_PARENT_ARCHIVE.inverse);
   }
 
   @JsonIgnore
   public List<EntityRef> getRelatedUnitArchives() {
-    return getRelations().get("has_sibling_archive");
+    return getRelations().get(HAS_SIBLING_ARCHIVE.regular);
   }
 
 }
