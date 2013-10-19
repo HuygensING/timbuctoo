@@ -1,5 +1,9 @@
 package nl.knaw.huygens.timbuctoo.model.dcar;
 
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_KEYWORD;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PERSON;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PLACE;
+
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.facet.FacetType;
@@ -146,19 +150,19 @@ public class DCARLegislation extends Legislation {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPlaceKeywords() {
-    return getRelations().get("has_place");
+    return getRelations().get(HAS_PLACE.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getSubjectKeywords() {
-    return getRelations().get("has_keyword");
+    return getRelations().get(HAS_KEYWORD.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPersons() {
-    return getRelations().get("has_person");
+    return getRelations().get(HAS_PERSON.regular);
   }
 
   @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false)

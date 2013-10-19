@@ -1,5 +1,10 @@
 package nl.knaw.huygens.timbuctoo.tools.importer.database;
 
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_KEYWORD;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PERSON;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PLACE;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.IS_CREATOR_OF;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -240,19 +245,19 @@ public class AtlantischeGidsImporter extends DefaultImporter {
   // --- relations -----------------------------------------------------
 
   private void importRelationTypes() {
-    RelationType type = new RelationType("is_creator_of", "is_created_by", ATLGArchiver.class, ATLGArchive.class);
+    RelationType type = new RelationType(IS_CREATOR_OF.regular, IS_CREATOR_OF.inverse, ATLGArchiver.class, ATLGArchive.class);
     addEntity(RelationType.class, type, true);
     isCreatorRef = new Reference(RelationType.class, type.getId());
 
-    type = new RelationType("has_keyword", "is_keyword_of", DomainEntity.class, ATLGKeyword.class);
+    type = new RelationType(HAS_KEYWORD.regular, HAS_KEYWORD.inverse, DomainEntity.class, ATLGKeyword.class);
     addEntity(RelationType.class, type, true);
     hasKeywordRef = new Reference(RelationType.class, type.getId());
 
-    type = new RelationType("has_person", "is_person_of", DomainEntity.class, ATLGPerson.class);
+    type = new RelationType(HAS_PERSON.regular, HAS_PERSON.inverse, DomainEntity.class, ATLGPerson.class);
     addEntity(RelationType.class, type, true);
     hasPersonRef = new Reference(RelationType.class, type.getId());
 
-    type = new RelationType("has_place", "is_place_of", DomainEntity.class, ATLGKeyword.class);
+    type = new RelationType(HAS_PLACE.regular, HAS_PLACE.inverse, DomainEntity.class, ATLGKeyword.class);
     addEntity(RelationType.class, type, true);
     hasPlaceRef = new Reference(RelationType.class, type.getId());
   }
