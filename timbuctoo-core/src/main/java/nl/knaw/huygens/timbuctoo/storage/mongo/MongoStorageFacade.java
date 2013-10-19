@@ -63,6 +63,7 @@ public class MongoStorageFacade implements VariationStorage {
 
     plainStorage = new MongoStorage(registry, mongo, db, dbName);
     variationStorage = new MongoVariationStorage(registry, mongo, db, dbName);
+    variationStorage.createIndexes();
   }
 
   @Override
@@ -72,6 +73,7 @@ public class MongoStorageFacade implements VariationStorage {
     db = mongo.getDB(dbName);
     plainStorage.resetDB(db);
     variationStorage.resetDB(db);
+    variationStorage.createIndexes();
   }
 
   @Override
