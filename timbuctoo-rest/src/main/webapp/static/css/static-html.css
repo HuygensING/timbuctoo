@@ -10,3 +10,12 @@ th, td {
   border: 1px inset #000;
   text-align: left;
 }
+
+td.name {
+  width: 100px;
+}
+
+td.number {
+  width: 50px;
+  text-align: right;
+}

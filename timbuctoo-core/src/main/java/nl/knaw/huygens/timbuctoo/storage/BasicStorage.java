@@ -21,6 +21,11 @@ public interface BasicStorage {
   <T extends Entity> StorageIterator<T> getAllByType(Class<T> type);
 
   /**
+   * Returns the number of items in the collection corresponding with the specified type.
+   */
+  <T extends Entity> long count(Class<T> type);
+
+  /**
    * Adds the specified entity to the storage; returns its assigned id.
    */
   <T extends Entity> String addItem(Class<T> type, T item) throws IOException;
