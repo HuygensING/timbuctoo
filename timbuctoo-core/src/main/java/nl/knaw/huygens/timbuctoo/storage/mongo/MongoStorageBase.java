@@ -68,7 +68,8 @@ public abstract class MongoStorageBase implements BasicStorage {
   // --- entities ------------------------------------------------------
 
   public <T extends Entity> long count(Class<T> type) {
-    return getCollection(type).count();
+    Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
+    return getCollection(baseType).count();
   }
 
   // --- system entities -----------------------------------------------
