@@ -12,15 +12,22 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
+import nl.knaw.huygens.timbuctoo.model.Archive;
+import nl.knaw.huygens.timbuctoo.model.Archiver;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.EntityRef;
+import nl.knaw.huygens.timbuctoo.model.Keyword;
+import nl.knaw.huygens.timbuctoo.model.Legislation;
+import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
+import nl.knaw.huygens.timbuctoo.storage.StorageStatus.KV;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,6 +89,30 @@ public class StorageManager {
         throw new RuntimeException(e);
       }
     }
+  }
+
+  // -------------------------------------------------------------------
+
+  // TODO generate entity types dynamically
+  public StorageStatus getStatus() {
+    StorageStatus status = new StorageStatus();
+
+    status.addDomainEntityCount(getCount(Archive.class));
+    status.addDomainEntityCount(getCount(Archiver.class));
+    status.addDomainEntityCount(getCount(Keyword.class));
+    status.addDomainEntityCount(getCount(Legislation.class));
+    status.addDomainEntityCount(getCount(Person.class));
+    status.addDomainEntityCount(getCount(Relation.class));
+
+    status.addSystemEntityCount(getCount(RelationType.class));
+    status.addSystemEntityCount(getCount(SearchResult.class));
+    status.addSystemEntityCount(getCount(User.class));
+
+    return status;
+  }
+
+  private KV<Long> getCount(Class<? extends Entity> type) {
+    return new KV<Long>(type.getSimpleName(), storage.count(type));
   }
 
   // -------------------------------------------------------------------

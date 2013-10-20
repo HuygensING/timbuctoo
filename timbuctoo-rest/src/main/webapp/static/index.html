@@ -5,26 +5,58 @@
 <title>Huygens ING Data Repository</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <link href="static/css/static-html.css" rel="stylesheet" type="text/css" />
+<script src="http://code.jquery.com/jquery-1.9.1.js" type="text/javascript"></script>
+<script src="static/config.js" type="text/javascript"></script>
 </head>
 
 <body>
 <h1>Huygens ING Data Repository</h1>
 
-<h2>Content of the repository</h2>
-<table>
-<tr><td>Archives</td><td style="text-align:right;">3577</td></tr>
-<tr><td>Archivers</td><td style="text-align:right;">143</td></tr>
-<tr><td>Legislations</td><td style="text-align:right;">1251</td></tr>
-<tr><td>Persons</td><td style="text-align:right;">774</td></tr>
-<tr><td>Keywords</td><td style="text-align:right;">130</td></tr>
-<tr><td>Relations</td><td style="text-align:right;">24705</td></tr>
-</table>
+<h2>Domain entities</h2>
+<div id="domain_entities"></div>
+
+<h2>System entities</h2>
+<div id="system_entities"></div>
+
+<p><a href="#" onclick="doGet()">Refresh</a></p>
 
 <h3>Repository <a href="system/api">API</a>.</h3>
 <h3><a href="static/search.html">Search</a> the repository.</h3>
 
 <hr/>
-<p><em>Powered by Timbuctoo 1.0</em></p>
+<p><em>Powered by Timbuctoo 2.0</em></p>
 
+
+<script>
+  var baseUrl = 'http://' + config.serverUri + '/';
+  var statusUrl = baseUrl + 'system/status';
+
+  function doGet() {
+    jQuery.ajax({
+      url: statusUrl,
+      type: 'GET',
+      data: {'refresh': false},
+      contentType: 'application/json; charset=utf-8',
+      success: function (data) {
+          var html1 = '<table><tr><th>Type</th><th>Count</th></tr>';
+          $.each(data.domainEntityCounts, function (i, item) {
+            html1 += '<tr><td class="name">' + item.key + '</td><td class="number">' + item.value + '</td></tr>';
+          });
+          html1 += '</table>';
+          $('#domain_entities').html(html1);
+          var html2 = '<table><tr><th>Type</th><th>Count</th></tr>';
+          $.each(data.systemEntityCounts, function (i, item) {
+            html2 += '<tr><td class="name">' + item.key + '</td><td class="number">' + item.value + '</td></tr>';
+          });
+          html2 += '</table>';
+          $('#system_entities').html(html2);
+      }
+    });
+  }
+
+  $(document).ready(function() {
+    doGet();
+  });
+</script>
 </body>
 </html>

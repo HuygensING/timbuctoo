@@ -100,6 +100,11 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
+  public <T extends Entity> long count(Class<T> type) {
+    return getStorageFor(type).count(type);
+  }
+
+  @Override
   public <T extends SystemEntity> T findItemByKey(Class<T> type, String key, String value) throws IOException {
     return getStorageFor(type).findItemByKey(type, key, value);
   }
