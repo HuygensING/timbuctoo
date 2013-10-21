@@ -106,7 +106,8 @@ public class DomainEntityResource {
 
   protected void persistObject(Class<? extends DomainEntity> type, String id) {
     try {
-      persistenceWrapper.persistObject(typeRegistry.getINameForType(type), id);
+      String pid = persistenceWrapper.persistObject(typeRegistry.getINameForType(type), id);
+      storageManager.setPID(type, id, pid);
     } catch (PersistenceException e) {
       LOG.error(String.format("Persisting of Object with id %s went wrong.", id), e);
     }
