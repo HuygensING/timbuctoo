@@ -109,28 +109,6 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testAddDocumentWithoutPersistingCompleteDocument() throws IOException, PersistenceException, JMSException {
-    TestConcreteDoc doc = new TestConcreteDoc();
-    doc.name = "test";
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
-    instance.addEntityWithoutPersisting(type, doc, true);
-
-    verifyAddDocument(type, doc, times(1), times(1));
-  }
-
-  @Test
-  public void testAddDocumentWithoutPersistingInCompleteDocument() throws IOException, PersistenceException, JMSException {
-    TestConcreteDoc doc = new TestConcreteDoc();
-    doc.name = "test";
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
-    instance.addEntityWithoutPersisting(type, doc, false);
-
-    verifyAddDocument(type, doc, times(1), never());
-  }
-
-  @Test
   public void testGetDocumentDocumentFound() throws IOException {
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
     String id = "testId";

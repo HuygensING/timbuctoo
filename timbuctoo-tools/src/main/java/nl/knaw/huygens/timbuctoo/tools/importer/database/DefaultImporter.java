@@ -66,7 +66,7 @@ public abstract class DefaultImporter extends ToolBase {
 
   protected <T extends Entity> String addEntity(Class<T> type, T entity, boolean isComplete) {
     try {
-      storageManager.addEntityWithoutPersisting(type, entity, isComplete);
+      storageManager.addEntity(type, entity, isComplete);
       return entity.getId();
     } catch (IOException e) {
       handleError("Failed to add %s; %s", entity.getDisplayName(), e.getMessage());
