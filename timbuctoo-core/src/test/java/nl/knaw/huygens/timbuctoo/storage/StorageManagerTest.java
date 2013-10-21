@@ -66,7 +66,7 @@ public class StorageManagerTest {
 
     instance.addEntity(type, doc);
 
-    verifyAddDocument(type, doc, times(1), times(1), times(1));
+    verifyAddDocument(type, doc, times(1), times(1));
   }
 
   @Test
@@ -78,7 +78,7 @@ public class StorageManagerTest {
 
     instance.addEntity(type, doc, false);
 
-    verifyAddDocument(type, doc, times(1), times(1), never());
+    verifyAddDocument(type, doc, times(1), never());
   }
 
   @Test
@@ -90,7 +90,7 @@ public class StorageManagerTest {
 
     instance.addEntity(type, doc);
 
-    verifyAddDocument(type, doc, times(1), never(), never());
+    verifyAddDocument(type, doc, times(1), never());
   }
 
   @Test(expected = IOException.class)
@@ -114,14 +114,13 @@ public class StorageManagerTest {
 
     instance.addEntity(type, doc);
 
-    verifyAddDocument(type, doc, times(1), times(1), times(1));
+    verifyAddDocument(type, doc, times(1), times(1));
   }
 
-  protected <T extends Entity> void verifyAddDocument(Class<T> type, T doc, VerificationMode storageVerification, VerificationMode persistenceVerification, VerificationMode indexingVerification)
+  protected <T extends Entity> void verifyAddDocument(Class<T> type, T doc, VerificationMode storageVerification, VerificationMode indexingVerification)
       throws IOException, PersistenceException, JMSException {
 
     verify(storage, storageVerification).addItem(type, doc);
-    verify(persistenceWrapper, persistenceVerification).persistObject(anyString(), anyString());
     verify(producer, indexingVerification).send(any(ActionType.class), anyString(), anyString());
   }
 
@@ -133,7 +132,7 @@ public class StorageManagerTest {
 
     instance.addEntityWithoutPersisting(type, doc, true);
 
-    verifyAddDocument(type, doc, times(1), never(), times(1));
+    verifyAddDocument(type, doc, times(1), times(1));
   }
 
   @Test
@@ -144,7 +143,7 @@ public class StorageManagerTest {
 
     instance.addEntityWithoutPersisting(type, doc, false);
 
-    verifyAddDocument(type, doc, times(1), never(), never());
+    verifyAddDocument(type, doc, times(1), never());
   }
 
   @Test
@@ -277,7 +276,7 @@ public class StorageManagerTest {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
     instance.modifyEntity(type, expectedDoc);
-    verifyModifyDocument(type, expectedDoc, times(1), times(1), times(1));
+    verifyModifyDocument(type, expectedDoc, times(1), times(1));
   }
 
   @Test
@@ -289,7 +288,7 @@ public class StorageManagerTest {
     Class<TestSystemDocument> type = TestSystemDocument.class;
 
     instance.modifyEntity(type, expectedDoc);
-    verifyModifyDocument(type, expectedDoc, times(1), never(), never());
+    verifyModifyDocument(type, expectedDoc, times(1), never());
   }
 
   @Test(expected = IOException.class)
@@ -313,14 +312,12 @@ public class StorageManagerTest {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
     instance.modifyEntity(type, expectedDoc);
-    verifyModifyDocument(type, expectedDoc, times(1), times(1), times(1));
+    verifyModifyDocument(type, expectedDoc, times(1), times(1));
   }
 
-  protected <T extends Entity> void verifyModifyDocument(Class<T> type, T expectedDoc, VerificationMode storageVerification, VerificationMode persistenceVerification,
-      VerificationMode indexVerification) throws IOException, PersistenceException, JMSException {
+  protected <T extends Entity> void verifyModifyDocument(Class<T> type, T expectedDoc, VerificationMode storageVerification, VerificationMode indexVerification) throws IOException, PersistenceException, JMSException {
 
     verify(storage, storageVerification).updateItem(type, expectedDoc.getId(), expectedDoc);
-    verify(persistenceWrapper, persistenceVerification).persistObject(anyString(), anyString());
     verify(producer, indexVerification).send(any(ActionType.class), anyString(), anyString());
   }
 
@@ -334,7 +331,7 @@ public class StorageManagerTest {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
 
     instance.modifyEntityWithoutPersisting(type, expectedDoc);
-    verifyModifyDocument(type, expectedDoc, times(1), never(), times(1));
+    verifyModifyDocument(type, expectedDoc, times(1), times(1));
   }
 
   @Test

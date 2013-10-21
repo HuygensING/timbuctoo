@@ -10,6 +10,7 @@ import nl.knaw.huygens.security.SecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.LocalSolrServer;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
+import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -41,6 +42,7 @@ class ResourceTestModule extends JerseyServletModule {
   private LocalSolrServer localSolrServer;
   private SecurityContextCreator securityContextCreator;
   private AuthorizationHandler authorizationHandler;
+  private PersistenceWrapper persistenceWrapper;
 
   public ResourceTestModule() {
     typeRegistry = new TypeRegistry(PACKAGES);
@@ -52,6 +54,7 @@ class ResourceTestModule extends JerseyServletModule {
     localSolrServer = mock(LocalSolrServer.class);
     securityContextCreator = new UserSecurityContextCreator(storageManager);
     authorizationHandler = mock(AuthorizationHandler.class);
+    persistenceWrapper = mock(PersistenceWrapper.class);
 
   }
 
@@ -60,7 +63,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(storageManager, jsonProvider, validator, mailSender, searchManager, localSolrServer, authorizationHandler);
+    reset(storageManager, jsonProvider, validator, mailSender, searchManager, localSolrServer, authorizationHandler, persistenceWrapper);
   }
 
   @Override
@@ -135,5 +138,11 @@ class ResourceTestModule extends JerseyServletModule {
   @Singleton
   public AuthorizationHandler provideAuthorizationHandler() {
     return authorizationHandler;
+  }
+
+  @Provides
+  @Singleton
+  public PersistenceWrapper providePersistenceWrapper() {
+    return this.persistenceWrapper;
   }
 }

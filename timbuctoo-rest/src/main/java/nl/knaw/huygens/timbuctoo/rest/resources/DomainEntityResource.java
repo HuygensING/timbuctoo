@@ -21,10 +21,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -54,12 +56,14 @@ public class DomainEntityResource {
   private final TypeRegistry typeRegistry;
   private final StorageManager storageManager;
   private final SearchManager searchManager;
+  private final PersistenceWrapper persistenceWrapper;
 
   @Inject
-  public DomainEntityResource(TypeRegistry registry, StorageManager storageManager, SearchManager searchManager) {
+  public DomainEntityResource(TypeRegistry registry, StorageManager storageManager, SearchManager searchManager, PersistenceWrapper persistenceWrapper) {
     typeRegistry = registry;
     this.storageManager = storageManager;
     this.searchManager = searchManager;
+    this.persistenceWrapper = persistenceWrapper;
   }
 
   // --- API -----------------------------------------------------------
@@ -76,6 +80,7 @@ public class DomainEntityResource {
     return storageManager.getAllLimited(type, start, rows);
   }
 
+  @SuppressWarnings("unchecked")
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @JsonView(JsonViews.WebView.class)
@@ -90,11 +95,21 @@ public class DomainEntityResource {
       throw new WebApplicationException(Status.BAD_REQUEST);
     }
 
-    storageManager.addEntity((Class<T>) type, (T) input);
+    String id = storageManager.addEntity((Class<T>) type, (T) input);
+
+    persistObject(type, id);
 
     String baseUri = CharMatcher.is('/').trimTrailingFrom(uriInfo.getBaseUri().toString());
-    String location = Joiner.on('/').join(baseUri, Paths.DOMAIN_PREFIX, entityName, input.getId());
+    String location = Joiner.on('/').join(baseUri, Paths.DOMAIN_PREFIX, entityName, id);
     return Response.status(Status.CREATED).header("Location", location).build();
+  }
+
+  protected void persistObject(Class<? extends DomainEntity> type, String id) {
+    try {
+      persistenceWrapper.persistObject(typeRegistry.getINameForType(type), id);
+    } catch (PersistenceException e) {
+      LOG.error(String.format("Persisting of Object with id %s went wrong.", id), e);
+    }
   }
 
   @GET
@@ -117,6 +132,7 @@ public class DomainEntityResource {
     return entity;
   }
 
+  @SuppressWarnings("unchecked")
   @PUT
   @Path(ID_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
@@ -139,8 +155,12 @@ public class DomainEntityResource {
       // only if the entity version does not exist an IOException is thrown.
       throw new WebApplicationException(Status.NOT_FOUND);
     }
+
+    persistObject(type, id);
+
   }
 
+  @SuppressWarnings("unchecked")
   @DELETE
   @Path(ID_PATH)
   @JsonView(JsonViews.WebView.class)
@@ -153,6 +173,8 @@ public class DomainEntityResource {
     DomainEntity typedDoc = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
     checkWritable(typedDoc, Status.FORBIDDEN);
     storageManager.removeEntity((Class<T>) type, (T) typedDoc);
+
+    persistObject(type, id);
     return Response.status(Status.NO_CONTENT).build();
   }
 
