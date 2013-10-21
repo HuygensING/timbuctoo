@@ -122,27 +122,44 @@ public class StorageManager {
     }
   }
 
+  // We retrieve all relations involving the specified entity by its id.
+  // Next we need to filter the relations that are compatible with the entity type:
+  // a relation is only valid if the entity type we are handling is assignable
+  // to the type specified in the relation.
+  // For example, if a relation is specified for a DCARArchiver, it is visible when
+  // dealing with an en entity type DCARArchiver, but not for Archiver.
   public <T extends DomainEntity> T getEntityWithRelations(Class<T> type, String id) {
+    StorageIterator<Relation> iterator = null;
     try {
-      T entity = storage.getItem(type, id);
-      StorageIterator<Relation> iterator = storage.getRelationsOf(type, id);
+      T entity = storage.getItem(type, id); // db access
+      iterator = storage.getRelationsOf(type, id); // db access
       while (iterator.hasNext()) {
-        Relation relation = iterator.next();
-        RelationType relType = getEntity(RelationType.class, relation.getTypeRef().getId());
-        if (relation.getSourceId().equals(id)) {
-          Reference reference = relation.getTargetRef();
-          entity.addRelation(relType.getRegularName(), getEntityRef(reference));
-        } else if (relation.getTargetId().equals(id)) {
-          Reference reference = relation.getSourceRef();
-          entity.addRelation(relType.getInverseName(), getEntityRef(reference));
+        Relation relation = iterator.next(); // db access
+        RelationType relType = getEntity(RelationType.class, relation.getTypeRef().getId()); // db access
+        if (relation.hasSourceId(id)) {
+          Class<? extends Entity> cls = registry.getTypeForIName(relation.getSourceType());
+          if (cls != null && cls.isAssignableFrom(type)) {
+            Reference reference = relation.getTargetRef();
+            entity.addRelation(relType.getRegularName(), getEntityRef(reference)); // db access
+          }
+        } else if (relation.hasTargetId(id)) {
+          Class<? extends Entity> cls = registry.getTypeForIName(relation.getTargetType());
+          if (cls != null && cls.isAssignableFrom(type)) {
+            Reference reference = relation.getSourceRef();
+            entity.addRelation(relType.getInverseName(), getEntityRef(reference)); // db access
+          }
         } else {
-          // impossible
+          throw new IllegalStateException("Impossible");
         }
       }
       return entity;
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
       return null;
+    } finally {
+      if (iterator != null) {
+        iterator.close();
+      }
     }
   }
 

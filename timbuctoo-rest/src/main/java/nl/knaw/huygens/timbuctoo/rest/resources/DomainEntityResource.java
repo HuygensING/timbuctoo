@@ -31,7 +31,6 @@ import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
-import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,14 +121,14 @@ public class DomainEntityResource {
       @PathParam(ID_PARAM) String id //
   ) {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
-    DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
+    DomainEntity entity = checkNotNull(storageManager.getEntityWithRelations(type, id), Status.NOT_FOUND);
 
-    try {
-      searchManager.addRelationsTo((DomainEntity) entity);
-    } catch (SolrServerException e) {
-      LOG.error(e.getMessage());
-      throw new WebApplicationException(Status.NOT_FOUND);
-    }
+    //    try {
+    //      searchManager.addRelationsTo((DomainEntity) entity);
+    //    } catch (SolrServerException e) {
+    //      LOG.error(e.getMessage());
+    //      throw new WebApplicationException(Status.NOT_FOUND);
+    //    }
     return entity;
   }
 
