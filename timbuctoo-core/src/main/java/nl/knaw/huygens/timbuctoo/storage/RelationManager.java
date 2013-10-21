@@ -54,7 +54,7 @@ public class RelationManager {
     type.setReflexive(reflexive);
     type.setSymmetric(symmetric);
     try {
-      storageManager.addEntityWithoutPersisting(RelationType.class, type, false); // don't index
+      storageManager.addEntity(RelationType.class, type, false); // don't index
     } catch (IOException e) {
       LOG.error("Failed to add {}; {}", type.getDisplayName(), e.getMessage());
     }
@@ -99,7 +99,7 @@ public class RelationManager {
         if (storageManager.countRelations(relation) > 0) {
           LOG.info("Ignored duplicate {}", relation.getDisplayName());
         } else {
-          return storageManager.addEntityWithoutPersisting(Relation.class, relation, true);
+          return storageManager.addEntity(Relation.class, relation, true);
         }
       } catch (IOException e) {
         LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
