@@ -27,7 +27,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
-import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
@@ -54,14 +53,12 @@ public class DomainEntityResource {
 
   private final TypeRegistry typeRegistry;
   private final StorageManager storageManager;
-  private final SearchManager searchManager;
   private final PersistenceWrapper persistenceWrapper;
 
   @Inject
-  public DomainEntityResource(TypeRegistry registry, StorageManager storageManager, SearchManager searchManager, PersistenceWrapper persistenceWrapper) {
+  public DomainEntityResource(TypeRegistry registry, StorageManager storageManager, PersistenceWrapper persistenceWrapper) {
     typeRegistry = registry;
     this.storageManager = storageManager;
-    this.searchManager = searchManager;
     this.persistenceWrapper = persistenceWrapper;
   }
 
@@ -121,15 +118,7 @@ public class DomainEntityResource {
       @PathParam(ID_PARAM) String id //
   ) {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
-    DomainEntity entity = checkNotNull(storageManager.getEntityWithRelations(type, id), Status.NOT_FOUND);
-
-    //    try {
-    //      searchManager.addRelationsTo((DomainEntity) entity);
-    //    } catch (SolrServerException e) {
-    //      LOG.error(e.getMessage());
-    //      throw new WebApplicationException(Status.NOT_FOUND);
-    //    }
-    return entity;
+    return checkNotNull(storageManager.getEntityWithRelations(type, id), Status.NOT_FOUND);
   }
 
   @SuppressWarnings("unchecked")
