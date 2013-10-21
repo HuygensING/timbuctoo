@@ -7,7 +7,6 @@ import java.util.List;
 
 import javax.jms.JMSException;
 
-import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
@@ -26,7 +25,6 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.storage.StorageStatus.KV;
 
 import org.slf4j.Logger;
@@ -42,14 +40,12 @@ public class StorageManager {
 
   private final TypeRegistry registry;
   private final VariationStorage storage;
-  private final PersistenceWrapper persistenceWrapper;
   private final Producer producer;
 
   @Inject
-  public StorageManager(VariationStorage storage, Broker broker, TypeRegistry registry, PersistenceWrapper persistenceWrapper) {
+  public StorageManager(VariationStorage storage, Broker broker, TypeRegistry registry) {
     this.registry = registry;
     this.storage = storage;
-    this.persistenceWrapper = persistenceWrapper;
     producer = setupProducer(broker);
   }
 
@@ -250,15 +246,8 @@ public class StorageManager {
     return id;
   }
 
-  public <T extends DomainEntity> void persistEntityVersion(Class<T> type, String id) {
-    try {
-      // TODO make persistent id dependent on version.
-      String collection = registry.getXNameForType(registry.getBaseClass(type));
-      String pid = persistenceWrapper.persistObject(collection, id);
-      storage.setPID(type, id, pid);
-    } catch (PersistenceException e) {
-      LOG.error("Error while handling {} {}", type.getName(), id);
-    }
+  public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) {
+    storage.setPID(type, id, pid);
   }
 
   public <T extends Entity> void modifyEntityWithoutPersisting(Class<T> type, T doc) throws IOException {

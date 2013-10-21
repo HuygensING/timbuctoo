@@ -25,7 +25,6 @@ import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.storage.mongo.model.TestSystemDocument;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
@@ -43,7 +42,6 @@ public class StorageManagerTest {
   private VariationStorage storage;
   private Broker broker;
   private TypeRegistry typeRegistry;
-  private PersistenceWrapper persistenceWrapper;
   private Producer producer;
 
   @Before
@@ -53,8 +51,7 @@ public class StorageManagerTest {
     producer = mock(Producer.class);
     when(broker.newProducer(anyString(), anyString())).thenReturn(producer);
     typeRegistry = mock(TypeRegistry.class);
-    persistenceWrapper = mock(PersistenceWrapper.class);
-    instance = new StorageManager(storage, broker, typeRegistry, persistenceWrapper);
+    instance = new StorageManager(storage, broker, typeRegistry);
   }
 
   @Test
@@ -104,21 +101,8 @@ public class StorageManagerTest {
     instance.addEntity(type, doc);
   }
 
-  @Test
-  public void testAddDocumentPersistentException() throws IOException, PersistenceException, JMSException {
-    TestConcreteDoc doc = new TestConcreteDoc();
-    doc.name = "test";
-
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    doThrow(PersistenceException.class).when(persistenceWrapper).persistObject(anyString(), anyString());
-
-    instance.addEntity(type, doc);
-
-    verifyAddDocument(type, doc, times(1), times(1));
-  }
-
-  protected <T extends Entity> void verifyAddDocument(Class<T> type, T doc, VerificationMode storageVerification, VerificationMode indexingVerification)
-      throws IOException, PersistenceException, JMSException {
+  protected <T extends Entity> void verifyAddDocument(Class<T> type, T doc, VerificationMode storageVerification, VerificationMode indexingVerification) throws IOException, PersistenceException,
+      JMSException {
 
     verify(storage, storageVerification).addItem(type, doc);
     verify(producer, indexingVerification).send(any(ActionType.class), anyString(), anyString());
@@ -315,7 +299,8 @@ public class StorageManagerTest {
     verifyModifyDocument(type, expectedDoc, times(1), times(1));
   }
 
-  protected <T extends Entity> void verifyModifyDocument(Class<T> type, T expectedDoc, VerificationMode storageVerification, VerificationMode indexVerification) throws IOException, PersistenceException, JMSException {
+  protected <T extends Entity> void verifyModifyDocument(Class<T> type, T expectedDoc, VerificationMode storageVerification, VerificationMode indexVerification) throws IOException,
+      PersistenceException, JMSException {
 
     verify(storage, storageVerification).updateItem(type, expectedDoc.getId(), expectedDoc);
     verify(producer, indexVerification).send(any(ActionType.class), anyString(), anyString());

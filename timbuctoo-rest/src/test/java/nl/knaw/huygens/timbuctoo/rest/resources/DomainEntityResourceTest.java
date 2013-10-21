@@ -25,15 +25,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
 import nl.knaw.huygens.persistence.PersistenceException;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.rest.providers.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.rest.providers.model.TestConcreteDoc;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.mockito.verification.VerificationMode;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -42,6 +43,7 @@ import com.sun.jersey.api.client.GenericType;
 
 public class DomainEntityResourceTest extends WebServiceTestSetup {
 
+  private static final String DEFAULT_PID = "c14a5e7d-4728-4f52-af98-480ff7fef08e";
   private static final String DEFAULT_ID = "TEST000000000001";
   private static final String USER_ROLE = "USER";
 
@@ -101,15 +103,24 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     doc.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
+    setupPersistenceWrapper();
+
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
-    verifyPersistObject(times(1), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), times(1)).persistObject("testconcretedoc", DEFAULT_ID);
+
+    verify(getStorageManager(), times(1)).setPID(TestConcreteDoc.class, DEFAULT_ID, DEFAULT_PID);
+
   }
 
-  protected void verifyPersistObject(VerificationMode invocations, String collection, String id) throws PersistenceException {
-    PersistenceWrapper perisistenceWrapper = injector.getInstance(PersistenceWrapper.class);
-    verify(perisistenceWrapper, invocations).persistObject(collection, id);
+  protected void setupPersistenceWrapper() throws PersistenceException {
+    PersistenceWrapper persistenceWrapper = getPersistenceWrapper();
+    when(persistenceWrapper.persistObject(anyString(), anyString())).thenReturn(DEFAULT_PID);
+  }
+
+  protected PersistenceWrapper getPersistenceWrapper() {
+    return injector.getInstance(PersistenceWrapper.class);
   }
 
   @Test
@@ -123,7 +134,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Ignore
@@ -185,7 +197,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -209,7 +222,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -220,7 +234,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("unknown").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -230,7 +245,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("otherdocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -241,7 +257,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("otherdocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -250,7 +267,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("otherdocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -264,10 +282,13 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
     when(getStorageManager().addEntity(TestConcreteDoc.class, doc)).thenReturn(DEFAULT_ID);
 
+    setupPersistenceWrapper();
+
     ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
     assertNotNull(response.getHeaders().getFirst("Location"));
-    verifyPersistObject(times(1), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), times(1)).persistObject("testconcretedoc", DEFAULT_ID);
+    verify(getStorageManager(), times(1)).setPID(TestConcreteDoc.class, DEFAULT_ID, DEFAULT_PID);
   }
 
   @SuppressWarnings("unchecked")
@@ -280,11 +301,13 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
     when(getStorageManager().addEntity(TestConcreteDoc.class, doc)).thenReturn(DEFAULT_ID);
-    doThrow(PersistenceException.class).when(injector.getInstance(PersistenceWrapper.class)).persistObject(anyString(), anyString());
+    doThrow(PersistenceException.class).when(getPersistenceWrapper()).persistObject(anyString(), anyString());
 
     ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
     assertNotNull(response.getHeaders().getFirst("Location"));
+    verify(getPersistenceWrapper(), times(1)).persistObject("testconcretedoc", DEFAULT_ID);
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -296,7 +319,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("unknown").path("all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -310,7 +334,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -324,7 +349,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("otherdocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -334,7 +360,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("otherdocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -345,10 +372,13 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     doc.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
     when(getStorageManager().getEntity(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(doc);
 
+    setupPersistenceWrapper();
+
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
-    verifyPersistObject(times(1), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), times(1)).persistObject("testconcretedoc", DEFAULT_ID);
+    verify(getStorageManager(), times(1)).setPID(TestConcreteDoc.class, DEFAULT_ID, DEFAULT_PID);
   }
 
   @Test
@@ -361,7 +391,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -373,7 +404,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -386,14 +418,16 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
   public void testDeleteCollection() throws PersistenceException {
     ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   // Security tests
@@ -428,7 +462,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
 
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -442,7 +477,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
 
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -457,7 +493,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, inputDoc);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
 
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -472,7 +509,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
 
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -481,7 +519,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   @Test
@@ -491,7 +530,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
-    verifyPersistObject(never(), "testconcretedoc", DEFAULT_ID);
+    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
+    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
   }
 
   // Variation tests
