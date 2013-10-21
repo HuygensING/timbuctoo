@@ -122,16 +122,26 @@ public class StorageManager {
     }
   }
 
+  public <T extends DomainEntity> T getEntityWithRelations(Class<T> type, String id) {
+    try {
+      T entity = storage.getItem(type, id);
+      addRelationTo(type, id, entity);
+      return entity;
+    } catch (IOException e) {
+      LOG.error("Error while handling {} {}", type.getName(), id);
+      return null;
+    }
+  }
+
   // We retrieve all relations involving the specified entity by its id.
   // Next we need to filter the relations that are compatible with the entity type:
   // a relation is only valid if the entity type we are handling is assignable
   // to the type specified in the relation.
   // For example, if a relation is specified for a DCARArchiver, it is visible when
   // dealing with an en entity type DCARArchiver, but not for Archiver.
-  public <T extends DomainEntity> T getEntityWithRelations(Class<T> type, String id) {
+  public <T extends DomainEntity> void addRelationTo(Class<T> type, String id, T entity) {
     StorageIterator<Relation> iterator = null;
     try {
-      T entity = storage.getItem(type, id); // db access
       iterator = storage.getRelationsOf(type, id); // db access
       while (iterator.hasNext()) {
         Relation relation = iterator.next(); // db access
@@ -152,10 +162,8 @@ public class StorageManager {
           throw new IllegalStateException("Impossible");
         }
       }
-      return entity;
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
-      return null;
     } finally {
       if (iterator != null) {
         iterator.close();
