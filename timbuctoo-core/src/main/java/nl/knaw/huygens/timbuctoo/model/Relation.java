@@ -83,6 +83,10 @@ public class Relation extends DomainEntity {
     return sourceId;
   }
 
+  public boolean hasSourceId(String id) {
+    return sourceId != null && sourceId.equals(id);
+  }
+
   @JsonProperty("^sourceId")
   public void setSourceId(String sourceRefId) {
     this.sourceId = sourceRefId;
@@ -149,6 +153,10 @@ public class Relation extends DomainEntity {
   @JsonProperty("^targetId")
   public String getTargetId() {
     return targetId;
+  }
+
+  public boolean hasTargetId(String id) {
+    return targetId != null && targetId.equals(id);
   }
 
   @JsonProperty("^targetId")
