@@ -14,9 +14,9 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
-import nl.knaw.huygens.timbuctoo.index.IndexService;
-import nl.knaw.huygens.timbuctoo.messages.Broker;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.atlg.XRelated;
@@ -28,6 +28,7 @@ import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
@@ -69,13 +70,10 @@ public class DutchCaribbeanImporter extends DefaultImporter {
     Configuration config = new Configuration(configFileName);
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
-    Broker broker = null;
     StorageManager storageManager = null;
     IndexManager indexManager = null;
 
     try {
-      broker = injector.getInstance(Broker.class);
-      broker.start();
 
       storageManager = injector.getInstance(StorageManager.class);
       storageManager.clear();
@@ -83,26 +81,14 @@ public class DutchCaribbeanImporter extends DefaultImporter {
       indexManager = injector.getInstance(IndexManager.class);
       indexManager.deleteAllDocuments();
 
-      IndexService service = injector.getInstance(IndexService.class);
-      Thread thread = new Thread(service);
-      thread.start();
-
       long start = System.currentTimeMillis();
 
       TypeRegistry registry = injector.getInstance(TypeRegistry.class);
       RelationManager relationManager = new RelationManager(registry, storageManager);
-      new DutchCaribbeanImporter(registry, storageManager, relationManager, importDirName).importAll();
-
-      // Signal we're done
-      sendEndOfDataMessage(broker);
+      new DutchCaribbeanImporter(registry, storageManager, relationManager, indexManager, importDirName).importAll();
 
       long time = (System.currentTimeMillis() - start) / 1000;
       System.out.printf("%n=== Used %d seconds%n%n", time);
-
-      waitForCompletion(thread, 5 * 60 * 1000);
-
-      time = (System.currentTimeMillis() - start) / 1000;
-      System.out.printf("%n=== Used %d seconds%n", time);
 
     } catch (Exception e) {
       // for debugging
@@ -115,9 +101,6 @@ public class DutchCaribbeanImporter extends DefaultImporter {
       if (storageManager != null) {
         storageManager.close();
       }
-      if (broker != null) {
-        broker.close();
-      }
       // If the application is not explicitly closed a finalizer thread of Guice keeps running.
       System.exit(0);
     }
@@ -129,6 +112,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
 
   private final ObjectMapper objectMapper;
   private final RelationManager relationManager;
+  private final IndexManager indexManager;
   private final File inputDir;
 
   private final Map<String, Reference> keywordRefMap = Maps.newHashMap();
@@ -146,10 +130,11 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private Reference hasSiblingArchive;
   private Reference hasSiblingArchiver;
 
-  public DutchCaribbeanImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, String inputDirName) {
+  public DutchCaribbeanImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager, String inputDirName) {
     super(registry, storageManager, relationManager);
     objectMapper = new ObjectMapper();
     this.relationManager = relationManager;
+    this.indexManager = indexManager;
     inputDir = new File(inputDirName);
     System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());
   }
@@ -215,8 +200,35 @@ public class DutchCaribbeanImporter extends DefaultImporter {
     System.out.println("------------------------");
     System.out.println("-- Pass 3 - indexing  --");
     System.out.println("------------------------");
+    System.out.println();
+
+    System.out.println(".. Keywords");
+    indexEntities(DCARKeyword.class);
+    System.out.println(".. Persons");
+    indexEntities(DCARPerson.class);
+    System.out.println(".. Legislation");
+    indexEntities(DCARLegislation.class);
+    System.out.println(".. Archives");
+    indexEntities(DCARArchive.class);
+    System.out.println(".. Archivers");
+    indexEntities(DCARArchiver.class);
 
     displayErrorSummary();
+  }
+
+  private <T extends DomainEntity> void indexEntities(Class<T> type) throws IndexException {
+    StorageIterator<T> iterator = null;
+    try {
+      iterator = storageManager.getAll(type);
+      while (iterator.hasNext()) {
+        T entity = iterator.next();
+        indexManager.addDocument(type, entity.getId());
+      }
+    } finally {
+      if (iterator != null) {
+        iterator.close();
+      }
+    }
   }
 
   // --- relations -----------------------------------------------------
