@@ -57,10 +57,9 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   public void createIndexes() {
     DBCollection collection = db.getCollection("relation");
-    BasicDBObject object = new BasicDBObject();
-    object.append("^sourceId", 1);
-    object.append("^targetId", 1);
-    collection.ensureIndex(object);
+    collection.ensureIndex(new BasicDBObject("^sourceId", 1));
+    collection.ensureIndex(new BasicDBObject("^targetId", 1));
+    collection.ensureIndex(new BasicDBObject("^sourceId", 1).append("^targetId", 1));
   }
 
   @Override
@@ -247,8 +246,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   @Override
   public StorageIterator<Relation> getRelationsOf(Class<? extends DomainEntity> type, String id) throws IOException {
-    String name = VariationUtils.typeToVariationName(Relation.class);
-    DBObject query = DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id)).notEquals(name, null);
+    DBObject query = DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id));
     DBCursor cursor = getVariationCollection(Relation.class).find(query);
     return new MongoDBVariationIterator<Relation>(cursor, reducer, Relation.class);
   }
@@ -284,7 +282,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   @Override
   public List<String> getRelationIds(List<String> ids) throws IOException {
-    List<String> releationIds = Lists.newArrayList();
+    List<String> relationIds = Lists.newArrayList();
 
     try {
       DBObject query = DBQuery.or(DBQuery.in("^sourceId", ids), DBQuery.in("^targetId", ids));
@@ -292,14 +290,14 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
       DBCursor cursor = db.getCollection("relation").find(query, columnsToShow);
       while (cursor.hasNext()) {
-        releationIds.add((String) cursor.next().get("_id"));
+        relationIds.add((String) cursor.next().get("_id"));
       }
     } catch (MongoException e) {
-      LOG.error("Error while retrieving relation id's without pid relating to {}", ids);
+      LOG.error("Error while retrieving relation id's of {}", ids);
       throw new IOException(e);
     }
 
-    return releationIds;
+    return relationIds;
   }
 
   @Override
