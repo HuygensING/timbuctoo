@@ -237,14 +237,12 @@ public class StorageManager {
    * @param doc should be of a the type used in type.
    * @param isComplete marks if the entity contains all it's references and relations, 
    * when this boolean is true the entity will be indexed
+   * @return the id of the newly created Entity.
    * @throws IOException when thrown by storage
    */
   public <T extends Entity> String addEntity(Class<T> type, T doc, boolean isComplete) throws IOException {
     String id = storage.addItem(type, doc);
     if (DomainEntity.class.isAssignableFrom(type)) {
-      @SuppressWarnings("unchecked")
-      Class<? extends DomainEntity> domainType = (Class<? extends DomainEntity>) type;
-      persistEntityVersion(domainType, id);
       if (isComplete) {
         sendIndexMessage(ActionType.INDEX_ADD, registry.getINameForType(type), id);
       }
@@ -252,7 +250,7 @@ public class StorageManager {
     return id;
   }
 
-  private <T extends DomainEntity> void persistEntityVersion(Class<T> type, String id) {
+  public <T extends DomainEntity> void persistEntityVersion(Class<T> type, String id) {
     try {
       // TODO make persistent id dependent on version.
       String collection = registry.getXNameForType(registry.getBaseClass(type));
@@ -273,9 +271,6 @@ public class StorageManager {
   public <T extends Entity> void modifyEntity(Class<T> type, T doc) throws IOException {
     storage.updateItem(type, doc.getId(), doc);
     if (DomainEntity.class.isAssignableFrom(type)) {
-      @SuppressWarnings("unchecked")
-      Class<? extends DomainEntity> domainType = (Class<? extends DomainEntity>) type;
-      persistEntityVersion(domainType, doc.getId());
       sendIndexMessage(ActionType.INDEX_MOD, registry.getINameForType(type), doc.getId());
     }
   }
