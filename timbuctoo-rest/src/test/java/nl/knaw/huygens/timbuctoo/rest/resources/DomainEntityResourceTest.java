@@ -50,7 +50,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetDocExisting() {
     TestConcreteDoc expectedDoc = new TestConcreteDoc(DEFAULT_ID);
-    when(getStorageManager().getEntity(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(expectedDoc);
+    when(getStorageManager().getEntityWithRelations(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(expectedDoc);
 
     TestConcreteDoc actualDoc = autoResource().path("testconcretedocs").path(DEFAULT_ID).get(TestConcreteDoc.class);
     assertNotNull(actualDoc);
@@ -435,7 +435,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetDocNotLoggedIn() {
     TestConcreteDoc expectedDoc = new TestConcreteDoc(DEFAULT_ID);
-    when(getStorageManager().getEntity(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(expectedDoc);
+    when(getStorageManager().getEntityWithRelations(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(expectedDoc);
 
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
@@ -444,7 +444,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetDocEmptyAuthorizationKey() {
     TestConcreteDoc expectedDoc = new TestConcreteDoc(DEFAULT_ID);
-    when(getStorageManager().getEntity(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(expectedDoc);
+    when(getStorageManager().getEntityWithRelations(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(expectedDoc);
 
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
