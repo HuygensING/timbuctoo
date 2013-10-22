@@ -17,6 +17,11 @@
   	  <artifactId>timbuctoo-core</artifactId>
       <version>${project.version}</version>
   	</dependency>
+    <dependency>
+      <groupId>timbuctoo</groupId>
+      <artifactId>timbuctoo-services</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- ## End of project dependencies ## -->
 
     <!-- ## Main dependencies ## -->
