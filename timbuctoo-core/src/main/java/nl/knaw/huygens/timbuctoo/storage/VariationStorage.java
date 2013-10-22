@@ -18,10 +18,9 @@ public interface VariationStorage extends BasicStorage {
   <T extends DomainEntity> T getRevision(Class<T> type, String id, int revisionId) throws IOException;
 
   /**
-   * Counts the number of stored relations with non-null fields
-   * as in the specified {@code Relation} instance.
+   * Is the specified relation present in the storage?
    */
-  int countRelations(Relation relation);
+  boolean relationExists(Relation relation);
 
   /**
    * Returns an iterator for all relations involving the specified domain entity,

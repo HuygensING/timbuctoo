@@ -96,7 +96,7 @@ public class RelationManager {
     Relation relation = builder.build();
     if (relation != null) {
       try {
-        if (storageManager.countRelations(relation) > 0) {
+        if (storageManager.relationExists(relation)) {
           LOG.info("Ignored duplicate {}", relation.getDisplayName());
         } else {
           return storageManager.addEntity(Relation.class, relation, true);
