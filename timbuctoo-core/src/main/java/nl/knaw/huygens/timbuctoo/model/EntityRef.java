@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import nl.knaw.huygens.timbuctoo.config.Paths;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Joiner;
 
@@ -11,6 +12,8 @@ import com.google.common.base.Joiner;
  *
  * It is an open question whether we should include the variation.
  */
+//Make sure the '@path'-field is not deserialized.
+@JsonIgnoreProperties("@path")
 public class EntityRef {
 
   /**
