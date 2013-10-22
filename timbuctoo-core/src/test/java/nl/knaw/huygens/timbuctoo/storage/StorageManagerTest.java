@@ -16,8 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.jms.JMSException;
+import javax.persistence.PersistenceException;
 
-import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.mongo.model.TestSystemDocument;
@@ -45,7 +45,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testAddDocumentDomainDocument() throws IOException, PersistenceException, JMSException {
+  public void testAddDocumentDomainDocument() throws IOException, JMSException {
     String id = "TEST000123000123";
     GeneralTestDoc doc = new GeneralTestDoc(id);
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
@@ -57,7 +57,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testAddDocumentDomainDocumentInComplete() throws JMSException, PersistenceException, IOException {
+  public void testAddDocumentDomainDocumentInComplete() throws JMSException, IOException {
     String id = "TEST000123000123";
     GeneralTestDoc doc = new GeneralTestDoc(id);
     Class<GeneralTestDoc> type = GeneralTestDoc.class;

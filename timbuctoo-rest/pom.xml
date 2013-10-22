@@ -33,6 +33,11 @@
     <!-- ## End of repository packages ## -->
 
     <!-- ## Main libraries ## -->
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>huygens-persistence</artifactId>
+      <version>1.0.3</version>
+    </dependency>
     <!-- Huygens security -->
     <dependency>
       <groupId>nl.knaw.huygens</groupId>

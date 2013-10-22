@@ -13,11 +13,6 @@
 
   <dependencies>
     <!-- ## Main dependencies ## -->
-    <dependency>
-      <groupId>nl.knaw.huygens</groupId>
-      <artifactId>huygens-persistence</artifactId>
-      <version>1.0.3</version>
-    </dependency>
     <!-- Apache ActiveMQ -->
     <dependency>
       <groupId>org.apache.activemq</groupId>
