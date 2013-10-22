@@ -10,6 +10,8 @@ import nl.knaw.huygens.security.SecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.LocalSolrServer;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
+import nl.knaw.huygens.timbuctoo.messages.Broker;
+import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
@@ -43,6 +45,8 @@ class ResourceTestModule extends JerseyServletModule {
   private SecurityContextCreator securityContextCreator;
   private AuthorizationHandler authorizationHandler;
   private PersistenceWrapper persistenceWrapper;
+  private Broker broker;
+  private Producer producer;
 
   public ResourceTestModule() {
     typeRegistry = new TypeRegistry(PACKAGES);
@@ -55,7 +59,8 @@ class ResourceTestModule extends JerseyServletModule {
     securityContextCreator = new UserSecurityContextCreator(storageManager);
     authorizationHandler = mock(AuthorizationHandler.class);
     persistenceWrapper = mock(PersistenceWrapper.class);
-
+    broker = mock(Broker.class);
+    producer = mock(Producer.class);
   }
 
   /* Because the RestAutoResourceModule is used in a static way for multiple tests,
@@ -63,7 +68,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(storageManager, jsonProvider, validator, mailSender, searchManager, localSolrServer, authorizationHandler, persistenceWrapper);
+    reset(storageManager, jsonProvider, validator, mailSender, searchManager, localSolrServer, authorizationHandler, persistenceWrapper, broker, producer);
   }
 
   @Override
@@ -144,5 +149,17 @@ class ResourceTestModule extends JerseyServletModule {
   @Singleton
   public PersistenceWrapper providePersistenceWrapper() {
     return this.persistenceWrapper;
+  }
+
+  @Provides
+  @Singleton
+  public Broker provideBroker() {
+    return this.broker;
+  }
+
+  @Provides
+  @Singleton
+  public Producer provideProducer() {
+    return this.producer;
   }
 }

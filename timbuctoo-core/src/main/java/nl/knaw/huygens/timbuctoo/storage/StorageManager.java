@@ -5,12 +5,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import javax.jms.JMSException;
-
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.messages.ActionType;
-import nl.knaw.huygens.timbuctoo.messages.Broker;
-import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.Archive;
 import nl.knaw.huygens.timbuctoo.model.Archiver;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -40,20 +35,11 @@ public class StorageManager {
 
   private final TypeRegistry registry;
   private final VariationStorage storage;
-  private final Producer producer;
 
   @Inject
-  public StorageManager(VariationStorage storage, Broker broker, TypeRegistry registry) {
+  public StorageManager(VariationStorage storage, TypeRegistry registry) {
     this.registry = registry;
     this.storage = storage;
-    producer = setupProducer(broker);
-  }
-
-  /**
-   * Clears the data store.
-   */
-  public void clear() {
-    storage.empty();
   }
 
   /**
@@ -61,30 +47,13 @@ public class StorageManager {
    */
   public void close() {
     storage.close();
-    if (producer != null) {
-      producer.closeQuietly();
-    }
   }
 
-  // -------------------------------------------------------------------
-
-  private Producer setupProducer(Broker broker) {
-    try {
-      return broker.newProducer(Broker.INDEX_QUEUE, "StorageManagerProducer");
-    } catch (JMSException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private void sendIndexMessage(ActionType action, String type, String id) {
-    if (producer != null) {
-      try {
-        producer.send(action, type, id);
-      } catch (JMSException e) {
-        LOG.error("Error while sending message {} - {} - {}\n{}", action, type, id, e.getMessage());
-        throw new RuntimeException(e);
-      }
-    }
+  /**
+   * Clears the data store.
+   */
+  public void clear() {
+    storage.empty();
   }
 
   // -------------------------------------------------------------------
@@ -236,11 +205,7 @@ public class StorageManager {
    * This code is needed, because of issue #1774 in Redmine. It contains the question if the persistent identifier should be added autmaticallly. 
    */
   public <T extends Entity> String addEntityWithoutPersisting(Class<T> type, T doc, boolean isComplete) throws IOException {
-    String id = storage.addItem(type, doc);
-    if (DomainEntity.class.isAssignableFrom(type) && isComplete) {
-      sendIndexMessage(ActionType.INDEX_ADD, registry.getINameForType(type), id);
-    }
-    return id;
+    return storage.addItem(type, doc);
   }
 
   /**
@@ -262,13 +227,7 @@ public class StorageManager {
    * @throws IOException when thrown by storage
    */
   public <T extends Entity> String addEntity(Class<T> type, T doc, boolean isComplete) throws IOException {
-    String id = storage.addItem(type, doc);
-    if (DomainEntity.class.isAssignableFrom(type)) {
-      if (isComplete) {
-        sendIndexMessage(ActionType.INDEX_ADD, registry.getINameForType(type), id);
-      }
-    }
-    return id;
+    return storage.addItem(type, doc);
   }
 
   public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) {
@@ -277,24 +236,14 @@ public class StorageManager {
 
   public <T extends Entity> void modifyEntityWithoutPersisting(Class<T> type, T doc) throws IOException {
     storage.updateItem(type, doc.getId(), doc);
-    if (DomainEntity.class.isAssignableFrom(type)) {
-      sendIndexMessage(ActionType.INDEX_MOD, registry.getINameForType(type), doc.getId());
-    }
   }
 
   public <T extends Entity> void modifyEntity(Class<T> type, T doc) throws IOException {
     storage.updateItem(type, doc.getId(), doc);
-    if (DomainEntity.class.isAssignableFrom(type)) {
-      sendIndexMessage(ActionType.INDEX_MOD, registry.getINameForType(type), doc.getId());
-    }
   }
 
   public <T extends Entity> void removeEntity(Class<T> type, T doc) throws IOException {
     storage.deleteItem(type, doc.getId(), doc.getLastChange());
-    //TODO do something with the PID.
-    if (DomainEntity.class.isAssignableFrom(type)) {
-      sendIndexMessage(ActionType.INDEX_DEL, registry.getINameForType(type), doc.getId());
-    }
   }
 
   public int removeAllSearchResults() {

@@ -3,9 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -21,9 +19,6 @@ import javax.jms.JMSException;
 
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.messages.ActionType;
-import nl.knaw.huygens.timbuctoo.messages.Broker;
-import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.mongo.model.TestSystemDocument;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
@@ -40,18 +35,13 @@ public class StorageManagerTest {
 
   private StorageManager instance;
   private VariationStorage storage;
-  private Broker broker;
   private TypeRegistry typeRegistry;
-  private Producer producer;
 
   @Before
   public void SetUp() throws JMSException {
     storage = mock(VariationStorage.class);
-    broker = mock(Broker.class);
-    producer = mock(Producer.class);
-    when(broker.newProducer(anyString(), anyString())).thenReturn(producer);
     typeRegistry = mock(TypeRegistry.class);
-    instance = new StorageManager(storage, broker, typeRegistry);
+    instance = new StorageManager(storage, typeRegistry);
   }
 
   @Test
@@ -105,7 +95,6 @@ public class StorageManagerTest {
       JMSException {
 
     verify(storage, storageVerification).addItem(type, doc);
-    verify(producer, indexingVerification).send(any(ActionType.class), anyString(), anyString());
   }
 
   @Test
@@ -281,7 +270,6 @@ public class StorageManagerTest {
       PersistenceException, JMSException {
 
     verify(storage, storageVerification).updateItem(type, expectedDoc.getId(), expectedDoc);
-    verify(producer, indexVerification).send(any(ActionType.class), anyString(), anyString());
   }
 
   @Test
@@ -312,7 +300,6 @@ public class StorageManagerTest {
 
     instance.removeEntity(type, inputDoc);
     verify(storage).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
-    verify(producer).send(ActionType.INDEX_DEL, typeString, id);
   }
 
   @Test
@@ -326,7 +313,6 @@ public class StorageManagerTest {
 
     instance.removeEntity(type, inputDoc);
     verify(storage, times(1)).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
-    verify(producer, never()).send(any(ActionType.class), anyString(), anyString());
   }
 
   @Test(expected = IOException.class)
