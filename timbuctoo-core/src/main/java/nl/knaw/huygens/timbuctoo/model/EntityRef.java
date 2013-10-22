@@ -1,5 +1,10 @@
 package nl.knaw.huygens.timbuctoo.model;
 
+import nl.knaw.huygens.timbuctoo.config.Paths;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Joiner;
+
 /**
  * A reference to an entity, to be used in other entities.
  * The reference is partially denormalized by including the display name.
@@ -11,7 +16,7 @@ public class EntityRef {
   /**
    * Utility for creating instances.
    */
-  public static <T extends Entity> EntityRef newInstance(String itype, String xtype, T entity) {
+  public static <T extends DomainEntity> EntityRef newInstance(String itype, String xtype, T entity) {
     return new EntityRef(itype, xtype, entity.getId(), entity.getDisplayName());
   }
 
@@ -60,6 +65,11 @@ public class EntityRef {
 
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
+  }
+
+  @JsonProperty("@path")
+  public String getPath() {
+    return Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
   }
 
   @Override
