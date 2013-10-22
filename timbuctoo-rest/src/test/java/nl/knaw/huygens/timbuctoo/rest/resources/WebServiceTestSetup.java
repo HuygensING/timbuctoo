@@ -108,7 +108,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   }
 
   @SuppressWarnings("unchecked")
-  protected void setUserUnauthorized() {
+  protected void setUserNotLoggedIn() {
     try {
       AuthorizationHandler authorizationHandler = injector.getInstance(AuthorizationHandler.class);
       when(authorizationHandler.getSecurityInformation(any(ContainerRequest.class))).thenThrow(UnauthorizedException.class);

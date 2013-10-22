@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.messages;
 
+import java.util.List;
+
 import javax.jms.JMSException;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
@@ -13,6 +15,7 @@ import org.apache.activemq.usage.TempUsage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -28,23 +31,33 @@ public class ActiveMQBroker implements Broker {
 
   private BrokerService brokerService;
 
+  private List<Producer> producers;
+  private List<Consumer> consumers;
+
   @Inject
   public ActiveMQBroker(Configuration config) {
     url = "vm://" + BROKER_NAME;
     LOG.info("Message broker URL: '{}'", url);
     createBrokerService(config);
+
+    producers = Lists.newLinkedList();
+    consumers = Lists.newLinkedList();
   }
 
   @Override
   public Producer newProducer(String queue, String name) throws JMSException {
     ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(url);
-    return new ActiveMQProducer(factory, queue, name);
+    Producer producer = new ActiveMQProducer(factory, queue, name);
+    producers.add(producer);
+    return producer;
   }
 
   @Override
   public Consumer newConsumer(String queue, String name) throws JMSException {
     ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(url);
-    return new ActiveMQConsumer(factory, queue, name);
+    Consumer consumer = new ActiveMQConsumer(factory, queue, name);
+    consumers.add(consumer);
+    return consumer;
   }
 
   @Override
@@ -97,6 +110,10 @@ public class ActiveMQBroker implements Broker {
   public void close() {
     if (brokerService != null) {
       LOG.info("Closing");
+
+      closeConsumers();
+      closeProducers();
+
       try {
         brokerService.stop();
       } catch (Exception e) {
@@ -106,6 +123,22 @@ public class ActiveMQBroker implements Broker {
         brokerService = null;
       }
     }
+  }
+
+  private void closeConsumers() {
+    LOG.info("Closing consumers");
+    for (Consumer consumer : consumers) {
+      consumer.closeQuietly();
+    }
+    consumers.clear();
+  }
+
+  private void closeProducers() {
+    LOG.info("Closing producers");
+    for (Producer producer : producers) {
+      producer.closeQuietly();
+    }
+    producers.clear();
   }
 
 }
