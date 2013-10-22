@@ -162,8 +162,8 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public int countRelations(Relation relation) {
-    return variationStorage.countRelations(relation);
+  public boolean relationExists(Relation relation) {
+    return variationStorage.relationExists(relation);
   }
 
   @Override

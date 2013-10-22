@@ -299,8 +299,8 @@ public class StorageManager {
     return StorageUtils.resolveIterator(storage.getAllByType(type), offset, limit);
   }
 
-  public int countRelations(Relation relation) {
-    return storage.countRelations(relation);
+  public boolean relationExists(Relation relation) {
+    return storage.relationExists(relation);
   }
 
 }
