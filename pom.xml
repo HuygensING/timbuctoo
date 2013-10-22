@@ -26,6 +26,7 @@
     <module>timbuctoo-war-config-test</module>
     <module>timbuctoo-war-config-prod</module>
     <module>timbuctoo-solr</module>
+    <module>timbuctoo-services</module>
   </modules>
 
   <prerequisites>

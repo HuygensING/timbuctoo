@@ -14,14 +14,22 @@
 
   <dependencies>
     <!-- ## Repository packages ## -->
+    <!-- Core project -->
     <dependency>
       <groupId>timbuctoo</groupId>
       <artifactId>timbuctoo-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- Search project -->
     <dependency>
       <groupId>timbuctoo</groupId>
       <artifactId>timbuctoo-search</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <!-- Services project -->
+    <dependency>
+      <groupId>timbuctoo</groupId>
+      <artifactId>timbuctoo-services</artifactId>
       <version>${project.version}</version>
     </dependency>
     <!-- ## End of repository packages ## -->

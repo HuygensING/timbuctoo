@@ -35,6 +35,7 @@ public class ActiveMQBroker implements Broker {
   private List<Consumer> consumers;
 
   @Inject
+  //TODO factor out the config.
   public ActiveMQBroker(Configuration config) {
     url = "vm://" + BROKER_NAME;
     LOG.info("Message broker URL: '{}'", url);

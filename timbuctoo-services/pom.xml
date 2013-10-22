@@ -1,0 +1,29 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>timbuctoo</groupId>
+    <artifactId>timbuctoo</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>timbuctoo-services</artifactId>
+  <name>Timbuctoo services</name>
+  
+  <dependencies>
+    <!-- ## Project dependencies ## -->
+    <!-- Core project -->
+    <dependency>
+      <groupId>timbuctoo</groupId>
+      <artifactId>timbuctoo-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <!-- ## End of project dependencies ## -->
+    <!-- ## Main dependencies ## -->
+    <!-- Apache ActiveMQ -->
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>activemq-all</artifactId>
+      <version>${activemq.version}</version>
+    </dependency>
+    <!-- ## End of main dependencies ## -->
+  </dependencies>
+</project>

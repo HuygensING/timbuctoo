@@ -30,6 +30,12 @@
       <artifactId>timbuctoo-search</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- Services project -->
+    <dependency>
+      <groupId>timbuctoo</groupId>
+      <artifactId>timbuctoo-services</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- ## End of repository packages ## -->
 
     <!-- ## Main libraries ## -->
