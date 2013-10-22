@@ -87,6 +87,7 @@ public class StorageManager {
       return storage.getItem(type, id);
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
+      LOG.error("exception", e);
       return null;
     }
   }

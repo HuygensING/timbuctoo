@@ -3,6 +3,8 @@ package nl.knaw.huygens.timbuctoo.rest.config;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
+import nl.knaw.huygens.persistence.PersistenceManager;
+import nl.knaw.huygens.persistence.PersistenceManagerFactory;
 import nl.knaw.huygens.security.AuthorizationHandler;
 import nl.knaw.huygens.security.SecurityContextCreator;
 import nl.knaw.huygens.security.apis.ApisAuthorizationHandler;
@@ -12,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.mail.MailSenderFactory;
 import nl.knaw.huygens.timbuctoo.messages.ActiveMQBroker;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
+import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 
 import com.google.inject.Provides;
@@ -42,5 +45,14 @@ public class RESTInjectionModule extends BasicInjectionModule {
   @Singleton
   MailSender provideMailSender() {
     return new MailSenderFactory(config.getBooleanSetting("mail.enabled"), config.getSetting("mail.host"), config.getSetting("mail.port"), config.getSetting("mail.from_address")).create();
+  }
+
+  @Provides
+  @Singleton
+  PersistenceWrapper providePersistenceManager() {
+    PersistenceManager persistenceManager = PersistenceManagerFactory.newPersistenceManager(config.getBooleanSetting("handle.enabled", true), config.getSetting("handle.cipher"),
+        config.getSetting("handle.naming_authority"), config.getSetting("handle.prefix"), config.pathInUserHome(config.getSetting("handle.private_key_file")));
+
+    return new PersistenceWrapper(config.getSetting("public_url"), persistenceManager);
   }
 }
