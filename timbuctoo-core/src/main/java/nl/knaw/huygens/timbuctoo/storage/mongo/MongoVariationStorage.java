@@ -62,6 +62,30 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     collection.ensureIndex(new BasicDBObject("^sourceId", 1).append("^targetId", 1));
   }
 
+  private ObjectMapper getMapper() {
+    return treeEncoderFactory.getObjectMapper();
+  }
+
+  private <T extends Entity> DBCollection getVariationCollection(Class<T> type) {
+    DBCollection col = collectionCache.get(type);
+    if (col == null) {
+      Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
+      col = db.getCollection(typeRegistry.getINameForType(baseType));
+      col.setDBDecoderFactory(treeDecoderFactory);
+      col.setDBEncoderFactory(treeEncoderFactory);
+      collectionCache.put(type, col);
+    }
+    return col;
+  }
+
+  private <T extends Entity> DBCollection getRawVersionCollection(Class<T> type) {
+    Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
+    DBCollection col = db.getCollection(MongoUtils.getVersioningCollectionName(baseType));
+    col.setDBDecoderFactory(treeDecoderFactory);
+    col.setDBEncoderFactory(treeEncoderFactory);
+    return col;
+  }
+
   @Override
   public <T extends Entity> T getItem(Class<T> type, String id) throws VariationException, IOException {
     DBCollection col = getVariationCollection(type);
@@ -78,18 +102,17 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws VariationException, IOException {
-    DBCollection col = getVariationCollection(type);
     DBObject query = new BasicDBObject("_id", id);
-    DBObject item = col.findOne(query);
+    DBObject item = getVariationCollection(type).findOne(query);
     return reducer.getAllForDBObject(item, type);
   }
 
   @Override
   public <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) throws IOException {
-    DBCollection col = getVariationCollection(type);
     DBObject query = new BasicDBObject("_id", id);
     addClassNotNull(type, query);
-    return reducer.reduceDBObject(col.findOne(query), type, variation);
+    DBObject item = getVariationCollection(type).findOne(query);
+    return reducer.reduceDBObject(item, type, variation);
   }
 
   @Override
@@ -103,42 +126,17 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   @Override
   public <T extends Entity> MongoChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
-    DBCollection col = getRawVersionCollection(type);
     DBObject query = new BasicDBObject("_id", id);
-
-    DBObject allRevisions = col.findOne(query);
-
+    DBObject allRevisions = getRawVersionCollection(type).findOne(query);
     return reducer.reduceMultipleRevisions(type, allRevisions);
   }
 
   @Override
   public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revisionId) throws IOException {
-    DBCollection col = getRawVersionCollection(type);
     DBObject query = new BasicDBObject("_id", id);
     query.put("versions.^rev", revisionId);
-    return reducer.reduceRevision(type, col.findOne(query));
-  }
-
-  protected <T extends Entity> DBCollection getVariationCollection(Class<T> type) {
-    DBCollection col;
-    if (!collectionCache.containsKey(type)) {
-      Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
-      col = db.getCollection(typeRegistry.getINameForType(baseType));
-      col.setDBDecoderFactory(treeDecoderFactory);
-      col.setDBEncoderFactory(treeEncoderFactory);
-      collectionCache.put(type, col);
-    } else {
-      col = collectionCache.get(type);
-    }
-    return col;
-  }
-
-  protected <T extends Entity> DBCollection getRawVersionCollection(Class<T> type) {
-    Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
-    DBCollection col = db.getCollection(MongoUtils.getVersioningCollectionName(baseType));
-    col.setDBDecoderFactory(treeDecoderFactory);
-    col.setDBEncoderFactory(treeEncoderFactory);
-    return col;
+    DBObject item = getRawVersionCollection(type).findOne(query);
+    return reducer.reduceRevision(type, item);
   }
 
   // -------------------------------------------------------------------
@@ -230,18 +228,14 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     col.update(new BasicDBObject("_id", id), new JacksonDBObject<JsonNode>(update, JsonNode.class));
   }
 
-  private ObjectMapper getMapper() {
-    return treeEncoderFactory.getObjectMapper();
-  }
-
   @Override
-  public int countRelations(Relation relation) {
+  public boolean relationExists(Relation relation) {
     DBCollection col = db.getCollection("relation");
     BasicDBObject query = new BasicDBObject();
     query.append("^typeId", relation.getTypeId());
     query.append("^sourceId", relation.getSourceId());
     query.append("^targetId", relation.getTargetId());
-    return (int) col.count(query);
+    return (col.count(query) != 0);
   }
 
   @Override
