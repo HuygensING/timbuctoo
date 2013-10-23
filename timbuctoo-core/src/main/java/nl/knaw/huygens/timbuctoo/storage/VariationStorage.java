@@ -28,6 +28,8 @@ public interface VariationStorage extends BasicStorage {
    */
   StorageIterator<Relation> getRelationsOf(Class<? extends DomainEntity> type, String id) throws IOException;
 
+  void addRelationsTo(Class<? extends DomainEntity> type, String id, DomainEntity entity);
+
   <T extends DomainEntity> void setPID(Class<T> type, String id, String pid);
 
   /**
