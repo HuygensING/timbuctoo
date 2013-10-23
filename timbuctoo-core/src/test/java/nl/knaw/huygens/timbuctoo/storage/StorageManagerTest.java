@@ -40,7 +40,7 @@ public class StorageManagerTest {
   public void SetUp() {
     storage = mock(VariationStorage.class);
     typeRegistry = mock(TypeRegistry.class);
-    instance = new StorageManager(storage, typeRegistry);
+    instance = new StorageManager(storage);
   }
 
   @Test

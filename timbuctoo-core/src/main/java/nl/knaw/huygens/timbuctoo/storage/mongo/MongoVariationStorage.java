@@ -8,7 +8,10 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.EntityRef;
+import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -23,6 +26,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
@@ -243,6 +247,55 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     DBObject query = DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id));
     DBCursor cursor = getVariationCollection(Relation.class).find(query);
     return new MongoDBVariationIterator<Relation>(cursor, reducer, Relation.class);
+  }
+
+  // We retrieve all relations involving the specified entity by its id.
+  // Next we need to filter the relations that are compatible with the entity type:
+  // a relation is only valid if the entity type we are handling is assignable
+  // to the type specified in the relation.
+  // For example, if a relation is specified for a DCARArchiver, it is visible when
+  // dealing with an en entity type DCARArchiver, but not for Archiver.
+  @Override
+  public void addRelationsTo(Class<? extends DomainEntity> type, String id, DomainEntity entity) {
+    Preconditions.checkNotNull(entity, "entity cannot be null");
+    StorageIterator<Relation> iterator = null;
+    try {
+      iterator = getRelationsOf(type, id); // db access
+      while (iterator.hasNext()) {
+        Relation relation = iterator.next(); // db access
+        RelationType relType = getRelationType(relation.getTypeRef().getId());
+        Preconditions.checkNotNull(relType, "Failed to retrieve relation type");
+        if (relation.hasSourceId(id)) {
+          Class<? extends Entity> cls = typeRegistry.getTypeForIName(relation.getSourceType());
+          if (cls != null && cls.isAssignableFrom(type)) {
+            Reference reference = relation.getTargetRef();
+            entity.addRelation(relType.getRegularName(), getEntityRef(reference)); // db access
+          }
+        } else if (relation.hasTargetId(id)) {
+          Class<? extends Entity> cls = typeRegistry.getTypeForIName(relation.getTargetType());
+          if (cls != null && cls.isAssignableFrom(type)) {
+            Reference reference = relation.getSourceRef();
+            entity.addRelation(relType.getInverseName(), getEntityRef(reference)); // db access
+          }
+        } else {
+          throw new IllegalStateException("Impossible");
+        }
+      }
+    } catch (IOException e) {
+      LOG.error("Error while handling {} {}", type.getName(), id);
+    } finally {
+      if (iterator != null) {
+        iterator.close();
+      }
+    }
+  }
+
+  private EntityRef getEntityRef(Reference reference) throws VariationException, IOException {
+    String iname = reference.getType();
+    String xname = typeRegistry.getXNameForIName(iname);
+    Class<? extends Entity> type = typeRegistry.getTypeForIName(iname);
+    Entity entity = getItem(type, reference.getId());
+    return new EntityRef(iname, xname, reference.getId(), entity.getDisplayName());
   }
 
   @Override
