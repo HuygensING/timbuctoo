@@ -22,8 +22,8 @@ import com.mongodb.DBObject;
 
 public class VariationInducer {
 
-  private ObjectMapper mapper;
-  private ObjectWriter writerWithView;
+  private final ObjectMapper mapper;
+  private final ObjectWriter writerWithView;
 
   public VariationInducer(Class<?> view) {
     mapper = new ObjectMapper();
@@ -34,16 +34,16 @@ public class VariationInducer {
     this(null);
   }
 
-  public <T extends Entity> JsonNode induce(T item, Class<T> cls) throws VariationException {
-    return induce(item, cls, (ObjectNode) null);
+  public <T extends Entity> JsonNode induce(T item, Class<T> type) throws VariationException {
+    return induce(item, type, (ObjectNode) null);
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Entity> JsonNode induce(T item, Class<T> cls, DBObject existingItem) throws VariationException {
+  public <T extends Entity> JsonNode induce(T item, Class<T> type, DBObject existingItem) throws VariationException {
     ObjectNode o;
     if (existingItem == null) {
-      List<Class<? extends Entity>> classIds = VariationUtils.getAllClasses(cls);
-      o = createNode(null, cls, classIds);
+      List<Class<? extends Entity>> classIds = VariationUtils.getAllClasses(type);
+      o = createNode(null, type, classIds);
     } else if (existingItem instanceof JacksonDBObject) {
       o = (ObjectNode) (((JacksonDBObject<JsonNode>) existingItem).getObject());
     } else if (existingItem instanceof DBJsonNode) {
@@ -51,10 +51,10 @@ public class VariationInducer {
     } else {
       throw new VariationException("Unknown type of DBObject!");
     }
-    return induce(item, cls, o);
+    return induce(item, type, o);
   }
 
-  private <T extends Entity> ObjectNode createNode(ObjectNode o, Class<T> cls, List<Class<? extends Entity>> allClasses) {
+  private <T extends Entity> ObjectNode createNode(ObjectNode o, Class<T> type, List<Class<? extends Entity>> allClasses) {
     if (o == null) {
       o = mapper.createObjectNode();
     }
@@ -67,13 +67,13 @@ public class VariationInducer {
     return o;
   }
 
-  public <T extends Entity> JsonNode induce(T item, Class<T> cls, ObjectNode existingItem) throws VariationException {
-    if (cls == null || item == null) {
+  public <T extends Entity> JsonNode induce(T item, Class<T> type, ObjectNode existingItem) throws VariationException {
+    if (type == null || item == null) {
       throw new IllegalArgumentException();
     }
-    String variationId = VariationUtils.getVariationName(cls);
-    List<Class<? extends Entity>> allClasses = VariationUtils.getAllClasses(cls);
-    existingItem = createNode(existingItem, cls, allClasses);
+    String variationId = VariationUtils.getVariationName(type);
+    List<Class<? extends Entity>> allClasses = VariationUtils.getAllClasses(type);
+    existingItem = createNode(existingItem, type, allClasses);
     int size = allClasses.size();
     int i = size;
     Map<String, Object> finishedKeys = Maps.newHashMap();
