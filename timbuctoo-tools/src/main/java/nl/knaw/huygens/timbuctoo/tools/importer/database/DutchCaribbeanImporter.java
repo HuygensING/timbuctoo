@@ -14,9 +14,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.atlg.XRelated;
@@ -28,7 +26,6 @@ import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
@@ -112,7 +109,6 @@ public class DutchCaribbeanImporter extends DefaultImporter {
 
   private final ObjectMapper objectMapper;
   private final RelationManager relationManager;
-  private final IndexManager indexManager;
   private final File inputDir;
 
   private final Map<String, Reference> keywordRefMap = Maps.newHashMap();
@@ -131,10 +127,9 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private Reference hasSiblingArchiver;
 
   public DutchCaribbeanImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager, String inputDirName) {
-    super(registry, storageManager, relationManager);
+    super(registry, storageManager, relationManager, indexManager);
     objectMapper = new ObjectMapper();
     this.relationManager = relationManager;
-    this.indexManager = indexManager;
     inputDir = new File(inputDirName);
     System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());
   }
@@ -214,21 +209,6 @@ public class DutchCaribbeanImporter extends DefaultImporter {
     indexEntities(DCARArchiver.class);
 
     displayErrorSummary();
-  }
-
-  private <T extends DomainEntity> void indexEntities(Class<T> type) throws IndexException {
-    StorageIterator<T> iterator = null;
-    try {
-      iterator = storageManager.getAll(type);
-      while (iterator.hasNext()) {
-        T entity = iterator.next();
-        indexManager.addDocument(type, entity.getId());
-      }
-    } finally {
-      if (iterator != null) {
-        iterator.close();
-      }
-    }
   }
 
   // --- relations -----------------------------------------------------
