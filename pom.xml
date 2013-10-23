@@ -146,8 +146,13 @@
       <artifactId>guice</artifactId>
       <version>${guice.version}</version>
     </dependency>
-    
+
     <!-- Logging -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>

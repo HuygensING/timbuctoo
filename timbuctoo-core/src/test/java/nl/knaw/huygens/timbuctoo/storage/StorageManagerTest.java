@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.jms.JMSException;
 import javax.persistence.PersistenceException;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -38,14 +37,14 @@ public class StorageManagerTest {
   private TypeRegistry typeRegistry;
 
   @Before
-  public void SetUp() throws JMSException {
+  public void SetUp() {
     storage = mock(VariationStorage.class);
     typeRegistry = mock(TypeRegistry.class);
     instance = new StorageManager(storage, typeRegistry);
   }
 
   @Test
-  public void testAddDocumentDomainDocument() throws IOException, JMSException {
+  public void testAddDocumentDomainDocument() throws IOException {
     String id = "TEST000123000123";
     GeneralTestDoc doc = new GeneralTestDoc(id);
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
@@ -57,7 +56,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testAddDocumentDomainDocumentInComplete() throws JMSException, IOException {
+  public void testAddDocumentDomainDocumentInComplete() throws IOException {
     String id = "TEST000123000123";
     GeneralTestDoc doc = new GeneralTestDoc(id);
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
@@ -69,7 +68,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testAddDocumentSystemDocument() throws IOException, PersistenceException, JMSException {
+  public void testAddDocumentSystemDocument() throws IOException, PersistenceException {
     TestSystemDocument doc = new TestSystemDocument();
     doc.setId("TEST000123000123");
 
@@ -91,8 +90,7 @@ public class StorageManagerTest {
     instance.addEntity(type, doc);
   }
 
-  protected <T extends Entity> void verifyAddDocument(Class<T> type, T doc, VerificationMode storageVerification, VerificationMode indexingVerification) throws IOException, PersistenceException,
-      JMSException {
+  protected <T extends Entity> void verifyAddDocument(Class<T> type, T doc, VerificationMode storageVerification, VerificationMode indexingVerification) throws IOException {
 
     verify(storage, storageVerification).addItem(type, doc);
   }
@@ -218,7 +216,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testModifyDocumentDomainDocumentModified() throws IOException, PersistenceException, JMSException {
+  public void testModifyDocumentDomainDocumentModified() throws IOException {
     TestConcreteDoc expectedDoc = new TestConcreteDoc();
     expectedDoc.name = "test";
     String id = "TCD0000000001";
@@ -231,7 +229,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testModifyDocumentSystemDocumentModified() throws IOException, PersistenceException, JMSException {
+  public void testModifyDocumentSystemDocumentModified() throws IOException {
     String id = "TSD0000000001";
     TestSystemDocument expectedDoc = new TestSystemDocument();
     expectedDoc.setId(id);
@@ -255,7 +253,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testModifyDocumentPersistentException() throws IOException, PersistenceException, JMSException {
+  public void testModifyDocumentPersistentException() throws IOException {
     TestConcreteDoc expectedDoc = new TestConcreteDoc();
     expectedDoc.name = "test";
     expectedDoc.setId("TCD0000000001");
@@ -266,14 +264,13 @@ public class StorageManagerTest {
     verifyModifyDocument(type, expectedDoc, times(1), times(1));
   }
 
-  protected <T extends Entity> void verifyModifyDocument(Class<T> type, T expectedDoc, VerificationMode storageVerification, VerificationMode indexVerification) throws IOException,
-      PersistenceException, JMSException {
+  protected <T extends Entity> void verifyModifyDocument(Class<T> type, T expectedDoc, VerificationMode storageVerification, VerificationMode indexVerification) throws IOException {
 
     verify(storage, storageVerification).updateItem(type, expectedDoc.getId(), expectedDoc);
   }
 
   @Test
-  public void testModifyDocumentWithoutPersisitingDomainDocument() throws IOException, PersistenceException, JMSException {
+  public void testModifyDocumentWithoutPersisitingDomainDocument() throws IOException {
     TestConcreteDoc expectedDoc = new TestConcreteDoc();
     expectedDoc.name = "test";
     String id = "TCD0000000001";
@@ -286,7 +283,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testRemoveDocumentDomainDocumentRemoved() throws IOException, JMSException {
+  public void testRemoveDocumentDomainDocumentRemoved() throws IOException {
     TestConcreteDoc inputDoc = new TestConcreteDoc();
     inputDoc.name = "test";
     String id = "TCD0000000001";
@@ -303,7 +300,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testRemoveDocumentSystemDocumentRemoved() throws IOException, JMSException {
+  public void testRemoveDocumentSystemDocumentRemoved() throws IOException {
     TestSystemDocument inputDoc = new TestSystemDocument();
     String id = "TCD0000000001";
     inputDoc.setId(id);
@@ -328,7 +325,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testRemovePermanently() throws JMSException, IOException {
+  public void testRemovePermanently() throws IOException {
     String id1 = "PER0000000001";
     String id2 = "PER0000000002";
     String id3 = "PER0000000005";
@@ -344,7 +341,7 @@ public class StorageManagerTest {
   }
 
   @Test(expected = IOException.class)
-  public void testRemovePermanentlyStorageDeleteException() throws JMSException, IOException {
+  public void testRemovePermanentlyStorageDeleteException() throws IOException {
     String id1 = "PER0000000001";
     String id2 = "PER0000000002";
     String id3 = "PER0000000005";
