@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.tools.importer.database;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.jms.JMSException;
 
@@ -13,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.EntityRef;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -141,6 +143,26 @@ public abstract class DefaultImporter extends ToolBase {
     String itype = typeRegistry.getINameForType(type);
     String xtype = typeRegistry.getXNameForType(type);
     return new EntityRef(itype, xtype, id, null);
+  }
+
+  /**
+   * Removes the non persisted entity's of {@code type} and it's relations from the storage and the index.
+   * Use with project specific entities. If you use generic entities all (including the entities of other projects) non persisted entities will be removed.
+   *  
+   * @param type the type to remove.
+   * @param storageManager
+   * @param indexManager
+   * @throws IOException
+   * @throws IndexException
+   */
+  protected void removeNonPersistedEntiesWithItsRelations(Class<? extends DomainEntity> type, StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
+    List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
+    storageManager.removeNonPersistent(type, ids);
+    indexManager.deleteDocuments(type, ids);
+    //Remove relations
+    List<String> relationIds = storageManager.getRelationIds(ids);
+    storageManager.removeNonPersistent(Relation.class, relationIds);
+    indexManager.deleteDocuments(Relation.class, ids);
   }
 
 }

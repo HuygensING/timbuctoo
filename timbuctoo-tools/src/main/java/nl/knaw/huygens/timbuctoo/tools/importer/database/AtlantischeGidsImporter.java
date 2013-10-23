@@ -111,21 +111,11 @@ public class AtlantischeGidsImporter extends DefaultImporter {
 
   protected void removeUnpersistentEntities(StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
     System.out.println("remove nonpersistent items.");
-    removeAllFromClass(ATLGArchive.class, storageManager, indexManager);
-    removeAllFromClass(ATLGArchiver.class, storageManager, indexManager);
-    removeAllFromClass(ATLGKeyword.class, storageManager, indexManager);
-    removeAllFromClass(ATLGLegislation.class, storageManager, indexManager);
-    removeAllFromClass(ATLGPerson.class, storageManager, indexManager);
-  }
-
-  private void removeAllFromClass(Class<? extends DomainEntity> type, StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
-    List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
-    storageManager.removeNonPersistent(type, ids);
-    indexManager.deleteDocuments(type, ids);
-    //Remove relations
-    List<String> relationIds = storageManager.getRelationIds(ids);
-    storageManager.removeNonPersistent(Relation.class, relationIds);
-    indexManager.deleteDocuments(Relation.class, ids);
+    removeNonPersistedEntiesWithItsRelations(ATLGArchive.class, storageManager, indexManager);
+    removeNonPersistedEntiesWithItsRelations(ATLGArchiver.class, storageManager, indexManager);
+    removeNonPersistedEntiesWithItsRelations(ATLGKeyword.class, storageManager, indexManager);
+    removeNonPersistedEntiesWithItsRelations(ATLGLegislation.class, storageManager, indexManager);
+    removeNonPersistedEntiesWithItsRelations(ATLGPerson.class, storageManager, indexManager);
   }
 
   // -------------------------------------------------------------------
