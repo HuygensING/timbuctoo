@@ -228,10 +228,6 @@ public class StorageManager {
     storage.setPID(type, id, pid);
   }
 
-  public <T extends Entity> void modifyEntityWithoutPersisting(Class<T> type, T doc) throws IOException {
-    storage.updateItem(type, doc.getId(), doc);
-  }
-
   public <T extends Entity> void modifyEntity(Class<T> type, T doc) throws IOException {
     storage.updateItem(type, doc.getId(), doc);
   }

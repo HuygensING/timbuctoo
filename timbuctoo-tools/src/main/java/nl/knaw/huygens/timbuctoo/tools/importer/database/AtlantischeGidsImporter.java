@@ -87,8 +87,6 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       indexManager = injector.getInstance(IndexManager.class);
       removeUnpersistentEntities(storageManager, indexManager);
 
-      indexManager.deleteAllDocuments();
-
       IndexService service = injector.getInstance(IndexService.class);
       Thread thread = new Thread(service);
       thread.start();
