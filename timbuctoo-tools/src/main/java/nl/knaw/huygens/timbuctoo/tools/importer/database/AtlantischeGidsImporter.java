@@ -238,6 +238,12 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     resolveArchiverRefs(archiverIds);
 
     displayErrorSummary();
+
+    indexEntities(ATLGArchive.class);
+    indexEntities(ATLGArchiver.class);
+    indexEntities(ATLGKeyword.class);
+    indexEntities(ATLGLegislation.class);
+    indexEntities(ATLGPerson.class);
   }
 
   // --- relations -----------------------------------------------------
