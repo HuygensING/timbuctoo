@@ -24,19 +24,15 @@ import com.mongodb.DBObject;
 
 public class VariationReducer {
 
+  private static final Logger LOG = LoggerFactory.getLogger(VariationReducer.class);
   private static final String VERSIONS_FIELD = "versions";
 
   private final TypeRegistry registry;
   private final ObjectMapper mapper;
-  private static final Logger LOG = LoggerFactory.getLogger(VariationReducer.class);
-
-  public VariationReducer(TypeRegistry registry, ObjectMapper mapper) {
-    this.registry = registry;
-    this.mapper = mapper;
-  }
 
   public VariationReducer(TypeRegistry registry) {
-    this(registry, new ObjectMapper());
+    this.registry = registry;
+    this.mapper = new ObjectMapper();
   }
 
   public <T extends Entity> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {
@@ -47,12 +43,9 @@ public class VariationReducer {
     ArrayNode versionsNode = (ArrayNode) tree.get(VERSIONS_FIELD);
     MongoChanges<T> changes = null;
 
-    T item = null;
     for (int i = 0; versionsNode.hasNonNull(i); i++) {
-      item = reduce(versionsNode.get(i), type);
-
+      T item = reduce(versionsNode.get(i), type);
       if (i == 0) {
-
         changes = new MongoChanges<T>(item.getId(), item);
       } else {
         changes.getRevisions().add(item);
@@ -163,10 +156,6 @@ public class VariationReducer {
 
   /**
    * Create the references to all the possible variations.
-   * @param typeStrings
-   * @param id
-   * @return
-   * @throws VariationException 
    */
   private List<Reference> getVariations(List<String> typeStrings, String id) throws VariationException {
     List<Reference> references = Lists.<Reference> newLinkedList();
