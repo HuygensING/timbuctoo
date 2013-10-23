@@ -98,7 +98,7 @@ public class IndexManager {
   }
 
   public <T extends Entity> void deleteDocuments(Class<T> type, List<String> ids) throws IndexException {
-    indexerForType(type).remove(ids);
+    indexerForType(registry.getBaseClass(type)).remove(ids);
   }
 
   public void deleteAllDocuments() throws IndexException {

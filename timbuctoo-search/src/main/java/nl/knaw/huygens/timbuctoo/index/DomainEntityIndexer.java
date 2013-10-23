@@ -116,7 +116,11 @@ class DomainEntityIndexer<T extends DomainEntity> implements EntityIndexer<T> {
   @Override
   public void remove(List<String> ids) throws IndexException {
     try {
-      solrServer.deleteById(core, ids);
+      for (String id : ids) {
+        solrServer.deleteById(core, id);
+      }
+
+      //solrServer.deleteById(core, ids);
     } catch (Exception e) {
       throw new IndexException(e);
     }
