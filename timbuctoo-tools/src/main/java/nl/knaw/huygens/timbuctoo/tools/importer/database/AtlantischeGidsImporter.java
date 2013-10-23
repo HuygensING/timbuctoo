@@ -227,7 +227,6 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     indexEntities(ATLGKeyword.class);
     indexEntities(ATLGLegislation.class);
     indexEntities(ATLGPerson.class);
-    indexEntities(Relation.class);
   }
 
   // --- relations -----------------------------------------------------
