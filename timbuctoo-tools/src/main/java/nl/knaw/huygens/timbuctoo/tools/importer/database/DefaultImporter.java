@@ -114,6 +114,7 @@ public abstract class DefaultImporter extends ToolBase {
   // --- indexing ------------------------------------------------------
 
   protected <T extends DomainEntity> void indexEntities(Class<T> type) throws IndexException {
+    System.out.println(".. " + type.getSimpleName());
     StorageIterator<T> iterator = null;
     try {
       iterator = storageManager.getAll(type);

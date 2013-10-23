@@ -197,15 +197,10 @@ public class DutchCaribbeanImporter extends DefaultImporter {
     System.out.println("------------------------");
     System.out.println();
 
-    System.out.println(".. Keywords");
     indexEntities(DCARKeyword.class);
-    System.out.println(".. Persons");
     indexEntities(DCARPerson.class);
-    System.out.println(".. Legislation");
     indexEntities(DCARLegislation.class);
-    System.out.println(".. Archives");
     indexEntities(DCARArchive.class);
-    System.out.println(".. Archivers");
     indexEntities(DCARArchiver.class);
 
     displayErrorSummary();
