@@ -13,13 +13,6 @@
 
   <dependencies>
     <!-- ## Main dependencies ## -->
-    <!-- Apache ActiveMQ -->
-    <dependency>
-      <groupId>org.apache.activemq</groupId>
-      <artifactId>activemq-all</artifactId>
-      <version>${activemq.version}</version>
-    </dependency>
-
     <!-- Apache collections utils -->
     <dependency>
       <groupId>commons-collections</groupId>
