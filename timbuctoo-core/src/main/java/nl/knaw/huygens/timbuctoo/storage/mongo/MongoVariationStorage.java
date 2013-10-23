@@ -108,7 +108,11 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws VariationException, IOException {
     DBObject query = new BasicDBObject("_id", id);
     DBObject item = getVariationCollection(type).findOne(query);
-    return reducer.getAllForDBObject(item, type);
+    List<T> variations = reducer.getAllForDBObject(item, type);
+    for (T variation : variations) {
+      addRelationsTo(variation.getClass(), id, variation);
+    }
+    return variations;
   }
 
   @Override
