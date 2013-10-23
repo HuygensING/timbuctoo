@@ -16,8 +16,6 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
-import nl.knaw.huygens.timbuctoo.index.IndexService;
-import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.model.Reference;
@@ -75,21 +73,12 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     Configuration config = new Configuration(configFileName);
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
-    Broker broker = null;
     StorageManager storageManager = null;
     IndexManager indexManager = null;
 
     try {
-      broker = injector.getInstance(Broker.class);
-      broker.start();
-
       storageManager = injector.getInstance(StorageManager.class);
       indexManager = injector.getInstance(IndexManager.class);
-      removeUnpersistentEntities(storageManager, indexManager);
-
-      IndexService service = injector.getInstance(IndexService.class);
-      Thread thread = new Thread(service);
-      thread.start();
 
       long start = System.currentTimeMillis();
 
@@ -97,13 +86,8 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       RelationManager relationManager = new RelationManager(registry, storageManager);
       new AtlantischeGidsImporter(registry, relationManager, storageManager, indexManager, importDirName).importAll();
 
-      // Signal we're done
-      sendEndOfDataMessage(broker);
-
       long time = (System.currentTimeMillis() - start) / 1000;
       System.out.printf("%n=== Used %d seconds%n%n", time);
-
-      waitForCompletion(thread, 5 * 60 * 1000);
 
       time = (System.currentTimeMillis() - start) / 1000;
       System.out.printf("%n=== Used %d seconds%n", time);
@@ -120,15 +104,12 @@ public class AtlantischeGidsImporter extends DefaultImporter {
       if (storageManager != null) {
         storageManager.close();
       }
-      if (broker != null) {
-        broker.close();
-      }
       // If the application is not explicitly closed a finalizer thread of Guice keeps running.
       System.exit(0);
     }
   }
 
-  protected static void removeUnpersistentEntities(StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
+  protected void removeUnpersistentEntities(StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
     System.out.println("remove nonpersistent items.");
     removeAllFromClass(ATLGArchive.class, storageManager, indexManager);
     removeAllFromClass(ATLGArchiver.class, storageManager, indexManager);
@@ -137,7 +118,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     removeAllFromClass(ATLGPerson.class, storageManager, indexManager);
   }
 
-  private static void removeAllFromClass(Class<? extends DomainEntity> type, StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
+  private void removeAllFromClass(Class<? extends DomainEntity> type, StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
     List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
     storageManager.removeNonPersistent(type, ids);
     indexManager.deleteDocuments(type, ids);
@@ -205,6 +186,8 @@ public class AtlantischeGidsImporter extends DefaultImporter {
   }
 
   public void importAll() throws Exception {
+    removeUnpersistentEntities(storageManager, indexManager);
+
     System.out.printf("%n.. Relation types%n");
     importRelationTypes();
     System.out.printf("Number of entries = 4%n");
@@ -244,6 +227,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     indexEntities(ATLGKeyword.class);
     indexEntities(ATLGLegislation.class);
     indexEntities(ATLGPerson.class);
+    indexEntities(Relation.class);
   }
 
   // --- relations -----------------------------------------------------
