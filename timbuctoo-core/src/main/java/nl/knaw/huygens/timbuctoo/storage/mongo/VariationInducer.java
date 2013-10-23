@@ -23,25 +23,15 @@ import com.mongodb.DBObject;
 public class VariationInducer {
 
   private ObjectMapper mapper;
-  private Class<?> view;
   private ObjectWriter writerWithView;
 
-  public VariationInducer() {
+  public VariationInducer(Class<?> view) {
     mapper = new ObjectMapper();
-    setView(null);
-    writerWithView = mapper.writerWithView(getView());
-  }
-
-  public VariationInducer(ObjectMapper mapper) {
-    this.mapper = mapper;
-    this.setView(null);
-    writerWithView = mapper.writerWithView(getView());
-  }
-
-  public VariationInducer(ObjectMapper mapper, Class<?> view) {
-    this.mapper = mapper;
-    this.setView(view);
     writerWithView = mapper.writerWithView(view);
+  }
+
+  public VariationInducer() {
+    this(null);
   }
 
   public <T extends Entity> JsonNode induce(T item, Class<T> cls) throws VariationException {
@@ -105,8 +95,7 @@ public class VariationInducer {
         String k = field.getKey();
         JsonNode fieldNode = field.getValue();
 
-        // Should not store bits we already stored in other parts of the
-        // hierarchy:
+        // Should not store bits we already stored in other parts of the hierarchy:
         if (finishedKeys.containsKey(k) && fieldNode.equals(finishedKeys.get(k))) {
           continue;
         }
@@ -130,8 +119,7 @@ public class VariationInducer {
           // ignore field.
         } else if (k.startsWith("^") || k.startsWith("_")) {
           // Either this is a new object and we need to add the property, or it
-          // is an existing one in which
-          // case we should check for an exact match:
+          // is an existing one in which case we should check for an exact match:
           if (!existingItem.has(k)) {
             existingItem.put(k, fieldNode);
           } else if (!fieldNode.equals(existingItem.get(k))) {
@@ -152,8 +140,7 @@ public class VariationInducer {
   }
 
   private void addOrMergeVariation(ObjectNode existingCommonTree, String key, String variationId, JsonNode variationValue) throws VariationException {
-    // Find the right property variation array, create it if it does not exist
-    // yet:
+    // Find the right property variation array, create it if it does not exist yet:
     if (!existingCommonTree.has(key)) {
       addVariation(existingCommonTree, key);
     }
@@ -266,22 +253,6 @@ public class VariationInducer {
       throw new IllegalArgumentException(e.getMessage(), e);
     }
     return result;
-  }
-
-  public Class<?> getView() {
-    return view;
-  }
-
-  public void setView(Class<?> view) {
-    this.view = view;
-  }
-
-  public ObjectMapper getMapper() {
-    return mapper;
-  }
-
-  public void setMapper(ObjectMapper mapper) {
-    this.mapper = mapper;
   }
 
 }
