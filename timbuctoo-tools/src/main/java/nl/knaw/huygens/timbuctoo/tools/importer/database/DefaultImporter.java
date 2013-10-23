@@ -5,12 +5,16 @@ import java.io.IOException;
 import javax.jms.JMSException;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.IndexException;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.ToolBase;
 
@@ -21,13 +25,15 @@ public abstract class DefaultImporter extends ToolBase {
 
   protected final TypeRegistry typeRegistry;
   protected final StorageManager storageManager;
+  protected final IndexManager indexManager;
 
   private String prevMessage;
   private int errors;
 
-  public DefaultImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager) {
+  public DefaultImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager) {
     this.typeRegistry = registry;
     this.storageManager = storageManager;
+    this.indexManager = indexManager;
     prevMessage = "";
     errors = 0;
     setup(relationManager);
@@ -101,6 +107,23 @@ public abstract class DefaultImporter extends ToolBase {
         System.out.println("... tired of waiting!");
         thread.interrupt();
         thread.join();
+      }
+    }
+  }
+
+  // --- indexing ------------------------------------------------------
+
+  protected <T extends DomainEntity> void indexEntities(Class<T> type) throws IndexException {
+    StorageIterator<T> iterator = null;
+    try {
+      iterator = storageManager.getAll(type);
+      while (iterator.hasNext()) {
+        T entity = iterator.next();
+        indexManager.addDocument(type, entity.getId());
+      }
+    } finally {
+      if (iterator != null) {
+        iterator.close();
       }
     }
   }

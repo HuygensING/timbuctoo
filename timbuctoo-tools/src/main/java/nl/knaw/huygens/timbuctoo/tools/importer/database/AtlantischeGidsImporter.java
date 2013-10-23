@@ -95,7 +95,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
 
       TypeRegistry registry = injector.getInstance(TypeRegistry.class);
       RelationManager relationManager = new RelationManager(registry, storageManager);
-      new AtlantischeGidsImporter(registry, relationManager, storageManager, importDirName).importAll();
+      new AtlantischeGidsImporter(registry, relationManager, storageManager, indexManager, importDirName).importAll();
 
       // Signal we're done
       sendEndOfDataMessage(broker);
@@ -167,8 +167,8 @@ public class AtlantischeGidsImporter extends DefaultImporter {
   private Reference hasPersonRef;
   private Reference hasPlaceRef;
 
-  public AtlantischeGidsImporter(TypeRegistry registry, RelationManager relationManager, StorageManager storageManager, String inputDirName) {
-    super(registry, storageManager, null);
+  public AtlantischeGidsImporter(TypeRegistry registry, RelationManager relationManager, StorageManager storageManager, IndexManager indexManager, String inputDirName) {
+    super(registry, storageManager, null, indexManager);
     objectMapper = new ObjectMapper();
     this.relationManager = relationManager;
     inputDir = new File(inputDirName);
