@@ -172,6 +172,11 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
+  public void addRelationsTo(Class<? extends DomainEntity> type, String id, DomainEntity entity) {
+    variationStorage.addRelationsTo(type, id, entity);
+  }
+
+  @Override
   public <T extends DomainEntity> void setPID(Class<T> cls, String id, String pid) {
     variationStorage.setPID(cls, id, pid);
   }

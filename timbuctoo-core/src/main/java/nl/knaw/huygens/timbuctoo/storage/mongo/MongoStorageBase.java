@@ -6,6 +6,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
 
@@ -96,6 +97,11 @@ public abstract class MongoStorageBase implements BasicStorage {
   public <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
     Query query = DBQuery.lessThan(dateField, dateValue);
     return getCollection(type).remove(query).getN();
+  }
+
+  // TODO decide whether this needs to be cacheable
+  protected RelationType getRelationType(String id) {
+    return getCollection(RelationType.class).findOneById(id);
   }
 
   // --- domain entities -----------------------------------------------
