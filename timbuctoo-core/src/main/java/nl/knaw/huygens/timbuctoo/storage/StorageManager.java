@@ -5,16 +5,13 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Archive;
 import nl.knaw.huygens.timbuctoo.model.Archiver;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.model.Keyword;
 import nl.knaw.huygens.timbuctoo.model.Legislation;
 import nl.knaw.huygens.timbuctoo.model.Person;
-import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
@@ -33,12 +30,10 @@ public class StorageManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(StorageManager.class);
 
-  private final TypeRegistry registry;
   private final VariationStorage storage;
 
   @Inject
-  public StorageManager(VariationStorage storage, TypeRegistry registry) {
-    this.registry = registry;
+  public StorageManager(VariationStorage storage) {
     this.storage = storage;
   }
 
@@ -95,58 +90,12 @@ public class StorageManager {
   public <T extends DomainEntity> T getEntityWithRelations(Class<T> type, String id) {
     try {
       T entity = storage.getItem(type, id);
-      addRelationTo(type, id, entity);
+      storage.addRelationsTo(type, id, entity);
       return entity;
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
       return null;
     }
-  }
-
-  // We retrieve all relations involving the specified entity by its id.
-  // Next we need to filter the relations that are compatible with the entity type:
-  // a relation is only valid if the entity type we are handling is assignable
-  // to the type specified in the relation.
-  // For example, if a relation is specified for a DCARArchiver, it is visible when
-  // dealing with an en entity type DCARArchiver, but not for Archiver.
-  public <T extends DomainEntity> void addRelationTo(Class<T> type, String id, T entity) {
-    StorageIterator<Relation> iterator = null;
-    try {
-      iterator = storage.getRelationsOf(type, id); // db access
-      while (iterator.hasNext()) {
-        Relation relation = iterator.next(); // db access
-        RelationType relType = getEntity(RelationType.class, relation.getTypeRef().getId()); // db access
-        if (relation.hasSourceId(id)) {
-          Class<? extends Entity> cls = registry.getTypeForIName(relation.getSourceType());
-          if (cls != null && cls.isAssignableFrom(type)) {
-            Reference reference = relation.getTargetRef();
-            entity.addRelation(relType.getRegularName(), getEntityRef(reference)); // db access
-          }
-        } else if (relation.hasTargetId(id)) {
-          Class<? extends Entity> cls = registry.getTypeForIName(relation.getTargetType());
-          if (cls != null && cls.isAssignableFrom(type)) {
-            Reference reference = relation.getSourceRef();
-            entity.addRelation(relType.getInverseName(), getEntityRef(reference)); // db access
-          }
-        } else {
-          throw new IllegalStateException("Impossible");
-        }
-      }
-    } catch (IOException e) {
-      LOG.error("Error while handling {} {}", type.getName(), id);
-    } finally {
-      if (iterator != null) {
-        iterator.close();
-      }
-    }
-  }
-
-  public EntityRef getEntityRef(Reference reference) {
-    String iname = reference.getType();
-    String xname = registry.getXNameForIName(iname);
-    Class<? extends Entity> type = registry.getTypeForIName(iname);
-    Entity entity = getEntity(type, reference.getId());
-    return new EntityRef(iname, xname, reference.getId(), entity.getDisplayName());
   }
 
   public <T extends SystemEntity> T findEntity(Class<T> type, String key, String value) {
