@@ -13,11 +13,11 @@ Project.configure do |project|
 
   # Build the project by invoking shell script "build_my_app.sh". Keep in mind that when the script is invoked, currentworking directory is
   # [cruise]/projects/your_project/work, so if you do not keep build_my_app.sh in version control, it should be '../build_my_app.sh' instead
-  project.build_command = 'ant war'
+  project.build_command = 'mvn clean package'
 
   # Ping Subversion for new revisions every 5 minutes (default: 30 seconds)
   project.scheduler.polling_interval = 5.minutes
 
-  project.source_control = SourceControl::Git.new(:repository=>'/data/git/timbuctoo.git')
+  project.source_control =  SourceControl::Git.new :repository => '/data/git/timbuctoo.git':branch => 'develop'
   project.do_clean_checkout :always
 end
