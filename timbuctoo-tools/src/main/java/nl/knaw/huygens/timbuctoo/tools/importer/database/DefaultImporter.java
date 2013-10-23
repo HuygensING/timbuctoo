@@ -76,7 +76,7 @@ public abstract class DefaultImporter extends ToolBase {
 
   protected <T extends Entity> T modEntity(Class<T> type, T entity) {
     try {
-      storageManager.modifyEntityWithoutPersisting(type, entity);
+      storageManager.modifyEntity(type, entity);
       return entity;
     } catch (IOException e) {
       handleError("Failed to modify %s; %s", entity.getDisplayName(), e.getMessage());

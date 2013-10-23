@@ -270,19 +270,6 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testModifyDocumentWithoutPersisitingDomainDocument() throws IOException {
-    TestConcreteDoc expectedDoc = new TestConcreteDoc();
-    expectedDoc.name = "test";
-    String id = "TCD0000000001";
-    expectedDoc.setId(id);
-
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
-    instance.modifyEntityWithoutPersisting(type, expectedDoc);
-    verifyModifyDocument(type, expectedDoc, times(1), times(1));
-  }
-
-  @Test
   public void testRemoveDocumentDomainDocumentRemoved() throws IOException {
     TestConcreteDoc inputDoc = new TestConcreteDoc();
     inputDoc.name = "test";
