@@ -203,16 +203,12 @@ public class VariationReducer {
   private List<String> getTypes(JsonNode node) {
     List<String> variations = Lists.newArrayList();
     Iterator<Map.Entry<String, JsonNode>> fieldIterator = node.fields();
-
-    Map.Entry<String, JsonNode> fieldEntry = null;
-
     while (fieldIterator.hasNext()) {
-      fieldEntry = fieldIterator.next();
+      Map.Entry<String, JsonNode> fieldEntry = fieldIterator.next();
       if (fieldEntry.getValue() instanceof ObjectNode) {
         variations.add(fieldEntry.getKey());
       }
     }
-
     return variations;
   }
 
