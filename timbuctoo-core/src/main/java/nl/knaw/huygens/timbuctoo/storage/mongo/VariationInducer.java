@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.mongodb.DBObject;
 
@@ -54,23 +55,23 @@ public class VariationInducer {
     return induce(item, type, o);
   }
 
-  private <T extends Entity> ObjectNode createNode(ObjectNode o, Class<T> type, List<Class<? extends Entity>> allClasses) {
-    if (o == null) {
-      o = mapper.createObjectNode();
+  private <T extends Entity> ObjectNode createNode(ObjectNode node, Class<T> type, List<Class<? extends Entity>> allClasses) {
+    if (node == null) {
+      node = mapper.createObjectNode();
     }
     for (Class<? extends Entity> someCls : allClasses) {
       String classId = VariationUtils.typeToVariationName(someCls);
-      if (!o.has(classId)) {
-        o.put(classId, mapper.createObjectNode());
+      if (!node.has(classId)) {
+        node.put(classId, mapper.createObjectNode());
       }
     }
-    return o;
+    return node;
   }
 
   public <T extends Entity> JsonNode induce(T item, Class<T> type, ObjectNode existingItem) throws VariationException {
-    if (type == null || item == null) {
-      throw new IllegalArgumentException();
-    }
+    Preconditions.checkArgument(item != null);
+    Preconditions.checkArgument(type != null);
+
     String variationId = VariationUtils.getVariationName(type);
     List<Class<? extends Entity>> allClasses = VariationUtils.getAllClasses(type);
     existingItem = createNode(existingItem, type, allClasses);
@@ -142,7 +143,7 @@ public class VariationInducer {
   private void addOrMergeVariation(ObjectNode existingCommonTree, String key, String variationId, JsonNode variationValue) throws VariationException {
     // Find the right property variation array, create it if it does not exist yet:
     if (!existingCommonTree.has(key)) {
-      addVariation(existingCommonTree, key);
+      existingCommonTree.put(key, mapper.createArrayNode());
     }
     ArrayNode existingValueAry = cautiousGetArray(existingCommonTree, key);
 
@@ -220,11 +221,6 @@ public class VariationInducer {
     existingValueAry.add(var);
   }
 
-  private void addVariation(ObjectNode existingCommonTree, String key) {
-    ArrayNode n = mapper.createArrayNode();
-    existingCommonTree.put(key, n);
-  }
-
   /**
    * This is a modified copy of the built-in "valueAsTree" method on
    * ObjectMapper. The modification includes being able to specify the view and
@@ -242,13 +238,13 @@ public class VariationInducer {
     if (val == null) {
       return null;
     }
-    TokenBuffer buf = new TokenBuffer(mapper);
+    TokenBuffer buffer = new TokenBuffer(mapper);
     JsonNode result;
     try {
-      writerWithView.withType(cls).writeValue(buf, val);
-      JsonParser jp = buf.asParser();
-      result = mapper.readTree(jp);
-      jp.close();
+      writerWithView.withType(cls).writeValue(buffer, val);
+      JsonParser parser = buffer.asParser();
+      result = mapper.readTree(parser);
+      parser.close();
     } catch (IOException e) { // should not occur, no real i/o...
       throw new IllegalArgumentException(e.getMessage(), e);
     }
