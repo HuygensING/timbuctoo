@@ -257,7 +257,8 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   // a relation is only valid if the entity type we are handling is assignable
   // to the type specified in the relation.
   // For example, if a relation is specified for a DCARArchiver, it is visible when
-  // dealing with an en entity type DCARArchiver, but not for Archiver.
+  // dealing with an entity type DCARArchiver, but not for Archiver.
+  //TODO add tests.
   @Override
   public void addRelationsTo(Class<? extends DomainEntity> type, String id, DomainEntity entity) {
     Preconditions.checkNotNull(entity, "entity cannot be null");

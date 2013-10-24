@@ -26,7 +26,6 @@ import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBGeneralTestDoc;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -228,10 +227,12 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  @Ignore
-  public void testGetAllVariations() throws IOException {
+  public void testGetAllVariationsWithoutRelations() throws IOException {
     DBObject value = createGeneralTestDocDBObject(DEFAULT_ID, "subType", "test");
     when(anyCollection.findOne(any(DBObject.class))).thenReturn(value);
+
+    DBCursor cursor = createCursorWithoutValues();
+    when(anyCollection.find(any(DBObject.class))).thenReturn(cursor);
 
     List<TestConcreteDoc> variations = storage.getAllVariations(TestConcreteDoc.class, DEFAULT_ID);
 

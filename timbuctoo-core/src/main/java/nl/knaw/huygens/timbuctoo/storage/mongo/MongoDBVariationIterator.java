@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -19,7 +20,7 @@ class MongoDBVariationIterator<T extends Entity> implements StorageIterator<T> {
   private boolean closed;
 
   public MongoDBVariationIterator(DBCursor delegate, VariationReducer reducer, Class<T> cls) {
-    this.delegate = delegate;
+    this.delegate = Preconditions.checkNotNull(delegate);
     this.reducer = reducer;
     this.cls = cls;
   }
