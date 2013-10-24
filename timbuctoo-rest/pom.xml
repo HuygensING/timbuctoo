@@ -42,7 +42,7 @@
     <dependency>
       <groupId>nl.knaw.huygens</groupId>
       <artifactId>huygens-persistence</artifactId>
-      <version>1.0.3</version>
+      <version>1.0.6</version>
     </dependency>
     <!-- Huygens security -->
     <dependency>
