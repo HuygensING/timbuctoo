@@ -50,16 +50,16 @@ public class IndexService implements Runnable {
           String id = action.getId();
 
           switch (actionType) {
-          case INDEX_ADD:
+          case ADD:
             manager.addDocument(type, id);
             break;
-          case INDEX_MOD:
+          case MOD:
             manager.updateDocument(type, id);
             break;
-          case INDEX_DEL:
+          case DEL:
             manager.deleteDocument(type, id);
             break;
-          case INDEX_END:
+          case END:
             break RUN_LOOP; //break the while loop
           }
         }

@@ -8,7 +8,7 @@ package nl.knaw.huygens.timbuctoo.messages;
  *
  */
 public enum ActionType {
-  INDEX_ADD("add"), INDEX_DEL("del"), INDEX_END("end"), INDEX_MOD("mod");
+  ADD("add"), DEL("del"), END("end"), MOD("mod");
 
   private String stringRepresentation;
 
