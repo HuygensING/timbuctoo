@@ -1,9 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -19,6 +17,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mongodb.DBObject;
 
@@ -134,12 +133,10 @@ public class VariationReducer {
         throw new VariationException("Non-object variation data; this should never happen.");
       }
     }
-    Iterator<Entry<String, JsonNode>> nodeFields = node.fields();
-    while (nodeFields.hasNext()) {
-      Entry<String, JsonNode> entry = nodeFields.next();
-      String key = entry.getKey();
+    for (Entry<String, JsonNode> field : ImmutableList.copyOf(node.fields())) {
+      String key = field.getKey();
       if (key.startsWith("^") || key.startsWith("_")) {
-        rv.put(key, entry.getValue());
+        rv.put(key, field.getValue());
       }
     }
     //The @JsonTypeInfo on entity expects the property @class everytime, the class is deserialized. 
@@ -202,31 +199,26 @@ public class VariationReducer {
 
   private List<String> getTypes(JsonNode node) {
     List<String> variations = Lists.newArrayList();
-    Iterator<Map.Entry<String, JsonNode>> fieldIterator = node.fields();
-    while (fieldIterator.hasNext()) {
-      Map.Entry<String, JsonNode> fieldEntry = fieldIterator.next();
-      if (fieldEntry.getValue() instanceof ObjectNode) {
-        variations.add(fieldEntry.getKey());
+    for (Entry<String, JsonNode> field : ImmutableList.copyOf(node.fields())) {
+      if (field.getValue() instanceof ObjectNode) {
+        variations.add(field.getKey());
       }
     }
     return variations;
   }
 
   private void processCommonData(final String variationName, JsonNode commonData, ObjectNode rv) throws VariationException {
-    Iterator<Entry<String, JsonNode>> fields = commonData.fields();
-    // Go through all common fields:
-    while (fields.hasNext()) {
-      Entry<String, JsonNode> f = fields.next();
-      String k = f.getKey();
-      JsonNode fV = f.getValue();
+    for (Entry<String, JsonNode> field : ImmutableList.copyOf(commonData.fields())) {
+      String key = field.getKey();
+      JsonNode value = field.getValue();
       // Loop through values:
-      if (fV.isArray()) {
-        ArrayNode ary = (ArrayNode) fV;
-        fetchAndAssignMatchingValue(variationName, rv, k, ary);
-      } else if (k.startsWith("!")) {
+      if (value.isArray()) {
+        ArrayNode ary = (ArrayNode) value;
+        fetchAndAssignMatchingValue(variationName, rv, key, ary);
+      } else if (key.startsWith("!")) {
         // Ignore properties starting with a "!"
       } else {
-        throw new VariationException("Unknown variation value for key: \"" + k + "\"");
+        throw new VariationException("Unknown variation value for key: \"" + key + "\"");
       }
     }
   }
@@ -288,16 +280,14 @@ public class VariationReducer {
    * Example3:  if cls is ProjectAScientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
    */
   public <T extends Entity> List<T> getAllForDBObject(DBObject item, Class<T> cls) throws IOException {
-    JsonNode jsonNode = convertToTree(item);
-    Iterator<String> fieldNames = jsonNode.fieldNames();
+    JsonNode node = convertToTree(item);
     List<T> rv = Lists.newArrayList();
-    while (fieldNames.hasNext()) {
-      String name = fieldNames.next();
+    for (String name : ImmutableList.copyOf(node.fieldNames())) {
       if (!name.startsWith("^") && !name.startsWith("_")) {
-        JsonNode subNode = jsonNode.get(name);
+        JsonNode subNode = node.get(name);
         if (subNode != null && subNode.isObject()) {
           Class<? extends T> indicatedClass = VariationUtils.variationNameToType(registry, name);
-          rv.add(reduce(jsonNode, indicatedClass));
+          rv.add(reduce(node, indicatedClass));
         }
       }
     }
