@@ -29,7 +29,6 @@ import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.rest.providers.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.rest.providers.model.TestConcreteDoc;
 
@@ -108,7 +107,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     doc.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
-    setUpPersistenceWrapper();
     setUpBroker();
 
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
@@ -295,7 +293,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
     when(getStorageManager().addEntity(TestConcreteDoc.class, doc)).thenReturn(DEFAULT_ID);
 
-    setUpPersistenceWrapper();
     setUpBroker();
 
     ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
@@ -383,7 +380,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     doc.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
     when(getStorageManager().getEntity(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(doc);
 
-    setUpPersistenceWrapper();
     setUpBroker();
 
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
@@ -607,15 +603,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("testconcretedocs").path("TEST000000000002").path(variation).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-  }
-
-  protected void setUpPersistenceWrapper() throws PersistenceException {
-    PersistenceWrapper persistenceWrapper = getPersistenceWrapper();
-    when(persistenceWrapper.persistObject(anyString(), anyString())).thenReturn(DEFAULT_PID);
-  }
-
-  protected PersistenceWrapper getPersistenceWrapper() {
-    return injector.getInstance(PersistenceWrapper.class);
   }
 
   protected void setUpBroker() throws JMSException {
