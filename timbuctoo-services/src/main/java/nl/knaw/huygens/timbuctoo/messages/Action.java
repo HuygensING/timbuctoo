@@ -1,15 +1,17 @@
 package nl.knaw.huygens.timbuctoo.messages;
 
+import nl.knaw.huygens.timbuctoo.model.Entity;
+
 public class Action {
 
-  private ActionType actionType;
-  private String id;
-  private String typeString;
+  private final ActionType actionType;
+  private final String id;
+  private final Class<? extends Entity> type;
 
-  public Action(ActionType actionType, String typeString, String id) {
+  public Action(ActionType actionType, Class<? extends Entity> type, String id) {
     this.actionType = actionType;
     this.id = id;
-    this.typeString = typeString;
+    this.type = type;
   }
 
   public ActionType getActionType() {
@@ -20,13 +22,13 @@ public class Action {
     return id;
   }
 
-  public String getTypeString() {
-    return typeString;
+  public Class<? extends Entity> getType() {
+    return type;
   }
 
   @Override
   public String toString() {
-    return "actionType: " + actionType + "\ntypeString: " + typeString + "\nid: " + id;
+    return "actionType: " + actionType + "\ntypeString: " + type + "\nid: " + id;
   }
 
 }

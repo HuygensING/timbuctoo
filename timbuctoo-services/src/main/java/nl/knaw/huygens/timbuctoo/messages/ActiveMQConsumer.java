@@ -8,6 +8,9 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,12 +19,14 @@ public class ActiveMQConsumer implements Consumer {
   private static final Logger LOG = LoggerFactory.getLogger(ActiveMQConsumer.class);
 
   private final String name;
+  private final TypeRegistry typeRegistry;
   private Connection connection;
   private Session session;
   private MessageConsumer consumer;
 
-  public ActiveMQConsumer(ConnectionFactory factory, String queue, String name) throws JMSException {
+  public ActiveMQConsumer(ConnectionFactory factory, String queue, String name, TypeRegistry typeRegistry) throws JMSException {
     this.name = name;
+    this.typeRegistry = typeRegistry;
     LOG.info("Creating '{}'", name);
     connection = factory.createConnection();
     connection.start();
@@ -41,9 +46,11 @@ public class ActiveMQConsumer implements Consumer {
     String action = message.getStringProperty(Broker.PROP_ACTION);
     ActionType actionType = ActionType.getFromString(action);
     String typeString = message.getStringProperty(Broker.PROP_DOC_TYPE);
+    Class<? extends Entity> type = typeRegistry.getTypeForIName(typeString);
+    
     String id = message.getStringProperty(Broker.PROP_DOC_ID);
 
-    return new Action(actionType, typeString, id);
+    return new Action(actionType, type, id);
   }
 
   @Override
