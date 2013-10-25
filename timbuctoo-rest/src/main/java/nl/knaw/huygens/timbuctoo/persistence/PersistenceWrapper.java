@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 
 public class PersistenceWrapper {
@@ -20,6 +21,7 @@ public class PersistenceWrapper {
   public PersistenceWrapper(String baseUrl, PersistenceManager persistenceManager, TypeRegistry typeRegistry) {
     this.baseUrl = CharMatcher.is('/').trimTrailingFrom(baseUrl);
     this.manager = persistenceManager;
+    Preconditions.checkNotNull(this.manager);
     this.typeRegistry = typeRegistry;
   }
 
