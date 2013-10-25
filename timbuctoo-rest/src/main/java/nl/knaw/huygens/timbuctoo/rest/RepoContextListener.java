@@ -1,11 +1,15 @@
 package nl.knaw.huygens.timbuctoo.rest;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import javax.jms.JMSException;
 import javax.servlet.ServletContextEvent;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.index.IndexService;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
+import nl.knaw.huygens.timbuctoo.persistence.PersistenceService;
 import nl.knaw.huygens.timbuctoo.rest.config.RESTInjectionModule;
 import nl.knaw.huygens.timbuctoo.rest.config.ServletInjectionModule;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -34,8 +38,10 @@ public class RepoContextListener extends GuiceServletContextListener {
   private Configuration config;
   private Injector injector;
   private Broker broker;
-  private IndexService service;
+  private IndexService indexService;
   private Thread indexServiceThread;
+  private PersistenceService persistenceService;
+  private ExecutorService persistenceThreadExecutor;
   private RepoScheduler scheduler;
 
   @Override
@@ -69,9 +75,13 @@ public class RepoContextListener extends GuiceServletContextListener {
       throw new RuntimeException(e);
     }
 
-    service = injector.getInstance(IndexService.class);
-    indexServiceThread = new Thread(service);
+    indexService = injector.getInstance(IndexService.class);
+    indexServiceThread = new Thread(indexService);
     indexServiceThread.start();
+
+    persistenceService = injector.getInstance(PersistenceService.class);
+    persistenceThreadExecutor = Executors.newSingleThreadExecutor();
+    persistenceThreadExecutor.execute(persistenceService);
   }
 
   private long getMillis(String key, String defaultValue) {
@@ -90,7 +100,7 @@ public class RepoContextListener extends GuiceServletContextListener {
       scheduler = null;
     }
     if (indexServiceThread != null) {
-      service.stop();
+      indexService.stop();
       IndexService.waitForCompletion(indexServiceThread, 1 * 1000);
       indexServiceThread = null;
     }
@@ -101,6 +111,15 @@ public class RepoContextListener extends GuiceServletContextListener {
       }
       injector = null;
     }
+
+    if (persistenceThreadExecutor != null) {
+      persistenceThreadExecutor.shutdown();
+    }
+
+    if (persistenceService != null) {
+      persistenceService.stop();
+    }
+
     if (broker != null) {
       broker.close();
       broker = null;

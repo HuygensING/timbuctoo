@@ -14,7 +14,6 @@ import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.mail.MailSenderFactory;
 import nl.knaw.huygens.timbuctoo.messages.ActiveMQBroker;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
-import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 
 import com.google.inject.Provides;
@@ -49,10 +48,9 @@ public class RESTInjectionModule extends BasicInjectionModule {
 
   @Provides
   @Singleton
-  PersistenceWrapper providePersistenceManager() {
+  PersistenceManager providePersistenceManager() {
     PersistenceManager persistenceManager = PersistenceManagerFactory.newPersistenceManager(config.getBooleanSetting("handle.enabled", true), config.getSetting("handle.cipher"),
         config.getSetting("handle.naming_authority"), config.getSetting("handle.prefix"), config.pathInUserHome(config.getSetting("handle.private_key_file")));
-
-    return new PersistenceWrapper(config.getSetting("public_url"), persistenceManager);
+    return persistenceManager;
   }
 }
