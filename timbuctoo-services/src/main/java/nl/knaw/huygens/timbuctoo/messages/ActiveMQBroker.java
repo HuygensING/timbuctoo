@@ -5,6 +5,7 @@ import java.util.List;
 import javax.jms.JMSException;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
@@ -28,6 +29,7 @@ public class ActiveMQBroker implements Broker {
   private static final Logger LOG = LoggerFactory.getLogger(ActiveMQBroker.class);
 
   private final String url;
+  private final TypeRegistry typeRegistry;
 
   private BrokerService brokerService;
 
@@ -36,10 +38,11 @@ public class ActiveMQBroker implements Broker {
 
   @Inject
   //TODO factor out the config.
-  public ActiveMQBroker(Configuration config) {
+  public ActiveMQBroker(Configuration config, TypeRegistry typeRegistry) {
     url = "vm://" + BROKER_NAME;
     LOG.info("Message broker URL: '{}'", url);
     createBrokerService(config);
+    this.typeRegistry = typeRegistry;
 
     producers = Lists.newLinkedList();
     consumers = Lists.newLinkedList();
@@ -48,7 +51,7 @@ public class ActiveMQBroker implements Broker {
   @Override
   public Producer newProducer(String queue, String name) throws JMSException {
     ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(url);
-    Producer producer = new ActiveMQProducer(factory, queue, name);
+    Producer producer = new ActiveMQProducer(factory, queue, name, typeRegistry);
     producers.add(producer);
     return producer;
   }
@@ -56,7 +59,7 @@ public class ActiveMQBroker implements Broker {
   @Override
   public Consumer newConsumer(String queue, String name) throws JMSException {
     ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(url);
-    Consumer consumer = new ActiveMQConsumer(factory, queue, name);
+    Consumer consumer = new ActiveMQConsumer(factory, queue, name, typeRegistry);
     consumers.add(consumer);
     return consumer;
   }

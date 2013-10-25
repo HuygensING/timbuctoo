@@ -6,6 +6,7 @@ public interface Broker {
 
   public static final String BROKER_NAME = "repo-broker";
   public static final String INDEX_QUEUE = "index";
+  public static final String PERSIST_QUEUE = "persist";
   // Message headers
   public static final String PROP_ACTION = "action";
   public static final String PROP_DOC_TYPE = "type";
