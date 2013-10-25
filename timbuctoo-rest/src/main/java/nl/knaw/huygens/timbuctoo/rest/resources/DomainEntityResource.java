@@ -22,7 +22,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
@@ -30,7 +29,6 @@ import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
@@ -57,15 +55,15 @@ public class DomainEntityResource {
 
   private final TypeRegistry typeRegistry;
   private final StorageManager storageManager;
-  private final PersistenceWrapper persistenceWrapper;
-  private final Producer producer;
+  private final Producer indexProducer;
+  private final Producer persistenceProducer;
 
   @Inject
-  public DomainEntityResource(TypeRegistry registry, StorageManager storageManager, PersistenceWrapper persistenceWrapper, Broker broker) {
+  public DomainEntityResource(TypeRegistry registry, StorageManager storageManager, Broker broker) {
     this.typeRegistry = registry;
     this.storageManager = storageManager;
-    this.persistenceWrapper = persistenceWrapper;
-    this.producer = this.createProducer(broker);
+    this.indexProducer = this.createProducer(broker, Broker.INDEX_QUEUE, "DomainEntityResourceIndex");
+    this.persistenceProducer = this.createProducer(broker, Broker.PERSIST_QUEUE, "DomainEntityResourcePersist");
   }
 
   // --- API -----------------------------------------------------------
@@ -102,29 +100,31 @@ public class DomainEntityResource {
     String internalName = typeRegistry.getINameForType(type);
     persistObject(type, id, internalName);
 
-    sendIndexMessage(ActionType.INDEX_ADD, id, internalName);
+    sendIndexMessage(ActionType.ADD, id, type);
 
     String baseUri = CharMatcher.is('/').trimTrailingFrom(uriInfo.getBaseUri().toString());
     String location = Joiner.on('/').join(baseUri, Paths.DOMAIN_PREFIX, entityName, id);
     return Response.status(Status.CREATED).header("Location", location).build();
   }
 
-  protected void sendIndexMessage(ActionType action, String id, String internalName) {
+  protected void sendIndexMessage(ActionType action, String id, Class<? extends DomainEntity> type) {
     try {
-      producer.send(action, internalName, id);
+      indexProducer.send(action, type, id);
     } catch (JMSException e) {
       // Cannot use the error method with the var-arg, because ActiveMQ is forcing it's own slf4j-dependency.
-      LOG.error("Error while sending message {} - {} - {}\n{}", new Object[] { action, internalName, id, e.getMessage() });
+      LOG.error("Error while sending index message {} - {} - {}. \n{}", new Object[] { action, type, id, e.getMessage() });
       LOG.debug("Exception", e);
     }
   }
 
   protected void persistObject(Class<? extends DomainEntity> type, String id, String internalTypeName) {
+    ActionType action = ActionType.ADD;
     try {
-      String pid = persistenceWrapper.persistObject(internalTypeName, id);
-      storageManager.setPID(type, id, pid);
-    } catch (PersistenceException e) {
-      LOG.error(String.format("Persisting of Object with id %s went wrong.", id), e);
+      persistenceProducer.send(action, type, id);
+    } catch (JMSException e) {
+      // Cannot use the error method with the var-arg, because ActiveMQ is forcing it's own slf4j-dependency.
+      LOG.error("Error while sending persistence message {} - {} - {}. \n{}", new Object[] { action, type, id, e.getMessage() });
+      LOG.debug("Exception", e);
     }
   }
 
@@ -166,7 +166,7 @@ public class DomainEntityResource {
 
     String internalName = typeRegistry.getINameForType(type);
     persistObject(type, id, internalName);
-    sendIndexMessage(ActionType.INDEX_MOD, id, internalName);
+    sendIndexMessage(ActionType.MOD, id, type);
 
   }
 
@@ -186,7 +186,7 @@ public class DomainEntityResource {
 
     String internalName = typeRegistry.getINameForType(type);
     persistObject(type, id, internalName);
-    sendIndexMessage(ActionType.INDEX_DEL, id, internalName);
+    sendIndexMessage(ActionType.DEL, id, type);
 
     return Response.status(Status.NO_CONTENT).build();
   }
@@ -233,9 +233,9 @@ public class DomainEntityResource {
     }
   }
 
-  private Producer createProducer(Broker broker) {
+  private Producer createProducer(Broker broker, String queue, String name) {
     try {
-      return broker.newProducer(Broker.INDEX_QUEUE, "DomainEntityResource");
+      return broker.newProducer(queue, name);
     } catch (JMSException e) {
       LOG.error("Error during creation of producer for queue {} with name {}", Broker.INDEX_QUEUE, "DomainEntityResource");
       LOG.debug("The following exception was thrown.", e);

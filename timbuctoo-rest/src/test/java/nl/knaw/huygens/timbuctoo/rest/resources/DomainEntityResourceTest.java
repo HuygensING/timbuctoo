@@ -28,23 +28,26 @@ import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.rest.providers.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.rest.providers.model.TestConcreteDoc;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Matchers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.inject.Key;
+import com.google.inject.name.Names;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 
 public class DomainEntityResourceTest extends WebServiceTestSetup {
 
-  private static final String DEFAULT_TYPE = "testconcretedoc";
+  private static final String PERSISTENCE_PRODUCER = "persistenceProducer";
+  private static final String INDEX_PRODUCER = "indexProducer";
+  private static final Class<? extends Entity> DEFAULT_TYPE = TestConcreteDoc.class;
   private static final String DEFAULT_PID = "c14a5e7d-4728-4f52-af98-480ff7fef08e";
   private static final String DEFAULT_ID = "TEST000000000001";
   private static final String USER_ROLE = "USER";
@@ -112,9 +115,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
 
-    verify(getPersistenceWrapper(), times(1)).persistObject(DEFAULT_TYPE, DEFAULT_ID);
-    verify(getStorageManager(), times(1)).setPID(TestConcreteDoc.class, DEFAULT_ID, DEFAULT_PID);
-    verify(getProducer(), times(1)).send(ActionType.INDEX_MOD, DEFAULT_TYPE, DEFAULT_ID);
+    verify(getProducer(PERSISTENCE_PRODUCER), times(1)).send(ActionType.ADD, DEFAULT_TYPE, DEFAULT_ID);
+    verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.MOD, DEFAULT_TYPE, DEFAULT_ID);
   }
 
   @Test
@@ -131,12 +133,10 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
-  @Ignore
   @Test
   @SuppressWarnings("unchecked")
   public void testPutDocInvalidDocument() throws IOException, PersistenceException, JMSException {
@@ -198,9 +198,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -215,23 +214,13 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     doThrow(IOException.class).when(getStorageManager()).modifyEntity(Matchers.<Class<TestConcreteDoc>> any(), any(TestConcreteDoc.class));
 
-    //    doAnswer(new Answer<Object>() {
-    //
-    //      @Override
-    //      public Object answer(InvocationOnMock invocation) throws IOException {
-    //        // only if the document version does not exist an IOException is thrown.
-    //        throw new IOException();
-    //      }
-    //    }).when(getStorageManager()).modifyEntity(any(Class.class), any(TestConcreteDoc.class));
-
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
     ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -245,9 +234,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("unknown").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -260,9 +249,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("otherdocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -276,9 +265,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("otherdocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -290,9 +279,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("otherdocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -312,32 +301,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
     assertNotNull(response.getHeaders().getFirst("Location"));
-    verify(getPersistenceWrapper(), times(1)).persistObject(DEFAULT_TYPE, DEFAULT_ID);
-    verify(getStorageManager(), times(1)).setPID(TestConcreteDoc.class, DEFAULT_ID, DEFAULT_PID);
-    verify(getProducer(), times(1)).send(ActionType.INDEX_ADD, DEFAULT_TYPE, DEFAULT_ID);
-  }
-
-  @SuppressWarnings("unchecked")
-  @Test
-  public void testPostPersistenceException() throws IOException, PersistenceException, JMSException {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
-
-    TestConcreteDoc doc = new TestConcreteDoc();
-    doc.name = "test";
-
-    when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
-    when(getStorageManager().addEntity(TestConcreteDoc.class, doc)).thenReturn(DEFAULT_ID);
-    doThrow(PersistenceException.class).when(getPersistenceWrapper()).persistObject(anyString(), anyString());
-
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
-
-    ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
-    assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
-    assertNotNull(response.getHeaders().getFirst("Location"));
-    verify(getPersistenceWrapper(), times(1)).persistObject(DEFAULT_TYPE, DEFAULT_ID);
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), times(1)).send(ActionType.INDEX_ADD, DEFAULT_TYPE, DEFAULT_ID);
+    verify(getProducer(PERSISTENCE_PRODUCER), times(1)).send(ActionType.ADD, DEFAULT_TYPE, DEFAULT_ID);
+    verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.ADD, DEFAULT_TYPE, DEFAULT_ID);
   }
 
   @Test
@@ -352,9 +317,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("unknown").path("all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -371,9 +336,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -390,9 +355,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("otherdocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -405,9 +370,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("otherdocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -424,9 +389,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), times(1)).persistObject(DEFAULT_TYPE, DEFAULT_ID);
-    verify(getStorageManager(), times(1)).setPID(TestConcreteDoc.class, DEFAULT_ID, DEFAULT_PID);
-    verify(getProducer(), times(1)).send(ActionType.INDEX_DEL, DEFAULT_TYPE, DEFAULT_ID);
+    verify(getProducer(PERSISTENCE_PRODUCER), times(1)).send(ActionType.ADD, DEFAULT_TYPE, DEFAULT_ID);
+    verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.DEL, DEFAULT_TYPE, DEFAULT_ID);
   }
 
   @Test
@@ -442,9 +406,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -459,9 +423,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -477,9 +441,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -490,9 +454,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   // Security tests
@@ -530,9 +494,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
 
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -549,9 +513,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
 
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -569,9 +533,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, inputDoc);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
 
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -589,9 +553,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
 
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -603,9 +567,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
@@ -618,9 +582,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
-    verify(getPersistenceWrapper(), never()).persistObject(anyString(), anyString());
-    verify(getStorageManager(), never()).setPID(Matchers.<Class<? extends DomainEntity>> any(), anyString(), anyString());
-    verify(getProducer(), never()).send(any(ActionType.class), anyString(), anyString());
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+
+    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   // Variation tests
@@ -656,11 +620,11 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   protected void setUpBroker() throws JMSException {
     Broker broker = injector.getInstance(Broker.class);
-    when(broker.newProducer(Broker.INDEX_QUEUE, "DomainEntityResource")).thenReturn(getProducer());
+    when(broker.newProducer(Broker.INDEX_QUEUE, "DomainEntityResourceIndex")).thenReturn(getProducer(INDEX_PRODUCER));
+    when(broker.newProducer(Broker.PERSIST_QUEUE, "DomainEntityResourcePersist")).thenReturn(getProducer(PERSISTENCE_PRODUCER));
   }
 
-  protected Producer getProducer() {
-    return injector.getInstance(Producer.class);
+  protected Producer getProducer(String name) {
+    return injector.getInstance(Key.get(Producer.class, Names.named(name)));
   }
-
 }

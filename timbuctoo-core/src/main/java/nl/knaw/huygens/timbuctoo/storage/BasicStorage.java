@@ -61,4 +61,6 @@ public interface BasicStorage {
    */
   <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue);
 
+  <T extends Entity> void setPID(Class<T> type, String id, String pid);
+
 }

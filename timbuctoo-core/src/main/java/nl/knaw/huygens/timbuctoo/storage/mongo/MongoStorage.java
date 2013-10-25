@@ -136,4 +136,11 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
     getCollection(type).findAndModify(DBQuery.is("_id", id), update);
   }
 
+  @Override
+  public <T extends Entity> void setPID(Class<T> type, String id, String pid) {
+    BasicDBObject query = new BasicDBObject("_id", id);
+    BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
+    getCollection(type).update(query, update);
+  }
+
 }

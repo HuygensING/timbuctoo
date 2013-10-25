@@ -96,7 +96,7 @@ public abstract class DefaultImporter extends ToolBase {
 
   public static void sendEndOfDataMessage(Broker broker) throws JMSException {
     Producer producer = broker.newProducer(Broker.INDEX_QUEUE, "ImporterProducer");
-    producer.send(ActionType.INDEX_END, "", "");
+    producer.send(ActionType.END, null, "");
     producer.close();
   }
 
