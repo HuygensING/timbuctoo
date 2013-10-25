@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.persistence;
 
 import javax.jms.JMSException;
 
+import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.ConsumerService;
@@ -28,16 +29,21 @@ public class PersistenceService extends ConsumerService implements Runnable {
 
   @Override
   protected void executeAction(Action action) {
-    switch (action.getActionType()) {
-    case ADD:
-      Class<? extends Entity> type = action.getType();
-      String pid = null;
-      //String pid = persistenceWrapper.persistObject(, action.getId());
-      storageManager.setPID(type, action.getId(), pid);
-      break;
+    try {
+      switch (action.getActionType()) {
 
-    default:
-      break;
+      case ADD:
+        Class<? extends Entity> type = action.getType();
+        String pid = persistenceWrapper.persistObject(type, action.getId());
+        storageManager.setPID(type, action.getId(), pid);
+        break;
+
+      default:
+        break;
+      }
+    } catch (PersistenceException ex) {
+      LOG.error("Persisting {} with id {} went wrong", action.getType(), action.getId());
+      LOG.error("exception", ex);
     }
 
   }
