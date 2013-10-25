@@ -88,14 +88,16 @@ public class StorageManager {
   }
 
   public <T extends DomainEntity> T getEntityWithRelations(Class<T> type, String id) {
+    T entity = null;
     try {
-      T entity = storage.getItem(type, id);
-      storage.addRelationsTo(type, id, entity);
-      return entity;
+      entity = storage.getItem(type, id);
+      if (entity != null) {
+        storage.addRelationsTo(type, id, entity);
+      }
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
-      return null;
     }
+    return entity;
   }
 
   public <T extends SystemEntity> T findEntity(Class<T> type, String key, String value) {
