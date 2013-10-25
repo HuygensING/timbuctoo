@@ -12,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.index.LocalSolrServer;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
-import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -44,7 +43,6 @@ class ResourceTestModule extends JerseyServletModule {
   private LocalSolrServer localSolrServer;
   private SecurityContextCreator securityContextCreator;
   private AuthorizationHandler authorizationHandler;
-  private PersistenceWrapper persistenceWrapper;
   private Broker broker;
   private Producer indexProducer;
   private Producer persistenceProducer;
@@ -59,7 +57,6 @@ class ResourceTestModule extends JerseyServletModule {
     localSolrServer = mock(LocalSolrServer.class);
     securityContextCreator = new UserSecurityContextCreator(storageManager);
     authorizationHandler = mock(AuthorizationHandler.class);
-    persistenceWrapper = mock(PersistenceWrapper.class);
     broker = mock(Broker.class);
     indexProducer = mock(Producer.class);
     persistenceProducer = mock(Producer.class);
@@ -70,7 +67,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(storageManager, jsonProvider, validator, mailSender, searchManager, localSolrServer, authorizationHandler, persistenceWrapper, broker, indexProducer, persistenceProducer);
+    reset(storageManager, jsonProvider, validator, mailSender, searchManager, localSolrServer, authorizationHandler, broker, indexProducer, persistenceProducer);
   }
 
   @Override
@@ -145,12 +142,6 @@ class ResourceTestModule extends JerseyServletModule {
   @Singleton
   public AuthorizationHandler provideAuthorizationHandler() {
     return authorizationHandler;
-  }
-
-  @Provides
-  @Singleton
-  public PersistenceWrapper providePersistenceWrapper() {
-    return this.persistenceWrapper;
   }
 
   @Provides
