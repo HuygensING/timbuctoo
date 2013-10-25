@@ -12,13 +12,8 @@ public class VariationUtils {
 
   public static final String AGREED = "a";
   public static final String VALUE = "v";
-  public static final String BASE_MODEL_PACKAGE_VARIATION = "model";
+  public static final String BASE_MODEL_PACKAGE = "model";
   public static final String DEFAULT_VARIATION = "!defaultVRE";
-
-  public static String getVariationName(Class<?> cls) {
-    String packageName = cls.getPackage().getName();
-    return packageName.substring(packageName.lastIndexOf('.') + 1);
-  }
 
   @SuppressWarnings("unchecked")
   public static List<Class<? extends Entity>> getAllClasses(Class<? extends Entity> cls) {
@@ -34,13 +29,15 @@ public class VariationUtils {
   // Conversion between (domain) model type tokens and variation names.
   // The conversion rules are used by VariationReducer and VariationInducer only.
 
-  public static String typeToVariationName(Class<?> cls) {
-    String clsId = cls.getSimpleName().toLowerCase();
-    String variationName = getVariationName(cls);
-    if (variationName.equals(BASE_MODEL_PACKAGE_VARIATION)) {
-      return clsId;
-    }
-    return variationName + "-" + clsId;
+  public static String getPackageName(Class<? extends Entity> type) {
+    String name = type.getPackage().getName();
+    return name.substring(name.lastIndexOf('.') + 1);
+  }
+
+  public static String typeToVariationName(Class<? extends Entity> type) {
+    String typeId = type.getSimpleName().toLowerCase();
+    String variationId = getPackageName(type);
+    return variationId.equals(BASE_MODEL_PACKAGE) ? typeId : variationId + "-" + typeId;
   }
 
   @SuppressWarnings("unchecked")

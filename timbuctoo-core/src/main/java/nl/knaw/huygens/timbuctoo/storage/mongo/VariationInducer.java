@@ -72,7 +72,7 @@ public class VariationInducer {
     Preconditions.checkArgument(item != null);
     Preconditions.checkArgument(type != null);
 
-    String variationId = VariationUtils.getVariationName(type);
+    String variationId = VariationUtils.getPackageName(type);
     List<Class<? extends Entity>> allClasses = VariationUtils.getAllClasses(type);
     existingItem = createNode(existingItem, type, allClasses);
     int size = allClasses.size();
