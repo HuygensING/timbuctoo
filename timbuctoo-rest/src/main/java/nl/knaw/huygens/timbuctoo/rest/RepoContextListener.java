@@ -113,11 +113,20 @@ public class RepoContextListener extends GuiceServletContextListener {
     }
 
     if (persistenceThreadExecutor != null) {
-      persistenceThreadExecutor.shutdown();
-    }
-
-    if (persistenceService != null) {
       persistenceService.stop();
+      persistenceThreadExecutor.shutdown();
+
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+
+      if (!persistenceThreadExecutor.isTerminated()) {
+        //force shutdown
+        persistenceThreadExecutor.shutdownNow();
+      }
     }
 
     if (broker != null) {

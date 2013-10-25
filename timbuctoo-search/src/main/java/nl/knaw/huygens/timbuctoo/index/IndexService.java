@@ -36,29 +36,27 @@ public class IndexService extends ConsumerService implements Runnable {
 
   @Override
   protected void executeAction(Action action) {
-    if (action != null) {
-      ActionType actionType = action.getActionType();
-      Class<? extends Entity> type = action.getType();
-      String id = action.getId();
+    ActionType actionType = action.getActionType();
+    Class<? extends Entity> type = action.getType();
+    String id = action.getId();
 
-      try {
-        switch (actionType) {
-        case ADD:
-          manager.addDocument(type, id);
-          break;
-        case MOD:
-          manager.updateDocument(type, id);
-          break;
-        case DEL:
-          manager.deleteDocument(type, id);
-          break;
-        case END:
-          this.stop(); //stop the Runnable
-        }
-      } catch (IndexException ex) {
-        getLogger().error("Error indexing ({}) object of type {} with id {}", new Object[] { actionType, type, id });
-        getLogger().debug("Exception while indexing", ex);
+    try {
+      switch (actionType) {
+      case ADD:
+        manager.addDocument(type, id);
+        break;
+      case MOD:
+        manager.updateDocument(type, id);
+        break;
+      case DEL:
+        manager.deleteDocument(type, id);
+        break;
+      case END:
+        this.stop(); //stop the Runnable
       }
+    } catch (IndexException ex) {
+      getLogger().error("Error indexing ({}) object of type {} with id {}", new Object[] { actionType, type, id });
+      getLogger().debug("Exception while indexing", ex);
     }
   }
 
