@@ -99,7 +99,7 @@ public class VariationReducer {
   }
 
   public <T extends Entity> T reduce(JsonNode node, Class<T> cls, String requestedVariation) throws VariationException, JsonProcessingException {
-    final String classVariation = VariationUtils.getVariationName(cls);
+    final String classVariation = VariationUtils.getPackageName(cls);
     String idPrefix = classVariation + "-";
     List<JsonNode> specificData = Lists.newArrayListWithExpectedSize(1);
     List<String> types = getTypes(node);
@@ -171,9 +171,9 @@ public class VariationReducer {
     return references;
   }
 
-  private String getVariationToRetrieve(final String packageName, JsonNode defaultVariationNode, String requestedVariation, List<String> variations) throws VariationException {
+  private String getVariationToRetrieve(String packageName, JsonNode defaultVariationNode, String requestedVariation, List<String> variations) throws VariationException {
     String variationToGet = packageName;
-    if (VariationUtils.BASE_MODEL_PACKAGE_VARIATION.equals(packageName)) {
+    if (VariationUtils.BASE_MODEL_PACKAGE.equals(packageName)) {
       //if the package is equal to the base package, different variations may be available.
       if (requestedVariation != null && isRequestedVariationAvailable(requestedVariation, variations)) {
         variationToGet = requestedVariation;
