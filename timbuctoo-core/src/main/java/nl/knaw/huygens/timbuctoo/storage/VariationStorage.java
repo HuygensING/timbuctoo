@@ -30,17 +30,15 @@ public interface VariationStorage extends BasicStorage {
 
   void addRelationsTo(Class<? extends DomainEntity> type, String id, DomainEntity entity);
 
-  <T extends DomainEntity> void setPID(Class<T> type, String id, String pid);
-
   /**
-   * Returns the id's of the domain entities of the specified type, that are not persisted.
-   * 
-   * Note that by design the method does not return variations of a type
-   * that already has been persisted.
-   * For example, if {@code Person} is a primitive type and a variation
-   * {@code XyzPerson} of an existing entity has been added, this method
-   * will not retrieve the id of that entity.
-   */
+  * Returns the id's of the domain entities of the specified type, that are not persisted.
+  * 
+  * Note that by design the method does not return variations of a type
+  * that already has been persisted.
+  * For example, if {@code Person} is a primitive type and a variation
+  * {@code XyzPerson} of an existing entity has been added, this method
+  * will not retrieve the id of that entity.
+  */
   <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException;
 
   /**

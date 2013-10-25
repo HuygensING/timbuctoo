@@ -303,7 +303,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends DomainEntity> void setPID(Class<T> cls, String id, String pid) {
+  public <T extends Entity> void setPID(Class<T> cls, String id, String pid) {
     BasicDBObject query = new BasicDBObject("_id", id);
     BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
     getVariationCollection(cls).update(query, update);

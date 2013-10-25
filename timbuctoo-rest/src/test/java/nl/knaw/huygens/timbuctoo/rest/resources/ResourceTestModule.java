@@ -46,7 +46,8 @@ class ResourceTestModule extends JerseyServletModule {
   private AuthorizationHandler authorizationHandler;
   private PersistenceWrapper persistenceWrapper;
   private Broker broker;
-  private Producer producer;
+  private Producer indexProducer;
+  private Producer persistenceProducer;
 
   public ResourceTestModule() {
     typeRegistry = new TypeRegistry(PACKAGES);
@@ -60,7 +61,8 @@ class ResourceTestModule extends JerseyServletModule {
     authorizationHandler = mock(AuthorizationHandler.class);
     persistenceWrapper = mock(PersistenceWrapper.class);
     broker = mock(Broker.class);
-    producer = mock(Producer.class);
+    indexProducer = mock(Producer.class);
+    persistenceProducer = mock(Producer.class);
   }
 
   /* Because the RestAutoResourceModule is used in a static way for multiple tests,
@@ -68,7 +70,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(storageManager, jsonProvider, validator, mailSender, searchManager, localSolrServer, authorizationHandler, persistenceWrapper, broker, producer);
+    reset(storageManager, jsonProvider, validator, mailSender, searchManager, localSolrServer, authorizationHandler, persistenceWrapper, broker, indexProducer, persistenceProducer);
   }
 
   @Override
@@ -159,7 +161,15 @@ class ResourceTestModule extends JerseyServletModule {
 
   @Provides
   @Singleton
-  public Producer provideProducer() {
-    return this.producer;
+  @Named("indexProducer")
+  public Producer provideIndexProducer() {
+    return this.indexProducer;
+  }
+
+  @Provides
+  @Singleton
+  @Named("persistenceProducer")
+  public Producer providePersistenceProducer() {
+    return this.persistenceProducer;
   }
 }

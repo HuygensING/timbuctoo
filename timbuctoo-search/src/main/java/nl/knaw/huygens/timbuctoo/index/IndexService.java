@@ -2,11 +2,10 @@ package nl.knaw.huygens.timbuctoo.index;
 
 import javax.jms.JMSException;
 
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
-import nl.knaw.huygens.timbuctoo.messages.Consumer;
+import nl.knaw.huygens.timbuctoo.messages.ConsumerService;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.slf4j.Logger;
@@ -14,63 +13,53 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
-// TODO handle exceptions properly
-public class IndexService implements Runnable {
+public class IndexService extends ConsumerService implements Runnable {
 
   private static final Logger LOG = LoggerFactory.getLogger(IndexService.class);
 
   private final IndexManager manager;
-  private final Consumer consumer;
-  private TypeRegistry registry;
-
-  private volatile boolean running;
 
   @Inject
-  public IndexService(IndexManager manager, Broker broker, TypeRegistry registry) throws JMSException {
+  public IndexService(IndexManager manager, Broker broker) throws JMSException {
+    super(broker, Broker.INDEX_QUEUE, "IndexService");
     this.manager = manager;
-    this.consumer = broker.newConsumer(Broker.INDEX_QUEUE, "IndexServiceConsumer");
-    this.registry = registry;
   }
 
-  public void stop() {
-    running = false;
+  /**
+   * Needed to make it possible to log with the right Logger in the superclass; 
+   * @return
+   */
+  @Override
+  protected Logger getLogger() {
+    return LOG;
   }
 
   @Override
-  public void run() {
-    LOG.info("Started");
-    running = true;
-    RUN_LOOP: while (running) {
-      try {
-        Action action = consumer.receive();
-        if (action != null) {
-          ActionType actionType = action.getActionType();
-          String typeString = action.getTypeString();
-          Class<? extends Entity> type = registry.getTypeForIName(typeString);
-          String id = action.getId();
+  protected void executeAction(Action action) {
+    if (action != null) {
+      ActionType actionType = action.getActionType();
+      Class<? extends Entity> type = action.getType();
+      String id = action.getId();
 
-          switch (actionType) {
-          case ADD:
-            manager.addDocument(type, id);
-            break;
-          case MOD:
-            manager.updateDocument(type, id);
-            break;
-          case DEL:
-            manager.deleteDocument(type, id);
-            break;
-          case END:
-            break RUN_LOOP; //break the while loop
-          }
+      try {
+        switch (actionType) {
+        case ADD:
+          manager.addDocument(type, id);
+          break;
+        case MOD:
+          manager.updateDocument(type, id);
+          break;
+        case DEL:
+          manager.deleteDocument(type, id);
+          break;
+        case END:
+          this.stop(); //stop the Runnable
         }
-      } catch (JMSException e) {
-        e.printStackTrace();
-      } catch (IndexException e) {
-        e.printStackTrace();
+      } catch (IndexException ex) {
+        getLogger().error("Error indexing ({}) object of type {} with id {}", new Object[] { actionType, type, id });
+        getLogger().debug("Exception while indexing", ex);
       }
     }
-    consumer.closeQuietly();
-    LOG.info("Stopped");
   }
 
   public static void waitForCompletion(Thread thread, long patience) {

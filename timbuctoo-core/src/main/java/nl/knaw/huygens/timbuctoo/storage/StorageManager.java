@@ -175,7 +175,7 @@ public class StorageManager {
     return storage.addItem(type, doc);
   }
 
-  public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) {
+  public <T extends Entity> void setPID(Class<T> type, String id, String pid) {
     storage.setPID(type, id, pid);
   }
 

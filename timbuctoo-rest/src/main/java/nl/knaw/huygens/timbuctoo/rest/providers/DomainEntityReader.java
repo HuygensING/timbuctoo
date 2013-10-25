@@ -21,6 +21,7 @@ import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.rest.resources.DomainEntityResource;
 
@@ -37,9 +38,9 @@ import com.google.inject.Inject;
  */
 @Provider
 @Consumes(MediaType.APPLICATION_JSON)
-public class EntityReader implements MessageBodyReader<Entity> {
+public class DomainEntityReader implements MessageBodyReader<Entity> {
 
-  private final Logger LOG = LoggerFactory.getLogger(EntityReader.class);
+  private final Logger LOG = LoggerFactory.getLogger(DomainEntityReader.class);
 
   @Context
   private UriInfo uriInfo;
@@ -55,7 +56,7 @@ public class EntityReader implements MessageBodyReader<Entity> {
 
   @Override
   public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-    return type.equals(Entity.class) && mediaType.isCompatible(MediaType.APPLICATION_JSON_TYPE);
+    return DomainEntity.class.isAssignableFrom(type) && mediaType.isCompatible(MediaType.APPLICATION_JSON_TYPE);
   }
 
   @Override
