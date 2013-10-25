@@ -29,7 +29,9 @@ public abstract class ConsumerService implements Runnable {
     while (running) {
       try {
         Action action = consumer.receive();
-        executeAction(action);
+        if (action != null) {
+          executeAction(action);
+        }
       } catch (JMSException e) {
         getLogger().error("Exception while receiving data.", e);
       }
