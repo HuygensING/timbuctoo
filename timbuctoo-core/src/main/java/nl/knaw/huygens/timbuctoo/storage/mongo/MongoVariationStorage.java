@@ -98,9 +98,9 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   private <T extends Entity> void addClassNotNull(Class<T> type, DBObject query) {
-    String classType = VariationUtils.typeToVariationName(type);
+    String variationName = reducer.typeToVariationName(type);
     BasicDBObject notNull = new BasicDBObject("$ne", null);
-    query.put(classType, notNull);
+    query.put(variationName, notNull);
   }
 
   @Override
@@ -125,9 +125,9 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   @Override
   public <T extends Entity> StorageIterator<T> getAllByType(Class<T> cls) {
     DBCollection col = getVariationCollection(cls);
-    String classType = VariationUtils.typeToVariationName(cls);
+    String variationName = reducer.typeToVariationName(cls);
     BasicDBObject notNull = new BasicDBObject("$ne", null);
-    BasicDBObject query = new BasicDBObject(classType, notNull);
+    BasicDBObject query = new BasicDBObject(variationName, notNull);
     return new MongoDBVariationIterator<T>(col.find(query), reducer, cls);
   }
 
@@ -314,8 +314,8 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     List<String> list = Lists.newArrayList();
 
     try {
-      String typeName = VariationUtils.typeToVariationName(type);
-      DBObject query = new BasicDBObject(typeName, new BasicDBObject("$ne", null));
+      String variationName = reducer.typeToVariationName(type);
+      DBObject query = new BasicDBObject(variationName, new BasicDBObject("$ne", null));
       query.put("^pid", null);
       DBObject columnsToShow = new BasicDBObject("_id", 1);
 
