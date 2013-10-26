@@ -31,28 +31,24 @@ public class VariationInducer {
     writerWithView = mapper.writerWithView(view);
   }
 
-  public VariationInducer() {
-    this(null);
-  }
-
   public <T extends Entity> JsonNode induce(T item, Class<T> type) throws VariationException {
     return induce(item, type, (ObjectNode) null);
   }
 
   @SuppressWarnings("unchecked")
   public <T extends Entity> JsonNode induce(T item, Class<T> type, DBObject existingItem) throws VariationException {
-    ObjectNode o;
+    ObjectNode node;
     if (existingItem == null) {
       List<Class<? extends Entity>> classIds = VariationUtils.getAllClasses(type);
-      o = createNode(null, type, classIds);
+      node = createNode(null, type, classIds);
     } else if (existingItem instanceof JacksonDBObject) {
-      o = (ObjectNode) (((JacksonDBObject<JsonNode>) existingItem).getObject());
+      node = (ObjectNode) (((JacksonDBObject<JsonNode>) existingItem).getObject());
     } else if (existingItem instanceof DBJsonNode) {
-      o = (ObjectNode) ((DBJsonNode) existingItem).getDelegate();
+      node = (ObjectNode) ((DBJsonNode) existingItem).getDelegate();
     } else {
       throw new VariationException("Unknown type of DBObject!");
     }
-    return induce(item, type, o);
+    return induce(item, type, node);
   }
 
   private <T extends Entity> ObjectNode createNode(ObjectNode node, Class<T> type, List<Class<? extends Entity>> allClasses) {
@@ -93,15 +89,15 @@ public class VariationInducer {
       Iterator<Entry<String, JsonNode>> fields = itemTree.fields();
       while (fields.hasNext()) {
         Entry<String, JsonNode> field = fields.next();
-        String k = field.getKey();
+        String key = field.getKey();
         JsonNode fieldNode = field.getValue();
 
         // Should not store bits we already stored in other parts of the hierarchy:
-        if (finishedKeys.containsKey(k) && fieldNode.equals(finishedKeys.get(k))) {
+        if (finishedKeys.containsKey(key) && fieldNode.equals(finishedKeys.get(key))) {
           continue;
         }
-        if (!k.startsWith("!")) {
-          finishedKeys.put(k, fieldNode);
+        if (!key.startsWith("!")) {
+          finishedKeys.put(key, fieldNode);
         }
 
         /*
@@ -116,24 +112,24 @@ public class VariationInducer {
          * property is present in multiple object and represents some default
          * value.
          */
-        if (k.startsWith("@")) {
+        if (key.startsWith("@")) {
           // ignore field.
-        } else if (k.startsWith("^") || k.startsWith("_")) {
+        } else if (key.startsWith("^") || key.startsWith("_")) {
           // Either this is a new object and we need to add the property, or it
           // is an existing one in which case we should check for an exact match:
-          if (!existingItem.has(k)) {
-            existingItem.put(k, fieldNode);
-          } else if (!fieldNode.equals(existingItem.get(k))) {
-            throw new VariationException("Inducing object into wrong object; fields " + k + " are not equal (" + fieldNode.toString() + " vs. " + existingItem.get(k).toString() + "!");
+          if (!existingItem.has(key)) {
+            existingItem.put(key, fieldNode);
+          } else if (!fieldNode.equals(existingItem.get(key))) {
+            throw new VariationException("Inducing object into wrong object; fields " + key + " are not equal (" + fieldNode.toString() + " vs. " + existingItem.get(key).toString() + "!");
           }
-        } else if (k.equals("!currentVariation") && isShared) { //only for shared classes a defaultVRE should be added.
+        } else if (key.equals("!currentVariation") && isShared) { //only for shared classes a defaultVRE should be added.
           if (existingItem.get(classId) != null && existingItem.get(classId).get(VariationUtils.DEFAULT_VARIATION) == null) {
             currentClsNode.put(VariationUtils.DEFAULT_VARIATION, variationId);
           }
         } else if (isShared) {
-          addOrMergeVariation(currentClsNode, k, variationId, fieldNode);
-        } else if (!k.equals("!currentVariation")) {
-          currentClsNode.put(k, fieldNode);
+          addOrMergeVariation(currentClsNode, key, variationId, fieldNode);
+        } else if (!key.equals("!currentVariation")) {
+          currentClsNode.put(key, fieldNode);
         }
       }
     }
@@ -232,23 +228,18 @@ public class VariationInducer {
    *          Type to use for serializing the value (should be on the type chain
    *          of the value's runtime type)
    * @return a JSON tree representation of the object
-   * @throws IllegalArgumentException
    */
-  private JsonNode asTree(Object val, Class<?> cls) throws IllegalArgumentException {
-    if (val == null) {
-      return null;
-    }
+  private JsonNode asTree(Object val, Class<?> cls) {
     TokenBuffer buffer = new TokenBuffer(mapper);
-    JsonNode result;
     try {
       writerWithView.withType(cls).writeValue(buffer, val);
       JsonParser parser = buffer.asParser();
-      result = mapper.readTree(parser);
+      JsonNode result = mapper.readTree(parser);
       parser.close();
+      return result;
     } catch (IOException e) { // should not occur, no real i/o...
-      throw new IllegalArgumentException(e.getMessage(), e);
+      throw new IllegalStateException("Impossible");
     }
-    return result;
   }
 
 }

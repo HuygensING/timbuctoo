@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
+import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.TestDoc;
 
@@ -17,18 +18,18 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class VariationInducerTest {
 
-  private ObjectMapper m;
+  private ObjectMapper mapper;
   private VariationInducer inducer;
 
   @Before
   public void setUp() throws Exception {
-    m = new ObjectMapper();
-    inducer = new VariationInducer();
+    mapper = new ObjectMapper();
+    inducer = new VariationInducer(JsonViews.DBView.class);
   }
 
   @After
   public void tearDown() {
-    m = null;
+    mapper = null;
     inducer = null;
   }
 
@@ -37,7 +38,7 @@ public class VariationInducerTest {
     String testStr = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projectb\"}," + "\"projectb-testdoc\": {\"blah\": \"stuff\"},\"_id\":null,"
         + "\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
-    JsonNode t = m.readTree(testStr);
+    JsonNode t = mapper.readTree(testStr);
     TestDoc x = new TestDoc();
     x.name = "x";
     x.blah = "stuff";
@@ -52,7 +53,7 @@ public class VariationInducerTest {
         + "\"testconcretedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"_id\":null,\"^pid\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
-    JsonNode t = m.readTree(testStr);
+    JsonNode t = mapper.readTree(testStr);
     ProjectAGeneralTestDoc x = new ProjectAGeneralTestDoc();
     x.name = "x";
     x.generalTestDocValue = "stuff";
@@ -69,7 +70,7 @@ public class VariationInducerTest {
         + "\"testconcretedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"_id\":null,\"^pid\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
-    JsonNode t = m.readTree(testStr);
+    JsonNode t = mapper.readTree(testStr);
     ProjectAGeneralTestDoc x = new ProjectAGeneralTestDoc();
     x.name = "x";
     x.generalTestDocValue = "stuff";
@@ -89,8 +90,8 @@ public class VariationInducerTest {
         + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, " + "\"other\": {\"blub\": \"otherstuff\"},"
         + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
-    ObjectNode existing = (ObjectNode) m.readTree(inTree);
-    JsonNode t = m.readTree(testStr);
+    ObjectNode existing = (ObjectNode) mapper.readTree(inTree);
+    JsonNode t = mapper.readTree(testStr);
     TestDoc x = new TestDoc();
     x.name = "x";
     x.blah = "stuff";
@@ -105,8 +106,8 @@ public class VariationInducerTest {
     String testStr = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"other\",\"projectb\"]}],\"!defaultVRE\":\"other\"}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
         + "\"other\": {\"blub\": \"otherstuff\"}," + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
-    ObjectNode existing = (ObjectNode) m.readTree(inTree);
-    JsonNode t = m.readTree(testStr);
+    ObjectNode existing = (ObjectNode) mapper.readTree(inTree);
+    JsonNode t = mapper.readTree(testStr);
     TestDoc x = new TestDoc();
     x.name = "x";
     x.blah = "stuff";
@@ -127,9 +128,9 @@ public class VariationInducerTest {
         + "\"testconcretedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projectb\",\"projecta\"]}],\"!defaultVRE\":\"projectb\"},"
         + "\"_id\":null,\"^pid\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
-    ObjectNode existing = (ObjectNode) m.readTree(inTree);
+    ObjectNode existing = (ObjectNode) mapper.readTree(inTree);
 
-    JsonNode t = m.readTree(testStr);
+    JsonNode t = mapper.readTree(testStr);
     ProjectAGeneralTestDoc x = new ProjectAGeneralTestDoc();
     x.name = "x";
     x.generalTestDocValue = "stuff";
@@ -147,8 +148,8 @@ public class VariationInducerTest {
     String testStr = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projectb\",\"other\"]}],\"!defaultVRE\":\"projectb\"}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
         + "\"other\": {\"blub\": \"otherstuff\"}," + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
-    ObjectNode existing = (ObjectNode) m.readTree(inTree);
-    JsonNode t = m.readTree(testStr);
+    ObjectNode existing = (ObjectNode) mapper.readTree(inTree);
+    JsonNode t = mapper.readTree(testStr);
     TestDoc x = new TestDoc();
     x.name = "x";
     x.blah = "stuff";
@@ -166,8 +167,8 @@ public class VariationInducerTest {
         + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, " + "\"other\": {\"blub\": \"otherstuff\"},"
         + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
-    ObjectNode existing = (ObjectNode) m.readTree(inTree);
-    JsonNode t = m.readTree(testStr);
+    ObjectNode existing = (ObjectNode) mapper.readTree(inTree);
+    JsonNode t = mapper.readTree(testStr);
     TestDoc x = new TestDoc();
     x.name = "x";
     x.blah = "stuff";
@@ -185,8 +186,8 @@ public class VariationInducerTest {
         + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, " + "\"other\": {\"blub\": \"otherstuff\"},"
         + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
-    ObjectNode existing = (ObjectNode) m.readTree(inTree);
-    JsonNode t = m.readTree(testStr);
+    ObjectNode existing = (ObjectNode) mapper.readTree(inTree);
+    JsonNode t = mapper.readTree(testStr);
     TestDoc x = new TestDoc();
     x.name = "x";
     x.blah = "stuff";
@@ -203,8 +204,8 @@ public class VariationInducerTest {
     String testStr = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"other\", \"projectb\"]}],\"!defaultVRE\":\"projectb\"}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
         + "\"other\": {\"blub\": \"otherstuff\"}," + "\"_id\":null,\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false,\"^pid\":null}";
 
-    ObjectNode existing = (ObjectNode) m.readTree(inTree);
-    JsonNode t = m.readTree(testStr);
+    ObjectNode existing = (ObjectNode) mapper.readTree(inTree);
+    JsonNode t = mapper.readTree(testStr);
     TestDoc x = new TestDoc();
     x.name = "x";
     x.blah = "stuff";
@@ -224,7 +225,7 @@ public class VariationInducerTest {
     String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"projectb\"]}]}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
         + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
-    ObjectNode existing = (ObjectNode) m.readTree(inTree);
+    ObjectNode existing = (ObjectNode) mapper.readTree(inTree);
     TestDoc x = new TestDoc();
     x.setId("TST002");
     x.name = "x";
@@ -237,7 +238,7 @@ public class VariationInducerTest {
     String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\": 42}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
         + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
-    ObjectNode existing = (ObjectNode) m.readTree(inTree);
+    ObjectNode existing = (ObjectNode) mapper.readTree(inTree);
     TestDoc x = createTestDoc();
 
     inducer.induce(x, TestDoc.class, existing);
@@ -249,7 +250,7 @@ public class VariationInducerTest {
     String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[42]}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
         + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
-    ObjectNode existing = (ObjectNode) m.readTree(inTree);
+    ObjectNode existing = (ObjectNode) mapper.readTree(inTree);
 
     TestDoc x = createTestDoc();
 
@@ -262,7 +263,7 @@ public class VariationInducerTest {
     String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[null]}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
         + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
-    ObjectNode existing = (ObjectNode) m.readTree(inTree);
+    ObjectNode existing = (ObjectNode) mapper.readTree(inTree);
     TestDoc x = createTestDoc();
 
     inducer.induce(x, TestDoc.class, existing);
@@ -274,7 +275,7 @@ public class VariationInducerTest {
     String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":null}, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
         + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
-    ObjectNode existing = (ObjectNode) m.readTree(inTree);
+    ObjectNode existing = (ObjectNode) mapper.readTree(inTree);
     TestDoc x = createTestDoc();
 
     inducer.induce(x, TestDoc.class, existing);
@@ -287,7 +288,7 @@ public class VariationInducerTest {
     String inTree = "{\"testinheritsfromtestbasedoc\": 42, " + "\"projectb-testdoc\": {\"blah\": \"stuff\"}, "
         + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
-    ObjectNode existing = (ObjectNode) m.readTree(inTree);
+    ObjectNode existing = (ObjectNode) mapper.readTree(inTree);
     TestDoc x = createTestDoc();
 
     inducer.induce(x, TestDoc.class, existing);
@@ -300,7 +301,7 @@ public class VariationInducerTest {
     String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"a\", \"a\":[\"projectb\"]}]}, " + "\"projectb-testdoc\": 42, "
         + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
-    ObjectNode existing = (ObjectNode) m.readTree(inTree);
+    ObjectNode existing = (ObjectNode) mapper.readTree(inTree);
     TestDoc x = createTestDoc();
 
     inducer.induce(x, TestDoc.class, existing);
@@ -312,7 +313,7 @@ public class VariationInducerTest {
     String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"a\", \"a\":[\"projectb\"]}]}, " + "\"projectb-testdoc\": null, "
         + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
-    ObjectNode existing = (ObjectNode) m.readTree(inTree);
+    ObjectNode existing = (ObjectNode) mapper.readTree(inTree);
     TestDoc x = createTestDoc();
 
     inducer.induce(x, TestDoc.class, existing);
@@ -325,7 +326,7 @@ public class VariationInducerTest {
     String inTree = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"a\"}]}, " + "\"projectb-testdoc\": {}, "
         + "\"_id\": \"TST001\",\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
 
-    ObjectNode existing = (ObjectNode) m.readTree(inTree);
+    ObjectNode existing = (ObjectNode) mapper.readTree(inTree);
     TestDoc x = createTestDoc();
 
     inducer.induce(x, TestDoc.class, existing);
