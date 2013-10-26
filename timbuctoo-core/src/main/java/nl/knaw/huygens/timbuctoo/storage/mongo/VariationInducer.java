@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.mongojack.internal.stream.JacksonDBObject;
@@ -23,12 +24,14 @@ import com.mongodb.DBObject;
 
 public class VariationInducer {
 
+  private final TypeRegistry registry;
   private final ObjectMapper mapper;
-  private final ObjectWriter writerWithView;
+  private final ObjectWriter writer;
 
-  public VariationInducer(Class<?> view) {
+  public VariationInducer(TypeRegistry registry, Class<?> view) {
+    this.registry = registry;
     mapper = new ObjectMapper();
-    writerWithView = mapper.writerWithView(view);
+    writer = mapper.writerWithView(view);
   }
 
   public <T extends Entity> JsonNode induce(T item, Class<T> type) throws VariationException {
@@ -76,15 +79,15 @@ public class VariationInducer {
     Map<String, Object> finishedKeys = Maps.newHashMap();
     while (i-- > 0) {
       Class<? extends Entity> someCls = allClasses.get(i);
-      String classId = VariationUtils.typeToVariationName(someCls);
-      JsonNode obj = existingItem.get(classId);
+      String variationName = VariationUtils.typeToVariationName(someCls);
+      JsonNode obj = existingItem.get(variationName);
       if (!obj.isObject()) {
-        throw new VariationException("Variation object (" + classId + ") is not an object?");
+        throw new VariationException("Node (" + variationName + ") is not an object");
       }
-
       ObjectNode currentClsNode = (ObjectNode) obj;
-      JsonNode itemTree = asTree(item, someCls);
-      boolean isShared = !classId.startsWith(variationId + "-");
+
+      JsonNode itemTree = asTree(item, variationName);
+      boolean isShared = !variationName.startsWith(variationId + "-");
 
       Iterator<Entry<String, JsonNode>> fields = itemTree.fields();
       while (fields.hasNext()) {
@@ -123,7 +126,7 @@ public class VariationInducer {
             throw new VariationException("Inducing object into wrong object; fields " + key + " are not equal (" + fieldNode.toString() + " vs. " + existingItem.get(key).toString() + "!");
           }
         } else if (key.equals("!currentVariation") && isShared) { //only for shared classes a defaultVRE should be added.
-          if (existingItem.get(classId) != null && existingItem.get(classId).get(VariationUtils.DEFAULT_VARIATION) == null) {
+          if (existingItem.get(variationName) != null && existingItem.get(variationName).get(VariationUtils.DEFAULT_VARIATION) == null) {
             currentClsNode.put(VariationUtils.DEFAULT_VARIATION, variationId);
           }
         } else if (isShared) {
@@ -218,21 +221,20 @@ public class VariationInducer {
   }
 
   /**
-   * This is a modified copy of the built-in "valueAsTree" method on
-   * ObjectMapper. The modification includes being able to specify the view and
-   * the type used for serialization
+   * This is a modified copy of the built-in "valueAsTree" method on ObjectMapper.
+   * It allows to specify the view and the type used for serialization
    * 
-   * @param val
+   * @param value
    *          Value to serialize
-   * @param cls
-   *          Type to use for serializing the value (should be on the type chain
-   *          of the value's runtime type)
+   * @param variationName
+   *          Variation name to use for serializing
    * @return a JSON tree representation of the object
    */
-  private JsonNode asTree(Object val, Class<?> cls) {
+  private JsonNode asTree(Object value, String variationName) {
     TokenBuffer buffer = new TokenBuffer(mapper);
     try {
-      writerWithView.withType(cls).writeValue(buffer, val);
+      Class<?> rootType = VariationUtils.variationNameToType(registry, variationName);
+      writer.withType(rootType).writeValue(buffer, value);
       JsonParser parser = buffer.asParser();
       JsonNode result = mapper.readTree(parser);
       parser.close();
