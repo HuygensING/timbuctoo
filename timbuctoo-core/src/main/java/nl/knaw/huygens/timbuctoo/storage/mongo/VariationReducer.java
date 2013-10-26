@@ -115,11 +115,10 @@ public class VariationReducer {
     variationToRetrieve = getVariationToRetrieve(classVariation, defaultVariationNode, requestedVariation, types);
 
     ObjectNode rv = mapper.createObjectNode();
-    for (Class<? extends Entity> someCls : VariationUtils.getAllClasses(cls)) {
-      String id = VariationUtils.typeToVariationName(someCls);
-      JsonNode data = node.get(id);
+    for (String name : VariationUtils.getVariationNamesForType(cls)) {
+      JsonNode data = node.get(name);
       if (data != null) {
-        if (id.startsWith(idPrefix)) {
+        if (name.startsWith(idPrefix)) {
           specificData.add(data);
         } else {
           processCommonData(variationToRetrieve, data, rv);

@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.DBObject;
 
@@ -42,8 +43,7 @@ public class VariationInducer {
   public <T extends Entity> JsonNode induce(T item, Class<T> type, DBObject existingItem) throws VariationException {
     ObjectNode node;
     if (existingItem == null) {
-      List<Class<? extends Entity>> classIds = VariationUtils.getAllClasses(type);
-      node = createNode(null, type, classIds);
+      node = createNode(null, type, VariationUtils.getVariationNamesForType(type));
     } else if (existingItem instanceof JacksonDBObject) {
       node = (ObjectNode) (((JacksonDBObject<JsonNode>) existingItem).getObject());
     } else if (existingItem instanceof DBJsonNode) {
@@ -54,14 +54,13 @@ public class VariationInducer {
     return induce(item, type, node);
   }
 
-  private <T extends Entity> ObjectNode createNode(ObjectNode node, Class<T> type, List<Class<? extends Entity>> allClasses) {
+  private <T extends Entity> ObjectNode createNode(ObjectNode node, Class<T> type, List<String> variationNames) {
     if (node == null) {
       node = mapper.createObjectNode();
     }
-    for (Class<? extends Entity> someCls : allClasses) {
-      String classId = VariationUtils.typeToVariationName(someCls);
-      if (!node.has(classId)) {
-        node.put(classId, mapper.createObjectNode());
+    for (String name : variationNames) {
+      if (!node.has(name)) {
+        node.put(name, mapper.createObjectNode());
       }
     }
     return node;
@@ -72,14 +71,11 @@ public class VariationInducer {
     Preconditions.checkArgument(type != null);
 
     String variationId = VariationUtils.getPackageName(type);
-    List<Class<? extends Entity>> allClasses = VariationUtils.getAllClasses(type);
-    existingItem = createNode(existingItem, type, allClasses);
-    int size = allClasses.size();
-    int i = size;
+    List<String> variationNames = VariationUtils.getVariationNamesForType(type);
+    existingItem = createNode(existingItem, type, variationNames);
     Map<String, Object> finishedKeys = Maps.newHashMap();
-    while (i-- > 0) {
-      Class<? extends Entity> someCls = allClasses.get(i);
-      String variationName = VariationUtils.typeToVariationName(someCls);
+
+    for (String variationName : Lists.reverse(variationNames)) {
       JsonNode obj = existingItem.get(variationName);
       if (!obj.isObject()) {
         throw new VariationException("Node (" + variationName + ") is not an object");

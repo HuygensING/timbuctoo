@@ -15,19 +15,19 @@ public class VariationUtils {
   public static final String BASE_MODEL_PACKAGE = "model";
   public static final String DEFAULT_VARIATION = "!defaultVRE";
 
+  /**
+   * Returns variation names for the specified entity type and its superclasses.
+   */
   @SuppressWarnings("unchecked")
-  public static List<Class<? extends Entity>> getAllClasses(Class<? extends Entity> cls) {
-    List<Class<? extends Entity>> rv = Lists.newArrayList();
-    Class<? extends Entity> myCls = cls;
-    while (myCls != null && !Modifier.isAbstract(myCls.getModifiers())) {
-      rv.add(myCls);
-      myCls = (Class<? extends Entity>) myCls.getSuperclass();
+  public static List<String> getVariationNamesForType(Class<? extends Entity> type) {
+    List<String> names = Lists.newArrayList();
+    // TODO Use TypeRegistry, this loop is fragile
+    while (type != null && !Modifier.isAbstract(type.getModifiers())) {
+      names.add(typeToVariationName(type));
+      type = (Class<? extends Entity>) type.getSuperclass();
     }
-    return rv;
+    return names;
   }
-
-  // Conversion between (domain) model type tokens and variation names.
-  // The conversion rules are used by VariationReducer and VariationInducer only.
 
   public static String getPackageName(Class<? extends Entity> type) {
     String name = type.getPackage().getName();
