@@ -73,22 +73,6 @@ class VariationReducer extends VariationConverter {
     return reduce(tree, cls, variation);
   }
 
-  public <T extends Entity> List<T> reduceDBObject(List<DBObject> nodes, Class<T> cls) throws IOException {
-    List<T> rv = Lists.newArrayListWithCapacity(nodes.size());
-    for (DBObject n : nodes) {
-      rv.add(reduceDBObject(n, cls));
-    }
-    return rv;
-  }
-
-  public <T extends Entity> List<T> reduce(List<JsonNode> nodes, Class<T> cls) throws VariationException, JsonProcessingException {
-    List<T> rv = Lists.newArrayListWithCapacity(nodes.size());
-    for (JsonNode n : nodes) {
-      rv.add(reduce(n, cls));
-    }
-    return rv;
-  }
-
   public <T extends Entity> T reduce(JsonNode node, Class<T> cls) throws VariationException, JsonProcessingException {
     return reduce(node, cls, null);
   }

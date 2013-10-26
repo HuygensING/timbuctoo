@@ -221,9 +221,9 @@ class VariationInducer extends VariationConverter {
    * @return a JSON tree representation of the object
    */
   private JsonNode asTree(Object value, String variationName) {
-    TokenBuffer buffer = new TokenBuffer(mapper);
     try {
       Class<?> rootType = variationNameToType(variationName);
+      TokenBuffer buffer = new TokenBuffer(mapper);
       writer.withType(rootType).writeValue(buffer, value);
       JsonParser parser = buffer.asParser();
       JsonNode result = mapper.readTree(parser);
