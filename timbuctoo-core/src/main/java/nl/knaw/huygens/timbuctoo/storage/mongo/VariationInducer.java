@@ -13,25 +13,22 @@ import org.mongojack.internal.stream.JacksonDBObject;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.DBObject;
 
-public class VariationInducer {
+class VariationInducer extends VariationConverter {
 
-  private final TypeRegistry registry;
-  private final ObjectMapper mapper;
   private final ObjectWriter writer;
 
   public VariationInducer(TypeRegistry registry, Class<?> view) {
-    this.registry = registry;
-    mapper = new ObjectMapper();
+    super(registry);
     writer = mapper.writerWithView(view);
   }
 
@@ -43,7 +40,7 @@ public class VariationInducer {
   public <T extends Entity> JsonNode induce(T item, Class<T> type, DBObject existingItem) throws VariationException {
     ObjectNode node;
     if (existingItem == null) {
-      node = createNode(null, type, VariationUtils.getVariationNamesForType(type));
+      node = createNode(null, type, getVariationNamesForType(type));
     } else if (existingItem instanceof JacksonDBObject) {
       node = (ObjectNode) (((JacksonDBObject<JsonNode>) existingItem).getObject());
     } else if (existingItem instanceof DBJsonNode) {
@@ -70,8 +67,8 @@ public class VariationInducer {
     Preconditions.checkArgument(item != null);
     Preconditions.checkArgument(type != null);
 
-    String variationId = VariationUtils.getPackageName(type);
-    List<String> variationNames = VariationUtils.getVariationNamesForType(type);
+    String variationId = getPackageName(type);
+    List<String> variationNames = getVariationNamesForType(type);
     existingItem = createNode(existingItem, type, variationNames);
     Map<String, Object> finishedKeys = Maps.newHashMap();
 
@@ -85,9 +82,7 @@ public class VariationInducer {
       JsonNode itemTree = asTree(item, variationName);
       boolean isShared = !variationName.startsWith(variationId + "-");
 
-      Iterator<Entry<String, JsonNode>> fields = itemTree.fields();
-      while (fields.hasNext()) {
-        Entry<String, JsonNode> field = fields.next();
+      for (Entry<String, JsonNode> field : ImmutableList.copyOf(itemTree.fields())) {
         String key = field.getKey();
         JsonNode fieldNode = field.getValue();
 
@@ -100,16 +95,15 @@ public class VariationInducer {
         }
 
         /*
-         * For each property, there are 5 possibilities: a) it is prefixed with
-         * an @, this means that it is only used in the application and should
-         * be removed when the object is saved in the database. b) it is a
-         * prefixed (^ or _) property, which should always be the same among all
-         * variations and is used for identifying different objects, their
-         * version, etc. c) it is shared between different variations
-         * (project/VRE/whatever) d) it is specific to a single variation
-         * (project/VRE/whatever) e) it is prefixed with a !, this means this
-         * property is present in multiple object and represents some default
-         * value.
+         * For each property, there are 5 possibilities:
+         * a) it is prefixed with an @, this means that it is only used in the
+         * application and should be removed when the object is saved in the database.
+         * b) it is a prefixed (^ or _) property, which should always be the same among
+         * all variations and is used for identifying objects, their version, etc.
+         * c) it is shared between different variations (project/VRE/whatever)
+         * d) it is specific to a single variation (project/VRE/whatever)
+         * e) it is prefixed with a !, this means this property is present
+         * in multiple object and represents some default value.
          */
         if (key.startsWith("@")) {
           // ignore field.
@@ -122,8 +116,8 @@ public class VariationInducer {
             throw new VariationException("Inducing object into wrong object; fields " + key + " are not equal (" + fieldNode.toString() + " vs. " + existingItem.get(key).toString() + "!");
           }
         } else if (key.equals("!currentVariation") && isShared) { //only for shared classes a defaultVRE should be added.
-          if (existingItem.get(variationName) != null && existingItem.get(variationName).get(VariationUtils.DEFAULT_VARIATION) == null) {
-            currentClsNode.put(VariationUtils.DEFAULT_VARIATION, variationId);
+          if (existingItem.get(variationName) != null && existingItem.get(variationName).get(DEFAULT_VARIATION) == null) {
+            currentClsNode.put(DEFAULT_VARIATION, variationId);
           }
         } else if (isShared) {
           addOrMergeVariation(currentClsNode, key, variationId, fieldNode);
@@ -154,8 +148,8 @@ public class VariationInducer {
         throw new VariationException("Variation for '" + key + "', index " + i + " is not an object?!");
       }
 
-      JsonNode actualValue = value.get(VariationUtils.VALUE);
-      ArrayNode agreedValueAry = cautiousGetArray(value, VariationUtils.AGREED);
+      JsonNode actualValue = value.get(VALUE);
+      ArrayNode agreedValueAry = cautiousGetArray(value, AGREED);
       boolean thisValueIsCorrect = actualValue.equals(variationValue);
       foundValue = foundValue || thisValueIsCorrect;
 
@@ -211,8 +205,8 @@ public class VariationInducer {
     ObjectNode var = mapper.createObjectNode();
     ArrayNode agreedList = mapper.createArrayNode();
     agreedList.add(variationId);
-    var.put(VariationUtils.AGREED, agreedList);
-    var.put(VariationUtils.VALUE, variationValue);
+    var.put(AGREED, agreedList);
+    var.put(VALUE, variationValue);
     existingValueAry.add(var);
   }
 
@@ -229,7 +223,7 @@ public class VariationInducer {
   private JsonNode asTree(Object value, String variationName) {
     TokenBuffer buffer = new TokenBuffer(mapper);
     try {
-      Class<?> rootType = VariationUtils.variationNameToType(registry, variationName);
+      Class<?> rootType = variationNameToType(variationName);
       writer.withType(rootType).writeValue(buffer, value);
       JsonParser parser = buffer.asParser();
       JsonNode result = mapper.readTree(parser);

@@ -6,20 +6,32 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
-public class VariationUtils {
+/**
+ * Base class for {@code VariationInducer} and {@code VariationInducer}.
+ */
+class VariationConverter {
 
-  public static final String AGREED = "a";
-  public static final String VALUE = "v";
-  public static final String BASE_MODEL_PACKAGE = "model";
-  public static final String DEFAULT_VARIATION = "!defaultVRE";
+  protected static final String AGREED = "a";
+  protected static final String VALUE = "v";
+  protected static final String BASE_MODEL_PACKAGE = "model";
+  protected static final String DEFAULT_VARIATION = "!defaultVRE";
+
+  protected final TypeRegistry typeRegistry;
+  protected final ObjectMapper mapper;
+
+  public VariationConverter(TypeRegistry registry) {
+    typeRegistry = registry;
+    mapper = new ObjectMapper();
+  }
 
   /**
    * Returns variation names for the specified entity type and its superclasses.
    */
   @SuppressWarnings("unchecked")
-  public static List<String> getVariationNamesForType(Class<? extends Entity> type) {
+  protected List<String> getVariationNamesForType(Class<? extends Entity> type) {
     List<String> names = Lists.newArrayList();
     // TODO Use TypeRegistry, this loop is fragile
     while (type != null && !Modifier.isAbstract(type.getModifiers())) {
@@ -29,23 +41,23 @@ public class VariationUtils {
     return names;
   }
 
-  public static String getPackageName(Class<? extends Entity> type) {
+  protected String getPackageName(Class<? extends Entity> type) {
     String name = type.getPackage().getName();
     return name.substring(name.lastIndexOf('.') + 1);
   }
 
-  public static String typeToVariationName(Class<? extends Entity> type) {
+  protected String typeToVariationName(Class<? extends Entity> type) {
     String typeId = type.getSimpleName().toLowerCase();
     String variationId = getPackageName(type);
     return variationId.equals(BASE_MODEL_PACKAGE) ? typeId : variationId + "-" + typeId;
   }
 
   @SuppressWarnings("unchecked")
-  public static <T extends Entity> Class<? extends T> variationNameToType(TypeRegistry registry, String id) {
-    return (Class<? extends T>) registry.getTypeForIName(normalize(id));
+  protected <T extends Entity> Class<? extends T> variationNameToType(String id) {
+    return (Class<? extends T>) typeRegistry.getTypeForIName(normalize(id));
   }
 
-  private static String normalize(String typeString) {
+  private String normalize(String typeString) {
     return typeString.replaceFirst("[a-z]*-", "");
   }
 

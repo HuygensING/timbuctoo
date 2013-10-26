@@ -6,42 +6,50 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.variation.model.TestExtraBaseDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class VariationUtilsTest {
+public class VariationConverterTest {
 
   private static TypeRegistry registry;
 
+  private VariationConverter base;
+
   @BeforeClass
   public static void setUpRegistry() {
-    registry = new TypeRegistry("nl.knaw.huygens.timbuctoo.variation.model");
+    registry = new TypeRegistry("timbuctoo.variation.model");
+  }
+
+  @Before
+  public void setup() {
+    base = new VariationConverter(registry);
   }
 
   @Test
   public void testGetPackageName() {
-    assertEquals("model", VariationUtils.getPackageName(TestExtraBaseDoc.class));
-    assertEquals("projecta", VariationUtils.getPackageName(ProjectAGeneralTestDoc.class));
+    assertEquals("model", base.getPackageName(TestExtraBaseDoc.class));
+    assertEquals("projecta", base.getPackageName(ProjectAGeneralTestDoc.class));
   }
 
   @Test
   public void testVariationNameToTypeAllLowerCase() {
-    assertEquals(TestExtraBaseDoc.class, VariationUtils.variationNameToType(registry, "testextrabasedoc"));
+    assertEquals(TestExtraBaseDoc.class, base.variationNameToType("testextrabasedoc"));
   }
 
   @Test
   public void testVariationNameToTypeWithCapitals() {
-    assertNull(VariationUtils.variationNameToType(registry, "TestExtraBaseDocs"));
+    assertNull(base.variationNameToType("TestExtraBaseDocs"));
   }
 
   @Test
   public void testVariationNameToTypeAllUppercase() {
-    assertNull(VariationUtils.variationNameToType(registry, "TESTEXTRABASEDOCs"));
+    assertNull(base.variationNameToType("TESTEXTRABASEDOCs"));
   }
 
   @Test
   public void testVariationNameToTypeWithPackage() {
-    assertEquals(TestExtraBaseDoc.class, VariationUtils.variationNameToType(registry, "model-testextrabasedoc"));
+    assertEquals(TestExtraBaseDoc.class, base.variationNameToType("model-testextrabasedoc"));
   }
 
 }

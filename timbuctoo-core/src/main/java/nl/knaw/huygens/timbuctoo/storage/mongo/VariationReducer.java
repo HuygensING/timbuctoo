@@ -14,24 +14,19 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mongodb.DBObject;
 
-public class VariationReducer {
+class VariationReducer extends VariationConverter {
 
   private static final Logger LOG = LoggerFactory.getLogger(VariationReducer.class);
   private static final String VERSIONS_FIELD = "versions";
 
-  private final TypeRegistry registry;
-  private final ObjectMapper mapper;
-
   public VariationReducer(TypeRegistry registry) {
-    this.registry = registry;
-    this.mapper = new ObjectMapper();
+    super(registry);
   }
 
   public <T extends Entity> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {
@@ -99,23 +94,23 @@ public class VariationReducer {
   }
 
   public <T extends Entity> T reduce(JsonNode node, Class<T> cls, String requestedVariation) throws VariationException, JsonProcessingException {
-    final String classVariation = VariationUtils.getPackageName(cls);
+    final String classVariation = getPackageName(cls);
     String idPrefix = classVariation + "-";
     List<JsonNode> specificData = Lists.newArrayListWithExpectedSize(1);
     List<String> types = getTypes(node);
-    String requestedClassId = VariationUtils.typeToVariationName(cls);
+    String requestedClassId = typeToVariationName(cls);
 
     String variationToRetrieve = null;
     JsonNode defaultVariationNode = null;
 
     if (node.get(requestedClassId) != null) {
-      defaultVariationNode = node.get(requestedClassId).get(VariationUtils.DEFAULT_VARIATION);
+      defaultVariationNode = node.get(requestedClassId).get(DEFAULT_VARIATION);
     }
 
     variationToRetrieve = getVariationToRetrieve(classVariation, defaultVariationNode, requestedVariation, types);
 
     ObjectNode rv = mapper.createObjectNode();
-    for (String name : VariationUtils.getVariationNamesForType(cls)) {
+    for (String name : getVariationNamesForType(cls)) {
       JsonNode data = node.get(name);
       if (data != null) {
         if (name.startsWith(idPrefix)) {
@@ -156,7 +151,7 @@ public class VariationReducer {
   private List<Reference> getVariations(List<String> typeStrings, String id) throws VariationException {
     List<Reference> references = Lists.<Reference> newLinkedList();
     for (String typeString : typeStrings) {
-      Class<? extends Entity> type = VariationUtils.variationNameToType(registry, typeString);
+      Class<? extends Entity> type = variationNameToType(typeString);
       if (typeString.contains("-")) {
         // project specific classes don't have any variation
         references.add(new Reference(type, id));
@@ -172,7 +167,7 @@ public class VariationReducer {
 
   private String getVariationToRetrieve(String packageName, JsonNode defaultVariationNode, String requestedVariation, List<String> variations) throws VariationException {
     String variationToGet = packageName;
-    if (VariationUtils.BASE_MODEL_PACKAGE.equals(packageName)) {
+    if (BASE_MODEL_PACKAGE.equals(packageName)) {
       //if the package is equal to the base package, different variations may be available.
       if (requestedVariation != null && isRequestedVariationAvailable(requestedVariation, variations)) {
         variationToGet = requestedVariation;
@@ -227,11 +222,11 @@ public class VariationReducer {
     for (JsonNode elem : ary) {
       if (elem.isObject()) {
         // Check the list of agreeing VREs to see if we want this one:
-        JsonNode agreedValueNode = elem.get(VariationUtils.AGREED);
+        JsonNode agreedValueNode = elem.get(AGREED);
         if (agreedValueNode != null && agreedValueNode.isArray()) {
           ArrayNode agreedValues = (ArrayNode) agreedValueNode;
           if (arrayContains(agreedValues, variationName)) {
-            rv.put(k, elem.get(VariationUtils.VALUE));
+            rv.put(k, elem.get(VALUE));
             return;
           }
         } else {
@@ -285,7 +280,7 @@ public class VariationReducer {
       if (!name.startsWith("^") && !name.startsWith("_")) {
         JsonNode subNode = node.get(name);
         if (subNode != null && subNode.isObject()) {
-          Class<? extends T> indicatedClass = VariationUtils.variationNameToType(registry, name);
+          Class<? extends T> indicatedClass = variationNameToType(name);
           rv.add(reduce(node, indicatedClass));
         }
       }
