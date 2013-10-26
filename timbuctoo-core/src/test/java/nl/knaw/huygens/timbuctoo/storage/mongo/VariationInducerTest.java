@@ -4,12 +4,14 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.TestDoc;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -18,13 +20,20 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class VariationInducerTest {
 
+  private static TypeRegistry registry;
+
   private ObjectMapper mapper;
   private VariationInducer inducer;
+
+  @BeforeClass
+  public static void setupRegistry() {
+    registry = new TypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
+  }
 
   @Before
   public void setUp() throws Exception {
     mapper = new ObjectMapper();
-    inducer = new VariationInducer(JsonViews.DBView.class);
+    inducer = new VariationInducer(registry, JsonViews.DBView.class);
   }
 
   @After
