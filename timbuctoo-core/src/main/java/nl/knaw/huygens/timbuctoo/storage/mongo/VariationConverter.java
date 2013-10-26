@@ -47,7 +47,7 @@ class VariationConverter {
   }
 
   protected String typeToVariationName(Class<? extends Entity> type) {
-    String typeId = type.getSimpleName().toLowerCase();
+    String typeId = typeRegistry.getINameForType(type);
     String variationId = getPackageName(type);
     return variationId.equals(BASE_MODEL_PACKAGE) ? typeId : variationId + "-" + typeId;
   }

@@ -2,8 +2,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBGeneralTestDoc
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.TestDoc;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mongojack.internal.stream.JacksonDBObject;
 
@@ -28,21 +27,21 @@ import com.mongodb.DBObject;
 
 public class VariationReducerTest {
 
+  private static TypeRegistry registry;
+
   private static final String TEST_ID = "id0000000001";
   private VariationReducer reducer;
-  private ObjectMapper m;
+  private ObjectMapper mapper;
+
+  @BeforeClass
+  public static void setupRegistry() {
+    registry = new TypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
+  }
 
   @Before
   public void setUp() {
-    TypeRegistry registry = mock(TypeRegistry.class);
-    doReturn(TestConcreteDoc.class).when(registry).getTypeForIName("testconcretedoc");
-    doReturn(TestInheritsFromTestBaseDoc.class).when(registry).getTypeForIName("testinheritsfromtestbasedoc");
-    doReturn(GeneralTestDoc.class).when(registry).getTypeForIName("generaltestdoc");
-    doReturn(ProjectAGeneralTestDoc.class).when(registry).getTypeForIName("projectageneraltestdoc");
-    doReturn(ProjectBGeneralTestDoc.class).when(registry).getTypeForIName("projectbgeneraltestdoc");
-
     reducer = new VariationReducer(registry);
-    m = new ObjectMapper();
+    mapper = new ObjectMapper();
   }
 
   @Test
@@ -50,7 +49,7 @@ public class VariationReducerTest {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"blub\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}], \"!defaultVRE\":\"blub\"},"
         + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     ProjectAGeneralTestDoc val = reducer.reduce(t, ProjectAGeneralTestDoc.class);
     ProjectAGeneralTestDoc testVal = new ProjectAGeneralTestDoc();
     testVal.name = "a";
@@ -68,7 +67,7 @@ public class VariationReducerTest {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class);
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "a";
@@ -86,7 +85,7 @@ public class VariationReducerTest {
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},"
         + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class);
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "b";
@@ -104,7 +103,7 @@ public class VariationReducerTest {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     GeneralTestDoc val = reducer.reduce(t, GeneralTestDoc.class);
     GeneralTestDoc testVal = new GeneralTestDoc();
     testVal.name = "a";
@@ -123,7 +122,7 @@ public class VariationReducerTest {
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},"
         + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     GeneralTestDoc val = reducer.reduce(t, GeneralTestDoc.class);
     GeneralTestDoc testVal = new GeneralTestDoc();
     testVal.name = "a";
@@ -140,7 +139,7 @@ public class VariationReducerTest {
   @Test
   public void testReduceMissingRole() throws IOException {
     String x = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}],\"!defaultVRE\":\"blub\"},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     TestDoc val = reducer.reduce(t, TestDoc.class);
     TestDoc testVal = new TestDoc();
     testVal.setId(TEST_ID);
@@ -156,7 +155,7 @@ public class VariationReducerTest {
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\", \"projectb\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},"
         + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"blubtest\"},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class, "projectb");
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "b";
@@ -175,7 +174,7 @@ public class VariationReducerTest {
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},"
         + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class, "projecta");
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "a";
@@ -194,7 +193,7 @@ public class VariationReducerTest {
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},"
         + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     GeneralTestDoc val = reducer.reduce(t, GeneralTestDoc.class, "projectb");
     GeneralTestDoc testVal = new GeneralTestDoc();
     testVal.name = "b";
@@ -213,7 +212,7 @@ public class VariationReducerTest {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     ProjectAGeneralTestDoc val = reducer.reduce(t, ProjectAGeneralTestDoc.class, "projecta");
     ProjectAGeneralTestDoc testVal = new ProjectAGeneralTestDoc();
     testVal.name = "a";
@@ -315,7 +314,7 @@ public class VariationReducerTest {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class, "blah");
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "a";
@@ -333,7 +332,7 @@ public class VariationReducerTest {
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},"
         + "\"projectb-projectbgeneraltestdoc\":{\"projectBGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     TestConcreteDoc val = reducer.reduce(t, TestConcreteDoc.class, "blah");
     TestConcreteDoc testVal = new TestConcreteDoc();
     testVal.name = "b";
@@ -351,7 +350,7 @@ public class VariationReducerTest {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"blub\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     GeneralTestDoc val = reducer.reduce(t, GeneralTestDoc.class, "blah");
     GeneralTestDoc testVal = new GeneralTestDoc();
     testVal.name = "a";
@@ -369,35 +368,35 @@ public class VariationReducerTest {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":[\"blub\"]}, {\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     reducer.reduce(t, ProjectAGeneralTestDoc.class, "blub");
   }
 
   @Test(expected = VariationException.class)
   public void testReduceVariationNonObject() throws IOException {
     String x = "{\"projectb-testdoc\": \"flups\",\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     reducer.reduce(t, TestDoc.class); // This will throw
   }
 
   @Test(expected = VariationException.class)
   public void testReduceMalformedCommonItem() throws IOException {
     String x = "{\"testconcretedoc\":{\"name\": 42},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     reducer.reduce(t, TestConcreteDoc.class); // This will throw
   }
 
   @Test(expected = VariationException.class)
   public void testReduceMalformedCommonValueArrayItem() throws IOException {
     String x = "{\"testconcretedoc\":{\"name\":[42]},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     reducer.reduce(t, TestConcreteDoc.class); // This will throw
   }
 
   @Test(expected = VariationException.class)
   public void testReduceMalformedCommonValueArrayItemAgreed() throws IOException {
     String x = "{\"testconcretedoc\":{\"name\":[{\"v\":\"b\", \"a\":42}]},\"_id\":\"id0000000001\"}";
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     reducer.reduce(t, TestConcreteDoc.class); // This will throw
   }
 
@@ -407,7 +406,7 @@ public class VariationReducerTest {
         + "\"generaltestdoc\":{\"generalTestDocValue\":[{\"v\":\"a\", \"a\":[\"projecta\"]},{\"v\":\"b\", \"a\":[\"blub\"]}],\"!defaultVRE\":\"projecta\"},"
         + "\"projecta-projectageneraltestdoc\":{\"projectAGeneralTestDocValue\":\"test\"},\"unknownType\" : {\"prop\":\"value\"},\"_id\":\"id0000000001\"}";
 
-    JsonNode t = m.readTree(x);
+    JsonNode t = mapper.readTree(x);
     reducer.reduce(t, TestConcreteDoc.class);
   }
 
@@ -456,7 +455,7 @@ public class VariationReducerTest {
   }
 
   private DBObject generateDBObject(String jsonString) throws JsonProcessingException, IOException {
-    return new JacksonDBObject<JsonNode>(m.readTree(jsonString), JsonNode.class);
+    return new JacksonDBObject<JsonNode>(mapper.readTree(jsonString), JsonNode.class);
   }
 
 }
