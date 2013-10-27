@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<solr persistent="true">
+<solr persistent="true" sharedLib="lib">
   <cores adminPath="/admin/cores">
     <!-- cores will be registered dynamically -->
   </cores>
