@@ -15,7 +15,7 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.storage.StorageStatus.KV;
+import nl.knaw.huygens.timbuctoo.util.KV;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

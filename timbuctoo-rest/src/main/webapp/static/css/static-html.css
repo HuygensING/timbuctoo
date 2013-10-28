@@ -4,6 +4,11 @@ table {
   background-color: lightblue;
 }
 
+table.outer {
+  border-spacing: 0px;
+  border: 0px;
+}
+
 th, td {
   padding: 5px;
   border-spacing: 2px;
@@ -18,4 +23,12 @@ td.name {
 td.number {
   width: 50px;
   text-align: right;
+}
+
+td.column {
+  padding: 20px;
+  border: 0px;
+  border-spacing: 0px;
+  vertical-align: top;
+  background-color: white;
 }
