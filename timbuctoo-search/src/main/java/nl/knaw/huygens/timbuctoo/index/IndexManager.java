@@ -1,17 +1,22 @@
 package nl.knaw.huygens.timbuctoo.index;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.util.KV;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -32,12 +37,14 @@ import com.google.inject.Singleton;
 @Singleton
 public class IndexManager {
 
+  private final Configuration config;
   private final TypeRegistry registry;
   private final LocalSolrServer server;
   private Map<Class<? extends Entity>, EntityIndexer<? extends Entity>> indexers;
 
   @Inject
   public IndexManager(Configuration config, TypeRegistry registry, LocalSolrServer server, StorageManager storageManager, RelationManager relationManager) {
+    this.config = config;
     this.registry = registry;
     this.server = server;
     setupIndexers(config, storageManager, relationManager);
@@ -92,6 +99,32 @@ public class IndexManager {
       server.deleteAll();
     } catch (Exception e) {
       throw new IndexException("Failed to delete all entities from index", e);
+    }
+  }
+
+  public IndexStatus getStatus() {
+    IndexStatus status = new IndexStatus();
+
+    Set<Class<? extends DomainEntity>> types = Sets.newTreeSet(new Comparator<Class<? extends DomainEntity>>() {
+      @Override
+      public int compare(Class<? extends DomainEntity> o1, Class<? extends DomainEntity> o2) {
+        return o1.getSimpleName().compareTo(o2.getSimpleName());
+      }
+    });
+    types.addAll(config.getDefaultScope().getBaseEntityTypes());
+    for (Class<? extends DomainEntity> type : types) {
+      status.addDomainEntityCount(getCount(type));
+    }
+
+    return status;
+  }
+
+  private KV<Long> getCount(Class<? extends Entity> type) {
+    try {
+      String coreName = registry.getINameForType(type);
+      return new KV<Long>(type.getSimpleName(), server.count(coreName));
+    } catch (Exception e) {
+      return new KV<Long>(type.getSimpleName(), (long) 0);
     }
   }
 

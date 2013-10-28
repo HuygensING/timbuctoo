@@ -15,12 +15,16 @@
 <table class="outer">
 <tr>
 <td class="column">
-<h2>Stored System Entities</h2>
+<h3>Stored system entities</h3>
 <div id="stored_system_entities"></div>
 </td>
 <td class="column">
-<h2>Stored Domain Entities</h2>
+<h3>Stored domain entities</h3>
 <div id="stored_domain_entities"></div>
+</td>
+<td class="column">
+<h3>Indexed domain entities</h3>
+<div id="indexed_domain_entities"></div>
 </td>
 </tr>
 </table>
@@ -58,6 +62,13 @@
           });
           html2 += '</table>';
           $('#stored_domain_entities').html(html2);
+
+          var html3 = '<table><tr><th>Type</th><th>Count</th></tr>';
+          $.each(data.indexStatus.domainEntityCounts, function (i, item) {
+            html3 += '<tr><td class="name">' + item.key + '</td><td class="number">' + item.value + '</td></tr>';
+          });
+          html3 += '</table>';
+          $('#indexed_domain_entities').html(html3);
       }
     });
   }

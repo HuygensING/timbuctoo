@@ -26,7 +26,7 @@ td.number {
 }
 
 td.column {
-  padding: 20px;
+  padding-right: 50px;
   border: 0px;
   border-spacing: 0px;
   vertical-align: top;
