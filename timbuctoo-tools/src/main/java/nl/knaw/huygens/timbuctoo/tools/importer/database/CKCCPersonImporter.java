@@ -6,7 +6,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.ckcc.CKCCPerson;
-import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCScientist;
+import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPerson;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
@@ -74,7 +74,7 @@ public class CKCCPersonImporter extends CSVImporter {
       List<Person> persons = storageManager.getAllVariations(Person.class, id);
       for (Person p : persons) {
         Class<? extends Person> cls = p.getClass();
-        if (cls != Person.class && cls != DWCScientist.class) {
+        if (cls != Person.class && cls != DWCPerson.class) {
           System.out.printf("%-20s %-40s %-12s %-12s%n", cls.getSimpleName(), p.getName(), p.getBirthDate(), p.getDeathDate());
         }
       }
