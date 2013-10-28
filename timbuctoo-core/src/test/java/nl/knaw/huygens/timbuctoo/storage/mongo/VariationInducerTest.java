@@ -45,7 +45,7 @@ public class VariationInducerTest {
   @Test
   public void testInduce() throws IOException {
     String testStr = "{\"testinheritsfromtestbasedoc\":{\"name\":[{\"v\":\"x\", \"a\":[\"projectb\"]}],\"!defaultVRE\":\"projectb\"}," + "\"projectb-testdoc\": {\"blah\": \"stuff\"},\"_id\":null,"
-        + "\"^rev\":0,\"^lastChange\":null,\"^creation\":null,\"^deleted\":false}";
+        + "\"^rev\":0,\"^lastChange\":null,\"^creation\":null, \"^pid\":null, \"^deleted\":false}";
 
     JsonNode t = mapper.readTree(testStr);
     TestDoc x = new TestDoc();
