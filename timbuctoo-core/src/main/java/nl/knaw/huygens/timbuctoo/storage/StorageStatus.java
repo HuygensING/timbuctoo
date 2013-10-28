@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.storage;
 
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.util.KV;
+
 import com.google.common.collect.Lists;
 
 public class StorageStatus {
@@ -28,26 +30,6 @@ public class StorageStatus {
 
   public void addSystemEntityCount(KV<Long> count) {
     systemEntityCounts.add(count);
-  }
-
-  // -------------------------------------------------------------------
-
-  public static class KV<T> {
-    private final String key;
-    private final T value;
-
-    public KV(String key, T value) {
-      this.key = key;
-      this.value = value;
-    }
-
-    public String getKey() {
-      return key;
-    }
-
-    public T getValue() {
-      return value;
-    }
   }
 
 }

@@ -7,8 +7,8 @@ import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.rest.util.Status;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.storage.StorageStatus;
 
 import com.google.inject.Inject;
 
@@ -25,8 +25,10 @@ public class StatusResource {
   @GET
   @Produces({ MediaType.APPLICATION_JSON })
   @APIDesc("Returns the status of the webapp.")
-  public StorageStatus getStatus() {
-    return storageManager.getStatus();
+  public Status getStatus() {
+    Status status = new Status();
+    status.setStorageStatus(storageManager.getStatus());
+    return status;
   }
 
 }
