@@ -118,6 +118,10 @@
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.database.AtlantischeGidsImporter</mainClass>
               <name>atlgImport</name>
             </program>
+            <program>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.database.DutchCaribbeanImporter</mainClass>
+              <name>ducaImport</name>
+            </program>
           </programs>
         </configuration>
       </plugin>
