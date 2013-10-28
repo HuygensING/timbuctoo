@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
@@ -25,11 +26,12 @@ class MongoDBVariationIterator<T extends Entity> implements StorageIterator<T> {
     this.cls = cls;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public T next() {
     try {
       DBObject next = delegate.next();
-      return reducer.reduceDBObject(next, cls);
+      return (T) reducer.reduceDBObject((Class<? extends DomainEntity>) cls, next);
     } catch (NoSuchElementException ex) {
       close();
       throw ex;
@@ -49,6 +51,7 @@ class MongoDBVariationIterator<T extends Entity> implements StorageIterator<T> {
     delegate.skip(count);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public List<T> getSome(int limit) {
     List<T> list = Lists.newArrayList();
@@ -63,7 +66,7 @@ class MongoDBVariationIterator<T extends Entity> implements StorageIterator<T> {
       }
 
       try {
-        list.add(reducer.reduceDBObject(next, cls));
+        list.add((T) reducer.reduceDBObject((Class<? extends DomainEntity>) cls, next));
       } catch (IOException e) {
         e.printStackTrace();
         list.add(null);

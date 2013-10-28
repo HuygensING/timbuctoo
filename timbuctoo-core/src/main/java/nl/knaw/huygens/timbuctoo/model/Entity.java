@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.model;
 
-import java.util.List;
-
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
@@ -11,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.google.common.collect.Lists;
 
 // Annotation determines to which subclass the entity has to be resolved.
 // @see: http://wiki.fasterxml.com/JacksonPolymorphicDeserialization
@@ -26,8 +23,6 @@ public abstract class Entity {
   private Change lastChange;
   private Change creation;
   private boolean _deleted;
-  private List<Reference> variations = Lists.newArrayList();
-  private String currentVariation;
 
   /**
    * Returns the name to be displayed for identification of this entity.
@@ -85,30 +80,6 @@ public abstract class Entity {
   @JsonProperty("^deleted")
   public void setDeleted(boolean deleted) {
     this._deleted = deleted;
-  }
-
-  @JsonProperty("@variations")
-  public List<Reference> getVariations() {
-    return variations;
-  }
-
-  @JsonProperty("@variations")
-  public void setVariations(List<Reference> variations) {
-    this.variations = variations;
-  }
-
-  public void addVariation(Class<? extends Entity> refType, String refId) {
-    variations.add(new Reference(refType, refId));
-  }
-
-  @JsonProperty("!currentVariation")
-  public String getCurrentVariation() {
-    return currentVariation;
-  }
-
-  @JsonProperty("!currentVariation")
-  public void setCurrentVariation(String currentVariation) {
-    this.currentVariation = currentVariation;
   }
 
 }

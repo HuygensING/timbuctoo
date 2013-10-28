@@ -5,21 +5,20 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 
 import org.bson.BSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 public class MongoDiffTest {
 
-  public static class Foo extends Entity {
+  public static class Foo extends DomainEntity {
     public static class Baz {
       public int x;
       public int y;
@@ -30,26 +29,13 @@ public class MongoDiffTest {
     public Baz baz;
 
     public int blah;
+    protected List<Reference> variations = Lists.newArrayList();
+    protected String currentVariation;
 
     @Override
     public String getDisplayName() {
       return name;
     }
-
-    @Override
-    @JsonProperty("!currentVariation")
-    public String getCurrentVariation() {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    @Override
-    @JsonProperty("!currentVariation")
-    public void setCurrentVariation(String defaultVRE) {
-      // TODO Auto-generated method stub
-
-    }
-
   }
 
   @Before
