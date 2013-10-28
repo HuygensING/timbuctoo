@@ -7,6 +7,7 @@ import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.rest.util.Status;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
@@ -16,10 +17,12 @@ import com.google.inject.Inject;
 public class StatusResource {
 
   private final StorageManager storageManager;
+  private final IndexManager indexManager;
 
   @Inject
-  public StatusResource(StorageManager storageManager) {
+  public StatusResource(StorageManager storageManager, IndexManager indexManager) {
     this.storageManager = storageManager;
+    this.indexManager = indexManager;
   }
 
   @GET
@@ -28,6 +31,7 @@ public class StatusResource {
   public Status getStatus() {
     Status status = new Status();
     status.setStorageStatus(storageManager.getStatus());
+    status.setIndexStatus(indexManager.getStatus());
     return status;
   }
 
