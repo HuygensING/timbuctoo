@@ -5,8 +5,8 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPerson;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPlace;
-import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.timbuctoo.model.raa.RAACivilServant;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -45,7 +45,7 @@ public class BulkImporter {
 
       String resourceDir = "src/main/resources/";
       importer.importData(resourceDir + "DWCPlaceMapping.properties", DWCPlace.class);
-      importer.importData(resourceDir + "DWCScientistMapping.properties", DWCScientist.class);
+      importer.importData(resourceDir + "DWCScientistMapping.properties", DWCPerson.class);
       importer.importData(resourceDir + "RAACivilServantMapping.properties", RAACivilServant.class);
       CKCCPersonImporter csvImporter = new CKCCPersonImporter(storageManager);
       csvImporter.handleFile(resourceDir + "testdata/ckcc-persons.txt", 9, false);
@@ -64,7 +64,7 @@ public class BulkImporter {
       System.out.println();
 
       indexEntities(storageManager, indexManager, DWCPlace.class);
-      indexEntities(storageManager, indexManager, DWCScientist.class);
+      indexEntities(storageManager, indexManager, DWCPerson.class);
       indexEntities(storageManager, indexManager, RAACivilServant.class);
 
       long time = (System.currentTimeMillis() - start) / 1000;
