@@ -1,9 +1,13 @@
 package nl.knaw.huygens.timbuctoo.config;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import nl.knaw.huygens.timbuctoo.vre.FullScope;
+import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -17,7 +21,9 @@ public class Configuration {
   public static final String DEFAULT_CONFIG_FILE = "../config.xml";
 
   private static final String SETTINGS_PREFIX = "settings.";
-  private XMLConfiguration xmlConfig;
+
+  private final XMLConfiguration xmlConfig;
+  private final Scope defaultScope;
 
   public Configuration() throws ConfigurationException {
     this(DEFAULT_CONFIG_FILE);
@@ -33,6 +39,12 @@ public class Configuration {
     } catch (ConfigurationException e) {
       System.err.println("ERROR: unable to load configuration!");
       throw e;
+    }
+    try {
+      defaultScope = new FullScope();
+    } catch (IOException e) {
+      System.err.println("ERROR: unable to obtain default scope!");
+      throw new ConfigurationException(e);
     }
   }
 
@@ -95,9 +107,13 @@ public class Configuration {
     return rv;
   }
 
-  public String getSolrDir() {
-    String path = this.getSetting("solr.directory");
-    return this.getBooleanSetting("solr.use_user_home") ? this.pathInUserHome(path) : path;
+  public Scope getDefaultScope() {
+    return defaultScope;
+  }
+
+  public String getSolrHomeDir() {
+    String path = getSetting("solr.directory");
+    return getBooleanSetting("solr.use_user_home") ? pathInUserHome(path) : path;
   }
 
   public String pathInUserHome(String path) {

@@ -9,9 +9,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -34,8 +32,6 @@ import com.google.inject.Singleton;
 @Singleton
 public class IndexManager {
 
-  private final Logger LOG = LoggerFactory.getLogger(IndexManager.class);
-
   private final TypeRegistry registry;
   private final LocalSolrServer server;
   private Map<Class<? extends Entity>, EntityIndexer<? extends Entity>> indexers;
@@ -48,26 +44,15 @@ public class IndexManager {
   }
 
   private void setupIndexers(Configuration config, StorageManager storageManager, RelationManager relationManager) {
-    boolean error = false;
     indexers = Maps.newHashMap();
     indexers.put(Relation.class, new RelationIndexer(registry, server, storageManager, relationManager));
-    for (String doctype : config.getSettings("indexeddoctypes")) {
-      Class<? extends Entity> type = registry.getTypeForIName(doctype);
-      if (type == null) {
-        LOG.error("Configuration: '{}' is not a entity type", doctype);
-        error = true;
-      } else if (type != registry.getBaseClass(type)) {
-        LOG.error("Configuration: '{}' is not a primitive entity type", doctype);
-        error = true;
-      } else if (indexers.containsKey(type)) {
-        LOG.warn("Configuration: ignoring entry '{}' in indexeddoctypes", doctype);
-      } else {
-        String core = type.getSimpleName().toLowerCase();
-        indexers.put(type, DomainEntityIndexer.newInstance(storageManager, server, core));
+
+    Scope scope = config.getDefaultScope();
+    for (Class<? extends Entity> type : scope.getBaseEntityTypes()) {
+      if (type != Relation.class) {
+        String coreName = registry.getINameForType(type);
+        indexers.put(type, DomainEntityIndexer.newInstance(storageManager, server, coreName));
       }
-    }
-    if (error) {
-      throw new RuntimeException("Configuration error");
     }
   }
 
