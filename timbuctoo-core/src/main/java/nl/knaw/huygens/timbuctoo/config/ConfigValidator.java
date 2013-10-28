@@ -20,7 +20,6 @@ public class ConfigValidator {
     error = false;
 
     validateDocTypes("doctypes");
-    validateDocTypes("indexeddoctypes");
     validateDocTypes("versioneddoctypes");
 
     validateSolrDirectory();
@@ -40,7 +39,7 @@ public class ConfigValidator {
   }
 
   private void validateSolrDirectory() {
-    File dir = new File(config.getSolrDir());
+    File dir = new File(config.getSolrHomeDir());
     if (!dir.isDirectory()) {
       System.err.printf("Solr directory '%s' does not exist%n", dir.getAbsolutePath());
       error = true;

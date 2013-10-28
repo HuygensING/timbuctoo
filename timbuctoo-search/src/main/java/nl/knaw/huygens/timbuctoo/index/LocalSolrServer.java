@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -36,9 +39,8 @@ import com.google.inject.name.Named;
 
 /**
  * Handles communication with an embedded Solr server with various cores.
- * The cores are specified in the {@code indexeddoctypes} entry of the
- * configuration file; each type corresponds with a core. Existing cores
- * that are not referred to in the configuration file are ignored.
+ * The cores correspond with the base entity types specified in the scope.
+ * Existing cores that are not referred to are ignored.
  */
 @Singleton
 public class LocalSolrServer {
@@ -60,25 +62,25 @@ public class LocalSolrServer {
   @Inject
   public LocalSolrServer( //
       Configuration config, //
-      @Named("indexeddoctypes")
-      String coreNameList, //
+      TypeRegistry registry, //
       @Named("solr.commit_within")
       String commitWithinSpec //
   ) {
 
     try {
-      String solrDir = config.getSolrDir();
-      LOG.info("Solr directory: {}", solrDir);
+      String solrHomeDir = config.getSolrHomeDir();
+      LOG.info("Solr directory: {}", solrHomeDir);
       commitWithin = stringToInt(commitWithinSpec, 10 * 1000);
       LOG.info("Maximum time before a commit: {} seconds", commitWithin / 1000);
 
-      File configFile = new File(new File(solrDir, "conf"), "solr.xml");
-      container = new CoreContainer(solrDir, configFile);
+      File configFile = new File(new File(solrHomeDir, "conf"), "solr.xml");
+      container = new CoreContainer(solrHomeDir, configFile);
+
       solrServers = Maps.newHashMap();
-      solrServers.put("relation", createServer(container, "relation", solrDir));
-      for (String coreName : coreNameList.split(",")) {
-        // solrServers.put(coreName, new EmbeddedSolrServer(container, coreName));
-        solrServers.put(coreName, createServer(container, coreName, solrDir));
+      Scope scope = config.getDefaultScope();
+      for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
+        String coreName = registry.getINameForType(type);
+        solrServers.put(coreName, createServer(container, coreName, solrHomeDir));
       }
       coreNames = Collections.unmodifiableSet(solrServers.keySet());
     } catch (Exception e) {
