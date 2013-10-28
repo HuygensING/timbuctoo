@@ -3,8 +3,6 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
@@ -27,7 +25,7 @@ public class StatusResource {
   @GET
   @Produces({ MediaType.APPLICATION_JSON })
   @APIDesc("Returns the status of the webapp.")
-  public StorageStatus getSitemap(@Context Application app) {
+  public StorageStatus getStatus() {
     return storageManager.getStatus();
   }
 

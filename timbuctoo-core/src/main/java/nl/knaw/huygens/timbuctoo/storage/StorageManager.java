@@ -2,16 +2,14 @@ package nl.knaw.huygens.timbuctoo.storage;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
-import nl.knaw.huygens.timbuctoo.model.Archive;
-import nl.knaw.huygens.timbuctoo.model.Archiver;
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Keyword;
-import nl.knaw.huygens.timbuctoo.model.Legislation;
-import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
@@ -22,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageStatus.KV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -30,10 +29,12 @@ public class StorageManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(StorageManager.class);
 
+  private final Configuration config;
   private final VariationStorage storage;
 
   @Inject
-  public StorageManager(VariationStorage storage) {
+  public StorageManager(Configuration config, VariationStorage storage) {
+    this.config = config;
     this.storage = storage;
   }
 
@@ -53,16 +54,19 @@ public class StorageManager {
 
   // -------------------------------------------------------------------
 
-  // TODO generate entity types dynamically
   public StorageStatus getStatus() {
     StorageStatus status = new StorageStatus();
 
-    status.addDomainEntityCount(getCount(Archive.class));
-    status.addDomainEntityCount(getCount(Archiver.class));
-    status.addDomainEntityCount(getCount(Keyword.class));
-    status.addDomainEntityCount(getCount(Legislation.class));
-    status.addDomainEntityCount(getCount(Person.class));
-    status.addDomainEntityCount(getCount(Relation.class));
+    Set<Class<? extends DomainEntity>> types = Sets.newTreeSet(new Comparator<Class<? extends DomainEntity>>() {
+      @Override
+      public int compare(Class<? extends DomainEntity> o1, Class<? extends DomainEntity> o2) {
+        return o1.getSimpleName().compareTo(o2.getSimpleName());
+      }
+    });
+    types.addAll(config.getDefaultScope().getBaseEntityTypes());
+    for (Class<? extends DomainEntity> type : types) {
+      status.addDomainEntityCount(getCount(type));
+    }
 
     status.addSystemEntityCount(getCount(RelationType.class));
     status.addSystemEntityCount(getCount(SearchResult.class));
