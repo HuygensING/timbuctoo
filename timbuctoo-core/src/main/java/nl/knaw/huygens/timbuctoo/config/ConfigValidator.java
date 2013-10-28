@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.config;
 import java.io.File;
 
 /**
- * Validates the Configuration of the Repository Project.
+ * Validates the configuration.
  */
 public class ConfigValidator {
 
@@ -20,8 +20,6 @@ public class ConfigValidator {
     error = false;
 
     validateDocTypes("doctypes");
-    validateDocTypes("versioneddoctypes");
-
     validateSolrDirectory();
 
     if (error) {
