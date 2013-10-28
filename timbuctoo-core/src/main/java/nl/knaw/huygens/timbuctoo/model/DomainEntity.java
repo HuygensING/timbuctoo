@@ -10,10 +10,12 @@ import com.google.common.collect.Maps;
 
 // Make sure the '@isWritable'-field is not deserialized.
 @JsonIgnoreProperties("@isWritable")
-public abstract class DomainEntity extends Entity {
+public abstract class DomainEntity extends Entity implements Variable {
 
   private String pid; // the persistent identifier.
   private Map<String, List<EntityRef>> relations = Maps.newHashMap();
+  protected List<Reference> variations = Lists.newArrayList();
+  protected String currentVariation;
 
   @JsonProperty("^pid")
   public String getPid() {
@@ -57,6 +59,35 @@ public abstract class DomainEntity extends Entity {
      * to check the batch-imported data.
      */
     return getPid() != null;
+  }
+
+  @Override
+  @JsonProperty("@variations")
+  public List<Reference> getVariations() {
+    return variations;
+  }
+
+  @Override
+  @JsonProperty("@variations")
+  public void setVariations(List<Reference> variations) {
+    this.variations = variations;
+  }
+
+  @Override
+  public void addVariation(Class<? extends Entity> refType, String refId) {
+    variations.add(new Reference(refType, refId));
+  }
+
+  @Override
+  @JsonProperty("!currentVariation")
+  public String getCurrentVariation() {
+    return currentVariation;
+  }
+
+  @Override
+  @JsonProperty("!currentVariation")
+  public void setCurrentVariation(String currentVariation) {
+    this.currentVariation = currentVariation;
   }
 
 }

@@ -159,10 +159,12 @@ public class TypeRegistryTest {
   private static class NotAnEntity {}
 
   private static class AnEntity extends Entity {
+
     @Override
     public String getDisplayName() {
       return null;
     }
+
   }
 
   private static class ASystemEntity extends SystemEntity {

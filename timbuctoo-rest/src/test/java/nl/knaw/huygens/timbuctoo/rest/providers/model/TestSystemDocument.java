@@ -18,16 +18,6 @@ public class TestSystemDocument extends SystemEntity {
   private String propWithAnnotatedAccessors;
 
   @Override
-  @JsonProperty("!currentVariation")
-  public String getCurrentVariation() {
-    return null;
-  }
-
-  @Override
-  @JsonProperty("!currentVariation")
-  public void setCurrentVariation(String currentVariation) {}
-
-  @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
   public String getDisplayName() {

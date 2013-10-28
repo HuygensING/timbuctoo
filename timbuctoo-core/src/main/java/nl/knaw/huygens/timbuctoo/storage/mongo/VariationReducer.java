@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 
@@ -29,7 +30,7 @@ class VariationReducer extends VariationConverter {
     super(registry);
   }
 
-  public <T extends Entity> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {
+  public <T extends DomainEntity> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {
     if (obj == null) {
       return null;
     }
@@ -49,7 +50,7 @@ class VariationReducer extends VariationConverter {
     return changes;
   }
 
-  public <T extends Entity> T reduceRevision(Class<T> type, DBObject obj) throws IOException {
+  public <T extends DomainEntity> T reduceRevision(Class<T> type, DBObject obj) throws IOException {
     if (obj == null) {
       return null;
     }
@@ -61,11 +62,11 @@ class VariationReducer extends VariationConverter {
     return reduce(objectToReduce, type);
   }
 
-  public <T extends Entity> T reduceDBObject(DBObject obj, Class<T> cls) throws IOException {
+  public <T extends DomainEntity> T reduceDBObject(Class<T> cls, DBObject obj) throws IOException {
     return reduceDBObject(obj, cls, null);
   }
 
-  public <T extends Entity> T reduceDBObject(DBObject obj, Class<T> cls, String variation) throws IOException {
+  public <T extends DomainEntity> T reduceDBObject(DBObject obj, Class<T> cls, String variation) throws IOException {
     if (obj == null) {
       return null;
     }
@@ -73,11 +74,11 @@ class VariationReducer extends VariationConverter {
     return reduce(tree, cls, variation);
   }
 
-  public <T extends Entity> T reduce(JsonNode node, Class<T> cls) throws VariationException, JsonProcessingException {
+  public <T extends DomainEntity> T reduce(JsonNode node, Class<T> cls) throws VariationException, JsonProcessingException {
     return reduce(node, cls, null);
   }
 
-  public <T extends Entity> T reduce(JsonNode node, Class<T> cls, String requestedVariation) throws VariationException, JsonProcessingException {
+  public <T extends DomainEntity> T reduce(JsonNode node, Class<T> cls, String requestedVariation) throws VariationException, JsonProcessingException {
     final String classVariation = getPackageName(cls);
     String idPrefix = classVariation + "-";
     List<JsonNode> specificData = Lists.newArrayListWithExpectedSize(1);
@@ -257,7 +258,7 @@ class VariationReducer extends VariationConverter {
    * Example2:  if cls is Scientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
    * Example3:  if cls is ProjectAScientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
    */
-  public <T extends Entity> List<T> getAllForDBObject(DBObject item, Class<T> cls) throws IOException {
+  public <T extends DomainEntity> List<T> getAllForDBObject(DBObject item, Class<T> cls) throws IOException {
     JsonNode node = convertToTree(item);
     List<T> rv = Lists.newArrayList();
     for (String name : ImmutableList.copyOf(node.fieldNames())) {

@@ -1,12 +1,17 @@
 package nl.knaw.huygens.timbuctoo.model;
 
+import java.util.List;
+
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Lists;
 
 public class ExplicitlyAnnotatedModelWithIndexAnnotations extends Entity {
+
+  protected List<Reference> variations = Lists.newArrayList();
+  protected String currentVariation;
 
   @Override
   @IndexAnnotation(fieldName = "id")
@@ -25,15 +30,5 @@ public class ExplicitlyAnnotatedModelWithIndexAnnotations extends Entity {
   public String getString() {
     return "";
   }
-
-  @Override
-  @JsonProperty("!currentVariation")
-  public String getCurrentVariation() {
-    return null;
-  }
-
-  @Override
-  @JsonProperty("!currentVariation")
-  public void setCurrentVariation(String defaultVRE) {}
 
 }
