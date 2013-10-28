@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.tools.importer.database;
 
+import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPerson;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPlace;
-import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.timbuctoo.model.raa.RAACivilServant;
 
 /**
@@ -16,7 +16,7 @@ public class BulkDataTransformer {
     long start = System.currentTimeMillis();
     String resourceDir = "resources/";
     importer.importData(resourceDir + "DWCPlaceMapping.properties", DWCPlace.class);
-    importer.importData(resourceDir + "DWCScientistMapping.properties", DWCScientist.class);
+    importer.importData(resourceDir + "DWCScientistMapping.properties", DWCPerson.class);
     importer.importData(resourceDir + "RAACivilServantMapping.properties", RAACivilServant.class);
 
     long time = (System.currentTimeMillis() - start) / 1000;

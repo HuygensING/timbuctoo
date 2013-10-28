@@ -1,11 +1,11 @@
 package nl.knaw.huygens.timbuctoo.variation.model;
 
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 /**
  * Basic POJO object used for testing
  */
-public abstract class TestBaseDoc extends SystemEntity {
+public abstract class TestBaseDoc extends DomainEntity {
 
   /** Simple string prop for testing */
   public String name;

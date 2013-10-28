@@ -23,19 +23,6 @@ public class MongoObjectMapperDocument extends SystemEntity {
   private List<? extends SystemEntity> nonPrimitiveTestCollection;
 
   @Override
-  @JsonProperty("!currentVariation")
-  public String getCurrentVariation() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  @JsonProperty("!currentVariation")
-  public void setCurrentVariation(String currentVariation) {
-    // TODO Auto-generated method stub
-  }
-
-  @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
   public String getDisplayName() {
