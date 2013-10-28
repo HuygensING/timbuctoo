@@ -51,6 +51,7 @@ public class IndexManager {
     for (Class<? extends Entity> type : scope.getBaseEntityTypes()) {
       if (type != Relation.class) {
         String coreName = registry.getINameForType(type);
+        server.addCore("default", coreName);
         indexers.put(type, DomainEntityIndexer.newInstance(storageManager, server, coreName));
       }
     }

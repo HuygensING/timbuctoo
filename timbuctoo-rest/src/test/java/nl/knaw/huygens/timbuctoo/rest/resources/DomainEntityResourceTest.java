@@ -47,7 +47,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   private static final String PERSISTENCE_PRODUCER = "persistenceProducer";
   private static final String INDEX_PRODUCER = "indexProducer";
   private static final Class<? extends Entity> DEFAULT_TYPE = TestConcreteDoc.class;
-  private static final String DEFAULT_PID = "c14a5e7d-4728-4f52-af98-480ff7fef08e";
+  // private static final String DEFAULT_PID = "c14a5e7d-4728-4f52-af98-480ff7fef08e";
   private static final String DEFAULT_ID = "TEST000000000001";
   private static final String USER_ROLE = "USER";
 

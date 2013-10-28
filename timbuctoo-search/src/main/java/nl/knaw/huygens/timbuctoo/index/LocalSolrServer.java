@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.index;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,9 +11,6 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -35,11 +33,9 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 
 /**
  * Handles communication with an embedded Solr server with various cores.
- * The cores correspond with the base entity types specified in the scope.
  * Existing cores that are not referred to are ignored.
  */
 @Singleton
@@ -54,58 +50,40 @@ public class LocalSolrServer {
   private static final String ID_FIELD = "id";
   private static final String ALL = "*:*";
 
-  private CoreContainer container = null;
-  private final Map<String, SolrServer> solrServers;
-  private final Set<String> coreNames;
+  private final CoreContainer container;
+  private final Map<String, SolrServer> solrServers = Maps.newTreeMap();
+  private final String solrHomeDir;
   private final int commitWithin;
 
   @Inject
-  public LocalSolrServer( //
-      Configuration config, //
-      TypeRegistry registry, //
-      @Named("solr.commit_within")
-      String commitWithinSpec //
-  ) {
+  public LocalSolrServer(Configuration config) {
+    solrHomeDir = config.getSolrHomeDir();
+    LOG.info("Solr directory: {}", solrHomeDir);
+
+    commitWithin = config.getIntSetting("solr.commit_within", 10 * 1000);
+    LOG.info("Maximum time before a commit: {} seconds", commitWithin / 1000);
 
     try {
-      String solrHomeDir = config.getSolrHomeDir();
-      LOG.info("Solr directory: {}", solrHomeDir);
-      commitWithin = stringToInt(commitWithinSpec, 10 * 1000);
-      LOG.info("Maximum time before a commit: {} seconds", commitWithin / 1000);
-
       File configFile = new File(new File(solrHomeDir, "conf"), "solr.xml");
       container = new CoreContainer(solrHomeDir, configFile);
-
-      solrServers = Maps.newHashMap();
-      Scope scope = config.getDefaultScope();
-      for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
-        String coreName = registry.getINameForType(type);
-        solrServers.put(coreName, createServer(container, coreName, solrHomeDir));
-      }
-      coreNames = Collections.unmodifiableSet(solrServers.keySet());
-    } catch (Exception e) {
-      LOG.error("Initialization: {}", e.getMessage());
-      if (container != null) {
-        try {
-          container.shutdown();
-        } catch (Exception e2) {
-          LOG.error("Solr CoreContainer shutdown: {}", e2.getMessage());
-        }
-      }
+    } catch (FileNotFoundException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public void addCore(String scopeName, String coreName) {
+    solrServers.put(coreName, createServer(scopeName, coreName));
   }
 
   /**
    * Creates an embedded Solr server with the given core name.
    * If a schema file exists for the core it will be used,
    * otherwise the schema {@code file schema-tmpl.xml} will be used.
-   * The core must not be specified in the solr.xml file.
    */
-  private SolrServer createServer(CoreContainer container, String coreName, String instanceDir) {
-    CoreDescriptor descriptor = new CoreDescriptor(container, coreName, instanceDir);
+  private SolrServer createServer(String scopeName, String coreName) {
+    CoreDescriptor descriptor = new CoreDescriptor(container, coreName, solrHomeDir);
     String schema = String.format("schema-%s.xml", coreName);
-    if (new File(instanceDir, schema).isFile()) {
+    if (new File(solrHomeDir, schema).isFile()) {
       descriptor.setSchemaName(schema);
       LOG.info("Schema for {} index: {}", coreName, schema);
     } else {
@@ -139,7 +117,7 @@ public class LocalSolrServer {
   }
 
   public void deleteAll() throws SolrServerException, IOException {
-    for (String core : coreNames) {
+    for (String core : getCoreNames()) {
       LOG.info("Clearing {} index", core);
       deleteAll(core);
     }
@@ -151,7 +129,7 @@ public class LocalSolrServer {
   }
 
   public void commitAll() throws SolrServerException, IOException {
-    for (String core : coreNames) {
+    for (String core : getCoreNames()) {
       commit(core);
     }
   }
@@ -215,20 +193,12 @@ public class LocalSolrServer {
     }
   }
 
-  public Set<String> getCoreNames() {
-    return coreNames;
+  private Set<String> getCoreNames() {
+    return solrServers.keySet();
   }
 
   private SolrServer serverFor(String core) {
     return solrServers.get(core);
-  }
-
-  private int stringToInt(String text, int defaulValue) {
-    try {
-      return Integer.parseInt(text);
-    } catch (NumberFormatException e) {
-      return defaulValue;
-    }
   }
 
 }
