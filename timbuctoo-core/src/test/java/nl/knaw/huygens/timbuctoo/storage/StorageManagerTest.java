@@ -17,6 +17,7 @@ import java.util.List;
 
 import javax.persistence.PersistenceException;
 
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.mongo.model.TestSystemDocument;
@@ -32,15 +33,17 @@ import com.google.common.collect.Lists;
 
 public class StorageManagerTest {
 
+  private Configuration config;
   private StorageManager instance;
   private VariationStorage storage;
   private TypeRegistry typeRegistry;
 
   @Before
   public void SetUp() {
+    config = mock(Configuration.class);
     storage = mock(VariationStorage.class);
     typeRegistry = mock(TypeRegistry.class);
-    instance = new StorageManager(storage);
+    instance = new StorageManager(config, storage);
   }
 
   @Test
