@@ -22,6 +22,7 @@ import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
@@ -29,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.search.FacetDoesNotExistException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,11 +46,13 @@ public class SearchResource {
   private static final Logger LOG = LoggerFactory.getLogger(SearchResource.class);
 
   @Inject
-  private SearchManager searchManager;
+  private Configuration config;
+  @Inject
+  private TypeRegistry registry;
   @Inject
   private StorageManager storageManager;
   @Inject
-  private TypeRegistry registry;
+  private SearchManager searchManager;
 
   @POST
   @APIDesc("Searches the Solr index")
@@ -71,9 +75,8 @@ public class SearchResource {
     // Process
     try {
       // FIXME SearchResource shouldn't know the relation between types and cores
-      Class<? extends Entity> baseType = registry.getBaseClass(type);
-      String core = registry.getINameForType(baseType);
-      SearchResult result = searchManager.search(type, core, searchParameters);
+      String coreName = getCoreName(config.getDefaultScope(), type);
+      SearchResult result = searchManager.search(type, coreName, searchParameters);
       storageManager.addEntity(SearchResult.class, result);
       String queryId = result.getId();
       return Response.created(new URI(queryId)).build();
@@ -84,6 +87,12 @@ public class SearchResource {
       LOG.warn("POST - {}", e.getMessage());
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  private String getCoreName(Scope scope, Class<? extends Entity> type) {
+    Class<? extends Entity> baseType = registry.getBaseClass(type);
+    String collectionName = registry.getINameForType(baseType);
+    return String.format("%s.%s", scope.getName(), collectionName);
   }
 
   @GET

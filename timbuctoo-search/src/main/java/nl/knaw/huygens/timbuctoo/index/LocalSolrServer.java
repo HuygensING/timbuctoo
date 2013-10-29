@@ -71,29 +71,37 @@ public class LocalSolrServer {
     }
   }
 
-  public void addCore(String scopeName, String coreName) {
-    solrServers.put(coreName, createServer(scopeName, coreName));
+  public String addCore(String scopeName, String collectionName) {
+    String coreName = String.format("%s.%s", scopeName, collectionName);
+    String dataDir = String.format("%s/%s", scopeName, collectionName);
+    String schemaName = getSchemaName(collectionName);
+
+    CoreDescriptor descriptor = new CoreDescriptor(container, coreName, solrHomeDir);
+    descriptor.setSchemaName(schemaName);
+    descriptor.setDataDir(dataDir);
+    descriptor.setLoadOnStartup(true);
+
+    SolrCore core = container.create(descriptor);
+    container.register(coreName, core, true);
+    SolrServer server = new EmbeddedSolrServer(container, coreName);
+
+    solrServers.put(coreName, server);
+    return coreName;
   }
 
   /**
-   * Creates an embedded Solr server with the given core name.
-   * If a schema file exists for the core it will be used,
-   * otherwise the schema {@code file schema-tmpl.xml} will be used.
+   * Returns the name of the schema file for the specified collection.
+   * If a custom schema file exists it will be used, otherwise the
+   * schema {@code file schema-tmpl.xml} will be used.
    */
-  private SolrServer createServer(String scopeName, String coreName) {
-    CoreDescriptor descriptor = new CoreDescriptor(container, coreName, solrHomeDir);
-    String schema = String.format("schema-%s.xml", coreName);
-    if (new File(solrHomeDir, schema).isFile()) {
-      descriptor.setSchemaName(schema);
-      LOG.info("Schema for {} index: {}", coreName, schema);
+  private String getSchemaName(String collectionName) {
+    String schemaName = String.format("schema-%s.xml", collectionName);
+    if (new File(new File(solrHomeDir, "conf"), schemaName).isFile()) {
+      LOG.info("Schema for {} index: {}", collectionName, schemaName);
+      return schemaName;
     } else {
-      descriptor.setSchemaName("schema-tmpl.xml");
+      return "schema-tmpl.xml";
     }
-    descriptor.setDataDir(coreName);
-    descriptor.setLoadOnStartup(true);
-    SolrCore core = container.create(descriptor);
-    container.register(coreName, core, true);
-    return new EmbeddedSolrServer(container, coreName);
   }
 
   public void add(String core, SolrInputDocument doc) throws SolrServerException, IOException {
