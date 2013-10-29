@@ -12,9 +12,7 @@ import nl.knaw.huygens.solr.SolrUtils;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.index.LocalSolrServer;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
 import org.apache.solr.client.solrj.SolrServerException;
@@ -48,29 +46,6 @@ public class SearchManager {
 
   public Set<String> findSortableFields(Class<? extends Entity> type) {
     return sortableFieldFinder.findFields(type);
-  }
-
-  public void addRelationsTo(DomainEntity entity) throws SolrServerException {
-    String term = String.format("dynamic_k_source_id:%s", entity.getId());
-    String[] fields = { "dynamic_k_type_name", "dynamic_k_target_type", "dynamic_k_target_id", "dynamic_k_target_name" };
-    QueryResponse response = server.search("relation", term, fields);
-    for (SolrDocument doc : response.getResults()) {
-      String typeName = getFieldValue(doc, "dynamic_k_type_name");
-      String iname = getFieldValue(doc, "dynamic_k_target_type");
-      String xname = typeRegistry.getXNameForIName(iname);
-      String id = getFieldValue(doc, "dynamic_k_target_id");
-      String displayName = getFieldValue(doc, "dynamic_k_target_name");
-      EntityRef ref = new EntityRef(iname, xname, id, displayName);
-      entity.addRelation(typeName, ref);
-    }
-  }
-
-  private String getFieldValue(SolrDocument doc, String fieldName) throws SolrServerException {
-    Object value = doc.getFieldValue(fieldName);
-    if (value == null || value instanceof String) {
-      return (String) value;
-    }
-    throw new SolrServerException("Unexpected field type " + value.getClass());
   }
 
   public SearchResult search(Class<? extends Entity> type, String core, FacetedSearchParameters searchParameters) throws SolrServerException, FacetDoesNotExistException {
