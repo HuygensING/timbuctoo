@@ -57,8 +57,8 @@ public class IndexManager {
     Scope scope = config.getDefaultScope();
     for (Class<? extends Entity> type : scope.getBaseEntityTypes()) {
       if (type != Relation.class) {
-        String coreName = registry.getINameForType(type);
-        server.addCore("default", coreName);
+        String collectionName = registry.getINameForType(type);
+        String coreName = server.addCore(scope.getName(), collectionName);
         indexers.put(type, DomainEntityIndexer.newInstance(storageManager, server, coreName));
       }
     }
@@ -104,6 +104,7 @@ public class IndexManager {
 
   public IndexStatus getStatus() {
     IndexStatus status = new IndexStatus();
+    Scope scope = config.getDefaultScope();
 
     Set<Class<? extends DomainEntity>> types = Sets.newTreeSet(new Comparator<Class<? extends DomainEntity>>() {
       @Override
@@ -111,17 +112,18 @@ public class IndexManager {
         return o1.getSimpleName().compareTo(o2.getSimpleName());
       }
     });
-    types.addAll(config.getDefaultScope().getBaseEntityTypes());
+    types.addAll(scope.getBaseEntityTypes());
     for (Class<? extends DomainEntity> type : types) {
-      status.addDomainEntityCount(getCount(type));
+      status.addDomainEntityCount(getCount(scope, type));
     }
 
     return status;
   }
 
-  private KV<Long> getCount(Class<? extends Entity> type) {
+  private KV<Long> getCount(Scope scope, Class<? extends Entity> type) {
     try {
-      String coreName = registry.getINameForType(type);
+      String collectionName = registry.getINameForType(type);
+      String coreName = String.format("%s.%s", scope.getName(), collectionName);
       return new KV<Long>(type.getSimpleName(), server.count(coreName));
     } catch (Exception e) {
       return new KV<Long>(type.getSimpleName(), (long) 0);
