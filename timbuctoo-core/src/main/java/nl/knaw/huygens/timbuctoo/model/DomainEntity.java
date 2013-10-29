@@ -16,6 +16,7 @@ public abstract class DomainEntity extends Entity implements Variable {
   private Map<String, List<EntityRef>> relations = Maps.newHashMap();
   protected List<Reference> variations = Lists.newArrayList();
   protected String currentVariation;
+  protected List<Role> roles;
 
   @JsonProperty("^pid")
   public String getPid() {
