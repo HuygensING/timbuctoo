@@ -25,7 +25,6 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.atlg.ATLGPerson;
 import nl.knaw.huygens.timbuctoo.search.model.ClassWithMupltipleFullTestSearchFields;
 
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -53,13 +52,12 @@ public class SearchManagerTest {
   @Before
   public void setUp() {
     solrInstance = mock(LocalSolrServer.class);
-    typeRegistry = new TypeRegistry(Person.class.getPackage().getName() + " " + ATLGPerson.class.getPackage().getName() + " "
-        + ClassWithMupltipleFullTestSearchFields.class.getPackage().getName());
+    typeRegistry = new TypeRegistry(Person.class.getPackage().getName() + " " + ATLGPerson.class.getPackage().getName() + " " + ClassWithMupltipleFullTestSearchFields.class.getPackage().getName());
     instance = new SearchManager(solrInstance, typeRegistry);
   }
 
   @Test
-  public void testSearchOneResult() throws SolrServerException, FacetDoesNotExistException {
+  public void testSearchOneResult() throws Exception {
     List<String> documentIds = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
@@ -68,18 +66,18 @@ public class SearchManagerTest {
   }
 
   @Test
-  public void testSearchSubType() throws SolrServerException, FacetDoesNotExistException {
+  public void testSearchSubType() throws Exception {
     List<String> documentIds = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
     Class<? extends Entity> type = ATLGPerson.class;
 
-    testSearch(type, documentIds, SEARCH_TERM, typeRegistry.getINameForType(type), facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(),
-        EXPECTED_TERM, TYPE_STRING);
+    testSearch(type, documentIds, SEARCH_TERM, typeRegistry.getINameForType(type), facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM,
+        TYPE_STRING);
   }
 
   @Test
-  public void testSearchMultipleResults() throws SolrServerException, FacetDoesNotExistException {
+  public void testSearchMultipleResults() throws Exception {
     List<String> documentIds = Lists.newArrayList("id1", "id2", "id3", "id4");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
@@ -88,7 +86,7 @@ public class SearchManagerTest {
   }
 
   @Test
-  public void testSearchWildCard() throws SolrServerException, FacetDoesNotExistException {
+  public void testSearchWildCard() throws Exception {
     List<String> documentIds = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
@@ -99,7 +97,7 @@ public class SearchManagerTest {
   }
 
   @Test
-  public void testSearchMultipleTerms() throws SolrServerException, FacetDoesNotExistException {
+  public void testSearchMultipleTerms() throws Exception {
     List<String> documentIds = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
@@ -110,7 +108,7 @@ public class SearchManagerTest {
   }
 
   @Test
-  public void testSearchMultipleFields() throws SolrServerException, FacetDoesNotExistException {
+  public void testSearchMultipleFields() throws Exception {
     List<String> documentIds = Lists.newArrayList("id1", "id2", "id3", "id4");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_t_simple");
     int numberOfFacetValues = 1;
@@ -123,7 +121,7 @@ public class SearchManagerTest {
   }
 
   @Test
-  public void testSearchNoResults() throws SolrServerException, FacetDoesNotExistException {
+  public void testSearchNoResults() throws Exception {
     List<String> documentIds = Lists.newArrayList();
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
@@ -131,7 +129,7 @@ public class SearchManagerTest {
   }
 
   @Test
-  public void testSearchWithOneFacetOneValue() throws SolrServerException, FacetDoesNotExistException {
+  public void testSearchWithOneFacetOneValue() throws Exception {
     List<String> documentIds = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
@@ -144,7 +142,7 @@ public class SearchManagerTest {
   }
 
   @Test
-  public void testSearchWithOneFacetMultipleValues() throws SolrServerException, FacetDoesNotExistException {
+  public void testSearchWithOneFacetMultipleValues() throws Exception {
     List<String> documentIds = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
@@ -157,7 +155,7 @@ public class SearchManagerTest {
   }
 
   @Test
-  public void testSearchWithMultipleFacetsOneValue() throws SolrServerException, FacetDoesNotExistException {
+  public void testSearchWithMultipleFacetsOneValue() throws Exception {
     List<String> documentIds = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate", "dynamic_s_deathDate");
     int numberOfFacetValues = 1;
@@ -170,7 +168,7 @@ public class SearchManagerTest {
   }
 
   @Test
-  public void testSearchWithMultipleFacetsMultipleValues() throws SolrServerException, FacetDoesNotExistException {
+  public void testSearchWithMultipleFacetsMultipleValues() throws Exception {
     List<String> documentIds = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate", "dynamic_s_deathDate");
     int numberOfFacetValues = 1;
@@ -183,7 +181,7 @@ public class SearchManagerTest {
   }
 
   private void testSearch(Class<? extends Entity> type, List<String> documentIds, String searchTerm, String typeString, List<String> facetNames, List<String> fullTextSearchNames,
-      int numberOfFacetValues, List<FacetParameter> facetParameters, String expectedTerm, String searchCore) throws SolrServerException, FacetDoesNotExistException {
+      int numberOfFacetValues, List<FacetParameter> facetParameters, String expectedTerm, String searchCore) throws Exception {
     FacetedSearchParameters searchParameters = new FacetedSearchParameters();
     searchParameters.setTerm(searchTerm);
     searchParameters.setTypeString(typeString);
@@ -197,12 +195,11 @@ public class SearchManagerTest {
     SearchResult expected = createExpectedResult(typeString, documentIds, expectedTerm, facets);
 
     SearchResult actual = instance.search(type, searchCore, searchParameters);
-
     verifySearchResult(expected, actual);
   }
 
   @Test(expected = SolrException.class)
-  public void testSearchSolrException() throws SolrServerException, FacetDoesNotExistException {
+  public void testSearchSolrException() throws Exception {
     doThrow(SolrException.class).when(solrInstance).search(anyString(), anyString(), anyCollectionOf(String.class), anyString());
 
     FacetedSearchParameters searchParameters = new FacetedSearchParameters();
@@ -213,7 +210,7 @@ public class SearchManagerTest {
   }
 
   @Test(expected = FacetDoesNotExistException.class)
-  public void testSearchFacetDoesNotExistException() throws SolrServerException, FacetDoesNotExistException {
+  public void testSearchFacetDoesNotExistException() throws Exception {
     FacetedSearchParameters searchParameters = new FacetedSearchParameters();
     searchParameters.setTerm(SEARCH_TERM);
     searchParameters.setTypeString(TYPE_STRING);
@@ -289,7 +286,7 @@ public class SearchManagerTest {
   }
 
   @SuppressWarnings("unchecked")
-  private void setUpQueryResponse(SolrDocumentList docs, List<FacetField> facetFields) throws SolrServerException {
+  private void setUpQueryResponse(SolrDocumentList docs, List<FacetField> facetFields) throws Exception {
     QueryResponse response = mock(QueryResponse.class);
     when(response.getResults()).thenReturn(docs);
     when(response.getFacetFields()).thenReturn(facetFields);
@@ -299,13 +296,9 @@ public class SearchManagerTest {
 
   private SolrDocumentList createSolrDocumentList(List<String> documentIds) {
     SolrDocumentList docs = mock(SolrDocumentList.class);
-
     List<SolrDocument> solrDocuments = createSolrDocuments(documentIds);
-
     Iterator<SolrDocument> iterator = solrDocuments.iterator();
-
     when(docs.iterator()).thenReturn(iterator);
-
     return docs;
   }
 
