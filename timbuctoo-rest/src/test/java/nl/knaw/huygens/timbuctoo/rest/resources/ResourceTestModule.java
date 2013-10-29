@@ -7,6 +7,7 @@ import javax.validation.Validator;
 
 import nl.knaw.huygens.security.AuthorizationHandler;
 import nl.knaw.huygens.security.SecurityContextCreator;
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.LocalSolrServer;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
@@ -34,6 +35,7 @@ class ResourceTestModule extends JerseyServletModule {
   private static final String M1B = "nl.knaw.huygens.timbuctoo.rest.providers.model.projectb";
   private static final String PACKAGES = M0 + " " + M1 + " " + M1A + " " + M1B;
 
+  private Configuration config;
   private TypeRegistry typeRegistry;
   private StorageManager storageManager;
   private JacksonJsonProvider jsonProvider;
@@ -48,6 +50,7 @@ class ResourceTestModule extends JerseyServletModule {
   private Producer persistenceProducer;
 
   public ResourceTestModule() {
+    config = mock(Configuration.class);
     typeRegistry = new TypeRegistry(PACKAGES);
     storageManager = mock(StorageManager.class);
     jsonProvider = mock(JacksonJsonProvider.class);
@@ -67,7 +70,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(storageManager, jsonProvider, validator, mailSender, searchManager, localSolrServer, authorizationHandler, broker, indexProducer, persistenceProducer);
+    reset(config, storageManager, jsonProvider, validator, mailSender, searchManager, localSolrServer, authorizationHandler, broker, indexProducer, persistenceProducer);
   }
 
   @Override
@@ -119,6 +122,12 @@ class ResourceTestModule extends JerseyServletModule {
   @Named(value = "security.enabled")
   public boolean provideSecurityEnabled() {
     return true;
+  }
+
+  @Provides
+  @Singleton
+  public Configuration provideConfiguration() {
+    return config;
   }
 
   @Provides

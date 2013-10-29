@@ -19,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
 import nl.knaw.huygens.solr.FacetedSearchParameters;
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -26,6 +27,7 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetDoesNotExistException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.apache.solr.client.solrj.SolrServerException;
 import org.junit.Before;
@@ -56,6 +58,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostSuccess() throws IOException, SolrServerException, FacetDoesNotExistException {
+    setupScope();
     SearchResult searchResult = createPostSearchResult();
     setupSearchManager(searchResult);
     FacetedSearchParameters searchParameters = createSearchParameters(typeString, id, TERM);
@@ -72,8 +75,16 @@ public class SearchResourceTest extends WebServiceTestSetup {
     verify(storageManager).addEntity(SearchResult.class, searchResult);
   }
 
+  private void setupScope() {
+    Scope scope = mock(Scope.class);
+    when(scope.getName()).thenReturn("name");
+    Configuration config = injector.getInstance(Configuration.class);
+    when(config.getDefaultScope()).thenReturn(scope);
+  }
+
   @Test
   public void testPostSuccessWithoutSort() throws IOException, SolrServerException, FacetDoesNotExistException {
+    setupScope();
     SearchResult searchResult = createPostSearchResult();
     setupSearchManager(searchResult);
     FacetedSearchParameters searchParameters = createSearchParameters(typeString, null, TERM);
@@ -140,6 +151,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostUnknownFacets() throws SolrServerException, FacetDoesNotExistException, IOException {
+    setupScope();
     SearchManager searchManager = injector.getInstance(SearchManager.class);
     doThrow(FacetDoesNotExistException.class).when(searchManager).search(Matchers.<Class<? extends Entity>> any(), anyString(), any(FacetedSearchParameters.class));
 
