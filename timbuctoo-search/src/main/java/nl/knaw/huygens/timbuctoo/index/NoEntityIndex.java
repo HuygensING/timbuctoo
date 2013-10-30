@@ -4,16 +4,19 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.response.QueryResponse;
+
 /**
  * An {@code EntityIndex} that does nothing...
  */
 class NoEntityIndex<T extends Entity> implements EntityIndex<T> {
 
   @Override
-  public void add(Class<T> type, String id) throws IndexException {}
+  public void add(Class<T> type, String id) {}
 
   @Override
-  public void modify(Class<T> type, String id) throws IndexException {}
+  public void modify(Class<T> type, String id) {}
 
   @Override
   public void remove(String id) {}
@@ -26,5 +29,10 @@ class NoEntityIndex<T extends Entity> implements EntityIndex<T> {
 
   @Override
   public void flush() {}
+
+  @Override
+  public QueryResponse search(Class<T> entityType, SolrQuery query) {
+    return new QueryResponse();
+  }
 
 }

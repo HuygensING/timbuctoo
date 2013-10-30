@@ -5,6 +5,8 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 
 /**
@@ -177,6 +179,15 @@ class DomainEntityIndex<T extends DomainEntity> implements EntityIndex<T> {
       document = indexer.getResult();
     }
     return document;
+  }
+
+  @Override
+  public QueryResponse search(Class<T> entityType, SolrQuery query) throws IndexException {
+    try {
+      return solrServer.search(core, query);
+    } catch (Exception e) {
+      throw new IndexException(e);
+    }
   }
 
 }
