@@ -10,11 +10,13 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.util.KV;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -37,6 +39,8 @@ import com.google.inject.Singleton;
 @Singleton
 public class IndexManager {
 
+  private static final Logger LOG = LoggerFactory.getLogger(IndexManager.class);
+
   private final Configuration config;
   private final TypeRegistry registry;
   private final LocalSolrServer server;
@@ -52,16 +56,19 @@ public class IndexManager {
 
   private void setupIndexes(Configuration config, StorageManager storageManager, RelationManager relationManager) {
     indexes = Maps.newHashMap();
-    indexes.put(Relation.class, new RelationIndex(registry, server, storageManager, relationManager));
 
-    Scope scope = config.getDefaultScope();
-    for (Class<? extends Entity> type : scope.getBaseEntityTypes()) {
-      if (type != Relation.class) {
+    for (Scope scope : config.getScopes()) {
+      for (Class<? extends Entity> type : scope.getBaseEntityTypes()) {
         String collection = registry.getINameForType(type);
         String coreName = String.format("%s.%s", scope.getName(), collection);
         server.addCore(collection, coreName);
-        indexes.put(type, DomainEntityIndex.newInstance(storageManager, server, coreName));
+        if (type == Relation.class) {
+          indexes.put(Relation.class, new RelationIndex(registry, server, storageManager, relationManager));
+        } else {
+          indexes.put(type, DomainEntityIndex.newInstance(storageManager, server, coreName));
+        }
       }
+      break;
     }
   }
 
@@ -113,23 +120,19 @@ public class IndexManager {
 
   public IndexStatus getStatus() {
     IndexStatus status = new IndexStatus();
-    Scope scope = config.getDefaultScope();
-
-    for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
-      status.addDomainEntityCount(getCount(scope, type));
-    }
-
-    return status;
-  }
-
-  private KV<Long> getCount(Scope scope, Class<? extends Entity> type) {
     try {
-      String collectionName = registry.getINameForType(type);
-      String coreName = String.format("%s.%s", scope.getName(), collectionName);
-      return new KV<Long>(type.getSimpleName(), server.count(coreName));
-    } catch (Exception e) {
-      return new KV<Long>(type.getSimpleName(), (long) 0);
+      for (Scope scope : config.getScopes()) {
+        for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
+          String collection = registry.getINameForType(type);
+          String coreName = String.format("%s.%s", scope.getName(), collection);
+          status.addDomainEntityCount(scope, type, server.count(coreName));
+        }
+        break;
+      }
+    } catch (SolrServerException e) {
+      LOG.error("Failed obtain status: {}", e.getMessage());
     }
+    return status;
   }
 
   public void close() throws IndexException {

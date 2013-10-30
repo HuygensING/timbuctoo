@@ -54,9 +54,16 @@ public class SearchResourceTest extends WebServiceTestSetup {
     when(searchManager.findSortableFields(Matchers.<Class<? extends Entity>> any())).thenReturn(SORTABLE_FIELDS);
   }
 
+  @Before
+  public void setupScope() {
+    Scope scope = mock(Scope.class);
+    when(scope.getName()).thenReturn("name");
+    Configuration config = injector.getInstance(Configuration.class);
+    when(config.getScopes()).thenReturn(Lists.newArrayList(scope));
+  }
+
   @Test
   public void testPostSuccess() throws Exception {
-    setupScope();
     SearchResult searchResult = createPostSearchResult();
     setupSearchManager(searchResult);
     FacetedSearchParameters searchParameters = createSearchParameters(typeString, id, TERM);
@@ -73,16 +80,8 @@ public class SearchResourceTest extends WebServiceTestSetup {
     verify(storageManager).addEntity(SearchResult.class, searchResult);
   }
 
-  private void setupScope() {
-    Scope scope = mock(Scope.class);
-    when(scope.getName()).thenReturn("name");
-    Configuration config = injector.getInstance(Configuration.class);
-    when(config.getDefaultScope()).thenReturn(scope);
-  }
-
   @Test
   public void testPostSuccessWithoutSort() throws Exception {
-    setupScope();
     SearchResult searchResult = createPostSearchResult();
     setupSearchManager(searchResult);
     FacetedSearchParameters searchParameters = createSearchParameters(typeString, null, TERM);
@@ -149,7 +148,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostUnknownFacets() throws Exception {
-    setupScope();
     SearchManager searchManager = injector.getInstance(SearchManager.class);
     doThrow(NoSuchFacetException.class).when(searchManager).search(any(Scope.class), Matchers.<Class<? extends Entity>> any(), any(FacetedSearchParameters.class));
 

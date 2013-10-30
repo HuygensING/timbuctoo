@@ -59,7 +59,7 @@ public class SearchResource {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response post(FacetedSearchParameters searchParams) {
     // TODO determine scope dynamically
-    Scope scope = config.getDefaultScope();
+    Scope scope = config.getScopes().get(0);
     String typeString = searchParams.getTypeString();
     String q = searchParams.getTerm();
 
