@@ -12,14 +12,14 @@ import nl.knaw.huygens.solr.FacetedSearchParameters;
 import nl.knaw.huygens.solr.SolrUtils;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
-import nl.knaw.huygens.timbuctoo.index.LocalSolrServer;
+import nl.knaw.huygens.timbuctoo.index.IndexException;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -33,14 +33,14 @@ import com.google.inject.Singleton;
 @Singleton
 public class SearchManager {
 
-  private final LocalSolrServer server;
+  private final IndexManager server;
   private final FacetFinder facetFinder;
   private final AbstractFieldFinder fullTextSearchFieldFinder;
   private final TypeRegistry typeRegistry;
   private final SortableFieldFinder sortableFieldFinder;
 
   @Inject
-  public SearchManager(LocalSolrServer server, TypeRegistry registry) {
+  public SearchManager(TypeRegistry registry, IndexManager server) {
     this.server = server;
     this.facetFinder = new FacetFinder();
     this.fullTextSearchFieldFinder = new FullTextSearchFieldFinder();
@@ -52,12 +52,11 @@ public class SearchManager {
     return sortableFieldFinder.findFields(type);
   }
 
-  public SearchResult search(Scope scope, Class<? extends Entity> type, FacetedSearchParameters searchParameters) throws SolrServerException, NoSuchFacetException {
-    String core = getCoreName(scope, type);
+  public SearchResult search(Scope scope, Class<? extends Entity> type, FacetedSearchParameters searchParameters) throws IndexException, NoSuchFacetException {
     Map<String, FacetInfo> facetInfoMap = facetFinder.findFacets(type);
     Set<String> fullTextSearchFields = fullTextSearchFieldFinder.findFields(type);
     String searchTerm = createSearchTerm(type, searchParameters, facetInfoMap.keySet(), fullTextSearchFields);
-    QueryResponse response = doFacettedSearch(core, searchTerm, facetInfoMap.keySet(), searchParameters.getSort());
+    QueryResponse response = doFacettedSearch(type, searchTerm, facetInfoMap.keySet(), searchParameters.getSort());
     SolrDocumentList documents = response.getResults();
 
     List<FacetCount> facets = getFacetCounts(response.getFacetFields(), facetInfoMap);
@@ -73,17 +72,11 @@ public class SearchManager {
     return searchResult;
   }
 
-  private String getCoreName(Scope scope, Class<? extends Entity> type) {
-    Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
-    String collectionName = typeRegistry.getINameForType(baseType);
-    return String.format("%s.%s", scope.getName(), collectionName);
-  }
-
   // FIXME this is probably suboptimal:
   private static final int ROWS = 20000;
   private static final int FACET_LIMIT = 10000;
 
-  private QueryResponse doFacettedSearch(String core, String query, Collection<String> facetFieldNames, String sortField) throws SolrServerException {
+  private QueryResponse doFacettedSearch(Class<? extends Entity> type, String query, Collection<String> facetFieldNames, String sortField) throws IndexException {
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery(query);
     solrQuery.setFields("id");
@@ -93,7 +86,7 @@ public class SearchManager {
     solrQuery.setFacetLimit(FACET_LIMIT);
     solrQuery.setFilterQueries("!cache=false");
     solrQuery.setSort(new SortClause(sortField, SolrQuery.ORDER.asc));
-    return server.search(core, solrQuery);
+    return server.search(type, solrQuery);
   }
 
   private String createSearchTerm(Class<? extends Entity> type, FacetedSearchParameters searchParameters, Set<String> existingFacets, Set<String> fullTextSearchFields) throws NoSuchFacetException {

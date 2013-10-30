@@ -15,6 +15,9 @@ import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.util.KV;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.response.QueryResponse;
+
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -103,6 +106,14 @@ public class IndexManager {
     }
   }
 
+  public <T extends Entity> QueryResponse search(Class<T> type, SolrQuery query) throws IndexException {
+    return searchBase(registry.getBaseClass(type), query);
+  }
+
+  private <T extends Entity> QueryResponse searchBase(Class<T> type, SolrQuery query) throws IndexException {
+    return indexForType(type).search(type, query);
+  }
+
   public IndexStatus getStatus() {
     IndexStatus status = new IndexStatus();
     Scope scope = config.getDefaultScope();
@@ -134,7 +145,6 @@ public class IndexManager {
   public void close() throws IndexException {
     try {
       server.commitAll();
-      // TODO show counts, if necessary
       server.shutdown();
     } catch (Exception e) {
       throw new IndexException("Failed to release IndexManager resources", e);

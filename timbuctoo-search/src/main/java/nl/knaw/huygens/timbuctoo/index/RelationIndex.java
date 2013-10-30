@@ -11,7 +11,9 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,6 +138,11 @@ class RelationIndex implements EntityIndex<Relation> {
     } catch (Exception ex) {
       throw new IndexException(ex);
     }
+  }
+
+  @Override
+  public QueryResponse search(Class<Relation> entityType, SolrQuery query) {
+    return new QueryResponse();
   }
 
 }

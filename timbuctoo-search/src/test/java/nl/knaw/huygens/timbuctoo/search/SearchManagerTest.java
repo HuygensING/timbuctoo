@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.search;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -16,7 +15,7 @@ import nl.knaw.huygens.solr.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount.Option;
-import nl.knaw.huygens.timbuctoo.index.LocalSolrServer;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
@@ -32,6 +31,7 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 
 import com.google.common.collect.Lists;
 
@@ -46,16 +46,16 @@ public class SearchManagerTest {
 
   private Scope scope;
   private SearchManager instance;
-  private LocalSolrServer solrInstance;
+  private IndexManager indexManager;
   private TypeRegistry typeRegistry;
 
   @Before
   public void setUp() {
     scope = mock(Scope.class);
     when(scope.getName()).thenReturn("scope");
-    solrInstance = mock(LocalSolrServer.class);
+    indexManager = mock(IndexManager.class);
     typeRegistry = new TypeRegistry(Person.class.getPackage().getName() + " " + ATLGPerson.class.getPackage().getName() + " " + ClassWithMupltipleFullTestSearchFields.class.getPackage().getName());
-    instance = new SearchManager(solrInstance, typeRegistry);
+    instance = new SearchManager(typeRegistry, indexManager);
   }
 
   @Test
@@ -279,7 +279,7 @@ public class SearchManagerTest {
     QueryResponse response = mock(QueryResponse.class);
     when(response.getResults()).thenReturn(docs);
     when(response.getFacetFields()).thenReturn(facetFields);
-    when(solrInstance.search(anyString(), any(SolrQuery.class))).thenReturn(response);
+    when(indexManager.search(Matchers.<Class<? extends Entity>> any(), any(SolrQuery.class))).thenReturn(response);
   }
 
   private SolrDocumentList createSolrDocumentList(List<String> documentIds) {
