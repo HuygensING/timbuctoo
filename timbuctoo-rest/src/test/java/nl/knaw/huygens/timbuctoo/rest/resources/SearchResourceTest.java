@@ -24,7 +24,7 @@ import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.FacetDoesNotExistException;
+import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
@@ -152,7 +152,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   public void testPostUnknownFacets() throws Exception {
     setupScope();
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    doThrow(FacetDoesNotExistException.class).when(searchManager).search(Matchers.<Class<? extends Entity>> any(), anyString(), any(FacetedSearchParameters.class));
+    doThrow(NoSuchFacetException.class).when(searchManager).search(Matchers.<Class<? extends Entity>> any(), anyString(), any(FacetedSearchParameters.class));
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 

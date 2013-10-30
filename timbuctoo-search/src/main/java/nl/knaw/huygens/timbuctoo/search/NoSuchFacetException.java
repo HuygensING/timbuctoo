@@ -1,10 +1,10 @@
 package nl.knaw.huygens.timbuctoo.search;
 
-public class FacetDoesNotExistException extends Exception {
+public class NoSuchFacetException extends Exception {
 
   private static final long serialVersionUID = 1L;
 
-  public FacetDoesNotExistException(String message) {
+  public NoSuchFacetException(String message) {
     super(message);
   }
 
