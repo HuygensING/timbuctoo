@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.index;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -58,10 +60,15 @@ public class LocalSolrServer {
     }
   }
 
-  public String addCore(String scopeName, String collectionName) {
-    String coreName = String.format("%s.%s", scopeName, collectionName);
-    String dataDir = String.format("%s/%s", scopeName, collectionName);
-    String schemaName = getSchemaName(collectionName);
+  /**
+   * Adds a core for the specified collection, using the specified core name.
+   */
+  public void addCore(String collection, String coreName) {
+    checkArgument(collection != null && collection.matches("^[a-z]+$"), "collection '%s'", collection);
+    checkArgument(coreName != null && coreName.matches("^[A-Za-z\\.]+$"), "coreName '%s'", coreName);
+
+    String schemaName = getSchemaName(collection);
+    String dataDir = coreName.replace('.', '/');
 
     CoreDescriptor descriptor = new CoreDescriptor(container, coreName, solrHomeDir);
     descriptor.setSchemaName(schemaName);
@@ -73,7 +80,6 @@ public class LocalSolrServer {
     SolrServer server = new EmbeddedSolrServer(container, coreName);
 
     solrServers.put(coreName, server);
-    return coreName;
   }
 
   /**
