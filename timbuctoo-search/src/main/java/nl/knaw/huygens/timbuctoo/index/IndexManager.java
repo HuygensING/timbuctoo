@@ -133,6 +133,7 @@ public class IndexManager {
   public void close() throws IndexException {
     try {
       server.commitAll();
+      // TODO show counts, if necessary
       server.shutdown();
     } catch (Exception e) {
       throw new IndexException("Failed to release IndexManager resources", e);

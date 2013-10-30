@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.search;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,8 @@ import nl.knaw.huygens.timbuctoo.index.LocalSolrServer;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
@@ -52,7 +55,7 @@ public class SearchManager {
     Map<String, FacetInfo> facetInfoMap = facetFinder.findFacets(type);
     Set<String> fullTextSearchFields = fullTextSearchFieldFinder.findFields(type);
     String searchTerm = createSearchTerm(type, searchParameters, facetInfoMap.keySet(), fullTextSearchFields);
-    QueryResponse response = server.search(core, searchTerm, facetInfoMap.keySet(), searchParameters.getSort());
+    QueryResponse response = doFacettedSearch(core, searchTerm, facetInfoMap.keySet(), searchParameters.getSort());
     SolrDocumentList documents = response.getResults();
 
     List<FacetCount> facets = getFacetCounts(response.getFacetFields(), facetInfoMap);
@@ -66,6 +69,23 @@ public class SearchManager {
     searchResult.setFacets(facets);
 
     return searchResult;
+  }
+
+  // FIXME this is probably suboptimal:
+  private static final int ROWS = 20000;
+  private static final int FACET_LIMIT = 10000;
+
+  public QueryResponse doFacettedSearch(String core, String query, Collection<String> facetFieldNames, String sortField) throws SolrServerException {
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery.setQuery(query);
+    solrQuery.setFields("id");
+    solrQuery.setRows(ROWS);
+    solrQuery.addFacetField(facetFieldNames.toArray(new String[facetFieldNames.size()]));
+    solrQuery.setFacetMinCount(0);
+    solrQuery.setFacetLimit(FACET_LIMIT);
+    solrQuery.setFilterQueries("!cache=false");
+    solrQuery.setSort(new SortClause(sortField, SolrQuery.ORDER.asc));
+    return server.search(core, solrQuery);
   }
 
   private String createSearchTerm(Class<? extends Entity> type, FacetedSearchParameters searchParameters, Set<String> existingFacets, Set<String> fullTextSearchFields)
