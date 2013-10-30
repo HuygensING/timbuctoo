@@ -43,13 +43,13 @@ public class IndexService extends ConsumerService implements Runnable {
     try {
       switch (actionType) {
       case ADD:
-        manager.addDocument(type, id);
+        manager.addEntity(type, id);
         break;
       case MOD:
-        manager.updateDocument(type, id);
+        manager.updateEntity(type, id);
         break;
       case DEL:
-        manager.deleteDocument(type, id);
+        manager.deleteEntity(type, id);
         break;
       case END:
         this.stop(); //stop the Runnable

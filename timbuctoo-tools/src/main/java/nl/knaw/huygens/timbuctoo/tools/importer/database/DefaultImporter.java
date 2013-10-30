@@ -122,7 +122,7 @@ public abstract class DefaultImporter extends ToolBase {
       iterator = storageManager.getAll(type);
       while (iterator.hasNext()) {
         T entity = iterator.next();
-        indexManager.addDocument(type, entity.getId());
+        indexManager.addEntity(type, entity.getId());
       }
     } finally {
       if (iterator != null) {
@@ -158,11 +158,11 @@ public abstract class DefaultImporter extends ToolBase {
   protected void removeNonPersistedEntiesWithItsRelations(Class<? extends DomainEntity> type, StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
     List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
     storageManager.removeNonPersistent(type, ids);
-    indexManager.deleteDocuments(type, ids);
+    indexManager.deleteEntities(type, ids);
     //Remove relations
     List<String> relationIds = storageManager.getRelationIds(ids);
     storageManager.removeNonPersistent(Relation.class, relationIds);
-    indexManager.deleteDocuments(Relation.class, ids);
+    indexManager.deleteEntities(Relation.class, ids);
   }
 
 }

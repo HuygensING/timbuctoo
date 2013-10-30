@@ -32,7 +32,7 @@ public class BulkImporter {
       storageManager.clear();
 
       indexManager = injector.getInstance(IndexManager.class);
-      indexManager.deleteAllDocuments();
+      indexManager.deleteAllEntities();
 
       GenericImporter importer = new GenericImporter(storageManager);
 
@@ -88,7 +88,7 @@ public class BulkImporter {
       iterator = storageManager.getAll(type);
       while (iterator.hasNext()) {
         T entity = iterator.next();
-        indexManager.addDocument(type, entity.getId());
+        indexManager.addEntity(type, entity.getId());
       }
     } finally {
       if (iterator != null) {
