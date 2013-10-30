@@ -16,7 +16,7 @@ import org.apache.solr.common.SolrInputDocument;
  * 
  * Note that whenever you update entities through this index, it is the
  * caller's responsibility to call
- * {@link nl.knaw.huygens.timbuctoo.index.DomainEntityIndexer#flush flush} to
+ * {@link nl.knaw.huygens.timbuctoo.index.DomainEntityIndex#flush flush} to
  * update the index and notify the world that this has happened.
  * 
  * @author Gijs
@@ -25,13 +25,13 @@ import org.apache.solr.common.SolrInputDocument;
  *          The generic parameter specifying what kind of POJO objects are used,
  *          and (implicitly) which index to index them in.
  */
-class DomainEntityIndexer<T extends DomainEntity> implements EntityIndexer<T> {
+class DomainEntityIndex<T extends DomainEntity> implements EntityIndex<T> {
 
   /**
-   * Creates a new {@code DomainEntityIndexer} instance.
+   * Creates a new {@code DomainEntityIndex} instance.
    */
-  public static <U extends DomainEntity> DomainEntityIndexer<U> newInstance(StorageManager storageManager, LocalSolrServer server, String core) {
-    return new DomainEntityIndexer<U>(storageManager, server, core);
+  public static <U extends DomainEntity> DomainEntityIndex<U> newInstance(StorageManager storageManager, LocalSolrServer server, String core) {
+    return new DomainEntityIndex<U>(storageManager, server, core);
   }
 
   private final StorageManager storageManager;
@@ -49,7 +49,7 @@ class DomainEntityIndexer<T extends DomainEntity> implements EntityIndexer<T> {
    * @param core
    *          the Solr core
    */
-  private DomainEntityIndexer(StorageManager storageManager, LocalSolrServer server, String core) {
+  private DomainEntityIndex(StorageManager storageManager, LocalSolrServer server, String core) {
     this.storageManager = storageManager;
     this.solrServer = server;
     this.core = core;

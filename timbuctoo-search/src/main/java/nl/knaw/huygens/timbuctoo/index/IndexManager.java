@@ -31,7 +31,7 @@ import com.google.inject.Singleton;
  * Since we are using the 'commitWithin' feature of Solr, there's no need
  * for flushing indexes, except when closing down.
  *
- * The client that instantiates this manager id responsible for calling
+ * The client that instantiates this manager is responsible for calling
  * the close method in order to release the resources used.
  */
 @Singleton
@@ -40,34 +40,34 @@ public class IndexManager {
   private final Configuration config;
   private final TypeRegistry registry;
   private final LocalSolrServer server;
-  private Map<Class<? extends Entity>, EntityIndexer<? extends Entity>> indexers;
+  private Map<Class<? extends Entity>, EntityIndex<? extends Entity>> indexes;
 
   @Inject
   public IndexManager(Configuration config, TypeRegistry registry, LocalSolrServer server, StorageManager storageManager, RelationManager relationManager) {
     this.config = config;
     this.registry = registry;
     this.server = server;
-    setupIndexers(config, storageManager, relationManager);
+    setupIndexes(config, storageManager, relationManager);
   }
 
-  private void setupIndexers(Configuration config, StorageManager storageManager, RelationManager relationManager) {
-    indexers = Maps.newHashMap();
-    indexers.put(Relation.class, new RelationIndexer(registry, server, storageManager, relationManager));
+  private void setupIndexes(Configuration config, StorageManager storageManager, RelationManager relationManager) {
+    indexes = Maps.newHashMap();
+    indexes.put(Relation.class, new RelationIndex(registry, server, storageManager, relationManager));
 
     Scope scope = config.getDefaultScope();
     for (Class<? extends Entity> type : scope.getBaseEntityTypes()) {
       if (type != Relation.class) {
         String collectionName = registry.getINameForType(type);
         String coreName = server.addCore(scope.getName(), collectionName);
-        indexers.put(type, DomainEntityIndexer.newInstance(storageManager, server, coreName));
+        indexes.put(type, DomainEntityIndex.newInstance(storageManager, server, coreName));
       }
     }
   }
 
-  private <T extends Entity> EntityIndexer<T> indexerForType(Class<T> type) {
+  private <T extends Entity> EntityIndex<T> indexForType(Class<T> type) {
     @SuppressWarnings("unchecked")
-    EntityIndexer<T> indexer = (EntityIndexer<T>) indexers.get(type);
-    return (indexer != null) ? indexer : new NoEntityIndexer<T>();
+    EntityIndex<T> index = (EntityIndex<T>) indexes.get(type);
+    return (index != null) ? index : new NoEntityIndex<T>();
   }
 
   public <T extends Entity> void addDocument(Class<T> type, String id) throws IndexException {
@@ -75,7 +75,7 @@ public class IndexManager {
   }
 
   private <T extends Entity> void addBaseDocument(Class<T> type, String id) throws IndexException {
-    indexerForType(type).add(type, id);
+    indexForType(type).add(type, id);
   }
 
   public <T extends Entity> void updateDocument(Class<T> type, String id) throws IndexException {
@@ -83,15 +83,15 @@ public class IndexManager {
   }
 
   private <T extends Entity> void updateBaseDocument(Class<T> type, String id) throws IndexException {
-    indexerForType(type).modify(type, id);
+    indexForType(type).modify(type, id);
   }
 
   public <T extends Entity> void deleteDocument(Class<T> type, String id) throws IndexException {
-    indexerForType(registry.getBaseClass(type)).remove(id);
+    indexForType(registry.getBaseClass(type)).remove(id);
   }
 
   public <T extends Entity> void deleteDocuments(Class<T> type, List<String> ids) throws IndexException {
-    indexerForType(registry.getBaseClass(type)).remove(ids);
+    indexForType(registry.getBaseClass(type)).remove(ids);
   }
 
   public void deleteAllDocuments() throws IndexException {
