@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.index.LocalSolrServer;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
@@ -51,7 +52,8 @@ public class SearchManager {
     return sortableFieldFinder.findFields(type);
   }
 
-  public SearchResult search(Class<? extends Entity> type, String core, FacetedSearchParameters searchParameters) throws SolrServerException, NoSuchFacetException {
+  public SearchResult search(Scope scope, Class<? extends Entity> type, FacetedSearchParameters searchParameters) throws SolrServerException, NoSuchFacetException {
+    String core = getCoreName(scope, type);
     Map<String, FacetInfo> facetInfoMap = facetFinder.findFacets(type);
     Set<String> fullTextSearchFields = fullTextSearchFieldFinder.findFields(type);
     String searchTerm = createSearchTerm(type, searchParameters, facetInfoMap.keySet(), fullTextSearchFields);
@@ -69,6 +71,12 @@ public class SearchManager {
     searchResult.setFacets(facets);
 
     return searchResult;
+  }
+
+  private String getCoreName(Scope scope, Class<? extends Entity> type) {
+    Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
+    String collectionName = typeRegistry.getINameForType(baseType);
+    return String.format("%s.%s", scope.getName(), collectionName);
   }
 
   // FIXME this is probably suboptimal:

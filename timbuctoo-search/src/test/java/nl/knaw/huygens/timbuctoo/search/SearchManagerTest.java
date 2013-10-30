@@ -22,6 +22,7 @@ import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.atlg.ATLGPerson;
 import nl.knaw.huygens.timbuctoo.search.model.ClassWithMupltipleFullTestSearchFields;
+import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -43,12 +44,15 @@ public class SearchManagerTest {
   private static final String SEARCH_TERM = "term";
   private static final String EXPECTED_TERM = String.format("dynamic_t_name:%s", SEARCH_TERM);
 
+  private Scope scope;
   private SearchManager instance;
   private LocalSolrServer solrInstance;
   private TypeRegistry typeRegistry;
 
   @Before
   public void setUp() {
+    scope = mock(Scope.class);
+    when(scope.getName()).thenReturn("scope");
     solrInstance = mock(LocalSolrServer.class);
     typeRegistry = new TypeRegistry(Person.class.getPackage().getName() + " " + ATLGPerson.class.getPackage().getName() + " " + ClassWithMupltipleFullTestSearchFields.class.getPackage().getName());
     instance = new SearchManager(solrInstance, typeRegistry);
@@ -60,7 +64,7 @@ public class SearchManagerTest {
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM, TYPE_STRING);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
   }
 
   @Test
@@ -70,8 +74,7 @@ public class SearchManagerTest {
     int numberOfFacetValues = 1;
     Class<? extends Entity> type = ATLGPerson.class;
 
-    testSearch(type, documentIds, SEARCH_TERM, typeRegistry.getINameForType(type), facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM,
-        TYPE_STRING);
+    testSearch(type, documentIds, SEARCH_TERM, typeRegistry.getINameForType(type), facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
   }
 
   @Test
@@ -80,7 +83,7 @@ public class SearchManagerTest {
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM, TYPE_STRING);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
   }
 
   @Test
@@ -91,7 +94,7 @@ public class SearchManagerTest {
 
     String expectedTerm = "dynamic_t_name:*";
     String searchTerm = "*";
-    testSearch(TYPE, documentIds, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm, TYPE_STRING);
+    testSearch(TYPE, documentIds, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm);
   }
 
   @Test
@@ -102,7 +105,7 @@ public class SearchManagerTest {
 
     String expectedTerm = "dynamic_t_name:(test 123)";
     String searchTerm = "test 123";
-    testSearch(TYPE, documentIds, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm, TYPE_STRING);
+    testSearch(TYPE, documentIds, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm);
   }
 
   @Test
@@ -115,7 +118,7 @@ public class SearchManagerTest {
     String expectedTerm = String.format("dynamic_t_simple1:%s dynamic_t_simple:%s", SEARCH_TERM, SEARCH_TERM);
 
     testSearch(ClassWithMupltipleFullTestSearchFields.class, documentIds, SEARCH_TERM, "classwithmupltiplefulltestsearchfields", facetFieldNames, fullTextSearchFields, numberOfFacetValues,
-        Lists.<FacetParameter> newArrayList(), expectedTerm, TYPE_STRING);
+        Lists.<FacetParameter> newArrayList(), expectedTerm);
   }
 
   @Test
@@ -123,7 +126,7 @@ public class SearchManagerTest {
     List<String> documentIds = Lists.newArrayList();
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM, TYPE_STRING);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
   }
 
   @Test
@@ -136,7 +139,7 @@ public class SearchManagerTest {
 
     String expectedTerm = String.format("+dynamic_t_name:%s +dynamic_s_birthDate:value", SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm, TYPE_STRING);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
   }
 
   @Test
@@ -149,7 +152,7 @@ public class SearchManagerTest {
 
     String expectedTerm = String.format("+dynamic_t_name:%s +dynamic_s_birthDate:(value value1)", SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm, TYPE_STRING);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
   }
 
   @Test
@@ -162,7 +165,7 @@ public class SearchManagerTest {
 
     String expectedTerm = String.format("+dynamic_t_name:%s +dynamic_s_birthDate:value +dynamic_s_deathDate:values", SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm, TYPE_STRING);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
   }
 
   @Test
@@ -175,11 +178,11 @@ public class SearchManagerTest {
 
     String expectedTerm = String.format("+dynamic_t_name:%s +dynamic_s_birthDate:(value value1) +dynamic_s_deathDate:(value1 value2)", SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm, TYPE_STRING);
+    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
   }
 
   private void testSearch(Class<? extends Entity> type, List<String> documentIds, String searchTerm, String typeString, List<String> facetNames, List<String> fullTextSearchNames,
-      int numberOfFacetValues, List<FacetParameter> facetParameters, String expectedTerm, String searchCore) throws Exception {
+      int numberOfFacetValues, List<FacetParameter> facetParameters, String expectedTerm) throws Exception {
     FacetedSearchParameters searchParameters = new FacetedSearchParameters();
     searchParameters.setTerm(searchTerm);
     searchParameters.setTypeString(typeString);
@@ -192,7 +195,7 @@ public class SearchManagerTest {
     List<FacetCount> facets = createFacetCountList(facetNames, numberOfFacetValues);
     SearchResult expected = createExpectedResult(typeString, documentIds, expectedTerm, facets);
 
-    SearchResult actual = instance.search(type, searchCore, searchParameters);
+    SearchResult actual = instance.search(scope, type, searchParameters);
     verifySearchResult(expected, actual);
   }
 
@@ -203,7 +206,7 @@ public class SearchManagerTest {
     searchParameters.setTypeString(TYPE_STRING);
     searchParameters.setFacetValues(Lists.newArrayList(new FacetParameter().setName("unknown")));
 
-    instance.search(Person.class, TYPE_STRING, searchParameters);
+    instance.search(scope, Person.class, searchParameters);
   }
 
   private void verifySearchResult(SearchResult expected, SearchResult actual) {
