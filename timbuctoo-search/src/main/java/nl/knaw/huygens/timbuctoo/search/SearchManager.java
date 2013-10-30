@@ -93,23 +93,23 @@ public class SearchManager {
     List<FacetParameter> facetValues = searchParameters.getFacetValues();
     boolean usesFacets = facetValues != null && !facetValues.isEmpty();
     StringBuilder builder = new StringBuilder();
-    boolean isFirst = true;
-    for (String fullTextSearchField : fullTextSearchFields) {
-      if (!isFirst) {
-        builder.append(" ");
-      }
-      builder.append(String.format("%s:%s", formatTextField(usesFacets, fullTextSearchField), formatTerm(searchParameters.getTerm())));
-      isFirst = false;
+    String prefix = "";
+    for (String field : fullTextSearchFields) {
+      builder.append(prefix).append(usesFacets ? "+" : "").append(field).append(":");
+      builder.append(formatTerm(searchParameters.getTerm()));
+      prefix = " ";
     }
     if (usesFacets) {
       for (FacetParameter facetParameter : facetValues) {
-        if (!existingFacets.contains(facetParameter.getName())) {
-          throw new FacetDoesNotExistException("Facet " + facetParameter.getName() + " does not exist.");
+        String name = facetParameter.getName();
+        if (existingFacets.contains(name)) {
+          builder.append(" +").append(name).append(":");
+          builder.append(formatFacetValues(facetParameter.getValues()));
+        } else {
+          throw new FacetDoesNotExistException(name);
         }
-        builder.append(String.format(" +%s:%s", facetParameter.getName(), formatFacetValues(facetParameter.getValues())));
       }
     }
-
     return builder.toString();
   }
 
@@ -126,10 +126,6 @@ public class SearchManager {
       return builder.toString();
     }
     return SolrUtils.escapeFacetId(values.get(0));
-  }
-
-  private String formatTextField(boolean usesFacets, String textField) {
-    return String.format(usesFacets ? "+%s" : "%s", textField);
   }
 
   private String formatTerm(String term) {
