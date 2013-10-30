@@ -3,9 +3,7 @@ package nl.knaw.huygens.timbuctoo.search;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -25,12 +23,12 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.atlg.ATLGPerson;
 import nl.knaw.huygens.timbuctoo.search.model.ClassWithMupltipleFullTestSearchFields;
 
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
-import org.apache.solr.common.SolrException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -198,17 +196,6 @@ public class SearchManagerTest {
     verifySearchResult(expected, actual);
   }
 
-  @Test(expected = SolrException.class)
-  public void testSearchSolrException() throws Exception {
-    doThrow(SolrException.class).when(solrInstance).search(anyString(), anyString(), anyCollectionOf(String.class), anyString());
-
-    FacetedSearchParameters searchParameters = new FacetedSearchParameters();
-    searchParameters.setTerm(SEARCH_TERM);
-    searchParameters.setTypeString(TYPE_STRING);
-
-    instance.search(Person.class, TYPE_STRING, searchParameters);
-  }
-
   @Test(expected = FacetDoesNotExistException.class)
   public void testSearchFacetDoesNotExistException() throws Exception {
     FacetedSearchParameters searchParameters = new FacetedSearchParameters();
@@ -285,13 +272,11 @@ public class SearchManagerTest {
     return facetFields;
   }
 
-  @SuppressWarnings("unchecked")
   private void setUpQueryResponse(SolrDocumentList docs, List<FacetField> facetFields) throws Exception {
     QueryResponse response = mock(QueryResponse.class);
     when(response.getResults()).thenReturn(docs);
     when(response.getFacetFields()).thenReturn(facetFields);
-
-    when(solrInstance.search(anyString(), anyString(), any(List.class), anyString())).thenReturn(response);
+    when(solrInstance.search(anyString(), any(SolrQuery.class))).thenReturn(response);
   }
 
   private SolrDocumentList createSolrDocumentList(List<String> documentIds) {

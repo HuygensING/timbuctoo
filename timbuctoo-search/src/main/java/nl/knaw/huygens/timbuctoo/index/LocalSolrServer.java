@@ -3,16 +3,13 @@ package nl.knaw.huygens.timbuctoo.index;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
@@ -29,19 +26,15 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 /**
- * Handles communication with an embedded Solr server with various cores.
+ * Encapsulates a set of Lucene indexes with their configuration data
+ * (referred to as Solr cores, or cores for short) which are handled
+ * by an embedded Solr server.
  * Existing cores that are not referred to are ignored.
  */
 @Singleton
 public class LocalSolrServer {
 
   private static final Logger LOG = LoggerFactory.getLogger(LocalSolrServer.class);
-
-  // FIXME this is probably suboptimal:
-  private static final int ROWS = 20000;
-  private static final int FACET_LIMIT = 10000;
-
-  private static final String ID_FIELD = "id";
   private static final String ALL = "*:*";
 
   private final CoreContainer container;
@@ -52,7 +45,7 @@ public class LocalSolrServer {
   @Inject
   public LocalSolrServer(Configuration config) {
     solrHomeDir = config.getSolrHomeDir();
-    LOG.info("Solr directory: {}", solrHomeDir);
+    LOG.info("Solr home directory: {}", solrHomeDir);
 
     commitWithin = config.getIntSetting("solr.commit_within", 10 * 1000);
     LOG.info("Maximum time before a commit: {} seconds", commitWithin / 1000);
@@ -127,7 +120,6 @@ public class LocalSolrServer {
 
   public void commit(String core) throws SolrServerException, IOException {
     serverFor(core).commit();
-    LOG.info("{} index: {} documents", core, count(core));
   }
 
   public void commitAll() throws SolrServerException, IOException {
@@ -136,28 +128,16 @@ public class LocalSolrServer {
     }
   }
 
+  public QueryResponse search(String core, SolrQuery query) throws SolrServerException {
+    return serverFor(core).query(query);
+  }
+
+  @Deprecated
   public long count(String core) throws SolrServerException {
-    SolrQuery params = new SolrQuery(ALL);
-    params.setRows(0); // don't actually request any data
-    return serverFor(core).query(params).getResults().getNumFound();
-  }
-
-  public QueryResponse search(String core, String query, Collection<String> facetFieldNames, String sortField) throws SolrServerException {
-    SolrQuery solrQuery = new SolrQuery();
-    solrQuery.setQuery(query);
-    solrQuery.setFields(ID_FIELD);
-    solrQuery.setRows(ROWS);
-    solrQuery.addFacetField(facetFieldNames.toArray(new String[facetFieldNames.size()]));
-    solrQuery.setFacetMinCount(0);
-    solrQuery.setFacetLimit(FACET_LIMIT);
-    solrQuery.setFilterQueries("!cache=false");
-    solrQuery.setSort(new SortClause(sortField, SolrQuery.ORDER.asc));
-    LOG.debug("Query: {}", solrQuery);
-    return serverFor(core).query(solrQuery);
-  }
-
-  public QueryResponse getByIds(String core, List<String> ids, Collection<String> facetFieldNames, String sort) throws SolrServerException, IOException {
-    return search(core, "id:(" + StringUtils.join(ids, " ") + ")", facetFieldNames, sort);
+    SolrQuery query = new SolrQuery();
+    query.setQuery(ALL);
+    query.setRows(0); // don't actually request any data
+    return search(core, query).getResults().getNumFound();
   }
 
   public void shutdown() {
