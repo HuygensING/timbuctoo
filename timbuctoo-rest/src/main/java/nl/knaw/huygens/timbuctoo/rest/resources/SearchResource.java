@@ -74,9 +74,8 @@ public class SearchResource {
 
     // Process
     try {
-      // FIXME SearchResource shouldn't know the relation between types and cores
-      String coreName = getCoreName(config.getDefaultScope(), type);
-      SearchResult result = searchManager.search(type, coreName, searchParameters);
+      Scope scope = config.getDefaultScope();
+      SearchResult result = searchManager.search(scope, type, searchParameters);
       storageManager.addEntity(SearchResult.class, result);
       String queryId = result.getId();
       return Response.created(new URI(queryId)).build();
@@ -87,12 +86,6 @@ public class SearchResource {
       LOG.warn("POST - {}", e.getMessage());
       throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
     }
-  }
-
-  private String getCoreName(Scope scope, Class<? extends Entity> type) {
-    Class<? extends Entity> baseType = registry.getBaseClass(type);
-    String collectionName = registry.getINameForType(baseType);
-    return String.format("%s.%s", scope.getName(), collectionName);
   }
 
   @GET
