@@ -2,7 +2,9 @@ package nl.knaw.huygens.timbuctoo.index;
 
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.util.KV;
+import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import com.google.common.collect.Lists;
 
@@ -18,8 +20,10 @@ public class IndexStatus {
     return domainEntityCounts;
   }
 
-  public void addDomainEntityCount(KV<Long> count) {
-    domainEntityCounts.add(count);
+  public void addDomainEntityCount(Scope scope, Class<? extends DomainEntity> type, long count) {
+    if ("FullScope".equals(scope.getName())) {
+      domainEntityCounts.add(new KV<Long>(type.getSimpleName(), count));
+    }
   }
 
 }

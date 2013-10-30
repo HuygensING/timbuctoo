@@ -55,7 +55,7 @@ public class StorageManager {
   public StorageStatus getStatus() {
     StorageStatus status = new StorageStatus();
 
-    Scope scope = config.getDefaultScope();
+    Scope scope = config.getScopes().get(0);
     for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
       status.addDomainEntityCount(getCount(type));
     }

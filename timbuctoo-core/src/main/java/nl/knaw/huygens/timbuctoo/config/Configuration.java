@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.vre.DutchCaribbeanScope;
 import nl.knaw.huygens.timbuctoo.vre.FullScope;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
@@ -13,6 +14,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -23,7 +25,7 @@ public class Configuration {
   private static final String SETTINGS_PREFIX = "settings.";
 
   private final XMLConfiguration xmlConfig;
-  private final Scope defaultScope;
+  private final List<Scope> scopes;
 
   public Configuration() throws ConfigurationException {
     this(DEFAULT_CONFIG_FILE);
@@ -41,9 +43,10 @@ public class Configuration {
       throw e;
     }
     try {
-      defaultScope = new FullScope();
+      // TODO determine dynamically
+      scopes = ImmutableList.<Scope> of(new FullScope(), new DutchCaribbeanScope());
     } catch (IOException e) {
-      System.err.println("ERROR: unable to obtain default scope!");
+      System.err.println("ERROR: unable to obtain scopes!");
       throw new ConfigurationException(e);
     }
   }
@@ -106,8 +109,8 @@ public class Configuration {
     return rv;
   }
 
-  public Scope getDefaultScope() {
-    return defaultScope;
+  public List<Scope> getScopes() {
+    return scopes;
   }
 
   public String getSolrHomeDir() {
