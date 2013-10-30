@@ -9,7 +9,6 @@ import nl.knaw.huygens.security.AuthorizationHandler;
 import nl.knaw.huygens.security.SecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.index.LocalSolrServer;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
@@ -42,7 +41,6 @@ class ResourceTestModule extends JerseyServletModule {
   private Validator validator;
   private MailSender mailSender;
   private SearchManager searchManager;
-  private LocalSolrServer localSolrServer;
   private SecurityContextCreator securityContextCreator;
   private AuthorizationHandler authorizationHandler;
   private Broker broker;
@@ -57,7 +55,6 @@ class ResourceTestModule extends JerseyServletModule {
     validator = mock(Validator.class);
     mailSender = mock(MailSender.class);
     searchManager = mock(SearchManager.class);
-    localSolrServer = mock(LocalSolrServer.class);
     securityContextCreator = new UserSecurityContextCreator(storageManager);
     authorizationHandler = mock(AuthorizationHandler.class);
     broker = mock(Broker.class);
@@ -70,7 +67,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(config, storageManager, jsonProvider, validator, mailSender, searchManager, localSolrServer, authorizationHandler, broker, indexProducer, persistenceProducer);
+    reset(config, storageManager, jsonProvider, validator, mailSender, searchManager, authorizationHandler, broker, indexProducer, persistenceProducer);
   }
 
   @Override
@@ -134,11 +131,6 @@ class ResourceTestModule extends JerseyServletModule {
   @Singleton
   public SearchManager provideSearchManager() {
     return searchManager;
-  }
-
-  @Provides
-  public LocalSolrServer provideLocalSolrServer() {
-    return localSolrServer;
   }
 
   @Provides
