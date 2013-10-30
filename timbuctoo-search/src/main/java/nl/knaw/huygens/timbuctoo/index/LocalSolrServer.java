@@ -34,7 +34,7 @@ import com.google.inject.Singleton;
  * Existing cores that are not referred to are ignored.
  */
 @Singleton
-public class LocalSolrServer {
+class LocalSolrServer {
 
   private static final Logger LOG = LoggerFactory.getLogger(LocalSolrServer.class);
   private static final String ALL = "*:*";
