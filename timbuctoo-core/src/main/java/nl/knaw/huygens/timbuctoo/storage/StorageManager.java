@@ -2,10 +2,8 @@ package nl.knaw.huygens.timbuctoo.storage;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -16,11 +14,11 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.util.KV;
+import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -57,14 +55,8 @@ public class StorageManager {
   public StorageStatus getStatus() {
     StorageStatus status = new StorageStatus();
 
-    Set<Class<? extends DomainEntity>> types = Sets.newTreeSet(new Comparator<Class<? extends DomainEntity>>() {
-      @Override
-      public int compare(Class<? extends DomainEntity> o1, Class<? extends DomainEntity> o2) {
-        return o1.getSimpleName().compareTo(o2.getSimpleName());
-      }
-    });
-    types.addAll(config.getDefaultScope().getBaseEntityTypes());
-    for (Class<? extends DomainEntity> type : types) {
+    Scope scope = config.getDefaultScope();
+    for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
       status.addDomainEntityCount(getCount(type));
     }
 

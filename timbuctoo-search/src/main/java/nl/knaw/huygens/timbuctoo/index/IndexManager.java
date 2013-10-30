@@ -1,9 +1,7 @@
 package nl.knaw.huygens.timbuctoo.index;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -19,7 +17,6 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -118,14 +115,7 @@ public class IndexManager {
     IndexStatus status = new IndexStatus();
     Scope scope = config.getDefaultScope();
 
-    Set<Class<? extends DomainEntity>> types = Sets.newTreeSet(new Comparator<Class<? extends DomainEntity>>() {
-      @Override
-      public int compare(Class<? extends DomainEntity> o1, Class<? extends DomainEntity> o2) {
-        return o1.getSimpleName().compareTo(o2.getSimpleName());
-      }
-    });
-    types.addAll(scope.getBaseEntityTypes());
-    for (Class<? extends DomainEntity> type : types) {
+    for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
       status.addDomainEntityCount(getCount(scope, type));
     }
 
