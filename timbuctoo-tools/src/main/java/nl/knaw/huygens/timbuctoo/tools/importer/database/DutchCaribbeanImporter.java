@@ -76,7 +76,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
       storageManager.clear();
 
       indexManager = injector.getInstance(IndexManager.class);
-      indexManager.deleteAllDocuments();
+      indexManager.deleteAllEntities();
 
       long start = System.currentTimeMillis();
 

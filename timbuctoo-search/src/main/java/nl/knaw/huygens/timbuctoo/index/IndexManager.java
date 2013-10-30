@@ -78,31 +78,31 @@ public class IndexManager {
     return (index != null) ? index : new NoEntityIndex<T>();
   }
 
-  public <T extends Entity> void addDocument(Class<T> type, String id) throws IndexException {
-    addBaseDocument(registry.getBaseClass(type), id);
+  public <T extends Entity> void addEntity(Class<T> type, String id) throws IndexException {
+    addBaseEntity(registry.getBaseClass(type), id);
   }
 
-  private <T extends Entity> void addBaseDocument(Class<T> type, String id) throws IndexException {
+  private <T extends Entity> void addBaseEntity(Class<T> type, String id) throws IndexException {
     indexForType(type).add(type, id);
   }
 
-  public <T extends Entity> void updateDocument(Class<T> type, String id) throws IndexException {
-    updateBaseDocument(registry.getBaseClass(type), id);
+  public <T extends Entity> void updateEntity(Class<T> type, String id) throws IndexException {
+    updateBaseEntity(registry.getBaseClass(type), id);
   }
 
-  private <T extends Entity> void updateBaseDocument(Class<T> type, String id) throws IndexException {
+  private <T extends Entity> void updateBaseEntity(Class<T> type, String id) throws IndexException {
     indexForType(type).modify(type, id);
   }
 
-  public <T extends Entity> void deleteDocument(Class<T> type, String id) throws IndexException {
+  public <T extends Entity> void deleteEntity(Class<T> type, String id) throws IndexException {
     indexForType(registry.getBaseClass(type)).remove(id);
   }
 
-  public <T extends Entity> void deleteDocuments(Class<T> type, List<String> ids) throws IndexException {
+  public <T extends Entity> void deleteEntities(Class<T> type, List<String> ids) throws IndexException {
     indexForType(registry.getBaseClass(type)).remove(ids);
   }
 
-  public void deleteAllDocuments() throws IndexException {
+  public void deleteAllEntities() throws IndexException {
     try {
       server.deleteAll();
     } catch (Exception e) {
