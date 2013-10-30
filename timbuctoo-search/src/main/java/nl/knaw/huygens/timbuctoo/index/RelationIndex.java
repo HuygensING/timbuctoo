@@ -23,9 +23,9 @@ import org.slf4j.LoggerFactory;
  * The id's of these Solr documents have the id of the relation entity
  * as prefix, allowing them to be deleted by a simple query.
  */
-class RelationIndexer implements EntityIndexer<Relation> {
+class RelationIndex implements EntityIndex<Relation> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RelationIndexer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RelationIndex.class);
   private static final String CORE = "relation";
 
   private final TypeRegistry registry;
@@ -33,7 +33,7 @@ class RelationIndexer implements EntityIndexer<Relation> {
   private final StorageManager storageManager;
   private final RelationManager relationManager;
 
-  public RelationIndexer(TypeRegistry registry, LocalSolrServer server, StorageManager storageManager, RelationManager relationManager) {
+  public RelationIndex(TypeRegistry registry, LocalSolrServer server, StorageManager storageManager, RelationManager relationManager) {
     this.registry = registry;
     this.server = server;
     this.storageManager = storageManager;
