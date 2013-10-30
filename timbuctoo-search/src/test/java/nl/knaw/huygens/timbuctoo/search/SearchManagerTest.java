@@ -196,8 +196,8 @@ public class SearchManagerTest {
     verifySearchResult(expected, actual);
   }
 
-  @Test(expected = FacetDoesNotExistException.class)
-  public void testSearchFacetDoesNotExistException() throws Exception {
+  @Test(expected = NoSuchFacetException.class)
+  public void testSearchThrowsExceptionForMissingFacet() throws Exception {
     FacetedSearchParameters searchParameters = new FacetedSearchParameters();
     searchParameters.setTerm(SEARCH_TERM);
     searchParameters.setTypeString(TYPE_STRING);

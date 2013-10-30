@@ -26,7 +26,7 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.FacetDoesNotExistException;
+import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -80,7 +80,7 @@ public class SearchResource {
       storageManager.addEntity(SearchResult.class, result);
       String queryId = result.getId();
       return Response.created(new URI(queryId)).build();
-    } catch (FacetDoesNotExistException ex) {
+    } catch (NoSuchFacetException ex) {
       LOG.warn("POST - {}", ex.getMessage());
       throw new WebApplicationException(Response.Status.BAD_REQUEST);
     } catch (Exception e) {

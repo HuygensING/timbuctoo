@@ -51,7 +51,7 @@ public class SearchManager {
     return sortableFieldFinder.findFields(type);
   }
 
-  public SearchResult search(Class<? extends Entity> type, String core, FacetedSearchParameters searchParameters) throws SolrServerException, FacetDoesNotExistException {
+  public SearchResult search(Class<? extends Entity> type, String core, FacetedSearchParameters searchParameters) throws SolrServerException, NoSuchFacetException {
     Map<String, FacetInfo> facetInfoMap = facetFinder.findFacets(type);
     Set<String> fullTextSearchFields = fullTextSearchFieldFinder.findFields(type);
     String searchTerm = createSearchTerm(type, searchParameters, facetInfoMap.keySet(), fullTextSearchFields);
@@ -75,7 +75,7 @@ public class SearchManager {
   private static final int ROWS = 20000;
   private static final int FACET_LIMIT = 10000;
 
-  public QueryResponse doFacettedSearch(String core, String query, Collection<String> facetFieldNames, String sortField) throws SolrServerException {
+  private QueryResponse doFacettedSearch(String core, String query, Collection<String> facetFieldNames, String sortField) throws SolrServerException {
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery(query);
     solrQuery.setFields("id");
@@ -88,8 +88,7 @@ public class SearchManager {
     return server.search(core, solrQuery);
   }
 
-  private String createSearchTerm(Class<? extends Entity> type, FacetedSearchParameters searchParameters, Set<String> existingFacets, Set<String> fullTextSearchFields)
-      throws FacetDoesNotExistException {
+  private String createSearchTerm(Class<? extends Entity> type, FacetedSearchParameters searchParameters, Set<String> existingFacets, Set<String> fullTextSearchFields) throws NoSuchFacetException {
     List<FacetParameter> facetValues = searchParameters.getFacetValues();
     boolean usesFacets = facetValues != null && !facetValues.isEmpty();
     StringBuilder builder = new StringBuilder();
@@ -106,7 +105,7 @@ public class SearchManager {
           builder.append(" +").append(name).append(":");
           builder.append(formatFacetValues(facetParameter.getValues()));
         } else {
-          throw new FacetDoesNotExistException(name);
+          throw new NoSuchFacetException(name);
         }
       }
     }
