@@ -57,9 +57,11 @@ public class SearchResource {
   @POST
   @APIDesc("Searches the Solr index")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response post(FacetedSearchParameters searchParameters) {
-    String typeString = searchParameters.getTypeString();
-    String q = searchParameters.getTerm();
+  public Response post(FacetedSearchParameters searchParams) {
+    // TODO determine scope dynamically
+    Scope scope = config.getDefaultScope();
+    String typeString = searchParams.getTypeString();
+    String q = searchParams.getTerm();
 
     // Validate input
     if (typeString == null || q == null) {
@@ -68,19 +70,18 @@ public class SearchResource {
     }
     Class<? extends Entity> type = registry.getTypeForIName(typeString);
     if (type == null) {
-      LOG.error("POST - no type {}", typeString);
+      LOG.error("POST - no such type: {}", typeString);
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
 
     // Process
     try {
-      Scope scope = config.getDefaultScope();
-      SearchResult result = searchManager.search(scope, type, searchParameters);
+      SearchResult result = searchManager.search(scope, type, searchParams);
       storageManager.addEntity(SearchResult.class, result);
       String queryId = result.getId();
       return Response.created(new URI(queryId)).build();
-    } catch (NoSuchFacetException ex) {
-      LOG.warn("POST - {}", ex.getMessage());
+    } catch (NoSuchFacetException e) {
+      LOG.warn("POST - no such facet: {}", e.getMessage());
       throw new WebApplicationException(Response.Status.BAD_REQUEST);
     } catch (Exception e) {
       LOG.warn("POST - {}", e.getMessage());
