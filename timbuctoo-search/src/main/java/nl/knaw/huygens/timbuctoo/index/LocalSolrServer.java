@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,11 +16,8 @@ import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.apache.solr.client.solrj.request.LukeRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.util.NamedList;
-import org.apache.solr.common.util.SimpleOrderedMap;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.CoreDescriptor;
 import org.apache.solr.core.SolrCore;
@@ -30,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -148,17 +142,6 @@ public class LocalSolrServer {
     return serverFor(core).query(params).getResults().getNumFound();
   }
 
-  /**
-   * Search a Solr core with the specified query and return the specified fields.
-   */
-  public QueryResponse search(String core, String query, String... fields) throws SolrServerException {
-    SolrQuery solrQuery = new SolrQuery();
-    solrQuery.setQuery(query);
-    solrQuery.setFields(fields);
-    solrQuery.setRows(ROWS);
-    return serverFor(core).query(solrQuery);
-  }
-
   public QueryResponse search(String core, String query, Collection<String> facetFieldNames, String sortField) throws SolrServerException {
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery(query);
@@ -175,24 +158,6 @@ public class LocalSolrServer {
 
   public QueryResponse getByIds(String core, List<String> ids, Collection<String> facetFieldNames, String sort) throws SolrServerException, IOException {
     return search(core, "id:(" + StringUtils.join(ids, " ") + ")", facetFieldNames, sort);
-  }
-
-  public Set<String> getAllFields(String core) throws SolrServerException, IOException {
-    SolrServer solrServer = solrServers.get(core);
-    LukeRequest request = new LukeRequest();
-    request.setNumTerms(0);
-    request.setFields(Collections.<String> emptyList());
-
-    NamedList<Object> namedList = solrServer.request(request);
-
-    @SuppressWarnings("unchecked")
-    SimpleOrderedMap<Object> fields = (SimpleOrderedMap<Object>) namedList.get("fields");
-    Iterator<Map.Entry<String, Object>> fieldIt = fields.iterator();
-    Set<String> rv = Sets.newHashSetWithExpectedSize(fields.size());
-    while (fieldIt.hasNext()) {
-      rv.add(fieldIt.next().getKey());
-    }
-    return rv;
   }
 
   public void shutdown() {
