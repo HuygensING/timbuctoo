@@ -4,8 +4,10 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
-// T must be a base type
-public interface EntityIndexer<T extends Entity> {
+/**
+ * Represents a Lucene index.
+ */
+public interface EntityIndex<T extends Entity> {
 
   void add(Class<T> docType, String docId) throws IndexException;
 

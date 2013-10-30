@@ -29,7 +29,6 @@ import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
-import org.apache.solr.client.solrj.SolrServerException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -57,7 +56,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostSuccess() throws IOException, SolrServerException, FacetDoesNotExistException {
+  public void testPostSuccess() throws Exception {
     setupScope();
     SearchResult searchResult = createPostSearchResult();
     setupSearchManager(searchResult);
@@ -83,7 +82,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostSuccessWithoutSort() throws IOException, SolrServerException, FacetDoesNotExistException {
+  public void testPostSuccessWithoutSort() throws Exception {
     setupScope();
     SearchResult searchResult = createPostSearchResult();
     setupSearchManager(searchResult);
@@ -102,7 +101,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostTypeUnknown() throws SolrServerException, IOException, FacetDoesNotExistException {
+  public void testPostTypeUnknown() throws Exception {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
@@ -118,7 +117,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostTypeStringNull() throws IOException, SolrServerException, FacetDoesNotExistException {
+  public void testPostTypeStringNull() throws Exception {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
@@ -134,7 +133,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostQueryStringNull() throws IOException, SolrServerException, FacetDoesNotExistException {
+  public void testPostQueryStringNull() throws Exception {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
@@ -150,7 +149,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostUnknownFacets() throws SolrServerException, FacetDoesNotExistException, IOException {
+  public void testPostUnknownFacets() throws Exception {
     setupScope();
     SearchManager searchManager = injector.getInstance(SearchManager.class);
     doThrow(FacetDoesNotExistException.class).when(searchManager).search(Matchers.<Class<? extends Entity>> any(), anyString(), any(FacetedSearchParameters.class));
@@ -164,11 +163,10 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
-
   }
 
   @Test
-  public void testPostSearchManagerThrowsAnException() throws IOException, SolrServerException, FacetDoesNotExistException {
+  public void testPostSearchManagerThrowsAnException() throws Exception {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
     doThrow(Exception.class).when(searchManager).search(Matchers.<Class<? extends Entity>> any(), anyString(), any(FacetedSearchParameters.class));
 
@@ -184,7 +182,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostStorageManagerThrowsAnException() throws IOException, SolrServerException, FacetDoesNotExistException {
+  public void testPostStorageManagerThrowsAnException() throws Exception {
     SearchResult searchResult = createPostSearchResult();
     setupSearchManager(searchResult);
 
@@ -325,7 +323,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
   }
 
-  private void setupSearchManager(SearchResult searchResult) throws SolrServerException, FacetDoesNotExistException {
+  private void setupSearchManager(SearchResult searchResult) throws Exception {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
     when(searchManager.search(Matchers.<Class<? extends Entity>> any(), anyString(), any(FacetedSearchParameters.class))).thenReturn(searchResult);
   }
@@ -411,4 +409,5 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertEquals(expected.get("_next"), actual.get("_next"));
     assertEquals(expected.get("_prev"), actual.get("_prev"));
   }
+
 }
