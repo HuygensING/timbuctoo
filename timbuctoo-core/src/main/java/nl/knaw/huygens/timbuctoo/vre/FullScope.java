@@ -31,4 +31,9 @@ public class FullScope extends AbstractScope {
     return true;
   }
 
+  @Override
+  public <T extends DomainEntity> boolean inScope(Class<T> type, T entity) {
+    return true;
+  }
+
 }

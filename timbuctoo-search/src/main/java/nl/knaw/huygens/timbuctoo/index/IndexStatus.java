@@ -15,7 +15,7 @@ public class IndexStatus {
   private final Map<String, List<KV<Long>>> counts;
 
   public IndexStatus() {
-    counts = Maps.newHashMap();
+    counts = Maps.newTreeMap();
   }
 
   public Map<String, List<KV<Long>>> getCounts() {
