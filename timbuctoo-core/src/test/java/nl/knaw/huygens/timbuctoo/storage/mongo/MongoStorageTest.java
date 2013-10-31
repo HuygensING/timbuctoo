@@ -14,7 +14,7 @@ import java.util.Date;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.storage.mongo.model.TestSystemEntity;
+import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
