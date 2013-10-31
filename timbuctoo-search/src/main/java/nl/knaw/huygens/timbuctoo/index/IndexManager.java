@@ -138,7 +138,6 @@ public class IndexManager {
           String coreName = String.format("%s.%s", scope.getId(), collection);
           status.addDomainEntityCount(scope, type, server.count(coreName));
         }
-        break;
       }
     } catch (SolrServerException e) {
       LOG.error("Failed obtain status: {}", e.getMessage());
