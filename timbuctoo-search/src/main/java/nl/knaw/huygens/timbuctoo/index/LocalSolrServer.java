@@ -65,10 +65,10 @@ class LocalSolrServer {
    */
   public void addCore(String collection, String coreName) {
     checkArgument(collection != null && collection.matches("^[a-z]+$"), "collection '%s'", collection);
-    checkArgument(coreName != null && coreName.matches("^[A-Za-z\\.]+$"), "coreName '%s'", coreName);
+    checkArgument(coreName != null && coreName.matches("^[a-z\\.]+$"), "coreName '%s'", coreName);
 
     String schemaName = getSchemaName(collection);
-    String dataDir = coreName.replace('.', '/');
+    String dataDir = coreName.replace(".", "-scope/");
 
     CoreDescriptor descriptor = new CoreDescriptor(container, coreName, solrHomeDir);
     descriptor.setSchemaName(schemaName);
