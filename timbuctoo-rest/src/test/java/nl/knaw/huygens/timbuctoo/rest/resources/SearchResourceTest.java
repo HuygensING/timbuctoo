@@ -57,7 +57,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Before
   public void setupScope() {
     Scope scope = mock(Scope.class);
-    when(scope.getName()).thenReturn("name");
+    when(scope.getId()).thenReturn("name");
     Configuration config = injector.getInstance(Configuration.class);
     when(config.getScopes()).thenReturn(Lists.newArrayList(scope));
   }

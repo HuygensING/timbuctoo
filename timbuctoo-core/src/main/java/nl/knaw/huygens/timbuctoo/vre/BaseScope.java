@@ -4,22 +4,23 @@ import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
-public class DutchCaribbeanScope extends AbstractScope {
+/**
+ * A {@code Scope} with all primitive domain entities.
+ */
+public class BaseScope extends AbstractScope {
 
-  private static final String DCAR_PACKAGE = "timbuctoo.model.dcar";
-
-  public DutchCaribbeanScope() throws IOException {
-    super(DCAR_PACKAGE);
+  public BaseScope() throws IOException {
+    super("timbuctoo.model");
   }
 
   @Override
   public String getId() {
-    return "dcar";
+    return "base";
   }
 
   @Override
   public String getName() {
-    return "Dutch Caribbean Scope";
+    return "Base Scope";
   }
 
   @Override

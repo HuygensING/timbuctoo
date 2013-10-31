@@ -7,21 +7,23 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 public class FullScope extends AbstractScope {
 
   public FullScope() throws IOException {
-    // primitive entity types
     addPackage("timbuctoo.model");
-    fixBaseTypes();
-    // additional entity types
     addPackage("timbuctoo.model.atlg");
     addPackage("timbuctoo.model.ckcc");
     addPackage("timbuctoo.model.dcar");
     addPackage("timbuctoo.model.dwcbia");
     addPackage("timbuctoo.model.raa");
-    fixAllTypes();
+    buildTypes();
+  }
+
+  @Override
+  public String getId() {
+    return "full";
   }
 
   @Override
   public String getName() {
-    return "FullScope";
+    return "Full Scope";
   }
 
   @Override
