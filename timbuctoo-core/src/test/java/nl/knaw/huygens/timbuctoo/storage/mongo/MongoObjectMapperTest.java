@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.storage.mongo.model.MongoObjectMapperDocument;
+import nl.knaw.huygens.timbuctoo.model.MongoObjectMapperDocument;
 
 import org.junit.BeforeClass;
 import org.junit.Test;

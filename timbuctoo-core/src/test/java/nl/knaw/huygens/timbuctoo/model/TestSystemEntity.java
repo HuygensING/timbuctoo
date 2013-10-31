@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.mongo.model;
+package nl.knaw.huygens.timbuctoo.model;
 
 import java.util.Date;
 
