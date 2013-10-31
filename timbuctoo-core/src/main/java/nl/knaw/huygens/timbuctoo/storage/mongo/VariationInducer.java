@@ -32,12 +32,12 @@ class VariationInducer extends VariationConverter {
     writer = mapper.writerWithView(view);
   }
 
-  public <T extends Entity> JsonNode induce(T item, Class<T> type) throws VariationException {
+  public <T extends Entity> JsonNode induce(Class<T> type, T item) throws VariationException {
     return induce(item, type, (ObjectNode) null);
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Entity> JsonNode induce(T item, Class<T> type, DBObject existingItem) throws VariationException {
+  public <T extends Entity> JsonNode induce(Class<T> type, T item, DBObject existingItem) throws VariationException {
     ObjectNode node;
     if (existingItem == null) {
       node = createNode(null, type, getVariationNamesForType(type));
