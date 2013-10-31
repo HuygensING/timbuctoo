@@ -20,7 +20,7 @@ import javax.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.mongo.model.TestSystemDocument;
+import nl.knaw.huygens.timbuctoo.storage.mongo.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 
@@ -60,10 +60,10 @@ public class StorageManagerTest {
 
   @Test
   public void testAddDocumentSystemDocument() throws IOException, PersistenceException {
-    TestSystemDocument doc = new TestSystemDocument();
+    TestSystemEntity doc = new TestSystemEntity();
     doc.setId("TEST000123000123");
 
-    Class<TestSystemDocument> type = TestSystemDocument.class;
+    Class<TestSystemEntity> type = TestSystemEntity.class;
 
     instance.addEntity(type, doc);
 
@@ -217,10 +217,10 @@ public class StorageManagerTest {
   @Test
   public void testModifyDocumentSystemDocumentModified() throws IOException {
     String id = "TSD0000000001";
-    TestSystemDocument expectedDoc = new TestSystemDocument();
+    TestSystemEntity expectedDoc = new TestSystemEntity();
     expectedDoc.setId(id);
 
-    Class<TestSystemDocument> type = TestSystemDocument.class;
+    Class<TestSystemEntity> type = TestSystemEntity.class;
 
     instance.modifyEntity(type, expectedDoc);
     verifyModifyDocument(type, expectedDoc, times(1), never());
@@ -274,12 +274,12 @@ public class StorageManagerTest {
 
   @Test
   public void testRemoveDocumentSystemDocumentRemoved() throws IOException {
-    TestSystemDocument inputDoc = new TestSystemDocument();
+    TestSystemEntity inputDoc = new TestSystemEntity();
     String id = "TCD0000000001";
     inputDoc.setId(id);
     inputDoc.setDeleted(true);
 
-    Class<TestSystemDocument> type = TestSystemDocument.class;
+    Class<TestSystemEntity> type = TestSystemEntity.class;
 
     instance.removeEntity(type, inputDoc);
     verify(storage, times(1)).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
