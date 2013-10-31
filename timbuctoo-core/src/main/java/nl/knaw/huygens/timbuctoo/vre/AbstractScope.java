@@ -1,10 +1,10 @@
 package nl.knaw.huygens.timbuctoo.vre;
 
 import java.io.IOException;
-import java.lang.reflect.Modifier;
 import java.util.Comparator;
 import java.util.Set;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import com.google.common.base.Preconditions;
@@ -14,18 +14,39 @@ import com.google.common.reflect.ClassPath.ClassInfo;
 
 public abstract class AbstractScope implements Scope {
 
-  private Builder<Class<? extends DomainEntity>> builder;
   private ClassPath classPath;
+  private Builder<Class<? extends DomainEntity>> builder;
 
   private Set<Class<? extends DomainEntity>> baseTypes;
   private Set<Class<? extends DomainEntity>> allTypes;
 
   public AbstractScope() throws IOException {
-    builder = new Builder<Class<? extends DomainEntity>>(new SimpleNameComparator());
     classPath = ClassPath.from(AbstractScope.class.getClassLoader());
+    builder = newBuilder();
   }
 
-  protected void addPackage(String name) throws IOException {
+  /**
+   * Convenience constructor that creates a scope for a single package.
+   */
+  public AbstractScope(String packageName) throws IOException {
+    this();
+    addPackage(packageName);
+    buildTypes();
+  }
+
+  @Override
+  public final Set<Class<? extends DomainEntity>> getBaseEntityTypes() {
+    Preconditions.checkState(builder == null);
+    return baseTypes;
+  }
+
+  @Override
+  public final Set<Class<? extends DomainEntity>> getAllEntityTypes() {
+    Preconditions.checkState(builder == null);
+    return allTypes;
+  }
+
+  protected final void addPackage(String name) throws IOException {
     Preconditions.checkState(builder != null);
     String packageName = name.replaceFirst("^timbuctoo", "nl.knaw.huygens.timbuctoo");
     for (ClassInfo info : classPath.getTopLevelClasses(packageName)) {
@@ -33,35 +54,42 @@ public abstract class AbstractScope implements Scope {
     }
   }
 
-  protected void addClass(Class<?> cls) {
+  protected final void addClass(Class<?> cls) {
     Preconditions.checkState(builder != null);
-    if (DomainEntity.class.isAssignableFrom(cls) && !Modifier.isAbstract(cls.getModifiers())) {
-      @SuppressWarnings("unchecked")
-      Class<? extends DomainEntity> type = (Class<? extends DomainEntity>) cls;
-      builder.add(type);
+    if (TypeRegistry.isDomainEntity(cls) && cls != DomainEntity.class) {
+      builder.add(TypeRegistry.toDomainEntity(cls));
     }
   }
 
-  protected void fixBaseTypes() {
-    Preconditions.checkState(builder != null);
-    baseTypes = builder.build();
-  }
-
-  protected void fixAllTypes() {
+  protected final void buildTypes() {
     Preconditions.checkState(builder != null);
     allTypes = builder.build();
+    baseTypes = buildBaseTypes();
     builder = null;
     classPath = null;
   }
 
-  @Override
-  public Set<Class<? extends DomainEntity>> getBaseEntityTypes() {
-    return baseTypes;
+  private Builder<Class<? extends DomainEntity>> newBuilder() {
+    return new Builder<Class<? extends DomainEntity>>(new SimpleNameComparator());
   }
 
-  @Override
-  public Set<Class<? extends DomainEntity>> getAllEntityTypes() {
-    return allTypes;
+  private Set<Class<? extends DomainEntity>> buildBaseTypes() {
+    Builder<Class<? extends DomainEntity>> builder = newBuilder();
+    for (Class<? extends DomainEntity> type : allTypes) {
+      builder.add(getBaseType(type));
+    }
+    return builder.build();
+  }
+
+  /**
+   * Returns the primitive type for the specified domain entity type,
+   * defined as the entity immediately below {@code DomainEntity} in
+   * the class hierarchy.
+   */
+  private Class<? extends DomainEntity> getBaseType(Class<? extends DomainEntity> type) {
+    Preconditions.checkArgument(type != null && type != DomainEntity.class);
+    Class<? extends DomainEntity> superType = TypeRegistry.toDomainEntity(type.getSuperclass());
+    return (superType == DomainEntity.class) ? type : getBaseType(superType);
   }
 
   // -------------------------------------------------------------------

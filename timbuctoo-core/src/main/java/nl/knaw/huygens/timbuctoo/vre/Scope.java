@@ -10,7 +10,12 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 public interface Scope {
 
   /**
-   * Returns the unique name of this scope.
+   * Returns the unique id of this scope.
+   */
+  String getId();
+
+  /**
+   * Returns the name of this scope.
    */
   String getName();
 
