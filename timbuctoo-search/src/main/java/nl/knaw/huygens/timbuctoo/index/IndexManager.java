@@ -60,7 +60,7 @@ public class IndexManager {
     for (Scope scope : config.getScopes()) {
       for (Class<? extends Entity> type : scope.getBaseEntityTypes()) {
         String collection = registry.getINameForType(type);
-        String coreName = String.format("%s.%s", scope.getName(), collection);
+        String coreName = String.format("%s.%s", scope.getId(), collection);
         server.addCore(collection, coreName);
         if (type == Relation.class) {
           indexes.put(Relation.class, new RelationIndex(registry, server, storageManager, relationManager));
@@ -124,7 +124,7 @@ public class IndexManager {
       for (Scope scope : config.getScopes()) {
         for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
           String collection = registry.getINameForType(type);
-          String coreName = String.format("%s.%s", scope.getName(), collection);
+          String coreName = String.format("%s.%s", scope.getId(), collection);
           status.addDomainEntityCount(scope, type, server.count(coreName));
         }
         break;
