@@ -35,4 +35,10 @@ public interface Scope {
    */
   <T extends DomainEntity> boolean inScope(Class<T> type, String id);
 
+  /**
+   * Returns {@code true} if the specified domain entity
+   * is in scope, {@code false} otherwise.
+   */
+  <T extends DomainEntity> boolean inScope(Class<T> type, T entity);
+
 }

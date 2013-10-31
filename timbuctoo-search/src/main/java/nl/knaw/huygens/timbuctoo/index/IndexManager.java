@@ -12,9 +12,11 @@ import nl.knaw.huygens.timbuctoo.vre.Scope;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -73,10 +75,18 @@ public class IndexManager {
   }
 
   private <T extends DomainEntity> void addBaseEntity(Class<T> type, String id) throws IndexException {
-    for (Scope scope : scopes) {
-      if (scope.inScope(type, id)) {
-        getIndex(scope, type).add(type, id);
+    try {
+      List<T> variations = storageManager.getAllVariations(type, id);
+      for (Scope scope : scopes) {
+        if (scope.inScope(type, id)) {
+          String collection = registry.getINameForType(type);
+          String coreName = String.format("%s.%s", scope.getId(), collection);
+          List<T> filtered = filter(type, variations, scope);
+          server.add(coreName, getSolrInputDocument(filtered));
+        }
       }
+    } catch (Exception e) {
+      // handle
     }
   }
 
@@ -152,6 +162,33 @@ public class IndexManager {
     } catch (Exception e) {
       throw new IndexException("Failed to release IndexManager resources", e);
     }
+  }
+
+  private <T extends DomainEntity> SolrInputDocument getSolrInputDocument(List<T> entities) {
+    ModelIterator modelIterator = new ModelIterator();
+    SolrInputDocument document = null;
+    SolrInputDocGenerator indexer = null;
+    for (T entity : entities) {
+      if (document == null) {
+        indexer = new SolrInputDocGenerator(entity);
+      } else {
+        indexer = new SolrInputDocGenerator(entity, document);
+      }
+      modelIterator.processClass(indexer, entity.getClass());
+      document = indexer.getResult();
+    }
+    return document;
+  }
+
+  // TODO filter with predicate
+  private <T extends DomainEntity> List<T> filter(Class<T> type, List<T> entities, Scope scope) {
+    List<T> list = Lists.newArrayList();
+    for (T entity : entities) {
+      if (scope.inScope(type, entity)) {
+        list.add(entity);
+      }
+    }
+    return list;
   }
 
 }
