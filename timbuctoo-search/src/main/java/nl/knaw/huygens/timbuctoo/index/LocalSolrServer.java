@@ -68,7 +68,7 @@ class LocalSolrServer {
     checkArgument(coreName != null && coreName.matches("^[a-z\\.]+$"), "coreName '%s'", coreName);
 
     String schemaName = getSchemaName(collection);
-    String dataDir = coreName.replace(".", "-scope/");
+    String dataDir = "data/" + coreName.replace('.', '/');
 
     CoreDescriptor descriptor = new CoreDescriptor(container, coreName, solrHomeDir);
     descriptor.setSchemaName(schemaName);
@@ -119,7 +119,7 @@ class LocalSolrServer {
 
   public void deleteAll() throws SolrServerException, IOException {
     for (String core : getCoreNames()) {
-      LOG.info("Clearing {} index", core);
+      LOG.info("Clearing index {}", core);
       deleteAll(core);
     }
   }
