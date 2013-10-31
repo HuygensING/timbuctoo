@@ -18,6 +18,8 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
@@ -59,10 +61,13 @@ public class DatabaseSetupper {
       System.out.println("Cleaning input data...");
       importCleaner();
     }
-    for (String model : config.getSettings("doctypes")) {
+
+    String doctypes = "archive,archiver,keyword,legislation,person,place";
+    for (String model : StringUtils.split(doctypes, ", ")) {
       Class<? extends Entity> cls = typeRegistry.getTypeForIName(model);
       importer.bulkImport(cls, true, vreId, vreName);
     }
+
     createAdminUser();
     System.out.println("Done.");
     return 0;
