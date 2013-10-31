@@ -13,24 +13,10 @@
 <h1>Huygens ING Data Repository</h1>
 
 <table class="outer">
-<tr>
-<td class="column">
-<h3>Stored system entities</h3>
-<div id="stored_system_entities"></div>
-</td>
-<td class="column">
-<h3>Stored domain entities</h3>
-<div id="stored_domain_entities"></div>
-</td>
-<td class="column">
-<h3>Indexed domain entities</h3>
-<div id="indexed_domain_entities"></div>
-</td>
-</tr>
+<tr id="status"></tr>
 </table>
 
-<p><a href="#" onclick="doGet()">Refresh</a></p>
-
+<h3><a href="#" onclick="doGet()">Refresh</a>.</h3>
 <h3>Repository <a href="system/api">API</a>.</h3>
 <h3><a href="static/search.html">Search</a> the repository.</h3>
 
@@ -49,26 +35,31 @@
       data: {'refresh': false},
       contentType: 'application/json; charset=utf-8',
       success: function (data) {
-          var html1 = '<table><tr><th>Type</th><th>Count</th></tr>';
-          $.each(data.storageStatus.systemEntityCounts, function (i, item) {
-            html1 += '<tr><td class="name">' + item.key + '</td><td class="number">' + item.value + '</td></tr>';
-          });
-          html1 += '</table>';
-          $('#stored_system_entities').html(html1);
+        var html = '';
 
-          var html2 = '<table><tr><th>Type</th><th>Count</th></tr>';
-          $.each(data.storageStatus.domainEntityCounts, function (i, item) {
-            html2 += '<tr><td class="name">' + item.key + '</td><td class="number">' + item.value + '</td></tr>';
-          });
-          html2 += '</table>';
-          $('#stored_domain_entities').html(html2);
+        html += '<td class="column"><h3>Stored system entities</h3>';
+        html += '<table><tr><th>Type</th><th>Count</th></tr>';
+        $.each(data.storageStatus.systemEntityCounts, function (i, item) {
+          html += '<tr><td class="name">' + item.key + '</td><td class="number">' + item.value + '</td></tr>';
+        });
+        html += '</table></td>';
 
-          var html3 = '<table><tr><th>Type</th><th>Count</th></tr>';
-          $.each(data.indexStatus.domainEntityCounts, function (i, item) {
-            html3 += '<tr><td class="name">' + item.key + '</td><td class="number">' + item.value + '</td></tr>';
-          });
-          html3 += '</table>';
-          $('#indexed_domain_entities').html(html3);
+        html += '<td class="column"><h3>Stored domain entities</h3>';
+        html += '<table><tr><th>Type</th><th>Count</th></tr>';
+        $.each(data.storageStatus.domainEntityCounts, function (i, item) {
+          html += '<tr><td class="name">' + item.key + '</td><td class="number">' + item.value + '</td></tr>';
+        });
+        html += '</table></td>';
+
+        $.each(data.indexStatus.counts, function (scope, items) {
+          html += '<td class="column"><h3>Indexed scope \'' + scope + '\'</h3>';
+        	html += '<table><tr><th>Type</th><th>Count</th></tr>';
+        	$.each(items, function (i, item) {
+            html += '<tr><td class="name">' + item.key + '</td><td class="number">' + item.value + '</td></tr>';
+        	});
+        	html += '</table></td>';
+        });
+        $('#status').html(html);
       }
     });
   }
