@@ -21,7 +21,7 @@ public class IndexStatus {
   }
 
   public void addDomainEntityCount(Scope scope, Class<? extends DomainEntity> type, long count) {
-    if ("FullScope".equals(scope.getName())) {
+    if ("full".equals(scope.getId())) {
       domainEntityCounts.add(new KV<Long>(type.getSimpleName(), count));
     }
   }
