@@ -155,7 +155,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     if (item.getId() == null) {
       setNextId(type, item);
     }
-    JsonNode jsonNode = inducer.induce(item, type);
+    JsonNode jsonNode = inducer.induce(type, item);
     DBCollection col = getVariationCollection(type);
     JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
     col.insert(insertedItem);
@@ -172,7 +172,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     if (existingNode == null) {
       throw new IOException("No entity was found for ID " + id + " and revision " + String.valueOf(item.getRev()) + " !");
     }
-    JsonNode updatedNode = inducer.induce(item, type, existingNode);
+    JsonNode updatedNode = inducer.induce(type, item, existingNode);
     ((ObjectNode) updatedNode).put("^rev", item.getRev() + 1);
     JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(updatedNode, JsonNode.class);
     col.update(q, updatedDBObj);
