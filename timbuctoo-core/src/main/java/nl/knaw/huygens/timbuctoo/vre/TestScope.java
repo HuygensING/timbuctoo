@@ -29,7 +29,7 @@ public class TestScope extends AbstractScope {
   }
 
   @Override
-  public <T extends DomainEntity> boolean inScope(Class<T> type, T entity) {
+  public <T extends DomainEntity> boolean inScope(T entity) {
     Class<? extends DomainEntity> entityType = entity.getClass();
     if (entityType == DCARArchive.class) {
       String text = ((DCARArchive) entity).getTitleEng();
