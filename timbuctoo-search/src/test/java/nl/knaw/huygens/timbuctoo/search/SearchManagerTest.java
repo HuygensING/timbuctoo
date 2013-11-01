@@ -16,7 +16,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount.Option;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
-import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.atlg.ATLGPerson;
@@ -60,78 +60,76 @@ public class SearchManagerTest {
 
   @Test
   public void testSearchOneResult() throws Exception {
-    List<String> documentIds = Lists.newArrayList("id1");
+    List<String> ids = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
+    testSearch(TYPE, ids, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
   }
 
   @Test
   public void testSearchSubType() throws Exception {
-    List<String> documentIds = Lists.newArrayList("id1");
+    List<String> ids = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
-    int numberOfFacetValues = 1;
-    Class<? extends Entity> type = ATLGPerson.class;
 
-    testSearch(type, documentIds, SEARCH_TERM, typeRegistry.getINameForType(type), facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
+    testSearch(ATLGPerson.class, ids, SEARCH_TERM, "atlgperson", facetFieldNames, FULL_TEXT_SEARCH_NAMES, 1, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
   }
 
   @Test
   public void testSearchMultipleResults() throws Exception {
-    List<String> documentIds = Lists.newArrayList("id1", "id2", "id3", "id4");
+    List<String> ids = Lists.newArrayList("id1", "id2", "id3", "id4");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
+    testSearch(TYPE, ids, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
   }
 
   @Test
   public void testSearchWildCard() throws Exception {
-    List<String> documentIds = Lists.newArrayList("id1");
+    List<String> ids = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
 
     String expectedTerm = "dynamic_t_name:*";
     String searchTerm = "*";
-    testSearch(TYPE, documentIds, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm);
+    testSearch(TYPE, ids, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm);
   }
 
   @Test
   public void testSearchMultipleTerms() throws Exception {
-    List<String> documentIds = Lists.newArrayList("id1");
+    List<String> ids = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
 
     String expectedTerm = "dynamic_t_name:(test 123)";
     String searchTerm = "test 123";
-    testSearch(TYPE, documentIds, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm);
+    testSearch(TYPE, ids, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm);
   }
 
   @Test
   public void testSearchMultipleFields() throws Exception {
-    List<String> documentIds = Lists.newArrayList("id1", "id2", "id3", "id4");
+    List<String> ids = Lists.newArrayList("id1", "id2", "id3", "id4");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_t_simple");
     int numberOfFacetValues = 1;
 
     List<String> fullTextSearchFields = Lists.newArrayList("dynamic_t_simple", "dynamic_t_simple1");
     String expectedTerm = String.format("dynamic_t_simple1:%s dynamic_t_simple:%s", SEARCH_TERM, SEARCH_TERM);
 
-    testSearch(ClassWithMupltipleFullTestSearchFields.class, documentIds, SEARCH_TERM, "classwithmupltiplefulltestsearchfields", facetFieldNames, fullTextSearchFields, numberOfFacetValues,
+    testSearch(ClassWithMupltipleFullTestSearchFields.class, ids, SEARCH_TERM, "classwithmupltiplefulltestsearchfields", facetFieldNames, fullTextSearchFields, numberOfFacetValues,
         Lists.<FacetParameter> newArrayList(), expectedTerm);
   }
 
   @Test
   public void testSearchNoResults() throws Exception {
-    List<String> documentIds = Lists.newArrayList();
+    List<String> ids = Lists.newArrayList();
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
+    testSearch(TYPE, ids, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
   }
 
   @Test
   public void testSearchWithOneFacetOneValue() throws Exception {
-    List<String> documentIds = Lists.newArrayList("id1");
+    List<String> ids = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
 
@@ -139,12 +137,12 @@ public class SearchManagerTest {
 
     String expectedTerm = String.format("+dynamic_t_name:%s +dynamic_s_birthDate:value", SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
+    testSearch(TYPE, ids, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
   }
 
   @Test
   public void testSearchWithOneFacetMultipleValues() throws Exception {
-    List<String> documentIds = Lists.newArrayList("id1");
+    List<String> ids = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
 
@@ -152,12 +150,12 @@ public class SearchManagerTest {
 
     String expectedTerm = String.format("+dynamic_t_name:%s +dynamic_s_birthDate:(value value1)", SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
+    testSearch(TYPE, ids, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
   }
 
   @Test
   public void testSearchWithMultipleFacetsOneValue() throws Exception {
-    List<String> documentIds = Lists.newArrayList("id1");
+    List<String> ids = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate", "dynamic_s_deathDate");
     int numberOfFacetValues = 1;
 
@@ -165,12 +163,12 @@ public class SearchManagerTest {
 
     String expectedTerm = String.format("+dynamic_t_name:%s +dynamic_s_birthDate:value +dynamic_s_deathDate:values", SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
+    testSearch(TYPE, ids, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
   }
 
   @Test
   public void testSearchWithMultipleFacetsMultipleValues() throws Exception {
-    List<String> documentIds = Lists.newArrayList("id1");
+    List<String> ids = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate", "dynamic_s_deathDate");
     int numberOfFacetValues = 1;
 
@@ -178,22 +176,22 @@ public class SearchManagerTest {
 
     String expectedTerm = String.format("+dynamic_t_name:%s +dynamic_s_birthDate:(value value1) +dynamic_s_deathDate:(value1 value2)", SEARCH_TERM);
 
-    testSearch(TYPE, documentIds, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
+    testSearch(TYPE, ids, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
   }
 
-  private void testSearch(Class<? extends Entity> type, List<String> documentIds, String searchTerm, String typeString, List<String> facetNames, List<String> fullTextSearchNames,
+  private void testSearch(Class<? extends DomainEntity> type, List<String> ids, String searchTerm, String typeString, List<String> facetNames, List<String> fullTextSearchNames,
       int numberOfFacetValues, List<FacetParameter> facetParameters, String expectedTerm) throws Exception {
     FacetedSearchParameters searchParameters = new FacetedSearchParameters();
     searchParameters.setTerm(searchTerm);
     searchParameters.setTypeString(typeString);
     searchParameters.setFacetValues(facetParameters);
 
-    SolrDocumentList docs = createSolrDocumentList(documentIds);
+    SolrDocumentList docs = createSolrDocumentList(ids);
     List<FacetField> facetFields = createFacetFieldList(facetNames, numberOfFacetValues);
     setUpQueryResponse(docs, facetFields);
 
     List<FacetCount> facets = createFacetCountList(facetNames, numberOfFacetValues);
-    SearchResult expected = createExpectedResult(typeString, documentIds, expectedTerm, facets);
+    SearchResult expected = createExpectedResult(typeString, ids, expectedTerm, facets);
 
     SearchResult actual = instance.search(scope, type, searchParameters);
     verifySearchResult(expected, actual);
@@ -279,20 +277,20 @@ public class SearchManagerTest {
     QueryResponse response = mock(QueryResponse.class);
     when(response.getResults()).thenReturn(docs);
     when(response.getFacetFields()).thenReturn(facetFields);
-    when(indexManager.search(Matchers.<Class<? extends Entity>> any(), any(SolrQuery.class))).thenReturn(response);
+    when(indexManager.search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SolrQuery.class))).thenReturn(response);
   }
 
-  private SolrDocumentList createSolrDocumentList(List<String> documentIds) {
+  private SolrDocumentList createSolrDocumentList(List<String> ids) {
     SolrDocumentList docs = mock(SolrDocumentList.class);
-    List<SolrDocument> solrDocuments = createSolrDocuments(documentIds);
+    List<SolrDocument> solrDocuments = createSolrDocuments(ids);
     Iterator<SolrDocument> iterator = solrDocuments.iterator();
     when(docs.iterator()).thenReturn(iterator);
     return docs;
   }
 
-  private List<SolrDocument> createSolrDocuments(List<String> documentIds) {
+  private List<SolrDocument> createSolrDocuments(List<String> ids) {
     List<SolrDocument> documents = Lists.newArrayList();
-    for (String documentId : documentIds) {
+    for (String documentId : ids) {
       SolrDocument doc = mock(SolrDocument.class);
       when(doc.getFieldValue(ID_FIELD_NAME)).thenReturn(documentId);
       documents.add(doc);

@@ -128,8 +128,8 @@ public class IndexManager {
     }
   }
 
-  public <T extends Entity> QueryResponse search(Class<T> type, SolrQuery query) throws IndexException {
-    return searchBase(scopes.get(0), toDomainEntity(registry.getBaseClass(type)), query);
+  public <T extends DomainEntity> QueryResponse search(Scope scope, Class<T> type, SolrQuery query) throws IndexException {
+    return searchBase(scope, toDomainEntity(registry.getBaseClass(type)), query);
   }
 
   private <T extends DomainEntity> QueryResponse searchBase(Scope scope, Class<T> type, SolrQuery query) throws IndexException {
