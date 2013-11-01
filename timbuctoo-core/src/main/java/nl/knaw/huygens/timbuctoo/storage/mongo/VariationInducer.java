@@ -1,8 +1,10 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.mongojack.internal.stream.JacksonDBObject;
@@ -64,14 +66,43 @@ class VariationInducer extends VariationConverter {
     Preconditions.checkArgument(item != null);
     Preconditions.checkArgument(type != null);
 
-    Map<String, Object> map = createObjectMap(type, item);
-    JsonNode node = mapper.valueToTree(map);
+    Map<String, Object> map = mongoMapper.mapObject(type, item, true);
+    ObjectNode newNode = mapper.valueToTree(map);
 
-    return node;
+    if (existingItem != null && DomainEntity.class.isAssignableFrom(type)) {
+      newNode = merge(type, existingItem, newNode);
+    }
+
+    return cleanUp(newNode);
   }
 
-  @SuppressWarnings("unchecked")
-  private <T extends Entity> Map<String, Object> createObjectMap(Class<T> type, T item) {
-    return mongoMapper.mapObject(type, item, true);
+  private ObjectNode merge(Class<? extends Entity> type, ObjectNode existingNode, JsonNode newNode) {
+    Iterator<String> fieldNames = newNode.fieldNames();
+    while (fieldNames.hasNext()) {
+      String fieldName = fieldNames.next();
+      if (!existingNode.has(fieldName)) {
+        existingNode.put(fieldName, newNode.get(fieldName));
+      } else {
+        String typeName = typeRegistry.getINameForType(type);
+        if (fieldName.contains(".") && !fieldName.startsWith(typeName)) {
+          existingNode.put(fieldName.replace(fieldName.substring(0, fieldName.indexOf('.')), typeName), newNode.get(fieldName));
+        }
+      }
+    }
+    return existingNode;
+  }
+
+  // remove all the runtime fields from the node
+  private ObjectNode cleanUp(ObjectNode node) {
+    Iterator<String> fieldNames = node.fieldNames();
+    // deepcopy is neede, because during iteration over the fields the fields cannot be removed.
+    ObjectNode nodeToCleanUp = node.deepCopy();
+    while (fieldNames.hasNext()) {
+      String fieldName = fieldNames.next();
+      if (fieldName.startsWith("!")) {
+        nodeToCleanUp.remove(fieldName);
+      }
+    }
+    return nodeToCleanUp;
   }
 }
