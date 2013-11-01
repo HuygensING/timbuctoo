@@ -66,5 +66,8 @@ public class SolrUtils {
     return termlist;
   }
 
-  private SolrUtils() {}
+  private SolrUtils() {
+    throw new AssertionError("Non-instantiable class");
+  }
+
 }

@@ -24,6 +24,7 @@ import nl.knaw.huygens.solr.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
@@ -73,10 +74,14 @@ public class SearchResource {
       LOG.error("POST - no such type: {}", typeString);
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
+    if (!TypeRegistry.isDomainEntity(type)) {
+      LOG.error("POST - not a domain entity type: {}", typeString);
+      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+    }
 
     // Process
     try {
-      SearchResult result = searchManager.search(scope, type, searchParams);
+      SearchResult result = searchManager.search(scope, TypeRegistry.toDomainEntity(type), searchParams);
       storageManager.addEntity(SearchResult.class, result);
       String queryId = result.getId();
       return Response.created(new URI(queryId)).build();
@@ -108,11 +113,17 @@ public class SearchResource {
     }
 
     // Process
-    Class<? extends Entity> type = registry.getTypeForIName(result.getSearchType());
-    if (type == null) {
+    Class<? extends Entity> entityType = registry.getTypeForIName(result.getSearchType());
+    if (entityType == null) {
       LOG.error("GET - no entity type for '{}'", result.getSearchType());
       throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
+    if (!TypeRegistry.isDomainEntity(entityType)) {
+      LOG.error("GET - not a domain entity type '{}'", result.getSearchType());
+      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+    }
+    Class<? extends DomainEntity> type = TypeRegistry.toDomainEntity(entityType);
+
     List<String> ids = result.getIds();
     int lo = toRange(start, 0, ids.size());
     int hi = toRange(lo + rows, 0, ids.size());
@@ -152,7 +163,7 @@ public class SearchResource {
     return Math.min(Math.max(value, minValue), maxValue);
   }
 
-  private <T extends Entity> List<T> retrieve(Class<T> type, List<String> ids, int lo, int hi) {
+  private <T extends DomainEntity> List<T> retrieve(Class<T> type, List<String> ids, int lo, int hi) {
     List<T> list = Lists.newArrayList();
     // TODO get all at once
     for (int index = lo; index < hi; index++) {
