@@ -5,12 +5,17 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.model.Entity;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 
 /**
  * This class converts a Java object to a map with a String key and value. 
- * The keys are the fieldnames used in the mongo database. 
  * The values are the current value of the object.
  * @author martijnm
  *
@@ -18,41 +23,57 @@ import com.google.common.collect.Maps;
 public class MongoObjectMapper {
   private static final Class<JsonProperty> ANNOTATION_TO_RETRIEVE = JsonProperty.class;
   private static final String GET_ACCESSOR = "get";
+  public static final Logger LOG = LoggerFactory.getLogger(MongoObjectMapper.class);
 
-  public <T> Map<String, Object> mapObject(Class<T> type, T example) {
-    if (type == null) {
-      throw new IllegalArgumentException("'type' cannot be null.");
+  /**
+   * Convert the object to a Map ignoring the null keys.
+   * @param type the type to convert, should extends Entity.
+   * @param item the object to convert.
+   * @param mapParentClassValues if set to true the mapping does not stop at the current 
+   * class of {@code type}, but iterates through all the fields of the super classes aswell.
+   * @return a map with all the non-null values of the {@code item}.
+   */
+  @SuppressWarnings("unchecked")
+  public <T extends Entity> Map<String, Object> mapObject(Class<T> type, T item, boolean mapParentClassValues) {
+    Preconditions.checkArgument(item != null);
+    Preconditions.checkArgument(type != null);
+    Map<String, Object> map = Maps.newHashMap();
+
+    if (mapParentClassValues && !(Entity.class == type)) {
+      map.putAll(mapObject((Class<T>) type.getSuperclass(), item, true));
     }
 
-    if (example == null) {
-      throw new IllegalArgumentException("'example' cannot be null.");
-    }
+    map.putAll(mapFields(type, item));
 
+    return map;
+  }
+
+  protected <T extends Entity> Map<String, Object> mapFields(Class<T> type, T item) {
     Map<String, Object> objectMap = Maps.<String, Object> newHashMap();
     Field[] fields = type.getDeclaredFields();
 
-    try {
-      for (Field field : fields) {
+    for (Field field : fields) {
+      try {
         Class<?> fieldType = field.getType();
 
         if (isHumanReadable(fieldType)) {
           field.setAccessible(true);
-          Object value = field.get(example);
+          Object value = field.get(item);
           if (value != null) {
             objectMap.put(getFieldName(type, field), value);
           }
         } else if (Collection.class.isAssignableFrom(fieldType)) {
           field.setAccessible(true);
-          Collection<?> value = (Collection<?>) field.get(example);
+          Collection<?> value = (Collection<?>) field.get(item);
           if (isHumanReableCollection(value)) {
             objectMap.put(getFieldName(type, field), value);
           }
         }
+      } catch (IllegalAccessException ex) {
+        LOG.error("Field {} is not accessible in type {}.", field.getName(), type);
+        LOG.debug("", ex);
       }
-    } catch (IllegalAccessException ex) {
-      ex.printStackTrace();
     }
-
     return objectMap;
   }
 
