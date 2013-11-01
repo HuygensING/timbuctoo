@@ -27,19 +27,21 @@ public class VariationInducerTest {
   private static final String TEST_NAME = "test";
   private final static String TEST_SYSTEM_ID = "TSD";
   private static TypeRegistry registry;
+  private static MongoObjectMapper mongoMapper;
 
   private ObjectMapper mapper;
   private VariationInducer inducer;
 
   @BeforeClass
-  public static void setupRegistry() {
+  public static void setupMapper() {
     registry = new TypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb, timbuctoo.model");
+    mongoMapper = new MongoObjectMapper(registry);
   }
 
   @Before
   public void setUp() throws Exception {
     mapper = new ObjectMapper();
-    inducer = new VariationInducer(registry, JsonViews.DBView.class);
+    inducer = new VariationInducer(registry, JsonViews.DBView.class, mongoMapper);
   }
 
   @After

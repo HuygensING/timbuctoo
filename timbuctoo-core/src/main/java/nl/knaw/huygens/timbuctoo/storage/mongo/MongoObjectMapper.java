@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 /**
  * This class converts a Java object to a map with a String key and value. 
@@ -24,6 +25,7 @@ import com.google.inject.Inject;
  * @author martijnm
  *
  */
+@Singleton
 public class MongoObjectMapper {
   private static final Class<JsonProperty> ANNOTATION_TO_RETRIEVE = JsonProperty.class;
   private static final String GET_ACCESSOR = "get";
