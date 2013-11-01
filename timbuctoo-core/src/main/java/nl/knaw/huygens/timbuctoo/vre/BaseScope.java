@@ -29,7 +29,7 @@ public class BaseScope extends AbstractScope {
   }
 
   @Override
-  public <T extends DomainEntity> boolean inScope(Class<T> type, T entity) {
+  public <T extends DomainEntity> boolean inScope(T entity) {
     return true;
   }
 

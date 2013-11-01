@@ -22,7 +22,7 @@ public class IndexStatus {
     return counts;
   }
 
-  public void addDomainEntityCount(Scope scope, Class<? extends DomainEntity> type, long count) {
+  public void addCount(Scope scope, Class<? extends DomainEntity> type, long count) {
     List<KV<Long>> list = counts.get(scope.getId());
     if (list == null) {
       list = Lists.newArrayList();

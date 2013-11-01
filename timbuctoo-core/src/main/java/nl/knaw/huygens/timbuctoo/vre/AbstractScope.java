@@ -1,5 +1,8 @@
 package nl.knaw.huygens.timbuctoo.vre;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.Set;
@@ -7,7 +10,6 @@ import java.util.Set;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSortedSet.Builder;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
@@ -36,18 +38,18 @@ public abstract class AbstractScope implements Scope {
 
   @Override
   public final Set<Class<? extends DomainEntity>> getBaseEntityTypes() {
-    Preconditions.checkState(builder == null);
+    checkState(builder == null);
     return baseTypes;
   }
 
   @Override
   public final Set<Class<? extends DomainEntity>> getAllEntityTypes() {
-    Preconditions.checkState(builder == null);
+    checkState(builder == null);
     return allTypes;
   }
 
   protected final void addPackage(String name) throws IOException {
-    Preconditions.checkState(builder != null);
+    checkState(builder != null);
     String packageName = name.replaceFirst("^timbuctoo", "nl.knaw.huygens.timbuctoo");
     for (ClassInfo info : classPath.getTopLevelClasses(packageName)) {
       addClass(info.load());
@@ -55,14 +57,14 @@ public abstract class AbstractScope implements Scope {
   }
 
   protected final void addClass(Class<?> cls) {
-    Preconditions.checkState(builder != null);
+    checkState(builder != null);
     if (TypeRegistry.isDomainEntity(cls) && cls != DomainEntity.class) {
       builder.add(TypeRegistry.toDomainEntity(cls));
     }
   }
 
   protected final void buildTypes() {
-    Preconditions.checkState(builder != null);
+    checkState(builder != null);
     allTypes = builder.build();
     baseTypes = buildBaseTypes();
     builder = null;
@@ -87,7 +89,7 @@ public abstract class AbstractScope implements Scope {
    * the class hierarchy.
    */
   private Class<? extends DomainEntity> getBaseType(Class<? extends DomainEntity> type) {
-    Preconditions.checkArgument(type != null && type != DomainEntity.class);
+    checkArgument(type != null && type != DomainEntity.class);
     Class<? extends DomainEntity> superType = TypeRegistry.toDomainEntity(type.getSuperclass());
     return (superType == DomainEntity.class) ? type : getBaseType(superType);
   }

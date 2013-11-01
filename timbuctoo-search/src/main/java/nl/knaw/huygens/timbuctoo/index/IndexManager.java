@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.index;
 
+import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toDomainEntity;
+
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
@@ -23,10 +25,7 @@ import com.google.inject.Singleton;
 /**
  * This manager is responsible for handling entity changes on the index.
  *
- * The manager uses the scopes defined in the configuration file.
- * Each core corresponds to a primitive entity type and stores data
- * for all subclasses of that entity type.
- * Relations are basic infrastructure and need not be specified.
+ * The manager uses the scopes obtained from the configuration.
  *
  * Since we are using the 'commitWithin' feature of Solr, there's no need
  * for flushing indexes, except when closing down.
@@ -46,10 +45,10 @@ public class IndexManager {
 
   @Inject
   public IndexManager(Configuration config, TypeRegistry registry, LocalSolrServer server, StorageManager storageManager) {
-    this.scopes = config.getScopes();
     this.registry = registry;
     this.server = server;
     this.storageManager = storageManager;
+    scopes = config.getScopes();
     registerCores();
   }
 
@@ -57,42 +56,44 @@ public class IndexManager {
     for (Scope scope : scopes) {
       for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
         String collection = registry.getINameForType(type);
-        String coreName = String.format("%s.%s", scope.getId(), collection);
+        String coreName = getCoreName(scope, collection);
         server.addCore(collection, coreName);
       }
     }
   }
 
-  private <T extends DomainEntity> EntityIndex<T> getIndex(Scope scope, Class<T> type) {
-    String collection = registry.getINameForType(type);
-    String coreName = String.format("%s.%s", scope.getId(), collection);
-    return DomainEntityIndex.newInstance(storageManager, server, coreName);
+  private <T extends DomainEntity> String getCoreName(Scope scope, Class<T> type) {
+    return getCoreName(scope, registry.getINameForType(type));
   }
 
-  @SuppressWarnings("unchecked")
+  private String getCoreName(Scope scope, String collection) {
+    return String.format("%s.%s", scope.getId(), collection);
+  }
+
+  private <T extends DomainEntity> EntityIndex<T> getIndex(Scope scope, Class<T> type) {
+    return DomainEntityIndex.newInstance(storageManager, server, getCoreName(scope, type));
+  }
+
   public <T extends Entity> void addEntity(Class<T> type, String id) throws IndexException {
-    addBaseEntity((Class<? extends DomainEntity>) registry.getBaseClass(type), id);
+    addBaseEntity(toDomainEntity(registry.getBaseClass(type)), id);
   }
 
   private <T extends DomainEntity> void addBaseEntity(Class<T> type, String id) throws IndexException {
     try {
       List<T> variations = storageManager.getAllVariations(type, id);
       for (Scope scope : scopes) {
-        if (scope.inScope(type, id)) {
-          String collection = registry.getINameForType(type);
-          String coreName = String.format("%s.%s", scope.getId(), collection);
-          List<T> filtered = filter(type, variations, scope);
-          server.add(coreName, getSolrInputDocument(filtered));
+        List<T> filtered = filter(variations, scope);
+        if (!filtered.isEmpty()) {
+          server.add(getCoreName(scope, type), getSolrInputDocument(filtered));
         }
       }
     } catch (Exception e) {
-      // handle
+      throw new IndexException("Failed to add entity", e);
     }
   }
 
-  @SuppressWarnings("unchecked")
   public <T extends Entity> void updateEntity(Class<T> type, String id) throws IndexException {
-    updateBaseEntity((Class<? extends DomainEntity>) registry.getBaseClass(type), id);
+    updateBaseEntity(toDomainEntity(registry.getBaseClass(type)), id);
   }
 
   private <T extends DomainEntity> void updateBaseEntity(Class<T> type, String id) throws IndexException {
@@ -103,9 +104,8 @@ public class IndexManager {
     }
   }
 
-  @SuppressWarnings("unchecked")
   public <T extends Entity> void deleteEntity(Class<T> type, String id) throws IndexException {
-    deleteBaseEntity((Class<? extends DomainEntity>) registry.getBaseClass(type), id);
+    deleteBaseEntity(toDomainEntity(registry.getBaseClass(type)), id);
   }
 
   public <T extends DomainEntity> void deleteBaseEntity(Class<T> type, String id) throws IndexException {
@@ -130,9 +130,8 @@ public class IndexManager {
     }
   }
 
-  @SuppressWarnings("unchecked")
   public <T extends Entity> QueryResponse search(Class<T> type, SolrQuery query) throws IndexException {
-    return searchBase((Class<? extends DomainEntity>) registry.getBaseClass(type), query);
+    return searchBase(toDomainEntity(registry.getBaseClass(type)), query);
   }
 
   private <T extends DomainEntity> QueryResponse searchBase(Class<T> type, SolrQuery query) throws IndexException {
@@ -144,13 +143,12 @@ public class IndexManager {
     try {
       for (Scope scope : scopes) {
         for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
-          String collection = registry.getINameForType(type);
-          String coreName = String.format("%s.%s", scope.getId(), collection);
-          status.addDomainEntityCount(scope, type, server.count(coreName));
+          long count = server.count(getCoreName(scope, type));
+          status.addCount(scope, type, count);
         }
       }
     } catch (SolrServerException e) {
-      LOG.error("Failed obtain status: {}", e.getMessage());
+      LOG.error("Failed to obtain status: {}", e.getMessage());
     }
     return status;
   }
@@ -181,10 +179,10 @@ public class IndexManager {
   }
 
   // TODO filter with predicate
-  private <T extends DomainEntity> List<T> filter(Class<T> type, List<T> entities, Scope scope) {
+  private <T extends DomainEntity> List<T> filter(List<T> entities, Scope scope) {
     List<T> list = Lists.newArrayList();
     for (T entity : entities) {
-      if (scope.inScope(type, entity)) {
+      if (scope.inScope(entity)) {
         list.add(entity);
       }
     }
