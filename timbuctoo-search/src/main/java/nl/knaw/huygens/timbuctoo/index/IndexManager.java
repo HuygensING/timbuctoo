@@ -12,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
@@ -70,11 +69,12 @@ public class IndexManager {
     return String.format("%s.%s", scope.getId(), collection);
   }
 
-  private <T extends DomainEntity> EntityIndex<T> getIndex(Scope scope, Class<T> type) {
-    return DomainEntityIndex.newInstance(storageManager, server, getCoreName(scope, type));
+  public <T extends Entity> void addEntity(Class<T> type, String id) throws IndexException {
+    addBaseEntity(toDomainEntity(registry.getBaseClass(type)), id);
   }
 
-  public <T extends Entity> void addEntity(Class<T> type, String id) throws IndexException {
+  public <T extends Entity> void updateEntity(Class<T> type, String id) throws IndexException {
+    // For Solr "add" and "update" are the same thing
     addBaseEntity(toDomainEntity(registry.getBaseClass(type)), id);
   }
 
@@ -92,33 +92,31 @@ public class IndexManager {
     }
   }
 
-  public <T extends Entity> void updateEntity(Class<T> type, String id) throws IndexException {
-    updateBaseEntity(toDomainEntity(registry.getBaseClass(type)), id);
-  }
-
-  private <T extends DomainEntity> void updateBaseEntity(Class<T> type, String id) throws IndexException {
-    for (Scope scope : scopes) {
-      if (scope.inScope(type, id)) {
-        getIndex(scope, type).modify(type, id);
-      }
-    }
-  }
-
   public <T extends Entity> void deleteEntity(Class<T> type, String id) throws IndexException {
     deleteBaseEntity(toDomainEntity(registry.getBaseClass(type)), id);
   }
 
   public <T extends DomainEntity> void deleteBaseEntity(Class<T> type, String id) throws IndexException {
-    for (Scope scope : scopes) {
-      if (scope.inScope(type, id)) {
-        getIndex(scope, type).remove(id);
+    // No need to check for being in scope: it doesn't harm to remove an item that's not there
+    try {
+      for (Scope scope : scopes) {
+        String coreName = getCoreName(scope, type);
+        server.deleteById(coreName, id);
       }
+    } catch (Exception e) {
+      throw new IndexException("Failed to delete entity", e);
     }
   }
 
-  public <T extends Entity> void deleteEntities(Class<T> type, List<String> ids) throws IndexException {
-    for (String id : ids) {
-      deleteEntity(type, id);
+  public <T extends DomainEntity> void deleteEntities(Class<T> type, List<String> ids) throws IndexException {
+    // No need to check for being in scope: it doesn't harm to remove an item that's not there
+    try {
+      for (Scope scope : scopes) {
+        String coreName = getCoreName(scope, type);
+        server.deleteById(coreName, ids);
+      }
+    } catch (Exception e) {
+      throw new IndexException("Failed to delete entities", e);
     }
   }
 
@@ -126,28 +124,34 @@ public class IndexManager {
     try {
       server.deleteAll();
     } catch (Exception e) {
-      throw new IndexException("Failed to delete all entities from index", e);
+      throw new IndexException("Failed to delete all entities", e);
     }
   }
 
   public <T extends Entity> QueryResponse search(Class<T> type, SolrQuery query) throws IndexException {
-    return searchBase(toDomainEntity(registry.getBaseClass(type)), query);
+    return searchBase(scopes.get(0), toDomainEntity(registry.getBaseClass(type)), query);
   }
 
-  private <T extends DomainEntity> QueryResponse searchBase(Class<T> type, SolrQuery query) throws IndexException {
-    return getIndex(scopes.get(0), type).search(type, query);
+  private <T extends DomainEntity> QueryResponse searchBase(Scope scope, Class<T> type, SolrQuery query) throws IndexException {
+    try {
+      String coreName = getCoreName(scope, type);
+      return server.search(coreName, query);
+    } catch (Exception e) {
+      throw new IndexException("Failed to search", e);
+    }
   }
 
   public IndexStatus getStatus() {
     IndexStatus status = new IndexStatus();
     try {
+      SolrQuery query = new SolrQuery("*:*").setRows(0); // no data
       for (Scope scope : scopes) {
         for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
-          long count = server.count(getCoreName(scope, type));
+          long count = searchBase(scope, type, query).getResults().getNumFound();
           status.addCount(scope, type, count);
         }
       }
-    } catch (SolrServerException e) {
+    } catch (Exception e) {
       LOG.error("Failed to obtain status: {}", e.getMessage());
     }
     return status;

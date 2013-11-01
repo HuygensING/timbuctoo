@@ -37,7 +37,6 @@ import com.google.inject.Singleton;
 class LocalSolrServer {
 
   private static final Logger LOG = LoggerFactory.getLogger(LocalSolrServer.class);
-  private static final String ALL = "*:*";
 
   private final CoreContainer container;
   private final Map<String, SolrServer> solrServers = Maps.newTreeMap();
@@ -87,10 +86,10 @@ class LocalSolrServer {
    * If a custom schema file exists it will be used, otherwise the
    * schema {@code file schema-tmpl.xml} will be used.
    */
-  private String getSchemaName(String collectionName) {
-    String schemaName = String.format("schema-%s.xml", collectionName);
+  private String getSchemaName(String collection) {
+    String schemaName = String.format("schema-%s.xml", collection);
     if (new File(new File(solrHomeDir, "conf"), schemaName).isFile()) {
-      LOG.info("Schema for {} index: {}", collectionName, schemaName);
+      LOG.info("Schema for {} index: {}", collection, schemaName);
       return schemaName;
     } else {
       return "schema-tmpl.xml";
@@ -114,12 +113,12 @@ class LocalSolrServer {
   }
 
   public void deleteAll(String core) throws SolrServerException, IOException {
-    serverFor(core).deleteByQuery(ALL, -1);
+    LOG.info("Clearing index {}", core);
+    serverFor(core).deleteByQuery("*:*", -1);
   }
 
   public void deleteAll() throws SolrServerException, IOException {
     for (String core : getCoreNames()) {
-      LOG.info("Clearing index {}", core);
       deleteAll(core);
     }
   }
@@ -136,14 +135,6 @@ class LocalSolrServer {
 
   public QueryResponse search(String core, SolrQuery query) throws SolrServerException {
     return serverFor(core).query(query);
-  }
-
-  @Deprecated
-  public long count(String core) throws SolrServerException {
-    SolrQuery query = new SolrQuery();
-    query.setQuery(ALL);
-    query.setRows(0); // don't actually request any data
-    return search(core, query).getResults().getNumFound();
   }
 
   public void shutdown() {
