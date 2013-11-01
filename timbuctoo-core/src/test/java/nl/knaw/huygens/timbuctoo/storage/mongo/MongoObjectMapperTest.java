@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.MongoObjectMapperEntity;
 
 import org.junit.BeforeClass;
@@ -14,6 +15,17 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class MongoObjectMapperTest {
+  // keys
+  private static final String PRIMITIVE_TEST_COLLECTION_KEY = "mongoobjectmapperentity.primitiveTestCollection";
+  private static final String _DELETED_KEY = "_deleted";
+  private static final String REV_KEY = "^rev";
+  private static final String _ID_KEY = "_id";
+  private static final String PWAA_KEY = "mongoobjectmapperentity.pwaa";
+  private static final String PROP_ANNOTATED_KEY = "mongoobjectmapperentity.propAnnotated";
+  private static final String TEST_VALUE2_KEY = "mongoobjectmapperentity.testValue2";
+  private static final String TEST_VALUE1_KEY = "mongoobjectmapperentity.testValue1";
+  private static final String NAME_KEY = "mongoobjectmapperentity.name";
+  //default values
   private static final String DEFAULT_ID = "testID";
   private static final String DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS = "propWithAnnotatedAccessors";
   private static final String DEFAULT_ANNOTATED_PROPERTY = "annotatedProperty";
@@ -25,7 +37,8 @@ public class MongoObjectMapperTest {
 
   @BeforeClass
   public static void setUpClass() {
-    instance = new MongoObjectMapper();
+    TypeRegistry typeRegistry = new TypeRegistry("timbuctoo.model");
+    instance = new MongoObjectMapper(typeRegistry);
   }
 
   @Test
@@ -35,11 +48,11 @@ public class MongoObjectMapperTest {
     Map<String, Object> actual = instance.mapObject(TYPE, testObject, false);
 
     Map<String, Object> expected = Maps.newHashMap();
-    expected.put("name", DEFAULT_NAME);
-    expected.put("testValue1", DEFAULT_TEST_VALUE1);
-    expected.put("testValue2", DEFAULT_TEST_VALUE2);
-    expected.put("propAnnotated", DEFAULT_ANNOTATED_PROPERTY);
-    expected.put("pwaa", DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
+    expected.put(NAME_KEY, DEFAULT_NAME);
+    expected.put(TEST_VALUE1_KEY, DEFAULT_TEST_VALUE1);
+    expected.put(TEST_VALUE2_KEY, DEFAULT_TEST_VALUE2);
+    expected.put(PROP_ANNOTATED_KEY, DEFAULT_ANNOTATED_PROPERTY);
+    expected.put(PWAA_KEY, DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
 
     assertEquals(expected, actual);
 
@@ -52,9 +65,9 @@ public class MongoObjectMapperTest {
     Map<String, Object> actual = instance.mapObject(TYPE, testObject, false);
 
     Map<String, Object> expected = Maps.newHashMap();
-    expected.put("name", DEFAULT_NAME);
-    expected.put("testValue1", DEFAULT_TEST_VALUE1);
-    expected.put("testValue2", DEFAULT_TEST_VALUE2);
+    expected.put(NAME_KEY, DEFAULT_NAME);
+    expected.put(TEST_VALUE1_KEY, DEFAULT_TEST_VALUE1);
+    expected.put(TEST_VALUE2_KEY, DEFAULT_TEST_VALUE2);
 
     assertEquals(expected, actual);
   }
@@ -67,14 +80,14 @@ public class MongoObjectMapperTest {
     Map<String, Object> actual = instance.mapObject(TYPE, testObject, true);
 
     Map<String, Object> expected = Maps.newHashMap();
-    expected.put("_id", DEFAULT_ID);
-    expected.put("^rev", 0);
-    expected.put("_deleted", false);
-    expected.put("name", DEFAULT_NAME);
-    expected.put("testValue1", DEFAULT_TEST_VALUE1);
-    expected.put("testValue2", DEFAULT_TEST_VALUE2);
-    expected.put("propAnnotated", DEFAULT_ANNOTATED_PROPERTY);
-    expected.put("pwaa", DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
+    expected.put(_ID_KEY, DEFAULT_ID);
+    expected.put(REV_KEY, 0);
+    expected.put(_DELETED_KEY, false);
+    expected.put(NAME_KEY, DEFAULT_NAME);
+    expected.put(TEST_VALUE1_KEY, DEFAULT_TEST_VALUE1);
+    expected.put(TEST_VALUE2_KEY, DEFAULT_TEST_VALUE2);
+    expected.put(PROP_ANNOTATED_KEY, DEFAULT_ANNOTATED_PROPERTY);
+    expected.put(PWAA_KEY, DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
 
     assertEquals(expected, actual);
 
@@ -89,12 +102,12 @@ public class MongoObjectMapperTest {
     Map<String, Object> actual = instance.mapObject(TYPE, testObject, false);
 
     Map<String, Object> expected = Maps.newHashMap();
-    expected.put("name", DEFAULT_NAME);
-    expected.put("testValue1", DEFAULT_TEST_VALUE1);
-    expected.put("testValue2", DEFAULT_TEST_VALUE2);
-    expected.put("propAnnotated", DEFAULT_ANNOTATED_PROPERTY);
-    expected.put("pwaa", DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
-    expected.put("primitiveTestCollection", primitiveList);
+    expected.put(NAME_KEY, DEFAULT_NAME);
+    expected.put(TEST_VALUE1_KEY, DEFAULT_TEST_VALUE1);
+    expected.put(TEST_VALUE2_KEY, DEFAULT_TEST_VALUE2);
+    expected.put(PROP_ANNOTATED_KEY, DEFAULT_ANNOTATED_PROPERTY);
+    expected.put(PWAA_KEY, DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
+    expected.put(PRIMITIVE_TEST_COLLECTION_KEY, primitiveList);
 
     assertEquals(expected, actual);
   }
@@ -111,11 +124,11 @@ public class MongoObjectMapperTest {
     Map<String, Object> actual = instance.mapObject(TYPE, testObject, false);
 
     Map<String, Object> expected = Maps.newHashMap();
-    expected.put("name", DEFAULT_NAME);
-    expected.put("testValue1", DEFAULT_TEST_VALUE1);
-    expected.put("testValue2", DEFAULT_TEST_VALUE2);
-    expected.put("propAnnotated", DEFAULT_ANNOTATED_PROPERTY);
-    expected.put("pwaa", DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
+    expected.put(NAME_KEY, DEFAULT_NAME);
+    expected.put(TEST_VALUE1_KEY, DEFAULT_TEST_VALUE1);
+    expected.put(TEST_VALUE2_KEY, DEFAULT_TEST_VALUE2);
+    expected.put(PROP_ANNOTATED_KEY, DEFAULT_ANNOTATED_PROPERTY);
+    expected.put(PWAA_KEY, DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
 
     assertEquals(expected, actual);
   }
