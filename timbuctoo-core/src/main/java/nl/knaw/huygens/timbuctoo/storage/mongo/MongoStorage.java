@@ -21,8 +21,8 @@ import com.mongodb.util.JSON;
 
 public class MongoStorage extends MongoStorageBase implements BasicStorage {
 
-  public MongoStorage(TypeRegistry registry, Mongo mongo, DB db, String dbName) {
-    super(registry, mongo, db, dbName);
+  public MongoStorage(TypeRegistry registry, Mongo mongo, DB db, String dbName, MongoObjectMapper mongoMapper) {
+    super(registry, mongo, db, dbName, mongoMapper);
   }
 
   @Override
