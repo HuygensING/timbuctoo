@@ -20,7 +20,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import nl.knaw.huygens.solr.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
-import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
@@ -51,7 +51,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Before
   public void setUpSortableFields() {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    when(searchManager.findSortableFields(Matchers.<Class<? extends Entity>> any())).thenReturn(SORTABLE_FIELDS);
+    when(searchManager.findSortableFields(Matchers.<Class<? extends DomainEntity>> any())).thenReturn(SORTABLE_FIELDS);
   }
 
   @Before
@@ -109,7 +109,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
-    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends Entity>> any(), any(FacetedSearchParameters.class));
+    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
   }
@@ -125,7 +125,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
-    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends Entity>> any(), any(FacetedSearchParameters.class));
+    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
@@ -141,7 +141,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
-    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends Entity>> any(), any(FacetedSearchParameters.class));
+    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(FacetedSearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
@@ -149,7 +149,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostUnknownFacets() throws Exception {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    doThrow(NoSuchFacetException.class).when(searchManager).search(any(Scope.class), Matchers.<Class<? extends Entity>> any(), any(FacetedSearchParameters.class));
+    doThrow(NoSuchFacetException.class).when(searchManager).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(FacetedSearchParameters.class));
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
@@ -165,7 +165,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostSearchManagerThrowsAnException() throws Exception {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    doThrow(Exception.class).when(searchManager).search(any(Scope.class), Matchers.<Class<? extends Entity>> any(), any(FacetedSearchParameters.class));
+    doThrow(Exception.class).when(searchManager).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(FacetedSearchParameters.class));
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
@@ -322,7 +322,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   private void setupSearchManager(SearchResult searchResult) throws Exception {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    when(searchManager.search(any(Scope.class), Matchers.<Class<? extends Entity>> any(), any(FacetedSearchParameters.class))).thenReturn(searchResult);
+    when(searchManager.search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(FacetedSearchParameters.class))).thenReturn(searchResult);
   }
 
   private SearchResult createPostSearchResult() {

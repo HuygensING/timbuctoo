@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
@@ -24,7 +25,6 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
@@ -48,25 +48,26 @@ public class SearchManager {
     this.sortableFieldFinder = new SortableFieldFinder();
   }
 
-  public Set<String> findSortableFields(Class<? extends Entity> type) {
+  public Set<String> findSortableFields(Class<? extends DomainEntity> type) {
     return sortableFieldFinder.findFields(type);
   }
 
-  public SearchResult search(Scope scope, Class<? extends Entity> type, FacetedSearchParameters searchParameters) throws IndexException, NoSuchFacetException {
+  public SearchResult search(Scope scope, Class<? extends DomainEntity> type, FacetedSearchParameters searchParameters) throws IndexException, NoSuchFacetException {
     Map<String, FacetInfo> facetInfoMap = facetFinder.findFacets(type);
     Set<String> fullTextSearchFields = fullTextSearchFieldFinder.findFields(type);
     String searchTerm = createSearchTerm(type, searchParameters, facetInfoMap.keySet(), fullTextSearchFields);
-    QueryResponse response = doFacettedSearch(type, searchTerm, facetInfoMap.keySet(), searchParameters.getSort());
-    SolrDocumentList documents = response.getResults();
+    SolrQuery solrQuery = createFacettedSearchQuery(searchTerm, facetInfoMap.keySet(), searchParameters.getSort());
 
-    List<FacetCount> facets = getFacetCounts(response.getFacetFields(), facetInfoMap);
+    QueryResponse response = server.search(scope, type, solrQuery);
 
     List<String> ids = Lists.newArrayList();
-    for (SolrDocument document : documents) {
+    for (SolrDocument document : response.getResults()) {
       ids.add(document.getFieldValue("id").toString());
     }
 
     SearchResult searchResult = new SearchResult(ids, typeRegistry.getINameForType(type), searchTerm, searchParameters.getSort(), new Date());
+
+    List<FacetCount> facets = getFacetCounts(response.getFacetFields(), facetInfoMap);
     searchResult.setFacets(facets);
 
     return searchResult;
@@ -76,7 +77,7 @@ public class SearchManager {
   private static final int ROWS = 20000;
   private static final int FACET_LIMIT = 10000;
 
-  private QueryResponse doFacettedSearch(Class<? extends Entity> type, String query, Collection<String> facetFieldNames, String sortField) throws IndexException {
+  private SolrQuery createFacettedSearchQuery(String query, Collection<String> facetFieldNames, String sortField) {
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery(query);
     solrQuery.setFields("id");
@@ -86,7 +87,7 @@ public class SearchManager {
     solrQuery.setFacetLimit(FACET_LIMIT);
     solrQuery.setFilterQueries("!cache=false");
     solrQuery.setSort(new SortClause(sortField, SolrQuery.ORDER.asc));
-    return server.search(type, solrQuery);
+    return solrQuery;
   }
 
   private String createSearchTerm(Class<? extends Entity> type, FacetedSearchParameters searchParameters, Set<String> existingFacets, Set<String> fullTextSearchFields) throws NoSuchFacetException {
