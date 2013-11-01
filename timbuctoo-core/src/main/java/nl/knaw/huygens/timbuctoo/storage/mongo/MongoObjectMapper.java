@@ -5,7 +5,10 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
+import com.google.inject.Inject;
 
 /**
  * This class converts a Java object to a map with a String key and value. 
@@ -23,7 +27,13 @@ import com.google.common.collect.Maps;
 public class MongoObjectMapper {
   private static final Class<JsonProperty> ANNOTATION_TO_RETRIEVE = JsonProperty.class;
   private static final String GET_ACCESSOR = "get";
-  public static final Logger LOG = LoggerFactory.getLogger(MongoObjectMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MongoObjectMapper.class);
+  private final TypeRegistry typeRegistry;
+
+  @Inject
+  public MongoObjectMapper(TypeRegistry typeRegistry) {
+    this.typeRegistry = typeRegistry;
+  }
 
   /**
    * Convert the object to a Map ignoring the null keys.
@@ -93,18 +103,26 @@ public class MongoObjectMapper {
 
   }
 
-  private String getFieldName(Class<?> type, Field field) {
+  private String getFieldName(Class<? extends Entity> type, Field field) {
     JsonProperty annotation = field.getAnnotation(ANNOTATION_TO_RETRIEVE);
+
     if (annotation != null) {
-      return annotation.value();
+      return formatFieldName(type, annotation.value());
     }
 
     Method method = getMethodOfField(type, field.getName());
 
     if (method != null && method.getAnnotation(ANNOTATION_TO_RETRIEVE) != null) {
-      return method.getAnnotation(ANNOTATION_TO_RETRIEVE).value();
+      return formatFieldName(type, method.getAnnotation(ANNOTATION_TO_RETRIEVE).value());
     }
-    return field.getName();
+    return formatFieldName(type, field.getName());
+  }
+
+  private String formatFieldName(Class<? extends Entity> type, String fieldName) {
+    if (type == Entity.class || type == DomainEntity.class || type == SystemEntity.class) {
+      return fieldName;
+    }
+    return typeRegistry.getINameForType(type) + "." + fieldName;
   }
 
   private Method getMethodOfField(Class<?> type, String fieldName) {
