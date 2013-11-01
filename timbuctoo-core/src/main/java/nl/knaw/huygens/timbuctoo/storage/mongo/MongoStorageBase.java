@@ -27,18 +27,20 @@ public abstract class MongoStorageBase implements BasicStorage {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoStorageBase.class);
 
+  protected final MongoObjectMapper mongoMapper;
   protected final TypeRegistry typeRegistry;
   private final Mongo mongo;
   private final String dbName;
   protected DB db;
   private EntityIds entityIds;
 
-  public MongoStorageBase(TypeRegistry registry, Mongo mongo, DB db, String dbName) {
+  public MongoStorageBase(TypeRegistry registry, Mongo mongo, DB db, String dbName, MongoObjectMapper mongoMapper) {
     this.typeRegistry = registry;
     this.mongo = mongo;
     this.dbName = dbName;
     this.db = db;
     this.entityIds = new EntityIds(db, typeRegistry);
+    this.mongoMapper = mongoMapper;
   }
 
   public void empty() {
@@ -83,7 +85,7 @@ public abstract class MongoStorageBase implements BasicStorage {
 
   @Override
   public <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException {
-    Map<String, Object> properties = new MongoObjectMapper(typeRegistry).mapObject(type, example, false);
+    Map<String, Object> properties = mongoMapper.mapObject(type, example, false);
     BasicDBObject query = new BasicDBObject(properties);
     return getCollection(type).findOne(query);
   }

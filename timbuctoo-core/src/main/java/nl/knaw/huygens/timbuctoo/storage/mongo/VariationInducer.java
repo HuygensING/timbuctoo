@@ -16,13 +16,15 @@ import com.google.common.base.Preconditions;
 import com.mongodb.DBObject;
 
 class VariationInducer extends VariationConverter {
-
-  private final ObjectWriter writer;
   private static final Logger LOG = LoggerFactory.getLogger(VariationInducer.class);
 
-  public VariationInducer(TypeRegistry registry, Class<?> view) {
+  private final ObjectWriter writer;
+  private final MongoObjectMapper mongoMapper;
+
+  public VariationInducer(TypeRegistry registry, Class<?> view, MongoObjectMapper mongoMapper) {
     super(registry);
     writer = mapper.writerWithView(view);
+    this.mongoMapper = mongoMapper;
   }
 
   /**
@@ -70,6 +72,6 @@ class VariationInducer extends VariationConverter {
 
   @SuppressWarnings("unchecked")
   private <T extends Entity> Map<String, Object> createObjectMap(Class<T> type, T item) {
-    return new MongoObjectMapper(typeRegistry).mapObject(type, item, true);
+    return mongoMapper.mapObject(type, item, true);
   }
 }

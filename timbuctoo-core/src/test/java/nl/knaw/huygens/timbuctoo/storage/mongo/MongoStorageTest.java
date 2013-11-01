@@ -39,17 +39,19 @@ public class MongoStorageTest extends MongoStorageTestBase {
   private static final Class<TestSystemEntity> TYPE = TestSystemEntity.class;
 
   private static TypeRegistry registry;
+  private static MongoObjectMapper mongoMapper;
 
   private MongoStorage storage;
 
   @BeforeClass
   public static void setUpDocTypeRegistry() {
     registry = new TypeRegistry(TYPE.getPackage().getName());
+    mongoMapper = new MongoObjectMapper(registry);
   }
 
   @Override
   protected void setupStorage() {
-    storage = new MongoStorage(registry, mongo, db, DB_NAME);
+    storage = new MongoStorage(registry, mongo, db, DB_NAME, mongoMapper);
     storage.setEntityIds(entityIds);
   }
 
