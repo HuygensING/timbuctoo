@@ -4,23 +4,21 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("TSTD")
-public class MongoObjectMapperDocument extends SystemEntity {
+public class MongoObjectMapperEntity extends SystemEntity {
 
+  private List<String> primitiveTestCollection;
+  private List<? extends SystemEntity> nonPrimitiveTestCollection;
   private String name;
   private String testValue1;
   private String testValue2;
   @JsonProperty("propAnnotated")
   private String annotatedProperty;
   private String propWithAnnotatedAccessors;
-
-  private List<String> primitiveTestCollection;
-  private List<? extends SystemEntity> nonPrimitiveTestCollection;
 
   @Override
   @JsonIgnore
