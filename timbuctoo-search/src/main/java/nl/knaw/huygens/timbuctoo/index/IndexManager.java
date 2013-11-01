@@ -129,12 +129,8 @@ public class IndexManager {
   }
 
   public <T extends DomainEntity> QueryResponse search(Scope scope, Class<T> type, SolrQuery query) throws IndexException {
-    return searchBase(scope, toDomainEntity(registry.getBaseClass(type)), query);
-  }
-
-  private <T extends DomainEntity> QueryResponse searchBase(Scope scope, Class<T> type, SolrQuery query) throws IndexException {
     try {
-      String coreName = getCoreName(scope, type);
+      String coreName = getCoreName(scope, toDomainEntity(registry.getBaseClass(type)));
       return server.search(coreName, query);
     } catch (Exception e) {
       throw new IndexException("Failed to search", e);
@@ -147,7 +143,7 @@ public class IndexManager {
       SolrQuery query = new SolrQuery("*:*").setRows(0); // no data
       for (Scope scope : scopes) {
         for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
-          long count = searchBase(scope, type, query).getResults().getNumFound();
+          long count = search(scope, type, query).getResults().getNumFound();
           status.addCount(scope, type, count);
         }
       }
