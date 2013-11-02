@@ -48,6 +48,22 @@ public abstract class AbstractScope implements Scope {
     return allTypes;
   }
 
+  /**
+   * Default implementation: just test for entity type.
+   */
+  @Override
+  public <T extends DomainEntity> boolean inScope(Class<T> type, String id) {
+    return allTypes.contains(type);
+  }
+
+  /**
+   * Default implementation: just test for entity type.
+   */
+  @Override
+  public <T extends DomainEntity> boolean inScope(T entity) {
+    return allTypes.contains(entity.getClass());
+  }
+
   protected final void addPackage(String name) throws IOException {
     checkState(builder != null);
     String packageName = name.replaceFirst("^timbuctoo", "nl.knaw.huygens.timbuctoo");

@@ -2,8 +2,6 @@ package nl.knaw.huygens.timbuctoo.vre;
 
 import java.io.IOException;
 
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-
 public class FullScope extends AbstractScope {
 
   public FullScope() throws IOException {
@@ -24,16 +22,6 @@ public class FullScope extends AbstractScope {
   @Override
   public String getName() {
     return "Full Scope";
-  }
-
-  @Override
-  public <T extends DomainEntity> boolean inScope(Class<T> type, String id) {
-    return true;
-  }
-
-  @Override
-  public <T extends DomainEntity> boolean inScope(T entity) {
-    return true;
   }
 
 }
