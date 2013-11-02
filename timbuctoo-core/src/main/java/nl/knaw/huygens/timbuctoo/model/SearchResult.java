@@ -33,6 +33,11 @@ public class SearchResult extends SystemEntity implements Persistent {
     searchType = type;
   }
 
+  @Override
+  public String getDisplayName() {
+    return "Search " + getId();
+  }
+
   public List<String> getIds() {
     return ids;
   }
@@ -71,11 +76,6 @@ public class SearchResult extends SystemEntity implements Persistent {
 
   public void setSearchType(String type) {
     searchType = type;
-  }
-
-  @Override
-  public String getDisplayName() {
-    return "Search " + getId();
   }
 
   public List<FacetCount> getFacets() {

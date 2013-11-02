@@ -54,7 +54,6 @@
 <script>
   var baseUrl = 'http://' + window.config.serverUri + '/';
   var searchUrl = baseUrl + 'search';
-  var resultUrl = baseUrl + 'domain/dcararchives/';
 
   /* Simply concatenates the components of a name */
   function buildName(name) {
@@ -67,12 +66,15 @@
   }
 
   function doPost() {
-    var scope = $('#searchscope').val();
-    var query = $('#searchtext').val();
     jQuery.ajax({
       url: searchUrl,
       type: 'POST',
-      data: JSON.stringify({'scopeId': scope, 'typeString': 'dcararchive', 'term': query, 'sort': 'id'}),
+      data: JSON.stringify({
+        'scopeId': $('#searchscope').val(),
+        'typeString': $('#searchtype').val(),
+        'term': $('#searchtext').val(),
+        'sort': 'id'
+      }),
       contentType: 'application/json; charset=utf-8',
       complete: function (xhr) {
         var queryURL = xhr.getResponseHeader('Location') || 'None';
@@ -91,10 +93,9 @@
       data: {'start': start, 'rows': rows},
       contentType: 'application/json; charset=utf-8',
       success: function (data) {
-        // console.log(data);
         var html = '<table><tr><th>Id</th><th>Name</th></tr>';
-        $.each(data.results, function (i, item) {
-          html += '<tr><td><a href="' + resultUrl + item._id + '">' + item._id + '</a></td><td>' + item.titleEng + '</td></tr>';
+        $.each(data.refs, function (i, item) {
+          html += '<tr><td><a href="' + baseUrl + 'domain/' + item.xtype + '/' + item.id + '">' + item.id + '</a></td><td>' + item.displayName + '</td></tr>';
         });
         html += '</table>';
         $('#results').html(html);
@@ -104,7 +105,7 @@
 
   $(document).ready(function() {
     $('#searchscope').val('dcar');
-    $('#searchtype').val('archive');
+    $('#searchtype').val('dcararchive');
     $('#searchtext').val('Storm');
     $('#searchid').val('');
     $('#results').html('No results (yet)');

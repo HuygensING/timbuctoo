@@ -43,7 +43,7 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 public class SearchResourceTest extends WebServiceTestSetup {
 
   private static final Set<String> SORTABLE_FIELDS = Sets.newHashSet("test1", "test");
-  private static final String SCOPE = "base";
+  private static final String SCOPE_ID = "base";
   private static final String TERM = "dynamic_t_name:Huygens";
   private static final String LOCATION_HEADER = "Location";
   private String typeString = "person";
@@ -58,10 +58,10 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Before
   public void setupScope() {
     Scope scope = mock(Scope.class);
-    when(scope.getId()).thenReturn(SCOPE);
+    when(scope.getId()).thenReturn(SCOPE_ID);
     Configuration config = injector.getInstance(Configuration.class);
     when(config.getScopes()).thenReturn(Lists.newArrayList(scope));
-    when(config.getScope(SCOPE)).thenReturn(scope);
+    when(config.getScopeById(SCOPE_ID)).thenReturn(scope);
   }
 
   private WebResource.Builder getResourceBuilder() {
@@ -72,7 +72,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   public void testPostSuccess() throws Exception {
     SearchResult searchResult = createPostSearchResult();
     setupSearchManager(searchResult);
-    SearchParameters searchParameters = createSearchParameters(SCOPE, typeString, id, TERM);
+    SearchParameters searchParameters = createSearchParameters(SCOPE_ID, typeString, id, TERM);
 
     WebResource resource = super.resource();
     String expected = String.format("%ssearch/%s", resource.getURI().toString(), id);
@@ -90,7 +90,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   public void testPostSuccessWithoutSort() throws Exception {
     SearchResult searchResult = createPostSearchResult();
     setupSearchManager(searchResult);
-    SearchParameters searchParameters = createSearchParameters(SCOPE, typeString, null, TERM);
+    SearchParameters searchParameters = createSearchParameters(SCOPE_ID, typeString, null, TERM);
 
     WebResource resource = super.resource();
     String expected = String.format("%ssearch/%s", resource.getURI().toString(), id);
@@ -109,7 +109,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
-    SearchParameters searchParameters = createSearchParameters(SCOPE, "unknownType", null, TERM);
+    SearchParameters searchParameters = createSearchParameters(SCOPE_ID, "unknownType", null, TERM);
 
     ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
@@ -124,7 +124,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
-    SearchParameters searchParameters = createSearchParameters(SCOPE, null, null, TERM);
+    SearchParameters searchParameters = createSearchParameters(SCOPE_ID, null, null, TERM);
 
     ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
@@ -169,7 +169,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
-    SearchParameters searchParameters = createSearchParameters(SCOPE, typeString, null, null);
+    SearchParameters searchParameters = createSearchParameters(SCOPE_ID, typeString, null, null);
 
     ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
@@ -186,7 +186,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
-    SearchParameters searchParameters = createSearchParameters(SCOPE, typeString, null, TERM);
+    SearchParameters searchParameters = createSearchParameters(SCOPE_ID, typeString, null, TERM);
 
     ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
@@ -201,7 +201,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
-    SearchParameters searchParameters = createSearchParameters(SCOPE, typeString, null, TERM);
+    SearchParameters searchParameters = createSearchParameters(SCOPE_ID, typeString, null, TERM);
 
     ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
@@ -217,7 +217,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     doThrow(IOException.class).when(storageManager).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
 
-    SearchParameters searchParameters = createSearchParameters(SCOPE, typeString, null, TERM);
+    SearchParameters searchParameters = createSearchParameters(SCOPE_ID, typeString, null, TERM);
 
     ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
