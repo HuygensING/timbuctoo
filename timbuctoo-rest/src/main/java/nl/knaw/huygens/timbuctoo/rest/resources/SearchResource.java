@@ -20,7 +20,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
-import nl.knaw.huygens.solr.FacetedSearchParameters;
+import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -58,15 +59,21 @@ public class SearchResource {
   @POST
   @APIDesc("Searches the Solr index")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response post(FacetedSearchParameters searchParams) {
-    // TODO determine scope dynamically
-    Scope scope = config.getScopes().get(0);
-    String typeString = searchParams.getTypeString();
-    String q = searchParams.getTerm();
+  public Response post(SearchParameters searchParams) {
+    String scopeId = searchParams.getScopeId();
+    if (Strings.isNullOrEmpty(scopeId)) {
+      LOG.error("POST - no 'scopeId' specified");
+      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+    }
+    Scope scope = config.getScope(scopeId);
+    if (scope == null) {
+      LOG.error("POST - no such scope: {}", scopeId);
+      throw new WebApplicationException(Response.Status.NOT_FOUND);
+    }
 
-    // Validate input
-    if (typeString == null || q == null) {
-      LOG.error("POST - type: '{}', q: '{}'", typeString, q);
+    String typeString = searchParams.getTypeString();
+    if (Strings.isNullOrEmpty(typeString)) {
+      LOG.error("POST - no 'typeString' specified");
       throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
     Class<? extends Entity> type = registry.getTypeForIName(typeString);
@@ -76,6 +83,12 @@ public class SearchResource {
     }
     if (!TypeRegistry.isDomainEntity(type)) {
       LOG.error("POST - not a domain entity type: {}", typeString);
+      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+    }
+
+    String q = searchParams.getTerm();
+    if (Strings.isNullOrEmpty(q)) {
+      LOG.error("POST - no 'q' specified");
       throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
 
@@ -136,7 +149,7 @@ public class SearchResource {
     returnValue.put("facets", result.getFacets());
     returnValue.put("numFound", ids.size());
     returnValue.put("ids", idsToGet);
-    returnValue.put("results", retrieve(type, ids, lo, hi));
+    returnValue.put("results", retrieve(type, idsToGet));
     returnValue.put("start", lo);
     returnValue.put("rows", idsToGet.size());
     returnValue.put("sortableFields", sortableFields);
@@ -163,11 +176,10 @@ public class SearchResource {
     return Math.min(Math.max(value, minValue), maxValue);
   }
 
-  private <T extends DomainEntity> List<T> retrieve(Class<T> type, List<String> ids, int lo, int hi) {
+  private <T extends DomainEntity> List<T> retrieve(Class<T> type, List<String> ids) {
     List<T> list = Lists.newArrayList();
     // TODO get all at once
-    for (int index = lo; index < hi; index++) {
-      String id = ids.get(index);
+    for (String id : ids) {
       list.add(storageManager.getEntity(type, id));
     }
     return list;
