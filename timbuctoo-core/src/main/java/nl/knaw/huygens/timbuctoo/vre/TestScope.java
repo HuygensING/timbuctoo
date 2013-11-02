@@ -7,10 +7,8 @@ import nl.knaw.huygens.timbuctoo.model.dcar.DCARArchive;
 
 public class TestScope extends AbstractScope {
 
-  private static final String DCAR_PACKAGE = "timbuctoo.model.dcar";
-
   public TestScope() throws IOException {
-    super(DCAR_PACKAGE);
+    super("timbuctoo.model.dcar");
   }
 
   @Override
