@@ -2,8 +2,6 @@ package nl.knaw.huygens.timbuctoo.vre;
 
 import java.io.IOException;
 
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-
 /**
  * A {@code Scope} with all primitive domain entities.
  */
@@ -21,16 +19,6 @@ public class BaseScope extends AbstractScope {
   @Override
   public String getName() {
     return "Base Scope";
-  }
-
-  @Override
-  public <T extends DomainEntity> boolean inScope(Class<T> type, String id) {
-    return true;
-  }
-
-  @Override
-  public <T extends DomainEntity> boolean inScope(T entity) {
-    return true;
   }
 
 }
