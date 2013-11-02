@@ -26,6 +26,7 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
@@ -65,7 +66,7 @@ public class SearchResource {
       LOG.error("POST - no 'scopeId' specified");
       throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
-    Scope scope = config.getScope(scopeId);
+    Scope scope = config.getScopeById(scopeId);
     if (scope == null) {
       LOG.error("POST - no such scope: {}", scopeId);
       throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -142,6 +143,8 @@ public class SearchResource {
     int hi = toRange(lo + rows, 0, ids.size());
 
     List<String> idsToGet = ids.subList(lo, hi);
+    List<DomainEntity> entities = retrieveEntities(type, idsToGet);
+    List<EntityRef> entityRefs = createEntityRefs(entities);
     Set<String> sortableFields = searchManager.findSortableFields(type);
 
     Map<String, Object> returnValue = Maps.newHashMap();
@@ -149,7 +152,8 @@ public class SearchResource {
     returnValue.put("facets", result.getFacets());
     returnValue.put("numFound", ids.size());
     returnValue.put("ids", idsToGet);
-    returnValue.put("results", retrieve(type, idsToGet));
+    returnValue.put("refs", entityRefs);
+    returnValue.put("results", entities);
     returnValue.put("start", lo);
     returnValue.put("rows", idsToGet.size());
     returnValue.put("sortableFields", sortableFields);
@@ -176,11 +180,24 @@ public class SearchResource {
     return Math.min(Math.max(value, minValue), maxValue);
   }
 
-  private <T extends DomainEntity> List<T> retrieve(Class<T> type, List<String> ids) {
-    List<T> list = Lists.newArrayList();
-    // TODO get all at once
+  private <T extends DomainEntity> List<DomainEntity> retrieveEntities(Class<T> type, List<String> ids) {
+    List<DomainEntity> list = Lists.newArrayList();
     for (String id : ids) {
       list.add(storageManager.getEntity(type, id));
+    }
+    return list;
+  }
+
+  private List<EntityRef> createEntityRefs(List<DomainEntity> entities) {
+    int size = entities.size();
+    List<EntityRef> list = Lists.newArrayListWithCapacity(size);
+    if (size != 0) {
+      Class<? extends DomainEntity> type = entities.get(0).getClass();
+      String itype = registry.getINameForType(type);
+      String xtype = registry.getXNameForType(type);
+      for (DomainEntity entity : entities) {
+        list.add(new EntityRef(itype, xtype, entity.getId(), entity.getDisplayName()));
+      }
     }
     return list;
   }

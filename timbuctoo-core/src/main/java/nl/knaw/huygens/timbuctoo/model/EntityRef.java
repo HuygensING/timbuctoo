@@ -16,13 +16,6 @@ import com.google.common.base.Joiner;
 @JsonIgnoreProperties("@path")
 public class EntityRef {
 
-  /**
-   * Utility for creating instances.
-   */
-  public static <T extends DomainEntity> EntityRef newInstance(String itype, String xtype, T entity) {
-    return new EntityRef(itype, xtype, entity.getId(), entity.getDisplayName());
-  }
-
   private String itype;
   private String xtype;
   private String id;

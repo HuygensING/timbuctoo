@@ -119,7 +119,7 @@ public class Configuration {
     return scopes;
   }
 
-  public Scope getScope(String id) {
+  public Scope getScopeById(String id) {
     return scopeMap.get(id);
   }
 
