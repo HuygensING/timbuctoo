@@ -6,9 +6,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.vre.BaseScope;
 import nl.knaw.huygens.timbuctoo.vre.DutchCaribbeanScope;
-import nl.knaw.huygens.timbuctoo.vre.FullScope;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
+import nl.knaw.huygens.timbuctoo.vre.TestScope;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -26,6 +27,7 @@ public class Configuration {
 
   private final XMLConfiguration xmlConfig;
   private final List<Scope> scopes;
+  private final Map<String, Scope> scopeMap;
 
   public Configuration() throws ConfigurationException {
     this(DEFAULT_CONFIG_FILE);
@@ -44,7 +46,11 @@ public class Configuration {
     }
     try {
       // TODO determine dynamically
-      scopes = ImmutableList.<Scope> of(new FullScope(), new DutchCaribbeanScope());
+      scopes = ImmutableList.<Scope> of(new BaseScope(), new DutchCaribbeanScope(), new TestScope());
+      scopeMap = Maps.newHashMap();
+      for (Scope scope : scopes) {
+        scopeMap.put(scope.getId(), scope);
+      }
     } catch (IOException e) {
       System.err.println("ERROR: unable to obtain scopes!");
       throw new ConfigurationException(e);
@@ -111,6 +117,10 @@ public class Configuration {
 
   public List<Scope> getScopes() {
     return scopes;
+  }
+
+  public Scope getScope(String id) {
+    return scopeMap.get(id);
   }
 
   public String getSolrHomeDir() {

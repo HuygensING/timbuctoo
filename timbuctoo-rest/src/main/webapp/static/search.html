@@ -67,7 +67,7 @@
     jQuery.ajax({
       url: searchUrl,
       type: 'POST',
-      data: JSON.stringify({'typeString': 'dcararchive', 'term': query, 'sort': 'id'}),
+      data: JSON.stringify({'scopeId':'dcar', 'typeString': 'dcararchive', 'term': query, 'sort': 'id'}),
       contentType: 'application/json; charset=utf-8',
       complete: function (xhr) {
         var queryURL = xhr.getResponseHeader('Location') || 'None';
