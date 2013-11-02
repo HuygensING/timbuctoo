@@ -8,7 +8,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.solr.FacetInfo;
 import nl.knaw.huygens.solr.FacetParameter;
-import nl.knaw.huygens.solr.FacetedSearchParameters;
+import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.solr.SolrUtils;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
@@ -52,7 +52,7 @@ public class SearchManager {
     return sortableFieldFinder.findFields(type);
   }
 
-  public SearchResult search(Scope scope, Class<? extends DomainEntity> type, FacetedSearchParameters searchParameters) throws IndexException, NoSuchFacetException {
+  public SearchResult search(Scope scope, Class<? extends DomainEntity> type, SearchParameters searchParameters) throws IndexException, NoSuchFacetException {
     Map<String, FacetInfo> facetInfoMap = facetFinder.findFacets(type);
     Set<String> fullTextSearchFields = fullTextSearchFieldFinder.findFields(type);
     String searchTerm = createSearchTerm(type, searchParameters, facetInfoMap.keySet(), fullTextSearchFields);
@@ -90,7 +90,7 @@ public class SearchManager {
     return solrQuery;
   }
 
-  private String createSearchTerm(Class<? extends Entity> type, FacetedSearchParameters searchParameters, Set<String> existingFacets, Set<String> fullTextSearchFields) throws NoSuchFacetException {
+  private String createSearchTerm(Class<? extends Entity> type, SearchParameters searchParameters, Set<String> existingFacets, Set<String> fullTextSearchFields) throws NoSuchFacetException {
     List<FacetParameter> facetValues = searchParameters.getFacetValues();
     boolean usesFacets = facetValues != null && !facetValues.isEmpty();
     StringBuilder builder = new StringBuilder();

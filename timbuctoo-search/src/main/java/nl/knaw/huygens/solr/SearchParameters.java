@@ -6,8 +6,9 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
-public class FacetedSearchParameters {
+public class SearchParameters {
 
+  private String scopeId = "";
   private String term = "*";
   private String sort = SolrFields.SCORE;
   private String sortDir = "asc";
@@ -19,7 +20,16 @@ public class FacetedSearchParameters {
   private List<String> orderLevels = Lists.newArrayList();
   private boolean fuzzy = false;
 
-  public FacetedSearchParameters setTerm(final String term) {
+  public SearchParameters setScopeId(String scopeId) {
+    this.scopeId = scopeId;
+    return this;
+  }
+
+  public String getScopeId() {
+    return scopeId;
+  }
+
+  public SearchParameters setTerm(final String term) {
     if ("".equals(term)) {
       this.term = "*";
     } else {
@@ -32,7 +42,7 @@ public class FacetedSearchParameters {
     return term;
   }
 
-  public FacetedSearchParameters setSort(final String sort) {
+  public SearchParameters setSort(final String sort) {
     this.sort = sort;
     return this;
   }
@@ -41,7 +51,7 @@ public class FacetedSearchParameters {
     return sort;
   }
 
-  public FacetedSearchParameters setSortDir(final String sortDir) {
+  public SearchParameters setSortDir(final String sortDir) {
     this.sortDir = sortDir;
     return this;
   }
@@ -63,7 +73,7 @@ public class FacetedSearchParameters {
     return "asc".equals(sortDir);
   }
 
-  public FacetedSearchParameters setCaseSensitive(boolean matchCase) {
+  public SearchParameters setCaseSensitive(boolean matchCase) {
     this.caseSensitive = matchCase;
     return this;
   }
@@ -72,7 +82,7 @@ public class FacetedSearchParameters {
     return caseSensitive;
   }
 
-  public FacetedSearchParameters setFacetFields(String[] _facetFields) {
+  public SearchParameters setFacetFields(String[] _facetFields) {
     this.facetFields = _facetFields;
     return this;
   }
@@ -81,7 +91,7 @@ public class FacetedSearchParameters {
     return facetFields;
   }
 
-  public FacetedSearchParameters setOrderLevels(List<String> orderLevels) {
+  public SearchParameters setOrderLevels(List<String> orderLevels) {
     this.orderLevels = orderLevels;
     return this;
   }
@@ -94,7 +104,7 @@ public class FacetedSearchParameters {
     return fuzzy;
   }
 
-  public FacetedSearchParameters setFuzzy(Boolean fuzzy) {
+  public SearchParameters setFuzzy(Boolean fuzzy) {
     this.fuzzy = fuzzy;
     return this;
   }
@@ -103,7 +113,7 @@ public class FacetedSearchParameters {
     return facetParameters;
   }
 
-  public FacetedSearchParameters setFacetValues(List<FacetParameter> fp) {
+  public SearchParameters setFacetValues(List<FacetParameter> fp) {
     this.facetParameters = fp;
     return this;
   }
@@ -112,7 +122,7 @@ public class FacetedSearchParameters {
     return facetInfoMap;
   }
 
-  public FacetedSearchParameters setFacetInfoMap(Map<String, FacetInfo> facetInfoMap) {
+  public SearchParameters setFacetInfoMap(Map<String, FacetInfo> facetInfoMap) {
     this.facetInfoMap = facetInfoMap;
     return this;
   }

@@ -5,13 +5,13 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-public class FacetedSearchParametersTest {
+public class SearchParametersTest {
 
-  private FacetedSearchParameters instance;
+  private SearchParameters instance;
 
   @Before
   public void setUp() {
-    instance = new FacetedSearchParameters();
+    instance = new SearchParameters();
   }
 
   @Test
@@ -40,4 +40,5 @@ public class FacetedSearchParametersTest {
     instance.setTerm(newValue);
     assertEquals(expectedValue, instance.getTerm());
   }
+
 }
