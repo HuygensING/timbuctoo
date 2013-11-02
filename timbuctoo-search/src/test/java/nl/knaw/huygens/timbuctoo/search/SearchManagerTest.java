@@ -11,7 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import nl.knaw.huygens.solr.FacetParameter;
-import nl.knaw.huygens.solr.FacetedSearchParameters;
+import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount.Option;
@@ -181,7 +181,7 @@ public class SearchManagerTest {
 
   private void testSearch(Class<? extends DomainEntity> type, List<String> ids, String searchTerm, String typeString, List<String> facetNames, List<String> fullTextSearchNames,
       int numberOfFacetValues, List<FacetParameter> facetParameters, String expectedTerm) throws Exception {
-    FacetedSearchParameters searchParameters = new FacetedSearchParameters();
+    SearchParameters searchParameters = new SearchParameters();
     searchParameters.setTerm(searchTerm);
     searchParameters.setTypeString(typeString);
     searchParameters.setFacetValues(facetParameters);
@@ -199,7 +199,7 @@ public class SearchManagerTest {
 
   @Test(expected = NoSuchFacetException.class)
   public void testSearchThrowsExceptionForMissingFacet() throws Exception {
-    FacetedSearchParameters searchParameters = new FacetedSearchParameters();
+    SearchParameters searchParameters = new SearchParameters();
     searchParameters.setTerm(SEARCH_TERM);
     searchParameters.setTypeString(TYPE_STRING);
     searchParameters.setFacetValues(Lists.newArrayList(new FacetParameter().setName("unknown")));

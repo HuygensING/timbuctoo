@@ -17,7 +17,7 @@ import java.util.Set;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
-import nl.knaw.huygens.solr.FacetedSearchParameters;
+import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -43,6 +43,7 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 public class SearchResourceTest extends WebServiceTestSetup {
 
   private static final Set<String> SORTABLE_FIELDS = Sets.newHashSet("test1", "test");
+  private static final String SCOPE = "base";
   private static final String TERM = "dynamic_t_name:Huygens";
   private static final String LOCATION_HEADER = "Location";
   private String typeString = "person";
@@ -57,16 +58,21 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Before
   public void setupScope() {
     Scope scope = mock(Scope.class);
-    when(scope.getId()).thenReturn("name");
+    when(scope.getId()).thenReturn(SCOPE);
     Configuration config = injector.getInstance(Configuration.class);
     when(config.getScopes()).thenReturn(Lists.newArrayList(scope));
+    when(config.getScope(SCOPE)).thenReturn(scope);
+  }
+
+  private WebResource.Builder getResourceBuilder() {
+    return resource().path("search").type(MediaType.APPLICATION_JSON);
   }
 
   @Test
   public void testPostSuccess() throws Exception {
     SearchResult searchResult = createPostSearchResult();
     setupSearchManager(searchResult);
-    FacetedSearchParameters searchParameters = createSearchParameters(typeString, id, TERM);
+    SearchParameters searchParameters = createSearchParameters(SCOPE, typeString, id, TERM);
 
     WebResource resource = super.resource();
     String expected = String.format("%ssearch/%s", resource.getURI().toString(), id);
@@ -84,7 +90,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   public void testPostSuccessWithoutSort() throws Exception {
     SearchResult searchResult = createPostSearchResult();
     setupSearchManager(searchResult);
-    FacetedSearchParameters searchParameters = createSearchParameters(typeString, null, TERM);
+    SearchParameters searchParameters = createSearchParameters(SCOPE, typeString, null, TERM);
 
     WebResource resource = super.resource();
     String expected = String.format("%ssearch/%s", resource.getURI().toString(), id);
@@ -103,13 +109,12 @@ public class SearchResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
-    FacetedSearchParameters searchParameters = createSearchParameters("unknownType", null, TERM);
+    SearchParameters searchParameters = createSearchParameters(SCOPE, "unknownType", null, TERM);
 
-    WebResource resource = super.resource();
-    ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
+    ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
-    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(FacetedSearchParameters.class));
+    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
   }
@@ -119,13 +124,42 @@ public class SearchResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
-    FacetedSearchParameters searchParameters = createSearchParameters(null, null, TERM);
+    SearchParameters searchParameters = createSearchParameters(SCOPE, null, null, TERM);
 
-    WebResource resource = super.resource();
-    ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
+    ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
-    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(FacetedSearchParameters.class));
+    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
+
+    assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
+  }
+
+  @Test
+  public void testPostScopeUnknown() throws Exception {
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    SearchManager searchManager = injector.getInstance(SearchManager.class);
+
+    SearchParameters searchParameters = createSearchParameters("unknownScope", typeString, null, TERM);
+
+    ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
+
+    verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
+
+    assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
+  }
+
+  @Test
+  public void testPostScopeIdNull() throws Exception {
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    SearchManager searchManager = injector.getInstance(SearchManager.class);
+
+    SearchParameters searchParameters = createSearchParameters(null, typeString, null, TERM);
+
+    ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
+
+    verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
@@ -135,13 +169,12 @@ public class SearchResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
-    FacetedSearchParameters searchParameters = createSearchParameters(typeString, null, null);
+    SearchParameters searchParameters = createSearchParameters(SCOPE, typeString, null, null);
 
-    WebResource resource = super.resource();
-    ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
+    ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
-    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(FacetedSearchParameters.class));
+    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
@@ -149,14 +182,13 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostUnknownFacets() throws Exception {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    doThrow(NoSuchFacetException.class).when(searchManager).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(FacetedSearchParameters.class));
+    doThrow(NoSuchFacetException.class).when(searchManager).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
-    FacetedSearchParameters searchParameters = createSearchParameters(typeString, null, TERM);
+    SearchParameters searchParameters = createSearchParameters(SCOPE, typeString, null, TERM);
 
-    WebResource resource = super.resource();
-    ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
+    ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
@@ -165,14 +197,13 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostSearchManagerThrowsAnException() throws Exception {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    doThrow(Exception.class).when(searchManager).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(FacetedSearchParameters.class));
+    doThrow(Exception.class).when(searchManager).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
-    FacetedSearchParameters searchParameters = createSearchParameters(typeString, null, TERM);
+    SearchParameters searchParameters = createSearchParameters(SCOPE, typeString, null, TERM);
 
-    WebResource resource = super.resource();
-    ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
+    ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     assertEquals(ClientResponse.Status.INTERNAL_SERVER_ERROR, clientResponse.getClientResponseStatus());
@@ -186,10 +217,9 @@ public class SearchResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     doThrow(IOException.class).when(storageManager).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
 
-    FacetedSearchParameters searchParameters = createSearchParameters(typeString, null, TERM);
+    SearchParameters searchParameters = createSearchParameters(SCOPE, typeString, null, TERM);
 
-    WebResource resource = super.resource();
-    ClientResponse clientResponse = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
+    ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
     assertEquals(ClientResponse.Status.INTERNAL_SERVER_ERROR, clientResponse.getClientResponseStatus());
   }
@@ -201,9 +231,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
     createSearchResult(idList, personList, storageManager);
-
     List<FacetCount> facets = createFacets();
-
     setUpSearchResult(idList, storageManager, facets);
 
     WebResource resource = super.resource();
@@ -322,7 +350,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   private void setupSearchManager(SearchResult searchResult) throws Exception {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    when(searchManager.search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(FacetedSearchParameters.class))).thenReturn(searchResult);
+    when(searchManager.search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class))).thenReturn(searchResult);
   }
 
   private SearchResult createPostSearchResult() {
@@ -331,8 +359,9 @@ public class SearchResourceTest extends WebServiceTestSetup {
     return searchResult;
   }
 
-  private FacetedSearchParameters createSearchParameters(String typeString, String sort, String term) {
-    FacetedSearchParameters searchParameters = new FacetedSearchParameters();
+  private SearchParameters createSearchParameters(String scopeId, String typeString, String sort, String term) {
+    SearchParameters searchParameters = new SearchParameters();
+    searchParameters.setScopeId(scopeId);
     searchParameters.setTypeString(typeString);
     searchParameters.setSort(sort);
     searchParameters.setTerm(term);
