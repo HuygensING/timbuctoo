@@ -14,12 +14,16 @@
 <h2>Query</h2>
 <table>
 <tr>
+  <td>Scope</td>
+  <td><input name="" type="text" size="50" id="searchscope"/></td>
+</tr>
+<tr>
   <td>Type</td>
-  <td><input name="" type="text" id="searchtype" disabled="disabled"/></td>
+  <td><input name="" type="text" size="50" id="searchtype"/></td>
 </tr>
 <tr>
   <td>Text</td>
-  <td><input name="" type="text" id="searchtext"/></td>
+  <td><input name="" type="text" size="50" id="searchtext"/></td>
 </tr>
 </table>
 <p><a href="#" onclick="doPost()">Submit query</a></p>
@@ -28,15 +32,15 @@
 <table>
 <tr>
   <td>URL</td>
-  <td><input name="" type="text" id="searchid"/></td>
+  <td><input name="" type="text" size="50" id="searchid"/></td>
 </tr>
 <tr>
   <td>Start</td>
-  <td><input name="" type="text" id="start" value="0"/></td>
+  <td><input name="" type="text" size="50" id="start" value="0"/></td>
 </tr>
 <tr>
   <td>Rows</td>
-  <td><input name="" type="text" id="rows" value="10"/></td>
+  <td><input name="" type="text" size="50" id="rows" value="10"/></td>
 </tr>
 </table>
 <p><a href="#" onclick="doGet()">Show results</a></p>
@@ -63,11 +67,12 @@
   }
 
   function doPost() {
+    var scope = $('#searchscope').val();
     var query = $('#searchtext').val();
     jQuery.ajax({
       url: searchUrl,
       type: 'POST',
-      data: JSON.stringify({'scopeId':'dcar', 'typeString': 'dcararchive', 'term': query, 'sort': 'id'}),
+      data: JSON.stringify({'scopeId': scope, 'typeString': 'dcararchive', 'term': query, 'sort': 'id'}),
       contentType: 'application/json; charset=utf-8',
       complete: function (xhr) {
         var queryURL = xhr.getResponseHeader('Location') || 'None';
@@ -86,8 +91,7 @@
       data: {'start': start, 'rows': rows},
       contentType: 'application/json; charset=utf-8',
       success: function (data) {
-    	//console.log(data);
-    	//console.log(data.results);
+        // console.log(data);
         var html = '<table><tr><th>Id</th><th>Name</th></tr>';
         $.each(data.results, function (i, item) {
           html += '<tr><td><a href="' + resultUrl + item._id + '">' + item._id + '</a></td><td>' + item.titleEng + '</td></tr>';
@@ -99,6 +103,7 @@
   }
 
   $(document).ready(function() {
+    $('#searchscope').val('dcar');
     $('#searchtype').val('archive');
     $('#searchtext').val('Storm');
     $('#searchid').val('');
