@@ -3,14 +3,9 @@ package nl.knaw.huygens.timbuctoo.tools.importer.database;
 import java.io.IOException;
 import java.util.List;
 
-import javax.jms.JMSException;
-
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
-import nl.knaw.huygens.timbuctoo.messages.ActionType;
-import nl.knaw.huygens.timbuctoo.messages.Broker;
-import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.EntityRef;
@@ -89,27 +84,6 @@ public abstract class DefaultImporter extends ToolBase {
     } catch (IOException e) {
       handleError("Failed to modify %s; %s", entity.getDisplayName(), e.getMessage());
       return null;
-    }
-  }
-
-  // -------------------------------------------------------------------
-
-  public static void sendEndOfDataMessage(Broker broker) throws JMSException {
-    Producer producer = broker.newProducer(Broker.INDEX_QUEUE, "ImporterProducer");
-    producer.send(ActionType.END, null, "");
-    producer.close();
-  }
-
-  public static void waitForCompletion(Thread thread, long patience) throws InterruptedException {
-    long targetTime = System.currentTimeMillis() + patience;
-    while (thread.isAlive()) {
-      System.out.println("... indexing");
-      thread.join(2500);
-      if (System.currentTimeMillis() > targetTime && thread.isAlive()) {
-        System.out.println("... tired of waiting!");
-        thread.interrupt();
-        thread.join();
-      }
     }
   }
 
