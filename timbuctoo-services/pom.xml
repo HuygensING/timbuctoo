@@ -10,13 +10,13 @@
   
   <dependencies>
     <!-- ## Project dependencies ## -->
-    <!-- Core project -->
     <dependency>
       <groupId>timbuctoo</groupId>
       <artifactId>timbuctoo-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <!-- ## End of project dependencies ## -->
+
     <!-- ## Main dependencies ## -->
     <!-- Apache ActiveMQ -->
     <dependency>
@@ -26,4 +26,5 @@
     </dependency>
     <!-- ## End of main dependencies ## -->
   </dependencies>
+  
 </project>
