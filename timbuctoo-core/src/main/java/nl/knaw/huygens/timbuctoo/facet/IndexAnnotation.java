@@ -28,12 +28,8 @@ public @interface IndexAnnotation {
 
   String fieldName() default "";
 
-  Class<? extends CustomIndexer> customIndexer() default CustomIndexer.NoopIndexer.class;
-
   /** Does the user interface contain a facet based on this field? */
   boolean isFaceted() default false;
-
-  boolean isComplex() default false;
 
   boolean canBeEmpty() default false;
 
