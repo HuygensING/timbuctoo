@@ -21,40 +21,40 @@ public class SolrInputDocGeneratorTest {
 
   private int id = 0;
 
-  private Entity createDocument(String displayName) {
+  private Entity createEntity(String displayName) {
     id++;
-    return createDocument(displayName, "" + id);
+    return createEntity(displayName, "" + id);
   }
 
-  private Entity createDocument(String displayName, String id) {
-    TestExtraBaseDoc doc = mock(TestExtraBaseDoc.class);
-    when(doc.getId()).thenReturn(id);
-    when(doc.getDisplayName()).thenReturn(displayName);
-    return doc;
+  private Entity createEntity(String displayName, String id) {
+    TestExtraBaseDoc entity = mock(TestExtraBaseDoc.class);
+    when(entity.getId()).thenReturn(id);
+    when(entity.getDisplayName()).thenReturn(displayName);
+    return entity;
   }
 
   private IndexAnnotation createIndexAnnotation(boolean canBeEmpty, String fieldName) {
-    IndexAnnotation indexAnnotation = mock(IndexAnnotation.class);
-    when(indexAnnotation.canBeEmpty()).thenReturn(canBeEmpty);
-    when(indexAnnotation.fieldName()).thenReturn(fieldName);
-    when(indexAnnotation.isFaceted()).thenReturn(false);
-    when(indexAnnotation.accessors()).thenReturn(new String[] {});
-    return indexAnnotation;
+    IndexAnnotation annotation = mock(IndexAnnotation.class);
+    when(annotation.canBeEmpty()).thenReturn(canBeEmpty);
+    when(annotation.fieldName()).thenReturn(fieldName);
+    when(annotation.isFaceted()).thenReturn(false);
+    when(annotation.accessors()).thenReturn(new String[] {});
+    return annotation;
   }
 
-  private void processMethod(Entity doc, SolrInputDocGenerator generator, String methodName, boolean fieldCanBeEmpty, String fieldName) throws NoSuchMethodException {
-    Method method = doc.getClass().getMethod(methodName);
-    IndexAnnotation annotation = this.createIndexAnnotation(fieldCanBeEmpty, fieldName);
+  private void processMethod(Entity entity, SolrInputDocGenerator generator, String methodName, boolean fieldCanBeEmpty, String fieldName) throws NoSuchMethodException {
+    Method method = entity.getClass().getMethod(methodName);
+    IndexAnnotation annotation = createIndexAnnotation(fieldCanBeEmpty, fieldName);
     generator.process(method, annotation);
   }
 
   @Test
   public void testGetResultOneDocumentWithoutEmptyFields() throws NoSuchMethodException, SecurityException {
     String expected = "test";
-    Entity doc = createDocument(expected);
-    SolrInputDocGenerator generator = new SolrInputDocGenerator(doc);
+    Entity entity = createEntity(expected);
+    SolrInputDocGenerator generator = new SolrInputDocGenerator(entity);
 
-    processMethod(doc, generator, "getDisplayName", false, "desc");
+    processMethod(entity, generator, "getDisplayName", false, "desc");
 
     SolrInputDocument solrInputDocument = generator.getResult();
     SolrInputField field = solrInputDocument.getField("desc");
@@ -67,10 +67,10 @@ public class SolrInputDocGeneratorTest {
   public void testGetResultOneDocumentWithEmptyFieldsThatShouldBeIndexed() throws NoSuchMethodException {
     String description = null;
     String expected = "(empty)";
-    Entity doc = createDocument(description);
-    SolrInputDocGenerator generator = new SolrInputDocGenerator(doc);
+    Entity entity = createEntity(description);
+    SolrInputDocGenerator generator = new SolrInputDocGenerator(entity);
 
-    processMethod(doc, generator, "getDisplayName", false, "desc");
+    processMethod(entity, generator, "getDisplayName", false, "desc");
 
     SolrInputDocument solrInputDocument = generator.getResult();
     SolrInputField field = solrInputDocument.getField("desc");
@@ -81,29 +81,29 @@ public class SolrInputDocGeneratorTest {
 
   @Test
   public void testGetResultOneDocument_WithEmptyFieldsThatShouldNotBeIndexed() throws NoSuchMethodException {
-    Entity doc = createDocument(null);
-    SolrInputDocGenerator generator = new SolrInputDocGenerator(doc);
+    Entity entity = createEntity(null);
+    SolrInputDocGenerator generator = new SolrInputDocGenerator(entity);
 
-    processMethod(doc, generator, "getDisplayName", true, "desc");
+    processMethod(entity, generator, "getDisplayName", true, "desc");
 
     SolrInputDocument solrInputDocument = generator.getResult();
-    SolrInputField descriptionField = solrInputDocument.getField("desc");
+    SolrInputField field = solrInputDocument.getField("desc");
 
-    assertNull(descriptionField);
+    assertNull(field);
   }
 
   @Test
   public void testGetResultMultipleDocumentsWithoutEmptyFields() throws NoSuchMethodException {
     String descriptionDoc1 = "doc1";
-    Entity doc1 = createDocument(descriptionDoc1);
-    SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(doc1);
-    processMethod(doc1, doc1Generator, "getDisplayName", false, "desc");
+    Entity entity1 = createEntity(descriptionDoc1);
+    SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(entity1);
+    processMethod(entity1, doc1Generator, "getDisplayName", false, "desc");
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
     String descriptionDoc2 = "doc2";
-    Entity doc2 = createDocument(descriptionDoc2, doc1.getId());
-    SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(doc2, inputDoc1);
-    processMethod(doc2, doc2Generator, "getDisplayName", false, "desc");
+    Entity entity2 = createEntity(descriptionDoc2, entity1.getId());
+    SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(entity2, inputDoc1);
+    processMethod(entity2, doc2Generator, "getDisplayName", false, "desc");
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("desc");
@@ -117,15 +117,14 @@ public class SolrInputDocGeneratorTest {
   @Test
   public void testGetResultMultipleDocumentsWithEmptyFieldsThatShouldBeIndexedOneEmpty() throws NoSuchMethodException {
     String descriptionDoc1 = "doc1";
-    Entity doc1 = createDocument(descriptionDoc1);
-    SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(doc1);
-    processMethod(doc1, doc1Generator, "getDisplayName", false, "desc");
+    Entity entity1 = createEntity(descriptionDoc1);
+    SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(entity1);
+    processMethod(entity1, doc1Generator, "getDisplayName", false, "desc");
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
-    String descriptionDoc2 = null;
-    Entity doc2 = createDocument(descriptionDoc2, doc1.getId());
-    SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(doc2, inputDoc1);
-    processMethod(doc2, doc2Generator, "getDisplayName", false, "desc");
+    Entity entity2 = createEntity(null, entity1.getId());
+    SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(entity2, inputDoc1);
+    processMethod(entity2, doc2Generator, "getDisplayName", false, "desc");
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("desc");
@@ -137,16 +136,14 @@ public class SolrInputDocGeneratorTest {
 
   @Test
   public void testGetResultMultipleDocumentsWithEmptyFieldsThatShouldBeIndexedAllEmpty() throws NoSuchMethodException {
-    String descriptionDoc1 = null;
-    Entity doc1 = createDocument(descriptionDoc1);
-    SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(doc1);
-    processMethod(doc1, doc1Generator, "getDisplayName", false, "desc");
+    Entity entity1 = createEntity(null);
+    SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(entity1);
+    processMethod(entity1, doc1Generator, "getDisplayName", false, "desc");
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
-    String descriptionDoc2 = null;
-    Entity doc2 = createDocument(descriptionDoc2, doc1.getId());
-    SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(doc2, inputDoc1);
-    processMethod(doc2, doc2Generator, "getDisplayName", false, "desc");
+    Entity entity2 = createEntity(null, entity1.getId());
+    SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(entity2, inputDoc1);
+    processMethod(entity2, doc2Generator, "getDisplayName", false, "desc");
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("desc");
@@ -158,16 +155,14 @@ public class SolrInputDocGeneratorTest {
 
   @Test
   public void testGetResultMultipleDocumentsWithEmptyFieldsThatShouldNotBeIndexed() throws NoSuchMethodException {
-    String descriptionDoc1 = null;
-    Entity doc1 = createDocument(descriptionDoc1);
-    SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(doc1);
-    processMethod(doc1, doc1Generator, "getDisplayName", true, "desc");
+    Entity entity1 = createEntity(null);
+    SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(entity1);
+    processMethod(entity1, doc1Generator, "getDisplayName", true, "desc");
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
-    String descriptionDoc2 = null;
-    Entity doc2 = createDocument(descriptionDoc2, doc1.getId());
-    SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(doc2, inputDoc1);
-    processMethod(doc2, doc2Generator, "getDisplayName", true, "desc");
+    Entity entity2 = createEntity(null, entity1.getId());
+    SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(entity2, inputDoc1);
+    processMethod(entity2, doc2Generator, "getDisplayName", true, "desc");
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("desc");
@@ -178,14 +173,14 @@ public class SolrInputDocGeneratorTest {
   @Test
   public void testGetResultMultipleDocumentsWithDuplicateValues() throws NoSuchMethodException {
     String description = "doc";
-    Entity doc1 = createDocument(description);
-    SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(doc1);
-    processMethod(doc1, doc1Generator, "getDisplayName", false, "desc");
+    Entity entity1 = createEntity(description);
+    SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(entity1);
+    processMethod(entity1, doc1Generator, "getDisplayName", false, "desc");
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
-    Entity doc2 = createDocument(description, doc1.getId());
-    SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(doc2, inputDoc1);
-    processMethod(doc2, doc2Generator, "getDisplayName", false, "desc");
+    Entity entity2 = createEntity(description, entity1.getId());
+    SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(entity2, inputDoc1);
+    processMethod(entity2, doc2Generator, "getDisplayName", false, "desc");
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("desc");
@@ -197,44 +192,40 @@ public class SolrInputDocGeneratorTest {
 
   @Test
   public void testGetResultMultipleDocumentsIdField() throws NoSuchMethodException {
-    String descriptionDoc1 = "doc1";
-    Entity doc1 = createDocument(descriptionDoc1);
-    SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(doc1);
-    processMethod(doc1, doc1Generator, "getId", false, "_id");
+    Entity entity1 = createEntity("doc1");
+    SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(entity1);
+    processMethod(entity1, doc1Generator, "getId", false, "_id");
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
-    String descriptionDoc2 = "doc2";
-    Entity doc2 = createDocument(descriptionDoc2, doc1.getId());
-    SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(doc2, inputDoc1);
-    processMethod(doc2, doc2Generator, "getId", false, "_id");
+    Entity entity2 = createEntity("doc2", entity1.getId());
+    SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(entity2, inputDoc1);
+    processMethod(entity2, doc2Generator, "getId", false, "_id");
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("_id");
     Collection<Object> actualIds = descriptionField.getValues();
 
     assertEquals(1, actualIds.size());
-    assertTrue(actualIds.contains(doc1.getId()));
+    assertTrue(actualIds.contains(entity1.getId()));
   }
 
   @Test
   public void testGetResultMultipleDocumentsSortingField() throws NoSuchMethodException {
-    String descriptionDoc1 = "doc1";
-    Entity doc1 = createDocument(descriptionDoc1);
-    SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(doc1);
-    processMethod(doc1, doc1Generator, "getDisplayName", false, "dynamic_sort_desc");
+    Entity entity1 = createEntity("doc1");
+    SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(entity1);
+    processMethod(entity1, doc1Generator, "getDisplayName", false, "dynamic_sort_desc");
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
-    String descriptionDoc2 = "doc2";
-    Entity doc2 = createDocument(descriptionDoc2, doc1.getId());
-    SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(doc2, inputDoc1);
-    processMethod(doc2, doc2Generator, "getDisplayName", false, "dynamic_sort_desc");
+    Entity entity2 = createEntity("doc2", entity1.getId());
+    SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(entity2, inputDoc1);
+    processMethod(entity2, doc2Generator, "getDisplayName", false, "dynamic_sort_desc");
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("dynamic_sort_desc");
     Collection<Object> actualIds = descriptionField.getValues();
 
     assertEquals(1, actualIds.size());
-    assertTrue(actualIds.contains(doc1.getDisplayName()));
+    assertTrue(actualIds.contains(entity1.getDisplayName()));
   }
 
 }
