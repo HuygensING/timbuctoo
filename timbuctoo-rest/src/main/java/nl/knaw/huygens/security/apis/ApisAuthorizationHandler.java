@@ -67,11 +67,8 @@ public class ApisAuthorizationHandler implements AuthorizationHandler {
   private TokenResponseCache cache;
 
   @Inject
-  public ApisAuthorizationHandler(@Named("security.apis.key")
-  String resourceServerKey, @Named("security.apis.secret")
-  String resourceServerSecret, @Named("security.apis.server")
-  String authorizationServerUrl, @Named("security.apis.cache")
-  boolean cacheEnabled) {
+  public ApisAuthorizationHandler(@Named("security.apis.key") String resourceServerKey, @Named("security.apis.secret") String resourceServerSecret,
+      @Named("security.apis.server") String authorizationServerUrl, @Named("security.apis.cache") boolean cacheEnabled) {
     this.resourceServerKey = resourceServerKey;
     this.resourceServerSecret = resourceServerSecret;
     this.authorizationServerUrl = authorizationServerUrl;
@@ -111,7 +108,6 @@ public class ApisAuthorizationHandler implements AuthorizationHandler {
     throw new UnauthorizedException();
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
   protected TokenResponseCache buildCache() {
     return new TokenResponseCacheImpl(1000, 60 * 5);
   }
