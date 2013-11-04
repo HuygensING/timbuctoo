@@ -5,12 +5,11 @@ package nl.knaw.huygens.timbuctoo.messages;
  * It's designed after http://stackoverflow.com/a/2965252
  * 
  * @author martijnm
- *
  */
 public enum ActionType {
   ADD("add"), DEL("del"), END("end"), MOD("mod");
 
-  private String stringRepresentation;
+  private final String stringRepresentation;
 
   ActionType(String stringRepresentation) {
     this.stringRepresentation = stringRepresentation;
@@ -21,16 +20,14 @@ public enum ActionType {
   }
 
   public static ActionType getFromString(String stringRepresentation) {
-    if (stringRepresentation == null) {
-      return null;
-    }
-
-    for (ActionType actionType : values()) {
-      if (actionType.getStringRepresentation().equals(stringRepresentation)) {
-        return actionType;
+    if (stringRepresentation != null) {
+      for (ActionType actionType : values()) {
+        if (actionType.getStringRepresentation().equals(stringRepresentation)) {
+          return actionType;
+        }
       }
     }
-
     return null;
   }
+
 }

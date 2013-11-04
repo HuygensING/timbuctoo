@@ -6,10 +6,10 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 
 public interface Producer {
 
-  public abstract void send(ActionType action, Class<? extends Entity> type, String id) throws JMSException;
+  void send(ActionType action, Class<? extends Entity> type, String id) throws JMSException;
 
-  public abstract void close() throws JMSException;
+  void close() throws JMSException;
 
-  public abstract void closeQuietly();
+  void closeQuietly();
 
 }
