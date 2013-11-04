@@ -8,7 +8,8 @@ import nl.knaw.huygens.timbuctoo.model.dcar.DCARArchive;
 public class TestScope extends AbstractScope {
 
   public TestScope() throws IOException {
-    super("timbuctoo.model.dcar");
+    addClass(DCARArchive.class);
+    buildTypes();
   }
 
   @Override
