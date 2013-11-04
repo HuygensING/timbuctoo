@@ -13,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.VariationStorage;
 
@@ -54,7 +53,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     treeEncoderFactory = new TreeEncoderFactory(objectMapper);
     treeDecoderFactory = new TreeDecoderFactory();
     collectionCache = Maps.newHashMap();
-    inducer = new VariationInducer(registry, JsonViews.DBView.class, mongoMapper);
+    inducer = new VariationInducer(registry, mongoMapper);
     reducer = new VariationReducer(registry);
   }
 

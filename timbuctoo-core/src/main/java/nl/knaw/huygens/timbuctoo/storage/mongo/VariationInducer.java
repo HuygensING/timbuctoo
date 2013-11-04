@@ -11,25 +11,18 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 
 import org.mongojack.internal.stream.JacksonDBObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.mongodb.DBObject;
 
 class VariationInducer extends VariationConverter {
-  private static final Logger LOG = LoggerFactory.getLogger(VariationInducer.class);
-
-  private final ObjectWriter writer;
   private final MongoObjectMapper mongoMapper;
 
-  public VariationInducer(TypeRegistry registry, Class<?> view, MongoObjectMapper mongoMapper) {
+  public VariationInducer(TypeRegistry registry, MongoObjectMapper mongoMapper) {
     super(registry);
-    writer = mapper.writerWithView(view);
     this.mongoMapper = mongoMapper;
   }
 
