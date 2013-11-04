@@ -36,16 +36,16 @@ public class GenericResultSetConverterTest {
     Map<String, List<String>> mapping = new HashMap<String, List<String>>();
     mapping.put("test", Arrays.asList(new String[] { "test" }));
 
-    Class<DocumentExtensionWithStringField> type = DocumentExtensionWithStringField.class;
+    Class<EntityWithStringField> type = EntityWithStringField.class;
 
-    GenericResultSetConverter<DocumentExtensionWithStringField> instance = new GenericResultSetConverter<DocumentExtensionWithStringField>(mapping, type);
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(mapping, type);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test", "testValue");
 
     ResultSet resultSet = createResultSet(resultSetMap);
 
-    List<DocumentExtensionWithStringField> result = instance.convert(resultSet);
+    List<EntityWithStringField> result = instance.convert(resultSet);
 
     Assert.assertEquals(1, result.size());
     Assert.assertEquals("testValue", result.get(0).getTest());
@@ -57,9 +57,9 @@ public class GenericResultSetConverterTest {
     Map<String, List<String>> mapping = new HashMap<String, List<String>>();
     mapping.put("test", Arrays.asList(new String[] { "test1", "test2", "test3" }));
 
-    Class<DocumentExtensionWithStringField> type = DocumentExtensionWithStringField.class;
+    Class<EntityWithStringField> type = EntityWithStringField.class;
 
-    GenericResultSetConverter<DocumentExtensionWithStringField> instance = new GenericResultSetConverter<DocumentExtensionWithStringField>(mapping, type);
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(mapping, type);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test1", "testValue1");
@@ -68,7 +68,7 @@ public class GenericResultSetConverterTest {
 
     ResultSet resultSet = createResultSet(resultSetMap);
 
-    List<DocumentExtensionWithStringField> result = instance.convert(resultSet);
+    List<EntityWithStringField> result = instance.convert(resultSet);
 
     Assert.assertEquals(1, result.size());
     Assert.assertEquals("testValue1 testValue2 testValue3", result.get(0).getTest());
@@ -80,9 +80,9 @@ public class GenericResultSetConverterTest {
     Map<String, List<String>> mapping = new HashMap<String, List<String>>();
     mapping.put("datable", Arrays.asList(new String[] { "test" }));
 
-    Class<DocumentExtensionWithDatableField> type = DocumentExtensionWithDatableField.class;
+    Class<EntityWithDatableField> type = EntityWithDatableField.class;
 
-    GenericResultSetConverter<DocumentExtensionWithDatableField> instance = new GenericResultSetConverter<DocumentExtensionWithDatableField>(mapping, type);
+    GenericResultSetConverter<EntityWithDatableField> instance = new GenericResultSetConverter<EntityWithDatableField>(mapping, type);
 
     String databableValue = "20130305";
     Map<String, String> resultSetMap = new HashMap<String, String>();
@@ -90,7 +90,7 @@ public class GenericResultSetConverterTest {
 
     ResultSet resultSet = createResultSet(resultSetMap);
 
-    List<DocumentExtensionWithDatableField> result = instance.convert(resultSet);
+    List<EntityWithDatableField> result = instance.convert(resultSet);
 
     Assert.assertEquals(1, result.size());
 
@@ -105,16 +105,16 @@ public class GenericResultSetConverterTest {
       InvocationTargetException {
     Map<String, List<String>> mapping = new HashMap<String, List<String>>();
 
-    Class<DocumentExtensionWithStringField> type = DocumentExtensionWithStringField.class;
+    Class<EntityWithStringField> type = EntityWithStringField.class;
 
-    GenericResultSetConverter<DocumentExtensionWithStringField> instance = new GenericResultSetConverter<DocumentExtensionWithStringField>(mapping, type);
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(mapping, type);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test", "testValue");
 
     ResultSet resultSet = createResultSet(resultSetMap);
 
-    List<DocumentExtensionWithStringField> result = instance.convert(resultSet);
+    List<EntityWithStringField> result = instance.convert(resultSet);
 
     Assert.assertEquals(1, result.size());
   }
@@ -125,9 +125,9 @@ public class GenericResultSetConverterTest {
     Map<String, List<String>> mapping = new HashMap<String, List<String>>();
     mapping.put("test", Arrays.asList(new String[] { "test" }));
 
-    Class<DocumentExtensionWithStringField> type = DocumentExtensionWithStringField.class;
+    Class<EntityWithStringField> type = EntityWithStringField.class;
 
-    GenericResultSetConverter<DocumentExtensionWithStringField> instance = new GenericResultSetConverter<DocumentExtensionWithStringField>(mapping, type);
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(mapping, type);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test", "testValue");
@@ -135,7 +135,7 @@ public class GenericResultSetConverterTest {
 
     ResultSet resultSet = createResultSet(resultSetMap);
 
-    List<DocumentExtensionWithStringField> result = instance.convert(resultSet);
+    List<EntityWithStringField> result = instance.convert(resultSet);
 
     Assert.assertEquals(1, result.size());
     Assert.assertEquals("testValue", result.get(0).getTest());
@@ -147,16 +147,16 @@ public class GenericResultSetConverterTest {
     Map<String, List<String>> mapping = new HashMap<String, List<String>>();
     mapping.put("test", Arrays.asList(new String[] { "test", "test2" }));
 
-    Class<DocumentExtensionWithStringField> type = DocumentExtensionWithStringField.class;
+    Class<EntityWithStringField> type = EntityWithStringField.class;
 
-    GenericResultSetConverter<DocumentExtensionWithStringField> instance = new GenericResultSetConverter<DocumentExtensionWithStringField>(mapping, type);
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(mapping, type);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test", "testValue");
 
     ResultSet resultSet = createResultSet(resultSetMap);
 
-    List<DocumentExtensionWithStringField> result = instance.convert(resultSet);
+    List<EntityWithStringField> result = instance.convert(resultSet);
 
     Assert.assertEquals(1, result.size());
     Assert.assertEquals("testValue", result.get(0).getTest());
@@ -167,18 +167,19 @@ public class GenericResultSetConverterTest {
     Map<String, List<String>> mapping = new HashMap<String, List<String>>();
     mapping.put("test", Arrays.asList(new String[] { "test" }));
 
-    Class<SubDocumentExtension> type = SubDocumentExtension.class;
+    Class<SubEntityExtension> type = SubEntityExtension.class;
 
-    GenericResultSetConverter<SubDocumentExtension> instance = new GenericResultSetConverter<SubDocumentExtension>(mapping, type);
+    GenericResultSetConverter<SubEntityExtension> instance = new GenericResultSetConverter<SubEntityExtension>(mapping, type);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test", "testValue");
 
     ResultSet resultSet = createResultSet(resultSetMap);
 
-    List<SubDocumentExtension> result = instance.convert(resultSet);
+    List<SubEntityExtension> result = instance.convert(resultSet);
 
     Assert.assertEquals(1, result.size());
     Assert.assertEquals("testValue", result.get(0).getTest());
   }
+
 }
