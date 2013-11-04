@@ -39,7 +39,7 @@ class VariationReducer extends VariationConverter {
     MongoChanges<T> changes = null;
 
     for (int i = 0; versionsNode.hasNonNull(i); i++) {
-      T item = reduce(versionsNode.get(i), type);
+      T item = reduce(type, versionsNode.get(i));
       if (i == 0) {
         changes = new MongoChanges<T>(item.getId(), item);
       } else {
@@ -59,7 +59,7 @@ class VariationReducer extends VariationConverter {
     ArrayNode versionsNode = (ArrayNode) tree.get(VERSIONS_FIELD);
     JsonNode objectToReduce = versionsNode.get(0);
 
-    return reduce(objectToReduce, type);
+    return reduce(type, objectToReduce);
   }
 
   public <T extends DomainEntity> T reduceDBObject(Class<T> cls, DBObject obj) throws IOException {
@@ -74,7 +74,7 @@ class VariationReducer extends VariationConverter {
     return reduce(tree, cls, variation);
   }
 
-  public <T extends DomainEntity> T reduce(JsonNode node, Class<T> cls) throws VariationException, JsonProcessingException {
+  public <T extends DomainEntity> T reduce(Class<T> cls, JsonNode node) throws VariationException, JsonProcessingException {
     return reduce(node, cls, null);
   }
 
@@ -266,7 +266,7 @@ class VariationReducer extends VariationConverter {
         JsonNode subNode = node.get(name);
         if (subNode != null && subNode.isObject()) {
           Class<? extends T> indicatedClass = variationNameToType(name);
-          rv.add(reduce(node, indicatedClass));
+          rv.add(reduce(indicatedClass, node));
         }
       }
     }
