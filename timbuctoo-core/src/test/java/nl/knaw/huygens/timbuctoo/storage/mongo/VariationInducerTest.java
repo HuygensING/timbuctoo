@@ -4,14 +4,19 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Reference;
+import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectANewTestRole;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBGeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBTestRole;
 
 import org.junit.After;
 import org.junit.Before;
@@ -40,7 +45,7 @@ public class VariationInducerTest {
   @BeforeClass
   public static void setupMapper() {
     registry = new TypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb timbuctoo.model");
-    mongoMapper = new MongoObjectMapper(registry);
+    mongoMapper = new MongoObjectMapper();
   }
 
   @Before
@@ -56,7 +61,7 @@ public class VariationInducerTest {
   }
 
   @Test
-  public void induceSystemEntity() throws JsonProcessingException, IOException {
+  public void testInduceSystemEntity() throws JsonProcessingException, IOException {
     String testValue1 = "value";
     String testValue2 = "testValue2";
 
@@ -74,7 +79,7 @@ public class VariationInducerTest {
   }
 
   @Test
-  public void induceSystemEntityWithNullValues() throws JsonProcessingException, IOException {
+  public void testInduceSystemEntityWithNullValues() throws JsonProcessingException, IOException {
     String testValue1 = "value";
 
     JsonNode expected = createSystemObjectNode(TEST_SYSTEM_ID, null, testValue1, null);
@@ -89,7 +94,7 @@ public class VariationInducerTest {
   }
 
   @Test
-  public void induceUpdatedSystemEntity() throws JsonProcessingException, IOException {
+  public void testInduceUpdatedSystemEntity() throws JsonProcessingException, IOException {
     String testValue1 = "value";
     String testValue2 = "testValue2";
     String name2 = "name2";
@@ -128,18 +133,18 @@ public class VariationInducerTest {
 
   @Ignore("Should we be able to induce primitive (from the model package) entities?")
   @Test
-  public void induceDomainEntityPrimitive() {
+  public void testInduceDomainEntityPrimitive() {
     fail("Yet to be implemented.");
   }
 
   @Ignore("Should we be able to induce primitive (from the model package) entities?")
   @Test
-  public void induceUpdatedDomainEntityPrimitive() {
+  public void testInduceUpdatedDomainEntityPrimitive() {
     fail("Yet to be implemented.");
   }
 
   @Test
-  public void induceDomainEntityProject() throws VariationException {
+  public void testInduceDomainEntityProject() throws VariationException {
     ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
     item.setId(DEFAULT_DOMAIN_ID);
     item.setCurrentVariation("projecta");
@@ -175,12 +180,7 @@ public class VariationInducerTest {
     existingMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
     ObjectNode existing = mapper.valueToTree(existingMap);
 
-    ProjectBGeneralTestDoc item = new ProjectBGeneralTestDoc();
-    item.projectBGeneralTestDocValue = "testB";
-    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
-    item.setCurrentVariation("projectb");
-    item.setPid("test pid");
-    item.setId(DEFAULT_DOMAIN_ID);
+    ProjectBGeneralTestDoc item = createProjectBGeneralTestDoc();
 
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
     expectedMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
@@ -194,18 +194,23 @@ public class VariationInducerTest {
 
   }
 
-  @Test
-  public void testInduceDomainEntityNewVariationExistingValue() throws VariationException {
-    Map<String, Object> existingMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
-    existingMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
-    ObjectNode existing = mapper.valueToTree(existingMap);
-
+  protected ProjectBGeneralTestDoc createProjectBGeneralTestDoc() {
     ProjectBGeneralTestDoc item = new ProjectBGeneralTestDoc();
     item.projectBGeneralTestDocValue = "testB";
     item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
     item.setCurrentVariation("projectb");
     item.setPid("test pid");
     item.setId(DEFAULT_DOMAIN_ID);
+    return item;
+  }
+
+  @Test
+  public void testInduceDomainEntityNewVariationExistingValue() throws VariationException {
+    Map<String, Object> existingMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
+    existingMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
+    ObjectNode existing = mapper.valueToTree(existingMap);
+
+    ProjectBGeneralTestDoc item = createProjectBGeneralTestDoc();
     item.generalTestDocValue = "projectbTestDoc";
 
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
@@ -221,32 +226,212 @@ public class VariationInducerTest {
   }
 
   @Test
-  public void induceDomainEntityWithRole() {
-    fail("Yet to be implemented.");
+  /*
+   * Project value equals to the default value is updated.
+   */
+  public void testInduceDomainEntityVariationUpdated() throws VariationException {
+    Map<String, Object> existingMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
+    existingMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
+    existingMap.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
+    existingMap.put("projectbgeneraltestdoc.generalTestDocValue", "projectbTestDoc");
+
+    ObjectNode existingItem = mapper.valueToTree(existingMap);
+
+    ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
+    item.setId(DEFAULT_DOMAIN_ID);
+    item.setCurrentVariation("projecta");
+    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
+    item.setPid("test pid");
+    item.projectAGeneralTestDocValue = "projectatest";
+    item.generalTestDocValue = "test1A";
+
+    Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
+    expectedMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
+    expectedMap.put("projectageneraltestdoc.generalTestDocValue", "test1A");
+    expectedMap.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
+    expectedMap.put("projectbgeneraltestdoc.generalTestDocValue", "projectbTestDoc");
+
+    JsonNode expected = mapper.valueToTree(expectedMap);
+
+    JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item, existingItem);
+
+    assertEquals(expected, actual);
+  }
+
+  /* 
+   * Test when an entity with two variations on a general property
+   * is updated on the key that is not the general accepted.
+   */
+  @Test
+  public void testInduceDomainEntitySecondVariationUpdated() throws VariationException {
+    Map<String, Object> existingMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "testB");
+    existingMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
+    existingMap.put("projectbgeneraltestdoc.generalTestDocValue", "projectbTestDoc");
+
+    ObjectNode existingItem = mapper.valueToTree(existingMap);
+
+    ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
+    item.setId(DEFAULT_DOMAIN_ID);
+    item.setCurrentVariation("projecta");
+    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
+    item.setPid("test pid");
+    item.projectAGeneralTestDocValue = "projectatest";
+    item.generalTestDocValue = "test1A";
+
+    Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "testB");
+    expectedMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
+    expectedMap.put("projectageneraltestdoc.generalTestDocValue", "test1A");
+    expectedMap.put("projectbgeneraltestdoc.generalTestDocValue", "projectbTestDoc");
+
+    JsonNode expected = mapper.valueToTree(expectedMap);
+
+    JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item, existingItem);
+
+    assertEquals(expected, actual);
   }
 
   @Test
-  public void induceUpdatedDomainEntityWithRole() {
-    fail("Yet to be implemented.");
+  public void testInduceDomainEntityWithRole() throws VariationException {
+    ProjectBGeneralTestDoc item = createProjectBGeneralTestDoc();
+    item.generalTestDocValue = "test";
+    ProjectBTestRole role = new ProjectBTestRole();
+    role.setBeeName("beeName");
+    role.setRoleName("roleName");
+    List<Role> roles = Lists.newArrayList();
+    roles.add(role);
+    item.setRoles(roles);
+
+    Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
+    expectedMap.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
+    expectedMap.put("projectbtestrole.beeName", "beeName");
+    expectedMap.put("testrole.roleName", "roleName");
+
+    JsonNode expected = mapper.valueToTree(expectedMap);
+
+    JsonNode actual = inducer.induce(ProjectBGeneralTestDoc.class, item);
+
+    assertEquals(expected, actual);
+
   }
 
   @Test
-  public void induceUpdatedDomainEntityWithRolesNewVariation() {
-    fail("Yet to be implemented.");
+  public void testInduceUpdatedDomainEntityWithRoleNewVariation() throws VariationException {
+    Map<String, Object> existingMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
+    existingMap.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
+    existingMap.put("projectbtestrole.beeName", "beeName");
+    existingMap.put("testrole.roleName", "roleName");
+
+    ObjectNode existing = mapper.valueToTree(existingMap);
+
+    ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
+    item.setId(DEFAULT_DOMAIN_ID);
+    item.setCurrentVariation("projecta");
+    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
+    item.setPid("test pid");
+    item.projectAGeneralTestDocValue = "projectatest";
+    item.generalTestDocValue = "testA";
+
+    Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
+    expectedMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
+    expectedMap.put("projectageneraltestdoc.generalTestDocValue", "testA");
+    expectedMap.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
+    expectedMap.put("projectbtestrole.beeName", "beeName");
+    expectedMap.put("testrole.roleName", "roleName");
+    ObjectNode expected = mapper.valueToTree(expectedMap);
+
+    JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item, existing);
+
+    assertEquals(expected, actual);
+
   }
 
   @Test
-  public void induceUpdatedDomainEntityWithRolesNewRole() {
-    fail("Yet to be implemented.");
+  public void testInduceUpdatedDomainEntityWithRolesNewRole() throws VariationException {
+    Map<String, Object> existingMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
+    existingMap.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
+    existingMap.put("projectbtestrole.beeName", "beeName");
+    existingMap.put("testrole.roleName", "roleName");
+
+    ObjectNode existing = mapper.valueToTree(existingMap);
+
+    ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
+    item.setId(DEFAULT_DOMAIN_ID);
+    item.setCurrentVariation("projecta");
+    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
+    item.setPid("test pid");
+    item.projectAGeneralTestDocValue = "projectatest";
+    item.generalTestDocValue = "testA";
+
+    List<Role> roles = Lists.newArrayList();
+    ProjectANewTestRole role = new ProjectANewTestRole();
+    role.setNewTestRoleName("newTestRoleName");
+    role.setProjectANewTestRoleName("projectANewTestRoleName");
+    roles.add(role);
+
+    item.setRoles(roles);
+
+    Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
+    expectedMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
+    expectedMap.put("projectageneraltestdoc.generalTestDocValue", "testA");
+    expectedMap.put("projectanewtestrole.projectANewTestRoleName", "projectANewTestRoleName");
+    expectedMap.put("newtestrole.newTestRoleName", "newTestRoleName");
+    expectedMap.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
+    expectedMap.put("projectbtestrole.beeName", "beeName");
+    expectedMap.put("testrole.roleName", "roleName");
+    ObjectNode expected = mapper.valueToTree(expectedMap);
+
+    JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item, existing);
+
+    assertEquals(expected, actual);
   }
 
   @Test
-  public void testInduceNullEntity() {
-    fail("Yet to be implemented.");
+  public void testInduceUpdatedDomainEntityWithRolesNewVariationForRole() throws VariationException {
+    Map<String, Object> existingMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
+    existingMap.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
+    existingMap.put("projectbtestrole.beeName", "beeName");
+    existingMap.put("testrole.roleName", "roleName");
+
+    ObjectNode existing = mapper.valueToTree(existingMap);
+
+    ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
+    item.setId(DEFAULT_DOMAIN_ID);
+    item.setCurrentVariation("projecta");
+    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
+    item.setPid("test pid");
+    item.projectAGeneralTestDocValue = "projectatest";
+    item.generalTestDocValue = "testA";
+
+    List<Role> roles = Lists.newArrayList();
+    ProjectATestRole role = new ProjectATestRole();
+    role.setProjectATestRoleName("projectATestRoleName");
+    role.setRoleName("projectARoleName");
+    roles.add(role);
+
+    item.setRoles(roles);
+
+    Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
+    expectedMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
+    expectedMap.put("projectageneraltestdoc.generalTestDocValue", "testA");
+    expectedMap.put("projectatestrole.projectATestRoleName", "projectATestRoleName");
+    expectedMap.put("projectatestrole.roleName", "projectARoleName");
+    expectedMap.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
+    expectedMap.put("projectbtestrole.beeName", "beeName");
+    expectedMap.put("testrole.roleName", "roleName");
+    ObjectNode expected = mapper.valueToTree(expectedMap);
+
+    JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item, existing);
+
+    assertEquals(expected, actual);
   }
 
-  @Test
-  public void testInduceNullType() {
-    fail("Yet to be implemented.");
+  @Test(expected = IllegalArgumentException.class)
+  public void testInduceNullEntity() throws VariationException {
+    inducer.induce(ProjectBGeneralTestDoc.class, null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testInduceNullType() throws VariationException {
+    inducer.induce(null, new ProjectBGeneralTestDoc());
   }
 }

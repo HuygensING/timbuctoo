@@ -85,7 +85,7 @@ public abstract class MongoStorageBase implements BasicStorage {
 
   @Override
   public <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException {
-    Map<String, Object> properties = mongoMapper.mapObject(type, example, false);
+    Map<String, Object> properties = mongoMapper.mapObject(type, example);
     BasicDBObject query = new BasicDBObject(properties);
     return getCollection(type).findOne(query);
   }
