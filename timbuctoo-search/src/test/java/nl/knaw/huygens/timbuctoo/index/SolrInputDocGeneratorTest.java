@@ -3,15 +3,12 @@ package nl.knaw.huygens.timbuctoo.index;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
 
-import nl.knaw.huygens.timbuctoo.facet.CustomIndexer;
-import nl.knaw.huygens.timbuctoo.facet.CustomIndexer.NoopIndexer;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.index.model.TestExtraBaseDoc;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -40,14 +37,8 @@ public class SolrInputDocGeneratorTest {
     IndexAnnotation indexAnnotation = mock(IndexAnnotation.class);
     when(indexAnnotation.canBeEmpty()).thenReturn(canBeEmpty);
     when(indexAnnotation.fieldName()).thenReturn(fieldName);
-    Class<? extends CustomIndexer> indexer = NoopIndexer.class;
-    // type unsafe doReturn is needed, because when and thenReturn give problems
-    // with generics.
-    doReturn(indexer).when(indexAnnotation).customIndexer();
-    when(indexAnnotation.isComplex()).thenReturn(false);
     when(indexAnnotation.isFaceted()).thenReturn(false);
     when(indexAnnotation.accessors()).thenReturn(new String[] {});
-
     return indexAnnotation;
   }
 

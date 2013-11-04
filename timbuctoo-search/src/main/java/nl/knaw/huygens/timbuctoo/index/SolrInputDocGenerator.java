@@ -6,8 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import nl.knaw.huygens.timbuctoo.facet.CustomIndexer;
-import nl.knaw.huygens.timbuctoo.facet.CustomIndexer.NoopIndexer;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
@@ -71,23 +69,9 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
    */
   private void indexMethodOnce(SolrInputDocument doc, Entity instance, Method m, IndexAnnotation argData) {
     // Determine index field name:
-    Class<? extends CustomIndexer> indexClass = argData.customIndexer();
-    CustomIndexer indexer;
-    String name;
-    if (indexClass.equals(NoopIndexer.class)) {
-      name = argData.fieldName();
-      if (name.length() == 0) {
-        name = Utils.getFieldName(m);
-      }
-      indexer = null;
-    } else {
-      try {
-        indexer = argData.customIndexer().newInstance();
-      } catch (Exception e) {
-        indexer = null;
-        e.printStackTrace();
-      }
-      name = "";
+    String name = argData.fieldName();
+    if (name.length() == 0) {
+      name = Utils.getFieldName(m);
     }
 
     boolean canBeEmpty = argData.canBeEmpty();
@@ -96,7 +80,7 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
     try {
       Object value = m.invoke(instance);
       String[] getters = argData.accessors();
-      indexObject(doc, name, indexer, value, canBeEmpty, getters);
+      indexObject(doc, name, value, canBeEmpty, getters);
     } catch (Exception ex) {
       throw new RuntimeException(ex);
     }
@@ -106,11 +90,11 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
    * Evil reflection stuff to deal with getting strings/stuff out of arrays of objects.
    * It will index the result of applying the array of methods on each of the objects.
    */
-  private void indexArray(SolrInputDocument doc, String fieldName, CustomIndexer indexer, Object[] array, boolean canBeEmpty, String... methods) {
+  private void indexArray(SolrInputDocument doc, String fieldName, Object[] array, boolean canBeEmpty, String... methods) {
     try {
       if (!ArrayUtils.isEmpty(array)) {
         for (Object o : array) {
-          indexObject(doc, fieldName, indexer, o, canBeEmpty, methods);
+          indexObject(doc, fieldName, o, canBeEmpty, methods);
         }
       } else if (!canBeEmpty && !StringUtils.isEmpty(fieldName)) {
         doc.addField(fieldName, "(empty)");
@@ -120,8 +104,8 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
     }
   }
 
-  private void indexObject(SolrInputDocument doc, String fieldName, CustomIndexer indexer, Object o, boolean canBeEmpty, String[] methods) throws IllegalArgumentException, SecurityException,
-      IllegalAccessException, InvocationTargetException, NoSuchFieldException {
+  private void indexObject(SolrInputDocument doc, String fieldName, Object o, boolean canBeEmpty, String[] methods) throws IllegalArgumentException, SecurityException, IllegalAccessException,
+      InvocationTargetException, NoSuchFieldException {
     Object value = o;
     List<String> methodList = Lists.newArrayList(methods);
     // Pop off accessors (fields or methods) until:
@@ -138,19 +122,15 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
     }
     // If this is an array or list, process as such:
     if (value != null && value.getClass().isArray()) {
-      indexArray(doc, fieldName, indexer, (Object[]) value, canBeEmpty, methodList.toArray(new String[methodList.size()]));
+      indexArray(doc, fieldName, (Object[]) value, canBeEmpty, methodList.toArray(new String[methodList.size()]));
     } else if (List.class.isInstance(value)) {
       @SuppressWarnings("unchecked")
       Object[] values = ((List<Object>) value).toArray();
-      indexArray(doc, fieldName, indexer, values, canBeEmpty, methodList.toArray(new String[methodList.size()]));
+      indexArray(doc, fieldName, values, canBeEmpty, methodList.toArray(new String[methodList.size()]));
     } else {
-      if (indexer != null) {
-        indexer.indexItem(doc, value);
-      } else {
-        Object transformedValue = transformValue(value, canBeEmpty);
-        if (transformedValue != null) {
-          doc.addField(fieldName, transformedValue);
-        }
+      Object transformedValue = transformValue(value, canBeEmpty);
+      if (transformedValue != null) {
+        doc.addField(fieldName, transformedValue);
       }
     }
   }
