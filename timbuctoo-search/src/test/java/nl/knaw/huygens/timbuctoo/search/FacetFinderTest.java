@@ -108,4 +108,5 @@ public class FacetFinderTest {
     assertEquals("Facet titles not equal", facetInfo1.getTitle(), facetInfo2.getTitle());
     assertEquals("Facet types not equal", facetInfo1.getType(), facetInfo2.getType());
   }
+
 }

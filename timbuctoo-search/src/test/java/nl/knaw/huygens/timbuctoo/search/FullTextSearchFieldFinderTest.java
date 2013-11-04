@@ -68,4 +68,5 @@ public class FullTextSearchFieldFinderTest {
     Set<String> actual = instance.findFields(type);
     assertThat(actual, equalTo(expected));
   }
+
 }
