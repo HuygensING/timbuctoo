@@ -40,6 +40,12 @@
       <groupId>nl.knaw.huygens</groupId>
       <artifactId>huygens-persistence</artifactId>
       <version>1.0.6</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!-- Huygens security -->
     <dependency>
@@ -99,56 +105,56 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>hamcrest-core</artifactId>
           <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-core</artifactId>
         </exclusion>
         <exclusion>
-          <artifactId>log4j-over-slf4j</artifactId>
-          <groupId>org.slf4j</groupId>
-        </exclusion>
-        <exclusion>
+          <groupId>org.opensaml</groupId>
           <artifactId>openws</artifactId>
-          <groupId>org.opensaml</groupId>
         </exclusion>
         <exclusion>
+          <groupId>org.springframework</groupId>
           <artifactId>spring-core</artifactId>
-          <groupId>org.springframework</groupId>
         </exclusion>
         <exclusion>
+          <groupId>org.springframework</groupId>
           <artifactId>spring-aop</artifactId>
-          <groupId>org.springframework</groupId>
         </exclusion>
         <exclusion>
+          <groupId>org.springframework</groupId>
           <artifactId>spring-beans</artifactId>
-          <groupId>org.springframework</groupId>
         </exclusion>
         <exclusion>
+          <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
-          <groupId>org.slf4j</groupId>
         </exclusion>
         <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>log4j-over-slf4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
           <artifactId>jul-to-slf4j</artifactId>
-          <groupId>org.slf4j</groupId>
         </exclusion>
         <exclusion>
+          <groupId>org.slf4j</groupId>
           <artifactId>jcl-over-slf4j</artifactId>
-          <groupId>org.slf4j</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>velocity</artifactId>
           <groupId>velocity</groupId>
+          <artifactId>velocity</artifactId>
         </exclusion>
         <exclusion>
-          <artifactId>coin-test</artifactId>
           <groupId>org.surfnet.coin</groupId>
+          <artifactId>coin-test</artifactId>
         </exclusion>
         <exclusion>
-          <artifactId>opensaml</artifactId>
           <groupId>org.opensaml</groupId>
+          <artifactId>opensaml</artifactId>
         </exclusion>
         <exclusion>
-          <artifactId>apis-authorization-server</artifactId>
           <groupId>nl.surfnet.apis</groupId>
+          <artifactId>apis-authorization-server</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
