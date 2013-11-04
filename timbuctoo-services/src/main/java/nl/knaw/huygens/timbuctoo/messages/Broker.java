@@ -4,22 +4,22 @@ import javax.jms.JMSException;
 
 public interface Broker {
 
-  public static final String BROKER_NAME = "repo-broker";
-  public static final String INDEX_QUEUE = "index";
-  public static final String PERSIST_QUEUE = "persist";
+  String BROKER_NAME = "repo-broker";
+  String INDEX_QUEUE = "index";
+  String PERSIST_QUEUE = "persist";
   // Message headers
-  public static final String PROP_ACTION = "action";
-  public static final String PROP_DOC_TYPE = "type";
-  public static final String PROP_DOC_ID = "id";
+  String PROP_ACTION = "action";
+  String PROP_DOC_TYPE = "type";
+  String PROP_DOC_ID = "id";
 
-  public abstract Producer newProducer(String queue, String name) throws JMSException;
+  Producer newProducer(String queue, String name) throws JMSException;
 
-  public abstract Consumer newConsumer(String queue, String name) throws JMSException;
+  Consumer newConsumer(String queue, String name) throws JMSException;
 
-  public abstract Browser newBrowser(String queue) throws JMSException;
+  Browser newBrowser(String queue) throws JMSException;
 
-  public abstract void start() throws JMSException;
+  void start() throws JMSException;
 
-  public abstract void close();
+  void close();
 
 }
