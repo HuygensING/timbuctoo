@@ -46,4 +46,5 @@ public class SortableFieldFinderTest {
     Set<String> actual = instance.findFields(type);
     assertThat(actual, equalTo(expected));
   }
+
 }
