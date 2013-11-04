@@ -153,6 +153,13 @@
       </exclusions>
     </dependency>
 
+    <!-- Apache Commons Codec: encoders and decoders -->
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <!-- Version used by Apis; Solr uses 1.7 -->
+      <version>1.4</version>
+    </dependency>
 
     <!-- Commons Configuration, assists with reading configuration files. -->
     <dependency>
