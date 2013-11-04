@@ -27,7 +27,6 @@ import nl.knaw.huygens.security.UnauthorizedException;
 
 import org.apache.commons.codec.binary.Base64;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.scribe.utils.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.surfnet.oaaas.auth.ObjectMapperProvider;
@@ -35,6 +34,7 @@ import org.surfnet.oaaas.model.TokenResponseCache;
 import org.surfnet.oaaas.model.TokenResponseCacheImpl;
 import org.surfnet.oaaas.model.VerifyTokenResponse;
 
+import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.sun.jersey.api.client.Client;
@@ -74,9 +74,9 @@ public class ApisAuthorizationHandler implements AuthorizationHandler {
     this.authorizationServerUrl = authorizationServerUrl;
     this.cacheEnabled = cacheEnabled;
 
-    Preconditions.checkEmptyString(this.resourceServerKey, "Must provide a resource server key");
-    Preconditions.checkEmptyString(this.resourceServerSecret, "Must provide a resource server secret");
-    Preconditions.checkEmptyString(this.authorizationServerUrl, "Must provide a authorization server url");
+    Preconditions.checkArgument(resourceServerKey != null && !resourceServerKey.isEmpty(), "Must provide a resource server key");
+    Preconditions.checkArgument(resourceServerSecret != null && !resourceServerSecret.isEmpty(), "Must provide a resource server secret");
+    Preconditions.checkArgument(authorizationServerUrl != null && !authorizationServerUrl.isEmpty(), "Must provide a authorization server url");
 
     if (this.cacheEnabled) {
       this.cache = this.buildCache();
