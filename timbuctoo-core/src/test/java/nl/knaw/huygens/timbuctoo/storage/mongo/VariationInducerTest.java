@@ -11,7 +11,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
-import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectANewTestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestRole;
@@ -51,7 +50,7 @@ public class VariationInducerTest {
   @Before
   public void setUp() throws Exception {
     mapper = new ObjectMapper();
-    inducer = new VariationInducer(registry, JsonViews.DBView.class, mongoMapper);
+    inducer = new VariationInducer(registry, mongoMapper);
   }
 
   @After
