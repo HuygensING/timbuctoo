@@ -71,14 +71,14 @@ class VariationReducer extends VariationConverter {
       return null;
     }
     JsonNode tree = convertToTree(obj);
-    return reduce(tree, cls, variation);
+    return reduce(cls, tree, variation);
   }
 
   public <T extends DomainEntity> T reduce(Class<T> cls, JsonNode node) throws VariationException, JsonProcessingException {
-    return reduce(node, cls, null);
+    return reduce(cls, node, null);
   }
 
-  public <T extends DomainEntity> T reduce(JsonNode node, Class<T> cls, String requestedVariation) throws VariationException, JsonProcessingException {
+  public <T extends DomainEntity> T reduce(Class<T> cls, JsonNode node, String requestedVariation) throws VariationException, JsonProcessingException {
     final String classVariation = getPackageName(cls);
     String idPrefix = classVariation + "-";
     List<JsonNode> specificData = Lists.newArrayListWithExpectedSize(1);
