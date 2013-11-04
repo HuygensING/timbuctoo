@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.annotations.DoNotRegister;
-import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
@@ -102,14 +101,14 @@ public class TypeRegistry {
   // -------------------------------------------------------------------
 
   private void registerClass(Class<? extends Entity> type) {
-    String iname = getInternalName(type);
+    String iname = TypeNameGenerator.getInternalName(type);
     if (iname2type.containsKey(iname)) {
       throw new IllegalStateException("Duplicate internal type name " + iname);
     }
     iname2type.put(iname, type);
     type2iname.put(type, iname);
 
-    String xname = getExternalName(type);
+    String xname = TypeNameGenerator.getExternalName(type);
     if (xname2type.containsKey(xname)) {
       throw new IllegalStateException("Duplicate internal type name " + xname);
     }
@@ -117,18 +116,6 @@ public class TypeRegistry {
     type2xname.put(type, xname);
 
     iname2xname.put(iname, xname);
-  }
-
-  private String getInternalName(Class<? extends Entity> type) {
-    return type.getSimpleName().toLowerCase();
-  }
-
-  private String getExternalName(Class<? extends Entity> type) {
-    if (type.isAnnotationPresent(EntityTypeName.class)) {
-      return type.getAnnotation(EntityTypeName.class).value();
-    } else {
-      return getInternalName(type) + "s";
-    }
   }
 
   // --- public api ----------------------------------------------------
