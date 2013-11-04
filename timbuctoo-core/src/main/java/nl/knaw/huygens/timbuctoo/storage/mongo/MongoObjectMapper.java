@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeNameGenerator;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
@@ -30,37 +30,27 @@ public class MongoObjectMapper {
   private static final Class<JsonProperty> ANNOTATION_TO_RETRIEVE = JsonProperty.class;
   private static final String GET_ACCESSOR = "get";
   private static final Logger LOG = LoggerFactory.getLogger(MongoObjectMapper.class);
-  private final TypeRegistry typeRegistry;
 
   @Inject
-  public MongoObjectMapper(TypeRegistry typeRegistry) {
-    this.typeRegistry = typeRegistry;
-  }
+  public MongoObjectMapper() {}
 
   /**
    * Convert the object to a Map ignoring the null keys.
    * @param type the type to convert, should extends Entity.
    * @param item the object to convert.
-   * @param mapParentClassValues if set to true the mapping does not stop at the current 
-   * class of {@code type}, but iterates through all the fields of the super classes aswell.
    * @return a map with all the non-null values of the {@code item}.
    */
-  @SuppressWarnings("unchecked")
-  public <T extends Entity> Map<String, Object> mapObject(Class<T> type, T item, boolean mapParentClassValues) {
+  public <T> Map<String, Object> mapObject(Class<T> type, T item) {
     Preconditions.checkArgument(item != null);
     Preconditions.checkArgument(type != null);
     Map<String, Object> map = Maps.newHashMap();
-
-    if (mapParentClassValues && !(Entity.class == type)) {
-      map.putAll(mapObject((Class<T>) type.getSuperclass(), item, true));
-    }
 
     map.putAll(mapFields(type, item));
 
     return map;
   }
 
-  protected <T extends Entity> Map<String, Object> mapFields(Class<T> type, T item) {
+  protected <T> Map<String, Object> mapFields(Class<T> type, T item) {
     Map<String, Object> objectMap = Maps.<String, Object> newHashMap();
     Field[] fields = type.getDeclaredFields();
 
@@ -105,7 +95,7 @@ public class MongoObjectMapper {
 
   }
 
-  private String getFieldName(Class<? extends Entity> type, Field field) {
+  private String getFieldName(Class<?> type, Field field) {
     JsonProperty annotation = field.getAnnotation(ANNOTATION_TO_RETRIEVE);
 
     if (annotation != null) {
@@ -120,11 +110,11 @@ public class MongoObjectMapper {
     return formatFieldName(type, field.getName());
   }
 
-  private String formatFieldName(Class<? extends Entity> type, String fieldName) {
+  private String formatFieldName(Class<?> type, String fieldName) {
     if (type == Entity.class || type == DomainEntity.class || type == SystemEntity.class) {
       return fieldName;
     }
-    return typeRegistry.getINameForType(type) + "." + fieldName;
+    return TypeNameGenerator.getInternalName(type) + "." + fieldName;
   }
 
   private Method getMethodOfField(Class<?> type, String fieldName) {
