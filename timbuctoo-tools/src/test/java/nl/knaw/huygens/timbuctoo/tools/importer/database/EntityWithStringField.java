@@ -5,16 +5,13 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
-import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
-public class DocumentExtensionWithDatableField extends Entity {
+public class EntityWithStringField extends Entity {
 
-  public DocumentExtensionWithDatableField() {}
-
-  private Datable datable;
+  private String test;
   protected List<Reference> variations = Lists.newArrayList();
   protected String currentVariation;
 
@@ -22,16 +19,15 @@ public class DocumentExtensionWithDatableField extends Entity {
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
   public String getDisplayName() {
-    // TODO Auto-generated method stub
     return null;
   }
 
-  public void setDatable(Datable datable) {
-    this.datable = datable;
+  public void setTest(String test) {
+    this.test = test;
   }
 
-  public Datable getDatable() {
-    return this.datable;
+  public String getTest() {
+    return this.test;
   }
 
 }
