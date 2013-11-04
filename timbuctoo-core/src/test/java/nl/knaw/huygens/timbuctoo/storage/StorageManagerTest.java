@@ -125,15 +125,10 @@ public class StorageManagerTest {
     assertNull(instance.getEntity(type, id));
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testGetDocumentIOException() throws IOException {
-    Class<GeneralTestDoc> type = GeneralTestDoc.class;
-    String id = "testId";
-
-    when(storage.getItem(type, id)).thenThrow(IOException.class);
-
-    assertNull(instance.getEntity(type, id));
+    when(storage.getItem(GeneralTestDoc.class, "testId")).thenThrow(new IOException("Thrown by unit test"));
+    assertNull(instance.getEntity(GeneralTestDoc.class, "testId"));
   }
 
   @Test
