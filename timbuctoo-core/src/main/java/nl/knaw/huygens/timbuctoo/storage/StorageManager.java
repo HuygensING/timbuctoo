@@ -77,8 +77,7 @@ public class StorageManager {
     try {
       return storage.getItem(type, id);
     } catch (IOException e) {
-      LOG.error("Error while handling {} {}", type.getName(), id);
-      LOG.error("exception", e);
+      LOG.error("Error in getEntity({}.class, {}): " + e.getMessage(), type.getSimpleName(), id);
       return null;
     }
   }
