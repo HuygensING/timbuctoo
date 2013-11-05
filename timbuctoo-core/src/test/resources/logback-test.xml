@@ -5,10 +5,11 @@
       <pattern>%d %-5p %c - %m%n</pattern>
     </encoder>
   </appender>
+  <logger name="com.mchange.v2" level="WARN"/>
+  <logger name="com.sun.jersey" level="WARN"/>
   <logger name="org.apache.activemq" level="WARN"/>
   <logger name="org.apache.solr" level="WARN"/>
-  <logger name="com.mchange.v2" level="WARN"/>
-  <root level="info">
+  <root level="warn">
     <appender-ref ref="CON"/>
   </root>
 </configuration>

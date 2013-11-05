@@ -88,7 +88,7 @@ public class TypeRegistry {
       Class<?> type = info.load();
       if (shouldRegisterClass(type)) {
         registerClass((Class<? extends Entity>) type);
-        LOG.info("Registered {}", type.getName());
+        LOG.debug("Registered {}", type.getName());
       }
     }
   }
