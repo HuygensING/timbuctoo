@@ -19,6 +19,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Guice;
@@ -54,13 +55,13 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     injector = Guice.createInjector(resourceTestModule);
   }
 
+  /**
+   * Bridges java.util.logging to SLF4J.
+   * See: http://blog.cn-consult.dk/2009/03/bridging-javautillogging-to-slf4j.html
+   */
   public static void initLogger() {
-    java.util.logging.Logger rootLogger = java.util.logging.LogManager.getLogManager().getLogger("");
-    java.util.logging.Handler[] handlers = rootLogger.getHandlers();
-    for (int i = 0; i < handlers.length; i++) {
-      rootLogger.removeHandler(handlers[i]);
-    }
-    org.slf4j.bridge.SLF4JBridgeHandler.install();
+    SLF4JBridgeHandler.removeHandlersForRootLogger();
+    SLF4JBridgeHandler.install();
   }
 
   @Before
