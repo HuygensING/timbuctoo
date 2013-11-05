@@ -49,8 +49,18 @@ public abstract class WebServiceTestSetup extends JerseyTest {
 
   @BeforeClass
   public static void setUpClass() {
+    initLogger();
     resourceTestModule = new ResourceTestModule();
     injector = Guice.createInjector(resourceTestModule);
+  }
+
+  public static void initLogger() {
+    java.util.logging.Logger rootLogger = java.util.logging.LogManager.getLogManager().getLogger("");
+    java.util.logging.Handler[] handlers = rootLogger.getHandlers();
+    for (int i = 0; i < handlers.length; i++) {
+      rootLogger.removeHandler(handlers[i]);
+    }
+    org.slf4j.bridge.SLF4JBridgeHandler.install();
   }
 
   @Before
