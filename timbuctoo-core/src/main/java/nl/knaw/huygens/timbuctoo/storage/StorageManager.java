@@ -148,38 +148,20 @@ public class StorageManager {
     }
   }
 
-  /**
-   * A convenience method for ${@code addEntity(type, doc, true)}
-   */
-  public <T extends Entity> String addEntity(Class<T> type, T doc) throws IOException {
-    return addEntity(type, doc, true);
-  }
-
-  /**
-   * Stores an item into the database. When no exception is thrown and the entity is of the type DomainEntity, the entity is persisted. 
-   * If the boolean isComplete is true the entity will be indexed as well.
-   * 
-   * @param type should be a DomainEntity
-   * @param doc should be of a the type used in type.
-   * @param isComplete marks if the entity contains all it's references and relations, 
-   * when this boolean is true the entity will be indexed
-   * @return the id of the newly created Entity.
-   * @throws IOException when thrown by storage
-   */
-  public <T extends Entity> String addEntity(Class<T> type, T doc, boolean isComplete) throws IOException {
-    return storage.addItem(type, doc);
+  public <T extends Entity> String addEntity(Class<T> type, T entity) throws IOException {
+    return storage.addItem(type, entity);
   }
 
   public <T extends Entity> void setPID(Class<T> type, String id, String pid) {
     storage.setPID(type, id, pid);
   }
 
-  public <T extends Entity> void modifyEntity(Class<T> type, T doc) throws IOException {
-    storage.updateItem(type, doc.getId(), doc);
+  public <T extends Entity> void modifyEntity(Class<T> type, T entity) throws IOException {
+    storage.updateItem(type, entity.getId(), entity);
   }
 
-  public <T extends Entity> void removeEntity(Class<T> type, T doc) throws IOException {
-    storage.deleteItem(type, doc.getId(), doc.getLastChange());
+  public <T extends Entity> void removeEntity(Class<T> type, T entity) throws IOException {
+    storage.deleteItem(type, entity.getId(), entity.getLastChange());
   }
 
   public int removeAllSearchResults() {

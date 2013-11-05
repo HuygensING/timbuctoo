@@ -223,19 +223,19 @@ public class AtlantischeGidsImporter extends DefaultImporter {
 
   private void importRelationTypes() {
     RelationType type = new RelationType(IS_CREATOR_OF.regular, IS_CREATOR_OF.inverse, ATLGArchiver.class, ATLGArchive.class);
-    addEntity(RelationType.class, type, true);
+    addEntity(RelationType.class, type);
     isCreatorRef = new Reference(RelationType.class, type.getId());
 
     type = new RelationType(HAS_KEYWORD.regular, HAS_KEYWORD.inverse, DomainEntity.class, ATLGKeyword.class);
-    addEntity(RelationType.class, type, true);
+    addEntity(RelationType.class, type);
     hasKeywordRef = new Reference(RelationType.class, type.getId());
 
     type = new RelationType(HAS_PERSON.regular, HAS_PERSON.inverse, DomainEntity.class, ATLGPerson.class);
-    addEntity(RelationType.class, type, true);
+    addEntity(RelationType.class, type);
     hasPersonRef = new Reference(RelationType.class, type.getId());
 
     type = new RelationType(HAS_PLACE.regular, HAS_PLACE.inverse, DomainEntity.class, ATLGKeyword.class);
-    addEntity(RelationType.class, type, true);
+    addEntity(RelationType.class, type);
     hasPlaceRef = new Reference(RelationType.class, type.getId());
   }
 
@@ -251,7 +251,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     RelationBuilder builder = relationManager.getBuilder();
     Relation relation = builder.source(sourceRef).type(relTypeRef).target(targetRef).build();
     if (relation != null) {
-      addEntity(Relation.class, relation, true);
+      addEntity(Relation.class, relation);
     }
   }
 
@@ -268,7 +268,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
         System.err.printf("## [%s] Duplicate keyword id %s%n", KEYWORD_FILE, jsonId);
       } else {
         ATLGKeyword keyword = convert(xkeyword);
-        String storedId = addEntity(ATLGKeyword.class, keyword, true);
+        String storedId = addEntity(ATLGKeyword.class, keyword);
         keywordRefMap.put(jsonId, new Reference(ATLGKeyword.class, storedId));
         keywordDocRefMap.put(jsonId, newEntityRef(ATLGKeyword.class, keyword));
       }
@@ -312,7 +312,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
         handleError("[%s] Duplicate person id %s", PERSON_FILE, jsonId);
       } else {
         ATLGPerson person = convert(xperson);
-        String storedId = addEntity(ATLGPerson.class, person, true);
+        String storedId = addEntity(ATLGPerson.class, person);
         personRefMap.put(jsonId, new Reference(ATLGPerson.class, storedId));
         personDocRefMap.put(jsonId, newEntityRef(ATLGPerson.class, person));
       }
@@ -365,7 +365,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
           handleError("[%s] Duplicate wetgeving id %s", file.getName(), jsonId);
         } else {
           ATLGLegislation legislation = convert(wetgeving);
-          String storedId = addEntity(ATLGLegislation.class, legislation, true);
+          String storedId = addEntity(ATLGLegislation.class, legislation);
           Reference legislationRef = new Reference(ATLGLegislation.class, storedId);
           addLegislationRelations(legislationRef, wetgeving);
           refs.add(jsonId);
@@ -455,7 +455,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
           handleError("[%s] Duplicate entry %s", file.getName(), key);
         } else {
           ATLGArchive archive = convert(object);
-          addEntity(ATLGArchive.class, archive, false);
+          addEntity(ATLGArchive.class, archive);
           docRefMap.put(key, newEntityRef(ATLGArchive.class, archive));
           ids.add(archive.getId());
           tokens.increment(archive.getIndexedRefCode());
@@ -625,7 +625,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
           handleError("[%s] Duplicate entry %s", file.getName(), key);
         } else {
           ATLGArchiver archiver = convert(creator);
-          addEntity(ATLGArchiver.class, archiver, false);
+          addEntity(ATLGArchiver.class, archiver);
           docRefMap.put(key, newEntityRef(ATLGArchiver.class, archiver));
           // this looks awfully smart: this creator has created a number of archives
           // what remains is to create a new graph with references converted
@@ -715,7 +715,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
         for (EntityRef archiveRef : newRefs) {
           Reference targetRef = new Reference(ATLGArchive.class, archiveRef.getId());
           Relation relation = new Relation(sourceRef, isCreatorRef, targetRef);
-          addEntity(Relation.class, relation, true);
+          addEntity(Relation.class, relation);
         }
       }
       oldRefs = archiver.getRelatedArchivers();
