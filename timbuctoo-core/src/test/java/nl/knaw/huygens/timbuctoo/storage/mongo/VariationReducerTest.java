@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class VariationReducerTest extends VariationTestBase {
 
   private static TypeRegistry registry;
+  private static MongoObjectMapper mongoObjectMapper;
 
   private static final String TEST_ID = "id0000000001";
   private VariationReducer reducer;
@@ -30,11 +31,12 @@ public class VariationReducerTest extends VariationTestBase {
   @BeforeClass
   public static void setupRegistry() {
     registry = new TypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
+    mongoObjectMapper = new MongoObjectMapper();
   }
 
   @Before
   public void setUp() {
-    reducer = new VariationReducer(registry);
+    reducer = new VariationReducer(registry, mongoObjectMapper);
     mapper = new ObjectMapper();
   }
 
