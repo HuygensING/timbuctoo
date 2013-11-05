@@ -28,9 +28,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
-public class VariationInducerTest {
+public class VariationInducerTest extends VariationTestBase {
 
   private static final String DEFAULT_DOMAIN_ID = "GTD0000000012";
   private static final String TEST_NAME = "test";
@@ -38,7 +37,7 @@ public class VariationInducerTest {
   private static TypeRegistry registry;
   private static MongoObjectMapper mongoMapper;
 
-  private ObjectMapper mapper;
+  ObjectMapper mapper;
   private VariationInducer inducer;
 
   @BeforeClass
@@ -112,24 +111,6 @@ public class VariationInducerTest {
     assertEquals(expectedObject, actual);
   }
 
-  protected ObjectNode createSystemObjectNode(String id, String name, String testValue1, String testValue2) throws IOException, JsonProcessingException {
-    Map<String, Object> map = Maps.newHashMap();
-    addNonNullValueToMap(map, "_id", id);
-    addNonNullValueToMap(map, "testsystementity.name", name);
-    addNonNullValueToMap(map, "testsystementity.testValue1", testValue1);
-    addNonNullValueToMap(map, "testsystementity.testValue2", testValue2);
-    map.put("^rev", 0);
-    map.put("_deleted", false);
-
-    return mapper.valueToTree(map);
-  }
-
-  private void addNonNullValueToMap(Map<String, Object> map, String key, String value) {
-    if (value != null) {
-      map.put(key, value);
-    }
-  }
-
   @Ignore("Should we be able to induce primitive (from the model package) entities?")
   @Test
   public void testInduceDomainEntityPrimitive() {
@@ -160,17 +141,6 @@ public class VariationInducerTest {
     JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item);
 
     assertEquals(expected, actual);
-  }
-
-  protected Map<String, Object> createGeneralTestDocMap(String id, String pid, String generalTestDocValue) {
-    Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.put("_id", id);
-    expectedMap.put("^rev", 0);
-    expectedMap.put("_deleted", false);
-    expectedMap.put("^pid", pid);
-    expectedMap.put("generaltestdoc.generalTestDocValue", generalTestDocValue);
-
-    return expectedMap;
   }
 
   @Test
@@ -432,5 +402,10 @@ public class VariationInducerTest {
   @Test(expected = IllegalArgumentException.class)
   public void testInduceNullType() throws VariationException {
     inducer.induce(null, new ProjectBGeneralTestDoc());
+  }
+
+  @Override
+  protected ObjectMapper getMapper() {
+    return this.mapper;
   }
 }
