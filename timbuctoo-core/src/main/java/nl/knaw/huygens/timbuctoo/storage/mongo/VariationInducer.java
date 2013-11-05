@@ -19,11 +19,9 @@ import com.google.common.collect.Maps;
 import com.mongodb.DBObject;
 
 class VariationInducer extends VariationConverter {
-  private final MongoObjectMapper mongoMapper;
 
   public VariationInducer(TypeRegistry registry, MongoObjectMapper mongoMapper) {
-    super(registry);
-    this.mongoMapper = mongoMapper;
+    super(registry, mongoMapper);
   }
 
   /**

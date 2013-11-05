@@ -2,10 +2,9 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNameGenerator;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
@@ -25,8 +24,8 @@ class VariationReducer extends VariationConverter {
   private static final Logger LOG = LoggerFactory.getLogger(VariationReducer.class);
   private static final String VERSIONS_FIELD = "versions";
 
-  public VariationReducer(TypeRegistry registry) {
-    super(registry);
+  public VariationReducer(TypeRegistry registry, MongoObjectMapper mongoMapper) {
+    super(registry, mongoMapper);
   }
 
   public <T extends Entity> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {
@@ -101,31 +100,29 @@ class VariationReducer extends VariationConverter {
       setFields((Class<T>) type.getSuperclass(), instance, node);
     }
 
-    String typeName = TypeNameGenerator.getInternalName(type);
-    Iterator<String> fieldNames = node.fieldNames();
+    Map<String, String> fieldMap = mongoMapper.getFieldMap(type);
 
-    //Map<String, String> fieldMap = createFieldMap(type);
+    for (String javaFieldName : fieldMap.keySet()) {
 
-    while (fieldNames.hasNext()) {
-      String fieldName = fieldNames.next();
-
-      String fieldNameInType = getFieldNameInType(typeName, fieldName);
+      String dbFieldName = fieldMap.get(javaFieldName);
 
       try {
-        Field field = type.getDeclaredField(fieldNameInType);
-        field.setAccessible(true);
-        field.set(instance, node.get(fieldName).asText());
+        if (node.has(dbFieldName)) {
+          Field field = type.getDeclaredField(javaFieldName);
+          field.setAccessible(true);
+          field.set(instance, node.get(dbFieldName).asText());
+        }
       } catch (SecurityException e) {
-        LOG.error("Field {} of type {} could not be retrieved.", fieldNameInType, type);
+        LOG.error("Field {} of type {} could not be retrieved.", javaFieldName, type);
         LOG.debug("exception", e);
       } catch (NoSuchFieldException e) {
-        LOG.error("Field {} of type {} could not be retrieved.", fieldNameInType, type);
+        LOG.error("Field {} of type {} could not be retrieved.", javaFieldName, type);
         LOG.debug("exception", e);
       } catch (IllegalArgumentException e) {
-        LOG.error("Field {} of type {} received the wrong value.", fieldNameInType, type);
+        LOG.error("Field {} of type {} received the wrong value.", javaFieldName, type);
         LOG.debug("exception", e);
       } catch (IllegalAccessException e) {
-        LOG.error("Field {} of type {} could not be accessed.", fieldNameInType, type);
+        LOG.error("Field {} of type {} could not be accessed.", javaFieldName, type);
         LOG.debug("exception", e);
       }
 
