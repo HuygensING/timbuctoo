@@ -22,7 +22,7 @@ public abstract class Entity {
   private int rev;
   private Change lastChange;
   private Change creation;
-  private boolean _deleted;
+  private boolean deleted;
 
   /**
    * Returns the name to be displayed for identification of this entity.
@@ -74,12 +74,12 @@ public abstract class Entity {
 
   @JsonProperty("^deleted")
   public boolean isDeleted() {
-    return _deleted;
+    return deleted;
   }
 
   @JsonProperty("^deleted")
   public void setDeleted(boolean deleted) {
-    this._deleted = deleted;
+    this.deleted = deleted;
   }
 
 }
