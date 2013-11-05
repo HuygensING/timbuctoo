@@ -59,18 +59,6 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testAddDocumentDomainDocumentInComplete() throws IOException {
-    String id = "TEST000123000123";
-    GeneralTestDoc doc = new GeneralTestDoc(id);
-    Class<GeneralTestDoc> type = GeneralTestDoc.class;
-    when(typeRegistry.getINameForType(type)).thenReturn("generaltestdoc");
-
-    instance.addEntity(type, doc, false);
-
-    verifyAddDocument(type, doc, times(1), never());
-  }
-
-  @Test
   public void testAddDocumentSystemDocument() throws IOException, PersistenceException {
     TestSystemDocument doc = new TestSystemDocument();
     doc.setId("TEST000123000123");
