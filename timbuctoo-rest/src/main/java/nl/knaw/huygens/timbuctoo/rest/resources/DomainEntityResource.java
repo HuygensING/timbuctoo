@@ -46,7 +46,7 @@ import com.google.inject.Inject;
 @Path(Paths.DOMAIN_PREFIX + "/{entityName: [a-zA-Z]+}")
 public class DomainEntityResource {
 
-  private final Logger LOG = LoggerFactory.getLogger(DomainEntityResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DomainEntityResource.class);
 
   private static final String ID_PARAM = "id";
   private static final String ID_PATH = "/{id: [a-zA-Z]{4}\\d+}";
@@ -62,8 +62,8 @@ public class DomainEntityResource {
   public DomainEntityResource(TypeRegistry registry, StorageManager storageManager, Broker broker) {
     this.typeRegistry = registry;
     this.storageManager = storageManager;
-    this.indexProducer = this.createProducer(broker, Broker.INDEX_QUEUE, "DomainEntityResourceIndex");
-    this.persistenceProducer = this.createProducer(broker, Broker.PERSIST_QUEUE, "DomainEntityResourcePersist");
+    this.indexProducer = createProducer(broker, Broker.INDEX_QUEUE, "DomainEntityResourceIndex");
+    this.persistenceProducer = createProducer(broker, Broker.PERSIST_QUEUE, "DomainEntityResourcePersist");
   }
 
   // --- API -----------------------------------------------------------
@@ -96,10 +96,7 @@ public class DomainEntityResource {
     }
 
     String id = storageManager.addEntity((Class<T>) type, (T) input);
-
-    String internalName = typeRegistry.getINameForType(type);
-    persistObject(type, id, internalName);
-
+    persistObject(type, id);
     sendIndexMessage(ActionType.ADD, id, type);
 
     String baseUri = CharMatcher.is('/').trimTrailingFrom(uriInfo.getBaseUri().toString());
@@ -111,19 +108,18 @@ public class DomainEntityResource {
     try {
       indexProducer.send(action, type, id);
     } catch (JMSException e) {
-      // Cannot use the error method with the var-arg, because ActiveMQ is forcing it's own slf4j-dependency.
-      LOG.error("Error while sending index message {} - {} - {}. \n{}", new Object[] { action, type, id, e.getMessage() });
+      LOG.error("Error while sending index message {} - {} - {}. \n{}", action, type, id, e.getMessage());
       LOG.debug("Exception", e);
     }
   }
 
-  protected void persistObject(Class<? extends DomainEntity> type, String id, String internalTypeName) {
+  protected void persistObject(Class<? extends DomainEntity> type, String id) {
     ActionType action = ActionType.ADD;
     try {
       persistenceProducer.send(action, type, id);
     } catch (JMSException e) {
       // Cannot use the error method with the var-arg, because ActiveMQ is forcing it's own slf4j-dependency.
-      LOG.error("Error while sending persistence message {} - {} - {}. \n{}", new Object[] { action, type, id, e.getMessage() });
+      LOG.error("Error while sending persistence message {} - {} - {}. \n{}", action, type, id, e.getMessage());
       LOG.debug("Exception", e);
     }
   }
@@ -164,10 +160,8 @@ public class DomainEntityResource {
       throw new WebApplicationException(Status.NOT_FOUND);
     }
 
-    String internalName = typeRegistry.getINameForType(type);
-    persistObject(type, id, internalName);
+    persistObject(type, id);
     sendIndexMessage(ActionType.MOD, id, type);
-
   }
 
   @SuppressWarnings("unchecked")
@@ -184,8 +178,7 @@ public class DomainEntityResource {
     checkWritable(typedDoc, Status.FORBIDDEN);
     storageManager.removeEntity((Class<T>) type, (T) typedDoc);
 
-    String internalName = typeRegistry.getINameForType(type);
-    persistObject(type, id, internalName);
+    persistObject(type, id);
     sendIndexMessage(ActionType.DEL, id, type);
 
     return Response.status(Status.NO_CONTENT).build();
