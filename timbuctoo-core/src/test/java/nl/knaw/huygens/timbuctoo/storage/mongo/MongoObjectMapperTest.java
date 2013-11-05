@@ -5,7 +5,10 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.MongoObjectMapperEntity;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -117,6 +120,59 @@ public class MongoObjectMapperTest {
   @Test(expected = IllegalArgumentException.class)
   public void testMapObjectObjectNull() {
     instance.mapObject(TYPE, null);
+  }
+
+  @Test
+  public void testGetFieldMap() {
+    Map<String, String> expected = Maps.newHashMap();
+    expected.put("primitiveTestCollection", "mongoobjectmapperentity.primitiveTestCollection");
+    expected.put("nonPrimitiveTestCollection", "mongoobjectmapperentity.nonPrimitiveTestCollection");
+    expected.put("name", "mongoobjectmapperentity.name");
+    expected.put("testValue1", "mongoobjectmapperentity.testValue1");
+    expected.put("testValue2", "mongoobjectmapperentity.testValue2");
+    expected.put("annotatedProperty", "mongoobjectmapperentity.propAnnotated");
+    expected.put("propWithAnnotatedAccessors", "mongoobjectmapperentity.pwaa");
+
+    Map<String, String> actual = instance.getFieldMap(MongoObjectMapperEntity.class);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testGetFieldMapDomainEntity() {
+    Map<String, String> expected = Maps.newHashMap();
+    expected.put("pid", "^pid");
+    expected.put("relations", "@relations");
+    expected.put("variations", "@variations");
+    expected.put("currentVariation", "!currentVariation");
+    expected.put("roles", "roles");
+
+    Map<String, String> actual = instance.getFieldMap(DomainEntity.class);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testGetFieldMapSystemEntity() {
+    Map<String, String> expected = Maps.newHashMap();
+
+    Map<String, String> actual = instance.getFieldMap(SystemEntity.class);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testGetFieldMapEntity() {
+    Map<String, String> expected = Maps.newHashMap();
+    expected.put("id", "_id");
+    expected.put("rev", "^rev");
+    expected.put("deleted", "^deleted");
+    expected.put("creation", "^creation");
+    expected.put("lastChange", "^lastChange");
+
+    Map<String, String> actual = instance.getFieldMap(Entity.class);
+
+    assertEquals(expected, actual);
   }
 
   private MongoObjectMapperEntity createMongoObjectMapperEntity(String name, String testValue1, String testValue2, String annotatedProperty, String propWithAnnotatedAccessors) {
