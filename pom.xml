@@ -165,7 +165,15 @@
       <artifactId>jul-to-slf4j</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
+
     <!-- ## Test dependencies ## -->
+    <!-- Hamcrest library for easier string comparison -->
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <version>${hamcrest-library.version}</version>
+      <scope>test</scope>
+    </dependency>
 
     <!-- JUnit test framework -->
     <dependency>
@@ -200,15 +208,8 @@
       <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
-
-    <!-- Hamcrest library for easier string comparison -->
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
-      <version>${hamcrest-library.version}</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
+  <!-- ## End of test dependencies ## -->
 
   <build>
     <plugins>
