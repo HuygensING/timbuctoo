@@ -29,6 +29,7 @@ import com.google.inject.Singleton;
 public class MongoObjectMapper {
   private static final Class<JsonProperty> ANNOTATION_TO_RETRIEVE = JsonProperty.class;
   private static final String GET_ACCESSOR = "get";
+  private static final String IS_ACCESSOR = "is"; //get accesor for booleans.
   private static final Logger LOG = LoggerFactory.getLogger(MongoObjectMapper.class);
 
   @Inject
@@ -50,7 +51,7 @@ public class MongoObjectMapper {
     return map;
   }
 
-  protected <T> Map<String, Object> mapFields(Class<T> type, T item) {
+  private <T> Map<String, Object> mapFields(Class<T> type, T item) {
     Map<String, Object> objectMap = Maps.<String, Object> newHashMap();
     Field[] fields = type.getDeclaredFields();
 
@@ -79,6 +80,20 @@ public class MongoObjectMapper {
     return objectMap;
   }
 
+  /**
+   * Generates a field map with for the {@code type} with object fields as keys and database fields as values.
+   * @param type the type to create the map for.
+   * @return the field map.
+   */
+  public Map<String, String> getFieldMap(Class<?> type) {
+    Map<String, String> map = Maps.newHashMap();
+    for (Field field : type.getDeclaredFields()) {
+      map.put(field.getName(), getFieldName(type, field));
+    }
+
+    return map;
+  }
+
   private boolean isHumanReadable(Class<?> type) {
     return type.isPrimitive() || isWrapperClass(type);
   }
@@ -102,7 +117,7 @@ public class MongoObjectMapper {
       return formatFieldName(type, annotation.value());
     }
 
-    Method method = getMethodOfField(type, field.getName());
+    Method method = getMethodOfField(type, field);
 
     if (method != null && method.getAnnotation(ANNOTATION_TO_RETRIEVE) != null) {
       return formatFieldName(type, method.getAnnotation(ANNOTATION_TO_RETRIEVE).value());
@@ -117,9 +132,9 @@ public class MongoObjectMapper {
     return TypeNameGenerator.getInternalName(type) + "." + fieldName;
   }
 
-  private Method getMethodOfField(Class<?> type, String fieldName) {
+  private Method getMethodOfField(Class<?> type, Field field) {
     Method method = null;
-    String methodName = getMethodName(fieldName, MongoObjectMapper.GET_ACCESSOR);
+    String methodName = getMethodName(field);
 
     for (Method m : type.getMethods()) {
       if (m.getName().equals(methodName)) {
@@ -131,11 +146,15 @@ public class MongoObjectMapper {
     return method;
   }
 
-  private String getMethodName(String fieldName, String accessor) {
-    char[] fieldNameChars = fieldName.toCharArray();
+  private String getMethodName(Field field) {
+    char[] fieldNameChars = field.getName().toCharArray();
 
     fieldNameChars[0] = Character.toUpperCase(fieldNameChars[0]);
 
-    return accessor.concat(String.valueOf(fieldNameChars));
+    if (field.getType() == boolean.class || field.getType() == Boolean.class) {
+      return IS_ACCESSOR.concat(String.valueOf(fieldNameChars));
+    }
+
+    return GET_ACCESSOR.concat(String.valueOf(fieldNameChars));
   }
 }
