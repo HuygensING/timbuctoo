@@ -1,13 +1,13 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNameGenerator;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Reference;
 
 import org.mongojack.internal.stream.JacksonDBObject;
 import org.slf4j.Logger;
@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mongodb.DBObject;
@@ -30,7 +29,7 @@ class VariationReducer extends VariationConverter {
     super(registry);
   }
 
-  public <T extends DomainEntity> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {
+  public <T extends Entity> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {
     if (obj == null) {
       return null;
     }
@@ -50,7 +49,7 @@ class VariationReducer extends VariationConverter {
     return changes;
   }
 
-  public <T extends DomainEntity> T reduceRevision(Class<T> type, DBObject obj) throws IOException {
+  public <T extends Entity> T reduceRevision(Class<T> type, DBObject obj) throws IOException {
     if (obj == null) {
       return null;
     }
@@ -62,181 +61,80 @@ class VariationReducer extends VariationConverter {
     return reduce(type, objectToReduce);
   }
 
-  public <T extends DomainEntity> T reduceDBObject(Class<T> cls, DBObject obj) throws IOException {
-    return reduceDBObject(obj, cls, null);
+  public <T extends Entity> T reduceDBObject(Class<T> type, DBObject obj) throws IOException {
+    return reduceDBObject(obj, type, null);
   }
 
-  public <T extends DomainEntity> T reduceDBObject(DBObject obj, Class<T> cls, String variation) throws IOException {
+  public <T extends Entity> T reduceDBObject(DBObject obj, Class<T> type, String variation) throws IOException {
     if (obj == null) {
       return null;
     }
     JsonNode tree = convertToTree(obj);
-    return reduce(cls, tree, variation);
+    return reduce(type, tree, variation);
   }
 
-  public <T extends DomainEntity> T reduce(Class<T> cls, JsonNode node) throws VariationException, JsonProcessingException {
-    return reduce(cls, node, null);
+  public <T extends Entity> T reduce(Class<T> type, JsonNode node) throws VariationException, JsonProcessingException {
+    return reduce(type, node, null);
   }
 
-  public <T extends DomainEntity> T reduce(Class<T> cls, JsonNode node, String requestedVariation) throws VariationException, JsonProcessingException {
-    final String classVariation = getPackageName(cls);
-    String idPrefix = classVariation + "-";
-    List<JsonNode> specificData = Lists.newArrayListWithExpectedSize(1);
-    List<String> types = getTypes(node);
-    String requestedClassId = typeToVariationName(cls);
+  public <T extends Entity> T reduce(Class<T> type, JsonNode node, String requestedVariation) throws VariationException, JsonProcessingException {
+    T returnObject = null;
+    try {
+      returnObject = type.newInstance();
 
-    String variationToRetrieve = null;
-    JsonNode defaultVariationNode = null;
+      setFields(type, returnObject, node);
 
-    if (node.get(requestedClassId) != null) {
-      defaultVariationNode = node.get(requestedClassId).get(DEFAULT_VARIATION);
-    }
-
-    variationToRetrieve = getVariationToRetrieve(classVariation, defaultVariationNode, requestedVariation, types);
-
-    ObjectNode rv = mapper.createObjectNode();
-    for (String name : getVariationNamesForType(cls)) {
-      JsonNode data = node.get(name);
-      if (data != null) {
-        if (name.startsWith(idPrefix)) {
-          specificData.add(data);
-        } else {
-          processCommonData(variationToRetrieve, data, rv);
-        }
-      }
-    }
-    for (JsonNode d : specificData) {
-      if (d.isObject()) {
-        rv.setAll((ObjectNode) d);
-      } else {
-        throw new VariationException("Non-object variation data; this should never happen.");
-      }
-    }
-    for (Entry<String, JsonNode> field : ImmutableList.copyOf(node.fields())) {
-      String key = field.getKey();
-      if (key.startsWith("^") || key.startsWith("_")) {
-        rv.put(key, field.getValue());
-      }
-    }
-    //The @JsonTypeInfo on entity expects the property @class everytime, the class is deserialized. 
-    rv.put("@class", cls.getName());
-
-    T returnObject = mapper.treeToValue(rv, cls);
-    returnObject.setVariations(getVariations(types, returnObject.getId()));
-    if (defaultVariationNode != null) {
-      returnObject.setCurrentVariation(variationToRetrieve);
+    } catch (InstantiationException e) {
+      LOG.error("Could not initialize object of type {} ", type);
+      LOG.debug("exception", e);
+    } catch (IllegalAccessException e) {
+      LOG.error("Could not initialize object of type {} ", type);
+      LOG.debug("exception", e);
     }
 
     return returnObject;
   }
 
-  /**
-   * Create the references to all the possible variations.
-   */
-  private List<Reference> getVariations(List<String> typeStrings, String id) throws VariationException {
-    List<Reference> references = Lists.<Reference> newLinkedList();
-    for (String typeString : typeStrings) {
-      Class<? extends Entity> type = variationNameToType(typeString);
-      if (typeString.contains("-")) {
-        // project specific classes don't have any variation
-        references.add(new Reference(type, id));
-      } else if (type != null) {
-        references.add(new Reference(type, id));
-      } else {
-        LOG.error("Unknown variation {}", typeString);
-        throw new VariationException("Unknown variation " + typeString);
-      }
+  @SuppressWarnings("unchecked")
+  public <T extends Entity> void setFields(Class<T> type, T instance, JsonNode node) {
+    if (type != Entity.class) {
+      setFields((Class<T>) type.getSuperclass(), instance, node);
     }
-    return references;
+
+    String typeName = TypeNameGenerator.getInternalName(type);
+    Iterator<String> fieldNames = node.fieldNames();
+
+    //Map<String, String> fieldMap = createFieldMap(type);
+
+    while (fieldNames.hasNext()) {
+      String fieldName = fieldNames.next();
+
+      String fieldNameInType = getFieldNameInType(typeName, fieldName);
+
+      try {
+        Field field = type.getDeclaredField(fieldNameInType);
+        field.setAccessible(true);
+        field.set(instance, node.get(fieldName).asText());
+      } catch (SecurityException e) {
+        LOG.error("Field {} of type {} could not be retrieved.", fieldNameInType, type);
+        LOG.debug("exception", e);
+      } catch (NoSuchFieldException e) {
+        LOG.error("Field {} of type {} could not be retrieved.", fieldNameInType, type);
+        LOG.debug("exception", e);
+      } catch (IllegalArgumentException e) {
+        LOG.error("Field {} of type {} received the wrong value.", fieldNameInType, type);
+        LOG.debug("exception", e);
+      } catch (IllegalAccessException e) {
+        LOG.error("Field {} of type {} could not be accessed.", fieldNameInType, type);
+        LOG.debug("exception", e);
+      }
+
+    }
+
   }
 
-  private String getVariationToRetrieve(String packageName, JsonNode defaultVariationNode, String requestedVariation, List<String> variations) throws VariationException {
-    String variationToGet = packageName;
-    if (BASE_MODEL_PACKAGE.equals(packageName)) {
-      //if the package is equal to the base package, different variations may be available.
-      if (requestedVariation != null && isRequestedVariationAvailable(requestedVariation, variations)) {
-        variationToGet = requestedVariation;
-      } else {
-        // if the requested variation is not available return the default variation 
-        variationToGet = defaultVariationNode != null ? defaultVariationNode.asText() : packageName;
-      }
-    } else if (requestedVariation != null && !packageName.contains(requestedVariation)) {
-      // The requested type is project specific and only available in the projects variation.
-      throw new VariationException("Variation does not exist for requested type.");
-    }
-    return variationToGet;
-  }
-
-  private boolean isRequestedVariationAvailable(String requestedVariation, List<String> projectVariations) {
-    for (String variation : projectVariations) {
-      if (variation.contains(requestedVariation)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private List<String> getTypes(JsonNode node) {
-    List<String> variations = Lists.newArrayList();
-    for (Entry<String, JsonNode> field : ImmutableList.copyOf(node.fields())) {
-      if (field.getValue() instanceof ObjectNode) {
-        variations.add(field.getKey());
-      }
-    }
-    return variations;
-  }
-
-  private void processCommonData(final String variationName, JsonNode commonData, ObjectNode rv) throws VariationException {
-    for (Entry<String, JsonNode> field : ImmutableList.copyOf(commonData.fields())) {
-      String key = field.getKey();
-      JsonNode value = field.getValue();
-      // Loop through values:
-      if (value.isArray()) {
-        ArrayNode ary = (ArrayNode) value;
-        fetchAndAssignMatchingValue(variationName, rv, key, ary);
-      } else if (key.startsWith("!")) {
-        // Ignore properties starting with a "!"
-      } else {
-        throw new VariationException("Unknown variation value for key: \"" + key + "\"");
-      }
-    }
-  }
-
-  private void fetchAndAssignMatchingValue(final String variationName, ObjectNode rv, String k, ArrayNode ary) throws VariationException {
-    int i = 0;
-    for (JsonNode elem : ary) {
-      if (elem.isObject()) {
-        // Check the list of agreeing VREs to see if we want this one:
-        JsonNode agreedValueNode = elem.get(AGREED);
-        if (agreedValueNode != null && agreedValueNode.isArray()) {
-          ArrayNode agreedValues = (ArrayNode) agreedValueNode;
-          if (arrayContains(agreedValues, variationName)) {
-            rv.put(k, elem.get(VALUE));
-            return;
-          }
-        } else {
-          throw new VariationException("Unknown variation 'agreed' object for key " + k + " and index " + i);
-        }
-      } else {
-        throw new VariationException("Unknown variation array element for key " + k + " and index " + i);
-      }
-      i++;
-    }
-    // The loop will return as we found a value that agrees;
-    // if we get here that means no such value exists, so
-    // we will put null:
-    rv.putNull(k);
-  }
-
-  private boolean arrayContains(ArrayNode stringAry, String stringEl) {
-    // I assume there is a better way to do this but I have not found it:
-    int i = stringAry.size();
-    while (i-- > 0) {
-      if (stringAry.get(i).asText().equals(stringEl)) {
-        return true;
-      }
-    }
-    return false;
+  protected String getFieldNameInType(String typeName, String fieldName) {
+    return fieldName.startsWith(typeName + ".") ? fieldName.replace(typeName + ".", "") : fieldName;
   }
 
   @SuppressWarnings("unchecked")
@@ -254,11 +152,11 @@ class VariationReducer extends VariationConverter {
 
   /*
    * This method generates a list of all the types of a type hierarchy, that are found in the DBObject.
-   * Example1: if cls is Person.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
-   * Example2:  if cls is Scientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
-   * Example3:  if cls is ProjectAScientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
+   * Example1: if type is Person.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
+   * Example2:  if type is Scientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
+   * Example3:  if type is ProjectAScientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
    */
-  public <T extends DomainEntity> List<T> getAllForDBObject(DBObject item, Class<T> cls) throws IOException {
+  public <T extends Entity> List<T> getAllForDBObject(DBObject item, Class<T> type) throws IOException {
     JsonNode node = convertToTree(item);
     List<T> rv = Lists.newArrayList();
     for (String name : ImmutableList.copyOf(node.fieldNames())) {
