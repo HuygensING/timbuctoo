@@ -38,8 +38,9 @@ public class ActiveMQProducer implements Producer {
     LOG.info("Created '{}'", name);
   }
 
+  // ActiveMQ message producers are not thread-safe
   @Override
-  public void send(ActionType action, Class<? extends Entity> type, String id) throws JMSException {
+  public synchronized void send(ActionType action, Class<? extends Entity> type, String id) throws JMSException {
     Message message = session.createMessage();
     message.setStringProperty(Broker.PROP_ACTION, action.getStringRepresentation());
     message.setStringProperty(Broker.PROP_DOC_TYPE, typeRegistry.getINameForType(type));

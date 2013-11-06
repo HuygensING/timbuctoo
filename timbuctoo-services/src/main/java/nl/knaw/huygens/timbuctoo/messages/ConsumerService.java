@@ -15,7 +15,7 @@ public abstract class ConsumerService implements Runnable {
   private volatile boolean running;
 
   public ConsumerService(Broker broker, String queue, String consumerName) throws JMSException {
-    this.consumer = createConsumer(broker, queue, consumerName);
+    consumer = createConsumer(broker, queue, consumerName);
   }
 
   public void stop() {
@@ -42,9 +42,9 @@ public abstract class ConsumerService implements Runnable {
 
   protected Consumer createConsumer(Broker broker, String queueName, String consumerName) throws JMSException {
     try {
-      return broker.newConsumer(queueName, consumerName);
+      return broker.getConsumer(consumerName, queueName);
     } catch (JMSException e) {
-      getLogger().error("Creating a consumer with queue {} and name {} went wrong.", new Object[] { Broker.PERSIST_QUEUE, "PersistenceService" });
+      getLogger().error("Failed to create consumer {} for queue {}", consumerName, queueName);
       getLogger().debug("Exception thrown while creating a new consumer.", e);
       throw e;
     }
