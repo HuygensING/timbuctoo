@@ -607,11 +607,12 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   protected void setUpBroker() throws JMSException {
     Broker broker = injector.getInstance(Broker.class);
-    when(broker.newProducer(Broker.INDEX_QUEUE, "DomainEntityResourceIndex")).thenReturn(getProducer(INDEX_PRODUCER));
-    when(broker.newProducer(Broker.PERSIST_QUEUE, "DomainEntityResourcePersist")).thenReturn(getProducer(PERSISTENCE_PRODUCER));
+    when(broker.getProducer(DomainEntityResource.INDEX_MSG_PRODUCER, Broker.INDEX_QUEUE)).thenReturn(getProducer(INDEX_PRODUCER));
+    when(broker.getProducer(DomainEntityResource.PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE)).thenReturn(getProducer(PERSISTENCE_PRODUCER));
   }
 
   protected Producer getProducer(String name) {
     return injector.getInstance(Key.get(Producer.class, Names.named(name)));
   }
+
 }

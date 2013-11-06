@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.messages;
 
-import java.util.List;
+import java.util.Map;
 
 import javax.jms.JMSException;
 
@@ -16,7 +16,7 @@ import org.apache.activemq.usage.TempUsage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -32,9 +32,8 @@ public class ActiveMQBroker implements Broker {
   private final TypeRegistry typeRegistry;
 
   private BrokerService brokerService;
-
-  private List<Producer> producers;
-  private List<Consumer> consumers;
+  private Map<String, Producer> producers;
+  private Map<String, Consumer> consumers;
 
   @Inject
   //TODO factor out the config.
@@ -44,24 +43,40 @@ public class ActiveMQBroker implements Broker {
     createBrokerService(config);
     this.typeRegistry = typeRegistry;
 
-    producers = Lists.newLinkedList();
-    consumers = Lists.newLinkedList();
+    producers = Maps.newTreeMap();
+    consumers = Maps.newTreeMap();
   }
 
   @Override
-  public Producer newProducer(String queue, String name) throws JMSException {
-    ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(url);
-    Producer producer = new ActiveMQProducer(factory, queue, name, typeRegistry);
-    producers.add(producer);
+  public Producer getProducer(String name, String queue) throws JMSException {
+    Producer producer = producers.get(name);
+    if (producer == null) {
+      producer = newProducer(name, queue);
+      producers.put(name, producer);
+      LOG.info("Number of producers: {}", producers.size());
+    }
     return producer;
   }
 
-  @Override
-  public Consumer newConsumer(String queue, String name) throws JMSException {
+  private Producer newProducer(String name, String queue) throws JMSException {
     ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(url);
-    Consumer consumer = new ActiveMQConsumer(factory, queue, name, typeRegistry);
-    consumers.add(consumer);
+    return new ActiveMQProducer(factory, queue, name, typeRegistry);
+  }
+
+  @Override
+  public Consumer getConsumer(String name, String queue) throws JMSException {
+    Consumer consumer = consumers.get(name);
+    if (consumer == null) {
+      consumer = newConsumer(name, queue);
+      consumers.put(name, consumer);
+      LOG.info("Number of consumers: {}", consumers.size());
+    }
     return consumer;
+  }
+
+  private Consumer newConsumer(String name, String queue) throws JMSException {
+    ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(url);
+    return new ActiveMQConsumer(factory, queue, name, typeRegistry);
   }
 
   @Override
@@ -113,10 +128,8 @@ public class ActiveMQBroker implements Broker {
   @Override
   public void close() {
     if (brokerService != null) {
-      LOG.info("Closing");
-
-      closeConsumers();
       closeProducers();
+      closeConsumers();
 
       try {
         brokerService.stop();
@@ -129,20 +142,20 @@ public class ActiveMQBroker implements Broker {
     }
   }
 
-  private void closeConsumers() {
-    LOG.info("Closing consumers");
-    for (Consumer consumer : consumers) {
-      consumer.closeQuietly();
-    }
-    consumers.clear();
-  }
-
   private void closeProducers() {
     LOG.info("Closing producers");
-    for (Producer producer : producers) {
+    for (Producer producer : producers.values()) {
       producer.closeQuietly();
     }
     producers.clear();
+  }
+
+  private void closeConsumers() {
+    LOG.info("Closing consumers");
+    for (Consumer consumer : consumers.values()) {
+      consumer.closeQuietly();
+    }
+    consumers.clear();
   }
 
 }
