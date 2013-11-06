@@ -20,7 +20,7 @@ import javax.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.mongo.model.TestSystemDocument;
+import nl.knaw.huygens.timbuctoo.storage.mongo.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 
@@ -60,14 +60,10 @@ public class StorageManagerTest {
 
   @Test
   public void testAddDocumentSystemDocument() throws IOException, PersistenceException {
-    TestSystemDocument doc = new TestSystemDocument();
-    doc.setId("TEST000123000123");
+    TestSystemEntity entity = new TestSystemEntity("TEST000123000123");
 
-    Class<TestSystemDocument> type = TestSystemDocument.class;
-
-    instance.addEntity(type, doc);
-
-    verifyAddDocument(type, doc, times(1), never());
+    instance.addEntity(TestSystemEntity.class, entity);
+    verifyAddDocument(TestSystemEntity.class, entity, times(1), never());
   }
 
   @Test(expected = IOException.class)
@@ -216,14 +212,10 @@ public class StorageManagerTest {
 
   @Test
   public void testModifyDocumentSystemDocumentModified() throws IOException {
-    String id = "TSD0000000001";
-    TestSystemDocument expectedDoc = new TestSystemDocument();
-    expectedDoc.setId(id);
+    TestSystemEntity entity = new TestSystemEntity("TSD0000000001");
 
-    Class<TestSystemDocument> type = TestSystemDocument.class;
-
-    instance.modifyEntity(type, expectedDoc);
-    verifyModifyDocument(type, expectedDoc, times(1), never());
+    instance.modifyEntity(TestSystemEntity.class, entity);
+    verifyModifyDocument(TestSystemEntity.class, entity, times(1), never());
   }
 
   @Test(expected = IOException.class)
@@ -274,15 +266,11 @@ public class StorageManagerTest {
 
   @Test
   public void testRemoveDocumentSystemDocumentRemoved() throws IOException {
-    TestSystemDocument inputDoc = new TestSystemDocument();
-    String id = "TCD0000000001";
-    inputDoc.setId(id);
-    inputDoc.setDeleted(true);
+    TestSystemEntity entity = new TestSystemEntity("TCD0000000001");
+    entity.setDeleted(true);
 
-    Class<TestSystemDocument> type = TestSystemDocument.class;
-
-    instance.removeEntity(type, inputDoc);
-    verify(storage, times(1)).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
+    instance.removeEntity(TestSystemEntity.class, entity);
+    verify(storage, times(1)).deleteItem(TestSystemEntity.class, entity.getId(), entity.getLastChange());
   }
 
   @Test(expected = IOException.class)

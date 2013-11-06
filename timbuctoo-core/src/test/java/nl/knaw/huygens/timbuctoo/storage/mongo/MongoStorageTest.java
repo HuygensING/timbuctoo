@@ -14,7 +14,7 @@ import java.util.Date;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.storage.mongo.model.TestSystemDocument;
+import nl.knaw.huygens.timbuctoo.storage.mongo.model.TestSystemEntity;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   private static final String DEFAULT_ID = "TSTD000000000001";
 
-  private static final Class<TestSystemDocument> TYPE = TestSystemDocument.class;
+  private static final Class<TestSystemEntity> TYPE = TestSystemEntity.class;
 
   private static TypeRegistry registry;
 
@@ -56,7 +56,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   @Test
   public void testFindItemOneSearchProperty() throws IOException {
     String name = "doc1";
-    TestSystemDocument example = new TestSystemDocument();
+    TestSystemEntity example = new TestSystemEntity();
     example.setName(name);
 
     Map<String, Object> testSystemDocumentMap = createDefaultMap(0, DEFAULT_ID);
@@ -73,7 +73,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testFindItemMultipleSearchProperties() throws IOException {
-    TestSystemDocument example = new TestSystemDocument();
+    TestSystemEntity example = new TestSystemEntity();
     String name = "doc2";
     example.setName(name);
     String testValue1 = "testValue";
@@ -95,7 +95,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testFindItemMultipleFound() throws IOException {
-    TestSystemDocument example = new TestSystemDocument();
+    TestSystemEntity example = new TestSystemEntity();
     String testValue = "testValue";
     example.setTestValue1(testValue);
 
@@ -103,7 +103,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     String name1 = "doc1";
     testSystemDocumentMap1.put("name", name1);
     testSystemDocumentMap1.put("testValue1", testValue);
-    TestSystemDocument doc1 = new TestSystemDocument();
+    TestSystemEntity doc1 = new TestSystemEntity();
     doc1.setName(name1);
     doc1.setTestValue1(testValue);
     DBObject dbObject1 = createDBObject(doc1, testSystemDocumentMap1);
@@ -112,7 +112,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     String name2 = "doc2";
     testSystemDocumentMap1.put("name", name2);
     testSystemDocumentMap1.put("testValue1", testValue);
-    TestSystemDocument doc2 = new TestSystemDocument();
+    TestSystemEntity doc2 = new TestSystemEntity();
     doc2.setName(name2);
     doc2.setTestValue1(testValue);
     DBObject dbObject2 = createDBObject(testSystemDocumentMap2);
@@ -124,7 +124,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = new BasicDBObject("testValue1", testValue);
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
-    TestSystemDocument actual = storage.findItem(TYPE, example);
+    TestSystemEntity actual = storage.findItem(TYPE, example);
 
     assertEquals(name1, actual.getName());
     assertEquals(testValue, actual.getTestValue1());
@@ -132,7 +132,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testFindItemNothingFound() throws IOException {
-    TestSystemDocument example = new TestSystemDocument();
+    TestSystemEntity example = new TestSystemEntity();
     String name = "nonExisting";
     example.setName(name);
 
@@ -146,7 +146,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testFindItemUnknownCollection() throws IOException {
-    TestSystemDocument example = new TestSystemDocument();
+    TestSystemEntity example = new TestSystemEntity();
     example.setName("nonExisting");
 
     DBCursor cursor = createCursorWithoutValues();
@@ -176,20 +176,18 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
-    storage.findItemByKey(TestSystemDocument.class, key, value);
+    storage.findItemByKey(TestSystemEntity.class, key, value);
 
     verify(anyCollection).find(query, null);
   }
 
   @Test
   public void testUpdateItem() throws IOException {
-    TestSystemDocument newDoc = new TestSystemDocument();
-    newDoc.setId(DEFAULT_ID);
+    TestSystemEntity newDoc = new TestSystemEntity(DEFAULT_ID);
     String testValue1 = "test";
     newDoc.setTestValue1(testValue1);
 
-    TestSystemDocument oldDoc = new TestSystemDocument();
-    oldDoc.setId(DEFAULT_ID);
+    TestSystemEntity oldDoc = new TestSystemEntity(DEFAULT_ID);
     oldDoc.setTestValue1("testValue");
 
     Map<String, Object> oldTestSystemDocumentMap = createDefaultMap(0, DEFAULT_ID);
@@ -228,8 +226,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test(expected = IOException.class)
   public void testUpdateItemNonExistent() throws IOException {
-    TestSystemDocument expected = new TestSystemDocument();
-    expected.setId(DEFAULT_ID);
+    TestSystemEntity expected = new TestSystemEntity(DEFAULT_ID);
     expected.setTestValue1("test");
 
     DBCursor cursor = createCursorWithoutValues();
@@ -242,13 +239,11 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test(expected = IOException.class)
   public void testUpdateItemItemChanged() throws IOException {
-    TestSystemDocument newDoc = new TestSystemDocument();
-    newDoc.setId(DEFAULT_ID);
+    TestSystemEntity newDoc = new TestSystemEntity(DEFAULT_ID);
     String testValue1 = "test";
     newDoc.setTestValue1(testValue1);
 
-    TestSystemDocument oldDoc = new TestSystemDocument();
-    oldDoc.setId(DEFAULT_ID);
+    TestSystemEntity oldDoc = new TestSystemEntity(DEFAULT_ID);
     oldDoc.setTestValue1("testValue");
 
     Map<String, Object> oldTestSystemDocumentMap = createDefaultMap(0, DEFAULT_ID);
@@ -272,7 +267,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testAddItem() throws IOException {
-    TestSystemDocument doc = new TestSystemDocument();
+    TestSystemEntity doc = new TestSystemEntity();
     doc.setTestValue1("test");
 
     storage.addItem(TYPE, doc);
@@ -282,9 +277,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testAddItemWithId() throws IOException {
-    TestSystemDocument doc = new TestSystemDocument();
-    String id = DEFAULT_ID;
-    doc.setId(id);
+    TestSystemEntity doc = new TestSystemEntity(DEFAULT_ID);
     doc.setTestValue1("test");
 
     storage.addItem(TYPE, doc);
@@ -294,7 +287,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test(expected = MongoException.class)
   public void testMongoException() throws IOException {
-    TestSystemDocument doc = new TestSystemDocument();
+    TestSystemEntity doc = new TestSystemEntity();
     String id = DEFAULT_ID;
     doc.setId(id);
     doc.setTestValue1("test");
@@ -306,8 +299,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetItem() throws IOException {
-    TestSystemDocument expected = new TestSystemDocument();
-    expected.setId(DEFAULT_ID);
+    TestSystemEntity expected = new TestSystemEntity(DEFAULT_ID);
     expected.setTestValue1("test");
 
     Map<String, Object> testSystemDocumentMap = createDefaultMap(0, DEFAULT_ID);
@@ -368,11 +360,10 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testDeleteItem() throws IOException {
-    TestSystemDocument docToDelete = new TestSystemDocument();
-    docToDelete.setId(DEFAULT_ID);
+    TestSystemEntity docToDelete = new TestSystemEntity(DEFAULT_ID);
     docToDelete.setName("test");
 
-    storage.deleteItem(TestSystemDocument.class, DEFAULT_ID, docToDelete.getLastChange());
+    storage.deleteItem(TestSystemEntity.class, DEFAULT_ID, docToDelete.getLastChange());
 
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
     DBObject updateDeleted = new BasicDBObject("^deleted", true);
@@ -386,11 +377,10 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testDeleteItemNotFound() throws IOException {
-    TestSystemDocument docToDelete = new TestSystemDocument();
-    docToDelete.setId(DEFAULT_ID);
+    TestSystemEntity docToDelete = new TestSystemEntity(DEFAULT_ID);
     docToDelete.setName("test");
 
-    storage.deleteItem(TestSystemDocument.class, DEFAULT_ID, docToDelete.getLastChange());
+    storage.deleteItem(TestSystemEntity.class, DEFAULT_ID, docToDelete.getLastChange());
 
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
     DBObject updateDeleted = new BasicDBObject("^deleted", true);
@@ -404,8 +394,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test(expected = MongoException.class)
   public void testDeleteItemMongoException() throws IOException {
-    TestSystemDocument docToDelete = new TestSystemDocument();
-    docToDelete.setId(DEFAULT_ID);
+    TestSystemEntity docToDelete = new TestSystemEntity(DEFAULT_ID);
     docToDelete.setName("test");
 
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
@@ -417,7 +406,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     doThrow(MongoException.class).when(anyCollection).findAndModify(query, null, null, false, update, false, false);
 
-    storage.deleteItem(TestSystemDocument.class, DEFAULT_ID, docToDelete.getLastChange());
+    storage.deleteItem(TestSystemEntity.class, DEFAULT_ID, docToDelete.getLastChange());
   }
 
   @Test
@@ -427,7 +416,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     when(anyCollection.remove(new BasicDBObject())).thenReturn(writeResult);
 
-    storage.removeAll(TestSystemDocument.class);
+    storage.removeAll(TestSystemEntity.class);
   }
 
   @Test
@@ -441,7 +430,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = new BasicDBObject("date", new BasicDBObject("$lt", dateValue));
     when(anyCollection.remove(query)).thenReturn(writeResult);
 
-    storage.removeByDate(TestSystemDocument.class, "date", dateValue);
+    storage.removeByDate(TestSystemEntity.class, "date", dateValue);
 
     verify(anyCollection).remove(query);
   }
@@ -459,7 +448,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     testSystemDocumentMap.put("^creation", null);
     testSystemDocumentMap.put("^pid", null);
     testSystemDocumentMap.put("^deleted", false);
-    testSystemDocumentMap.put("@class", TestSystemDocument.class.getName());
+    testSystemDocumentMap.put("@class", TestSystemEntity.class.getName());
     testSystemDocumentMap.put("@variations", new Object[0]);
     testSystemDocumentMap.put("!currentVariation", null);
     return testSystemDocumentMap;
@@ -472,8 +461,8 @@ public class MongoStorageTest extends MongoStorageTestBase {
     return dbObject;
   }
 
-  protected DBObject createDBObject(TestSystemDocument doc, Map<String, Object> map) {
-    JacksonDBObject<TestSystemDocument> dbObject = new JacksonDBObject<TestSystemDocument>();
+  protected DBObject createDBObject(TestSystemEntity doc, Map<String, Object> map) {
+    JacksonDBObject<TestSystemEntity> dbObject = new JacksonDBObject<TestSystemEntity>();
     dbObject.putAll(map);
     dbObject.setObject(doc);
     return dbObject;
