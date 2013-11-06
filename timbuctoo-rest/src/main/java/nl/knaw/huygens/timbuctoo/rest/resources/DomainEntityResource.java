@@ -43,27 +43,25 @@ import com.google.inject.Inject;
 /**
  * A REST resource for adressing collections of domain entities.
  */
-@Path(Paths.DOMAIN_PREFIX + "/{entityName: [a-zA-Z]+}")
+@Path(Paths.DOMAIN_PREFIX + "/{" + DomainEntityResource.ENTITY_PARAM + ": [a-zA-Z]+}")
 public class DomainEntityResource {
+
+  public static final String ENTITY_PARAM = "entityName";
 
   private static final Logger LOG = LoggerFactory.getLogger(DomainEntityResource.class);
 
   private static final String ID_PARAM = "id";
   private static final String ID_PATH = "/{id: [a-zA-Z]{4}\\d+}";
 
-  public static final String ENTITY_PARAM = "entityName";
-
   private final TypeRegistry typeRegistry;
   private final StorageManager storageManager;
-  private final Producer indexProducer;
-  private final Producer persistenceProducer;
+  private final Broker broker;
 
   @Inject
   public DomainEntityResource(TypeRegistry registry, StorageManager storageManager, Broker broker) {
     this.typeRegistry = registry;
     this.storageManager = storageManager;
-    this.indexProducer = createProducer(broker, Broker.INDEX_QUEUE, "DomainEntityResourceIndex");
-    this.persistenceProducer = createProducer(broker, Broker.PERSIST_QUEUE, "DomainEntityResourcePersist");
+    this.broker = broker;
   }
 
   // --- API -----------------------------------------------------------
@@ -97,31 +95,11 @@ public class DomainEntityResource {
 
     String id = storageManager.addEntity((Class<T>) type, (T) input);
     persistObject(type, id);
-    sendIndexMessage(ActionType.ADD, id, type);
+    sendIndexMessage(ActionType.ADD, type, id);
 
     String baseUri = CharMatcher.is('/').trimTrailingFrom(uriInfo.getBaseUri().toString());
     String location = Joiner.on('/').join(baseUri, Paths.DOMAIN_PREFIX, entityName, id);
     return Response.status(Status.CREATED).header("Location", location).build();
-  }
-
-  protected void sendIndexMessage(ActionType action, String id, Class<? extends DomainEntity> type) {
-    try {
-      indexProducer.send(action, type, id);
-    } catch (JMSException e) {
-      LOG.error("Error while sending index message {} - {} - {}. \n{}", action, type, id, e.getMessage());
-      LOG.debug("Exception", e);
-    }
-  }
-
-  protected void persistObject(Class<? extends DomainEntity> type, String id) {
-    ActionType action = ActionType.ADD;
-    try {
-      persistenceProducer.send(action, type, id);
-    } catch (JMSException e) {
-      // Cannot use the error method with the var-arg, because ActiveMQ is forcing it's own slf4j-dependency.
-      LOG.error("Error while sending persistence message {} - {} - {}. \n{}", action, type, id, e.getMessage());
-      LOG.debug("Exception", e);
-    }
   }
 
   @GET
@@ -161,7 +139,7 @@ public class DomainEntityResource {
     }
 
     persistObject(type, id);
-    sendIndexMessage(ActionType.MOD, id, type);
+    sendIndexMessage(ActionType.MOD, type, id);
   }
 
   @SuppressWarnings("unchecked")
@@ -179,7 +157,7 @@ public class DomainEntityResource {
     storageManager.removeEntity((Class<T>) type, (T) typedDoc);
 
     persistObject(type, id);
-    sendIndexMessage(ActionType.DEL, id, type);
+    sendIndexMessage(ActionType.DEL, type, id);
 
     return Response.status(Status.NO_CONTENT).build();
   }
@@ -197,7 +175,33 @@ public class DomainEntityResource {
     return checkNotNull(storageManager.getCompleteVariation(type, id, variation), Status.NOT_FOUND);
   }
 
-  // -------------------------------------------------------------------
+  // --- Message handling ----------------------------------------------
+
+  public static final String INDEX_MSG_PRODUCER = "ResourceIndexProducer";
+  public static final String PERSIST_MSG_PRODUCER = "ResourcePersistProducer";
+
+  private void sendIndexMessage(ActionType action, Class<? extends DomainEntity> type, String id) {
+    try {
+      Producer producer = broker.getProducer(INDEX_MSG_PRODUCER, Broker.INDEX_QUEUE);
+      producer.send(action, type, id);
+    } catch (JMSException e) {
+      LOG.error("Failed to send index message {} - {} - {}. \n{}", action, type, id, e.getMessage());
+      LOG.debug("Exception", e);
+    }
+  }
+
+  protected void persistObject(Class<? extends DomainEntity> type, String id) {
+    ActionType action = ActionType.ADD;
+    try {
+      Producer producer = broker.getProducer(PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE);
+      producer.send(action, type, id);
+    } catch (JMSException e) {
+      LOG.error("Failed to send persistence message {} - {} - {}. \n{}", action, type, id, e.getMessage());
+      LOG.debug("Exception", e);
+    }
+  }
+
+  // --- Conversion and Validation -------------------------------------
 
   private Class<? extends DomainEntity> getEntityType(String entityName, Status status) {
     Class<? extends Entity> type = typeRegistry.getTypeForXName(entityName);
@@ -221,18 +225,9 @@ public class DomainEntityResource {
   }
 
   private void checkWritable(DomainEntity entity, Status status) {
-    if (!(entity).isWritable()) {
+    if (!entity.isWritable()) {
       throw new WebApplicationException(status);
     }
   }
 
-  private Producer createProducer(Broker broker, String queue, String name) {
-    try {
-      return broker.newProducer(queue, name);
-    } catch (JMSException e) {
-      LOG.error("Error during creation of producer for queue {} with name {}", Broker.INDEX_QUEUE, "DomainEntityResource");
-      LOG.debug("The following exception was thrown.", e);
-      throw new RuntimeException(e);
-    }
-  }
 }
