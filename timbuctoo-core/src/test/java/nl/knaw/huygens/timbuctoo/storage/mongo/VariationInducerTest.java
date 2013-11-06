@@ -250,6 +250,12 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test
+  public void testInduceProjectVariationUpdatedToDefault() {
+    //Project specific value has to be removed.
+    fail("Yet to be implemented.");
+  }
+
+  @Test
   public void testInduceDomainEntityWithRole() throws VariationException {
     ProjectBGeneralTestDoc item = createProjectBGeneralTestDoc(DEFAULT_DOMAIN_ID, "test pid", "testB");
     item.generalTestDocValue = "test";
