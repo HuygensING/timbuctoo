@@ -120,6 +120,13 @@ class VariationInducer extends VariationConverter {
     return map;
   }
 
+  /**
+   * Updates the field name, if a value of the field name is overridden to ${objecttosave}.fieldName instead of ${objectoffieldname}.fieldName.  
+   * @param type
+   * @param mapToMerge
+   * @param existingNode
+   * @return
+   */
   private Map<String, Object> updateFieldNames(Class<?> type, Map<String, Object> mapToMerge, ObjectNode existingNode) {
     Map<String, Object> updatedMap = Maps.newHashMap();
 
