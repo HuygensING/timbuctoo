@@ -3,9 +3,14 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 import java.io.IOException;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.model.Reference;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBGeneralTestDoc;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public abstract class VariationTestBase {
@@ -39,6 +44,16 @@ public abstract class VariationTestBase {
     expectedMap.put("generaltestdoc.generalTestDocValue", generalTestDocValue);
 
     return expectedMap;
+  }
+
+  protected ProjectBGeneralTestDoc createProjectBGeneralTestDoc(String id, String pid, String projectBGeneralTestDocValue) {
+    ProjectBGeneralTestDoc item = new ProjectBGeneralTestDoc();
+    item.projectBGeneralTestDocValue = projectBGeneralTestDocValue;
+    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, id), new Reference(ProjectBGeneralTestDoc.class, id)));
+    item.setCurrentVariation("projectb");
+    item.setPid(pid);
+    item.setId(id);
+    return item;
   }
 
 }

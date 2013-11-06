@@ -149,7 +149,7 @@ public class VariationInducerTest extends VariationTestBase {
     existingMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
     ObjectNode existing = mapper.valueToTree(existingMap);
 
-    ProjectBGeneralTestDoc item = createProjectBGeneralTestDoc();
+    ProjectBGeneralTestDoc item = createProjectBGeneralTestDoc(DEFAULT_DOMAIN_ID, "test pid", "testB");
 
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
     expectedMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
@@ -163,23 +163,13 @@ public class VariationInducerTest extends VariationTestBase {
 
   }
 
-  protected ProjectBGeneralTestDoc createProjectBGeneralTestDoc() {
-    ProjectBGeneralTestDoc item = new ProjectBGeneralTestDoc();
-    item.projectBGeneralTestDocValue = "testB";
-    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
-    item.setCurrentVariation("projectb");
-    item.setPid("test pid");
-    item.setId(DEFAULT_DOMAIN_ID);
-    return item;
-  }
-
   @Test
   public void testInduceDomainEntityNewVariationExistingValue() throws VariationException {
     Map<String, Object> existingMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
     existingMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
     ObjectNode existing = mapper.valueToTree(existingMap);
 
-    ProjectBGeneralTestDoc item = createProjectBGeneralTestDoc();
+    ProjectBGeneralTestDoc item = createProjectBGeneralTestDoc(DEFAULT_DOMAIN_ID, "test pid", "testB");
     item.generalTestDocValue = "projectbTestDoc";
 
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
@@ -261,7 +251,7 @@ public class VariationInducerTest extends VariationTestBase {
 
   @Test
   public void testInduceDomainEntityWithRole() throws VariationException {
-    ProjectBGeneralTestDoc item = createProjectBGeneralTestDoc();
+    ProjectBGeneralTestDoc item = createProjectBGeneralTestDoc(DEFAULT_DOMAIN_ID, "test pid", "testB");
     item.generalTestDocValue = "test";
     ProjectBTestRole role = new ProjectBTestRole();
     role.setBeeName("beeName");
