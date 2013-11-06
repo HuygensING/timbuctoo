@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("TSTD")
-public class TestSystemDocument extends SystemEntity {
+public class TestSystemEntity extends SystemEntity {
 
   private String name;
   private String testValue1;
@@ -19,6 +19,12 @@ public class TestSystemDocument extends SystemEntity {
   private String annotatedProperty;
   private String propWithAnnotatedAccessors;
   private Date date;
+
+  public TestSystemEntity() {}
+
+  public TestSystemEntity(String id) {
+    setId(id);
+  }
 
   @Override
   @JsonIgnore
