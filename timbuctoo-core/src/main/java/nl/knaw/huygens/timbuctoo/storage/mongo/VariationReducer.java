@@ -110,7 +110,7 @@ class VariationReducer extends VariationConverter {
         if (node.has(dbFieldName)) {
           Field field = type.getDeclaredField(javaFieldName);
           field.setAccessible(true);
-          field.set(instance, node.get(dbFieldName).asText());
+          field.set(instance, getValue(field.getType(), node.get(dbFieldName)));
         }
       } catch (SecurityException e) {
         LOG.error("Field {} of type {} could not be retrieved.", javaFieldName, type);
@@ -125,13 +125,27 @@ class VariationReducer extends VariationConverter {
         LOG.error("Field {} of type {} could not be accessed.", javaFieldName, type);
         LOG.debug("exception", e);
       }
-
     }
-
   }
 
-  protected String getFieldNameInType(String typeName, String fieldName) {
-    return fieldName.startsWith(typeName + ".") ? fieldName.replace(typeName + ".", "") : fieldName;
+  private Object getValue(Class<?> type, JsonNode value) {
+    if (type == Integer.class || type == int.class) {
+      return value.asInt();
+    } else if (type == Boolean.class || type == boolean.class) {
+      return value.asBoolean();
+    } else if (type == Character.class || type == char.class) {
+      return value.asText().charAt(0);
+    } else if (type == Double.class || type == double.class) {
+      return value.asDouble();
+    } else if (type == Float.class || type == float.class) {
+      return (float) value.asDouble();
+    } else if (type == Long.class || type == long.class) {
+      return value.asLong();
+    } else if (type == Short.class || type == short.class) {
+      return (short) value.asInt();
+    }
+
+    return value.asText();
   }
 
   @SuppressWarnings("unchecked")
