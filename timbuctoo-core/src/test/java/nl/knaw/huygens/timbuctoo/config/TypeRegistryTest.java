@@ -4,16 +4,24 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Set;
+
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestBaseDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.TestDocWithIDPrefix;
 import nl.knaw.huygens.timbuctoo.variation.model.TestExtraBaseDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestInheritsFromTestBaseDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
 
 import org.junit.Test;
+
+import com.google.common.collect.Sets;
 
 /**
  * Tests for the TypeRegistry. Watch-out the register is highly
@@ -98,6 +106,40 @@ public class TypeRegistryTest {
   public void testRegisterPackageAbstractClass() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
     assertNull(registry.getTypeForIName("testbasedoc"));
+  }
+
+  @Test
+  public void testGetSubClassesDomainEntity() {
+    Set<Class<? extends Entity>> expected = Sets.newHashSet();
+    expected.add(ProjectAGeneralTestDoc.class);
+    expected.add(GeneralTestDoc.class);
+    expected.add(TestDocWithIDPrefix.class);
+
+    testGetSubClasses(expected, MODEL_PACKAGE + " timbuctoo.model timbuctoo.variation.model.projecta", TestConcreteDoc.class);
+  }
+
+  protected void testGetSubClasses(Set<Class<? extends Entity>> expected, String packageNames, Class<? extends Entity> requestedClass) {
+    TypeRegistry registry = new TypeRegistry(packageNames);
+    Set<Class<? extends Entity>> actual = registry.getSubClasses(requestedClass);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testGetSubClassesSystemEntity() {
+
+    Set<Class<? extends Entity>> expected = Sets.newHashSet();
+
+    testGetSubClasses(expected, MODEL_PACKAGE + " timbuctoo.model", TestSystemEntity.class);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testGetSubClassesNonPrimitive() {
+    Set<Class<? extends Entity>> expected = Sets.newHashSet();
+    expected.add(ProjectAGeneralTestDoc.class);
+    expected.add(GeneralTestDoc.class);
+
+    testGetSubClasses(expected, MODEL_PACKAGE + " timbuctoo.model timbuctoo.variation.model.projecta", GeneralTestDoc.class);
   }
 
   // --- tests of static utilities -------------------------------------

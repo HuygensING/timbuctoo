@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
 import com.google.inject.Singleton;
@@ -59,6 +60,8 @@ public class TypeRegistry {
   private final Map<Class<? extends Entity>, String> type2iname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> iname2type = Maps.newHashMap();
 
+  private final Map<Class<? extends Entity>, Set<Class<? extends Entity>>> classHierarchy = Maps.newHashMap();
+
   private final Map<Class<? extends Entity>, String> type2xname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> xname2type = Maps.newHashMap();
 
@@ -87,8 +90,35 @@ public class TypeRegistry {
       Class<?> type = info.load();
       if (shouldRegisterClass(type)) {
         registerClass((Class<? extends Entity>) type);
+        try {
+          registerClassHierarchy((Class<? extends Entity>) type, null);
+        } catch (Exception e) {
+          LOG.error("error register class hierarchy of type {}", type);
+        }
         LOG.debug("Registered {}", type.getName());
+
       }
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private void registerClassHierarchy(Class<? extends Entity> type, Set<Class<? extends Entity>> subclasses) {
+    if (type.getSuperclass() == Entity.class) {
+      return;
+    }
+
+    if (subclasses == null) {
+      subclasses = Sets.newHashSet();
+    }
+    if (type.getSuperclass() == DomainEntity.class || type.getSuperclass() == SystemEntity.class) {
+      if (classHierarchy.containsKey(type)) {
+        classHierarchy.get(type).addAll(subclasses);
+      } else {
+        classHierarchy.put(type, subclasses);
+      }
+    } else {
+      subclasses.add(type);
+      registerClassHierarchy((Class<? extends Entity>) type.getSuperclass(), subclasses);
     }
   }
 
@@ -100,7 +130,7 @@ public class TypeRegistry {
 
   // -------------------------------------------------------------------
 
-  private void registerClass(Class<? extends Entity> type) {
+  private <T extends Entity> void registerClass(Class<T> type) {
     String iname = TypeNameGenerator.getInternalName(type);
     if (iname2type.containsKey(iname)) {
       throw new IllegalStateException("Duplicate internal type name " + iname);
@@ -175,6 +205,20 @@ public class TypeRegistry {
       type = (Class<? extends Entity>) type.getSuperclass();
     }
     return lastType;
+  }
+
+  /**
+   * Gets the subclasses for each primitive, that are registered in this registry.
+   * @param type type that is a primitive i.e. directly extends {@code SystemEntity} or {@code DomainEntity}.
+   * @return a list with subclasses if {@code type} is found else null.
+   * @throws IllegalArgumentException if the super type of {@code type} is not {@code SystemEntity} or {@code DomainEntity}.
+   */
+  public Set<Class<? extends Entity>> getSubClasses(Class<? extends Entity> type) {
+    if (!(type.getSuperclass() == SystemEntity.class || type.getSuperclass() == DomainEntity.class)) {
+      throw new IllegalArgumentException("Type should be a direct subclass of SystemEntity or DomainEntity.");
+    }
+
+    return this.classHierarchy.get(type);
   }
 
   // --- static utilities ----------------------------------------------
