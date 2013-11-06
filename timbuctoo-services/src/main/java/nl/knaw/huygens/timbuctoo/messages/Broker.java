@@ -12,9 +12,17 @@ public interface Broker {
   String PROP_DOC_TYPE = "type";
   String PROP_DOC_ID = "id";
 
-  Producer newProducer(String queue, String name) throws JMSException;
+  /**
+   * Returns the message producer with the specified name that writes
+   * messages to the specified queue, creating it if it does not exist.
+   */
+  Producer getProducer(String name, String queue) throws JMSException;
 
-  Consumer newConsumer(String queue, String name) throws JMSException;
+  /**
+   * Returns the message consumer with the specified name that reads
+   * messages from the specified queue, creating it if it does not exist.
+   */
+  Consumer getConsumer(String name, String queue) throws JMSException;
 
   Browser newBrowser(String queue) throws JMSException;
 
