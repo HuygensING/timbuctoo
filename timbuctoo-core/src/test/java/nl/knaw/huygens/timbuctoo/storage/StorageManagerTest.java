@@ -222,8 +222,8 @@ public class StorageManagerTest {
 
     Class<TestSystemEntity> type = TestSystemEntity.class;
 
-    instance.modifyEntity(TestSystemEntity.class, entity);
-    verifyModifyDocument(TestSystemEntity.class, entity, times(1), never());
+    instance.modifyEntity(type, expectedDoc);
+    verifyModifyDocument(type, expectedDoc, times(1), never());
   }
 
   @Test(expected = IOException.class)
