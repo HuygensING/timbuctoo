@@ -27,7 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import com.google.inject.Inject;
 
 @Path(Paths.SYSTEM_PREFIX + "/users")
-public class UserResource {
+public class UserResource extends ResourceBase {
 
   private static final String ID_REGEX = "/{id:" + User.ID_PREFIX + "\\d+}";
   private static final String UNVERIFIED_USER_ROLE = "UNVERIFIED_USER";
@@ -110,17 +110,6 @@ public class UserResource {
     storageManager.removeEntity(user);
 
     return Response.status(Status.NO_CONTENT).build();
-  }
-
-  /**
-   * Checks the specified reference and throws a {@code WebApplicationException}
-   * with the specified status if the reference is {@code null}.
-   */
-  private <T> T checkNotNull(T reference, Status status) {
-    if (reference == null) {
-      throw new WebApplicationException(status);
-    }
-    return reference;
   }
 
 }
