@@ -143,12 +143,11 @@ public class DomainEntityResource {
     notifyChange(ActionType.MOD, type, id);
   }
 
-  @SuppressWarnings("unchecked")
   @DELETE
   @Path(ID_PATH)
   @JsonView(JsonViews.WebView.class)
   @RolesAllowed("USER")
-  public <T extends DomainEntity> Response delete( //
+  public Response delete( //
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id //
   ) throws IOException {
@@ -157,7 +156,7 @@ public class DomainEntityResource {
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
     checkWritable(entity, Status.FORBIDDEN);
 
-    storageManager.removeEntity((Class<T>) type, (T) entity);
+    storageManager.removeEntity(entity);
     notifyChange(ActionType.DEL, type, id);
 
     return Response.status(Status.NO_CONTENT).build();
