@@ -249,31 +249,26 @@ public class StorageManagerTest {
 
   @Test
   public void testRemoveDocumentDomainDocumentRemoved() throws IOException {
-    TestConcreteDoc inputDoc = new TestConcreteDoc();
-    inputDoc.name = "test";
     String id = "TCD0000000001";
-    inputDoc.setId(id);
-    inputDoc.setDeleted(true);
+    TestConcreteDoc entity = new TestConcreteDoc(id);
+    entity.name = "test";
+    entity.setDeleted(true);
 
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    String typeString = "testconcretedoc";
+    when(typeRegistry.getINameForType(Mockito.<Class<? extends Entity>> any())).thenReturn("testconcretedoc");
 
-    when(typeRegistry.getINameForType(Mockito.<Class<? extends Entity>> any())).thenReturn(typeString);
-
-    instance.removeEntity(type, inputDoc);
-    verify(storage).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
+    instance.removeEntity(entity);
+    verify(storage).deleteItem(TestConcreteDoc.class, id, entity.getLastChange());
   }
 
   @Test(expected = IOException.class)
   public void testRemoveDocumentStorageException() throws IOException {
-    TestConcreteDoc doc = new TestConcreteDoc();
-    doc.name = "test";
-    doc.setId("TCD0000000001");
+    String id = "TCD0000000001";
+    TestConcreteDoc entity = new TestConcreteDoc(id);
+    entity.name = "test";
 
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    doThrow(IOException.class).when(storage).deleteItem(type, doc.getId(), doc.getLastChange());
+    doThrow(IOException.class).when(storage).deleteItem(TestConcreteDoc.class, id, entity.getLastChange());
 
-    instance.removeEntity(type, doc);
+    instance.removeEntity(entity);
   }
 
   @Test

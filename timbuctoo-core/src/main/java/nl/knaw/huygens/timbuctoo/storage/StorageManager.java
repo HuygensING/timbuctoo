@@ -161,8 +161,8 @@ public class StorageManager {
     storage.updateItem(type, entity.getId(), entity);
   }
 
-  public <T extends Entity> void removeEntity(Class<T> type, T entity) throws IOException {
-    // TODO refactor once the new inducer/reducer implementation is ready
+  public <T extends Entity> void removeEntity(T entity) throws IOException {
+    Class<? extends Entity> type = entity.getClass();
     if (TypeRegistry.isSystemEntity(type)) {
       storage.removeItem(TypeRegistry.toSystemEntity(type), entity.getId());
     }
