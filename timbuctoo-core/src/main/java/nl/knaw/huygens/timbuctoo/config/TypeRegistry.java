@@ -60,7 +60,7 @@ public class TypeRegistry {
   private final Map<Class<? extends Entity>, String> type2iname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> iname2type = Maps.newHashMap();
 
-  private final Map<Class<? extends Entity>, Set<Class<? extends Entity>>> classHierarchy = Maps.newHashMap();
+  private final Map<String, Set<Class<? extends DomainEntity>>> variationMap = Maps.newHashMap();
 
   private final Map<Class<? extends Entity>, String> type2xname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> xname2type = Maps.newHashMap();
@@ -90,35 +90,9 @@ public class TypeRegistry {
       Class<?> type = info.load();
       if (shouldRegisterClass(type)) {
         registerClass((Class<? extends Entity>) type);
-        try {
-          registerClassHierarchy((Class<? extends Entity>) type, null);
-        } catch (Exception e) {
-          LOG.error("error register class hierarchy of type {}", type);
-        }
+        registerVariationForClass((Class<? extends Entity>) type);
         LOG.debug("Registered {}", type.getName());
-
       }
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private void registerClassHierarchy(Class<? extends Entity> type, Set<Class<? extends Entity>> subclasses) {
-    if (type.getSuperclass() == Entity.class) {
-      return;
-    }
-
-    if (subclasses == null) {
-      subclasses = Sets.newHashSet();
-    }
-    if (type.getSuperclass() == DomainEntity.class || type.getSuperclass() == SystemEntity.class) {
-      if (classHierarchy.containsKey(type)) {
-        classHierarchy.get(type).addAll(subclasses);
-      } else {
-        classHierarchy.put(type, subclasses);
-      }
-    } else {
-      subclasses.add(type);
-      registerClassHierarchy((Class<? extends Entity>) type.getSuperclass(), subclasses);
     }
   }
 
@@ -146,6 +120,24 @@ public class TypeRegistry {
     type2xname.put(type, xname);
 
     iname2xname.put(iname, xname);
+  }
+
+  private void registerVariationForClass(Class<? extends Entity> type) {
+    if (DomainEntity.class.isAssignableFrom(type)) {
+      @SuppressWarnings("unchecked")
+      Class<? extends DomainEntity> domainEntity = (Class<? extends DomainEntity>) type;
+      String variation = getClassVariation(domainEntity);
+
+      if (variation != null) {
+        if (variationMap.containsKey(variation)) {
+          variationMap.get(variation).add(domainEntity);
+        } else {
+          Set<Class<? extends DomainEntity>> set = Sets.newHashSet();
+          set.add(domainEntity);
+          variationMap.put(variation, set);
+        }
+      }
+    }
   }
 
   // --- public api ----------------------------------------------------
@@ -208,17 +200,37 @@ public class TypeRegistry {
   }
 
   /**
-   * Gets the subclasses for each primitive, that are registered in this registry.
-   * @param type type that is a primitive i.e. directly extends {@code SystemEntity} or {@code DomainEntity}.
-   * @return a list with subclasses if {@code type} is found else null.
-   * @throws IllegalArgumentException if the super type of {@code type} is not {@code SystemEntity} or {@code DomainEntity}.
+   * Gets a sub class of the primitive that correspondents with the {@code variation}.
+   * @param typeForVariation should be a class of the model package.
+   * @param variation should be a sub-package of the model package. 
+   * @return the class if one is found, null if not.
    */
-  public Set<Class<? extends Entity>> getSubClasses(Class<? extends Entity> type) {
-    if (!(type.getSuperclass() == SystemEntity.class || type.getSuperclass() == DomainEntity.class)) {
-      throw new IllegalArgumentException("Type should be a direct subclass of SystemEntity or DomainEntity.");
+  public Class<? extends DomainEntity> getVariationClass(Class<? extends DomainEntity> typeForVariation, String variation) {
+    if (!variationMap.containsKey(variation)) {
+      return null;
     }
 
-    return this.classHierarchy.get(type);
+    for (Class<? extends DomainEntity> domainEntity : variationMap.get(variation)) {
+      if (typeForVariation.isAssignableFrom(domainEntity)) {
+        return domainEntity;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Determines the variation of a class. This is based on the package the class is placed in.
+   * @param type the type the variation should be determined of.
+   * @return the variation. This will be null for each primitive (i.e. Person) and supporting classes (like DomainEntity).
+   */
+  public String getClassVariation(Class<? extends DomainEntity> type) {
+    String packageName = type.getPackage().getName();
+    if (packageName.endsWith(".model")) {
+      return null;
+    }
+
+    return packageName.substring(packageName.lastIndexOf('.') + 1);
   }
 
   // --- static utilities ----------------------------------------------
