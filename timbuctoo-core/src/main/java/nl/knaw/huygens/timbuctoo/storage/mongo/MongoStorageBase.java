@@ -91,6 +91,11 @@ public abstract class MongoStorageBase implements BasicStorage {
   }
 
   @Override
+  public <T extends SystemEntity> void removeItem(Class<T> type, String id) {
+    getCollection(type).removeById(id);
+  }
+
+  @Override
   public <T extends SystemEntity> int removeAll(Class<T> type) {
     return getCollection(type).remove(new BasicDBObject()).getN();
   }
