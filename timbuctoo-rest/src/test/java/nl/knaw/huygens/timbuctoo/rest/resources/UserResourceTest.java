@@ -89,8 +89,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testGetUserAsAdmin() {
     setUpUserRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE));
 
-    User expected = createUser("test", "test");
-    expected.setId(USER_ID);
+    User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
@@ -115,8 +114,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testGetMyUserDataAsAdmin() {
     setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
 
-    User expected = createUser("test", "test");
-    expected.setId(USER_ID);
+    User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
@@ -130,8 +128,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testGetMyUserDataAsUser() {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
-    User expected = createUser("test", "test");
-    expected.setId(USER_ID);
+    User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
@@ -148,8 +145,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
     MailSender mailSender = injector.getInstance(MailSender.class);
 
-    User expected = createUser("test", "test");
-    expected.setId(USER_ID);
+    User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
@@ -211,13 +207,11 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
     MailSender sender = injector.getInstance(MailSender.class);
 
-    User user = createUser("firstName", "lastName");
+    User user = createUser(USER_ID, "firstName", "lastName");
     user.email = "test@test.com";
-    user.setId(USER_ID);
 
-    User original = createUser("test", "test");
+    User original = createUser(USER_ID, "test", "test");
     original.email = "test@test.com";
-    original.setId(USER_ID);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(original);
@@ -232,9 +226,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testPutUserUserNotFound() throws IOException {
     setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
 
-    User user = createUser("firstName", "lastName");
-    user.setId(USER_ID);
-
+    User user = createUser(USER_ID, "firstName", "lastName");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     doAnswer(new Answer<Object>() {
 
@@ -253,9 +245,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testPutUserNotInRole() {
     setUpUserRoles(USER_ID, null);
 
-    User user = createUser("firstName", "lastName");
-    user.setId(USER_ID);
-
+    User user = createUser(USER_ID, "firstName", "lastName");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(null);
 
@@ -265,9 +255,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutUserNotLoggedIn() {
-    User user = createUser("firstName", "lastName");
-    user.setId(USER_ID);
-
+    User user = createUser(USER_ID, "firstName", "lastName");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(null);
 
@@ -281,8 +269,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testDeleteUser() {
     setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
 
-    User expected = createUser("test", "test");
-    expected.setId(USER_ID);
+    User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
@@ -305,8 +292,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testDeleteUserNotInRole() {
     setUpUserRoles(USER_ID, null);
 
-    User expected = createUser("test", "test");
-    expected.setId(USER_ID);
+    User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
@@ -316,8 +302,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteUserNotLoggedIn() {
-    User expected = createUser("test", "test");
-    expected.setId(USER_ID);
+    User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
     setUserNotLoggedIn();
@@ -326,8 +311,16 @@ public class UserResourceTest extends WebServiceTestSetup {
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
   }
 
-  protected User createUser(String firstName, String lastName) {
+  private User createUser(String firstName, String lastName) {
     User user = new User();
+    user.firstName = firstName;
+    user.lastName = lastName;
+    return user;
+  }
+
+  private User createUser(String id, String firstName, String lastName) {
+    User user = new User();
+    user.setId(id);
     user.firstName = firstName;
     user.lastName = lastName;
     return user;

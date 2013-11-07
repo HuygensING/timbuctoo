@@ -359,54 +359,11 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testDeleteItem() throws IOException {
-    TestSystemEntity docToDelete = new TestSystemEntity(DEFAULT_ID);
-    docToDelete.setName("test");
-
-    storage.deleteItem(TestSystemEntity.class, DEFAULT_ID, docToDelete.getLastChange());
-
-    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
-    DBObject updateDeleted = new BasicDBObject("^deleted", true);
-    updateDeleted.put("^lastChange", null);
-    DBObject update = new BasicDBObject();
-    update.put("$set", updateDeleted);
-    update.put("$inc", new BasicDBObject("^rev", 1));
-
-    verify(anyCollection).findAndModify(query, null, null, false, update, false, false);
-  }
-
-  @Test
-  public void testDeleteItemNotFound() throws IOException {
-    TestSystemEntity docToDelete = new TestSystemEntity(DEFAULT_ID);
-    docToDelete.setName("test");
-
-    storage.deleteItem(TestSystemEntity.class, DEFAULT_ID, docToDelete.getLastChange());
-
-    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
-    DBObject updateDeleted = new BasicDBObject("^deleted", true);
-    updateDeleted.put("^lastChange", null);
-    DBObject update = new BasicDBObject();
-    update.put("$set", updateDeleted);
-    update.put("$inc", new BasicDBObject("^rev", 1));
-
-    verify(anyCollection).findAndModify(query, null, null, false, update, false, false);
-  }
-
-  @Test(expected = MongoException.class)
-  public void testDeleteItemMongoException() throws IOException {
-    TestSystemEntity docToDelete = new TestSystemEntity(DEFAULT_ID);
-    docToDelete.setName("test");
-
-    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
-    DBObject updateDeleted = new BasicDBObject("^deleted", true);
-    updateDeleted.put("^lastChange", null);
-    DBObject update = new BasicDBObject();
-    update.put("$set", updateDeleted);
-    update.put("$inc", new BasicDBObject("^rev", 1));
-
-    doThrow(MongoException.class).when(anyCollection).findAndModify(query, null, null, false, update, false, false);
-
-    storage.deleteItem(TestSystemEntity.class, DEFAULT_ID, docToDelete.getLastChange());
+  public void testRemoveItem() throws IOException {
+    storage.removeItem(TestSystemEntity.class, DEFAULT_ID);
+    // just verify that the underlying storage is called
+    // whether that call is successful or not is irrelevant
+    verify(anyCollection).remove(any(DBObject.class));
   }
 
   @Test

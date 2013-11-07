@@ -180,7 +180,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Entity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
+  public <T extends DomainEntity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
     DBCollection col = getVariationCollection(type);
     BasicDBObject q = new BasicDBObject("_id", id);
     DBObject existingNode = col.findOne(q);

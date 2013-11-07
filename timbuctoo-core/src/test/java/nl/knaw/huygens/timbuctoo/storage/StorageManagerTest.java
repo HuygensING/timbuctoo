@@ -264,15 +264,6 @@ public class StorageManagerTest {
     verify(storage).deleteItem(type, inputDoc.getId(), inputDoc.getLastChange());
   }
 
-  @Test
-  public void testRemoveDocumentSystemDocumentRemoved() throws IOException {
-    TestSystemEntity entity = new TestSystemEntity("TCD0000000001");
-    entity.setDeleted(true);
-
-    instance.removeEntity(TestSystemEntity.class, entity);
-    verify(storage, times(1)).deleteItem(TestSystemEntity.class, entity.getId(), entity.getLastChange());
-  }
-
   @Test(expected = IOException.class)
   public void testRemoveDocumentStorageException() throws IOException {
     TestConcreteDoc doc = new TestConcreteDoc();
