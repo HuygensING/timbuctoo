@@ -49,6 +49,11 @@ public interface BasicStorage {
   <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException;
 
   /**
+   * Removes the spcified system entity.
+   */
+  <T extends SystemEntity> void removeItem(Class<T> type, String id) throws IOException;
+
+  /**
    * Removes all system entities with the specified type.
    * @return The number of entities removed.
    */
