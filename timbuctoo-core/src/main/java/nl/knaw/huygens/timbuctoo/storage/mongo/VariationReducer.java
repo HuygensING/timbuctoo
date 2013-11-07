@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.mongojack.internal.stream.JacksonDBObject;
@@ -76,12 +77,17 @@ class VariationReducer extends VariationConverter {
     return reduce(type, node, null);
   }
 
+  @SuppressWarnings("unchecked")
   public <T extends Entity> T reduce(Class<T> type, JsonNode node, String requestedVariation) throws VariationException, JsonProcessingException {
     T returnObject = null;
     try {
       returnObject = type.newInstance();
 
-      setFields(type, returnObject, node);
+      if (requestedVariation == null && DomainEntity.class.isAssignableFrom(type)) {
+        requestedVariation = typeRegistry.getClassVariation((Class<? extends DomainEntity>) type);
+      }
+
+      setFields(type, returnObject, node, requestedVariation);
 
     } catch (InstantiationException e) {
       LOG.error("Could not initialize object of type {} ", type);
@@ -95,9 +101,9 @@ class VariationReducer extends VariationConverter {
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Entity> void setFields(Class<T> type, T instance, JsonNode node) {
+  private <T extends Entity> void setFields(Class<T> type, T instance, JsonNode node, String requestedVariation) {
     if (type != Entity.class) {
-      setFields((Class<T>) type.getSuperclass(), instance, node);
+      setFields((Class<T>) type.getSuperclass(), instance, node, requestedVariation);
     }
 
     Map<String, String> fieldMap = mongoMapper.getFieldMap(type);
@@ -110,7 +116,10 @@ class VariationReducer extends VariationConverter {
         if (node.has(dbFieldName)) {
           Field field = type.getDeclaredField(javaFieldName);
           field.setAccessible(true);
-          field.set(instance, getValue(field.getType(), node.get(dbFieldName)));
+
+          Object value = getVariationValue(type, field, requestedVariation, node, node.get(dbFieldName));
+
+          field.set(instance, value);
         }
       } catch (SecurityException e) {
         LOG.error("Field {} of type {} could not be retrieved.", javaFieldName, type);
@@ -128,7 +137,25 @@ class VariationReducer extends VariationConverter {
     }
   }
 
-  private Object getValue(Class<?> type, JsonNode value) {
+  private Object getVariationValue(Class<? extends Entity> type, Field field, String variation, JsonNode record, JsonNode originalValue) {
+    Object value = convertValue(field.getType(), originalValue);
+
+    if (TypeRegistry.isDomainEntity(type)) {
+      @SuppressWarnings("unchecked")
+      Class<? extends Entity> subClass = typeRegistry.getVariationClass((Class<? extends DomainEntity>) type, variation);
+      if (subClass != null) {
+        String overridenDBKey = mongoMapper.getFieldName(subClass, field);
+
+        if (record.has(overridenDBKey)) {
+          value = convertValue(field.getType(), record.get(overridenDBKey));
+        }
+      }
+    }
+
+    return value;
+  }
+
+  private Object convertValue(Class<?> type, JsonNode value) {
     if (type == Integer.class || type == int.class) {
       return value.asInt();
     } else if (type == Boolean.class || type == boolean.class) {

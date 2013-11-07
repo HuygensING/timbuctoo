@@ -289,7 +289,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setPid(TEST_PID);
     expected.generalTestDocValue = projectAVariation;
 
-    GeneralTestDoc actual = reducer.reduce(GeneralTestDoc.class, node, "projectA");
+    GeneralTestDoc actual = reducer.reduce(GeneralTestDoc.class, node, "projecta");
 
     assertEquals(expected, actual);
   }
