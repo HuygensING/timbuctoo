@@ -125,8 +125,8 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public <T extends Entity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
-    getStorageFor(type).deleteItem(type, id, change);
+  public <T extends DomainEntity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
+    variationStorage.deleteItem(type, id, change);
   }
 
   @Override
