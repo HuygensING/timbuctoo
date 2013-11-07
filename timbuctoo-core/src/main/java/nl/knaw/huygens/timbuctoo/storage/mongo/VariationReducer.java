@@ -24,9 +24,11 @@ class VariationReducer extends VariationConverter {
 
   private static final Logger LOG = LoggerFactory.getLogger(VariationReducer.class);
   private static final String VERSIONS_FIELD = "versions";
+  private final MongoFieldMapper mongoFieldMapper;
 
-  public VariationReducer(TypeRegistry registry, MongoObjectMapper mongoMapper) {
-    super(registry, mongoMapper);
+  public VariationReducer(TypeRegistry registry, MongoObjectMapper mongoObjectMapper, MongoFieldMapper mongoFieldMapper) {
+    super(registry, mongoObjectMapper);
+    this.mongoFieldMapper = mongoFieldMapper;
   }
 
   public <T extends Entity> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {
@@ -106,7 +108,7 @@ class VariationReducer extends VariationConverter {
       setFields((Class<T>) type.getSuperclass(), instance, node, requestedVariation);
     }
 
-    Map<String, String> fieldMap = mongoMapper.getFieldMap(type);
+    Map<String, String> fieldMap = mongoFieldMapper.getFieldMap(type);
 
     for (String javaFieldName : fieldMap.keySet()) {
 
@@ -144,7 +146,7 @@ class VariationReducer extends VariationConverter {
       @SuppressWarnings("unchecked")
       Class<? extends Entity> subClass = typeRegistry.getVariationClass((Class<? extends DomainEntity>) type, variation);
       if (subClass != null) {
-        String overridenDBKey = mongoMapper.getFieldName(subClass, field);
+        String overridenDBKey = mongoFieldMapper.getFieldName(subClass, field);
 
         if (record.has(overridenDBKey)) {
           value = convertValue(field.getType(), record.get(overridenDBKey));
