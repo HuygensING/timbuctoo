@@ -94,8 +94,7 @@ public class DomainEntityResource {
     }
 
     String id = storageManager.addEntity((Class<T>) type, (T) input);
-    persistObject(type, id);
-    sendIndexMessage(ActionType.ADD, type, id);
+    notifyChange(ActionType.ADD, type, id);
 
     String baseUri = CharMatcher.is('/').trimTrailingFrom(uriInfo.getBaseUri().toString());
     String location = Joiner.on('/').join(baseUri, Paths.DOMAIN_PREFIX, entityName, id);
@@ -131,15 +130,14 @@ public class DomainEntityResource {
     }
 
     try {
+      // FIXME [#1882] the stored entity must be checked, not the input
       checkWritable(input, Status.FORBIDDEN);
       storageManager.modifyEntity((Class<T>) type, (T) input);
+      notifyChange(ActionType.MOD, type, id);
     } catch (IOException e) {
       // only if the entity version does not exist an IOException is thrown.
       throw new WebApplicationException(Status.NOT_FOUND);
     }
-
-    persistObject(type, id);
-    sendIndexMessage(ActionType.MOD, type, id);
   }
 
   @SuppressWarnings("unchecked")
@@ -152,12 +150,12 @@ public class DomainEntityResource {
       @PathParam(ID_PARAM) String id //
   ) throws IOException {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
-    DomainEntity typedDoc = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
-    checkWritable(typedDoc, Status.FORBIDDEN);
-    storageManager.removeEntity((Class<T>) type, (T) typedDoc);
 
-    persistObject(type, id);
-    sendIndexMessage(ActionType.DEL, type, id);
+    DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
+    checkWritable(entity, Status.FORBIDDEN);
+
+    storageManager.removeEntity((Class<T>) type, (T) entity);
+    notifyChange(ActionType.DEL, type, id);
 
     return Response.status(Status.NO_CONTENT).build();
   }
@@ -180,23 +178,41 @@ public class DomainEntityResource {
   public static final String INDEX_MSG_PRODUCER = "ResourceIndexProducer";
   public static final String PERSIST_MSG_PRODUCER = "ResourcePersistProducer";
 
-  private void sendIndexMessage(ActionType action, Class<? extends DomainEntity> type, String id) {
+  /**
+   * Notify other software components of a change in the data.
+   */
+  private void notifyChange(ActionType actionType, Class<? extends DomainEntity> type, String id) {
+    switch (actionType) {
+    case ADD:
+    case MOD:
+      sendPersistMessage(actionType, type, id);
+      sendIndexMessage(actionType, type, id);
+      break;
+    case DEL:
+      sendIndexMessage(actionType, type, id);
+      break;
+    default:
+      LOG.warn("Unexpected action {}", actionType);
+      break;
+    }
+  }
+
+  private void sendIndexMessage(ActionType actionType, Class<? extends DomainEntity> type, String id) {
     try {
       Producer producer = broker.getProducer(INDEX_MSG_PRODUCER, Broker.INDEX_QUEUE);
-      producer.send(action, type, id);
+      producer.send(actionType, type, id);
     } catch (JMSException e) {
-      LOG.error("Failed to send index message {} - {} - {}. \n{}", action, type, id, e.getMessage());
+      LOG.error("Failed to send index message {} - {} - {}. \n{}", actionType, type, id, e.getMessage());
       LOG.debug("Exception", e);
     }
   }
 
-  protected void persistObject(Class<? extends DomainEntity> type, String id) {
-    ActionType action = ActionType.ADD;
+  protected void sendPersistMessage(ActionType actionType, Class<? extends DomainEntity> type, String id) {
     try {
       Producer producer = broker.getProducer(PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE);
-      producer.send(action, type, id);
+      producer.send(actionType, type, id);
     } catch (JMSException e) {
-      LOG.error("Failed to send persistence message {} - {} - {}. \n{}", action, type, id, e.getMessage());
+      LOG.error("Failed to send persistence message {} - {} - {}. \n{}", actionType, type, id, e.getMessage());
       LOG.debug("Exception", e);
     }
   }

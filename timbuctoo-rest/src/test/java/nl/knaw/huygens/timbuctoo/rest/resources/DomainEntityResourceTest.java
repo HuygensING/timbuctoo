@@ -56,7 +56,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     TestConcreteDoc expectedDoc = new TestConcreteDoc(DEFAULT_ID);
     when(getStorageManager().getEntityWithRelations(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(expectedDoc);
 
-    TestConcreteDoc actualDoc = autoResource().path("testconcretedocs").path(DEFAULT_ID).get(TestConcreteDoc.class);
+    TestConcreteDoc actualDoc = domainResource("testconcretedocs", DEFAULT_ID).get(TestConcreteDoc.class);
     assertNotNull(actualDoc);
     assertEquals(expectedDoc.getId(), actualDoc.getId());
   }
@@ -65,13 +65,13 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testGetDocNonExistingInstance() {
     when(getStorageManager().getEntity(TestConcreteDoc.class, "TST0000000001")).thenReturn(null);
 
-    ClientResponse response = autoResource().path("testconcretedocs").path("TST0000000001").get(ClientResponse.class);
+    ClientResponse response = domainResource("testconcretedocs", "TST0000000001").get(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
   @Test
   public void testGetDocNonExistingClass() {
-    ClientResponse response = autoResource().path("unknown").path("TST0000000001").get(ClientResponse.class);
+    ClientResponse response = domainResource("unknown", "TST0000000001").get(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
@@ -84,7 +84,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     when(getStorageManager().getAllLimited(TestConcreteDoc.class, 0, 200)).thenReturn(expectedList);
 
     GenericType<List<TestConcreteDoc>> genericType = new GenericType<List<TestConcreteDoc>>() {};
-    List<TestConcreteDoc> actualList = autoResource().path("testconcretedocs").get(genericType);
+    List<TestConcreteDoc> actualList = domainResource("testconcretedocs").get(genericType);
     assertEquals(expectedList.size(), actualList.size());
   }
 
@@ -94,7 +94,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     when(getStorageManager().getAllLimited(TestConcreteDoc.class, 0, 200)).thenReturn(expectedList);
 
     GenericType<List<TestConcreteDoc>> genericType = new GenericType<List<TestConcreteDoc>>() {};
-    List<TestConcreteDoc> actualList = autoResource().path("testconcretedocs").get(genericType);
+    List<TestConcreteDoc> actualList = domainResource("testconcretedocs").get(genericType);
     assertEquals(expectedList.size(), actualList.size());
   }
 
@@ -109,11 +109,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     setUpBroker();
 
-    ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
-        .put(ClientResponse.class, doc);
+    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
-
-    verify(getProducer(PERSISTENCE_PRODUCER), times(1)).send(ActionType.ADD, DEFAULT_TYPE, DEFAULT_ID);
+    verify(getProducer(PERSISTENCE_PRODUCER), times(1)).send(ActionType.MOD, DEFAULT_TYPE, DEFAULT_ID);
     verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.MOD, DEFAULT_TYPE, DEFAULT_ID);
   }
 
@@ -128,10 +126,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
-        .put(ClientResponse.class, doc);
+    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -193,10 +190,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
-        .put(ClientResponse.class, doc);
+    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -215,9 +211,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("testconcretedocs").path(id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = domainResource("testconcretedocs", id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -230,10 +226,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("unknown").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = domainResource("unknown", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -245,10 +240,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("otherdocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = domainResource("otherdocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -261,10 +255,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("otherdocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = domainResource("otherdocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -275,10 +268,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("otherdocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = domainResource("otherdocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -295,7 +287,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     setUpBroker();
 
-    ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
+    ClientResponse response = domainResource("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
     assertNotNull(response.getHeaders().getFirst("Location"));
     verify(getProducer(PERSISTENCE_PRODUCER), times(1)).send(ActionType.ADD, DEFAULT_TYPE, DEFAULT_ID);
@@ -312,10 +304,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("unknown").path("all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
+    ClientResponse response = domainResource("unknown", "all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -331,10 +322,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
+    ClientResponse response = domainResource("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -350,10 +340,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("otherdocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
+    ClientResponse response = domainResource("otherdocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -365,10 +354,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("otherdocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
+    ClientResponse response = domainResource("otherdocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -382,10 +370,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     setUpBroker();
 
-    ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
-        .delete(ClientResponse.class);
+    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), times(1)).send(ActionType.ADD, DEFAULT_TYPE, DEFAULT_ID);
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(ActionType.DEL, DEFAULT_TYPE, DEFAULT_ID);
     verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.DEL, DEFAULT_TYPE, DEFAULT_ID);
   }
 
@@ -399,11 +386,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
-        .delete(ClientResponse.class);
+    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -416,11 +401,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
-        .delete(ClientResponse.class);
+    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -434,11 +417,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
-        .delete(ClientResponse.class);
+    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -448,10 +429,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
+    ClientResponse response = domainResource("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -462,7 +442,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     TestConcreteDoc expectedDoc = new TestConcreteDoc(DEFAULT_ID);
     when(getStorageManager().getEntityWithRelations(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(expectedDoc);
 
-    ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).get(ClientResponse.class);
+    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
   }
 
@@ -471,7 +451,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     TestConcreteDoc expectedDoc = new TestConcreteDoc(DEFAULT_ID);
     when(getStorageManager().getEntityWithRelations(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(expectedDoc);
 
-    ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).get(ClientResponse.class);
+    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
   }
 
@@ -486,12 +466,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
-        .put(ClientResponse.class, doc);
+    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
-
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -506,11 +483,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     setUserNotLoggedIn();
 
-    ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, doc);
+    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
-
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -526,11 +501,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, inputDoc);
+    ClientResponse response = domainResource("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, inputDoc);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
-
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -546,11 +519,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     setUserNotLoggedIn();
 
-    ClientResponse response = autoResource().path("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, doc);
+    ClientResponse response = domainResource("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
-
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -561,10 +532,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).delete(ClientResponse.class);
+    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -575,11 +545,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     //Set up the broker, for a better faillure message.
     setUpBroker();
 
-    ClientResponse response = autoResource().path("testconcretedocs").path(DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
-        .delete(ClientResponse.class);
+    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());;
-
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
@@ -591,7 +559,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     String variation = "projecta";
     when(getStorageManager().getCompleteVariation(TestConcreteDoc.class, DEFAULT_ID, variation)).thenReturn(expectedDoc);
 
-    TestConcreteDoc actualDoc = autoResource().path("testconcretedocs").path(DEFAULT_ID).path(variation).header("Authorization", "bearer 12333322abef").get(TestConcreteDoc.class);
+    TestConcreteDoc actualDoc = domainResource("testconcretedocs", DEFAULT_ID).path(variation).header("Authorization", "bearer 12333322abef").get(TestConcreteDoc.class);
     assertNotNull(actualDoc);
     assertEquals(expectedDoc.getId(), actualDoc.getId());
   }
@@ -601,7 +569,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     String variation = "projecta";
     when(getStorageManager().getCompleteVariation(TestConcreteDoc.class, "TEST000000000002", variation)).thenReturn(null);
 
-    ClientResponse response = autoResource().path("testconcretedocs").path("TEST000000000002").path(variation).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
+    ClientResponse response = domainResource("testconcretedocs", "TEST000000000002").path(variation).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
