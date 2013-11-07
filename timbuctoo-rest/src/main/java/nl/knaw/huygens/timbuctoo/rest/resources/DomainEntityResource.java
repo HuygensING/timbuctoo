@@ -44,7 +44,7 @@ import com.google.inject.Inject;
  * A REST resource for adressing collections of domain entities.
  */
 @Path(Paths.DOMAIN_PREFIX + "/{" + DomainEntityResource.ENTITY_PARAM + ": [a-zA-Z]+}")
-public class DomainEntityResource {
+public class DomainEntityResource extends ResourceBase {
 
   public static final String ENTITY_PARAM = "entityName";
 
@@ -229,17 +229,6 @@ public class DomainEntityResource {
       LOG.error("'{}' is not a domain entity name", entityName);
       throw new WebApplicationException(status);
     }
-  }
-
-  /**
-   * Checks the specified reference and throws a {@code WebApplicationException}
-   * with the specified status if the reference is {@code null}.
-   */
-  private <T> T checkNotNull(T reference, Status status) {
-    if (reference == null) {
-      throw new WebApplicationException(status);
-    }
-    return reference;
   }
 
   private void checkWritable(DomainEntity entity, Status status) {
