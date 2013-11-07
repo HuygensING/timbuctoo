@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static org.junit.Assert.assertEquals;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
@@ -183,5 +184,41 @@ public class MongoObjectMapperTest {
     doc.setAnnotatedProperty(annotatedProperty);
     doc.setPropWithAnnotatedAccessors(propWithAnnotatedAccessors);
     return doc;
+  }
+
+  @Test
+  public void testGetFieldNameSimpleField() throws NoSuchFieldException {
+    testGetFieldName(TYPE, TYPE.getDeclaredField("name"), "mongoobjectmapperentity.name");
+  }
+
+  @Test
+  public void testGetFieldNameForFieldWithAnnotation() throws NoSuchFieldException {
+    testGetFieldName(TYPE, TYPE.getDeclaredField("annotatedProperty"), "mongoobjectmapperentity.propAnnotated");
+  }
+
+  @Test
+  public void testGetFieldNameFieldForAccessorWithAnnotation() throws NoSuchFieldException {
+    testGetFieldName(TYPE, TYPE.getDeclaredField("propWithAnnotatedAccessors"), "mongoobjectmapperentity.pwaa");
+  }
+
+  @Test
+  public void testGetFieldNameForEntity() throws NoSuchFieldException {
+    testGetFieldName(Entity.class, Entity.class.getDeclaredField("id"), "_id");
+  }
+
+  @Test
+  public void testGetFieldNameForDomainEntity() throws NoSuchFieldException {
+    testGetFieldName(DomainEntity.class, Entity.class.getDeclaredField("id"), "_id");
+  }
+
+  @Test
+  public void testGetFieldNameForSystemEntity() throws NoSuchFieldException {
+    testGetFieldName(SystemEntity.class, Entity.class.getDeclaredField("id"), "_id");
+  }
+
+  protected void testGetFieldName(Class<? extends Entity> type, Field declaredField, String expected) throws NoSuchFieldException {
+    String actual = instance.getFieldName(type, declaredField);
+
+    assertEquals(expected, actual);
   }
 }

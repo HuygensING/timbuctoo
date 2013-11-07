@@ -110,25 +110,34 @@ public class MongoObjectMapper {
 
   }
 
-  private String getFieldName(Class<?> type, Field field) {
+  /**
+   * Gets a field name for a field in combination with a class. 
+   * This method will add a prefix for every {@code type} that is not {@code Entity}, {@code DomainEntity} or {@code SystemEntity}.
+   * The method will not check if the {@code type} contains the field. It will just create a {@code String). 
+   * @param type the type needed for the prefix.
+   * @param field the field to get the name for.
+   * @return the field name.
+   */
+  public String getFieldName(Class<?> type, Field field) {
     JsonProperty annotation = field.getAnnotation(ANNOTATION_TO_RETRIEVE);
 
     if (annotation != null) {
-      return formatFieldName(type, annotation.value());
+      return getPrefixedFieldName(type, annotation.value());
     }
 
     Method method = getMethodOfField(type, field);
 
     if (method != null && method.getAnnotation(ANNOTATION_TO_RETRIEVE) != null) {
-      return formatFieldName(type, method.getAnnotation(ANNOTATION_TO_RETRIEVE).value());
+      return getPrefixedFieldName(type, method.getAnnotation(ANNOTATION_TO_RETRIEVE).value());
     }
-    return formatFieldName(type, field.getName());
+    return getPrefixedFieldName(type, field.getName());
   }
 
-  private String formatFieldName(Class<?> type, String fieldName) {
+  private String getPrefixedFieldName(Class<?> type, String fieldName) {
     if (type == Entity.class || type == DomainEntity.class || type == SystemEntity.class) {
       return fieldName;
     }
+
     return TypeNameGenerator.getInternalName(type) + "." + fieldName;
   }
 
