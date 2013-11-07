@@ -102,7 +102,7 @@ class VariationInducer extends VariationConverter {
       map.putAll(getEntityMap((Class<T>) type.getSuperclass(), item));
     }
 
-    map.putAll(mongoMapper.mapObject(type, item));
+    map.putAll(mongoObjectMapper.mapObject(type, item));
 
     return map;
   }
@@ -115,7 +115,7 @@ class VariationInducer extends VariationConverter {
       map.putAll(getRoleMap((Class<T>) type.getSuperclass(), role));
     }
 
-    map.putAll(mongoMapper.mapObject(type, (T) role));
+    map.putAll(mongoObjectMapper.mapObject(type, (T) role));
 
     return map;
   }

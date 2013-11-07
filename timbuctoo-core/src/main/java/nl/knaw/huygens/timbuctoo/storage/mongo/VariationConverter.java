@@ -21,12 +21,12 @@ class VariationConverter {
 
   protected final TypeRegistry typeRegistry;
   protected final ObjectMapper mapper;
-  protected final MongoObjectMapper mongoMapper;
+  protected final MongoObjectMapper mongoObjectMapper;
 
   public VariationConverter(TypeRegistry registry, MongoObjectMapper mongoObjectMapper) {
     typeRegistry = registry;
     mapper = new ObjectMapper();
-    this.mongoMapper = mongoObjectMapper;
+    this.mongoObjectMapper = mongoObjectMapper;
   }
 
   /**
