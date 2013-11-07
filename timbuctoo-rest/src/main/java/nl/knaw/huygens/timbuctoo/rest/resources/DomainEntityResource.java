@@ -129,15 +129,18 @@ public class DomainEntityResource {
       throw new WebApplicationException(Status.BAD_REQUEST);
     }
 
+    DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
+    checkWritable(entity, Status.FORBIDDEN);
+
     try {
-      // FIXME [#1882] the stored entity must be checked, not the input
-      checkWritable(input, Status.FORBIDDEN);
       storageManager.modifyEntity((Class<T>) type, (T) input);
-      notifyChange(ActionType.MOD, type, id);
     } catch (IOException e) {
-      // only if the entity version does not exist an IOException is thrown.
-      throw new WebApplicationException(Status.NOT_FOUND);
+      // TODO improve the logic, we already have checked existnce
+      // storage manager should no throw an exception
+      throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
     }
+
+    notifyChange(ActionType.MOD, type, id);
   }
 
   @SuppressWarnings("unchecked")
@@ -192,7 +195,7 @@ public class DomainEntityResource {
       sendIndexMessage(actionType, type, id);
       break;
     default:
-      LOG.warn("Unexpected action {}", actionType);
+      LOG.error("Unexpected action {}", actionType);
       break;
     }
   }
@@ -242,6 +245,7 @@ public class DomainEntityResource {
 
   private void checkWritable(DomainEntity entity, Status status) {
     if (!entity.isWritable()) {
+      LOG.info("Entity with id {} is not writeable", entity.getId());
       throw new WebApplicationException(status);
     }
   }

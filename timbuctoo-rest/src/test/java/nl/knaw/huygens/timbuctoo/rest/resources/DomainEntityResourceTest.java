@@ -32,6 +32,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.rest.providers.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.rest.providers.model.TestConcreteDoc;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 
@@ -50,6 +51,17 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   // private static final String DEFAULT_PID = "c14a5e7d-4728-4f52-af98-480ff7fef08e";
   private static final String DEFAULT_ID = "TEST000000000001";
   private static final String USER_ROLE = "USER";
+
+  @Before
+  public void setUpBroker() throws JMSException {
+    Broker broker = injector.getInstance(Broker.class);
+    when(broker.getProducer(DomainEntityResource.INDEX_MSG_PRODUCER, Broker.INDEX_QUEUE)).thenReturn(getProducer(INDEX_PRODUCER));
+    when(broker.getProducer(DomainEntityResource.PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE)).thenReturn(getProducer(PERSISTENCE_PRODUCER));
+  }
+
+  private Producer getProducer(String name) {
+    return injector.getInstance(Key.get(Producer.class, Names.named(name)));
+  }
 
   @Test
   public void testGetDocExisting() {
@@ -103,13 +115,12 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPut() throws IOException, PersistenceException, JMSException {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
-    TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
-    doc.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
-    when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
+    TestConcreteDoc entity = new TestConcreteDoc(DEFAULT_ID);
+    entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
+    when(getStorageManager().getEntity(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(entity);
+    when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(entity);
 
-    setUpBroker();
-
-    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), times(1)).send(ActionType.MOD, DEFAULT_TYPE, DEFAULT_ID);
     verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.MOD, DEFAULT_TYPE, DEFAULT_ID);
@@ -120,13 +131,11 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutDocExistingDocumentWithoutPID() throws IOException, PersistenceException, JMSException {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
-    TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
-    when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
+    TestConcreteDoc entity = new TestConcreteDoc(DEFAULT_ID);
+    when(getStorageManager().getEntity(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(entity);
+    when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(entity);
 
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
-
-    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
@@ -187,9 +196,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     when(validator.validate(doc)).thenReturn(Sets.<ConstraintViolation<TestConcreteDoc>> newHashSet(violation));
 
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
-
     ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
@@ -208,9 +214,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     doThrow(IOException.class).when(getStorageManager()).modifyEntity(Matchers.<Class<TestConcreteDoc>> any(), any(TestConcreteDoc.class));
 
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
-
     ClientResponse response = domainResource("testconcretedocs", id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
@@ -223,9 +226,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
 
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
-
     ClientResponse response = domainResource("unknown", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
@@ -235,10 +235,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testPutDocWrongType() throws PersistenceException, JMSException {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
-    TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
 
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
+    TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
 
     ClientResponse response = domainResource("otherdocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
@@ -252,9 +250,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     GeneralTestDoc doc = new GeneralTestDoc(DEFAULT_ID);
 
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
-
     ClientResponse response = domainResource("otherdocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
@@ -264,9 +259,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testPutOnCollection() throws PersistenceException, JMSException {
     GeneralTestDoc doc = new GeneralTestDoc(DEFAULT_ID);
-
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
 
     ClientResponse response = domainResource("otherdocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
@@ -285,8 +277,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
     when(getStorageManager().addEntity(TestConcreteDoc.class, doc)).thenReturn(DEFAULT_ID);
 
-    setUpBroker();
-
     ClientResponse response = domainResource("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
     assertNotNull(response.getHeaders().getFirst("Location"));
@@ -300,9 +290,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.name = "test";
-
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
 
     ClientResponse response = domainResource("unknown", "all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
@@ -319,9 +306,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     doc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
-
     ClientResponse response = domainResource("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
@@ -337,9 +321,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     doc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(null);
 
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
-
     ClientResponse response = domainResource("otherdocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
@@ -350,9 +331,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPostSpecificDocument() throws PersistenceException, JMSException {
     TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
     doc.name = "test";
-
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
 
     ClientResponse response = domainResource("otherdocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
@@ -368,8 +346,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     doc.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
     when(getStorageManager().getEntity(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(doc);
 
-    setUpBroker();
-
     ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(ActionType.DEL, DEFAULT_TYPE, DEFAULT_ID);
@@ -383,9 +359,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
     when(getStorageManager().getEntity(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(doc);
 
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
-
     ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
@@ -397,9 +370,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
     when(getStorageManager().getEntity(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(null);
-
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
 
     ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
@@ -414,9 +384,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
     when(getStorageManager().getEntity(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(null);
 
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
-
     ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
@@ -425,10 +392,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteCollection() throws PersistenceException, JMSException {
-
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
-
     ClientResponse response = domainResource("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
@@ -463,9 +426,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
-
     ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
@@ -477,9 +437,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutDocUserNotLoggedIn() throws IOException, PersistenceException, JMSException {
     TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
-
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
 
     setUserNotLoggedIn();
 
@@ -498,9 +455,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     inputDoc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(inputDoc);
 
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
-
     ClientResponse response = domainResource("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, inputDoc);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
@@ -514,9 +468,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     doc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
-
     setUserNotLoggedIn();
 
     ClientResponse response = domainResource("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, doc);
@@ -529,9 +480,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testDeleteNotLoggedIn() throws PersistenceException, JMSException {
     setUserNotLoggedIn();
 
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
-
     ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
@@ -541,9 +489,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testDeleteUserNotInRole() throws PersistenceException, JMSException {
     setUpUserRoles(USER_ID, null);
-
-    //Set up the broker, for a better faillure message.
-    setUpBroker();
 
     ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
@@ -571,16 +516,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = domainResource("testconcretedocs", "TEST000000000002").path(variation).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-  }
-
-  protected void setUpBroker() throws JMSException {
-    Broker broker = injector.getInstance(Broker.class);
-    when(broker.getProducer(DomainEntityResource.INDEX_MSG_PRODUCER, Broker.INDEX_QUEUE)).thenReturn(getProducer(INDEX_PRODUCER));
-    when(broker.getProducer(DomainEntityResource.PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE)).thenReturn(getProducer(PERSISTENCE_PRODUCER));
-  }
-
-  protected Producer getProducer(String name) {
-    return injector.getInstance(Key.get(Producer.class, Names.named(name)));
   }
 
 }
