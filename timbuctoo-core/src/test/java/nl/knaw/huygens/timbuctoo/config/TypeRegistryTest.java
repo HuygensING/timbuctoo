@@ -48,6 +48,7 @@ public class TypeRegistryTest {
     assertEquals(TestExtraBaseDoc.class, registry.getTypeForIName("testextrabasedoc"));
   }
 
+  @Test
   public void testGetRoleForIName() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
     assertEquals(ProjectATestRole.class, registry.getRoleForIName("projectatestrole"));
@@ -188,6 +189,28 @@ public class TypeRegistryTest {
     assertFalse(TypeRegistry.isDomainEntity(AnEntity.class));
     assertFalse(TypeRegistry.isDomainEntity(ASystemEntity.class));
     assertTrue(TypeRegistry.isDomainEntity(ADomainEntity.class));
+  }
+
+  @Test
+  public void testIsRole() {
+    assertTrue(TypeRegistry.isRole(TestRole.class));
+    assertTrue(TypeRegistry.isRole(ProjectATestRole.class));
+    assertFalse(TypeRegistry.isRole(AnEntity.class));
+  }
+
+  public void testIsRoleWithStrings() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+    assertTrue(registry.isRole("testrole"));
+    assertTrue(registry.isRole("projectatestrole"));
+    assertFalse(registry.isRole("anentity"));
+  }
+
+  @Test
+  public void testIsVariable() {
+    assertTrue(TypeRegistry.isVariable(TestRole.class));
+    assertTrue(TypeRegistry.isVariable(ProjectATestRole.class));
+    assertFalse(TypeRegistry.isVariable(AnEntity.class));
+    assertTrue(TypeRegistry.isVariable(DomainEntity.class));
   }
 
   @Test(expected = ClassCastException.class)
