@@ -30,4 +30,10 @@ public class TestRole extends Role {
   public String toString() {
     return "TestRole{\nroleName: " + roleName + "\n}";
   }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(roleName);
+  }
+
 }

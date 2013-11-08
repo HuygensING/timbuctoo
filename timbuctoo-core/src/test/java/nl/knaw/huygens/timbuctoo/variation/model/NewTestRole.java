@@ -31,4 +31,8 @@ public class NewTestRole extends Role {
     return "NewTestRole{\nnewTestRoleName: " + newTestRoleName + "\n}";
   }
 
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(newTestRoleName);
+  }
 }

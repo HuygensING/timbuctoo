@@ -31,4 +31,9 @@ public class ProjectATestRole extends TestRole {
   public String toString() {
     return "ProjectATestRole{\nroleName: " + getRoleName() + "\nprojectATestRoleName: " + projectATestRoleName + "\n}";
   }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(getRoleName(), projectATestRoleName);
+  }
 }
