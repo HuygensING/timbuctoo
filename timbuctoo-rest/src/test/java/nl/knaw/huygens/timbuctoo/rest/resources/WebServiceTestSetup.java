@@ -114,8 +114,12 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     return injector.getInstance(JacksonJsonProvider.class);
   }
 
-  protected WebResource autoResource() {
-    return resource().path(Paths.DOMAIN_PREFIX);
+  protected WebResource domainResource(String... pathElements) {
+    WebResource resource = resource().path(Paths.DOMAIN_PREFIX);
+    for (String pathElement : pathElements) {
+      resource = resource.path(pathElement);
+    }
+    return resource;
   }
 
   @SuppressWarnings("unchecked")

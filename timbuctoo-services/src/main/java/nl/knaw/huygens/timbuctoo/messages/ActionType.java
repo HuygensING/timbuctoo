@@ -7,7 +7,7 @@ package nl.knaw.huygens.timbuctoo.messages;
  * @author martijnm
  */
 public enum ActionType {
-  ADD("add"), DEL("del"), END("end"), MOD("mod");
+  ADD("add"), MOD("mod"), DEL("del"), END("end");
 
   private final String stringRepresentation;
 
