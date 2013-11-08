@@ -274,6 +274,10 @@ public class TypeRegistry {
     return packageName.substring(packageName.lastIndexOf('.') + 1);
   }
 
+  public boolean isRole(String typeName) {
+    return this.iname2role.containsKey(typeName);
+  }
+
   // --- static utilities ----------------------------------------------
 
   public static boolean isEntity(Class<?> cls) {
@@ -292,7 +296,7 @@ public class TypeRegistry {
     return Variable.class.isAssignableFrom(cls);
   }
 
-  private boolean isRole(Class<?> cls) {
+  public static boolean isRole(Class<?> cls) {
     return Role.class.isAssignableFrom(cls);
   }
 
