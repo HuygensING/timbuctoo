@@ -244,20 +244,18 @@ public class TypeRegistry {
    * Gets a sub class of the primitive that correspondents with the {@code variation}.
    * @param typeForVariation should be a class of the model package.
    * @param variation should be a sub-package of the model package. 
-   * @return the class if one is found, null if not.
+   * @return the class if one is found, the class inserted if not.
    */
   public Class<? extends Variable> getVariationClass(Class<? extends Variable> typeForVariation, String variation) {
-    if (!variationMap.containsKey(variation)) {
-      return null;
-    }
-
-    for (Class<? extends Variable> variable : variationMap.get(variation)) {
-      if (typeForVariation.isAssignableFrom(variable)) {
-        return variable;
+    if (variationMap.containsKey(variation)) {
+      for (Class<? extends Variable> variable : variationMap.get(variation)) {
+        if (typeForVariation.isAssignableFrom(variable)) {
+          return variable;
+        }
       }
     }
 
-    return null;
+    return typeForVariation;
   }
 
   /**
