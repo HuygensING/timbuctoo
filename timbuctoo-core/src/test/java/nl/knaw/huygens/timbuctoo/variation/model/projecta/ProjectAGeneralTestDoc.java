@@ -22,7 +22,19 @@ public class ProjectAGeneralTestDoc extends GeneralTestDoc {
 
   @Override
   public String toString() {
-    return "ProjectAGeneralTestDoc { \ngeneralTestDocValue: " + generalTestDocValue + "\nid: " + getId() + "\npid: " + getPid() + "\n projectAGeneralTestDocValue: " + projectAGeneralTestDocValue
-        + "\n}";
+    StringBuilder sb = new StringBuilder();
+    sb.append("ProjectAGeneralTestDoc { \ngeneralTestDocValue: ");
+    sb.append(generalTestDocValue);
+    sb.append("\nid: ");
+    sb.append(getId());
+    sb.append("\nroles: ");
+    sb.append(getRoles());
+    sb.append("\npid: ");
+    sb.append(getPid());
+    sb.append("\nprojectAGeneralTestDocValue: ");
+    sb.append(projectAGeneralTestDocValue);
+    sb.append("\n}");
+
+    return sb.toString();
   }
 }

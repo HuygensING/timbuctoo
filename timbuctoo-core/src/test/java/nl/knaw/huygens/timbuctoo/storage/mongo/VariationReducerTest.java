@@ -168,7 +168,7 @@ public class VariationReducerTest extends VariationTestBase {
 
   @Test
   public void testReduceDomainEntityWithRole() throws VariationException, JsonProcessingException {
-    Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, "test");
+    Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, GENERAL_TEST_DOC_VALUE);
     map.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
     map.put("projectbtestrole.beeName", "beeName");
     map.put("testrole.roleName", "roleName");
@@ -192,7 +192,7 @@ public class VariationReducerTest extends VariationTestBase {
 
   @Test
   public void testReduceDomainEntityWithMultipleRoles() throws VariationException, JsonProcessingException {
-    Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, "test");
+    Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, GENERAL_TEST_DOC_VALUE);
     map.put("projectageneraltestdoc.projectAGeneralTestDocValue", "testB");
     map.put("projectatestrole.projectANewTestRoleName", "beeName");
     map.put("testrole.roleName", "roleName");
@@ -211,6 +211,7 @@ public class VariationReducerTest extends VariationTestBase {
     newTestRole.setNewTestRoleName("newTestRoleName");
     ArrayList<Role> roles = Lists.newArrayList();
     roles.add(testRole);
+    roles.add(newTestRole);
     expected.setRoles(roles);
 
     GeneralTestDoc actual = reducer.reduce(GeneralTestDoc.class, node);
@@ -220,8 +221,9 @@ public class VariationReducerTest extends VariationTestBase {
 
   @Test
   public void testReduceDomainEntityProjectSubClassWithRole() throws VariationException, JsonProcessingException {
-    Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, "test");
-    map.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
+    Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, GENERAL_TEST_DOC_VALUE);
+    String projectBTestDocValue = "testB";
+    map.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", projectBTestDocValue);
     map.put("projectbtestrole.beeName", "beeName");
     map.put("testrole.roleName", "roleName");
 
@@ -231,6 +233,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setId(TEST_ID);
     expected.setPid(TEST_PID);
     expected.generalTestDocValue = GENERAL_TEST_DOC_VALUE;
+    expected.projectBGeneralTestDocValue = projectBTestDocValue;
     ProjectBTestRole testRole = new ProjectBTestRole();
     testRole.setRoleName("roleName");
     testRole.setBeeName("beeName");
@@ -245,10 +248,40 @@ public class VariationReducerTest extends VariationTestBase {
   }
 
   @Test
+  public void testReduceDomainEnityProjectSubClassWithRoleNotFilledIn() throws VariationException, JsonProcessingException {
+    Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, GENERAL_TEST_DOC_VALUE);
+    map.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
+    map.put("projectbtestrole.beeName", "beeName");
+    map.put("testrole.roleName", "roleName");
+
+    JsonNode node = mapper.valueToTree(map);
+
+    ProjectAGeneralTestDoc expected = new ProjectAGeneralTestDoc();
+    expected.setId(TEST_ID);
+    expected.setPid(TEST_PID);
+    expected.generalTestDocValue = GENERAL_TEST_DOC_VALUE;
+    ProjectATestRole testRole = new ProjectATestRole();
+    testRole.setRoleName("roleName");
+
+    ArrayList<Role> roles = Lists.newArrayList();
+    roles.add(testRole);
+    expected.setRoles(roles);
+
+    ProjectAGeneralTestDoc actual = reducer.reduce(ProjectAGeneralTestDoc.class, node);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testReduceDomainEnityProjectSubClassWithUndefinedSubRole() {
+
+  }
+
+  @Test
   public void testReduceDomainEntityProjectSubClassWithMultipleRoles() throws VariationException, JsonProcessingException {
     Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, "test");
     map.put("projectageneraltestdoc.projectAGeneralTestDocValue", "testB");
-    map.put("projectatestrole.projectANewTestRoleName", "beeName");
+    map.put("projectatestrole.projectATestRoleName", "beeName");
     map.put("testrole.roleName", "roleName");
     map.put("newtestrole.newTestRoleName", "newTestRoleName");
     map.put("projectanewtestrole.projectANewTestRoleName", "projectANewTestRoleName");
@@ -259,6 +292,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setId(TEST_ID);
     expected.setPid(TEST_PID);
     expected.generalTestDocValue = "test";
+    expected.projectAGeneralTestDocValue = "testB";
     ProjectATestRole role = new ProjectATestRole();
     role.setProjectATestRoleName("beeName");
     role.setRoleName("roleName");
@@ -270,7 +304,7 @@ public class VariationReducerTest extends VariationTestBase {
     roles.add(projectANewTestRole);
     expected.setRoles(roles);
 
-    ProjectBGeneralTestDoc actual = reducer.reduce(ProjectBGeneralTestDoc.class, node);
+    ProjectAGeneralTestDoc actual = reducer.reduce(ProjectAGeneralTestDoc.class, node);
 
     assertEquals(expected, actual);
 
@@ -290,6 +324,36 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setId(TEST_ID);
     expected.setPid(TEST_PID);
     expected.generalTestDocValue = projectAVariation;
+
+    GeneralTestDoc actual = reducer.reduce(GeneralTestDoc.class, node, "projecta");
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testReduceDomainEntityWithRoleRequestedVariation() throws VariationException, JsonProcessingException {
+    Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, "test");
+    map.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
+    map.put("projectbtestrole.beeName", "beeName");
+    map.put("testrole.roleName", "roleName");
+    String projectatestvalue = "projectatest";
+    map.put("projectageneraltestdoc.projectAGeneralTestDocValue", projectatestvalue);
+    String projectAVariation = "projectAVariation";
+    map.put("projectageneraltestdoc.generalTestDocValue", projectAVariation);
+    map.put("projectatestrole.projectATestRoleName", "value");
+    map.put("projectatestrole.roleName", "value");
+
+    JsonNode node = mapper.valueToTree(map);
+
+    GeneralTestDoc expected = new GeneralTestDoc();
+    expected.setId(TEST_ID);
+    expected.setPid(TEST_PID);
+    expected.generalTestDocValue = projectAVariation;
+    TestRole testRole = new TestRole();
+    testRole.setRoleName("value");
+    ArrayList<Role> roles = Lists.newArrayList();
+    roles.add(testRole);
+    expected.setRoles(roles);
 
     GeneralTestDoc actual = reducer.reduce(GeneralTestDoc.class, node, "projecta");
 
