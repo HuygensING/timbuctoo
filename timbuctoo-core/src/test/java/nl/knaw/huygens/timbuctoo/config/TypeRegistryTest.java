@@ -154,7 +154,7 @@ public class TypeRegistryTest {
   }
 
   @Test
-  public void testGetVariationClass() {
+  public void testGetVariationClassForDomainEntity() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
     assertEquals(ProjectAGeneralTestDoc.class, registry.getVariationClass(GeneralTestDoc.class, "projecta"));
   }
@@ -163,6 +163,13 @@ public class TypeRegistryTest {
   public void testGetVariationClassForRole() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
     assertEquals(ProjectATestRole.class, registry.getVariationClass(TestRole.class, "projecta"));
+  }
+
+  @Test
+  public void testGetVariationClassNotFound() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+    assertEquals(TestRole.class, registry.getVariationClass(TestRole.class, "nonExistionVariation"));
+
   }
 
   // --- tests of static utilities -------------------------------------
