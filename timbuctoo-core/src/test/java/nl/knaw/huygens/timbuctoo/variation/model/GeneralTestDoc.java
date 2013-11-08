@@ -1,6 +1,12 @@
 package nl.knaw.huygens.timbuctoo.variation.model;
 
+import java.util.List;
+import java.util.Set;
+
+import nl.knaw.huygens.timbuctoo.model.Role;
+
 import com.google.common.base.Objects;
+import com.google.common.collect.Sets;
 
 public class GeneralTestDoc extends TestConcreteDoc {
 
@@ -25,9 +31,17 @@ public class GeneralTestDoc extends TestConcreteDoc {
     isEqual &= Objects.equal(other.generalTestDocValue, generalTestDocValue);
     isEqual &= Objects.equal(other.getId(), getId());
     isEqual &= Objects.equal(other.getPid(), getPid());
-    isEqual &= Objects.equal(other.getRoles(), getRoles());
+    //Order does not matter for us, so compare with sets.
+    isEqual &= Objects.equal(createRoleSet(other.getRoles()), createRoleSet(getRoles()));
 
     return isEqual;
+  }
+
+  private Set<Role> createRoleSet(List<Role> roles) {
+    if (roles == null) {
+      return null;
+    }
+    return Sets.newHashSet(roles);
   }
 
   @Override
