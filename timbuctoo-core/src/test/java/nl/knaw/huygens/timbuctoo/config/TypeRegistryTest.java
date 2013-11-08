@@ -168,8 +168,13 @@ public class TypeRegistryTest {
   @Test
   public void testGetVariationClassNotFound() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertEquals(TestRole.class, registry.getVariationClass(TestRole.class, "nonExistionVariation"));
+    assertEquals(null, registry.getVariationClass(TestRole.class, "nonExistionVariation"));
+  }
 
+  @Test
+  public void testGetVariationClassVariationNull() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+    assertEquals(null, registry.getVariationClass(TestRole.class, null));
   }
 
   // --- tests of static utilities -------------------------------------
