@@ -25,6 +25,7 @@ public class GeneralTestDoc extends TestConcreteDoc {
     isEqual &= Objects.equal(other.generalTestDocValue, generalTestDocValue);
     isEqual &= Objects.equal(other.getId(), getId());
     isEqual &= Objects.equal(other.getPid(), getPid());
+    isEqual &= Objects.equal(other.getRoles(), getRoles());
 
     return isEqual;
   }
@@ -36,8 +37,17 @@ public class GeneralTestDoc extends TestConcreteDoc {
 
   @Override
   public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("GeneralTestDoc { \ngeneralTestDocValue: ");
+    sb.append(generalTestDocValue);
+    sb.append("\nid: ");
+    sb.append(getId());
+    sb.append("\nroles: ");
+    sb.append(getRoles());
+    sb.append("\npid: ");
+    sb.append(getPid());
+    sb.append("\n}");
 
-    return "GeneralTestDoc { \ngeneralTestDocValue: " + generalTestDocValue + "\nid: " + getId() + "\npid: " + getPid() + "\n}";
+    return sb.toString();
   }
-
 }
