@@ -31,21 +31,23 @@ public class PersistenceService extends ConsumerService implements Runnable {
   protected void executeAction(Action action) {
     try {
       switch (action.getActionType()) {
-
       case ADD:
+      case MOD:
         Class<? extends Entity> type = action.getType();
         String pid = persistenceWrapper.persistObject(type, action.getId());
         storageManager.setPID(type, action.getId(), pid);
         break;
-
+      case DEL:
+        LOG.debug("Ignoring action {}", action);
+        break;
       default:
+        LOG.warn("Unexpected action {}", action);
         break;
       }
-    } catch (PersistenceException ex) {
+    } catch (PersistenceException e) {
       LOG.error("Persisting {} with id {} went wrong", action.getType(), action.getId());
-      LOG.error("exception", ex);
+      LOG.error("exception", e);
     }
-
   }
 
   @Override

@@ -27,7 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import com.google.inject.Inject;
 
 @Path(Paths.SYSTEM_PREFIX + "/users")
-public class UserResource {
+public class UserResource extends ResourceBase {
 
   private static final String ID_REGEX = "/{id:" + User.ID_PREFIX + "\\d+}";
   private static final String UNVERIFIED_USER_ROLE = "UNVERIFIED_USER";
@@ -47,10 +47,7 @@ public class UserResource {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
-  public List<User> getAll(@QueryParam("rows")
-  @DefaultValue("200")
-  int rows, @QueryParam("start")
-  int start) {
+  public List<User> getAll(@QueryParam("rows") @DefaultValue("200") int rows, @QueryParam("start") int start) {
     return storageManager.getAllLimited(User.class, start, rows);
   }
 
@@ -58,23 +55,15 @@ public class UserResource {
   @Path(ID_REGEX)
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
-  public User get(@PathParam(ID_PARAM)
-  String id) {
-    User user = storageManager.getEntity(User.class, id);
-
-    if (user == null) {
-      throw new WebApplicationException(Response.Status.NOT_FOUND);
-    }
-
-    return user;
+  public User get(@PathParam(ID_PARAM) String id) {
+    return checkNotNull(storageManager.getEntity(User.class, id), Status.NOT_FOUND);
   }
 
   @GET
   @Path("/me")
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed({ ADMIN_ROLE, USER_ROLE, UNVERIFIED_USER_ROLE })
-  public User getMyUserData(@QueryParam("id")
-  String id) {
+  public User getMyUserData(@QueryParam("id") String id) {
     return storageManager.getEntity(User.class, id);
   }
 
@@ -82,8 +71,7 @@ public class UserResource {
   @Path(ID_REGEX)
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
-  public Response put(@PathParam(ID_PARAM)
-  String id, User user) throws IOException {
+  public Response put(@PathParam(ID_PARAM) String id, User user) throws IOException {
     try {
       storageManager.modifyEntity(User.class, user);
     } catch (IOException ex) {
@@ -92,7 +80,7 @@ public class UserResource {
 
     sendEmail(user);
 
-    return Response.status(Response.Status.NO_CONTENT).build();
+    return Response.status(Status.NO_CONTENT).build();
   }
 
   private void sendEmail(User user) {
@@ -116,16 +104,12 @@ public class UserResource {
   @Path(ID_REGEX)
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
-  public Response delete(@PathParam(ID_PARAM)
-  String id) throws IOException {
-    User user = storageManager.getEntity(User.class, id);
+  public Response delete(@PathParam(ID_PARAM) String id) throws IOException {
+    User user = checkNotNull(storageManager.getEntity(User.class, id), Status.NOT_FOUND);
 
-    if (user == null) {
-      throw new WebApplicationException(Response.Status.NOT_FOUND);
-    }
+    storageManager.removeEntity(user);
 
-    storageManager.removeEntity(User.class, user);
-
-    return Response.status(Response.Status.NO_CONTENT).build();
+    return Response.status(Status.NO_CONTENT).build();
   }
+
 }

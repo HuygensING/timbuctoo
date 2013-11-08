@@ -5,7 +5,6 @@ import java.util.Date;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 public interface BasicStorage {
 
@@ -31,8 +30,6 @@ public interface BasicStorage {
   <T extends Entity> String addItem(Class<T> type, T item) throws IOException;
 
   <T extends Entity> void updateItem(Class<T> type, String id, T item) throws IOException;
-
-  <T extends Entity> void deleteItem(Class<T> type, String id, Change change) throws IOException;
 
   <T extends Entity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException;
 

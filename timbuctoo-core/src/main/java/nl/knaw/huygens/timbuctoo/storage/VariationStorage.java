@@ -5,6 +5,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 public interface VariationStorage extends BasicStorage {
 
@@ -55,5 +56,7 @@ public interface VariationStorage extends BasicStorage {
    * Removes non-persistent domain entities with the specified type and id's..
    */
   <T extends DomainEntity> void removeNonPersistent(Class<T> type, List<String> ids) throws IOException;
+
+  <T extends DomainEntity> void deleteItem(Class<T> type, String id, Change change) throws IOException;
 
 }

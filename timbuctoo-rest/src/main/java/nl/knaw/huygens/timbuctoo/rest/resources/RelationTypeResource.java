@@ -8,7 +8,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
@@ -21,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.google.inject.Inject;
 
 @Path(Paths.SYSTEM_PREFIX + "/relationtypes")
-public class RelationTypeResource {
+public class RelationTypeResource extends ResourceBase {
 
   private static final String ID_PARAM = "id";
   private static final String ID_PATH = "/{id: [a-zA-Z]{4}\\d+}";
@@ -37,11 +36,8 @@ public class RelationTypeResource {
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
   public List<RelationType> getAllDocs( //
-      @QueryParam("rows")
-      @DefaultValue("200")
-      int rows, //
-      @QueryParam("start")
-      int start //
+      @QueryParam("rows") @DefaultValue("200") int rows, //
+      @QueryParam("start") int start //
   ) {
     return storageManager.getAllLimited(RelationType.class, start, rows);
   }
@@ -51,21 +47,9 @@ public class RelationTypeResource {
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
   public RelationType getDoc( //
-      @PathParam(ID_PARAM)
-      String id //
+      @PathParam(ID_PARAM) String id //
   ) {
     return checkNotNull(storageManager.getEntity(RelationType.class, id), Status.NOT_FOUND);
-  }
-
-  /**
-   * Checks the specified reference and throws a {@code WebApplicationException}
-   * with the specified status if the reference is {@code null}.
-   */
-  private <T> T checkNotNull(T reference, Status status) {
-    if (reference == null) {
-      throw new WebApplicationException(status);
-    }
-    return reference;
   }
 
 }

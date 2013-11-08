@@ -179,12 +179,12 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Entity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
+  public <T extends DomainEntity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
     DBCollection col = getVariationCollection(type);
     BasicDBObject q = new BasicDBObject("_id", id);
     DBObject existingNode = col.findOne(q);
     if (existingNode == null) {
-      throw new IOException("No entity was found for ID " + id + "!");
+      throw new IOException("No entity was found for ID " + id);
     }
     ObjectNode node;
     try {
@@ -197,8 +197,10 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     } catch (Exception ex) {
       throw new IOException("Couldn't read properly from database.");
     }
+    node.put("^deleted", true);
+    node.put("^pid", (String) null);
     JsonNode changeTree = getMapper().valueToTree(change);
-    node.put("^deleted", true).put("^lastChange", changeTree);
+    node.put("^lastChange", changeTree);
     int rev = node.get("^rev").asInt();
     node.put("^rev", rev + 1);
     q.put("^rev", rev);
