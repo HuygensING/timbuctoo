@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -118,5 +119,22 @@ public class MongoFieldMapperTest {
     String actual = instance.getFieldName(type, declaredField);
 
     assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testGetTypeNameOfFieldNameFieldNameWithDot() {
+    String fieldName = "test.testField";
+    assertEquals("test", instance.getTypeNameOfFieldName(fieldName));
+  }
+
+  @Test
+  public void testGetTypeNameOfFieldNameFieldNameWithoutDot() {
+    String fieldName = "testField";
+    assertNull(instance.getTypeNameOfFieldName(fieldName));
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testGetTypeNameOfFieldNameFieldNameNull() {
+    instance.getTypeNameOfFieldName(null);
   }
 }

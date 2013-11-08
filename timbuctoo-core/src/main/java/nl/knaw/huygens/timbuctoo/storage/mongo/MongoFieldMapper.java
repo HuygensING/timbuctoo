@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -33,6 +35,12 @@ public class MongoFieldMapper {
     }
 
     return map;
+  }
+
+  public String getTypeNameOfFieldName(String fieldName) {
+    checkNotNull(fieldName);
+
+    return fieldName.contains(".") ? fieldName.substring(0, fieldName.indexOf('.')) : null;
   }
 
   /**
