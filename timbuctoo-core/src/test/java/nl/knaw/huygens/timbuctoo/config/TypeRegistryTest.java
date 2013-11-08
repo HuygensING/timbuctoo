@@ -13,7 +13,9 @@ import nl.knaw.huygens.timbuctoo.variation.model.TestBaseDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestExtraBaseDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestInheritsFromTestBaseDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.TestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestRole;
 
 import org.junit.Test;
 
@@ -26,6 +28,7 @@ import org.junit.Test;
  */
 public class TypeRegistryTest {
 
+  private static final String PROJECT_A_MODEL = "timbuctoo.variation.model.projecta";
   private static final String MODEL_PACKAGE = "timbuctoo.variation.model";
 
   @Test(expected = IllegalArgumentException.class)
@@ -45,12 +48,35 @@ public class TypeRegistryTest {
     assertEquals(TestExtraBaseDoc.class, registry.getTypeForIName("testextrabasedoc"));
   }
 
+  public void testGetRoleForIName() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+    assertEquals(ProjectATestRole.class, registry.getRoleForIName("projectatestrole"));
+  }
+
   @Test
   public void testGetTypeForXName() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
     assertEquals(GeneralTestDoc.class, registry.getTypeForXName("generaltestdocs"));
     // TestExtraBaseDoc has @EntityTypeName("testextrabasedoc")
     assertEquals(TestExtraBaseDoc.class, registry.getTypeForXName("testextrabasedoc"));
+  }
+
+  @Test
+  public void testGetINameForType() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
+    assertEquals("generaltestdoc", registry.getINameForType(GeneralTestDoc.class));
+  }
+
+  @Test
+  public void testGetINameForRole() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+    assertEquals("projectatestrole", registry.getINameForRole(ProjectATestRole.class));
+  }
+
+  @Test
+  public void testGetXNameForType() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
+    assertEquals("generaltestdocs", registry.getXNameForType(GeneralTestDoc.class));
   }
 
   @Test
@@ -103,9 +129,15 @@ public class TypeRegistryTest {
   }
 
   @Test
-  public void testClassGetVariation() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " timbuctoo.variation.model.projecta");
+  public void testGetClassVariation() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
     assertEquals("projecta", registry.getClassVariation(ProjectAGeneralTestDoc.class));
+  }
+
+  @Test
+  public void testGetClassVariationForRole() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+    assertEquals("projecta", registry.getClassVariation(ProjectATestRole.class));
   }
 
   @Test
@@ -122,8 +154,14 @@ public class TypeRegistryTest {
 
   @Test
   public void testGetVariationClass() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " timbuctoo.variation.model.projecta");
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
     assertEquals(ProjectAGeneralTestDoc.class, registry.getVariationClass(GeneralTestDoc.class, "projecta"));
+  }
+
+  @Test
+  public void testGetVariationClassForRole() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+    assertEquals(ProjectATestRole.class, registry.getVariationClass(TestRole.class, "projecta"));
   }
 
   // --- tests of static utilities -------------------------------------

@@ -10,7 +10,9 @@ import java.util.Set;
 import nl.knaw.huygens.timbuctoo.annotations.DoNotRegister;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.model.Variable;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -60,12 +62,15 @@ public class TypeRegistry {
   private final Map<Class<? extends Entity>, String> type2iname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> iname2type = Maps.newHashMap();
 
-  private final Map<String, Set<Class<? extends DomainEntity>>> variationMap = Maps.newHashMap();
+  private final Map<String, Set<Class<? extends Variable>>> variationMap = Maps.newHashMap();
 
   private final Map<Class<? extends Entity>, String> type2xname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> xname2type = Maps.newHashMap();
 
   private final Map<String, String> iname2xname = Maps.newHashMap();
+
+  private final Map<String, Class<? extends Role>> iname2role = Maps.newHashMap();
+  private final Map<Class<? extends Role>, String> role2iname = Maps.newHashMap();
 
   public TypeRegistry(String packageNames) {
     checkArgument(packageNames != null, "'packageNames' must not be null");
@@ -88,18 +93,31 @@ public class TypeRegistry {
   private void registerPackage(ClassPath classPath, String packageName) {
     for (ClassInfo info : classPath.getTopLevelClasses(packageName)) {
       Class<?> type = info.load();
-      if (shouldRegisterClass(type)) {
+      if (shouldRegisterEntity(type)) {
         registerClass((Class<? extends Entity>) type);
-        registerVariationForClass((Class<? extends Entity>) type);
-        LOG.debug("Registered {}", type.getName());
+        if (isDomainEntity(type)) {
+          registerVariationForClass((Class<? extends DomainEntity>) type);
+        }
+        LOG.debug("Registered entity {}", type.getName());
+      } else if (shouldRegisterRole(type)) {
+        registerRole((Class<? extends Role>) type);
+        registerVariationForClass((Class<? extends Role>) type);
       }
     }
   }
 
-  private boolean shouldRegisterClass(Class<?> type) {
+  private boolean shouldRegisterRole(Class<?> type) {
+    return isRole(type) && !shouldNotRegister(type);
+  }
+
+  private boolean shouldRegisterEntity(Class<?> type) {
     return isEntity(type) //
-        && !Modifier.isAbstract(type.getModifiers()) //
-        && !type.isAnnotationPresent(DoNotRegister.class);
+        && !shouldNotRegister(type);
+  }
+
+  private boolean shouldNotRegister(Class<?> type) {
+    return Modifier.isAbstract(type.getModifiers()) //
+        || type.isAnnotationPresent(DoNotRegister.class);
   }
 
   // -------------------------------------------------------------------
@@ -122,20 +140,25 @@ public class TypeRegistry {
     iname2xname.put(iname, xname);
   }
 
-  private void registerVariationForClass(Class<? extends Entity> type) {
-    if (DomainEntity.class.isAssignableFrom(type)) {
-      @SuppressWarnings("unchecked")
-      Class<? extends DomainEntity> domainEntity = (Class<? extends DomainEntity>) type;
-      String variation = getClassVariation(domainEntity);
+  private <T extends Role> void registerRole(Class<T> role) {
+    String iname = TypeNameGenerator.getInternalName(role);
+    if (iname2role.containsKey(iname)) {
+      throw new IllegalStateException("Duplicate internal type name " + iname);
+    }
+    iname2role.put(iname, role);
+    role2iname.put(role, iname);
+  }
 
-      if (variation != null) {
-        if (variationMap.containsKey(variation)) {
-          variationMap.get(variation).add(domainEntity);
-        } else {
-          Set<Class<? extends DomainEntity>> set = Sets.newHashSet();
-          set.add(domainEntity);
-          variationMap.put(variation, set);
-        }
+  private void registerVariationForClass(Class<? extends Variable> type) {
+    String variation = getClassVariation(type);
+
+    if (variation != null) {
+      if (variationMap.containsKey(variation)) {
+        variationMap.get(variation).add(type);
+      } else {
+        Set<Class<? extends Variable>> set = Sets.newHashSet();
+        set.add(type);
+        variationMap.put(variation, set);
       }
     }
   }
@@ -158,11 +181,29 @@ public class TypeRegistry {
   }
 
   /**
+   * Returns the internal type name for the specified role type token,
+   * or {@code null} if there is no such name.
+   */
+  public String getINameForRole(Class<? extends Role> role) {
+    return role2iname.get(role);
+  }
+
+  /**
    * Returns the type token for the specified internal type name,
    * or {@code null} if there is no such token.
    */
-  public Class<? extends Entity> getTypeForIName(String iname) {
-    return iname2type.get(iname);
+  public Class<? extends Entity> getTypeForIName(String iName) {
+    return iname2type.get(iName);
+  }
+
+  /**
+   * Returns the role type token for the specified internal name
+   * or {@code null} if there is no such token.
+   * @param iName the internal name that is requested.
+   * @return
+   */
+  public Class<? extends Role> getRoleForIName(String iName) {
+    return iname2role.get(iName);
   }
 
   /**
@@ -177,8 +218,8 @@ public class TypeRegistry {
    * Returns the type token for the specified external type name,
    * or {@code null} if there is no such token.
    */
-  public Class<? extends Entity> getTypeForXName(String xname) {
-    return xname2type.get(xname);
+  public Class<? extends Entity> getTypeForXName(String xName) {
+    return xname2type.get(xName);
   }
 
   /**
@@ -205,14 +246,14 @@ public class TypeRegistry {
    * @param variation should be a sub-package of the model package. 
    * @return the class if one is found, null if not.
    */
-  public Class<? extends DomainEntity> getVariationClass(Class<? extends DomainEntity> typeForVariation, String variation) {
+  public Class<? extends Variable> getVariationClass(Class<? extends Variable> typeForVariation, String variation) {
     if (!variationMap.containsKey(variation)) {
       return null;
     }
 
-    for (Class<? extends DomainEntity> domainEntity : variationMap.get(variation)) {
-      if (typeForVariation.isAssignableFrom(domainEntity)) {
-        return domainEntity;
+    for (Class<? extends Variable> variable : variationMap.get(variation)) {
+      if (typeForVariation.isAssignableFrom(variable)) {
+        return variable;
       }
     }
 
@@ -224,7 +265,7 @@ public class TypeRegistry {
    * @param type the type the variation should be determined of.
    * @return the variation. This will be null for each primitive (i.e. Person) and supporting classes (like DomainEntity).
    */
-  public String getClassVariation(Class<? extends DomainEntity> type) {
+  public String getClassVariation(Class<? extends Variable> type) {
     String packageName = type.getPackage().getName();
     if (packageName.endsWith(".model")) {
       return null;
@@ -245,6 +286,14 @@ public class TypeRegistry {
 
   public static boolean isDomainEntity(Class<?> cls) {
     return DomainEntity.class.isAssignableFrom(cls);
+  }
+
+  public static boolean isVariable(Class<?> cls) {
+    return Variable.class.isAssignableFrom(cls);
+  }
+
+  private boolean isRole(Class<?> cls) {
+    return Role.class.isAssignableFrom(cls);
   }
 
   /**
