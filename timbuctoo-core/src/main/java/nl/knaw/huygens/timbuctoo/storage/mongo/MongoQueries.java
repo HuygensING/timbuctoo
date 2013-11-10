@@ -1,5 +1,10 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import java.util.Date;
+import java.util.Map;
+
+import org.mongojack.DBQuery;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
@@ -16,8 +21,16 @@ public class MongoQueries {
     return new BasicDBObject("_id", id);
   }
 
-  public DBObject selectByKeyValue(String key, Object value) {
+  public DBObject selectByProperty(String key, Object value) {
     return new BasicDBObject(key, value);
+  }
+
+  public DBObject selectByProperties(Map<String, Object> properties) {
+    return new BasicDBObject(properties);
+  }
+
+  public DBObject selectByDate(String dateField, Date dateValue) {
+    return DBQuery.lessThan(dateField, dateValue);
   }
 
 }

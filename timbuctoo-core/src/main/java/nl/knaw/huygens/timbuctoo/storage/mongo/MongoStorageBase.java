@@ -10,14 +10,12 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
 
-import org.mongojack.DBQuery;
-import org.mongojack.DBQuery.Query;
 import org.mongojack.JacksonDBCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
+import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 
 /**
@@ -28,6 +26,7 @@ public abstract class MongoStorageBase implements BasicStorage {
   private static final Logger LOG = LoggerFactory.getLogger(MongoStorageBase.class);
 
   protected final TypeRegistry typeRegistry;
+  protected final MongoQueries queries;
   private final Mongo mongo;
   private final String dbName;
   protected DB db;
@@ -35,6 +34,7 @@ public abstract class MongoStorageBase implements BasicStorage {
 
   public MongoStorageBase(TypeRegistry registry, Mongo mongo, DB db, String dbName) {
     this.typeRegistry = registry;
+    this.queries = new MongoQueries();
     this.mongo = mongo;
     this.dbName = dbName;
     this.db = db;
@@ -77,36 +77,39 @@ public abstract class MongoStorageBase implements BasicStorage {
 
   @Override
   public <T extends SystemEntity> T findItemByKey(Class<T> type, String key, String value) throws IOException {
-    BasicDBObject query = new BasicDBObject(key, value);
+    DBObject query = queries.selectByProperty(key, value);
     return getCollection(type).findOne(query);
   }
 
   @Override
   public <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException {
     Map<String, Object> properties = new MongoObjectMapper().mapObject(type, example);
-    BasicDBObject query = new BasicDBObject(properties);
+    DBObject query = queries.selectByProperties(properties);
     return getCollection(type).findOne(query);
   }
 
   @Override
   public <T extends SystemEntity> void removeItem(Class<T> type, String id) {
-    getCollection(type).removeById(id);
+    DBObject query = queries.selectById(id);
+    getCollection(type).remove(query);
   }
 
   @Override
   public <T extends SystemEntity> int removeAll(Class<T> type) {
-    return getCollection(type).remove(new BasicDBObject()).getN();
+    DBObject query = queries.selectAll();
+    return getCollection(type).remove(query).getN();
   }
 
   @Override
   public <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
-    Query query = DBQuery.lessThan(dateField, dateValue);
+    DBObject query = queries.selectByDate(dateField, dateValue);
     return getCollection(type).remove(query).getN();
   }
 
   // TODO decide whether this needs to be cacheable
   protected RelationType getRelationType(String id) {
-    return getCollection(RelationType.class).findOneById(id);
+    DBObject query = queries.selectById(id);
+    return getCollection(RelationType.class).findOne(query);
   }
 
   // --- domain entities -----------------------------------------------
