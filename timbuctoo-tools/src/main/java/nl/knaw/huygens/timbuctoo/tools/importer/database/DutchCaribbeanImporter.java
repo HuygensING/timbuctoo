@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -60,9 +61,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
 
     // Handle commandline arguments
     String importDirName = (args.length > 0) ? args[0] : "../../AtlantischeGids/work/";
-    System.out.println("Import directory: " + importDirName);
     String configFileName = (args.length > 1) ? args[1] : "config.xml";
-    System.out.println("Configuration file: " + configFileName);
 
     Configuration config = new Configuration(configFileName);
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
@@ -71,14 +70,10 @@ public class DutchCaribbeanImporter extends DefaultImporter {
     IndexManager indexManager = null;
 
     try {
+      long start = System.currentTimeMillis();
 
       storageManager = injector.getInstance(StorageManager.class);
-      storageManager.clear();
-
       indexManager = injector.getInstance(IndexManager.class);
-      indexManager.deleteAllEntities();
-
-      long start = System.currentTimeMillis();
 
       TypeRegistry registry = injector.getInstance(TypeRegistry.class);
       RelationManager relationManager = new RelationManager(registry, storageManager);
@@ -113,7 +108,6 @@ public class DutchCaribbeanImporter extends DefaultImporter {
 
   private final Map<String, Reference> keywordRefMap = Maps.newHashMap();
   private final Map<String, Reference> personRefMap = Maps.newHashMap();
-  private final Map<String, Reference> placeRefMap = Maps.newHashMap();
   private final Map<String, Reference> legislationRefMap = Maps.newHashMap();
   private final Map<String, Reference> archiveRefMap = Maps.newHashMap();
   private final Map<String, Reference> archiverRefMap = Maps.newHashMap();
@@ -146,56 +140,56 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   }
 
   public void importAll() throws Exception {
+
+    printBoxedText("1. Initialization");
+
+    System.out.println(storageManager.getStatus());
+    storageManager.clear();
+    System.out.println(storageManager.getStatus());
+
+    System.out.println(indexManager.getStatus());
+    indexManager.deleteAllEntities();
+    System.out.println(indexManager.getStatus());
+
     System.out.printf("%n.. Setup relation types%n");
+    // FIXME system entities shouldn't have been removed!
+    setup(relationManager);
     setupRelationTypes();
 
-    System.out.println();
-    System.out.println("---------------------------------");
-    System.out.println("--  Pass 1 - basic properties  --");
-    System.out.println("---------------------------------");
+    printBoxedText("2. Basic properties");
 
-    System.out.printf("%n.. Keywords%n");
+    System.out.println(".. Keywords");
     importKeywords(keywordRefMap);
     System.out.printf("Number of entries = %d%n", keywordRefMap.size());
 
-    System.out.printf("%n.. Persons%n");
+    System.out.println(".. Persons");
     importPersons(personRefMap);
     System.out.printf("Number of entries = %d%n", personRefMap.size());
 
-    System.out.printf("%n.. Places%n");
-    System.out.printf("Number of entries = %d%n", placeRefMap.size());
-
-    System.out.printf("%n.. Legislation%n");
+    System.out.println(".. Legislation");
     importLegislation(legislationRefMap);
     System.out.printf("Number of entries = %d%n", legislationRefMap.size());
 
-    System.out.printf("%n.. Archives%n");
+    System.out.println(".. Archives");
     importArchives(archiveRefMap);
     System.out.printf("Number of entries = %d%n", archiveRefMap.size());
 
-    System.out.printf("%n.. Archivers%n");
+    System.out.println(".. Archivers");
     importArchivers(archiverRefMap);
     System.out.printf("Number of entries = %d%n", archiverRefMap.size());
 
-    System.out.println();
-    System.out.println("--------------------------");
-    System.out.println("--  Pass 2 - relations  --");
-    System.out.println("--------------------------");
+    printBoxedText("3. Relations");
 
-    System.out.printf("%n.. Legislation%n");
+    System.out.println(".. Legislation");
     importLegislationRelations(legislationRefMap);
 
-    System.out.printf("%n.. Archives%n");
+    System.out.println(".. Archives");
     importArchiveRelations(archiveRefMap);
 
-    System.out.printf("%n.. Archivers%n");
+    System.out.println(".. Archivers");
     importArchiverRelations(archiverRefMap);
 
-    System.out.println();
-    System.out.println("------------------------");
-    System.out.println("-- Pass 3 - indexing  --");
-    System.out.println("------------------------");
-    System.out.println();
+    printBoxedText("4. Indexing");
 
     indexEntities(DCARKeyword.class);
     indexEntities(DCARPerson.class);
@@ -204,6 +198,17 @@ public class DutchCaribbeanImporter extends DefaultImporter {
     indexEntities(DCARArchiver.class);
 
     displayErrorSummary();
+  }
+
+  private void printBoxedText(String text) {
+    String line = Strings.repeat("-", text.length() + 8);
+    System.out.println();
+    System.out.println(line);
+    System.out.print("--  ");
+    System.out.print(text);
+    System.out.println("  --");
+    System.out.println(line);
+    System.out.println();
   }
 
   // --- relations -----------------------------------------------------

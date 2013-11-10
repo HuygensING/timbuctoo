@@ -31,4 +31,16 @@ public class IndexStatus {
     list.add(new KV<Long>(type.getSimpleName(), count));
   }
 
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    for (String key : counts.keySet()) {
+      builder.append("Indexed scope '").append(key).append("'\n");
+      for (KV<Long> kv : counts.get(key)) {
+        builder.append(String.format("- %-20s %6d\n", kv.getKey(), kv.getValue()));
+      }
+    }
+    return builder.toString();
+  }
+
 }

@@ -114,7 +114,9 @@ class LocalSolrServer {
 
   public void deleteAll(String core) throws SolrServerException, IOException {
     LOG.info("Clearing index {}", core);
-    serverFor(core).deleteByQuery("*:*", -1);
+    SolrServer server = serverFor(core);
+    server.deleteByQuery("*:*");
+    server.commit();
   }
 
   public void deleteAll() throws SolrServerException, IOException {
