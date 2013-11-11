@@ -1,27 +1,32 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNameGenerator;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 
+import org.apache.commons.lang.StringUtils;
 import org.mongojack.internal.stream.JacksonDBObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Preconditions;
+import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.mongodb.DBObject;
 
 class VariationInducer extends VariationConverter {
 
-  public VariationInducer(TypeRegistry registry, MongoObjectMapper mongoMapper) {
-    super(registry, mongoMapper);
+  public VariationInducer(TypeRegistry registry, MongoObjectMapper mongoMapper, MongoFieldMapper mongoFieldMapper) {
+    super(registry, mongoMapper, mongoFieldMapper);
   }
 
   /**
@@ -58,41 +63,40 @@ class VariationInducer extends VariationConverter {
    * @throws VariationException
    */
   public <T extends Entity> JsonNode induce(Class<T> type, T item, ObjectNode existingItem) throws VariationException {
-    Preconditions.checkArgument(item != null);
-    Preconditions.checkArgument(type != null);
+    checkArgument(item != null);
+    checkArgument(type != null);
 
     Map<String, Object> map = Maps.newHashMap();
 
     Map<String, Object> entityMap = getEntityMap(type, item);
-    if (existingItem != null && DomainEntity.class.isAssignableFrom(type)) {
-      map.putAll(updateFieldNames(type, entityMap, existingItem));
+    if (existingItem != null && TypeRegistry.isDomainEntity(type)) {
+      map.putAll(merge(type, entityMap, existingItem));
     } else {
       map.putAll(entityMap);
     }
 
-    if (DomainEntity.class.isAssignableFrom(type)) {
-      List<Role> roles = ((DomainEntity) item).getRoles();
-      if (roles != null) {
-        for (Role role : roles) {
-          Map<String, Object> roleMap = Maps.newHashMap();
-          Class<? extends Role> roleType = role.getClass();
-          roleMap.putAll(getRoleMap(roleType, roleType.cast(role)));
-          if (existingItem != null) {
-            map.putAll(updateFieldNames(roleType, roleMap, existingItem));
-          } else {
-            map.putAll(roleMap);
-          }
+    if (TypeRegistry.isSystemEntity(type)) {
+      return mapper.valueToTree(map);
+    }
+
+    List<Role> roles = ((DomainEntity) item).getRoles();
+    if (roles != null) {
+      for (Role role : roles) {
+        Map<String, Object> roleMap = Maps.newHashMap();
+        Class<? extends Role> roleType = role.getClass();
+        roleMap.putAll(getRoleMap(roleType, roleType.cast(role)));
+        if (existingItem != null) {
+          map.putAll(merge(roleType, roleMap, existingItem));
+        } else {
+          map.putAll(roleMap);
         }
       }
     }
 
     ObjectNode newNode = mapper.valueToTree(map);
 
-    if (existingItem != null && DomainEntity.class.isAssignableFrom(type)) {
-      newNode = merge(type, existingItem, newNode);
-    }
-
     return cleanUp(newNode);
+    //throw new UnsupportedOperationException("Being revised.");
   }
 
   @SuppressWarnings("unchecked")
@@ -121,36 +125,82 @@ class VariationInducer extends VariationConverter {
   }
 
   /**
-   * Updates the field name, if a value of the field name is overridden to ${objecttosave}.fieldName instead of ${objectoffieldname}.fieldName.  
-   * @param type
-   * @param mapToMerge
-   * @param existingNode
+   * Checks if the there is variation possible for this field.
+   * @param fieldName
    * @return
    */
-  private Map<String, Object> updateFieldNames(Class<?> type, Map<String, Object> mapToMerge, ObjectNode existingNode) {
-    Map<String, Object> updatedMap = Maps.newHashMap();
-
-    for (String fieldName : mapToMerge.keySet()) {
-      if (existingNode.has(fieldName) && fieldName.contains(".")) {
-        String updatedFieldName = fieldName.replace(fieldName.substring(0, fieldName.indexOf('.')), TypeNameGenerator.getInternalName(type));
-        updatedMap.put(updatedFieldName, mapToMerge.get(fieldName));
-      } else {
-        updatedMap.put(fieldName, mapToMerge.get(fieldName));
-      }
-    }
-    return updatedMap;
+  protected boolean isFieldWithVariation(String fieldName) {
+    return fieldName.contains(".");
   }
 
-  private ObjectNode merge(Class<? extends Entity> type, ObjectNode existingNode, JsonNode newNode) {
-    Iterator<String> fieldNames = newNode.fieldNames();
-    while (fieldNames.hasNext()) {
-      String fieldName = fieldNames.next();
-      if (existingNode.has(fieldName)) {
-        existingNode.remove(fieldName);
+  private Map<String, Object> merge(Class<?> type, Map<String, Object> newValues, ObjectNode existingNode) {
+    Map<String, Object> mergedMap = Maps.newHashMap();
+    for (String key : newValues.keySet()) {
+      if (existingNode.has(key)) {
+        if (isFieldWithVariation(key) && !isSameValue(key, newValues, existingNode)) {
+          String typeName = mongoFieldMapper.getTypeNameOfFieldName(key);
+          String variationName = StringUtils.replace(key, typeName, typeRegistry.getIName(type));
+          mergedMap.put(variationName, newValues.get(key));
+          mergedMap.put(key, existingNode.get(key));
+        } else {
+          mergedMap.put(key, newValues.get(key));
+        }
+      } else {
+        mergedMap.put(key, newValues.get(key));
       }
-      existingNode.put(fieldName, newNode.get(fieldName));
     }
-    return existingNode;
+
+    Iterator<String> keys = existingNode.fieldNames();
+
+    while (keys.hasNext()) {
+      String key = keys.next();
+      Set<String> similarKeys = getSimilarKeys(mergedMap, key);
+
+      if (similarKeys.isEmpty()) {
+        mergedMap.put(key, existingNode.get(key));
+      } else {
+        for (String similarKey : similarKeys) {
+          String typeName = mongoFieldMapper.getTypeNameOfFieldName(similarKey);
+          if (typeName != null && typeRegistry.getForIName(typeName).isAssignableFrom(type) && !isSameValue(similarKey, key, mergedMap, existingNode)) {
+            mergedMap.put(key, existingNode.get(key));
+            break;
+          }
+        }
+      }
+    }
+
+    return mergedMap;
+  }
+
+  private Set<String> getSimilarKeys(Map<String, Object> map, String key) {
+    checkNotNull(key);
+    if (!key.contains(".")) {
+      return Sets.newHashSet();
+    }
+    final String fieldName = key.contains(".") ? key.split("\\.")[1] : "";
+    Set<String> similarKeys = Sets.newHashSet();
+    for (String similarKey : map.keySet()) {
+      if (StringUtils.contains(similarKey, fieldName)) {
+        similarKeys.add(similarKey);
+      }
+    }
+    return similarKeys;
+  }
+
+  private boolean isSameValue(String key, Map<String, Object> newValues, ObjectNode existingNode) {
+    return isSameValue(key, key, newValues, existingNode);
+  }
+
+  protected boolean isSameValue(String key, String keyInNode, Map<String, Object> newValues, ObjectNode existingNode) {
+    Object newValue = newValues.get(key);
+
+    if (newValue == null) {
+      return false;
+    }
+
+    Object existingValue = convertValue(newValue.getClass(), existingNode.get(keyInNode));
+
+    return Objects.equal(newValue, existingValue);
   }
 
   // remove all the runtime fields from the node
@@ -166,4 +216,5 @@ class VariationInducer extends VariationConverter {
     }
     return nodeToCleanUp;
   }
+
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
@@ -22,11 +23,13 @@ class VariationConverter {
   protected final TypeRegistry typeRegistry;
   protected final ObjectMapper mapper;
   protected final MongoObjectMapper mongoObjectMapper;
+  protected final MongoFieldMapper mongoFieldMapper;
 
-  public VariationConverter(TypeRegistry registry, MongoObjectMapper mongoObjectMapper) {
+  public VariationConverter(TypeRegistry registry, MongoObjectMapper mongoObjectMapper, MongoFieldMapper mongoFieldMapper) {
     typeRegistry = registry;
     mapper = new ObjectMapper();
     this.mongoObjectMapper = mongoObjectMapper;
+    this.mongoFieldMapper = mongoFieldMapper;
   }
 
   /**
@@ -61,6 +64,26 @@ class VariationConverter {
 
   private String normalize(String typeString) {
     return typeString.replaceFirst("[a-z]*-", "");
+  }
+
+  protected Object convertValue(Class<?> type, JsonNode value) {
+    if (type == Integer.class || type == int.class) {
+      return value.asInt();
+    } else if (type == Boolean.class || type == boolean.class) {
+      return value.asBoolean();
+    } else if (type == Character.class || type == char.class) {
+      return value.asText().charAt(0);
+    } else if (type == Double.class || type == double.class) {
+      return value.asDouble();
+    } else if (type == Float.class || type == float.class) {
+      return (float) value.asDouble();
+    } else if (type == Long.class || type == long.class) {
+      return value.asLong();
+    } else if (type == Short.class || type == short.class) {
+      return (short) value.asInt();
+    }
+
+    return value.asText();
   }
 
 }

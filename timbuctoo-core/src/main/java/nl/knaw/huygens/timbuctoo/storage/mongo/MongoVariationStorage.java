@@ -53,7 +53,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     treeEncoderFactory = new TreeEncoderFactory(objectMapper);
     treeDecoderFactory = new TreeDecoderFactory();
     collectionCache = Maps.newHashMap();
-    inducer = new VariationInducer(registry, mongoMapper);
+    inducer = new VariationInducer(registry, mongoMapper, mongoFieldMapper);
     reducer = new VariationReducer(registry, mongoMapper, mongoFieldMapper);
   }
 
