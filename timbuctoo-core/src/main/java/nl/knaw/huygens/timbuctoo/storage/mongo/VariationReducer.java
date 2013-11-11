@@ -32,11 +32,9 @@ class VariationReducer extends VariationConverter {
 
   private static final Logger LOG = LoggerFactory.getLogger(VariationReducer.class);
   private static final String VERSIONS_FIELD = "versions";
-  private final MongoFieldMapper mongoFieldMapper;
 
   public VariationReducer(TypeRegistry registry, MongoObjectMapper mongoObjectMapper, MongoFieldMapper mongoFieldMapper) {
-    super(registry, mongoObjectMapper);
-    this.mongoFieldMapper = mongoFieldMapper;
+    super(registry, mongoObjectMapper, mongoFieldMapper);
   }
 
   public <T extends Entity> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {
@@ -98,10 +96,6 @@ class VariationReducer extends VariationConverter {
       }
 
       setFields(type, Entity.class, returnObject, node, requestedVariation);
-
-      /* TODO get all roles of variation and check if they are stored in the database.
-       * Then fill generate the roles from the data in the database.
-       */
 
       String typeVariation = TypeRegistry.isDomainEntity(type) ? typeRegistry.getClassVariation((Class<? extends DomainEntity>) type) : null;
 
@@ -223,6 +217,7 @@ class VariationReducer extends VariationConverter {
 
       if (subClass != null) {
         String overridenDBKey = mongoFieldMapper.getFieldName(subClass, field);
+
         if (record.has(overridenDBKey)) {
           value = convertValue(field.getType(), record.get(overridenDBKey));
         }
@@ -230,26 +225,6 @@ class VariationReducer extends VariationConverter {
     }
 
     return value;
-  }
-
-  private Object convertValue(Class<?> type, JsonNode value) {
-    if (type == Integer.class || type == int.class) {
-      return value.asInt();
-    } else if (type == Boolean.class || type == boolean.class) {
-      return value.asBoolean();
-    } else if (type == Character.class || type == char.class) {
-      return value.asText().charAt(0);
-    } else if (type == Double.class || type == double.class) {
-      return value.asDouble();
-    } else if (type == Float.class || type == float.class) {
-      return (float) value.asDouble();
-    } else if (type == Long.class || type == long.class) {
-      return value.asLong();
-    } else if (type == Short.class || type == short.class) {
-      return (short) value.asInt();
-    }
-
-    return value.asText();
   }
 
   @SuppressWarnings("unchecked")

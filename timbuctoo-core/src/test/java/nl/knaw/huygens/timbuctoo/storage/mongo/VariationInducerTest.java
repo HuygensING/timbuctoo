@@ -36,6 +36,7 @@ public class VariationInducerTest extends VariationTestBase {
   private final static String TEST_SYSTEM_ID = "TSD";
   private static TypeRegistry registry;
   private static MongoObjectMapper mongoMapper;
+  private static MongoFieldMapper mongoFieldMapper;
 
   ObjectMapper mapper;
   private VariationInducer inducer;
@@ -43,13 +44,14 @@ public class VariationInducerTest extends VariationTestBase {
   @BeforeClass
   public static void setupMapper() {
     registry = new TypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb timbuctoo.model");
-    mongoMapper = new MongoObjectMapper(new MongoFieldMapper());
+    mongoFieldMapper = new MongoFieldMapper();
+    mongoMapper = new MongoObjectMapper(mongoFieldMapper);
   }
 
   @Before
   public void setUp() throws Exception {
     mapper = new ObjectMapper();
-    inducer = new VariationInducer(registry, mongoMapper);
+    inducer = new VariationInducer(registry, mongoMapper, mongoFieldMapper);
   }
 
   @After
@@ -184,10 +186,10 @@ public class VariationInducerTest extends VariationTestBase {
     assertEquals(expected, actual);
   }
 
-  @Test
   /*
    * Project value equals to the default value is updated.
    */
+  @Test
   public void testInduceDomainEntityVariationUpdated() throws VariationException {
     Map<String, Object> existingMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "test");
     existingMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
@@ -250,9 +252,58 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testInduceProjectVariationUpdatedToDefault() {
-    //Project specific value has to be removed.
-    fail("Yet to be implemented.");
+  public void testInduceProjectVariationUpdatedWithExistingValue() throws VariationException {
+    Map<String, Object> existingMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "testB");
+    existingMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
+    existingMap.put("projectbgeneraltestdoc.generalTestDocValue", "projectbTestDoc");
+
+    ObjectNode existingItem = mapper.valueToTree(existingMap);
+
+    ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
+    item.setId(DEFAULT_DOMAIN_ID);
+    item.setCurrentVariation("projecta");
+    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
+    item.setPid("test pid");
+    item.projectAGeneralTestDocValue = "projectatest";
+    item.generalTestDocValue = "testB";
+
+    Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "testB");
+    expectedMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
+    expectedMap.put("projectbgeneraltestdoc.generalTestDocValue", "projectbTestDoc");
+
+    JsonNode expected = mapper.valueToTree(expectedMap);
+
+    JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item, existingItem);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testInduceProjectVariationUpdatedToDefault() throws VariationException {
+    Map<String, Object> existingMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "testB");
+    existingMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
+    existingMap.put("projectageneraltestdoc.generalTestDocValue", "testB");
+    existingMap.put("projectbgeneraltestdoc.generalTestDocValue", "projectbTestDoc");
+
+    ObjectNode existingItem = mapper.valueToTree(existingMap);
+
+    ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
+    item.setId(DEFAULT_DOMAIN_ID);
+    item.setCurrentVariation("projecta");
+    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
+    item.setPid("test pid");
+    item.projectAGeneralTestDocValue = "projectatest";
+    item.generalTestDocValue = "testB";
+
+    Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test pid", "testB");
+    expectedMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
+    expectedMap.put("projectbgeneraltestdoc.generalTestDocValue", "projectbTestDoc");
+
+    JsonNode expected = mapper.valueToTree(expectedMap);
+
+    JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item, existingItem);
+
+    assertEquals(expected, actual);
   }
 
   @Test

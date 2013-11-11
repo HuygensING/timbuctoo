@@ -55,6 +55,18 @@ public class TypeRegistryTest {
   }
 
   @Test
+  public void testGetForINameRole() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+    assertEquals(ProjectATestRole.class, registry.getForIName("projectatestrole"));
+  }
+
+  @Test
+  public void testGetForINameEntity() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
+    assertEquals(TestExtraBaseDoc.class, registry.getForIName("testextrabasedoc"));
+  }
+
+  @Test
   public void testGetTypeForXName() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
     assertEquals(GeneralTestDoc.class, registry.getTypeForXName("generaltestdocs"));
@@ -75,27 +87,81 @@ public class TypeRegistryTest {
   }
 
   @Test
+  public void testGetINameEntity() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
+    assertEquals("generaltestdoc", registry.getIName(GeneralTestDoc.class));
+  }
+
+  @Test
+  public void testGetINameRole() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+    assertEquals("projectatestrole", registry.getIName(ProjectATestRole.class));
+  }
+
+  @Test
+  public void testGetINameNonDomainClass() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
+    assertEquals(null, registry.getIName(String.class));
+  }
+
+  @Test
   public void testGetXNameForType() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
     assertEquals("generaltestdocs", registry.getXNameForType(GeneralTestDoc.class));
   }
 
   @Test
-  public void testBaseClassFromCollectionBaseClass() {
+  public void testGetBaseClassFromCollectionBaseClass() {
     TypeRegistry registry = new TypeRegistry("");
     assertEquals(TestBaseDoc.class, registry.getBaseClass(TestBaseDoc.class));
   }
 
   @Test
-  public void testBaseClassFromCollectionClass() {
+  public void testGetBaseClassFromCollectionClass() {
     TypeRegistry registry = new TypeRegistry("");
     assertEquals(TestConcreteDoc.class, registry.getBaseClass(TestConcreteDoc.class));
+  }
+
+  @Test
+  public void testGetBaseClassInHeritedGeneralClass() {
+    TypeRegistry registry = new TypeRegistry("");
+    assertEquals(TestConcreteDoc.class, registry.getBaseClass(GeneralTestDoc.class));
   }
 
   @Test
   public void testGetBaseClassFromNonDirectDescendantOfDocument() {
     TypeRegistry registry = new TypeRegistry("");
     assertEquals(TestInheritsFromTestBaseDoc.class, registry.getBaseClass(TestInheritsFromTestBaseDoc.class));
+  }
+
+  @Test
+  public void testGetBaseClassForProjectSpecificClass() {
+    TypeRegistry registry = new TypeRegistry("");
+    assertEquals(TestConcreteDoc.class, registry.getBaseClass(ProjectAGeneralTestDoc.class));
+  }
+
+  @Test
+  public void testGetBaseRoleOfBaseRole() {
+    TypeRegistry registry = new TypeRegistry("");
+    assertEquals(TestRole.class, registry.getBaseRole(TestRole.class));
+  }
+
+  @Test
+  public void testGetBaseRoleOfProjectSpecificBaseRole() {
+    TypeRegistry registry = new TypeRegistry("");
+    assertEquals(TestRole.class, registry.getBaseRole(ProjectATestRole.class));
+  }
+
+  @Test
+  public void testGetBaseOfBaseRole() {
+    TypeRegistry registry = new TypeRegistry("");
+    assertEquals(TestRole.class, registry.getBase(ProjectATestRole.class));
+  }
+
+  @Test
+  public void testGetBaseClassOfEntity() {
+    TypeRegistry registry = new TypeRegistry("");
+    assertEquals(TestConcreteDoc.class, registry.getBase(ProjectAGeneralTestDoc.class));
   }
 
   @Test
@@ -253,6 +319,16 @@ public class TypeRegistryTest {
   @Test
   public void testToDomainEntitySucceeds() {
     assertTrue(TypeRegistry.isDomainEntity(TypeRegistry.toDomainEntity(ADomainEntity.class)));
+  }
+
+  @Test
+  public void testToRole() {
+    assertTrue(TypeRegistry.isRole(TypeRegistry.toRole(TestRole.class)));
+  }
+
+  @Test(expected = ClassCastException.class)
+  public void testToRoleFail() {
+    TypeRegistry.toRole(ADomainEntity.class);
   }
 
   private static class NotAnEntity {}

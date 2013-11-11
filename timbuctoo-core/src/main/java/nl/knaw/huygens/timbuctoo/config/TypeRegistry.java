@@ -100,8 +100,8 @@ public class TypeRegistry {
         }
         LOG.debug("Registered entity {}", type.getName());
       } else if (shouldRegisterRole(type)) {
-        registerRole((Class<? extends Role>) type);
-        registerVariationForClass((Class<? extends Role>) type);
+        registerRole(toRole(type));
+        registerVariationForClass(toRole(type));
       }
     }
   }
@@ -189,6 +189,21 @@ public class TypeRegistry {
   }
 
   /**
+   * Convenience method that returns {@code getINameForType} or {@code getINameForRole} or null depending on the parameter. 
+   * @param type the type to get the internal name from. 
+   * @return
+   */
+  @SuppressWarnings("unchecked")
+  public String getIName(Class<?> type) {
+    if (isEntity(type)) {
+      return getINameForType((Class<? extends Entity>) type);
+    } else if (isRole(type)) {
+      return getINameForRole(toRole(type));
+    }
+    return null;
+  }
+
+  /**
    * Returns the type token for the specified internal type name,
    * or {@code null} if there is no such token.
    */
@@ -204,6 +219,19 @@ public class TypeRegistry {
    */
   public Class<? extends Role> getRoleForIName(String iName) {
     return iname2role.get(iName);
+  }
+
+  /**
+   * Returns a {@code Role} class or a {@code Entity} class if one is found.
+   * @param iName the internal name to get the class from.
+   * @return the class if one is found.
+   */
+  public Class<?> getForIName(String iName) {
+    if (iname2role.containsKey(iName)) {
+      return iname2role.get(iName);
+    }
+
+    return iname2type.get(iName);
   }
 
   /**
@@ -238,6 +266,29 @@ public class TypeRegistry {
       type = (Class<? extends Entity>) type.getSuperclass();
     }
     return lastType;
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T extends Role> Class<T> getBaseRole(Class<T> type) {
+    if (!Modifier.isAbstract(type.getModifiers()) && type.getSuperclass() != Role.class) {
+      return getBaseRole((Class<T>) type.getSuperclass());
+    }
+    return type;
+  }
+
+  /**
+   * Convenience method that returns {@code getBaseClass} or {@code getBaseRole} or null depending on the parameter. 
+   * @param type the type to get the base from. 
+   * @return
+   */
+  public Class<?> getBase(Class<?> type) {
+    if (isEntity(type)) {
+      return getBaseClass(toEntity(type));
+    } else if (isRole(type)) {
+      return getBaseRole(toRole(type));
+    }
+
+    return null;
   }
 
   /**
@@ -336,6 +387,14 @@ public class TypeRegistry {
       return result;
     }
     throw new ClassCastException(cls.getName() + " is not a domain entity");
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T extends Role> Class<T> toRole(Class<?> type) {
+    if (isRole(type)) {
+      return (Class<T>) type;
+    }
+    throw new ClassCastException(type.getName() + " is not a domain entity");
   }
 
 }
