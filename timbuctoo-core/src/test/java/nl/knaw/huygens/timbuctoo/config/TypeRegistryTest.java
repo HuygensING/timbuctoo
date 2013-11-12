@@ -4,6 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Set;
+
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -11,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestBaseDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.TestDocWithIDPrefix;
 import nl.knaw.huygens.timbuctoo.variation.model.TestExtraBaseDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestInheritsFromTestBaseDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestRole;
@@ -18,6 +22,8 @@ import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestRole;
 
 import org.junit.Test;
+
+import com.google.common.collect.Sets;
 
 /**
  * Tests for the TypeRegistry. Watch-out the register is highly
@@ -141,6 +147,12 @@ public class TypeRegistryTest {
   }
 
   @Test
+  public void testGetBaseClassOfNull() {
+    TypeRegistry registry = new TypeRegistry("");
+    assertEquals(null, registry.getBaseClass(null));
+  }
+
+  @Test
   public void testGetBaseRoleOfBaseRole() {
     TypeRegistry registry = new TypeRegistry("");
     assertEquals(TestRole.class, registry.getBaseRole(TestRole.class));
@@ -153,15 +165,73 @@ public class TypeRegistryTest {
   }
 
   @Test
+  public void testGetBaseRoleOfNull() {
+    TypeRegistry registry = new TypeRegistry("");
+    assertEquals(null, registry.getBaseRole(null));
+  }
+
+  @Test
   public void testGetBaseOfBaseRole() {
     TypeRegistry registry = new TypeRegistry("");
     assertEquals(TestRole.class, registry.getBase(ProjectATestRole.class));
   }
 
   @Test
+  public void testGetBaseOfNull() {
+    TypeRegistry registry = new TypeRegistry("");
+    assertEquals(null, registry.getBase(null));
+  }
+
+  @Test
+  public void testGetBaseOfOtherType() {
+    TypeRegistry registry = new TypeRegistry("");
+    assertEquals(null, registry.getBase(String.class));
+  }
+
+  @Test
   public void testGetBaseClassOfEntity() {
     TypeRegistry registry = new TypeRegistry("");
     assertEquals(TestConcreteDoc.class, registry.getBase(ProjectAGeneralTestDoc.class));
+  }
+
+  @Test
+  public void testGetSubClassesOfPrimitiveModel() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+    Set<Class<? extends Entity>> expected = Sets.newHashSet();
+    expected.add(GeneralTestDoc.class);
+    expected.add(TestDocWithIDPrefix.class);
+    expected.add(ProjectAGeneralTestDoc.class);
+    expected.add(TestConcreteDoc.class);
+
+    assertEquals(expected, registry.getSubClasses(TestConcreteDoc.class));
+  }
+
+  @Test
+  public void testGetSubClassesOfProjectSubClass() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+
+    assertEquals(null, registry.getSubClasses(ProjectAGeneralTestDoc.class));
+  }
+
+  @Test
+  public void testGetSubClassesOfDomainEntity() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+
+    assertEquals(null, registry.getSubClasses(DomainEntity.class));
+  }
+
+  @Test
+  public void testGetSubClassesOfSystemEntity() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+
+    assertEquals(null, registry.getSubClasses(SystemEntity.class));
+  }
+
+  @Test
+  public void testGetSubClassesOfEntity() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+
+    assertEquals(null, registry.getSubClasses(Entity.class));
   }
 
   @Test
@@ -247,6 +317,7 @@ public class TypeRegistryTest {
 
   @Test
   public void testIsEntity() {
+    assertFalse(TypeRegistry.isEntity(null));
     assertFalse(TypeRegistry.isEntity(NotAnEntity.class));
     assertTrue(TypeRegistry.isEntity(AnEntity.class));
     assertTrue(TypeRegistry.isEntity(ASystemEntity.class));
@@ -255,6 +326,7 @@ public class TypeRegistryTest {
 
   @Test
   public void testIsSystemEntity() {
+    assertFalse(TypeRegistry.isSystemEntity(null));
     assertFalse(TypeRegistry.isSystemEntity(NotAnEntity.class));
     assertFalse(TypeRegistry.isSystemEntity(AnEntity.class));
     assertTrue(TypeRegistry.isSystemEntity(ASystemEntity.class));
@@ -263,6 +335,7 @@ public class TypeRegistryTest {
 
   @Test
   public void testIsDomainEntity() {
+    assertFalse(TypeRegistry.isDomainEntity(null));
     assertFalse(TypeRegistry.isDomainEntity(NotAnEntity.class));
     assertFalse(TypeRegistry.isDomainEntity(AnEntity.class));
     assertFalse(TypeRegistry.isDomainEntity(ASystemEntity.class));
@@ -271,16 +344,19 @@ public class TypeRegistryTest {
 
   @Test
   public void testIsRole() {
+    assertFalse(TypeRegistry.isRole((Class<?>) null));
     assertTrue(TypeRegistry.isRole(TestRole.class));
     assertTrue(TypeRegistry.isRole(ProjectATestRole.class));
     assertFalse(TypeRegistry.isRole(AnEntity.class));
   }
 
+  @Test
   public void testIsRoleWithStrings() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
     assertTrue(registry.isRole("testrole"));
     assertTrue(registry.isRole("projectatestrole"));
     assertFalse(registry.isRole("anentity"));
+    assertFalse(registry.isRole((String) null));
   }
 
   @Test
@@ -289,6 +365,7 @@ public class TypeRegistryTest {
     assertTrue(TypeRegistry.isVariable(ProjectATestRole.class));
     assertFalse(TypeRegistry.isVariable(AnEntity.class));
     assertTrue(TypeRegistry.isVariable(DomainEntity.class));
+    assertFalse(TypeRegistry.isVariable(null));
   }
 
   @Test(expected = ClassCastException.class)

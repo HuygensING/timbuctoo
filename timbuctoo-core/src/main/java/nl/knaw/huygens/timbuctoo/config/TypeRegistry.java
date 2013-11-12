@@ -284,7 +284,7 @@ public class TypeRegistry {
 
   @SuppressWarnings("unchecked")
   public <T extends Role> Class<T> getBaseRole(Class<T> type) {
-    if (!Modifier.isAbstract(type.getModifiers()) && type.getSuperclass() != Role.class) {
+    if (type != null && type.getSuperclass() != Role.class) {
       return getBaseRole((Class<T>) type.getSuperclass());
     }
     return type;
@@ -352,23 +352,23 @@ public class TypeRegistry {
   // --- static utilities ----------------------------------------------
 
   public static boolean isEntity(Class<?> cls) {
-    return Entity.class.isAssignableFrom(cls);
+    return cls == null ? false : Entity.class.isAssignableFrom(cls);
   }
 
   public static boolean isSystemEntity(Class<?> cls) {
-    return SystemEntity.class.isAssignableFrom(cls);
+    return cls == null ? false : SystemEntity.class.isAssignableFrom(cls);
   }
 
   public static boolean isDomainEntity(Class<?> cls) {
-    return DomainEntity.class.isAssignableFrom(cls);
+    return cls == null ? false : DomainEntity.class.isAssignableFrom(cls);
   }
 
   public static boolean isVariable(Class<?> cls) {
-    return Variable.class.isAssignableFrom(cls);
+    return cls == null ? false : Variable.class.isAssignableFrom(cls);
   }
 
   public static boolean isRole(Class<?> cls) {
-    return Role.class.isAssignableFrom(cls);
+    return cls == null ? false : Role.class.isAssignableFrom(cls);
   }
 
   /**
