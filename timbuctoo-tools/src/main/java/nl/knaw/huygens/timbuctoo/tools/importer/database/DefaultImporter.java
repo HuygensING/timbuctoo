@@ -107,6 +107,17 @@ public abstract class DefaultImporter extends ToolBase {
 
   // -------------------------------------------------------------------
 
+  /**
+   * Displays the status of the Mongo database and the Solr indexes.
+   */
+  protected void displayStatus() throws IndexException {
+    // Make sure the Solr indexes are up-to-date
+    indexManager.commitAll();
+
+    System.out.println(storageManager.getStatus());
+    System.out.println(indexManager.getStatus());
+  }
+
   protected <T extends Entity> EntityRef newEntityRef(Class<T> type, T entity) {
     String itype = typeRegistry.getINameForType(type);
     String xtype = typeRegistry.getXNameForType(type);
