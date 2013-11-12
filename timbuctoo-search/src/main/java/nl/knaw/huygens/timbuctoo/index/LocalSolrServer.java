@@ -114,7 +114,9 @@ class LocalSolrServer {
 
   public void deleteAll(String core) throws SolrServerException, IOException {
     LOG.info("Clearing index {}", core);
-    serverFor(core).deleteByQuery("*:*", -1);
+    SolrServer server = serverFor(core);
+    server.deleteByQuery("*:*");
+    server.commit();
   }
 
   public void deleteAll() throws SolrServerException, IOException {
@@ -147,8 +149,12 @@ class LocalSolrServer {
     return solrServers.keySet();
   }
 
-  private SolrServer serverFor(String core) {
-    return solrServers.get(core);
+  private SolrServer serverFor(String core) throws SolrServerException {
+    SolrServer server = solrServers.get(core);
+    if (server == null) {
+      throw new SolrServerException("No such core: " + core);
+    }
+    return server;
   }
 
 }

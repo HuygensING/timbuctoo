@@ -32,4 +32,18 @@ public class StorageStatus {
     systemEntityCounts.add(count);
   }
 
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("System entity counts\n");
+    for (KV<Long> kv : systemEntityCounts) {
+      builder.append(String.format("- %-20s %6d\n", kv.getKey(), kv.getValue()));
+    }
+    builder.append("Domain entity counts\n");
+    for (KV<Long> kv : domainEntityCounts) {
+      builder.append(String.format("- %-20s %6d\n", kv.getKey(), kv.getValue()));
+    }
+    return builder.toString();
+  }
+
 }

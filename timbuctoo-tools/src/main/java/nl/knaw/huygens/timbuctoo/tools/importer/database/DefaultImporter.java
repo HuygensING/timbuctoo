@@ -36,7 +36,7 @@ public abstract class DefaultImporter extends ToolBase {
     setup(relationManager);
   }
 
-  private void setup(RelationManager relationManager) {
+  protected void setup(RelationManager relationManager) {
     if (relationManager != null) {
       relationManager.importRelationTypes(RELATION_TYPE_DEFS);
     }
