@@ -10,10 +10,12 @@ import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_SIBLING_ARCH
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.IS_CREATOR_OF;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -144,11 +146,12 @@ public class DutchCaribbeanImporter extends DefaultImporter {
     printBoxedText("1. Initialization");
 
     System.out.println(storageManager.getStatus());
-    storageManager.clear();
-    System.out.println(storageManager.getStatus());
-
     System.out.println(indexManager.getStatus());
+
+    storageManager.clear();
     indexManager.deleteAllEntities();
+
+    System.out.println(storageManager.getStatus());
     System.out.println(indexManager.getStatus());
 
     System.out.printf("%n.. Setup relation types%n");
@@ -198,6 +201,14 @@ public class DutchCaribbeanImporter extends DefaultImporter {
     indexEntities(DCARArchiver.class);
 
     displayErrorSummary();
+  }
+
+  private void removeNonPersistentEnties(StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
+    removeNonPersistentEnties(DCARKeyword.class, storageManager, indexManager);
+    removeNonPersistentEnties(DCARPerson.class, storageManager, indexManager);
+    removeNonPersistentEnties(DCARArchive.class, storageManager, indexManager);
+    removeNonPersistentEnties(DCARArchiver.class, storageManager, indexManager);
+    removeNonPersistentEnties(DCARLegislation.class, storageManager, indexManager);
   }
 
   private void printBoxedText(String text) {
