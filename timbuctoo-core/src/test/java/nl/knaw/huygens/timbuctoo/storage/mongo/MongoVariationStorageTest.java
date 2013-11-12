@@ -301,13 +301,12 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test
   public void testGetAllByType() throws IOException {
     DBCursor cursor = createCursorWithoutValues();
-    DBObject query = new BasicDBObject("projectb-projectbgeneraltestdoc", new BasicDBObject("$ne", null));
 
-    when(anyCollection.find(query)).thenReturn(cursor);
+    when(anyCollection.find()).thenReturn(cursor);
 
     storage.getAllByType(ProjectBGeneralTestDoc.class);
 
-    verify(anyCollection).find(query);
+    verify(anyCollection).find();
   }
 
   @Test

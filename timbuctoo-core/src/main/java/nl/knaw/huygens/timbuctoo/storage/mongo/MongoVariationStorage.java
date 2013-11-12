@@ -125,10 +125,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   @Override
   public <T extends Entity> StorageIterator<T> getAllByType(Class<T> cls) {
     DBCollection col = getVariationCollection(cls);
-    String variationName = reducer.typeToVariationName(cls);
-    BasicDBObject notNull = new BasicDBObject("$ne", null);
-    BasicDBObject query = new BasicDBObject(variationName, notNull);
-    return new MongoDBVariationIterator<T>(col.find(query), reducer, cls);
+    return new MongoDBVariationIterator<T>(col.find(), reducer, cls);
   }
 
   @SuppressWarnings("unchecked")
