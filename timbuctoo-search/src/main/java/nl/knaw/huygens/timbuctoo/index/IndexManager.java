@@ -153,6 +153,14 @@ public class IndexManager {
     return status;
   }
 
+  public void commitAll() throws IndexException {
+    try {
+      server.commitAll();
+    } catch (Exception e) {
+      throw new IndexException("Failed to commit", e);
+    }
+  }
+
   public void close() throws IndexException {
     try {
       server.commitAll();

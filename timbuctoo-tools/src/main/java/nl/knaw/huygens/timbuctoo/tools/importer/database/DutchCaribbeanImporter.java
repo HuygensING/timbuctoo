@@ -145,14 +145,12 @@ public class DutchCaribbeanImporter extends DefaultImporter {
 
     printBoxedText("1. Initialization");
 
-    System.out.println(storageManager.getStatus());
-    System.out.println(indexManager.getStatus());
+    displayStatus();
 
     storageManager.clear();
     indexManager.deleteAllEntities();
 
-    System.out.println(storageManager.getStatus());
-    System.out.println(indexManager.getStatus());
+    displayStatus();
 
     System.out.printf("%n.. Setup relation types%n");
     // FIXME system entities shouldn't have been removed!
@@ -199,6 +197,8 @@ public class DutchCaribbeanImporter extends DefaultImporter {
     indexEntities(DCARLegislation.class);
     indexEntities(DCARArchive.class);
     indexEntities(DCARArchiver.class);
+
+    displayStatus();
 
     displayErrorSummary();
   }
