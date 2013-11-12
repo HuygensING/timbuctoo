@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntityPrimitive;
@@ -358,6 +359,26 @@ public class VariationReducerTest extends VariationTestBase {
     GeneralTestDoc actual = reducer.reduce(GeneralTestDoc.class, node, "projecta");
 
     assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testGetAllForDBObject() throws IOException {
+    Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, "test");
+    map.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
+    map.put("projectbtestrole.beeName", "beeName");
+    map.put("testrole.roleName", "roleName");
+    String projectatestvalue = "projectatest";
+    map.put("projectageneraltestdoc.projectAGeneralTestDocValue", projectatestvalue);
+    String projectAVariation = "projectAVariation";
+    map.put("projectageneraltestdoc.generalTestDocValue", projectAVariation);
+    map.put("projectatestrole.projectATestRoleName", "value");
+    map.put("projectatestrole.roleName", "value");
+
+    JsonNode node = mapper.valueToTree(map);
+
+    List<? extends Entity> variation = reducer.getAllForDBObject(new DBJsonNode(node), ProjectAGeneralTestDoc.class);
+
+    assertEquals(5, variation.size());
   }
 
   @Override

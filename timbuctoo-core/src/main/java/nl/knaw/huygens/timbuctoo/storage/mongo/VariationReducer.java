@@ -12,6 +12,7 @@ import java.util.Set;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.Variable;
 
@@ -23,7 +24,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mongodb.DBObject;
@@ -132,7 +132,24 @@ class VariationReducer extends VariationConverter {
       LOG.debug("exception", e);
     }
 
+    if (TypeRegistry.isVariable(type)) {
+      addVariations(type, returnObject);
+    }
+
     return returnObject;
+  }
+
+  protected <T extends Entity> void addVariations(Class<T> type, T returnObject) {
+    List<Reference> variations = Lists.newArrayList();
+    String id = returnObject.getId();
+    Class<? extends Entity> baseClass = typeRegistry.getBaseClass(type);
+    Set<Class<? extends Entity>> variationTypes = typeRegistry.getSubClasses(baseClass);
+
+    for (Class<? extends Entity> variationClass : variationTypes) {
+      variations.add(new Reference(variationClass, id));
+    }
+
+    ((Variable) returnObject).setVariations(variations);
   }
 
   private <T extends Role> T createRole(Class<T> type, JsonNode node, String variation) throws InstantiationException, IllegalAccessException {
@@ -246,19 +263,18 @@ class VariationReducer extends VariationConverter {
    * Example2:  if type is Scientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
    * Example3:  if type is ProjectAScientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
    */
+  @SuppressWarnings("unchecked")
   public <T extends Entity> List<T> getAllForDBObject(DBObject item, Class<T> type) throws IOException {
     JsonNode node = convertToTree(item);
     List<T> rv = Lists.newArrayList();
-    for (String name : ImmutableList.copyOf(node.fieldNames())) {
-      if (!name.startsWith("^") && !name.startsWith("_")) {
-        JsonNode subNode = node.get(name);
-        if (subNode != null && subNode.isObject()) {
-          Class<? extends T> indicatedClass = variationNameToType(name);
-          rv.add(reduce(indicatedClass, node));
-        }
-      }
+
+    Class<? extends Entity> baseClass = typeRegistry.getBaseClass(type);
+    Set<Class<? extends Entity>> variations = typeRegistry.getSubClasses(baseClass);
+
+    for (Class<? extends Entity> typeToReduce : variations) {
+      rv.add((T) this.reduce(typeToReduce, node));
     }
+
     return rv;
   }
-
 }

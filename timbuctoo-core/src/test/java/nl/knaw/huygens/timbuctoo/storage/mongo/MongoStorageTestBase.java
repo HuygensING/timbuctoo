@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -50,7 +50,8 @@ public abstract class MongoStorageTestBase {
 
   protected <T extends Entity> void assertEqualDocs(T expected, T actual) {
     try {
-      assertNull(MongoDiff.diffDocuments(expected, actual));
+      // Use assertEquals instead of assertNull for a clearer message when a test fails.
+      assertEquals(null, MongoDiff.diffDocuments(expected, actual));
     } catch (IOException e) {
       fail(e.getMessage());
     }

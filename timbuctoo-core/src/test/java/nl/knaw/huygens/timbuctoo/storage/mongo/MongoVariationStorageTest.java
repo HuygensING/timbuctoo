@@ -193,6 +193,10 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     String name = "getItem";
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, name);
     expected.addVariation(TestConcreteDoc.class, DEFAULT_ID);
+    expected.addVariation(ProjectAGeneralTestDoc.class, DEFAULT_ID);
+    expected.addVariation(GeneralTestDoc.class, DEFAULT_ID);
+    expected.addVariation(ProjectBGeneralTestDoc.class, DEFAULT_ID);
+    expected.addVariation(TestDocWithIDPrefix.class, DEFAULT_ID);
 
     DBObject dbObject = createTestConcreteDocDBObject(DEFAULT_ID, name);
 
@@ -218,9 +222,11 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     expected.setId(DEFAULT_ID);
     expected.name = "subType";
     expected.generalTestDocValue = "test";
-    expected.setCurrentVariation("model");
-    expected.addVariation(GeneralTestDoc.class, DEFAULT_ID);
     expected.addVariation(TestConcreteDoc.class, DEFAULT_ID);
+    expected.addVariation(ProjectAGeneralTestDoc.class, DEFAULT_ID);
+    expected.addVariation(GeneralTestDoc.class, DEFAULT_ID);
+    expected.addVariation(ProjectBGeneralTestDoc.class, DEFAULT_ID);
+    expected.addVariation(TestDocWithIDPrefix.class, DEFAULT_ID);
 
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
 
@@ -241,7 +247,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     List<TestConcreteDoc> variations = storage.getAllVariations(TestConcreteDoc.class, DEFAULT_ID);
 
-    assertEquals(2, variations.size());
+    assertEquals(5, variations.size());
   }
 
   @Test
@@ -259,7 +265,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     assertEquals(name, actual.name);
     assertEquals(DEFAULT_ID, actual.getId());
-    assertEquals(variation, actual.getCurrentVariation());
+    //assertEquals(variation, actual.getCurrentVariation());
   }
 
   @Test
@@ -289,7 +295,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     assertEquals(name, actual.name);
     assertEquals(DEFAULT_ID, actual.getId());
-    assertEquals("projecta", actual.getCurrentVariation());
+    //assertEquals("projecta", actual.getCurrentVariation());
   }
 
   @Test
@@ -572,13 +578,13 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     TestConcreteDoc expected = new TestConcreteDoc();
     expected.name = name;
     expected.setId(id);
-    expected.setCurrentVariation("model");
+    //expected.setCurrentVariation("model");
     return expected;
   }
 
   private DBObject createTestConcreteDocDBObject(String id, String name) {
     Map<String, Object> map = createDefaultMap(id);
-    map.put("testconcretedoc", createTestConcreteDocMap(name, "model"));
+    map.putAll(createTestConcreteDocMap(name, "model"));
 
     DBJsonNode dbObject = createDBJsonNode(map);
 
@@ -587,50 +593,38 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   private DBObject createGeneralTestDocDBObject(String id, String name, String generalTestDocValue) {
     Map<String, Object> map = createDefaultMap(id);
-    Map<String, Object> testConcreteDocMap = createTestConcreteDocMap(name, "model");
-
-    Map<String, Object> generalTestDocMap = createGeneralTestDocMap(generalTestDocValue, "model");
-
-    map.put("testconcretedoc", testConcreteDocMap);
-    map.put("generaltestdoc", generalTestDocMap);
+    map.putAll(createTestConcreteDocMap(name, "model"));
+    map.putAll(createGeneralTestDocMap(generalTestDocValue, "model"));
 
     return createDBJsonNode(map);
   }
 
   private DBObject createProjectAGeneralTestDBObject(String id, String name, String generalTestDocValue, String projectAGeneralTestDocValue) {
     Map<String, Object> map = createDefaultMap(id);
-    Map<String, Object> testConcreteDocMap = createTestConcreteDocMap(name, "projecta");
-    Map<String, Object> generalTestDocMap = createGeneralTestDocMap(generalTestDocValue, "projecta");
-    Map<String, Object> projectAGeneralTestDocMap = createProjectAGeneralTestDocMap(projectAGeneralTestDocValue);
-
-    map.put("testconcretedoc", testConcreteDocMap);
-    map.put("generaltestdoc", generalTestDocMap);
-    map.put("projecta-projectageneraltestdoc", projectAGeneralTestDocMap);
+    map.putAll(createTestConcreteDocMap(name, "projecta"));
+    map.putAll(createGeneralTestDocMap(generalTestDocValue, "projecta"));
+    map.putAll(createProjectAGeneralTestDocMap(projectAGeneralTestDocValue));
 
     return createDBJsonNode(map);
   }
 
   private Map<String, Object> createProjectAGeneralTestDocMap(String projectAGeneralTestDocValue) {
     Map<String, Object> generalTestDocMap = Maps.newHashMap();
-    generalTestDocMap.put("projectAGeneralTestDocValue", projectAGeneralTestDocValue);
+    generalTestDocMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", projectAGeneralTestDocValue);
 
     return generalTestDocMap;
   }
 
   private Map<String, Object> createGeneralTestDocMap(String generalTestDocValue, String variation) {
     Map<String, Object> generalTestDocMap = Maps.newHashMap();
-    generalTestDocMap.put("generalTestDocValue", new Object[] { createValueMap(generalTestDocValue, variation) });
-    generalTestDocMap.put("!defaultVRE", variation);
+    generalTestDocMap.put("generaltestdoc.generalTestDocValue", generalTestDocValue);
     return generalTestDocMap;
   }
 
   private Map<String, Object> createTestConcreteDocMap(String name, String variation) {
 
-    Map<String, Object> nameMap = createValueMap(name, variation);
-
     Map<String, Object> testConcreteDocMap = Maps.newHashMap();
-    testConcreteDocMap.put("name", new Object[] { nameMap });
-    testConcreteDocMap.put("!defaultVRE", variation);
+    testConcreteDocMap.put("testconcretedoc.name", name);
     return testConcreteDocMap;
   }
 
@@ -651,9 +645,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     Map<String, Object> map = Maps.newHashMap();
     map.put("_id", id);
     map.put("^rev", 0);
-    map.put("^lastChange", null);
-    map.put("^creation", null);
-    map.put("^pid", null);
     map.put("^deleted", false);
     return map;
   }
