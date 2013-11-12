@@ -62,6 +62,8 @@ public class TypeRegistry {
   private final Map<Class<? extends Entity>, String> type2iname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> iname2type = Maps.newHashMap();
 
+  private final Map<Class<? extends Entity>, Set<Class<? extends Entity>>> subClassMap = Maps.newHashMap();
+
   private final Map<String, Set<Class<? extends Variable>>> variationMap = Maps.newHashMap();
 
   private final Map<Class<? extends Entity>, String> type2xname = Maps.newHashMap();
@@ -89,20 +91,32 @@ public class TypeRegistry {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private void registerPackage(ClassPath classPath, String packageName) {
     for (ClassInfo info : classPath.getTopLevelClasses(packageName)) {
       Class<?> type = info.load();
       if (shouldRegisterEntity(type)) {
-        registerClass((Class<? extends Entity>) type);
+        registerClass(toEntity(type));
         if (isDomainEntity(type)) {
-          registerVariationForClass((Class<? extends DomainEntity>) type);
+          registerVariationForClass(toDomainEntity(type));
+          registerWithBaseClass(toDomainEntity(type));
         }
         LOG.debug("Registered entity {}", type.getName());
       } else if (shouldRegisterRole(type)) {
         registerRole(toRole(type));
         registerVariationForClass(toRole(type));
       }
+    }
+  }
+
+  private void registerWithBaseClass(Class<? extends Entity> type) {
+    Class<? extends Entity> baseClass = getBaseClass(type);
+
+    if (subClassMap.containsKey(baseClass)) {
+      subClassMap.get(baseClass).add(type);
+    } else {
+      Set<Class<? extends Entity>> subClasses = Sets.newHashSet();
+      subClasses.add(type);
+      subClassMap.put(baseClass, subClasses);
     }
   }
 
@@ -289,6 +303,10 @@ public class TypeRegistry {
     }
 
     return null;
+  }
+
+  public Set<Class<? extends Entity>> getSubClasses(Class<? extends Entity> baseClass) {
+    return subClassMap.get(baseClass);
   }
 
   /**
