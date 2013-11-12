@@ -122,14 +122,8 @@ public abstract class DefaultImporter extends ToolBase {
   /**
    * Removes the non persisted entity's of {@code type} and it's relations from the storage and the index.
    * Use with project specific entities. If you use generic entities all (including the entities of other projects) non persisted entities will be removed.
-   *  
-   * @param type the type to remove.
-   * @param storageManager
-   * @param indexManager
-   * @throws IOException
-   * @throws IndexException
    */
-  protected void removeNonPersistedEntiesWithItsRelations(Class<? extends DomainEntity> type, StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
+  protected void removeNonPersistentEnties(Class<? extends DomainEntity> type, StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
     List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
     storageManager.removeNonPersistent(type, ids);
     indexManager.deleteEntities(type, ids);
