@@ -109,13 +109,13 @@ public class AtlantischeGidsImporter extends DefaultImporter {
     }
   }
 
-  protected void removeUnpersistentEntities(StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
+  protected void removeNonPersistentEnties(StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
     System.out.println("remove nonpersistent items.");
-    removeNonPersistedEntiesWithItsRelations(ATLGArchive.class, storageManager, indexManager);
-    removeNonPersistedEntiesWithItsRelations(ATLGArchiver.class, storageManager, indexManager);
-    removeNonPersistedEntiesWithItsRelations(ATLGKeyword.class, storageManager, indexManager);
-    removeNonPersistedEntiesWithItsRelations(ATLGLegislation.class, storageManager, indexManager);
-    removeNonPersistedEntiesWithItsRelations(ATLGPerson.class, storageManager, indexManager);
+    removeNonPersistentEnties(ATLGArchive.class, storageManager, indexManager);
+    removeNonPersistentEnties(ATLGArchiver.class, storageManager, indexManager);
+    removeNonPersistentEnties(ATLGKeyword.class, storageManager, indexManager);
+    removeNonPersistentEnties(ATLGLegislation.class, storageManager, indexManager);
+    removeNonPersistentEnties(ATLGPerson.class, storageManager, indexManager);
   }
 
   // -------------------------------------------------------------------
@@ -176,7 +176,7 @@ public class AtlantischeGidsImporter extends DefaultImporter {
   }
 
   public void importAll() throws Exception {
-    removeUnpersistentEntities(storageManager, indexManager);
+    removeNonPersistentEnties(storageManager, indexManager);
 
     System.out.printf("%n.. Relation types%n");
     importRelationTypes();

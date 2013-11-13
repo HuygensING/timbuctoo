@@ -107,6 +107,17 @@ public abstract class DefaultImporter extends ToolBase {
 
   // -------------------------------------------------------------------
 
+  /**
+   * Displays the status of the Mongo database and the Solr indexes.
+   */
+  protected void displayStatus() throws IndexException {
+    // Make sure the Solr indexes are up-to-date
+    indexManager.commitAll();
+
+    System.out.println(storageManager.getStatus());
+    System.out.println(indexManager.getStatus());
+  }
+
   protected <T extends Entity> EntityRef newEntityRef(Class<T> type, T entity) {
     String itype = typeRegistry.getINameForType(type);
     String xtype = typeRegistry.getXNameForType(type);
@@ -122,14 +133,8 @@ public abstract class DefaultImporter extends ToolBase {
   /**
    * Removes the non persisted entity's of {@code type} and it's relations from the storage and the index.
    * Use with project specific entities. If you use generic entities all (including the entities of other projects) non persisted entities will be removed.
-   *  
-   * @param type the type to remove.
-   * @param storageManager
-   * @param indexManager
-   * @throws IOException
-   * @throws IndexException
    */
-  protected void removeNonPersistedEntiesWithItsRelations(Class<? extends DomainEntity> type, StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
+  protected void removeNonPersistentEnties(Class<? extends DomainEntity> type, StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
     List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
     storageManager.removeNonPersistent(type, ids);
     indexManager.deleteEntities(type, ids);
