@@ -23,6 +23,7 @@ import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestDocWithIDPrefix;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBGeneralTestDoc;
 
 import org.junit.BeforeClass;
@@ -197,6 +198,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     expected.addVariation(GeneralTestDoc.class, DEFAULT_ID);
     expected.addVariation(ProjectBGeneralTestDoc.class, DEFAULT_ID);
     expected.addVariation(TestDocWithIDPrefix.class, DEFAULT_ID);
+    expected.addVariation(ProjectATestDocWithPersonName.class, DEFAULT_ID);
 
     DBObject dbObject = createTestConcreteDocDBObject(DEFAULT_ID, name);
 
@@ -226,6 +228,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     expected.addVariation(GeneralTestDoc.class, DEFAULT_ID);
     expected.addVariation(ProjectBGeneralTestDoc.class, DEFAULT_ID);
     expected.addVariation(TestDocWithIDPrefix.class, DEFAULT_ID);
+    expected.addVariation(ProjectATestDocWithPersonName.class, DEFAULT_ID);
 
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
 
@@ -246,7 +249,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     List<TestConcreteDoc> variations = storage.getAllVariations(TestConcreteDoc.class, DEFAULT_ID);
 
-    assertEquals(5, variations.size());
+    assertEquals(6, variations.size());
   }
 
   @Test

@@ -37,6 +37,12 @@ public class MongoFieldMapper {
     return map;
   }
 
+  /**
+   * A method to retrieve the name of the type the field belongs to.
+   * @param fieldName the field to retrieve the type name from.
+   * @return the type name or {@code null} if the field does not belong to a type.
+   * @throws NullPointerException is thrown if {@code fieldName} is {@code null}.
+   */
   public String getTypeNameOfFieldName(String fieldName) {
     checkNotNull(fieldName);
 
@@ -98,5 +104,24 @@ public class MongoFieldMapper {
     }
 
     return GET_ACCESSOR.concat(String.valueOf(fieldNameChars));
+  }
+
+  /**
+   * Creates the name for the field in a nested object.
+   * @param originalFieldName the fieldName in the nested object.
+   * @param type the class the object is nested in.
+   * @param field the field of the nested object.
+   * @return the nested name.
+   * @throws NullPointerException when one of the three parameters is {@code null}.
+   */
+  public String createNestedFieldName(String originalFieldName, Class<?> type, Field field) {
+    checkNotNull(originalFieldName);
+    checkNotNull(type);
+    checkNotNull(field);
+
+    String nestedField = getFieldName(type, field);
+    String nestedType = getTypeNameOfFieldName(originalFieldName);
+
+    return originalFieldName.replace(nestedType, nestedField);
   }
 }

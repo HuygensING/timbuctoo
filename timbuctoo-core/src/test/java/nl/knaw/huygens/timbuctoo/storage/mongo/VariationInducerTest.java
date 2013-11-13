@@ -11,8 +11,11 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
+import nl.knaw.huygens.timbuctoo.model.util.PersonName;
+import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectANewTestRole;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBGeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBTestRole;
@@ -28,6 +31,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class VariationInducerTest extends VariationTestBase {
 
@@ -143,6 +147,19 @@ public class VariationInducerTest extends VariationTestBase {
     JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item);
 
     assertEquals(expected, actual);
+  }
+
+  @Ignore("See redmine #1890")
+  @Test
+  public void testInduceDomainEntityProjectWithPersonName() {
+    ProjectATestDocWithPersonName item = new ProjectATestDocWithPersonName();
+    PersonName name = new PersonName();
+    name.addNameComponent(Type.FORENAME, "test");
+    name.addNameComponent(Type.SURNAME, "test");
+    item.setPersonName(name);
+
+    Map<String, Object> expectedMap = Maps.newHashMap();
+    //expectedMap.put("projectatestdocwithpersonname.personName.components", value)
   }
 
   @Test

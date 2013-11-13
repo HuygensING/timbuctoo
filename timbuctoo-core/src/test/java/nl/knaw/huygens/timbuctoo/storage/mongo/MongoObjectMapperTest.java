@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.MongoObjectMapperEntity;
+import nl.knaw.huygens.timbuctoo.model.MongoObjectMapperNested;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -105,6 +106,23 @@ public class MongoObjectMapperTest {
     expected.put(PWAA_KEY, DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
 
     assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testMapObjectWithNestedObjects() {
+    MongoObjectMapperEntity nestedEntity = createMongoObjectMapperEntity(DEFAULT_NAME, DEFAULT_TEST_VALUE1, DEFAULT_TEST_VALUE2, DEFAULT_ANNOTATED_PROPERTY, DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
+    MongoObjectMapperNested testObject = new MongoObjectMapperNested(nestedEntity);
+
+    Map<String, Object> actual = instance.mapObject(MongoObjectMapperNested.class, testObject);
+    Map<String, Object> expected = Maps.newHashMap();
+    expected.put("mongoobjectmappernested.nestedEntity.name", DEFAULT_NAME);
+    expected.put("mongoobjectmappernested.nestedEntity.testValue1", DEFAULT_TEST_VALUE1);
+    expected.put("mongoobjectmappernested.nestedEntity.testValue2", DEFAULT_TEST_VALUE2);
+    expected.put("mongoobjectmappernested.nestedEntity.propAnnotated", DEFAULT_ANNOTATED_PROPERTY);
+    expected.put("mongoobjectmappernested.nestedEntity.pwaa", DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
+
+    assertEquals(expected, actual);
+
   }
 
   @Test(expected = IllegalArgumentException.class)
