@@ -165,6 +165,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setPid(TEST_PID);
     expected.generalTestDocValue = GENERAL_TEST_DOC_VALUE;
     expected.projectAGeneralTestDocValue = projectatestvalue;
+    expected.setCurrentVariation("projecta");
 
     ProjectAGeneralTestDoc actual = reducer.reduce(ProjectAGeneralTestDoc.class, node);
 
@@ -186,6 +187,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setPid(TEST_PID);
     expected.generalTestDocValue = projectAVariation;
     expected.projectAGeneralTestDocValue = projectatestvalue;
+    expected.setCurrentVariation("projecta");
 
     ProjectAGeneralTestDoc actual = reducer.reduce(ProjectAGeneralTestDoc.class, node);
 
@@ -260,6 +262,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setPid(TEST_PID);
     expected.generalTestDocValue = GENERAL_TEST_DOC_VALUE;
     expected.projectBGeneralTestDocValue = projectBTestDocValue;
+    expected.setCurrentVariation("projectb");
     ProjectBTestRole testRole = new ProjectBTestRole();
     testRole.setRoleName("roleName");
     testRole.setBeeName("beeName");
@@ -286,6 +289,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setId(TEST_ID);
     expected.setPid(TEST_PID);
     expected.generalTestDocValue = GENERAL_TEST_DOC_VALUE;
+    expected.setCurrentVariation("projecta");
     ProjectATestRole testRole = new ProjectATestRole();
     testRole.setRoleName("roleName");
 
@@ -319,6 +323,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setPid(TEST_PID);
     expected.generalTestDocValue = "test";
     expected.projectAGeneralTestDocValue = "testB";
+    expected.setCurrentVariation("projecta");
     ProjectATestRole role = new ProjectATestRole();
     role.setProjectATestRoleName("beeName");
     role.setRoleName("roleName");
@@ -350,8 +355,10 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setId(TEST_ID);
     expected.setPid(TEST_PID);
     expected.generalTestDocValue = projectAVariation;
+    String requestedVariation = "projecta";
+    expected.setCurrentVariation(requestedVariation);
 
-    GeneralTestDoc actual = reducer.reduce(GeneralTestDoc.class, node, "projecta");
+    GeneralTestDoc actual = reducer.reduce(GeneralTestDoc.class, node, requestedVariation);
 
     assertEquals(expected, actual);
   }
@@ -375,13 +382,15 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setId(TEST_ID);
     expected.setPid(TEST_PID);
     expected.generalTestDocValue = projectAVariation;
+    String requestedVariation = "projecta";
+    expected.setCurrentVariation(requestedVariation);
     TestRole testRole = new TestRole();
     testRole.setRoleName("value");
     ArrayList<Role> roles = Lists.newArrayList();
     roles.add(testRole);
     expected.setRoles(roles);
 
-    GeneralTestDoc actual = reducer.reduce(GeneralTestDoc.class, node, "projecta");
+    GeneralTestDoc actual = reducer.reduce(GeneralTestDoc.class, node, requestedVariation);
 
     assertEquals(expected, actual);
   }
@@ -411,6 +420,6 @@ public class VariationReducerTest extends VariationTestBase {
     return this.mapper;
   }
 
-  //TODO: add tests for reducing revisions / multiple revisions and getAllForObject.
+  //TODO: add tests for reducing revisions / multiple revisions.
 
 }
