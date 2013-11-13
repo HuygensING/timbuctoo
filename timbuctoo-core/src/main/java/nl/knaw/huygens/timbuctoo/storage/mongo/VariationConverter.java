@@ -1,13 +1,16 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Lists;
 
 /**
@@ -66,24 +69,31 @@ class VariationConverter {
     return typeString.replaceFirst("[a-z]*-", "");
   }
 
-  protected Object convertValue(Class<?> type, JsonNode value) {
-    if (type == Integer.class || type == int.class) {
+  protected <T> Object convertValue(Class<T> fieldType, JsonNode value) throws IOException {
+    if (value.isArray()) {
+      ArrayNode array = (ArrayNode) value;
+      array.size();
+
+      List<? extends Object> returnValue = mapper.readValue(value.toString(), new TypeReference<List<? extends Object>>() {});
+
+      return returnValue;
+
+    } else if (fieldType == Integer.class || fieldType == int.class) {
       return value.asInt();
-    } else if (type == Boolean.class || type == boolean.class) {
+    } else if (fieldType == Boolean.class || fieldType == boolean.class) {
       return value.asBoolean();
-    } else if (type == Character.class || type == char.class) {
+    } else if (fieldType == Character.class || fieldType == char.class) {
       return value.asText().charAt(0);
-    } else if (type == Double.class || type == double.class) {
+    } else if (fieldType == Double.class || fieldType == double.class) {
       return value.asDouble();
-    } else if (type == Float.class || type == float.class) {
+    } else if (fieldType == Float.class || fieldType == float.class) {
       return (float) value.asDouble();
-    } else if (type == Long.class || type == long.class) {
+    } else if (fieldType == Long.class || fieldType == long.class) {
       return value.asLong();
-    } else if (type == Short.class || type == short.class) {
+    } else if (fieldType == Short.class || fieldType == short.class) {
       return (short) value.asInt();
     }
 
     return value.asText();
   }
-
 }

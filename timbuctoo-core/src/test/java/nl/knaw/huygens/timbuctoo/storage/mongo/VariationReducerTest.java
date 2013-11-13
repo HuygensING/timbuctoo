@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntityPrimitive;
+import nl.knaw.huygens.timbuctoo.model.TestSystemEntityPrimitiveCollections;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.NewTestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.TestRole;
@@ -108,7 +109,23 @@ public class VariationReducerTest extends VariationTestBase {
     TestSystemEntityPrimitive actual = reducer.reduce(TestSystemEntityPrimitive.class, node);
 
     assertEquals(expected, actual);
+  }
 
+  @Test
+  public void testReduceSystemEntityPrimitiveCollections() throws VariationException, JsonProcessingException {
+    Map<String, Object> map = Maps.newHashMap();
+    map.put("testsystementityprimitivecollections.testStringList", new String[] { "test", "test1" });
+    map.put("testsystementityprimitivecollections.testIntegerList", new Integer[] { 1, 13, 42 });
+
+    ObjectNode node = mapper.valueToTree(map);
+
+    TestSystemEntityPrimitiveCollections expected = new TestSystemEntityPrimitiveCollections();
+    expected.setTestIntegerList(Lists.newArrayList(1, 13, 42));
+    expected.setTestStringList(Lists.newArrayList("test", "test1"));
+
+    TestSystemEntityPrimitiveCollections actual = reducer.reduce(TestSystemEntityPrimitiveCollections.class, node);
+
+    assertEquals(expected, actual);
   }
 
   @Test
