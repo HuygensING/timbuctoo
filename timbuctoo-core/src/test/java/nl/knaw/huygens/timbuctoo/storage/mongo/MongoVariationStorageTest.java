@@ -204,7 +204,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     DBObject query = new BasicDBObject();
     query.put("_id", DEFAULT_ID);
-    query.put("testconcretedoc", new BasicDBObject("$ne", null));
 
     when(anyCollection.findOne(query)).thenReturn(dbObject);
 
@@ -253,7 +252,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test
   public void testGetVariation() throws IOException {
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
-    query.put("testconcretedoc", new BasicDBObject("$ne", null));
 
     String name = "name";
     DBObject projectAGeneralTestDBNode = createProjectAGeneralTestDBObject(DEFAULT_ID, name, "value1", "value2");
@@ -284,7 +282,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test
   public void testGetVariationVariationNonExisting() throws IOException {
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
-    query.put("testconcretedoc", new BasicDBObject("$ne", null));
 
     String name = "name";
     DBObject projectAGeneralTestDBNode = createProjectAGeneralTestDBObject(DEFAULT_ID, name, "value1", "value2");

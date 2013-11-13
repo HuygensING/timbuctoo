@@ -93,14 +93,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   public <T extends Entity> T getItem(Class<T> type, String id) throws VariationException, IOException {
     DBCollection col = getVariationCollection(type);
     DBObject query = new BasicDBObject("_id", id);
-    addClassNotNull(type, query);
     return (T) reducer.reduceDBObject((Class<? extends DomainEntity>) type, col.findOne(query));
-  }
-
-  private <T extends Entity> void addClassNotNull(Class<T> type, DBObject query) {
-    String variationName = reducer.typeToVariationName(type);
-    BasicDBObject notNull = new BasicDBObject("$ne", null);
-    query.put(variationName, notNull);
   }
 
   @Override
@@ -117,7 +110,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   @Override
   public <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) throws IOException {
     DBObject query = new BasicDBObject("_id", id);
-    addClassNotNull(type, query);
     DBObject item = getVariationCollection(type).findOne(query);
     return reducer.reduceDBObject(item, type, variation);
   }
