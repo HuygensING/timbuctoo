@@ -226,7 +226,12 @@ class VariationReducer extends VariationConverter {
   }
 
   private Object getVariationValue(Class<?> type, Field field, String variation, JsonNode record, JsonNode originalValue) {
-    Object value = convertValue(field.getType(), originalValue);
+    Object value = null;
+    try {
+      value = convertValue(field.getType(), originalValue);
+    } catch (IOException e) {
+      LOG.error("Original value \"{}\" cannot be converted.", originalValue);
+    }
 
     if (TypeRegistry.isVariable(type)) {
       @SuppressWarnings("unchecked")
@@ -236,7 +241,12 @@ class VariationReducer extends VariationConverter {
         String overridenDBKey = mongoFieldMapper.getFieldName(subClass, field);
 
         if (record.has(overridenDBKey)) {
-          value = convertValue(field.getType(), record.get(overridenDBKey));
+
+          try {
+            value = convertValue(field.getType(), record.get(overridenDBKey));
+          } catch (IOException e) {
+            LOG.error("Variation value \"{}\" cannot be converted.", record.get(overridenDBKey));
+          }
         }
       }
     }

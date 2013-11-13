@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,8 @@ import nl.knaw.huygens.timbuctoo.model.Role;
 
 import org.apache.commons.lang.StringUtils;
 import org.mongojack.internal.stream.JacksonDBObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -24,6 +27,8 @@ import com.google.common.collect.Sets;
 import com.mongodb.DBObject;
 
 class VariationInducer extends VariationConverter {
+
+  private static final Logger LOG = LoggerFactory.getLogger(VariationInducer.class);
 
   public VariationInducer(TypeRegistry registry, MongoObjectMapper mongoMapper, MongoFieldMapper mongoFieldMapper) {
     super(registry, mongoMapper, mongoFieldMapper);
@@ -198,7 +203,12 @@ class VariationInducer extends VariationConverter {
       return false;
     }
 
-    Object existingValue = convertValue(newValue.getClass(), existingNode.get(keyInNode));
+    Object existingValue = null;
+    try {
+      existingValue = convertValue(newValue.getClass(), existingNode.get(keyInNode));
+    } catch (IOException e) {
+      LOG.error("Value \"{}\" cannot be converted.", existingNode.get(keyInNode));
+    }
 
     return Objects.equal(newValue, existingValue);
   }
