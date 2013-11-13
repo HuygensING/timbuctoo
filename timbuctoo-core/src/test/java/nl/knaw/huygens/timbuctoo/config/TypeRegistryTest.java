@@ -19,6 +19,7 @@ import nl.knaw.huygens.timbuctoo.variation.model.TestExtraBaseDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestInheritsFromTestBaseDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestRole;
 
 import org.junit.Test;
@@ -194,6 +195,7 @@ public class TypeRegistryTest {
     assertEquals(TestConcreteDoc.class, registry.getBase(ProjectAGeneralTestDoc.class));
   }
 
+  //TODO: Make test less dependent on adding subclasses.
   @Test
   public void testGetSubClassesOfPrimitiveModel() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
@@ -202,6 +204,7 @@ public class TypeRegistryTest {
     expected.add(TestDocWithIDPrefix.class);
     expected.add(ProjectAGeneralTestDoc.class);
     expected.add(TestConcreteDoc.class);
+    expected.add(ProjectATestDocWithPersonName.class);
 
     assertEquals(expected, registry.getSubClasses(TestConcreteDoc.class));
   }

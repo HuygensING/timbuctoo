@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBTestRole;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -142,6 +144,12 @@ public class VariationReducerTest extends VariationTestBase {
     GeneralTestDoc actual = reducer.reduce(GeneralTestDoc.class, node);
 
     assertEquals(expected, actual);
+  }
+
+  @Ignore("See redmine #1890")
+  @Test
+  public void testReduceDomainEntityProjectWithPersonName() {
+    fail("Yet to be implemented.");
   }
 
   @Test
@@ -395,7 +403,7 @@ public class VariationReducerTest extends VariationTestBase {
 
     List<? extends Entity> variation = reducer.getAllForDBObject(new DBJsonNode(node), ProjectAGeneralTestDoc.class);
 
-    assertEquals(5, variation.size());
+    assertEquals(6, variation.size());
   }
 
   @Override

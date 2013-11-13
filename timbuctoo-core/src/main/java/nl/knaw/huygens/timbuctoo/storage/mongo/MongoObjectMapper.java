@@ -65,6 +65,8 @@ public class MongoObjectMapper {
           if (isHumanReableCollection(value)) {
             objectMap.put(mongoFieldMapper.getFieldName(type, field), value);
           }
+        } else {
+          objectMap.putAll(mapNestedObject(type, item, field, fieldType));
         }
       } catch (IllegalAccessException ex) {
         LOG.error("Field {} is not accessible in type {}.", field.getName(), type);
@@ -72,6 +74,22 @@ public class MongoObjectMapper {
       }
     }
     return objectMap;
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> Map<String, Object> mapNestedObject(Class<T> type, T item, Field field, Class<?> fieldType) throws IllegalAccessException {
+    Map<String, Object> map = Maps.newHashMap();
+    field.setAccessible(true);
+    T value = (T) field.get(item);
+    if (value != null) {
+      Map<String, Object> tempMap = mapObject((Class<T>) fieldType, value);
+      for (String key : tempMap.keySet()) {
+        map.put(mongoFieldMapper.createNestedFieldName(key, type, field), tempMap.get(key));
+      }
+    }
+
+    return map;
+
   }
 
   private boolean isHumanReadable(Class<?> type) {
