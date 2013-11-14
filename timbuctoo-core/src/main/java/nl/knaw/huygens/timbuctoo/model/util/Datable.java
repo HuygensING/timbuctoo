@@ -6,9 +6,10 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Objects;
 
 @SuppressWarnings("serial")
-public class Datable implements Serializable {
+public class Datable implements Comparable<Datable>, Serializable {
 
   /** Central European Time */
   static final TimeZone CET = TimeZone.getTimeZone("CET");
@@ -238,12 +239,29 @@ public class Datable implements Serializable {
     return calendar.get(Calendar.YEAR);
   }
 
+  @Override
   public int compareTo(Datable other) {
     if (other == null) {
       return 0;
     }
+
     int compareFrom = getFromDate().compareTo(other.getFromDate());
     return (compareFrom != 0) ? compareFrom : (getToDate().compareTo(other.getToDate()));
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Datable)) {
+      return false;
+    }
+
+    Datable other = (Datable) obj;
+
+    return Objects.equal(other.edtf, edtf);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(edtf);
+  }
 }

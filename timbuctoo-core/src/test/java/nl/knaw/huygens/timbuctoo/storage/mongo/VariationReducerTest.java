@@ -9,11 +9,13 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DatableSystemEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntityPrimitive;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntityPrimitiveCollections;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.NewTestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.TestRole;
@@ -109,6 +111,25 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setTestShort((short) 4);
 
     TestSystemEntityPrimitive actual = reducer.reduce(TestSystemEntityPrimitive.class, node);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testInduceDatable() throws VariationException, JsonProcessingException {
+    Map<String, Object> map = Maps.newHashMap();
+    Datable datable = new Datable("20131011");
+    map.put("datablesystementity.testDatable", datable.getEDTF());
+    map.put("^rev", 0);
+    map.put("^deleted", false);
+    ObjectNode node = mapper.valueToTree(map);
+
+    DatableSystemEntity expected = new DatableSystemEntity();
+    expected.setTestDatable(datable);
+    expected.setRev(0);
+    expected.setDeleted(false);
+
+    DatableSystemEntity actual = reducer.reduce(DatableSystemEntity.class, node);
 
     assertEquals(expected, actual);
   }
