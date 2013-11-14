@@ -21,10 +21,10 @@ public class MongoObjectMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoObjectMapper.class);
 
-  private final MongoFieldMapper mongoFieldMapper;
+  private final MongoFieldMapper fieldMapper;
 
   public MongoObjectMapper() {
-    mongoFieldMapper = new MongoFieldMapper();
+    fieldMapper = new MongoFieldMapper();
   }
 
   /**
@@ -37,7 +37,7 @@ public class MongoObjectMapper {
     Preconditions.checkArgument(item != null);
     Preconditions.checkArgument(type != null);
 
-    Map<String, Object> objectMap = Maps.<String, Object> newHashMap();
+    Map<String, Object> map = Maps.newHashMap();
     for (Field field : type.getDeclaredFields()) {
       try {
         Class<?> fieldType = field.getType();
@@ -46,19 +46,19 @@ public class MongoObjectMapper {
           field.setAccessible(true);
           Object value = field.get(item);
           if (value != null) {
-            objectMap.put(mongoFieldMapper.getFieldName(type, field), value);
+            map.put(fieldMapper.getFieldName(type, field), value);
           }
         } else if (Collection.class.isAssignableFrom(fieldType)) {
           field.setAccessible(true);
           Collection<?> value = (Collection<?>) field.get(item);
           if (isHumanReableCollection(value)) {
-            objectMap.put(mongoFieldMapper.getFieldName(type, field), value);
+            map.put(fieldMapper.getFieldName(type, field), value);
           }
         } else if (Datable.class.isAssignableFrom(fieldType)) {
           field.setAccessible(true);
           Datable datable = (Datable) field.get(item);
           if (datable != null) {
-            objectMap.put(mongoFieldMapper.getFieldName(type, field), datable.getEDTF());
+            map.put(fieldMapper.getFieldName(type, field), datable.getEDTF());
           }
         } else {
           // Temporary only import simple properties.
@@ -69,7 +69,7 @@ public class MongoObjectMapper {
         LOG.debug("", e);
       }
     }
-    return objectMap;
+    return map;
   }
 
   private boolean isHumanReadable(Class<?> type) {
