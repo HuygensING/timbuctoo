@@ -9,7 +9,7 @@ import com.mongodb.DefaultDBEncoder;
 
 public class TreeEncoderFactory implements DBEncoderFactory {
 
-  private ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
 
   public TreeEncoderFactory(ObjectMapper objectMapper) {
     this.objectMapper = objectMapper;
@@ -18,14 +18,6 @@ public class TreeEncoderFactory implements DBEncoderFactory {
   @Override
   public DBEncoder create() {
     return new JacksonDBEncoder(objectMapper, DefaultDBEncoder.FACTORY.create());
-  }
-
-  public ObjectMapper getObjectMapper() {
-    return objectMapper;
-  }
-
-  public void setObjectMapper(ObjectMapper objectMapper) {
-    this.objectMapper = objectMapper;
   }
 
 }
