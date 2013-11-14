@@ -31,10 +31,10 @@ class VariationConverter {
   protected final MongoObjectMapper mongoObjectMapper;
   protected final MongoFieldMapper mongoFieldMapper;
 
-  public VariationConverter(TypeRegistry registry, MongoObjectMapper mongoObjectMapper) {
+  public VariationConverter(TypeRegistry registry) {
     typeRegistry = registry;
     mapper = new ObjectMapper();
-    this.mongoObjectMapper = mongoObjectMapper;
+    mongoObjectMapper = new MongoObjectMapper();
     mongoFieldMapper = new MongoFieldMapper();
   }
 

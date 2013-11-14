@@ -30,8 +30,8 @@ class VariationInducer extends VariationConverter {
 
   private static final Logger LOG = LoggerFactory.getLogger(VariationInducer.class);
 
-  public VariationInducer(TypeRegistry registry, MongoObjectMapper mongoMapper) {
-    super(registry, mongoMapper);
+  public VariationInducer(TypeRegistry registry) {
+    super(registry);
   }
 
   /**

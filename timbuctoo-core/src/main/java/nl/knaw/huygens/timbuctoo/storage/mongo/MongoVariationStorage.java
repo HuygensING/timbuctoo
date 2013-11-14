@@ -47,14 +47,14 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   private final VariationInducer inducer;
   private final VariationReducer reducer;
 
-  public MongoVariationStorage(TypeRegistry registry, Mongo mongo, DB db, String dbName, MongoObjectMapper mongoMapper) throws UnknownHostException, MongoException {
-    super(registry, mongo, db, dbName, mongoMapper);
+  public MongoVariationStorage(TypeRegistry registry, Mongo mongo, DB db, String dbName) throws UnknownHostException, MongoException {
+    super(registry, mongo, db, dbName);
     objectMapper = new ObjectMapper();
     treeEncoderFactory = new TreeEncoderFactory(objectMapper);
     treeDecoderFactory = new TreeDecoderFactory();
     collectionCache = Maps.newHashMap();
-    inducer = new VariationInducer(registry, mongoMapper);
-    reducer = new VariationReducer(registry, mongoMapper);
+    inducer = new VariationInducer(registry);
+    reducer = new VariationReducer(registry);
   }
 
   public void createIndexes() {
