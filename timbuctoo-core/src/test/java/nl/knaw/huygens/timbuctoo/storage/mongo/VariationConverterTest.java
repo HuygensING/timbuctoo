@@ -13,19 +13,17 @@ import org.junit.Test;
 public class VariationConverterTest {
 
   private static TypeRegistry registry;
-  private static MongoObjectMapper mongoMapper;
 
   private VariationConverter base;
 
   @BeforeClass
   public static void setUpRegistry() {
     registry = new TypeRegistry("timbuctoo.variation.model");
-    mongoMapper = new MongoObjectMapper();
   }
 
   @Before
   public void setup() {
-    base = new VariationConverter(registry, mongoMapper);
+    base = new VariationConverter(registry);
   }
 
   @Test

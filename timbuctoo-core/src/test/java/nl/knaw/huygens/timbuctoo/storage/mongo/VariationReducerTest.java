@@ -43,7 +43,6 @@ public class VariationReducerTest extends VariationTestBase {
   private static final String GENERAL_TEST_DOC_VALUE = "generalTestDocValue";
   private static final String TEST_PID = "test pid";
   private static TypeRegistry registry;
-  private static MongoObjectMapper mongoObjectMapper;
 
   private static final String TEST_ID = "id0000000001";
   private VariationReducer reducer;
@@ -52,12 +51,11 @@ public class VariationReducerTest extends VariationTestBase {
   @BeforeClass
   public static void setupRegistry() {
     registry = new TypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
-    mongoObjectMapper = new MongoObjectMapper();
   }
 
   @Before
   public void setUp() {
-    reducer = new VariationReducer(registry, mongoObjectMapper);
+    reducer = new VariationReducer(registry);
     mapper = new ObjectMapper();
   }
 

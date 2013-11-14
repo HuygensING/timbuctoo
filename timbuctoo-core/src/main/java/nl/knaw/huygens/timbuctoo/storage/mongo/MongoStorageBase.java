@@ -33,14 +33,14 @@ public abstract class MongoStorageBase implements BasicStorage {
   protected DB db;
   private EntityIds entityIds;
 
-  public MongoStorageBase(TypeRegistry registry, Mongo mongo, DB db, String dbName, MongoObjectMapper mongoMapper) {
+  public MongoStorageBase(TypeRegistry registry, Mongo mongo, DB db, String dbName) {
     this.typeRegistry = registry;
     this.queries = new MongoQueries();
     this.mongo = mongo;
     this.dbName = dbName;
     this.db = db;
     this.entityIds = new EntityIds(db, typeRegistry);
-    this.mongoMapper = mongoMapper;
+    mongoMapper = new MongoObjectMapper();
   }
 
   public void empty() {
