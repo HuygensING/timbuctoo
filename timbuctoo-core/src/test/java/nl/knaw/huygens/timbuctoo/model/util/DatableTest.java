@@ -1,5 +1,9 @@
 package nl.knaw.huygens.timbuctoo.model.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -7,6 +11,8 @@ import java.util.Date;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.google.common.base.Objects;
 
 public class DatableTest {
 
@@ -176,13 +182,49 @@ public class DatableTest {
     Assert.assertEquals(1710, datable.getToYear());
   }
 
-  /**
-   * When a datable is initialized with a null value, it should
-   * not throw an Exception.
-   */
   @Test
-  public void testNullString() {
-    new Datable(null);
+  public void testEqualsEqual() {
+    Datable first = new Datable("20131011");
+    Datable second = new Datable("20131011");
+
+    assertTrue(first.equals(second));
   }
 
+  @Test
+  public void testEqualsNotEqual() {
+    Datable first = new Datable("20131011");
+    Datable second = new Datable("20131012");
+
+    assertFalse(first.equals(second));
+  }
+
+  @Test
+  public void testHashCode() {
+    String dateString = "20131011";
+    assertEquals(Objects.hashCode(dateString), new Datable(dateString).hashCode());
+  }
+
+  @Test
+  public void testCompareToEqualSameEdtf() {
+    Datable first = new Datable("20131011");
+    Datable second = new Datable("20131011");
+
+    assertEquals(0, first.compareTo(second));
+  }
+
+  @Test
+  public void testCompareToSmaller() {
+    Datable first = new Datable("20131010");
+    Datable second = new Datable("20131011");
+
+    assertEquals(-1, first.compareTo(second));
+  }
+
+  @Test
+  public void testCompareToBigger() {
+    Datable first = new Datable("20131011");
+    Datable second = new Datable("20131010");
+
+    assertEquals(1, first.compareTo(second));
+  }
 }
