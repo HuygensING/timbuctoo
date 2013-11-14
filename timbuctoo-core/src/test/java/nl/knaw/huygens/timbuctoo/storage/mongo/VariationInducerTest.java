@@ -51,7 +51,7 @@ public class VariationInducerTest extends VariationTestBase {
   public static void setupMapper() {
     registry = new TypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb timbuctoo.model");
     mongoFieldMapper = new MongoFieldMapper();
-    mongoMapper = new MongoObjectMapper(mongoFieldMapper);
+    mongoMapper = new MongoObjectMapper();
   }
 
   @Before

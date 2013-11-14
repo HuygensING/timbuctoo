@@ -54,7 +54,7 @@ public class VariationReducerTest extends VariationTestBase {
   public static void setupRegistry() {
     registry = new TypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
     mongoFieldMapper = new MongoFieldMapper();
-    mongoObjectMapper = new MongoObjectMapper(mongoFieldMapper);
+    mongoObjectMapper = new MongoObjectMapper();
   }
 
   @Before

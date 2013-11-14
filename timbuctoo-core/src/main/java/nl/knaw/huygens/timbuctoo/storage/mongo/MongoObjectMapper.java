@@ -11,24 +11,20 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 /**
  * This class converts a Java object to a map with a String key and value. 
  * The values are the current value of the object.
  * @author martijnm
- *
  */
-@Singleton
 public class MongoObjectMapper {
+
   private static final Logger LOG = LoggerFactory.getLogger(MongoObjectMapper.class);
 
   private final MongoFieldMapper mongoFieldMapper;
 
-  @Inject
-  public MongoObjectMapper(MongoFieldMapper mongoFieldMapper) {
-    this.mongoFieldMapper = mongoFieldMapper;
+  public MongoObjectMapper() {
+    mongoFieldMapper = new MongoFieldMapper();
   }
 
   /**

@@ -22,7 +22,7 @@ public class VariationConverterTest {
   public static void setUpRegistry() {
     registry = new TypeRegistry("timbuctoo.variation.model");
     mongoFieldMapper = new MongoFieldMapper();
-    mongoMapper = new MongoObjectMapper(mongoFieldMapper);
+    mongoMapper = new MongoObjectMapper();
   }
 
   @Before
