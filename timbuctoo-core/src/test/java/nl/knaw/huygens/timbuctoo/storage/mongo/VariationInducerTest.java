@@ -8,9 +8,11 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DatableSystemEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
@@ -106,15 +108,32 @@ public class VariationInducerTest extends VariationTestBase {
     JsonNode expectedObject = createSystemObjectNode(TEST_SYSTEM_ID, name2, testValue1, testValue2);
     ObjectNode existingObject = createSystemObjectNode(TEST_SYSTEM_ID, TEST_NAME, testValue1, null);
 
-    TestSystemEntity doc = new TestSystemEntity();
-    doc.setId(TEST_SYSTEM_ID);
-    doc.setName(name2);
-    doc.setTestValue1(testValue1);
-    doc.setTestValue2(testValue2);
+    TestSystemEntity item = new TestSystemEntity();
+    item.setId(TEST_SYSTEM_ID);
+    item.setName(name2);
+    item.setTestValue1(testValue1);
+    item.setTestValue2(testValue2);
 
-    JsonNode actual = inducer.induce(TestSystemEntity.class, doc, existingObject);
+    JsonNode actual = inducer.induce(TestSystemEntity.class, item, existingObject);
 
     assertEquals(expectedObject, actual);
+  }
+
+  @Test
+  public void testInduceDatable() throws VariationException {
+    Map<String, Object> expectedMap = Maps.newHashMap();
+    Datable datable = new Datable("20131011");
+    expectedMap.put("datablesystementity.testDatable", datable.getEDTF());
+    expectedMap.put("^rev", 0);
+    expectedMap.put("^deleted", false);
+    JsonNode expected = mapper.valueToTree(expectedMap);
+
+    DatableSystemEntity item = new DatableSystemEntity();
+    item.setTestDatable(datable);
+
+    JsonNode actual = inducer.induce(DatableSystemEntity.class, item);
+
+    assertEquals(expected, actual);
   }
 
   @Ignore("Should we be able to induce primitive (from the model package) entities?")
