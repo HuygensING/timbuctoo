@@ -6,8 +6,11 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -71,13 +74,7 @@ class VariationConverter {
 
   protected <T> Object convertValue(Class<T> fieldType, JsonNode value) throws IOException {
     if (value.isArray()) {
-      ArrayNode array = (ArrayNode) value;
-      array.size();
-
-      List<? extends Object> returnValue = mapper.readValue(value.toString(), new TypeReference<List<? extends Object>>() {});
-
-      return returnValue;
-
+      return createCollection(value);
     } else if (fieldType == Integer.class || fieldType == int.class) {
       return value.asInt();
     } else if (fieldType == Boolean.class || fieldType == boolean.class) {
@@ -92,8 +89,19 @@ class VariationConverter {
       return value.asLong();
     } else if (fieldType == Short.class || fieldType == short.class) {
       return (short) value.asInt();
+    } else if (Datable.class.isAssignableFrom(fieldType)) {
+      return new Datable(value.asText());
     }
 
     return value.asText();
+  }
+
+  protected Object createCollection(JsonNode value) throws IOException, JsonParseException, JsonMappingException {
+    ArrayNode array = (ArrayNode) value;
+    array.size();
+
+    List<? extends Object> returnValue = mapper.readValue(value.toString(), new TypeReference<List<? extends Object>>() {});
+
+    return returnValue;
   }
 }
