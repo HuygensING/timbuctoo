@@ -34,7 +34,7 @@ public class MongoObjectMapperTest {
 
   @BeforeClass
   public static void setUpClass() {
-    instance = new MongoObjectMapper(new MongoFieldMapper());
+    instance = new MongoObjectMapper();
   }
 
   @Test

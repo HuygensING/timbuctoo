@@ -53,7 +53,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   public static void setUpDocTypeRegistry() {
     registry = new TypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
     mongoFieldMapper = new MongoFieldMapper();
-    mongoMapper = new MongoObjectMapper(mongoFieldMapper);
+    mongoMapper = new MongoObjectMapper();
   }
 
   @Override

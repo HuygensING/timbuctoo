@@ -46,7 +46,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   @BeforeClass
   public static void setUpDocTypeRegistry() {
     registry = new TypeRegistry(TYPE.getPackage().getName());
-    mongoMapper = new MongoObjectMapper(new MongoFieldMapper());
+    mongoMapper = new MongoObjectMapper();
   }
 
   @Override
