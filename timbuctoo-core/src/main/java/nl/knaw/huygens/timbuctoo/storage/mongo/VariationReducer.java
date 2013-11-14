@@ -33,8 +33,8 @@ class VariationReducer extends VariationConverter {
   private static final Logger LOG = LoggerFactory.getLogger(VariationReducer.class);
   private static final String VERSIONS_FIELD = "versions";
 
-  public VariationReducer(TypeRegistry registry, MongoObjectMapper mongoObjectMapper, MongoFieldMapper mongoFieldMapper) {
-    super(registry, mongoObjectMapper, mongoFieldMapper);
+  public VariationReducer(TypeRegistry registry, MongoObjectMapper mongoObjectMapper) {
+    super(registry, mongoObjectMapper);
   }
 
   public <T extends Entity> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {

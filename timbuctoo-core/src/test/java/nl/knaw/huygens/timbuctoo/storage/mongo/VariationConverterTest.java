@@ -14,20 +14,18 @@ public class VariationConverterTest {
 
   private static TypeRegistry registry;
   private static MongoObjectMapper mongoMapper;
-  private static MongoFieldMapper mongoFieldMapper;
 
   private VariationConverter base;
 
   @BeforeClass
   public static void setUpRegistry() {
     registry = new TypeRegistry("timbuctoo.variation.model");
-    mongoFieldMapper = new MongoFieldMapper();
     mongoMapper = new MongoObjectMapper();
   }
 
   @Before
   public void setup() {
-    base = new VariationConverter(registry, mongoMapper, mongoFieldMapper);
+    base = new VariationConverter(registry, mongoMapper);
   }
 
   @Test
