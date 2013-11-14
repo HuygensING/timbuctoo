@@ -9,7 +9,6 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.MongoObjectMapperEntity;
-import nl.knaw.huygens.timbuctoo.model.MongoObjectMapperNested;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.junit.After;
@@ -146,24 +145,4 @@ public class MongoFieldMapperTest {
     instance.getTypeNameOfFieldName(null);
   }
 
-  @Test
-  public void testCreateNestedFieldName() throws SecurityException, NoSuchFieldException {
-    assertEquals("mongoobjectmappernested.nestedEntity.name",
-        instance.createNestedFieldName("mongoobjectmapperentity.name", MongoObjectMapperNested.class, MongoObjectMapperNested.class.getDeclaredField("nestedEntity")));
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void testCreateNestedFieldNameNameNull() throws SecurityException, NoSuchFieldException {
-    assertEquals(null, instance.createNestedFieldName(null, MongoObjectMapperNested.class, MongoObjectMapperNested.class.getDeclaredField("nestedEntity")));
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void testCreateNestedFieldNameTypeNull() throws SecurityException, NoSuchFieldException {
-    instance.createNestedFieldName("mongoobjectmapperentity.name", null, MongoObjectMapperNested.class.getDeclaredField("nestedEntity"));
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void testCreateNestedFieldNameFieldNull() throws SecurityException, NoSuchFieldException {
-    instance.createNestedFieldName("mongoobjectmapperentity.name", MongoObjectMapperNested.class, null);
-  }
 }
