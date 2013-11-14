@@ -40,18 +40,9 @@ public class MongoObjectMapper {
   public <T> Map<String, Object> mapObject(Class<T> type, T item) {
     Preconditions.checkArgument(item != null);
     Preconditions.checkArgument(type != null);
-    Map<String, Object> map = Maps.newHashMap();
 
-    map.putAll(mapFields(type, item));
-
-    return map;
-  }
-
-  private <T> Map<String, Object> mapFields(Class<T> type, T item) {
     Map<String, Object> objectMap = Maps.<String, Object> newHashMap();
-    Field[] fields = type.getDeclaredFields();
-
-    for (Field field : fields) {
+    for (Field field : type.getDeclaredFields()) {
       try {
         Class<?> fieldType = field.getType();
 
@@ -77,9 +68,9 @@ public class MongoObjectMapper {
           // Temporary only import simple properties.
           //          objectMap.putAll(mapNestedObject(type, item, field, fieldType));
         }
-      } catch (IllegalAccessException ex) {
+      } catch (IllegalAccessException e) {
         LOG.error("Field {} is not accessible in type {}.", field.getName(), type);
-        LOG.debug("", ex);
+        LOG.debug("", e);
       }
     }
     return objectMap;
@@ -96,9 +87,7 @@ public class MongoObjectMapper {
         map.put(mongoFieldMapper.createNestedFieldName(key, type, field), tempMap.get(key));
       }
     }
-
     return map;
-
   }
 
   private boolean isHumanReadable(Class<?> type) {
