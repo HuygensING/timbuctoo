@@ -42,7 +42,6 @@ public class VariationInducerTest extends VariationTestBase {
   private final static String TEST_SYSTEM_ID = "TSD";
   private static TypeRegistry registry;
   private static MongoObjectMapper mongoMapper;
-  private static MongoFieldMapper mongoFieldMapper;
 
   ObjectMapper mapper;
   private VariationInducer inducer;
@@ -50,14 +49,13 @@ public class VariationInducerTest extends VariationTestBase {
   @BeforeClass
   public static void setupMapper() {
     registry = new TypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb timbuctoo.model");
-    mongoFieldMapper = new MongoFieldMapper();
     mongoMapper = new MongoObjectMapper();
   }
 
   @Before
   public void setUp() throws Exception {
     mapper = new ObjectMapper();
-    inducer = new VariationInducer(registry, mongoMapper, mongoFieldMapper);
+    inducer = new VariationInducer(registry, mongoMapper);
   }
 
   @After

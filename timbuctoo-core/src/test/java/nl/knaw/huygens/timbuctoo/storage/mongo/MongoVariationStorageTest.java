@@ -45,21 +45,18 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   private static TypeRegistry registry;
   private static MongoObjectMapper mongoMapper;
-  private static MongoFieldMapper mongoFieldMapper;
 
   private MongoVariationStorage storage;
 
   @BeforeClass
   public static void setUpDocTypeRegistry() {
     registry = new TypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
-    mongoFieldMapper = new MongoFieldMapper();
     mongoMapper = new MongoObjectMapper();
   }
 
   @Override
   protected void setupStorage() throws UnknownHostException, MongoException {
-
-    storage = new MongoVariationStorage(registry, mongo, db, DB_NAME, mongoMapper, mongoFieldMapper);
+    storage = new MongoVariationStorage(registry, mongo, db, DB_NAME, mongoMapper);
     storage.setEntityIds(entityIds);
   }
 
