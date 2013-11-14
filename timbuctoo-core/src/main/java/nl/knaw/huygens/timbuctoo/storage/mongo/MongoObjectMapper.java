@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,8 +67,15 @@ public class MongoObjectMapper {
           if (isHumanReableCollection(value)) {
             objectMap.put(mongoFieldMapper.getFieldName(type, field), value);
           }
+        } else if (Datable.class.isAssignableFrom(fieldType)) {
+          field.setAccessible(true);
+          Datable datable = (Datable) field.get(item);
+          if (datable != null) {
+            objectMap.put(mongoFieldMapper.getFieldName(type, field), datable.getEDTF());
+          }
         } else {
-          objectMap.putAll(mapNestedObject(type, item, field, fieldType));
+          // Temporary only import simple properties.
+          //          objectMap.putAll(mapNestedObject(type, item, field, fieldType));
         }
       } catch (IllegalAccessException ex) {
         LOG.error("Field {} is not accessible in type {}.", field.getName(), type);
