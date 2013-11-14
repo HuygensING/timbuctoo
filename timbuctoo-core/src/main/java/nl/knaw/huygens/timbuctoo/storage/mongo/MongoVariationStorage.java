@@ -64,10 +64,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     collection.ensureIndex(new BasicDBObject("^sourceId", 1).append("^targetId", 1));
   }
 
-  private ObjectMapper getMapper() {
-    return objectMapper;
-  }
-
   private <T extends Entity> DBCollection getVariationCollection(Class<T> type) {
     DBCollection col = collectionCache.get(type);
     if (col == null) {
@@ -188,7 +184,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     }
     node.put("^deleted", true);
     node.put("^pid", (String) null);
-    JsonNode changeTree = getMapper().valueToTree(change);
+    JsonNode changeTree = objectMapper.valueToTree(change);
     node.put("^lastChange", changeTree);
     int rev = node.get("^rev").asInt();
     node.put("^rev", rev + 1);
@@ -202,11 +198,10 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     DBCollection col = getRawVersionCollection(cls);
     JsonNode actualVersion = initialVersion.getObject();
 
-    ObjectMapper mapper = getMapper();
-    ArrayNode versionsNode = mapper.createArrayNode();
+    ArrayNode versionsNode = objectMapper.createArrayNode();
     versionsNode.add(actualVersion);
 
-    ObjectNode itemNode = mapper.createObjectNode();
+    ObjectNode itemNode = objectMapper.createObjectNode();
     itemNode.put("versions", versionsNode);
     itemNode.put("_id", id);
 
@@ -217,11 +212,10 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     DBCollection col = getRawVersionCollection(cls);
     JsonNode actualVersion = newVersion.getObject();
 
-    ObjectMapper mapper = getMapper();
-    ObjectNode versionNode = mapper.createObjectNode();
+    ObjectNode versionNode = objectMapper.createObjectNode();
     versionNode.put("versions", actualVersion);
 
-    ObjectNode update = mapper.createObjectNode();
+    ObjectNode update = objectMapper.createObjectNode();
     update.put("$push", versionNode);
 
     col.update(new BasicDBObject("_id", id), new JacksonDBObject<JsonNode>(update, JsonNode.class));
