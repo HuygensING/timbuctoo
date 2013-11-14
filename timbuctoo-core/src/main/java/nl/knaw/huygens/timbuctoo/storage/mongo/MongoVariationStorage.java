@@ -65,7 +65,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   private ObjectMapper getMapper() {
-    return treeEncoderFactory.getObjectMapper();
+    return objectMapper;
   }
 
   private <T extends Entity> DBCollection getVariationCollection(Class<T> type) {
