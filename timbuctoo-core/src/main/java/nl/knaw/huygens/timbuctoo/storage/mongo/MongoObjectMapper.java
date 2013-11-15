@@ -46,54 +46,52 @@ public class MongoObjectMapper {
 
     Map<String, Object> map = Maps.newHashMap();
     for (Field field : type.getDeclaredFields()) {
-      try {
-        Class<?> fieldType = field.getType();
-
-        if (isHumanReadable(fieldType)) {
+      if (fieldMapper.isProperty(field)) {
+        try {
           field.setAccessible(true);
-          Object value = field.get(item);
-          if (value != null) {
-            map.put(fieldMapper.getFieldName(type, field), value);
-          }
-        } else if (Collection.class.isAssignableFrom(fieldType)) {
-          field.setAccessible(true);
-          Collection<?> value = (Collection<?>) field.get(item);
-          if (isHumanReableCollection(value)) {
-            map.put(fieldMapper.getFieldName(type, field), value);
-          }
-        } else if (Datable.class.isAssignableFrom(fieldType)) {
-          field.setAccessible(true);
-          Datable datable = (Datable) field.get(item);
-          if (datable != null) {
-            map.put(fieldMapper.getFieldName(type, field), datable.getEDTF());
-          }
-        } else if (PersonName.class.isAssignableFrom(fieldType)) {
-          // Quick fix for serialize an Object.
-          field.setAccessible(true);
-          Object value = field.get(item);
-          if (value != null) {
-            ObjectMapper om = new ObjectMapper();
-            try {
-              Map<String, Object> nameMap = om.readValue(om.writeValueAsString(value), new TypeReference<Map<String, Object>>() {});
-              map.put(fieldMapper.getFieldName(type, field), nameMap);
-            } catch (JsonParseException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
-            } catch (JsonMappingException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
-            } catch (JsonProcessingException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
-            } catch (IOException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
+          Class<?> fieldType = field.getType();
+          if (isHumanReadable(fieldType)) {
+            Object value = field.get(item);
+            if (value != null) {
+              map.put(fieldMapper.getFieldName(type, field), value);
+            }
+          } else if (Collection.class.isAssignableFrom(fieldType)) {
+            Collection<?> value = (Collection<?>) field.get(item);
+            if (isHumanReableCollection(value)) {
+              map.put(fieldMapper.getFieldName(type, field), value);
+            }
+          } else if (Datable.class.isAssignableFrom(fieldType)) {
+            Datable datable = (Datable) field.get(item);
+            if (datable != null) {
+              map.put(fieldMapper.getFieldName(type, field), datable.getEDTF());
+            }
+          } else if (PersonName.class.isAssignableFrom(fieldType)) {
+            // Quick fix for serialize an Object.
+            Object value = field.get(item);
+            if (value != null) {
+              ObjectMapper om = new ObjectMapper();
+              try {
+                Map<String, Object> nameMap = om.readValue(om.writeValueAsString(value), new TypeReference<Map<String, Object>>() {});
+                map.put(fieldMapper.getFieldName(type, field), nameMap);
+              } catch (JsonParseException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+              } catch (JsonMappingException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+              } catch (JsonProcessingException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+              } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+              }
             }
           }
+        } catch (IllegalAccessException e) {
+          LOG.error("Field {} is not accessible in type {}.", field.getName(), type);
+          LOG.debug("", e);
         }
-      } catch (IllegalAccessException e) {
-        LOG.error("Field {} is not accessible in type {}.", field.getName(), type);
-        LOG.debug("", e);
       }
     }
     return map;
