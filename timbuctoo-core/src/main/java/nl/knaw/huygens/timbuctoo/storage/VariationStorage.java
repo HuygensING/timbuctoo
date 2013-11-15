@@ -18,6 +18,8 @@ public interface VariationStorage extends BasicStorage {
 
   <T extends DomainEntity> T getRevision(Class<T> type, String id, int revisionId) throws IOException;
 
+  <T extends DomainEntity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException;
+
   /**
    * Is the specified relation present in the storage?
    */
