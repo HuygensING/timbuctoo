@@ -88,12 +88,11 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     return new MongoDBVariationIterator<T>(col.find(), reducer, type);
   }
 
-  @SuppressWarnings("unchecked")
   @Override
-  public <T extends Entity> MongoChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
-    DBObject query = new BasicDBObject("_id", id);
+  public <T extends DomainEntity> MongoChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
+    DBObject query = queries.selectById(id);
     DBObject allRevisions = getRawVersionCollection(type).findOne(query);
-    return (MongoChanges<T>) reducer.reduceMultipleRevisions((Class<? extends DomainEntity>) type, allRevisions);
+    return reducer.reduceMultipleRevisions(type, allRevisions);
   }
 
   @Override

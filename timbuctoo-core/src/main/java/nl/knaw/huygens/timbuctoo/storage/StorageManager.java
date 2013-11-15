@@ -140,7 +140,7 @@ public class StorageManager {
     return storage.getAllByType(type);
   }
 
-  public <T extends Entity> RevisionChanges<T> getVersions(Class<T> type, String id) {
+  public <T extends DomainEntity> RevisionChanges<T> getVersions(Class<T> type, String id) {
     try {
       return storage.getAllRevisions(type, id);
     } catch (IOException e) {
