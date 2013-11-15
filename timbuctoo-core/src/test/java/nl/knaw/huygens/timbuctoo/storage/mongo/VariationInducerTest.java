@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
+import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectANewTestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
@@ -25,7 +25,6 @@ import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBTestRole;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -132,16 +131,44 @@ public class VariationInducerTest extends VariationTestBase {
     assertEquals(expected, actual);
   }
 
-  @Ignore("Should we be able to induce primitive (from the model package) entities?")
   @Test
-  public void testInduceDomainEntityPrimitive() {
-    fail("Yet to be implemented.");
+  public void testInduceDomainEntityPrimitive() throws VariationException {
+    Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test_pid", "testDocValue");
+    expectedMap.put("testconcretedoc.name", "test");
+
+    JsonNode expected = mapper.valueToTree(expectedMap);
+
+    GeneralTestDoc item = new GeneralTestDoc();
+    item.name = "test";
+    item.generalTestDocValue = "testDocValue";
+    item.setPid("test_pid");
+    item.setId(DEFAULT_DOMAIN_ID);
+
+    JsonNode actual = inducer.induce(GeneralTestDoc.class, item);
+
+    assertEquals(expected, actual);
   }
 
-  @Ignore("Should we be able to induce primitive (from the model package) entities?")
   @Test
-  public void testInduceUpdatedDomainEntityPrimitive() {
-    fail("Yet to be implemented.");
+  public void testInduceUpdatedDomainEntityPrimitive() throws VariationException {
+    Map<String, Object> existingMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test_pid", "testDocValue");
+    existingMap.put("testconcretedoc.name", "test");
+    ObjectNode node = mapper.valueToTree(existingMap);
+
+    Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test_pid", "testDocValue");
+    expectedMap.put("testconcretedoc.name", "test");
+    expectedMap.put("generaltestdoc.name", "test1");
+    JsonNode expected = mapper.valueToTree(expectedMap);
+
+    GeneralTestDoc item = new GeneralTestDoc();
+    item.name = "test1";
+    item.generalTestDocValue = "testDocValue";
+    item.setPid("test_pid");
+    item.setId(DEFAULT_DOMAIN_ID);
+
+    JsonNode actual = inducer.induce(GeneralTestDoc.class, item, node);
+
+    assertEquals(expected, actual);
   }
 
   @Test
