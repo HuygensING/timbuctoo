@@ -7,6 +7,8 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.MongoObjectMapperEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.PersonName;
+import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -117,9 +119,26 @@ public class MongoObjectMapperTest {
     Map<String, Object> expected = Maps.newHashMap();
     expected.put("mongoobjectmapperentity.date", datable.getEDTF());
 
-    Map<String, Object> actual = instance.mapObject(MongoObjectMapperEntity.class, item);
+    Map<String, Object> actual = instance.mapObject(TYPE, item);
 
     assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testMapObjectWithPersonName() {
+    MongoObjectMapperEntity item = new MongoObjectMapperEntity();
+    PersonName personName = new PersonName();
+    personName.addNameComponent(Type.FORENAME, "test");
+    personName.addNameComponent(Type.SURNAME, "test");
+    item.setPersonName(personName);
+
+    Map<String, Object> expected = Maps.newLinkedHashMap();
+    expected.put("mongoobjectmapperentity.personName", PersonNameMapper.createPersonNameMap(personName));
+
+    Map<String, Object> actual = instance.mapObject(TYPE, item);
+
+    // Use the to string because the maps cannot be compared as map.
+    assertEquals(expected.toString(), actual.toString());
   }
 
   @Test(expected = IllegalArgumentException.class)

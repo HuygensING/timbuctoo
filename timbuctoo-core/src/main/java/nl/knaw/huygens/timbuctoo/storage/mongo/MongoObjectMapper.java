@@ -1,14 +1,21 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 
@@ -60,9 +67,29 @@ public class MongoObjectMapper {
           if (datable != null) {
             map.put(fieldMapper.getFieldName(type, field), datable.getEDTF());
           }
-        } else {
-          // Temporary only import simple properties.
-          //          objectMap.putAll(mapNestedObject(type, item, field, fieldType));
+        } else if (PersonName.class.isAssignableFrom(fieldType)) {
+          // Quick fix for serialize an Object.
+          field.setAccessible(true);
+          Object value = field.get(item);
+          if (value != null) {
+            ObjectMapper om = new ObjectMapper();
+            try {
+              Map<String, Object> nameMap = om.readValue(om.writeValueAsString(value), new TypeReference<Map<String, Object>>() {});
+              map.put(fieldMapper.getFieldName(type, field), nameMap);
+            } catch (JsonParseException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            } catch (JsonMappingException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            } catch (JsonProcessingException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            } catch (IOException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            }
+          }
         }
       } catch (IllegalAccessException e) {
         LOG.error("Field {} is not accessible in type {}.", field.getName(), type);

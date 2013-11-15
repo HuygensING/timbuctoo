@@ -5,6 +5,7 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,6 +22,7 @@ public class MongoObjectMapperEntity extends SystemEntity {
   private String annotatedProperty;
   private String propWithAnnotatedAccessors;
   private Datable date;
+  private PersonName personName;
 
   @Override
   @JsonIgnore
@@ -93,6 +95,14 @@ public class MongoObjectMapperEntity extends SystemEntity {
 
   public void setDate(Datable date) {
     this.date = date;
+  }
+
+  public PersonName getPersonName() {
+    return personName;
+  }
+
+  public void setPersonName(PersonName personName) {
+    this.personName = personName;
   }
 
 }
