@@ -48,13 +48,4 @@ public class MongoUtilsTest {
     verify(db).getCollection("foo");
   }
 
-  @Test
-  public void testGetVersioningCollection() {
-    DB db = Mockito.mock(DB.class);
-    DBCollection col = Mockito.mock(DBCollection.class);
-    when(db.getCollection("foo_versions")).thenReturn(col);
-    MongoUtils.getVersioningCollection(db, Foo.class);
-    verify(db).getCollection("foo_versions");
-  }
-
 }

@@ -12,10 +12,8 @@ import org.mongojack.JacksonDBCollection;
 import org.mongojack.internal.object.BsonObjectGenerator;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -52,12 +50,6 @@ public class MongoUtils {
   public static <T extends Entity> JacksonDBCollection<T, String> getCollection(DB db, Class<T> cls) {
     DBCollection col = db.getCollection(getCollectionName(cls));
     return JacksonDBCollection.wrap(col, cls, String.class, JsonViews.DBView.class);
-  }
-
-  public static <T extends Entity> JacksonDBCollection<MongoChanges<T>, String> getVersioningCollection(DB db, Class<T> cls) {
-    DBCollection col = db.getCollection(getVersioningCollectionName(cls));
-    JavaType someType = TypeFactory.defaultInstance().constructParametricType(MongoChanges.class, cls);
-    return RepoJacksonDBCollection.wrap(col, someType, JsonViews.DBView.class);
   }
 
   public static void sortDocumentsByLastChange(List<DBObject> docs) {

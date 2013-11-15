@@ -161,10 +161,6 @@ public abstract class MongoStorageBase implements BasicStorage {
     return MongoUtils.getCollection(db, type);
   }
 
-  protected <T extends Entity> JacksonDBCollection<MongoChanges<T>, String> getVersioningCollection(Class<T> type) {
-    return MongoUtils.getVersioningCollection(db, type);
-  }
-
   /**
    * Sets the id of the specified entity to the next value
    * for the collection in which the entity is stored.
