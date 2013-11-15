@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.persistence;
 import javax.jms.JMSException;
 
 import nl.knaw.huygens.persistence.PersistenceException;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.ConsumerService;
@@ -24,7 +25,6 @@ public class PersistenceService extends ConsumerService implements Runnable {
     super(broker, Broker.PERSIST_QUEUE, "PersistenceService");
     this.persistenceWrapper = persistenceWrapper;
     this.storageManager = storageManager;
-
   }
 
   @Override
@@ -34,8 +34,12 @@ public class PersistenceService extends ConsumerService implements Runnable {
       case ADD:
       case MOD:
         Class<? extends Entity> type = action.getType();
-        String pid = persistenceWrapper.persistObject(type, action.getId());
-        storageManager.setPID(type, action.getId(), pid);
+        if (TypeRegistry.isDomainEntity(type)) {
+          String pid = persistenceWrapper.persistObject(type, action.getId());
+          storageManager.setPID(TypeRegistry.toDomainEntity(type), action.getId(), pid);
+        } else {
+          LOG.error("Not a domain entitiy: {}", type.getSimpleName());
+        }
         break;
       case DEL:
         LOG.debug("Ignoring action {}", action);
