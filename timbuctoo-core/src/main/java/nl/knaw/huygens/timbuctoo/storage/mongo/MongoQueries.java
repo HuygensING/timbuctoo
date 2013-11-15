@@ -33,6 +33,12 @@ public class MongoQueries {
     return DBQuery.lessThan(dateField, dateValue);
   }
 
+  // FIXME This is correct for the old reducer/inducer, but now it is wrong!
+  // Still, it is better to define it in one place...
+  public DBObject selectVariation(String name) {
+    return new BasicDBObject(name, new BasicDBObject("$ne", null));
+  }
+
   public DBObject setProperty(String key, Object value) {
     return new BasicDBObject("$set", new BasicDBObject(key, value));
   }
