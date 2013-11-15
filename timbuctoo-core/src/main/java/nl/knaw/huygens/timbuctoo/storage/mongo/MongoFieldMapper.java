@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNameGenerator;
@@ -31,10 +32,19 @@ public class MongoFieldMapper {
   public Map<String, String> getFieldMap(Class<?> type) {
     Map<String, String> map = Maps.newHashMap();
     for (Field field : type.getDeclaredFields()) {
-      map.put(field.getName(), getFieldName(type, field));
+      if (isProperty(field)) {
+        map.put(field.getName(), getFieldName(type, field));
+      }
     }
-
     return map;
+  }
+
+  /**
+   * Indicates whether a field qualifies as property.
+   */
+  public boolean isProperty(Field field) {
+    int modifiers = field.getModifiers();
+    return !Modifier.isStatic(modifiers);
   }
 
   /**
