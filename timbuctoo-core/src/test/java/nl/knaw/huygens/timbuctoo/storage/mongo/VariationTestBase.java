@@ -38,13 +38,28 @@ public abstract class VariationTestBase {
 
   protected Map<String, Object> createGeneralTestDocMap(String id, String pid, String generalTestDocValue) {
     Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.put("_id", id);
-    expectedMap.put("^rev", 0);
-    expectedMap.put("^deleted", false);
-    expectedMap.put(DomainEntity.PID, pid);
+    expectedMap.putAll(createDefaultMap(id, pid, expectedMap));
     expectedMap.put("generaltestdoc.generalTestDocValue", generalTestDocValue);
 
     return expectedMap;
+  }
+
+  protected Map<String, Object> createTestConcreteDocMap(String id, String pid, String name) {
+    Map<String, Object> expectedMap = Maps.newHashMap();
+    expectedMap.putAll(createDefaultMap(id, pid, expectedMap));
+    expectedMap.put("testconcretedoc.name", name);
+
+    return expectedMap;
+  }
+
+  protected Map<String, Object> createDefaultMap(String id, String pid, Map<String, Object> expectedMap) {
+    Map<String, Object> map = Maps.newHashMap();
+    map.put("_id", id);
+    map.put("^rev", 0);
+    map.put("^deleted", false);
+    map.put(DomainEntity.PID, pid);
+
+    return map;
   }
 
   protected ProjectBGeneralTestDoc createProjectBGeneralTestDoc(String id, String pid, String projectBGeneralTestDocValue) {
