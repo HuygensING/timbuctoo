@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,11 +15,14 @@ import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntityPrimitive;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntityPrimitiveCollections;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.PersonName;
+import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.NewTestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.TestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectANewTestRole;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBGeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBTestRole;
@@ -28,7 +30,6 @@ import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBTestRole;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -163,10 +164,22 @@ public class VariationReducerTest extends VariationTestBase {
     assertEquals(expected, actual);
   }
 
-  @Ignore("See redmine #1890")
   @Test
-  public void testReduceDomainEntityProjectWithPersonName() {
-    fail("Yet to be implemented.");
+  public void testReduceDomainEntityProjectWithPersonName() throws VariationException, JsonProcessingException {
+    ProjectATestDocWithPersonName expected = new ProjectATestDocWithPersonName();
+    PersonName name = new PersonName();
+    name.addNameComponent(Type.FORENAME, "test");
+    name.addNameComponent(Type.SURNAME, "test");
+    expected.setPersonName(name);
+
+    Map<String, Object> map = Maps.newHashMap();
+    map.put("projectatestdocwithpersonname.personName", PersonNameMapper.createPersonNameMap(name));
+    map.put("^rev", 0);
+    map.put("^deleted", false);
+    JsonNode node = mapper.valueToTree(map);
+
+    ProjectATestDocWithPersonName actual = reducer.reduce(ProjectATestDocWithPersonName.class, node);
+    assertEquals(expected, actual);
   }
 
   @Test

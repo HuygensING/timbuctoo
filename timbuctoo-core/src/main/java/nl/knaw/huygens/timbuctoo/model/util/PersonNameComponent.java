@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 
 /**
@@ -36,6 +37,23 @@ public class PersonNameComponent {
 
   public void setValue(String value) {
     this.value = StringUtils.stripToEmpty(value);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof PersonNameComponent)) {
+      return false;
+    }
+
+    PersonNameComponent other = (PersonNameComponent) obj;
+
+    return Objects.equal(other.type, type) && Objects.equal(other.value, value);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hashCode(type, value);
   }
 
   // -------------------------------------------------------------------

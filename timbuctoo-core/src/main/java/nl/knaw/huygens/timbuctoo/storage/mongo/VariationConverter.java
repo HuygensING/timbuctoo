@@ -7,6 +7,7 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -91,6 +92,8 @@ class VariationConverter {
       return (short) value.asInt();
     } else if (Datable.class.isAssignableFrom(fieldType)) {
       return new Datable(value.asText());
+    } else if (PersonName.class.isAssignableFrom(fieldType)) {
+      return mapper.readValue(value.toString(), PersonName.class);
     }
 
     return value.asText();
