@@ -136,7 +136,7 @@ public abstract class MongoStorageBase implements BasicStorage {
 
   public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) {
     DBObject query = queries.selectById(id);
-    DBObject update = queries.setProperty("^pid", pid);
+    DBObject update = queries.setProperty(DomainEntity.PID, pid);
     getDBCollection(type).update(query, update);
   }
 
