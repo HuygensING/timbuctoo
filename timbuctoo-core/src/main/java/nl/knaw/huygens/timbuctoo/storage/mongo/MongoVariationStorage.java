@@ -59,7 +59,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   @SuppressWarnings("unchecked")
   @Override
   public <T extends Entity> T getItem(Class<T> type, String id) throws VariationException, IOException {
-    DBCollection col = getVariationCollection(type);
+    DBCollection col = getDBCollection(type);
     DBObject query = new BasicDBObject("_id", id);
     return (T) reducer.reduceDBObject((Class<? extends DomainEntity>) type, col.findOne(query));
   }
@@ -67,7 +67,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws VariationException, IOException {
     DBObject query = new BasicDBObject("_id", id);
-    DBObject item = getVariationCollection(type).findOne(query);
+    DBObject item = getDBCollection(type).findOne(query);
     List<T> variations = reducer.getAllForDBObject(item, type);
     for (T variation : variations) {
       addRelationsTo(variation.getClass(), id, variation);
@@ -78,13 +78,13 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   @Override
   public <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) throws IOException {
     DBObject query = new BasicDBObject("_id", id);
-    DBObject item = getVariationCollection(type).findOne(query);
+    DBObject item = getDBCollection(type).findOne(query);
     return reducer.reduceDBObject(item, type, variation);
   }
 
   @Override
   public <T extends Entity> StorageIterator<T> getAllByType(Class<T> cls) {
-    DBCollection col = getVariationCollection(cls);
+    DBCollection col = getDBCollection(cls);
     return new MongoDBVariationIterator<T>(col.find(), reducer, cls);
   }
 
@@ -112,7 +112,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
       setNextId(type, item);
     }
     JsonNode jsonNode = inducer.induce(type, item);
-    DBCollection col = getVariationCollection(type);
+    DBCollection col = getDBCollection(type);
     JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
     col.insert(insertedItem);
     addInitialVersion(type, item.getId(), insertedItem);
@@ -121,7 +121,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   @Override
   public <T extends Entity> void updateItem(Class<T> type, String id, T item) throws IOException {
-    DBCollection col = getVariationCollection(type);
+    DBCollection col = getDBCollection(type);
     BasicDBObject q = new BasicDBObject("_id", id);
     q.put("^rev", item.getRev());
     DBObject existingNode = col.findOne(q);
@@ -137,7 +137,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   @Override
   public <T extends DomainEntity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
-    DBCollection col = getVariationCollection(type);
+    DBCollection col = getDBCollection(type);
     BasicDBObject q = new BasicDBObject("_id", id);
     DBObject existingNode = col.findOne(q);
     if (existingNode == null) {
@@ -206,7 +206,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   @Override
   public StorageIterator<Relation> getRelationsOf(Class<? extends DomainEntity> type, String id) throws IOException {
     DBObject query = DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id));
-    DBCursor cursor = getVariationCollection(Relation.class).find(query);
+    DBCursor cursor = getDBCollection(Relation.class).find(query);
     return new MongoDBVariationIterator<Relation>(cursor, reducer, Relation.class);
   }
 
@@ -270,7 +270,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
       query.put("^pid", null);
       DBObject columnsToShow = new BasicDBObject("_id", 1);
 
-      DBCursor cursor = getVariationCollection(type).find(query, columnsToShow);
+      DBCursor cursor = getDBCollection(type).find(query, columnsToShow);
       while (cursor.hasNext()) {
         list.add((String) cursor.next().get("_id"));
       }
@@ -307,7 +307,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     try {
       DBObject query = DBQuery.in("_id", ids);
       query.put("^pid", null);
-      getVariationCollection(type).remove(query);
+      getDBCollection(type).remove(query);
     } catch (MongoException e) {
       LOG.error("Error while removing entities of type '{}'", type);
       throw new IOException(e);
