@@ -164,7 +164,6 @@ public class VariationInducerTest extends VariationTestBase {
     assertEquals(expected, actual);
   }
 
-  //@Ignore("See redmine #1890")
   @Test
   public void testInduceDomainEntityProjectWithPersonName() throws VariationException {
     ProjectATestDocWithPersonName item = new ProjectATestDocWithPersonName();
