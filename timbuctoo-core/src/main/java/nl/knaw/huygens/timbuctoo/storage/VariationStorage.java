@@ -31,6 +31,8 @@ public interface VariationStorage extends BasicStorage {
 
   void addRelationsTo(Class<? extends DomainEntity> type, String id, DomainEntity entity);
 
+  <T extends DomainEntity> void setPID(Class<T> type, String id, String pid);
+
   /**
   * Returns the id's of the domain entities of the specified type, that are not persisted.
   * 
