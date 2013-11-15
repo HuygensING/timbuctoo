@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.List;
-import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -22,12 +21,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -40,21 +37,8 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoVariationStorage.class);
 
-  private final ObjectMapper objectMapper;
-  private final TreeEncoderFactory treeEncoderFactory;
-  private final TreeDecoderFactory treeDecoderFactory;
-  private final Map<Class<? extends Entity>, DBCollection> collectionCache;
-  private final VariationInducer inducer;
-  private final VariationReducer reducer;
-
   public MongoVariationStorage(TypeRegistry registry, Mongo mongo, DB db, String dbName) throws UnknownHostException, MongoException {
     super(registry, mongo, db, dbName);
-    objectMapper = new ObjectMapper();
-    treeEncoderFactory = new TreeEncoderFactory(objectMapper);
-    treeDecoderFactory = new TreeDecoderFactory();
-    collectionCache = Maps.newHashMap();
-    inducer = new VariationInducer(registry);
-    reducer = new VariationReducer(registry);
   }
 
   public void createIndexes() {
@@ -62,18 +46,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     collection.ensureIndex(new BasicDBObject("^sourceId", 1));
     collection.ensureIndex(new BasicDBObject("^targetId", 1));
     collection.ensureIndex(new BasicDBObject("^sourceId", 1).append("^targetId", 1));
-  }
-
-  private <T extends Entity> DBCollection getVariationCollection(Class<T> type) {
-    DBCollection col = collectionCache.get(type);
-    if (col == null) {
-      Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
-      col = db.getCollection(typeRegistry.getINameForType(baseType));
-      col.setDBDecoderFactory(treeDecoderFactory);
-      col.setDBEncoderFactory(treeEncoderFactory);
-      collectionCache.put(type, col);
-    }
-    return col;
   }
 
   private <T extends Entity> DBCollection getRawVersionCollection(Class<T> type) {
