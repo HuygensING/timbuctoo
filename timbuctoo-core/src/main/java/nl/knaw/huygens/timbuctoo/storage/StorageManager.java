@@ -153,10 +153,6 @@ public class StorageManager {
     return storage.addItem(type, entity);
   }
 
-  public <T extends Entity> void setPID(Class<T> type, String id, String pid) {
-    storage.setPID(type, id, pid);
-  }
-
   public <T extends Entity> void modifyEntity(Class<T> type, T entity) throws IOException {
     storage.updateItem(type, entity.getId(), entity);
   }
@@ -177,6 +173,10 @@ public class StorageManager {
 
   public int removeSearchResultsBefore(Date date) {
     return storage.removeByDate(SearchResult.class, SearchResult.DATE_FIELD, date);
+  }
+
+  public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) {
+    storage.setPID(type, id, pid);
   }
 
   /**

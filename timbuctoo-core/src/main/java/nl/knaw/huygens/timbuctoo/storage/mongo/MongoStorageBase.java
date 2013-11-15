@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -89,18 +91,6 @@ public abstract class MongoStorageBase implements BasicStorage {
 
   // --- entities ------------------------------------------------------
 
-  protected <T extends Entity> DBCollection getVariationCollection(Class<T> type) {
-    DBCollection col = collectionCache.get(type);
-    if (col == null) {
-      Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
-      col = db.getCollection(typeRegistry.getINameForType(baseType));
-      col.setDBDecoderFactory(treeDecoderFactory);
-      col.setDBEncoderFactory(treeEncoderFactory);
-      collectionCache.put(type, col);
-    }
-    return col;
-  }
-
   public <T extends Entity> long count(Class<T> type) {
     Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
     return getCollection(baseType).count();
@@ -147,9 +137,26 @@ public abstract class MongoStorageBase implements BasicStorage {
 
   // --- domain entities -----------------------------------------------
 
-  // TODO
+  public <T extends DomainEntity> void setPID(Class<T> cls, String id, String pid) {
+    DBObject query = queries.selectById(id);
+    DBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
+    getVariationCollection(cls).update(query, update);
+  }
 
   // --- support -------------------------------------------------------
+
+  protected <T extends Entity> DBCollection getVariationCollection(Class<T> type) {
+    DBCollection col = collectionCache.get(type);
+    if (col == null) {
+      Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
+      col = db.getCollection(typeRegistry.getINameForType(baseType));
+      col.setDBDecoderFactory(treeDecoderFactory);
+      col.setDBEncoderFactory(treeEncoderFactory);
+      collectionCache.put(type, col);
+      LOG.info("Added {} to collection cache", type.getSimpleName());
+    }
+    return col;
+  }
 
   protected <T extends Entity> JacksonDBCollection<T, String> getCollection(Class<T> type) {
     return MongoUtils.getCollection(db, type);
