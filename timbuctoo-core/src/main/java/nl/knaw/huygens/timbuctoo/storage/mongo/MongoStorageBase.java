@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
-import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -35,7 +34,6 @@ public abstract class MongoStorageBase implements BasicStorage {
   private final Mongo mongo;
   protected DB db;
   private final String dbName;
-  private final Map<Class<? extends Entity>, DBCollection> collectionCache;
   private EntityIds entityIds;
 
   protected final MongoObjectMapper mongoMapper;
@@ -53,7 +51,6 @@ public abstract class MongoStorageBase implements BasicStorage {
     this.db = db;
     this.dbName = dbName;
 
-    collectionCache = Maps.newHashMap();
     entityIds = new EntityIds(db, typeRegistry);
     queries = new MongoQueries();
     mongoMapper = new MongoObjectMapper();
@@ -137,25 +134,27 @@ public abstract class MongoStorageBase implements BasicStorage {
 
   // --- domain entities -----------------------------------------------
 
-  public <T extends DomainEntity> void setPID(Class<T> cls, String id, String pid) {
+  public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) {
     DBObject query = queries.selectById(id);
-    DBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
-    getVariationCollection(cls).update(query, update);
+    DBObject update = queries.setProperty("^pid", pid);
+    getDBCollection(type).update(query, update);
   }
 
   // --- support -------------------------------------------------------
 
-  protected <T extends Entity> DBCollection getVariationCollection(Class<T> type) {
-    DBCollection col = collectionCache.get(type);
-    if (col == null) {
+  private final Map<Class<? extends Entity>, DBCollection> collectionCache = Maps.newHashMap();
+
+  protected <T extends Entity> DBCollection getDBCollection(Class<T> type) {
+    DBCollection collection = collectionCache.get(type);
+    if (collection == null) {
       Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
-      col = db.getCollection(typeRegistry.getINameForType(baseType));
-      col.setDBDecoderFactory(treeDecoderFactory);
-      col.setDBEncoderFactory(treeEncoderFactory);
-      collectionCache.put(type, col);
+      collection = db.getCollection(typeRegistry.getINameForType(baseType));
+      collection.setDBDecoderFactory(treeDecoderFactory);
+      collection.setDBEncoderFactory(treeEncoderFactory);
+      collectionCache.put(type, collection);
       LOG.info("Added {} to collection cache", type.getSimpleName());
     }
-    return col;
+    return collection;
   }
 
   protected <T extends Entity> JacksonDBCollection<T, String> getCollection(Class<T> type) {

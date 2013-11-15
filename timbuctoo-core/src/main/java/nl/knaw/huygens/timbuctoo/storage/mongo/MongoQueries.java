@@ -33,4 +33,8 @@ public class MongoQueries {
     return DBQuery.lessThan(dateField, dateValue);
   }
 
+  public DBObject setProperty(String key, Object value) {
+    return new BasicDBObject("$set", new BasicDBObject(key, value));
+  }
+
 }
