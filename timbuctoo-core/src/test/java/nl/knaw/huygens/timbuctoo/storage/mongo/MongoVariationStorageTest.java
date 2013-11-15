@@ -250,37 +250,22 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetVariation() throws IOException {
-    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
+    DBObject query = new MongoQueries().selectById(DEFAULT_ID);
 
     String name = "name";
     DBObject projectAGeneralTestDBNode = createProjectAGeneralTestDBObject(DEFAULT_ID, name, "value1", "value2");
 
     when(anyCollection.findOne(query)).thenReturn(projectAGeneralTestDBNode);
 
-    String variation = "projecta";
-    TestConcreteDoc actual = storage.getVariation(TestConcreteDoc.class, DEFAULT_ID, variation);
+    TestConcreteDoc actual = storage.getVariation(TestConcreteDoc.class, DEFAULT_ID, "projecta");
 
     assertEquals(name, actual.name);
     assertEquals(DEFAULT_ID, actual.getId());
-    //assertEquals(variation, actual.getCurrentVariation());
-  }
-
-  @Test
-  public void testGetVariationItemNonExisting() throws IOException {
-    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
-    query.put("testconcretedoc", new BasicDBObject("$ne", null));
-
-    when(anyCollection.findOne(query)).thenReturn(null);
-
-    String variation = "projecta";
-    TestConcreteDoc actual = storage.getVariation(TestConcreteDoc.class, DEFAULT_ID, variation);
-    assertNull(actual);
-
   }
 
   @Test
   public void testGetVariationVariationNonExisting() throws IOException {
-    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
+    DBObject query = new MongoQueries().selectById(DEFAULT_ID);
 
     String name = "name";
     DBObject projectAGeneralTestDBNode = createProjectAGeneralTestDBObject(DEFAULT_ID, name, "value1", "value2");
@@ -325,7 +310,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllIdsWithoutPIDOfType() throws IOException {
-    DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
+    DBObject query = new MongoQueries().selectVariation("testconcretedoc");
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
@@ -345,7 +330,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllIdsWithoutPIDOfTypeMultipleFound() throws IOException {
-    DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
+    DBObject query = new MongoQueries().selectVariation("testconcretedoc");
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
@@ -374,7 +359,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllIdsWithoutPIDOfTypeNoneFound() throws IOException {
-    DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
+    DBObject query = new MongoQueries().selectVariation("testconcretedoc");
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
@@ -391,7 +376,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test(expected = IOException.class)
   public void testGetAllIdsWithoutPIDFindThrowsException() throws IOException {
-    DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
+    DBObject query = new MongoQueries().selectVariation("testconcretedoc");
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
@@ -402,7 +387,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test(expected = IOException.class)
   public void testGetAllIdsWithoutPIDCursorNextThrowsException() throws IOException {
-    DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
+    DBObject query = new MongoQueries().selectVariation("testconcretedoc");
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
@@ -417,7 +402,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test(expected = IOException.class)
   public void testGetAllIdsWithoutPIDCursorHasNextThrowsException() throws IOException {
-    DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
+    DBObject query = new MongoQueries().selectVariation("testconcretedoc");
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
