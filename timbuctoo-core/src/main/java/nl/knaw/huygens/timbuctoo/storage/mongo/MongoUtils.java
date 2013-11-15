@@ -8,14 +8,11 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 
-import org.mongojack.JacksonDBCollection;
 import org.mongojack.internal.object.BsonObjectGenerator;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
 public class MongoUtils {
@@ -45,11 +42,6 @@ public class MongoUtils {
 
   public static String getVersioningCollectionName(Class<? extends Entity> type) {
     return getCollectionName(type) + "_versions";
-  }
-
-  public static <T extends Entity> JacksonDBCollection<T, String> getCollection(DB db, Class<T> cls) {
-    DBCollection col = db.getCollection(getCollectionName(cls));
-    return JacksonDBCollection.wrap(col, cls, String.class, JsonViews.DBView.class);
   }
 
   public static void sortDocumentsByLastChange(List<DBObject> docs) {
