@@ -130,8 +130,8 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public <T extends Entity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
-    return getStorageFor(type).getAllRevisions(type, id);
+  public <T extends DomainEntity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
+    return variationStorage.getAllRevisions(type, id);
   }
 
   @Override

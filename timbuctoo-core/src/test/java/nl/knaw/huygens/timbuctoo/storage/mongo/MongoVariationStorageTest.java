@@ -265,7 +265,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetVariationVariationNonExisting() throws IOException {
-    DBObject query = new MongoQueries().selectById(DEFAULT_ID);
+    DBObject query = queries.selectById(DEFAULT_ID);
 
     String name = "name";
     DBObject projectAGeneralTestDBNode = createProjectAGeneralTestDBObject(DEFAULT_ID, name, "value1", "value2");
@@ -310,7 +310,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllIdsWithoutPIDOfType() throws IOException {
-    DBObject query = new MongoQueries().selectVariation("testconcretedoc");
+    DBObject query = queries.selectVariation("testconcretedoc");
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
@@ -330,7 +330,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllIdsWithoutPIDOfTypeMultipleFound() throws IOException {
-    DBObject query = new MongoQueries().selectVariation("testconcretedoc");
+    DBObject query = queries.selectVariation("testconcretedoc");
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
@@ -359,7 +359,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllIdsWithoutPIDOfTypeNoneFound() throws IOException {
-    DBObject query = new MongoQueries().selectVariation("testconcretedoc");
+    DBObject query = queries.selectVariation("testconcretedoc");
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
@@ -376,7 +376,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test(expected = IOException.class)
   public void testGetAllIdsWithoutPIDFindThrowsException() throws IOException {
-    DBObject query = new MongoQueries().selectVariation("testconcretedoc");
+    DBObject query = queries.selectVariation("testconcretedoc");
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
@@ -387,7 +387,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test(expected = IOException.class)
   public void testGetAllIdsWithoutPIDCursorNextThrowsException() throws IOException {
-    DBObject query = new MongoQueries().selectVariation("testconcretedoc");
+    DBObject query = queries.selectVariation("testconcretedoc");
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
@@ -402,7 +402,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test(expected = IOException.class)
   public void testGetAllIdsWithoutPIDCursorHasNextThrowsException() throws IOException {
-    DBObject query = new MongoQueries().selectVariation("testconcretedoc");
+    DBObject query = queries.selectVariation("testconcretedoc");
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
@@ -525,7 +525,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
     String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
-    DBObject update = new MongoQueries().setProperty(DomainEntity.PID, pid);
+    DBObject update = queries.setProperty(DomainEntity.PID, pid);
 
     storage.setPID(type, DEFAULT_ID, pid);
 
@@ -539,7 +539,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
     String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
-    DBObject update = new MongoQueries().setProperty(DomainEntity.PID, pid);
+    DBObject update = queries.setProperty(DomainEntity.PID, pid);
 
     doThrow(MongoException.class).when(anyCollection).update(query, update);
 

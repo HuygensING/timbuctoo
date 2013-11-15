@@ -30,6 +30,7 @@ public abstract class MongoStorageTestBase {
   protected Mongo mongo;
   protected DBCollection anyCollection;
   protected EntityIds entityIds;
+  protected MongoQueries queries;
   protected MongoOptions mongoOptions;
 
   public MongoStorageTestBase() {
@@ -40,6 +41,7 @@ public abstract class MongoStorageTestBase {
   public void setUp() throws UnknownHostException, MongoException {
     anyCollection = mock(DBCollection.class);
     entityIds = mock(EntityIds.class);
+    queries = new MongoQueries();
     db = mock(DB.class);
     when(db.getCollection(anyString())).thenReturn(anyCollection);
     mongo = mock(Mongo.class);

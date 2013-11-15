@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
+import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 
 import org.mongojack.JacksonDBCollection;
 import org.slf4j.Logger;
@@ -158,11 +159,8 @@ public abstract class MongoStorageBase implements BasicStorage {
   }
 
   protected <T extends Entity> JacksonDBCollection<T, String> getCollection(Class<T> type) {
-    return MongoUtils.getCollection(db, type);
-  }
-
-  protected <T extends Entity> JacksonDBCollection<MongoChanges<T>, String> getVersioningCollection(Class<T> type) {
-    return MongoUtils.getVersioningCollection(db, type);
+    DBCollection col = db.getCollection(MongoUtils.getCollectionName(type));
+    return JacksonDBCollection.wrap(col, type, String.class, JsonViews.DBView.class);
   }
 
   /**

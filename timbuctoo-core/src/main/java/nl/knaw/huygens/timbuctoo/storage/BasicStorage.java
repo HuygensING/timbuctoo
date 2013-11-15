@@ -31,8 +31,6 @@ public interface BasicStorage {
 
   <T extends Entity> void updateItem(Class<T> type, String id, T item) throws IOException;
 
-  <T extends Entity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException;
-
   // --- system entities -----------------------------------------------
 
   /**

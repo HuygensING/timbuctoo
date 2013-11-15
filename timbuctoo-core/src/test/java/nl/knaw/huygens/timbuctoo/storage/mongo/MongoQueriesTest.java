@@ -16,7 +16,7 @@ public class MongoQueriesTest {
   private MongoQueries queries;
 
   @Before
-  public void setupMongoQuries() {
+  public void setupMongoQueries() {
     queries = new MongoQueries();
   }
 
