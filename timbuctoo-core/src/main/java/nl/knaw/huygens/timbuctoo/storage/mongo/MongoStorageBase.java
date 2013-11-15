@@ -14,7 +14,10 @@ import org.mongojack.JacksonDBCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 import com.mongodb.DB;
+import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 
@@ -25,22 +28,38 @@ public abstract class MongoStorageBase implements BasicStorage {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoStorageBase.class);
 
-  protected final MongoObjectMapper mongoMapper;
   protected final TypeRegistry typeRegistry;
-  protected final MongoQueries queries;
+
   private final Mongo mongo;
-  private final String dbName;
   protected DB db;
+  private final String dbName;
+  private final Map<Class<? extends Entity>, DBCollection> collectionCache;
   private EntityIds entityIds;
 
+  protected final MongoObjectMapper mongoMapper;
+  protected final MongoQueries queries;
+
+  protected final ObjectMapper objectMapper;
+  protected final TreeEncoderFactory treeEncoderFactory;
+  protected final TreeDecoderFactory treeDecoderFactory;
+  protected final VariationInducer inducer;
+  protected final VariationReducer reducer;
+
   public MongoStorageBase(TypeRegistry registry, Mongo mongo, DB db, String dbName) {
-    this.typeRegistry = registry;
-    this.queries = new MongoQueries();
+    typeRegistry = registry;
     this.mongo = mongo;
-    this.dbName = dbName;
     this.db = db;
-    this.entityIds = new EntityIds(db, typeRegistry);
+    this.dbName = dbName;
+
+    collectionCache = Maps.newHashMap();
+    entityIds = new EntityIds(db, typeRegistry);
+    queries = new MongoQueries();
     mongoMapper = new MongoObjectMapper();
+    objectMapper = new ObjectMapper();
+    treeEncoderFactory = new TreeEncoderFactory(objectMapper);
+    treeDecoderFactory = new TreeDecoderFactory();
+    inducer = new VariationInducer(registry);
+    reducer = new VariationReducer(registry);
   }
 
   public void empty() {
@@ -69,6 +88,18 @@ public abstract class MongoStorageBase implements BasicStorage {
   }
 
   // --- entities ------------------------------------------------------
+
+  protected <T extends Entity> DBCollection getVariationCollection(Class<T> type) {
+    DBCollection col = collectionCache.get(type);
+    if (col == null) {
+      Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
+      col = db.getCollection(typeRegistry.getINameForType(baseType));
+      col.setDBDecoderFactory(treeDecoderFactory);
+      col.setDBEncoderFactory(treeEncoderFactory);
+      collectionCache.put(type, col);
+    }
+    return col;
+  }
 
   public <T extends Entity> long count(Class<T> type) {
     Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
