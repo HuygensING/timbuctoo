@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 import java.io.IOException;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBGeneralTestDoc;
@@ -40,7 +41,7 @@ public abstract class VariationTestBase {
     expectedMap.put("_id", id);
     expectedMap.put("^rev", 0);
     expectedMap.put("^deleted", false);
-    expectedMap.put("^pid", pid);
+    expectedMap.put(DomainEntity.PID, pid);
     expectedMap.put("generaltestdoc.generalTestDocValue", generalTestDocValue);
 
     return expectedMap;

@@ -53,7 +53,7 @@ public class MongoFieldMapperTest {
   @Test
   public void testGetFieldMapDomainEntity() {
     Map<String, String> expected = Maps.newHashMap();
-    expected.put("pid", "^pid");
+    expected.put("pid", DomainEntity.PID);
     expected.put("relations", "@relations");
     expected.put("variations", "@variations");
     expected.put("currentVariation", "!currentVariation");

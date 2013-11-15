@@ -155,7 +155,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
       throw new IOException("Couldn't read properly from database.");
     }
     node.put("^deleted", true);
-    node.put("^pid", (String) null);
+    node.put(DomainEntity.PID, (String) null);
     JsonNode changeTree = objectMapper.valueToTree(change);
     node.put("^lastChange", changeTree);
     int rev = node.get("^rev").asInt();
@@ -267,7 +267,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     try {
       String variationName = reducer.typeToVariationName(type);
       DBObject query = new BasicDBObject(variationName, new BasicDBObject("$ne", null));
-      query.put("^pid", null);
+      query.put(DomainEntity.PID, null);
       DBObject columnsToShow = new BasicDBObject("_id", 1);
 
       DBCursor cursor = getDBCollection(type).find(query, columnsToShow);
@@ -306,7 +306,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   public <T extends DomainEntity> void removeNonPersistent(Class<T> type, List<String> ids) throws IOException {
     try {
       DBObject query = DBQuery.in("_id", ids);
-      query.put("^pid", null);
+      query.put(DomainEntity.PID, null);
       getDBCollection(type).remove(query);
     } catch (MongoException e) {
       LOG.error("Error while removing entities of type '{}'", type);

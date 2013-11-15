@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestDocWithIDPrefix;
@@ -325,7 +326,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test
   public void testGetAllIdsWithoutPIDOfType() throws IOException {
     DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
-    query.put("^pid", null);
+    query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
     String id1 = "TSD0000000001";
@@ -345,7 +346,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test
   public void testGetAllIdsWithoutPIDOfTypeMultipleFound() throws IOException {
     DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
-    query.put("^pid", null);
+    query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
     String id1 = DEFAULT_ID;
@@ -374,7 +375,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test
   public void testGetAllIdsWithoutPIDOfTypeNoneFound() throws IOException {
     DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
-    query.put("^pid", null);
+    query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
     DBCursor cursor = createCursorWithoutValues();
@@ -391,7 +392,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test(expected = IOException.class)
   public void testGetAllIdsWithoutPIDFindThrowsException() throws IOException {
     DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
-    query.put("^pid", null);
+    query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
     doThrow(MongoException.class).when(anyCollection).find(query, columnsToShow);
@@ -402,7 +403,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test(expected = IOException.class)
   public void testGetAllIdsWithoutPIDCursorNextThrowsException() throws IOException {
     DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
-    query.put("^pid", null);
+    query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
     DBCursor cursor = mock(DBCursor.class);
@@ -417,7 +418,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test(expected = IOException.class)
   public void testGetAllIdsWithoutPIDCursorHasNextThrowsException() throws IOException {
     DBObject query = new BasicDBObject("testconcretedoc", new BasicDBObject("$ne", null));
-    query.put("^pid", null);
+    query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
     DBCursor cursor = mock(DBCursor.class);
@@ -514,7 +515,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   public void testRemovePermanently() throws IOException {
     List<String> ids = Lists.newArrayList("TCD000000001", "TCD000000003", "TCD000000005");
     DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
-    query.put("^pid", null);
+    query.put(DomainEntity.PID, null);
 
     storage.removeNonPersistent(TestConcreteDoc.class, ids);
 
@@ -526,7 +527,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   public void testRemovePemanentlyDBThrowsException() throws IOException {
     List<String> ids = Lists.newArrayList("TCD000000001", "TCD000000003", "TCD000000005");
     DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
-    query.put("^pid", null);
+    query.put(DomainEntity.PID, null);
     doThrow(MongoException.class).when(anyCollection).remove(query);
 
     storage.removeNonPersistent(TestConcreteDoc.class, ids);
@@ -539,7 +540,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
     String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
-    DBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
+    DBObject update = new MongoQueries().setProperty(DomainEntity.PID, pid);
 
     storage.setPID(type, DEFAULT_ID, pid);
 
@@ -553,7 +554,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
     String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
-    DBObject update = new BasicDBObject("$set", new BasicDBObject("^pid", pid));
+    DBObject update = new MongoQueries().setProperty(DomainEntity.PID, pid);
 
     doThrow(MongoException.class).when(anyCollection).update(query, update);
 

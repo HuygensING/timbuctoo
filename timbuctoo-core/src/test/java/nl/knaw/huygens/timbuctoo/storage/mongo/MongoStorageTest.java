@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
 
 import org.junit.BeforeClass;
@@ -411,7 +412,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     testSystemDocumentMap.put("^rev", revision);
     testSystemDocumentMap.put("^lastChange", null);
     testSystemDocumentMap.put("^creation", null);
-    testSystemDocumentMap.put("^pid", null);
+    testSystemDocumentMap.put(DomainEntity.PID, null);
     testSystemDocumentMap.put("^deleted", false);
     testSystemDocumentMap.put("@class", TestSystemEntity.class.getName());
     testSystemDocumentMap.put("@variations", new Object[0]);

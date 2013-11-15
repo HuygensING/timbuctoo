@@ -12,18 +12,20 @@ import com.google.common.collect.Maps;
 @JsonIgnoreProperties("@isWritable")
 public abstract class DomainEntity extends Entity implements Variable {
 
+  public static final String PID = "^pid";
+
   private String pid; // the persistent identifier.
   private Map<String, List<EntityRef>> relations = Maps.newHashMap();
   protected List<Reference> variations = Lists.newArrayList();
   protected String currentVariation;
   private List<Role> roles;
 
-  @JsonProperty("^pid")
+  @JsonProperty(PID)
   public String getPid() {
     return pid;
   }
 
-  @JsonProperty("^pid")
+  @JsonProperty(PID)
   public void setPid(String pid) {
     this.pid = pid;
   }
