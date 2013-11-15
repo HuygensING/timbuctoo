@@ -164,9 +164,9 @@ public class VariationInducerTest extends VariationTestBase {
     assertEquals(expected, actual);
   }
 
-  @Ignore("See redmine #1890")
+  //@Ignore("See redmine #1890")
   @Test
-  public void testInduceDomainEntityProjectWithPersonName() {
+  public void testInduceDomainEntityProjectWithPersonName() throws VariationException {
     ProjectATestDocWithPersonName item = new ProjectATestDocWithPersonName();
     PersonName name = new PersonName();
     name.addNameComponent(Type.FORENAME, "test");
@@ -174,7 +174,13 @@ public class VariationInducerTest extends VariationTestBase {
     item.setPersonName(name);
 
     Map<String, Object> expectedMap = Maps.newHashMap();
-    //expectedMap.put("projectatestdocwithpersonname.personName.components", value)
+    expectedMap.put("projectatestdocwithpersonname.personName", PersonNameMapper.createPersonNameMap(name));
+    expectedMap.put("^rev", 0);
+    expectedMap.put("^deleted", false);
+    JsonNode expected = mapper.valueToTree(expectedMap);
+
+    JsonNode actual = inducer.induce(ProjectATestDocWithPersonName.class, item);
+    assertEquals(expected, actual);
   }
 
   @Test

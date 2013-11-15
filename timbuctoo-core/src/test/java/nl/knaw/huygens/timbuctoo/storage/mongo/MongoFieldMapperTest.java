@@ -43,6 +43,7 @@ public class MongoFieldMapperTest {
     expected.put("annotatedProperty", "mongoobjectmapperentity.propAnnotated");
     expected.put("propWithAnnotatedAccessors", "mongoobjectmapperentity.pwaa");
     expected.put("date", "mongoobjectmapperentity.date");
+    expected.put("personName", "mongoobjectmapperentity.personName");
 
     Map<String, String> actual = instance.getFieldMap(MongoObjectMapperEntity.class);
 
