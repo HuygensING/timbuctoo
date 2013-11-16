@@ -32,6 +32,11 @@ public class FieldMapper {
     return prefix + SEPARATOR + field;
   }
 
+  /** Returns the name of a key from its parts. */
+  public static String propertyName(Class<?> type, String field) {
+    return TypeNameGenerator.getInternalName(type) + SEPARATOR + field;
+  }
+
   private static final String GET_ACCESSOR = "get";
   private static final String IS_ACCESSOR = "is"; //get accesor for booleans.
 
@@ -97,7 +102,7 @@ public class FieldMapper {
     if (type == Entity.class || type == DomainEntity.class || type == SystemEntity.class) {
       return fieldName;
     }
-    return propertyName(TypeNameGenerator.getInternalName(type), fieldName);
+    return propertyName(type, fieldName);
   }
 
   private Method getMethodOfField(Class<?> type, Field field) {

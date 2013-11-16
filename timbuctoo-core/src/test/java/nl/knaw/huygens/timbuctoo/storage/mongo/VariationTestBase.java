@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import static nl.knaw.huygens.timbuctoo.storage.mongo.FieldMapper.propertyName;
+
 import java.io.IOException;
 import java.util.Map;
 
@@ -19,9 +21,9 @@ public abstract class VariationTestBase {
   protected ObjectNode createSystemObjectNode(String id, String name, String testValue1, String testValue2) throws IOException, JsonProcessingException {
     Map<String, Object> map = Maps.newHashMap();
     addNonNullValueToMap(map, "_id", id);
-    addNonNullValueToMap(map, "testsystementity.name", name);
-    addNonNullValueToMap(map, "testsystementity.testValue1", testValue1);
-    addNonNullValueToMap(map, "testsystementity.testValue2", testValue2);
+    addNonNullValueToMap(map, propertyName("testsystementity", "name"), name);
+    addNonNullValueToMap(map, propertyName("testsystementity", "testValue1"), testValue1);
+    addNonNullValueToMap(map, propertyName("testsystementity", "testValue2"), testValue2);
     map.put("^rev", 0);
     map.put("^deleted", false);
 
@@ -39,7 +41,7 @@ public abstract class VariationTestBase {
   protected Map<String, Object> createGeneralTestDocMap(String id, String pid, String generalTestDocValue) {
     Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.putAll(createDefaultMap(id, pid, expectedMap));
-    expectedMap.put("generaltestdoc.generalTestDocValue", generalTestDocValue);
+    expectedMap.put(propertyName("generaltestdoc", "generalTestDocValue"), generalTestDocValue);
 
     return expectedMap;
   }
@@ -47,7 +49,7 @@ public abstract class VariationTestBase {
   protected Map<String, Object> createTestConcreteDocMap(String id, String pid, String name) {
     Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.putAll(createDefaultMap(id, pid, expectedMap));
-    expectedMap.put("testconcretedoc.name", name);
+    expectedMap.put(propertyName("testconcretedoc", "name"), name);
 
     return expectedMap;
   }

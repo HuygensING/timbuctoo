@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import static nl.knaw.huygens.timbuctoo.storage.mongo.FieldMapper.propertyName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -588,21 +589,21 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   private Map<String, Object> createProjectAGeneralTestDocMap(String projectAGeneralTestDocValue) {
     Map<String, Object> generalTestDocMap = Maps.newHashMap();
-    generalTestDocMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", projectAGeneralTestDocValue);
+    generalTestDocMap.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), projectAGeneralTestDocValue);
 
     return generalTestDocMap;
   }
 
   private Map<String, Object> createGeneralTestDocMap(String generalTestDocValue, String variation) {
     Map<String, Object> generalTestDocMap = Maps.newHashMap();
-    generalTestDocMap.put("generaltestdoc.generalTestDocValue", generalTestDocValue);
+    generalTestDocMap.put(propertyName("generaltestdoc", "generalTestDocValue"), generalTestDocValue);
     return generalTestDocMap;
   }
 
   private Map<String, Object> createTestConcreteDocMap(String name, String variation) {
 
     Map<String, Object> testConcreteDocMap = Maps.newHashMap();
-    testConcreteDocMap.put("testconcretedoc.name", name);
+    testConcreteDocMap.put(propertyName("testconcretedoc", "name"), name);
     return testConcreteDocMap;
   }
 

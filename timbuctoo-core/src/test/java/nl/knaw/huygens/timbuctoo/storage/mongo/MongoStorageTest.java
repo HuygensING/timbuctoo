@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import static nl.knaw.huygens.timbuctoo.storage.mongo.FieldMapper.propertyName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
@@ -61,12 +62,12 @@ public class MongoStorageTest extends MongoStorageTestBase {
     example.setName(name);
 
     Map<String, Object> testSystemDocumentMap = createDefaultMap(0, DEFAULT_ID);
-    testSystemDocumentMap.put("testsystementity.name", name);
+    testSystemDocumentMap.put(propertyName("testsystementity", "name"), name);
     DBObject dbObject = createDBObject(testSystemDocumentMap);
 
     DBCursor cursor = createDBCursorWithOneValue(dbObject);
 
-    DBObject query = new BasicDBObject("testsystementity.name", name);
+    DBObject query = new BasicDBObject(propertyName("testsystementity", "name"), name);
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
     storage.findItem(TYPE, example);
@@ -81,14 +82,14 @@ public class MongoStorageTest extends MongoStorageTestBase {
     example.setTestValue1(testValue1);
 
     Map<String, Object> testSystemDocumentMap = createDefaultMap(0, DEFAULT_ID);
-    testSystemDocumentMap.put("testsystementity.name", name);
-    testSystemDocumentMap.put("testsystementity.testValue1", testValue1);
+    testSystemDocumentMap.put(propertyName("testsystementity", "name"), name);
+    testSystemDocumentMap.put(propertyName("testsystementity", "testValue1"), testValue1);
     DBObject dbObject = createDBObject(testSystemDocumentMap);
 
     DBCursor cursor = createDBCursorWithOneValue(dbObject);
 
-    DBObject query = new BasicDBObject("testsystementity.name", name);
-    query.put("testsystementity.testValue1", testValue1);
+    DBObject query = new BasicDBObject(propertyName("testsystementity", "name"), name);
+    query.put(propertyName("testsystementity", "testValue1"), testValue1);
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
     storage.findItem(TYPE, example);
@@ -102,8 +103,8 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     Map<String, Object> testSystemDocumentMap1 = createDefaultMap(0, DEFAULT_ID);
     String name1 = "doc1";
-    testSystemDocumentMap1.put("testsystementity.name", name1);
-    testSystemDocumentMap1.put("testsystementity.testValue1", testValue);
+    testSystemDocumentMap1.put(propertyName("testsystementity", "name"), name1);
+    testSystemDocumentMap1.put(propertyName("testsystementity", "testValue1"), testValue);
     TestSystemEntity doc1 = new TestSystemEntity();
     doc1.setName(name1);
     doc1.setTestValue1(testValue);
@@ -111,8 +112,8 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     Map<String, Object> testSystemDocumentMap2 = createDefaultMap(0, DEFAULT_ID);
     String name2 = "doc2";
-    testSystemDocumentMap1.put("testsystementity.name", name2);
-    testSystemDocumentMap1.put("testsystementity.testValue1", testValue);
+    testSystemDocumentMap1.put(propertyName("testsystementity", "name"), name2);
+    testSystemDocumentMap1.put(propertyName("testsystementity", "testValue1"), testValue);
     TestSystemEntity doc2 = new TestSystemEntity();
     doc2.setName(name2);
     doc2.setTestValue1(testValue);
@@ -122,7 +123,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     when(cursor.hasNext()).thenReturn(true, true, false);
     when(cursor.next()).thenReturn(dbObject1, dbObject2);
 
-    DBObject query = new BasicDBObject("testsystementity.testValue1", testValue);
+    DBObject query = new BasicDBObject(propertyName("testsystementity", "testValue1"), testValue);
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
     TestSystemEntity actual = storage.findItem(TYPE, example);
@@ -139,7 +140,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     DBCursor cursor = createCursorWithoutValues();
 
-    DBObject query = new BasicDBObject("testsystementity.name", name);
+    DBObject query = new BasicDBObject(propertyName("testsystementity", "name"), name);
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
     storage.findItem(TYPE, example);
@@ -152,7 +153,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     DBCursor cursor = createCursorWithoutValues();
 
-    DBObject query = new BasicDBObject("testsystementity.name", "nonExisting");
+    DBObject query = new BasicDBObject(propertyName("testsystementity", "name"), "nonExisting");
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
     storage.findItem(TYPE, example);
