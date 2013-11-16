@@ -1,39 +1,12 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.storage.JsonViews;
-
-import org.mongojack.internal.object.BsonObjectGenerator;
-
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.DBObject;
 
 public class MongoUtils {
-
-  private static ObjectWriter dbWriter;
-  static {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.setSerializationInclusion(Include.NON_DEFAULT);
-    dbWriter = mapper.writerWithView(JsonViews.DBView.class);
-  }
-
-  public static DBObject getObjectForDoc(Object doc) throws IOException {
-    if (doc == null) {
-      return null;
-    }
-    BsonObjectGenerator generator = new BsonObjectGenerator();
-    dbWriter.writeValue(generator, doc);
-    DBObject dbObject = generator.getDBObject();
-    dbObject.removeField("@class");
-
-    return generator.getDBObject();
-  }
 
   public static void sortDocumentsByLastChange(List<DBObject> docs) {
     Collections.sort(docs, new Comparator<DBObject>() {

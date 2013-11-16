@@ -5,16 +5,41 @@ import java.util.List;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
+import org.mongojack.internal.object.BsonObjectGenerator;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.Sets;
+import com.mongodb.DBObject;
 
 public class MongoDiff {
 
+  private static ObjectWriter dbWriter;
+  static {
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.setSerializationInclusion(Include.NON_DEFAULT);
+    dbWriter = mapper.writerWithView(JsonViews.DBView.class);
+  }
+
+  public static DBObject getObjectForDoc(Object doc) throws IOException {
+    if (doc == null) {
+      return null;
+    }
+    BsonObjectGenerator generator = new BsonObjectGenerator();
+    dbWriter.writeValue(generator, doc);
+    DBObject dbObject = generator.getDBObject();
+    dbObject.removeField("@class");
+
+    return generator.getDBObject();
+  }
+
   public static <T extends Entity> BSONObject diffDocuments(T d1, T d2) throws IOException {
-    return diff(MongoUtils.getObjectForDoc(d1), MongoUtils.getObjectForDoc(d2), false);
+    return diff(getObjectForDoc(d1), getObjectForDoc(d2), false);
   }
 
   public static BSONObject diffToNewObject(BSONObject oldObj, BSONObject newObj) {

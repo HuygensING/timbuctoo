@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.List;
@@ -41,6 +42,17 @@ public class MongoDiffTest {
   @Before
   public void setUp() throws Exception {
 
+  }
+
+  @Test
+  public void testGetObjectForDoc() {
+    Foo x = new Foo();
+    x.name = "blub";
+    try {
+      assertEquals(new BasicDBObject("name", "blub"), MongoDiff.getObjectForDoc(x));
+    } catch (IOException e) {
+      fail();
+    }
   }
 
   @Test
@@ -139,8 +151,8 @@ public class MongoDiffTest {
     testObj.put("bars", Lists.newArrayList("a", "b", "c"));
     assertEquals(testObj, diff);
 
-    DBObject xBSON = MongoUtils.getObjectForDoc(x);
-    DBObject yBSON = MongoUtils.getObjectForDoc(y);
+    DBObject xBSON = MongoDiff.getObjectForDoc(x);
+    DBObject yBSON = MongoDiff.getObjectForDoc(y);
     diff = MongoDiff.diffToNewObject(xBSON, yBSON);
     assertEquals(testObj, diff);
   }
@@ -158,8 +170,8 @@ public class MongoDiffTest {
     testObj.put("bars", Lists.newArrayList("a", "b"));
     assertEquals(testObj, diff);
 
-    DBObject xBSON = MongoUtils.getObjectForDoc(x);
-    DBObject yBSON = MongoUtils.getObjectForDoc(y);
+    DBObject xBSON = MongoDiff.getObjectForDoc(x);
+    DBObject yBSON = MongoDiff.getObjectForDoc(y);
     diff = MongoDiff.diffToNewObject(xBSON, yBSON);
     assertEquals(testObj, diff);
   }
@@ -175,8 +187,8 @@ public class MongoDiffTest {
     BSONObject diff = MongoDiff.diffDocuments(x, y);
     assertEquals(null, diff);
 
-    DBObject xBSON = MongoUtils.getObjectForDoc(x);
-    DBObject yBSON = MongoUtils.getObjectForDoc(y);
+    DBObject xBSON = MongoDiff.getObjectForDoc(x);
+    DBObject yBSON = MongoDiff.getObjectForDoc(y);
     diff = MongoDiff.diffToNewObject(xBSON, yBSON);
     assertEquals(null, diff);
   }
@@ -194,8 +206,8 @@ public class MongoDiffTest {
     testObj.put("bars", null);
     assertEquals(testObj, diff);
 
-    DBObject xBSON = MongoUtils.getObjectForDoc(x);
-    DBObject yBSON = MongoUtils.getObjectForDoc(y);
+    DBObject xBSON = MongoDiff.getObjectForDoc(x);
+    DBObject yBSON = MongoDiff.getObjectForDoc(y);
     diff = MongoDiff.diffToNewObject(xBSON, yBSON);
     assertEquals(testObj, diff);
   }
@@ -216,9 +228,10 @@ public class MongoDiffTest {
     testObj.put("@variations", null);
     assertEquals(testObj, diff);
 
-    DBObject xBSON = MongoUtils.getObjectForDoc(x);
-    DBObject yBSON = MongoUtils.getObjectForDoc(y);
+    DBObject xBSON = MongoDiff.getObjectForDoc(x);
+    DBObject yBSON = MongoDiff.getObjectForDoc(y);
     diff = MongoDiff.diffToNewObject(xBSON, yBSON);
     assertEquals(testObj, diff);
   }
+
 }
