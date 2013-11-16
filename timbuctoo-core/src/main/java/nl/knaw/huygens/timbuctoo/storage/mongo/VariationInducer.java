@@ -143,7 +143,7 @@ class VariationInducer extends VariationConverter {
     for (String key : newValues.keySet()) {
       if (existingNode.has(key)) {
         if (isFieldWithVariation(key) && !isSameValue(key, newValues, existingNode)) {
-          String typeName = mongoFieldMapper.getTypeNameOfFieldName(key);
+          String typeName = fieldMapper.getTypeNameOfFieldName(key);
           String variationName = StringUtils.replace(key, typeName, typeRegistry.getIName(type));
           mergedMap.put(variationName, newValues.get(key));
           mergedMap.put(key, existingNode.get(key));
@@ -165,7 +165,7 @@ class VariationInducer extends VariationConverter {
         mergedMap.put(key, existingNode.get(key));
       } else {
         for (String similarKey : similarKeys) {
-          String typeName = mongoFieldMapper.getTypeNameOfFieldName(similarKey);
+          String typeName = fieldMapper.getTypeNameOfFieldName(similarKey);
           if (typeName != null && typeRegistry.getForIName(typeName).isAssignableFrom(type) && !isSameValue(similarKey, key, mergedMap, existingNode)) {
             mergedMap.put(key, existingNode.get(key));
             break;

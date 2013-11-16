@@ -17,14 +17,14 @@ import org.junit.Test;
 
 import com.google.common.collect.Maps;
 
-public class MongoFieldMapperTest {
+public class FieldMapperTest {
 
   private static final Class<MongoObjectMapperEntity> TYPE = MongoObjectMapperEntity.class;
-  private MongoFieldMapper instance;
+  private FieldMapper instance;
 
   @Before
   public void setUp() {
-    instance = new MongoFieldMapper();
+    instance = new FieldMapper();
   }
 
   @After
