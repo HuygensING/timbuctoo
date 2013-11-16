@@ -337,7 +337,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetItemNonExistent() {
+  public void testGetItemNonExistent() throws IOException {
     DBCursor cursor = createCursorWithoutValues();
 
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
