@@ -2,19 +2,11 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.annotations.DoNotRegister;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 
-/*
- * Make sure the User-class is not registered by the DocumentTypeRegistry. The reason is that User has it's own resource class with it's specific authorization.
- * This creates a possibility for a security leak. This would occur when the UserResource URL and the RESTAutoResource URL have a different structure. 
- * Then an unauthorized user can access the User's via the RESTAutoResource.
- * When the User-class is not registered, the class will not be found by the RESTAutoResource and the User will only be available through the UserResource. 
- */
-@DoNotRegister
 @IDPrefix(User.ID_PREFIX)
 public class User extends SystemEntity {
 
