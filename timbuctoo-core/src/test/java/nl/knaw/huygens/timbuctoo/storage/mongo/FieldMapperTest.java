@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import static nl.knaw.huygens.timbuctoo.storage.mongo.FieldMapper.propertyName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -11,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.MongoObjectMapperEntity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,7 +19,8 @@ import com.google.common.collect.Maps;
 
 public class FieldMapperTest {
 
-  private static final Class<MongoObjectMapperEntity> TYPE = MongoObjectMapperEntity.class;
+  private static final Class<? extends Entity> TYPE = MongoObjectMapperEntity.class;
+
   private FieldMapper instance;
 
   @Before
@@ -27,27 +28,20 @@ public class FieldMapperTest {
     instance = new FieldMapper();
   }
 
-  @After
-  public void tearDown() {
-    instance = null;
-  }
-
   @Test
   public void testGetFieldMap() {
     Map<String, String> expected = Maps.newHashMap();
-    expected.put("primitiveTestCollection", "mongoobjectmapperentity.primitiveTestCollection");
-    expected.put("nonPrimitiveTestCollection", "mongoobjectmapperentity.nonPrimitiveTestCollection");
-    expected.put("name", "mongoobjectmapperentity.name");
-    expected.put("testValue1", "mongoobjectmapperentity.testValue1");
-    expected.put("testValue2", "mongoobjectmapperentity.testValue2");
-    expected.put("annotatedProperty", "mongoobjectmapperentity.propAnnotated");
-    expected.put("propWithAnnotatedAccessors", "mongoobjectmapperentity.pwaa");
-    expected.put("date", "mongoobjectmapperentity.date");
-    expected.put("personName", "mongoobjectmapperentity.personName");
+    expected.put("primitiveTestCollection", propertyName(TYPE, "primitiveTestCollection"));
+    expected.put("nonPrimitiveTestCollection", propertyName(TYPE, "nonPrimitiveTestCollection"));
+    expected.put("name", propertyName(TYPE, "name"));
+    expected.put("testValue1", propertyName(TYPE, "testValue1"));
+    expected.put("testValue2", propertyName(TYPE, "testValue2"));
+    expected.put("annotatedProperty", propertyName(TYPE, "propAnnotated"));
+    expected.put("propWithAnnotatedAccessors", propertyName(TYPE, "pwaa"));
+    expected.put("date", propertyName(TYPE, "date"));
+    expected.put("personName", propertyName(TYPE, "personName"));
 
-    Map<String, String> actual = instance.getFieldMap(MongoObjectMapperEntity.class);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, instance.getFieldMap(TYPE));
   }
 
   @Test
@@ -59,18 +53,14 @@ public class FieldMapperTest {
     expected.put("currentVariation", "!currentVariation");
     expected.put("roles", "roles");
 
-    Map<String, String> actual = instance.getFieldMap(DomainEntity.class);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, instance.getFieldMap(DomainEntity.class));
   }
 
   @Test
   public void testGetFieldMapSystemEntity() {
     Map<String, String> expected = Maps.newHashMap();
 
-    Map<String, String> actual = instance.getFieldMap(SystemEntity.class);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, instance.getFieldMap(SystemEntity.class));
   }
 
   @Test
@@ -82,24 +72,22 @@ public class FieldMapperTest {
     expected.put("creation", "^creation");
     expected.put("lastChange", "^lastChange");
 
-    Map<String, String> actual = instance.getFieldMap(Entity.class);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, instance.getFieldMap(Entity.class));
   }
 
   @Test
   public void testGetFieldNameSimpleField() throws NoSuchFieldException {
-    testGetFieldName(TYPE, TYPE.getDeclaredField("name"), "mongoobjectmapperentity.name");
+    testGetFieldName(TYPE, TYPE.getDeclaredField("name"), propertyName(TYPE, "name"));
   }
 
   @Test
   public void testGetFieldNameForFieldWithAnnotation() throws NoSuchFieldException {
-    testGetFieldName(TYPE, TYPE.getDeclaredField("annotatedProperty"), "mongoobjectmapperentity.propAnnotated");
+    testGetFieldName(TYPE, TYPE.getDeclaredField("annotatedProperty"), propertyName(TYPE, "propAnnotated"));
   }
 
   @Test
   public void testGetFieldNameFieldForAccessorWithAnnotation() throws NoSuchFieldException {
-    testGetFieldName(TYPE, TYPE.getDeclaredField("propWithAnnotatedAccessors"), "mongoobjectmapperentity.pwaa");
+    testGetFieldName(TYPE, TYPE.getDeclaredField("propWithAnnotatedAccessors"), propertyName(TYPE, "pwaa"));
   }
 
   @Test
@@ -119,19 +107,12 @@ public class FieldMapperTest {
 
   protected void testGetFieldName(Class<? extends Entity> type, Field declaredField, String expected) throws NoSuchFieldException {
     String actual = instance.getFieldName(type, declaredField);
-
     assertEquals(expected, actual);
   }
 
   @Test
   public void testGetTypeNameOfFieldNameFieldNameWithDot() {
-    String fieldName = "test.testField";
-    assertEquals("test", instance.getTypeNameOfFieldName(fieldName));
-  }
-
-  @Test
-  public void testGetTypeNameOfFieldNameNestedField() {
-    String fieldName = "test.testField.nestedField";
+    String fieldName = propertyName("test", "testField");
     assertEquals("test", instance.getTypeNameOfFieldName(fieldName));
   }
 

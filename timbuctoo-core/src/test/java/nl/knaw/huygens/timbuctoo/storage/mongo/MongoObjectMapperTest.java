@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import static nl.knaw.huygens.timbuctoo.storage.mongo.FieldMapper.propertyName;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
@@ -17,13 +18,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class MongoObjectMapperTest {
+
   // keys
-  private static final String PRIMITIVE_TEST_COLLECTION_KEY = "mongoobjectmapperentity.primitiveTestCollection";
-  private static final String PWAA_KEY = "mongoobjectmapperentity.pwaa";
-  private static final String PROP_ANNOTATED_KEY = "mongoobjectmapperentity.propAnnotated";
-  private static final String TEST_VALUE2_KEY = "mongoobjectmapperentity.testValue2";
-  private static final String TEST_VALUE1_KEY = "mongoobjectmapperentity.testValue1";
-  private static final String NAME_KEY = "mongoobjectmapperentity.name";
+  private static final String PRIMITIVE_TEST_COLLECTION_KEY = propertyName("mongoobjectmapperentity", "primitiveTestCollection");
+  private static final String PWAA_KEY = propertyName("mongoobjectmapperentity", "pwaa");
+  private static final String PROP_ANNOTATED_KEY = propertyName("mongoobjectmapperentity", "propAnnotated");
+  private static final String TEST_VALUE2_KEY = propertyName("mongoobjectmapperentity", "testValue2");
+  private static final String TEST_VALUE1_KEY = propertyName("mongoobjectmapperentity", "testValue1");
+  private static final String NAME_KEY = propertyName("mongoobjectmapperentity", "name");
   //default values
   private static final String DEFAULT_ID = "testID";
   private static final String DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS = "propWithAnnotatedAccessors";
@@ -117,7 +119,7 @@ public class MongoObjectMapperTest {
     item.setDate(datable);
 
     Map<String, Object> expected = Maps.newHashMap();
-    expected.put("mongoobjectmapperentity.date", datable.getEDTF());
+    expected.put(propertyName("mongoobjectmapperentity", "date"), datable.getEDTF());
 
     Map<String, Object> actual = instance.mapObject(TYPE, item);
 
@@ -133,7 +135,7 @@ public class MongoObjectMapperTest {
     item.setPersonName(personName);
 
     Map<String, Object> expected = Maps.newLinkedHashMap();
-    expected.put("mongoobjectmapperentity.personName", PersonNameMapper.createPersonNameMap(personName));
+    expected.put(propertyName("mongoobjectmapperentity", "personName"), PersonNameMapper.createPersonNameMap(personName));
 
     Map<String, Object> actual = instance.mapObject(TYPE, item);
 
