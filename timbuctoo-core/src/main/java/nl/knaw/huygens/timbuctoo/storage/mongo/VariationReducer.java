@@ -166,7 +166,7 @@ class VariationReducer extends VariationConverter {
     Iterator<String> iterator = node.fieldNames();
     while (iterator.hasNext()) {
       String fieldName = iterator.next();
-      String typeName = mongoFieldMapper.getTypeNameOfFieldName(fieldName);
+      String typeName = fieldMapper.getTypeNameOfFieldName(fieldName);
 
       if (typeRegistry.isRole(typeName)) {
         Class<? extends Role> role = typeRegistry.getRoleForIName(typeName);
@@ -195,7 +195,7 @@ class VariationReducer extends VariationConverter {
       setFields((Class<T>) type.getSuperclass(), classToStop, instance, node, requestedVariation);
     }
 
-    Map<String, String> fieldMap = mongoFieldMapper.getFieldMap(type);
+    Map<String, String> fieldMap = fieldMapper.getFieldMap(type);
 
     for (String javaFieldName : fieldMap.keySet()) {
 
@@ -239,7 +239,7 @@ class VariationReducer extends VariationConverter {
       Class<? extends Variable> subClass = typeRegistry.getVariationClass((Class<? extends Variable>) type, variation);
 
       if (subClass != null) {
-        String overridenDBKey = mongoFieldMapper.getFieldName(subClass, field);
+        String overridenDBKey = fieldMapper.getFieldName(subClass, field);
 
         if (record.has(overridenDBKey)) {
 

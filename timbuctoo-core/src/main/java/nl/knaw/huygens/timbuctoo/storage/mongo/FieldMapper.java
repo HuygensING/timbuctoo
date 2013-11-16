@@ -19,7 +19,8 @@ import com.google.common.collect.Maps;
  * A class that contains all the information about how the class fields are mapped 
  * to the fields in the database.
  */
-public class MongoFieldMapper {
+public class FieldMapper {
+
   private static final Class<JsonProperty> ANNOTATION_TO_RETRIEVE = JsonProperty.class;
   private static final String GET_ACCESSOR = "get";
   private static final String IS_ACCESSOR = "is"; //get accesor for booleans.

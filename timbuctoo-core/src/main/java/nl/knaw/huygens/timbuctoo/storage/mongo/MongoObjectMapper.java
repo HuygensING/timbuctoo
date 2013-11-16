@@ -28,10 +28,10 @@ public class MongoObjectMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoObjectMapper.class);
 
-  private final MongoFieldMapper fieldMapper;
+  private final FieldMapper fieldMapper;
 
   public MongoObjectMapper() {
-    fieldMapper = new MongoFieldMapper();
+    fieldMapper = new FieldMapper();
   }
 
   /**
