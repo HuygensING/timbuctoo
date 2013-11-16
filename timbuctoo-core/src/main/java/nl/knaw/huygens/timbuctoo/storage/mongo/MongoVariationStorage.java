@@ -50,7 +50,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   private <T extends Entity> DBCollection getRawVersionCollection(Class<T> type) {
     Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
-    DBCollection col = db.getCollection(MongoUtils.getVersioningCollectionName(baseType));
+    DBCollection col = db.getCollection(getVersioningCollectionName(baseType));
     col.setDBDecoderFactory(treeDecoderFactory);
     col.setDBEncoderFactory(treeEncoderFactory);
     return col;
