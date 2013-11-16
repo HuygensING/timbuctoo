@@ -21,7 +21,17 @@ import com.google.common.collect.Maps;
  */
 public class FieldMapper {
 
-  private static final Class<JsonProperty> ANNOTATION_TO_RETRIEVE = JsonProperty.class;
+  /** Separator between parts of a property name, as string. */
+  public static final String SEPARATOR = ".";
+
+  /** Separator between parts of a key, as character. */
+  public static final char SEPARATOR_CHAR = '.';
+
+  /** Returns the name of a key from its parts. */
+  public static String propertyName(String prefix, String field) {
+    return prefix + SEPARATOR + field;
+  }
+
   private static final String GET_ACCESSOR = "get";
   private static final String IS_ACCESSOR = "is"; //get accesor for booleans.
 
@@ -56,8 +66,8 @@ public class FieldMapper {
    */
   public String getTypeNameOfFieldName(String fieldName) {
     checkNotNull(fieldName);
-
-    return fieldName.contains(".") ? fieldName.substring(0, fieldName.indexOf('.')) : null;
+    int pos = fieldName.indexOf(SEPARATOR_CHAR);
+    return (pos < 0) ? null : fieldName.substring(0, pos);
   }
 
   /**
@@ -69,7 +79,7 @@ public class FieldMapper {
    * @return the field name.
    */
   public String getFieldName(Class<?> type, Field field) {
-    JsonProperty annotation = field.getAnnotation(ANNOTATION_TO_RETRIEVE);
+    JsonProperty annotation = field.getAnnotation(JsonProperty.class);
 
     if (annotation != null) {
       return getPrefixedFieldName(type, annotation.value());
@@ -77,8 +87,8 @@ public class FieldMapper {
 
     Method method = getMethodOfField(type, field);
 
-    if (method != null && method.getAnnotation(ANNOTATION_TO_RETRIEVE) != null) {
-      return getPrefixedFieldName(type, method.getAnnotation(ANNOTATION_TO_RETRIEVE).value());
+    if (method != null && method.getAnnotation(JsonProperty.class) != null) {
+      return getPrefixedFieldName(type, method.getAnnotation(JsonProperty.class).value());
     }
     return getPrefixedFieldName(type, field.getName());
   }
@@ -87,22 +97,17 @@ public class FieldMapper {
     if (type == Entity.class || type == DomainEntity.class || type == SystemEntity.class) {
       return fieldName;
     }
-
-    return TypeNameGenerator.getInternalName(type) + "." + fieldName;
+    return propertyName(TypeNameGenerator.getInternalName(type), fieldName);
   }
 
   private Method getMethodOfField(Class<?> type, Field field) {
-    Method method = null;
     String methodName = getMethodName(field);
-
-    for (Method m : type.getMethods()) {
-      if (m.getName().equals(methodName)) {
-        method = m;
-        break;
+    for (Method method : type.getMethods()) {
+      if (method.getName().equals(methodName)) {
+        return method;
       }
     }
-
-    return method;
+    return null;
   }
 
   private String getMethodName(Field field) {

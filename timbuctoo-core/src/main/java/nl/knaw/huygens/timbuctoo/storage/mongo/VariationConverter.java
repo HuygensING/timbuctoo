@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import java.io.IOException;
-import java.lang.reflect.Modifier;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -15,7 +14,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.collect.Lists;
 
 /**
  * Base class for {@code VariationInducer} and {@code VariationInducer}.
@@ -37,20 +35,6 @@ class VariationConverter {
     mapper = new ObjectMapper();
     mongoObjectMapper = new MongoObjectMapper();
     fieldMapper = new FieldMapper();
-  }
-
-  /**
-   * Returns variation names for the specified entity type and its superclasses.
-   */
-  @SuppressWarnings("unchecked")
-  protected List<String> getVariationNamesForType(Class<? extends Entity> type) {
-    List<String> names = Lists.newArrayList();
-    // TODO Use TypeRegistry, this loop is fragile
-    while (type != null && !Modifier.isAbstract(type.getModifiers())) {
-      names.add(typeToVariationName(type));
-      type = (Class<? extends Entity>) type.getSuperclass();
-    }
-    return names;
   }
 
   protected String getPackageName(Class<? extends Entity> type) {

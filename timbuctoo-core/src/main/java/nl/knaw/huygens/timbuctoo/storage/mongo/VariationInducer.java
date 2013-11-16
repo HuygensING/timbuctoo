@@ -131,11 +131,9 @@ class VariationInducer extends VariationConverter {
 
   /**
    * Checks if the there is variation possible for this field.
-   * @param fieldName
-   * @return
    */
   protected boolean isFieldWithVariation(String fieldName) {
-    return fieldName.contains(".");
+    return fieldName.contains(FieldMapper.SEPARATOR);
   }
 
   private Map<String, Object> merge(Class<?> type, Map<String, Object> newValues, ObjectNode existingNode) {
@@ -179,14 +177,14 @@ class VariationInducer extends VariationConverter {
 
   private Set<String> getSimilarKeys(Map<String, Object> map, String key) {
     checkNotNull(key);
-    if (!key.contains(".")) {
-      return Sets.newHashSet();
-    }
-    final String fieldName = key.contains(".") ? key.split("\\.")[1] : "";
     Set<String> similarKeys = Sets.newHashSet();
-    for (String similarKey : map.keySet()) {
-      if (StringUtils.contains(similarKey, fieldName)) {
-        similarKeys.add(similarKey);
+    int pos = key.indexOf(FieldMapper.SEPARATOR_CHAR);
+    if (pos >= 0) {
+      String fieldName = key.substring(pos + 1);
+      for (String similarKey : map.keySet()) {
+        if (StringUtils.contains(similarKey, fieldName)) {
+          similarKeys.add(similarKey);
+        }
       }
     }
     return similarKeys;
