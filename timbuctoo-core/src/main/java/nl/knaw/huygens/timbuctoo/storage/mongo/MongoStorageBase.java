@@ -12,7 +12,9 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
+import nl.knaw.huygens.timbuctoo.storage.EmptyStorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 import org.mongojack.JacksonDBCollection;
 import org.slf4j.Logger;
@@ -22,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 
@@ -90,6 +93,16 @@ public abstract class MongoStorageBase implements BasicStorage {
   }
 
   // --- entities ------------------------------------------------------
+
+  protected <T extends Entity> T getItem(Class<T> type, DBObject query) throws IOException {
+    DBObject item = getDBCollection(type).findOne(query);
+    return reducer.reduceDBObject(type, item);
+  }
+
+  protected <T extends Entity> StorageIterator<T> getItems(Class<T> type, DBObject query) {
+    DBCursor cursor = getDBCollection(type).find(query);
+    return (cursor != null) ? new MongoDBVariationIterator<T>(type, cursor, reducer) : new EmptyStorageIterator<T>();
+  }
 
   public <T extends Entity> long count(Class<T> type) {
     Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);

@@ -15,26 +15,25 @@ import com.mongodb.DBObject;
 
 class MongoDBVariationIterator<T extends Entity> implements StorageIterator<T> {
 
+  private final Class<T> type;
   private final DBCursor delegate;
   private final VariationReducer reducer;
-  private final Class<T> cls;
   private boolean closed;
 
-  public MongoDBVariationIterator(DBCursor delegate, VariationReducer reducer, Class<T> cls) {
+  public MongoDBVariationIterator(Class<T> type, DBCursor delegate, VariationReducer reducer) {
+    this.type = type;
     this.delegate = Preconditions.checkNotNull(delegate);
     this.reducer = reducer;
-    this.cls = cls;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public T next() {
     try {
       DBObject next = delegate.next();
-      return (T) reducer.reduceDBObject((Class<? extends DomainEntity>) cls, next);
-    } catch (NoSuchElementException ex) {
+      return reducer.reduceDBObject(type, next);
+    } catch (NoSuchElementException e) {
       close();
-      throw ex;
+      throw e;
     } catch (IOException e) {
       e.printStackTrace();
       return null;
@@ -66,7 +65,7 @@ class MongoDBVariationIterator<T extends Entity> implements StorageIterator<T> {
       }
 
       try {
-        list.add((T) reducer.reduceDBObject((Class<? extends DomainEntity>) cls, next));
+        list.add((T) reducer.reduceDBObject((Class<? extends DomainEntity>) type, next));
       } catch (IOException e) {
         e.printStackTrace();
         list.add(null);

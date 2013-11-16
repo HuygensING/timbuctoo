@@ -3,6 +3,8 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 import java.util.Date;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.model.Relation;
+
 import org.mongojack.DBQuery;
 
 import com.mongodb.BasicDBObject;
@@ -31,6 +33,14 @@ public class MongoQueries {
 
   public DBObject selectByDate(String dateField, Date dateValue) {
     return DBQuery.lessThan(dateField, dateValue);
+  }
+
+  public DBObject selectRelation(Relation relation) {
+    DBObject query = new BasicDBObject();
+    query.put("^typeId", relation.getTypeId());
+    query.put("^sourceId", relation.getSourceId());
+    query.put("^targetId", relation.getTargetId());
+    return query;
   }
 
   // FIXME This is correct for the old reducer/inducer, but now it is wrong!

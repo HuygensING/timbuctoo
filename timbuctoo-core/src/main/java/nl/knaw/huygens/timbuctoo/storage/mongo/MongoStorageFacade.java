@@ -167,7 +167,7 @@ public class MongoStorageFacade implements VariationStorage {
   }
 
   @Override
-  public boolean relationExists(Relation relation) {
+  public boolean relationExists(Relation relation) throws IOException {
     return variationStorage.relationExists(relation);
   }
 

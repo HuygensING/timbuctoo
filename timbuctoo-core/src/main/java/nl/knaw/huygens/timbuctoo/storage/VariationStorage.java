@@ -23,7 +23,7 @@ public interface VariationStorage extends BasicStorage {
   /**
    * Is the specified relation present in the storage?
    */
-  boolean relationExists(Relation relation);
+  boolean relationExists(Relation relation) throws IOException;
 
   /**
    * Returns an iterator for all relations involving the specified domain entity,
