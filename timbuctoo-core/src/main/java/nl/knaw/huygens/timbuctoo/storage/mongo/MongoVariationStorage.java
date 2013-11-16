@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.EmptyStorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.VariationStorage;
 
@@ -59,14 +60,14 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   @SuppressWarnings("unchecked")
   @Override
   public <T extends Entity> T getItem(Class<T> type, String id) throws VariationException, IOException {
-    DBCollection col = getDBCollection(type);
-    DBObject query = new BasicDBObject("_id", id);
-    return (T) reducer.reduceDBObject((Class<? extends DomainEntity>) type, col.findOne(query));
+    DBObject query = queries.selectById(id);
+    DBObject item = getDBCollection(type).findOne(query);
+    return (T) reducer.reduceDBObject((Class<? extends DomainEntity>) type, item);
   }
 
   @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws VariationException, IOException {
-    DBObject query = new BasicDBObject("_id", id);
+    DBObject query = queries.selectById(id);
     DBObject item = getDBCollection(type).findOne(query);
     List<T> variations = reducer.getAllForDBObject(item, type);
     for (T variation : variations) {
@@ -84,8 +85,9 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   @Override
   public <T extends Entity> StorageIterator<T> getAllByType(Class<T> type) {
-    DBCollection col = getDBCollection(type);
-    return new MongoDBVariationIterator<T>(col.find(), reducer, type);
+    DBObject query = queries.selectAll();
+    DBCursor cursor = getDBCollection(type).find(query);
+    return (cursor != null) ? new MongoDBVariationIterator<T>(cursor, reducer, type) : new EmptyStorageIterator<T>();
   }
 
   @Override
@@ -97,7 +99,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
   @Override
   public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revisionId) throws IOException {
-    DBObject query = new BasicDBObject("_id", id);
+    DBObject query = queries.selectById(id);
     query.put("versions.^rev", revisionId);
     DBObject item = getRawVersionCollection(type).findOne(query);
     return reducer.reduceRevision(type, item);
@@ -111,34 +113,35 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
       setNextId(type, item);
     }
     JsonNode jsonNode = inducer.induce(type, item);
-    DBCollection col = getDBCollection(type);
     JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
-    col.insert(insertedItem);
-    addInitialVersion(type, item.getId(), insertedItem);
+    getDBCollection(type).insert(insertedItem);
+    if (TypeRegistry.isDomainEntity(type)) {
+      addInitialVersion(type, item.getId(), insertedItem);
+    }
     return item.getId();
   }
 
   @Override
   public <T extends Entity> void updateItem(Class<T> type, String id, T item) throws IOException {
-    DBCollection col = getDBCollection(type);
-    BasicDBObject q = new BasicDBObject("_id", id);
-    q.put("^rev", item.getRev());
-    DBObject existingNode = col.findOne(q);
+    DBObject query = queries.selectById(id);
+    query.put("^rev", item.getRev());
+    DBObject existingNode = getDBCollection(type).findOne(query);
     if (existingNode == null) {
       throw new IOException("No entity was found for ID " + id + " and revision " + String.valueOf(item.getRev()) + " !");
     }
     JsonNode updatedNode = inducer.induce(type, item, existingNode);
     ((ObjectNode) updatedNode).put("^rev", item.getRev() + 1);
     JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(updatedNode, JsonNode.class);
-    col.update(q, updatedDBObj);
-    addVersion(type, id, updatedDBObj);
+    getDBCollection(type).update(query, updatedDBObj);
+    if (TypeRegistry.isDomainEntity(type)) {
+      addVersion(type, id, updatedDBObj);
+    }
   }
 
   @Override
   public <T extends DomainEntity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
-    DBCollection col = getDBCollection(type);
-    BasicDBObject q = new BasicDBObject("_id", id);
-    DBObject existingNode = col.findOne(q);
+    DBObject query = queries.selectById(id);
+    DBObject existingNode = getDBCollection(type).findOne(query);
     if (existingNode == null) {
       throw new IOException("No entity was found for ID " + id);
     }
@@ -159,14 +162,13 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     node.put("^lastChange", changeTree);
     int rev = node.get("^rev").asInt();
     node.put("^rev", rev + 1);
-    q.put("^rev", rev);
+    query.put("^rev", rev);
     JacksonDBObject<JsonNode> updatedNode = new JacksonDBObject<JsonNode>(node, JsonNode.class);
-    col.update(q, updatedNode);
+    getDBCollection(type).update(query, updatedNode);
     addVersion(type, id, updatedNode);
   }
 
-  private <T extends Entity> void addInitialVersion(Class<T> cls, String id, JacksonDBObject<JsonNode> initialVersion) {
-    DBCollection col = getRawVersionCollection(cls);
+  private <T extends Entity> void addInitialVersion(Class<T> type, String id, JacksonDBObject<JsonNode> initialVersion) {
     JsonNode actualVersion = initialVersion.getObject();
 
     ArrayNode versionsNode = objectMapper.createArrayNode();
@@ -176,11 +178,10 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     itemNode.put("versions", versionsNode);
     itemNode.put("_id", id);
 
-    col.insert(new JacksonDBObject<JsonNode>(itemNode, JsonNode.class));
+    getRawVersionCollection(type).insert(new JacksonDBObject<JsonNode>(itemNode, JsonNode.class));
   }
 
-  private <T extends Entity> void addVersion(Class<T> cls, String id, JacksonDBObject<JsonNode> newVersion) {
-    DBCollection col = getRawVersionCollection(cls);
+  private <T extends Entity> void addVersion(Class<T> type, String id, JacksonDBObject<JsonNode> newVersion) {
     JsonNode actualVersion = newVersion.getObject();
 
     ObjectNode versionNode = objectMapper.createObjectNode();
@@ -188,8 +189,9 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
 
     ObjectNode update = objectMapper.createObjectNode();
     update.put("$push", versionNode);
+    DBObject updateObj = new JacksonDBObject<JsonNode>(update, JsonNode.class);
 
-    col.update(new BasicDBObject("_id", id), new JacksonDBObject<JsonNode>(update, JsonNode.class));
+    getRawVersionCollection(type).update(new BasicDBObject("_id", id), updateObj);
   }
 
   @Override
