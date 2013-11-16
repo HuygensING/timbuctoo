@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 
 import org.mongojack.internal.object.BsonObjectGenerator;
@@ -34,14 +33,6 @@ public class MongoUtils {
     dbObject.removeField("@class");
 
     return generator.getDBObject();
-  }
-
-  public static String getCollectionName(Class<? extends Entity> type) {
-    return type.getSimpleName().toLowerCase();
-  }
-
-  public static String getVersioningCollectionName(Class<? extends Entity> type) {
-    return getCollectionName(type) + "_versions";
   }
 
   public static void sortDocumentsByLastChange(List<DBObject> docs) {

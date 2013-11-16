@@ -14,16 +14,6 @@ import com.mongodb.BasicDBObject;
 public class MongoUtilsTest {
 
   @Test
-  public void testGetCollectionName() {
-    assertEquals("foo", MongoUtils.getCollectionName(Foo.class));
-  }
-
-  @Test
-  public void testGetVersioningCollectionName() {
-    assertEquals("foo_versions", MongoUtils.getVersioningCollectionName(Foo.class));
-  }
-
-  @Test
   public void testGetObjectForDoc() {
     Foo x = new Foo();
     x.name = "blub";

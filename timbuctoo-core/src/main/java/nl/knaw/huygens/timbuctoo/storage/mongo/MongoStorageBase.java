@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
@@ -149,7 +151,9 @@ public abstract class MongoStorageBase implements BasicStorage {
     DBCollection collection = collectionCache.get(type);
     if (collection == null) {
       Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
-      collection = db.getCollection(typeRegistry.getINameForType(baseType));
+      String collectionName = typeRegistry.getINameForType(baseType);
+      checkState(collectionName != null, "Unregistered type %s", type.getSimpleName());
+      collection = db.getCollection(collectionName);
       collection.setDBDecoderFactory(treeDecoderFactory);
       collection.setDBEncoderFactory(treeEncoderFactory);
       collectionCache.put(type, collection);
@@ -159,8 +163,16 @@ public abstract class MongoStorageBase implements BasicStorage {
   }
 
   protected <T extends Entity> JacksonDBCollection<T, String> getCollection(Class<T> type) {
-    DBCollection col = db.getCollection(MongoUtils.getCollectionName(type));
+    DBCollection col = db.getCollection(getCollectionName(type));
     return JacksonDBCollection.wrap(col, type, String.class, JsonViews.DBView.class);
+  }
+
+  protected String getCollectionName(Class<? extends Entity> type) {
+    return type.getSimpleName().toLowerCase();
+  }
+
+  protected String getVersioningCollectionName(Class<? extends Entity> type) {
+    return getCollectionName(type) + "_versions";
   }
 
   /**
