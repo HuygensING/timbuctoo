@@ -333,7 +333,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = new BasicDBObject("_id", null);
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
-    storage.getItem(TYPE, null);
+    storage.getItem(TYPE, (String) null);
   }
 
   @Test

@@ -12,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.EmptyStorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.VariationStorage;
 
@@ -57,12 +56,10 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
     return col;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
-  public <T extends Entity> T getItem(Class<T> type, String id) throws VariationException, IOException {
+  public <T extends Entity> T getItem(Class<T> type, String id) throws IOException {
     DBObject query = queries.selectById(id);
-    DBObject item = getDBCollection(type).findOne(query);
-    return (T) reducer.reduceDBObject((Class<? extends DomainEntity>) type, item);
+    return getItem(type, query);
   }
 
   @Override
@@ -86,8 +83,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   @Override
   public <T extends Entity> StorageIterator<T> getAllByType(Class<T> type) {
     DBObject query = queries.selectAll();
-    DBCursor cursor = getDBCollection(type).find(query);
-    return (cursor != null) ? new MongoDBVariationIterator<T>(cursor, reducer, type) : new EmptyStorageIterator<T>();
+    return getItems(type, query);
   }
 
   @Override
@@ -195,20 +191,15 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public boolean relationExists(Relation relation) {
-    DBCollection col = db.getCollection("relation");
-    BasicDBObject query = new BasicDBObject();
-    query.append("^typeId", relation.getTypeId());
-    query.append("^sourceId", relation.getSourceId());
-    query.append("^targetId", relation.getTargetId());
-    return (col.count(query) != 0);
+  public boolean relationExists(Relation relation) throws IOException {
+    DBObject query = queries.selectRelation(relation);
+    return getItem(Relation.class, query) != null;
   }
 
   @Override
   public StorageIterator<Relation> getRelationsOf(Class<? extends DomainEntity> type, String id) throws IOException {
     DBObject query = DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id));
-    DBCursor cursor = getDBCollection(Relation.class).find(query);
-    return new MongoDBVariationIterator<Relation>(cursor, reducer, Relation.class);
+    return getItems(Relation.class, query);
   }
 
   // We retrieve all relations involving the specified entity by its id.
@@ -245,7 +236,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
         }
       }
     } catch (IOException e) {
-      LOG.error("Error while handling {} {}", type.getName(), id);
+      LOG.error("Error while handling {} {}", type.getSimpleName(), id);
     } finally {
       if (iterator != null) {
         iterator.close();
@@ -276,7 +267,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
         list.add((String) cursor.next().get("_id"));
       }
     } catch (MongoException e) {
-      LOG.error("Error while retrieving objects without pid of type {}", type);
+      LOG.error("Error while retrieving objects without pid of type {}", type.getSimpleName());
       throw new IOException(e);
     }
 
@@ -310,7 +301,7 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
       query.put(DomainEntity.PID, null);
       getDBCollection(type).remove(query);
     } catch (MongoException e) {
-      LOG.error("Error while removing entities of type '{}'", type);
+      LOG.error("Error while removing entities of type {}", type.getSimpleName());
       throw new IOException(e);
     }
   }

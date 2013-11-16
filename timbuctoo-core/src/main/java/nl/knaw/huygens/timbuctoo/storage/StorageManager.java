@@ -224,7 +224,12 @@ public class StorageManager {
   }
 
   public boolean relationExists(Relation relation) {
-    return storage.relationExists(relation);
+    try {
+      return storage.relationExists(relation);
+    } catch (IOException e) {
+      LOG.error("Error while retrieving relation");
+      return false;
+    }
   }
 
 }
