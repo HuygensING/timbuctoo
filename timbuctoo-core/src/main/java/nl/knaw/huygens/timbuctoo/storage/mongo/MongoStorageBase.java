@@ -104,7 +104,7 @@ public class MongoStorageBase implements BasicStorage {
 
   protected <T extends Entity> StorageIterator<T> getItems(Class<T> type, DBObject query) {
     DBCursor cursor = getDBCollection(type).find(query);
-    return (cursor != null) ? new MongoDBVariationIterator<T>(type, cursor, reducer) : new EmptyStorageIterator<T>();
+    return (cursor != null) ? new MongoStorageIterator<T>(type, cursor, reducer) : new EmptyStorageIterator<T>();
   }
 
   public <T extends Entity> long count(Class<T> type) {
