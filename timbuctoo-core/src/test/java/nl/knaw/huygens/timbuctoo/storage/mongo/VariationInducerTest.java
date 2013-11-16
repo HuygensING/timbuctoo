@@ -77,9 +77,7 @@ public class VariationInducerTest extends VariationTestBase {
     doc.setTestValue1(testValue1);
     doc.setTestValue2(testValue2);
 
-    JsonNode actual = inducer.induce(TestSystemEntity.class, doc);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, inducer.induce(TestSystemEntity.class, doc));
   }
 
   @Test
@@ -92,9 +90,7 @@ public class VariationInducerTest extends VariationTestBase {
     doc.setId(TEST_SYSTEM_ID);
     doc.setTestValue1(testValue1);
 
-    JsonNode actual = inducer.induce(TestSystemEntity.class, doc);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, inducer.induce(TestSystemEntity.class, doc));
   }
 
   @Test
@@ -112,9 +108,7 @@ public class VariationInducerTest extends VariationTestBase {
     item.setTestValue1(testValue1);
     item.setTestValue2(testValue2);
 
-    JsonNode actual = inducer.induce(TestSystemEntity.class, item, existingObject);
-
-    assertEquals(expectedObject, actual);
+    assertEquals(expectedObject, inducer.induce(TestSystemEntity.class, item, existingObject));
   }
 
   @Test
@@ -129,16 +123,13 @@ public class VariationInducerTest extends VariationTestBase {
     DatableSystemEntity item = new DatableSystemEntity();
     item.setTestDatable(datable);
 
-    JsonNode actual = inducer.induce(DatableSystemEntity.class, item);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, inducer.induce(DatableSystemEntity.class, item));
   }
 
   @Test
   public void testInduceDomainEntityPrimitive() throws VariationException {
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test_pid", "testDocValue");
     expectedMap.put("testconcretedoc.name", "test");
-
     JsonNode expected = mapper.valueToTree(expectedMap);
 
     GeneralTestDoc item = new GeneralTestDoc();
@@ -147,9 +138,7 @@ public class VariationInducerTest extends VariationTestBase {
     item.setPid("test_pid");
     item.setId(DEFAULT_DOMAIN_ID);
 
-    JsonNode actual = inducer.induce(GeneralTestDoc.class, item);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, inducer.induce(GeneralTestDoc.class, item));
   }
 
   @Ignore("#1896")
@@ -167,9 +156,7 @@ public class VariationInducerTest extends VariationTestBase {
     item.setPid(DEFAULT_PID);
     item.setId(DEFAULT_DOMAIN_ID);
 
-    JsonNode actual = inducer.induce(TestConcreteDoc.class, item, node);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, inducer.induce(TestConcreteDoc.class, item, node));
   }
 
   @Ignore("#1896")
@@ -189,9 +176,7 @@ public class VariationInducerTest extends VariationTestBase {
     item.setPid("test_pid");
     item.setId(DEFAULT_DOMAIN_ID);
 
-    JsonNode actual = inducer.induce(GeneralTestDoc.class, item, node);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, inducer.induce(GeneralTestDoc.class, item, node));
   }
 
   @Test
@@ -206,12 +191,9 @@ public class VariationInducerTest extends VariationTestBase {
 
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test");
     expectedMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
-
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, item));
   }
 
   @Test
@@ -228,8 +210,7 @@ public class VariationInducerTest extends VariationTestBase {
     expectedMap.put("^deleted", false);
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    JsonNode actual = inducer.induce(ProjectATestDocWithPersonName.class, item);
-    assertEquals(expected, actual);
+    assertEquals(expected, inducer.induce(ProjectATestDocWithPersonName.class, item));
   }
 
   @Test
@@ -243,13 +224,9 @@ public class VariationInducerTest extends VariationTestBase {
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test");
     expectedMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
     expectedMap.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
-
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    JsonNode actual = inducer.induce(ProjectBGeneralTestDoc.class, item, existing);
-
-    assertEquals(expected, actual);
-
+    assertEquals(expected, inducer.induce(ProjectBGeneralTestDoc.class, item, existing));
   }
 
   @Test
@@ -265,12 +242,9 @@ public class VariationInducerTest extends VariationTestBase {
     expectedMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
     expectedMap.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
     expectedMap.put("projectbgeneraltestdoc.generalTestDocValue", "projectbTestDoc");
-
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    JsonNode actual = inducer.induce(ProjectBGeneralTestDoc.class, item, existing);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, inducer.induce(ProjectBGeneralTestDoc.class, item, existing));
   }
 
   /*
@@ -298,12 +272,9 @@ public class VariationInducerTest extends VariationTestBase {
     expectedMap.put("projectageneraltestdoc.generalTestDocValue", "test1A");
     expectedMap.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
     expectedMap.put("projectbgeneraltestdoc.generalTestDocValue", "projectbTestDoc");
-
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item, existingItem);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, item, existingItem));
   }
 
   /* 
@@ -330,12 +301,9 @@ public class VariationInducerTest extends VariationTestBase {
     expectedMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
     expectedMap.put("projectageneraltestdoc.generalTestDocValue", "test1A");
     expectedMap.put("projectbgeneraltestdoc.generalTestDocValue", "projectbTestDoc");
-
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item, existingItem);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, item, existingItem));
   }
 
   @Test
@@ -357,12 +325,9 @@ public class VariationInducerTest extends VariationTestBase {
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "testB");
     expectedMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
     expectedMap.put("projectbgeneraltestdoc.generalTestDocValue", "projectbTestDoc");
-
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item, existingItem);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, item, existingItem));
   }
 
   @Test
@@ -385,12 +350,9 @@ public class VariationInducerTest extends VariationTestBase {
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "testB");
     expectedMap.put("projectageneraltestdoc.projectAGeneralTestDocValue", "projectatest");
     expectedMap.put("projectbgeneraltestdoc.generalTestDocValue", "projectbTestDoc");
-
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item, existingItem);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, item, existingItem));
   }
 
   @Test
@@ -408,13 +370,9 @@ public class VariationInducerTest extends VariationTestBase {
     expectedMap.put("projectbgeneraltestdoc.projectBGeneralTestDocValue", "testB");
     expectedMap.put("projectbtestrole.beeName", "beeName");
     expectedMap.put("testrole.roleName", "roleName");
-
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    JsonNode actual = inducer.induce(ProjectBGeneralTestDoc.class, item);
-
-    assertEquals(expected, actual);
-
+    assertEquals(expected, inducer.induce(ProjectBGeneralTestDoc.class, item));
   }
 
   @Test
@@ -442,10 +400,7 @@ public class VariationInducerTest extends VariationTestBase {
     expectedMap.put("testrole.roleName", "roleName");
     ObjectNode expected = mapper.valueToTree(expectedMap);
 
-    JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item, existing);
-
-    assertEquals(expected, actual);
-
+    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, item, existing));
   }
 
   @Test
@@ -483,9 +438,7 @@ public class VariationInducerTest extends VariationTestBase {
     expectedMap.put("testrole.roleName", "roleName");
     ObjectNode expected = mapper.valueToTree(expectedMap);
 
-    JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item, existing);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, item, existing));
   }
 
   @Test
@@ -523,9 +476,7 @@ public class VariationInducerTest extends VariationTestBase {
     expectedMap.put("testrole.roleName", "roleName");
     ObjectNode expected = mapper.valueToTree(expectedMap);
 
-    JsonNode actual = inducer.induce(ProjectAGeneralTestDoc.class, item, existing);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, item, existing));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -542,4 +493,5 @@ public class VariationInducerTest extends VariationTestBase {
   protected ObjectMapper getMapper() {
     return this.mapper;
   }
+
 }
