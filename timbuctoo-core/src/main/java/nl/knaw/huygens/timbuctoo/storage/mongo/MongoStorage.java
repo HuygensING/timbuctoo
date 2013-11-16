@@ -5,6 +5,7 @@ import java.io.IOException;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
+import nl.knaw.huygens.timbuctoo.storage.EmptyStorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 import org.mongojack.DBCursor;
@@ -32,7 +33,7 @@ public class MongoStorage extends MongoStorageBase implements BasicStorage {
   @Override
   public <T extends Entity> StorageIterator<T> getAllByType(Class<T> type) {
     DBCursor<T> cursor = getCollection(type).find();
-    return new MongoDBIterator<T>(cursor);
+    return (cursor != null) ? new MongoDBIterator<T>(cursor) : new EmptyStorageIterator<T>();
   }
 
   // -------------------------------------------------------------------

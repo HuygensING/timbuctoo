@@ -281,19 +281,17 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllByType() throws IOException {
+    DBObject query = queries.selectAll();
     DBCursor cursor = createCursorWithoutValues();
-
-    when(anyCollection.find()).thenReturn(cursor);
+    when(anyCollection.find(query)).thenReturn(cursor);
 
     storage.getAllByType(ProjectBGeneralTestDoc.class);
-
-    verify(anyCollection).find();
+    verify(anyCollection).find(query);
   }
 
   @Test
   public void testGetAllRevisions() throws IOException {
     storage.getAllRevisions(TestConcreteDoc.class, DEFAULT_ID);
-
     verify(anyCollection).findOne(new BasicDBObject("_id", DEFAULT_ID));
   }
 
