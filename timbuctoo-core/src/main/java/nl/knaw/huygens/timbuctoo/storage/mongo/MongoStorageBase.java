@@ -34,7 +34,7 @@ import com.mongodb.util.JSON;
 /**
  * Implementation base for Mongo storage classes.
  */
-public abstract class MongoStorageBase implements BasicStorage {
+public class MongoStorageBase implements BasicStorage {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoStorageBase.class);
 

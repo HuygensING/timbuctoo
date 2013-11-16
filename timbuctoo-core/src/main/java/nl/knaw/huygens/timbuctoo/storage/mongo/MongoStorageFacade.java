@@ -40,7 +40,7 @@ public class MongoStorageFacade implements VariationStorage {
   private final Mongo mongo;
   private final String dbName;
   private DB db;
-  private final MongoStorage plainStorage;
+  private final MongoStorageBase plainStorage;
   private final MongoVariationStorage variationStorage;
 
   @Inject
@@ -61,7 +61,7 @@ public class MongoStorageFacade implements VariationStorage {
       db.authenticate(user, password.toCharArray());
     }
 
-    plainStorage = new MongoStorage(registry, mongo, db, dbName);
+    plainStorage = new MongoStorageBase(registry, mongo, db, dbName);
     variationStorage = new MongoVariationStorage(registry, mongo, db, dbName);
     variationStorage.createIndexes();
   }
