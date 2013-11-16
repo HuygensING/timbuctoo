@@ -13,14 +13,14 @@ import com.google.common.collect.Lists;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
-class MongoDBVariationIterator<T extends Entity> implements StorageIterator<T> {
+class MongoStorageIterator<T extends Entity> implements StorageIterator<T> {
 
   private final Class<T> type;
   private final DBCursor delegate;
   private final VariationReducer reducer;
   private boolean closed;
 
-  public MongoDBVariationIterator(Class<T> type, DBCursor delegate, VariationReducer reducer) {
+  public MongoStorageIterator(Class<T> type, DBCursor delegate, VariationReducer reducer) {
     this.type = type;
     this.delegate = Preconditions.checkNotNull(delegate);
     this.reducer = reducer;
