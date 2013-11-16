@@ -16,17 +16,20 @@ import nl.knaw.huygens.timbuctoo.storage.EmptyStorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
+import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
+import com.mongodb.util.JSON;
 
 /**
  * Implementation base for Mongo storage classes.
@@ -107,6 +110,54 @@ public abstract class MongoStorageBase implements BasicStorage {
   public <T extends Entity> long count(Class<T> type) {
     Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
     return getCollection(baseType).count();
+  }
+
+  // -------------------------------------------------------------------
+
+  @Override
+  public <T extends Entity> T getItem(Class<T> type, String id) throws IOException {
+    return getCollection(type).findOneById(id);
+  }
+
+  @Override
+  public <T extends Entity> StorageIterator<T> getAllByType(Class<T> type) {
+    org.mongojack.DBCursor<T> cursor = getCollection(type).find();
+    return (cursor != null) ? new MongoDBIterator<T>(cursor) : new EmptyStorageIterator<T>();
+  }
+
+  @Override
+  public <T extends Entity> String addItem(Class<T> type, T item) throws IOException {
+    item.setCreation(item.getLastChange());
+    if (item.getId() == null) {
+      setNextId(type, item);
+    }
+    getCollection(type).insert(item);
+    return item.getId();
+  }
+
+  @Override
+  public <T extends Entity> void updateItem(Class<T> type, String id, T item) throws IOException {
+    JacksonDBCollection<T, String> col = getCollection(type);
+
+    int oldRev = item.getRev();
+    item.setRev(oldRev + 1);
+
+    BasicDBObject query = new BasicDBObject("_id", id);
+    query.put("^rev", oldRev);
+
+    T oldItemWithCreation = col.findOne(query);
+    if (oldItemWithCreation != null) {
+      item.setCreation(oldItemWithCreation.getCreation());
+    }
+
+    String objectString = new ObjectMapper().writeValueAsString(item);
+
+    DBObject newItem = (DBObject) JSON.parse(objectString);
+
+    T oldItem = col.findAndModify(DBQuery.is("_id", id).is("^rev", oldRev), newItem);
+    if (oldItem == null) {
+      throw new IOException("The entity was modified since you loaded it!");
+    }
   }
 
   // --- system entities -----------------------------------------------
