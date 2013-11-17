@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.lang.reflect.Field;
@@ -8,9 +9,6 @@ import java.lang.reflect.Modifier;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNameGenerator;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
@@ -29,16 +27,23 @@ public class FieldMapper {
 
   /** Returns the name of a key from its parts. */
   public static String propertyName(String prefix, String field) {
-    return prefix + SEPARATOR + field;
+    checkArgument(field != null && field.length() != 0);
+
+    StringBuilder builder = new StringBuilder();
+    if (Character.isLetter(field.charAt(0))) {
+      builder.append(prefix).append(SEPARATOR_CHAR);
+    }
+    builder.append(field);
+    return builder.toString();
   }
 
   /** Returns the name of a key from its parts. */
   public static String propertyName(Class<?> type, String field) {
-    return TypeNameGenerator.getInternalName(type) + SEPARATOR + field;
+    return propertyName(TypeNameGenerator.getInternalName(type), field);
   }
 
   private static final String GET_ACCESSOR = "get";
-  private static final String IS_ACCESSOR = "is"; //get accesor for booleans.
+  private static final String IS_ACCESSOR = "is"; // get accesor for booleans.
 
   /**
    * Generates a field map with for the {@code type} with object fields as keys and database fields as values.
@@ -85,24 +90,16 @@ public class FieldMapper {
    */
   public String getFieldName(Class<?> type, Field field) {
     JsonProperty annotation = field.getAnnotation(JsonProperty.class);
-
     if (annotation != null) {
-      return getPrefixedFieldName(type, annotation.value());
+      return propertyName(type, annotation.value());
     }
 
     Method method = getMethodOfField(type, field);
-
     if (method != null && method.getAnnotation(JsonProperty.class) != null) {
-      return getPrefixedFieldName(type, method.getAnnotation(JsonProperty.class).value());
+      return propertyName(type, method.getAnnotation(JsonProperty.class).value());
     }
-    return getPrefixedFieldName(type, field.getName());
-  }
 
-  private String getPrefixedFieldName(Class<?> type, String fieldName) {
-    if (type == Entity.class || type == DomainEntity.class || type == SystemEntity.class) {
-      return fieldName;
-    }
-    return propertyName(type, fieldName);
+    return propertyName(type, field.getName());
   }
 
   private Method getMethodOfField(Class<?> type, Field field) {
