@@ -10,7 +10,9 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.MongoObjectMapperEntity;
+import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.model.User;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +31,51 @@ public class FieldMapperTest {
   }
 
   @Test
+  public void testPropertyNameForEntity() {
+    assertEquals("_x", propertyName(Entity.class, "_x"));
+    assertEquals("^x", propertyName(Entity.class, "^x"));
+    assertEquals("!x", propertyName(Entity.class, "!x"));
+    assertEquals("@x", propertyName(Entity.class, "@x"));
+    assertEquals("entity" + FieldMapper.SEPARATOR + "xx", propertyName(Entity.class, "xx"));
+  }
+
+  @Test
+  public void testPropertyNameForSystemEntity() {
+    assertEquals("_x", propertyName(SystemEntity.class, "_x"));
+    assertEquals("^x", propertyName(SystemEntity.class, "^x"));
+    assertEquals("!x", propertyName(SystemEntity.class, "!x"));
+    assertEquals("@x", propertyName(SystemEntity.class, "@x"));
+    assertEquals("systementity" + FieldMapper.SEPARATOR + "xx", propertyName(SystemEntity.class, "xx"));
+  }
+
+  @Test
+  public void testPropertyNameForDomainEntity() {
+    assertEquals("_x", propertyName(DomainEntity.class, "_x"));
+    assertEquals("^x", propertyName(DomainEntity.class, "^x"));
+    assertEquals("!x", propertyName(DomainEntity.class, "!x"));
+    assertEquals("@x", propertyName(DomainEntity.class, "@x"));
+    assertEquals("domainentity" + FieldMapper.SEPARATOR + "xx", propertyName(DomainEntity.class, "xx"));
+  }
+
+  @Test
+  public void testPropertyNameForUser() {
+    assertEquals("_x", propertyName(User.class, "_x"));
+    assertEquals("^x", propertyName(User.class, "^x"));
+    assertEquals("!x", propertyName(User.class, "!x"));
+    assertEquals("@x", propertyName(User.class, "@x"));
+    assertEquals("user" + FieldMapper.SEPARATOR + "xx", propertyName(User.class, "xx"));
+  }
+
+  @Test
+  public void testPropertyNameForPerson() {
+    assertEquals("_x", propertyName(Person.class, "_x"));
+    assertEquals("^x", propertyName(Person.class, "^x"));
+    assertEquals("!x", propertyName(Person.class, "!x"));
+    assertEquals("@x", propertyName(Person.class, "@x"));
+    assertEquals("person" + FieldMapper.SEPARATOR + "xx", propertyName(Person.class, "xx"));
+  }
+
+  @Test
   public void testGetFieldMap() {
     Map<String, String> expected = Maps.newHashMap();
     expected.put("primitiveTestCollection", propertyName(TYPE, "primitiveTestCollection"));
@@ -42,37 +89,6 @@ public class FieldMapperTest {
     expected.put("personName", propertyName(TYPE, "personName"));
 
     assertEquals(expected, instance.getFieldMap(TYPE));
-  }
-
-  @Test
-  public void testGetFieldMapDomainEntity() {
-    Map<String, String> expected = Maps.newHashMap();
-    expected.put("pid", DomainEntity.PID);
-    expected.put("relations", "@relations");
-    expected.put("variations", "@variations");
-    expected.put("currentVariation", "!currentVariation");
-    expected.put("roles", "roles");
-
-    assertEquals(expected, instance.getFieldMap(DomainEntity.class));
-  }
-
-  @Test
-  public void testGetFieldMapSystemEntity() {
-    Map<String, String> expected = Maps.newHashMap();
-
-    assertEquals(expected, instance.getFieldMap(SystemEntity.class));
-  }
-
-  @Test
-  public void testGetFieldMapEntity() {
-    Map<String, String> expected = Maps.newHashMap();
-    expected.put("id", "_id");
-    expected.put("rev", "^rev");
-    expected.put("deleted", "^deleted");
-    expected.put("creation", "^creation");
-    expected.put("lastChange", "^lastChange");
-
-    assertEquals(expected, instance.getFieldMap(Entity.class));
   }
 
   @Test
