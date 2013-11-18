@@ -12,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
 import nl.knaw.huygens.timbuctoo.storage.RevisionChanges;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.VariationStorage;
@@ -28,10 +27,6 @@ import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
-/**
- * Delegates storage operation to plain storage or variation storage.
- * Variation storage is used for all domain entities.
- */
 @Singleton
 public class MongoStorageFacade implements VariationStorage {
 
@@ -40,8 +35,7 @@ public class MongoStorageFacade implements VariationStorage {
   private final Mongo mongo;
   private final String dbName;
   private DB db;
-  private final MongoStorageBase plainStorage;
-  private final MongoVariationStorage variationStorage;
+  private final MongoStorageBase storage;
 
   @Inject
   public MongoStorageFacade(TypeRegistry registry, Configuration config) throws UnknownHostException, MongoException {
@@ -61,9 +55,8 @@ public class MongoStorageFacade implements VariationStorage {
       db.authenticate(user, password.toCharArray());
     }
 
-    plainStorage = new MongoStorageBase(registry, mongo, db, dbName);
-    variationStorage = new MongoVariationStorage(registry, mongo, db, dbName);
-    variationStorage.createIndexes();
+    storage = new MongoStorageBase(registry, mongo, db, dbName);
+    storage.createIndexes();
   }
 
   @Override
@@ -71,9 +64,8 @@ public class MongoStorageFacade implements VariationStorage {
     db.cleanCursors(true);
     mongo.dropDatabase(dbName);
     db = mongo.getDB(dbName);
-    plainStorage.resetDB(db);
-    variationStorage.resetDB(db);
-    variationStorage.createIndexes();
+    storage.resetDB(db);
+    storage.createIndexes();
   }
 
   @Override
@@ -85,80 +77,74 @@ public class MongoStorageFacade implements VariationStorage {
 
   // -------------------------------------------------------------------
 
-  private BasicStorage getStorageFor(Class<? extends Entity> type) {
-    return DomainEntity.class.isAssignableFrom(type) ? variationStorage : plainStorage;
-  }
-
   @Override
   public <T extends Entity> T getItem(Class<T> type, String id) throws IOException {
-    return getStorageFor(type).getItem(type, id);
+    return storage.getItem(type, id);
   }
 
   @Override
   public <T extends Entity> StorageIterator<T> getAllByType(Class<T> type) {
-    return getStorageFor(type).getAllByType(type);
+    return storage.getAllByType(type);
   }
 
   @Override
   public <T extends Entity> long count(Class<T> type) {
-    return getStorageFor(type).count(type);
+    return storage.count(type);
   }
 
   @Override
   public <T extends SystemEntity> T findItemByKey(Class<T> type, String key, String value) throws IOException {
-    return getStorageFor(type).findItemByKey(type, key, value);
+    return storage.findItemByKey(type, key, value);
   }
 
   @Override
   public <T extends SystemEntity> T findItem(Class<T> type, T item) throws IOException {
-    return getStorageFor(type).findItem(type, item);
+    return storage.findItem(type, item);
   }
 
   @Override
   public <T extends Entity> String addItem(Class<T> type, T item) throws IOException {
-    return getStorageFor(type).addItem(type, item);
+    return storage.addItem(type, item);
   }
 
   @Override
   public <T extends Entity> void updateItem(Class<T> type, String id, T item) throws IOException {
-    getStorageFor(type).updateItem(type, id, item);
+    storage.updateItem(type, id, item);
   }
 
   @Override
   public <T extends DomainEntity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
-    variationStorage.deleteItem(type, id, change);
+    storage.deleteItem(type, id, change);
   }
 
   @Override
   public <T extends DomainEntity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
-    return variationStorage.getAllRevisions(type, id);
+    return storage.getAllRevisions(type, id);
   }
 
   @Override
   public <T extends SystemEntity> void removeItem(Class<T> type, String id) throws IOException {
-    getStorageFor(type).removeItem(type, id);
+    storage.removeItem(type, id);
   }
 
   @Override
   public <T extends SystemEntity> int removeAll(Class<T> type) {
-    return getStorageFor(type).removeAll(type);
+    return storage.removeAll(type);
   }
 
   @Override
   public <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
-    return getStorageFor(type).removeByDate(type, dateField, dateValue);
+    return storage.removeByDate(type, dateField, dateValue);
   }
-
-  // -------------------------------------------------------------------
 
   @Override
   public <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) throws IOException {
-    return variationStorage.getVariation(type, id, variation);
+    return storage.getVariation(type, id, variation);
   }
 
   @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws IOException {
-    return variationStorage.getAllVariations(type, id);
+    return storage.getAllVariations(type, id);
   }
 
   @Override
@@ -168,37 +154,37 @@ public class MongoStorageFacade implements VariationStorage {
 
   @Override
   public boolean relationExists(Relation relation) throws IOException {
-    return variationStorage.relationExists(relation);
+    return storage.relationExists(relation);
   }
 
   @Override
   public StorageIterator<Relation> getRelationsOf(Class<? extends DomainEntity> type, String id) throws IOException {
-    return variationStorage.getRelationsOf(type, id);
+    return storage.getRelationsOf(type, id);
   }
 
   @Override
   public void addRelationsTo(Class<? extends DomainEntity> type, String id, DomainEntity entity) {
-    variationStorage.addRelationsTo(type, id, entity);
+    storage.addRelationsTo(type, id, entity);
   }
 
   @Override
   public <T extends DomainEntity> void setPID(Class<T> cls, String id, String pid) {
-    variationStorage.setPID(cls, id, pid);
+    storage.setPID(cls, id, pid);
   }
 
   @Override
   public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
-    return variationStorage.getAllIdsWithoutPIDOfType(type);
+    return storage.getAllIdsWithoutPIDOfType(type);
   }
 
   @Override
   public List<String> getRelationIds(List<String> ids) throws IOException {
-    return variationStorage.getRelationIds(ids);
+    return storage.getRelationIds(ids);
   }
 
   @Override
   public <T extends DomainEntity> void removeNonPersistent(Class<T> type, List<String> ids) throws IOException {
-    variationStorage.removeNonPersistent(type, ids);
+    storage.removeNonPersistent(type, ids);
   }
 
 }

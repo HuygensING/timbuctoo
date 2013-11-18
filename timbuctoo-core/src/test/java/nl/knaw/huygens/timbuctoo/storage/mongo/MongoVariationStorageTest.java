@@ -47,7 +47,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   private static TypeRegistry registry;
 
-  private MongoVariationStorage storage;
+  private MongoStorageBase storage;
 
   @BeforeClass
   public static void setupTypeRegistry() {
@@ -56,7 +56,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Override
   protected void setupStorage() throws UnknownHostException, MongoException {
-    storage = new MongoVariationStorage(registry, mongo, db, DB_NAME);
+    storage = new MongoStorageBase(registry, mongo, db, DB_NAME);
     storage.setEntityIds(entityIds);
   }
 
