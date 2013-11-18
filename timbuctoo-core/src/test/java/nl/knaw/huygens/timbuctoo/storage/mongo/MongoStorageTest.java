@@ -29,8 +29,7 @@ import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 
 /**
- * These unit tests all only check the interaction with the Mongo database. 
- *
+ * These unit tests all only check the interaction with the Mongo database.
  */
 public class MongoStorageTest extends MongoStorageTestBase {
 
@@ -49,7 +48,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Override
   protected void setupStorage() {
-    storage = new MongoStorage(registry, mongo, db, DB_NAME, entityIds);
+    storage = new MongoStorage(registry, mongo, db, entityIds);
   }
 
   @Test

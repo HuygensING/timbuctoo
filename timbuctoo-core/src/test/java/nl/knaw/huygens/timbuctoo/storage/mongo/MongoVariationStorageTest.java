@@ -56,7 +56,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Override
   protected void setupStorage() throws UnknownHostException, MongoException {
-    storage = new MongoStorage(registry, mongo, db, DB_NAME, entityIds);
+    storage = new MongoStorage(registry, mongo, db, entityIds);
   }
 
   @Test
