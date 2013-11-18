@@ -28,76 +28,76 @@ public class StorageManagerTest {
 
   private Configuration config;
   private Storage storage;
-  private StorageManager instance;
+  private StorageManager manager;
 
   @Before
   public void setup() {
     config = mock(Configuration.class);
     storage = mock(Storage.class);
-    instance = new StorageManager(config, storage);
+    manager = new StorageManager(config, storage);
   }
 
   @Test
   public void testGetEntity() throws IOException {
-    instance.getEntity(GeneralTestDoc.class, "id");
+    manager.getEntity(GeneralTestDoc.class, "id");
     verify(storage).getItem(GeneralTestDoc.class, "id");
   }
 
   @Test
   public void testFindEntityByKey() throws IOException {
-    instance.findEntity(TestSystemEntity.class, "key", "value");
+    manager.findEntity(TestSystemEntity.class, "key", "value");
     verify(storage).findItemByKey(TestSystemEntity.class, "key", "value");
   }
 
   @Test
   public void testFindEntity() throws IOException {
     TestSystemEntity entity = new TestSystemEntity();
-    instance.findEntity(TestSystemEntity.class, entity);
+    manager.findEntity(TestSystemEntity.class, entity);
     verify(storage).findItem(TestSystemEntity.class, entity);
   }
 
   @Test
-  public void testGetCompleteVariation() throws IOException {
-    instance.getCompleteVariation(GeneralTestDoc.class, "id", "variation");
+  public void testGetVariation() throws IOException {
+    manager.getVariation(GeneralTestDoc.class, "id", "variation");
     verify(storage).getVariation(GeneralTestDoc.class, "id", "variation");
   }
 
   @Test
   public void testGetAllVariations() throws IOException {
-    instance.getAllVariations(GeneralTestDoc.class, "id");
+    manager.getAllVariations(GeneralTestDoc.class, "id");
     verify(storage).getAllVariations(GeneralTestDoc.class, "id");
   }
 
   @Test
-  public void testGetAll() throws IOException {
-    instance.getAll(GeneralTestDoc.class);
+  public void testGetAll() {
+    manager.getAll(GeneralTestDoc.class);
     verify(storage).getAllByType(GeneralTestDoc.class);
   }
 
   @Test
   public void testGetVersions() throws IOException {
-    instance.getVersions(GeneralTestDoc.class, "id");
+    manager.getVersions(GeneralTestDoc.class, "id");
     verify(storage).getAllRevisions(GeneralTestDoc.class, "id");
   }
 
   @Test
   public void testAddEntity() throws IOException {
     GeneralTestDoc entity = new GeneralTestDoc();
-    instance.addEntity(GeneralTestDoc.class, entity);
+    manager.addEntity(GeneralTestDoc.class, entity);
     verify(storage).addItem(GeneralTestDoc.class, entity);
   }
 
   @Test
   public void testModifyEntity() throws IOException {
     TestConcreteDoc entity = new TestConcreteDoc("id");
-    instance.modifyEntity(TestConcreteDoc.class, entity);
+    manager.modifyEntity(TestConcreteDoc.class, entity);
     verify(storage).updateItem(TestConcreteDoc.class, "id", entity);
   }
 
   @Test
   public void testRemoveSystemEntity() throws IOException {
     TestSystemEntity entity = new TestSystemEntity("id");
-    instance.removeEntity(entity);
+    manager.removeEntity(entity);
     verify(storage).removeItem(TestSystemEntity.class, "id");
   }
 
@@ -106,39 +106,39 @@ public class StorageManagerTest {
     TestConcreteDoc entity = new TestConcreteDoc("id");
     Change change = new Change();
     entity.setLastChange(change);
-    instance.removeEntity(entity);
+    manager.removeEntity(entity);
     verify(storage).deleteItem(TestConcreteDoc.class, "id", change);
   }
 
   @Test
-  public void testRemoveAllSearchResults() throws IOException {
-    instance.removeAllSearchResults();
+  public void testRemoveAllSearchResults() {
+    manager.removeAllSearchResults();
     verify(storage).removeAll(SearchResult.class);
   }
 
   @Test
-  public void testRemoveSearchResultsBefore() throws IOException {
+  public void testRemoveSearchResultsBefore() {
     Date date = new Date();
-    instance.removeSearchResultsBefore(date);
+    manager.removeSearchResultsBefore(date);
     verify(storage).removeByDate(SearchResult.class, "date", date);
   }
 
   @Test
-  public void testSetPID() throws IOException {
-    instance.setPID(TestConcreteDoc.class, "id", "pid");
+  public void testSetPID() {
+    manager.setPID(TestConcreteDoc.class, "id", "pid");
     verify(storage).setPID(TestConcreteDoc.class, "id", "pid");
   }
 
   @Test
   public void testRemoveNonPersistent() throws IOException {
     ArrayList<String> ids = Lists.newArrayList("id1", "id2", "id3");
-    instance.removeNonPersistent(GeneralTestDoc.class, ids);
+    manager.removeNonPersistent(GeneralTestDoc.class, ids);
     verify(storage).removeNonPersistent(GeneralTestDoc.class, ids);
   }
 
   @Test
   public void testGetAllIdsWithoutPIDOfType() throws IOException {
-    instance.getAllIdsWithoutPIDOfType(GeneralTestDoc.class);
+    manager.getAllIdsWithoutPIDOfType(GeneralTestDoc.class);
     verify(storage).getAllIdsWithoutPIDOfType(GeneralTestDoc.class);
   }
 
@@ -160,13 +160,13 @@ public class StorageManagerTest {
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     when(storage.getAllByType(type)).thenReturn(iterator);
 
-    List<TestConcreteDoc> actualList = instance.getAllLimited(type, 0, 3);
+    List<TestConcreteDoc> actualList = manager.getAllLimited(type, 0, 3);
     assertEquals(3, actualList.size());
   }
 
   @Test
   public void testGetAllLimitedLimitIsZero() {
-    List<TestConcreteDoc> list = instance.getAllLimited(TestConcreteDoc.class, 3, 0);
+    List<TestConcreteDoc> list = manager.getAllLimited(TestConcreteDoc.class, 3, 0);
     assertTrue(list.isEmpty());
   }
 
