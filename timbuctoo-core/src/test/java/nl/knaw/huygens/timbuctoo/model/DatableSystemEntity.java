@@ -33,7 +33,6 @@ public class DatableSystemEntity extends SystemEntity {
     boolean isEqual = true;
     isEqual &= Objects.equal(other.testDatable, testDatable);
     isEqual &= Objects.equal(other.getRev(), getRev());
-    isEqual &= Objects.equal(other.isDeleted(), isDeleted());
 
     return isEqual;
   }
@@ -44,10 +43,8 @@ public class DatableSystemEntity extends SystemEntity {
     sb.append(testDatable);
     sb.append("\nrev: ");
     sb.append(getRev());
-    sb.append("\ndeleted: ");
-    sb.append(isDeleted());
     sb.append("\n}");
-
     return sb.toString();
   }
+
 }

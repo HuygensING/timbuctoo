@@ -111,13 +111,11 @@ public class VariationReducerTest extends VariationTestBase {
     Datable datable = new Datable("20131011");
     map.put(propertyName(type, "testDatable"), datable.getEDTF());
     map.put("^rev", 0);
-    map.put("^deleted", false);
     ObjectNode node = mapper.valueToTree(map);
 
     DatableSystemEntity expected = new DatableSystemEntity();
     expected.setTestDatable(datable);
     expected.setRev(0);
-    expected.setDeleted(false);
 
     assertEquals(expected, reducer.reduce(type, node));
   }

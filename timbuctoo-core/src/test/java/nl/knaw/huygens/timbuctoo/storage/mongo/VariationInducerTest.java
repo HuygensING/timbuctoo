@@ -118,7 +118,6 @@ public class VariationInducerTest extends VariationTestBase {
     Datable datable = new Datable("20131011");
     expectedMap.put(propertyName("datablesystementity", "testDatable"), datable.getEDTF());
     expectedMap.put("^rev", 0);
-    expectedMap.put("^deleted", false);
     JsonNode expected = mapper.valueToTree(expectedMap);
 
     DatableSystemEntity item = new DatableSystemEntity();
