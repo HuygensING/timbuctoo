@@ -220,11 +220,6 @@ public class MongoStorageBase implements BasicStorage {
     return collection;
   }
 
-  // protected <T extends Entity> JacksonDBCollection<T, String> getCollection(Class<T> type) {
-  //   DBCollection col = db.getCollection(getCollectionName(type));
-  //   return JacksonDBCollection.wrap(col, type, String.class, JsonViews.DBView.class);
-  // }
-
   protected String getCollectionName(Class<? extends Entity> type) {
     return type.getSimpleName().toLowerCase();
   }
