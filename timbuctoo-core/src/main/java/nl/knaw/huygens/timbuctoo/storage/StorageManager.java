@@ -29,10 +29,10 @@ public class StorageManager {
   private static final Logger LOG = LoggerFactory.getLogger(StorageManager.class);
 
   private final Configuration config;
-  private final VariationStorage storage;
+  private final Storage storage;
 
   @Inject
-  public StorageManager(Configuration config, VariationStorage storage) {
+  public StorageManager(Configuration config, Storage storage) {
     this.config = config;
     this.storage = storage;
   }

@@ -14,7 +14,7 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.RevisionChanges;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.VariationStorage;
+import nl.knaw.huygens.timbuctoo.storage.Storage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,7 @@ import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
 @Singleton
-public class MongoStorageFacade implements VariationStorage {
+public class MongoStorageFacade implements Storage {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoStorageFacade.class);
 
