@@ -17,8 +17,6 @@ public interface Storage {
 
   // --- life cycle ----------------------------------------------------
 
-  void empty();
-
   /**
    * Closes the underlying storage.
    */

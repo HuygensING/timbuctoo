@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.timbuctoo.model.raa.RAACivilServant;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.tools.importer.MongoAdmin;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -23,13 +24,16 @@ public class BulkImporter {
     Configuration config = new Configuration("config.xml");
     Injector injector = Guice.createInjector(new BasicInjectionModule(config));
 
+    // TODO Remove non-persistent items only
+    MongoAdmin admin = new MongoAdmin(config);
+    admin.dropDatabase();
+
     StorageManager storageManager = null;
     IndexManager indexManager = null;
 
     try {
 
       storageManager = injector.getInstance(StorageManager.class);
-      storageManager.clear();
 
       indexManager = injector.getInstance(IndexManager.class);
       indexManager.deleteAllEntities();

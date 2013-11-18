@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import nl.knaw.huygens.timbuctoo.tools.importer.MongoAdmin;
 import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
 import nl.knaw.huygens.timbuctoo.util.Files;
 
@@ -67,6 +68,10 @@ public class DutchCaribbeanImporter extends DefaultImporter {
 
     Configuration config = new Configuration(configFileName);
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
+
+    // TODO Remove non-persistent items only
+    MongoAdmin admin = new MongoAdmin(config);
+    admin.dropDatabase();
 
     StorageManager storageManager = null;
     IndexManager indexManager = null;
@@ -147,7 +152,6 @@ public class DutchCaribbeanImporter extends DefaultImporter {
 
     displayStatus();
 
-    storageManager.clear();
     indexManager.deleteAllEntities();
 
     displayStatus();

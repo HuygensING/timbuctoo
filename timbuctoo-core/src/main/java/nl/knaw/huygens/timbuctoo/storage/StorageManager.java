@@ -44,13 +44,6 @@ public class StorageManager {
     storage.close();
   }
 
-  /**
-   * Clears the data store.
-   */
-  public void clear() {
-    storage.empty();
-  }
-
   // -------------------------------------------------------------------
 
   public StorageStatus getStatus() {

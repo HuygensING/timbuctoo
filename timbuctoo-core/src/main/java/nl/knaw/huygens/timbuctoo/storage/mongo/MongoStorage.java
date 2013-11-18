@@ -54,9 +54,9 @@ public class MongoStorage implements Storage {
   private final TypeRegistry typeRegistry;
   private final Mongo mongo;
   private final String dbName;
-  private DB db;
+  private final DB db;
+  private final EntityIds entityIds;
 
-  private EntityIds entityIds;
   private MongoObjectMapper mongoMapper;
   private MongoQueries queries;
   private ObjectMapper objectMapper;
@@ -116,15 +116,6 @@ public class MongoStorage implements Storage {
     collection.ensureIndex(new BasicDBObject("^sourceId", 1));
     collection.ensureIndex(new BasicDBObject("^targetId", 1));
     collection.ensureIndex(new BasicDBObject("^sourceId", 1).append("^targetId", 1));
-  }
-
-  @Override
-  public void empty() {
-    db.cleanCursors(true);
-    mongo.dropDatabase(dbName);
-    db = mongo.getDB(dbName);
-    createIndexes();
-    entityIds = new EntityIds(db, typeRegistry);
   }
 
   @Override
