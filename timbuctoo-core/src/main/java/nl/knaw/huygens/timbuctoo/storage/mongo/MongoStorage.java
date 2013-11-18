@@ -3,10 +3,12 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -17,8 +19,8 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EmptyStorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 import org.mongojack.DBQuery;
 import org.mongojack.internal.stream.JacksonDBObject;
@@ -29,9 +31,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -39,75 +43,94 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
+import com.mongodb.MongoOptions;
+import com.mongodb.ServerAddress;
 
-public class MongoStorageBase implements Storage {
+public class MongoStorage implements Storage {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MongoStorageBase.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MongoStorage.class);
 
-  protected final TypeRegistry typeRegistry;
-
+  private final TypeRegistry typeRegistry;
   private final Mongo mongo;
-  protected DB db;
   private final String dbName;
+  private DB db;
+
   private EntityIds entityIds;
+  private MongoObjectMapper mongoMapper;
+  private MongoQueries queries;
+  private ObjectMapper objectMapper;
+  private TreeEncoderFactory treeEncoderFactory;
+  private TreeDecoderFactory treeDecoderFactory;
+  private VariationInducer inducer;
+  private VariationReducer reducer;
 
-  protected final MongoObjectMapper mongoMapper;
-  protected final MongoQueries queries;
-
-  protected final ObjectMapper objectMapper;
-  protected final TreeEncoderFactory treeEncoderFactory;
-  protected final TreeDecoderFactory treeDecoderFactory;
-  protected final VariationInducer inducer;
-  protected final VariationReducer reducer;
-
-  public MongoStorageBase(TypeRegistry registry, Mongo mongo, DB db, String dbName) {
+  @Inject
+  public MongoStorage(TypeRegistry registry, Configuration config) throws UnknownHostException, MongoException {
     typeRegistry = registry;
+    MongoOptions options = new MongoOptions();
+    options.safe = true;
+
+    String host = config.getSetting("database.host", "localhost");
+    int port = config.getIntSetting("database.port", 27017);
+    mongo = new Mongo(new ServerAddress(host, port), options);
+
+    dbName = config.getSetting("database.name");
+    db = mongo.getDB(dbName);
+
+    String user = config.getSetting("database.user");
+    if (!user.isEmpty()) {
+      String password = config.getSetting("database.password");
+      db.authenticate(user, password.toCharArray());
+    }
+
+    entityIds = new EntityIds(db, typeRegistry);
+
+    initialize();
+    createIndexes();
+  }
+
+  @VisibleForTesting
+  MongoStorage(TypeRegistry registry, Mongo mongo, DB db, String dbName, EntityIds entityIds) {
+    this.typeRegistry = registry;
     this.mongo = mongo;
     this.db = db;
     this.dbName = dbName;
+    this.entityIds = entityIds;
 
-    entityIds = new EntityIds(db, typeRegistry);
-    queries = new MongoQueries();
+    initialize();
+  }
+
+  private void initialize() {
     mongoMapper = new MongoObjectMapper();
+    queries = new MongoQueries();
     objectMapper = new ObjectMapper();
     treeEncoderFactory = new TreeEncoderFactory(objectMapper);
     treeDecoderFactory = new TreeDecoderFactory();
-    inducer = new VariationInducer(registry);
-    reducer = new VariationReducer(registry);
+    inducer = new VariationInducer(typeRegistry);
+    reducer = new VariationReducer(typeRegistry);
   }
 
-  // --- life cycle ----------------------------------------------------
-
-  public void empty() {
-    db.cleanCursors(true);
-    mongo.dropDatabase(dbName);
-    db = mongo.getDB(dbName);
-    entityIds = new EntityIds(db, typeRegistry);
-  }
-
-  public void close() {
-    db.cleanCursors(true);
-    mongo.close();
-    LOG.info("Closed");
-  }
-
-  public DB getDB() {
-    return db;
-  }
-
-  public void resetDB(DB db) {
-    this.db = db;
-  }
-
-  public void setEntityIds(EntityIds entityIds) {
-    this.entityIds = entityIds;
-  }
-
-  public void createIndexes() {
+  private void createIndexes() {
     DBCollection collection = db.getCollection("relation");
     collection.ensureIndex(new BasicDBObject("^sourceId", 1));
     collection.ensureIndex(new BasicDBObject("^targetId", 1));
     collection.ensureIndex(new BasicDBObject("^sourceId", 1).append("^targetId", 1));
+  }
+
+  @Override
+  public void empty() {
+    db.cleanCursors(true);
+    mongo.dropDatabase(dbName);
+    db = mongo.getDB(dbName);
+    createIndexes();
+    entityIds = new EntityIds(db, typeRegistry);
+  }
+
+  @Override
+  public void close() {
+    db.cleanCursors(true);
+    mongo.close();
+    LOG.info("Closed");
   }
 
   // --- support -------------------------------------------------------
