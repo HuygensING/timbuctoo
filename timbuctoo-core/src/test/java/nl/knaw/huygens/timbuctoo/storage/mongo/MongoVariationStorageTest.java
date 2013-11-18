@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
-import static nl.knaw.huygens.timbuctoo.storage.mongo.FieldMapper.propertyName;
+import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
