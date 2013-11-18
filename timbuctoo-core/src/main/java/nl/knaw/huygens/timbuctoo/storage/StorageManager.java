@@ -111,7 +111,7 @@ public class StorageManager {
     }
   }
 
-  public <T extends DomainEntity> T getCompleteVariation(Class<T> type, String id, String variation) {
+  public <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) {
     try {
       return storage.getVariation(type, id, variation);
     } catch (Exception e) {

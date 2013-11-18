@@ -172,7 +172,7 @@ public class DomainEntityResource extends ResourceBase {
       @PathParam("variation") String variation //
   ) {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
-    return checkNotNull(storageManager.getCompleteVariation(type, id, variation), Status.NOT_FOUND);
+    return checkNotNull(storageManager.getVariation(type, id, variation), Status.NOT_FOUND);
   }
 
   // --- Message handling ----------------------------------------------

@@ -502,7 +502,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testGetDocOfVariation() {
     TestConcreteDoc expectedDoc = new TestConcreteDoc(DEFAULT_ID);
     String variation = "projecta";
-    when(getStorageManager().getCompleteVariation(TestConcreteDoc.class, DEFAULT_ID, variation)).thenReturn(expectedDoc);
+    when(getStorageManager().getVariation(TestConcreteDoc.class, DEFAULT_ID, variation)).thenReturn(expectedDoc);
 
     TestConcreteDoc actualDoc = domainResource("testconcretedocs", DEFAULT_ID).path(variation).header("Authorization", "bearer 12333322abef").get(TestConcreteDoc.class);
     assertNotNull(actualDoc);
@@ -512,7 +512,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetDocOfVariationDocDoesNotExist() {
     String variation = "projecta";
-    when(getStorageManager().getCompleteVariation(TestConcreteDoc.class, "TEST000000000002", variation)).thenReturn(null);
+    when(getStorageManager().getVariation(TestConcreteDoc.class, "TEST000000000002", variation)).thenReturn(null);
 
     ClientResponse response = domainResource("testconcretedocs", "TEST000000000002").path(variation).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
