@@ -13,23 +13,21 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.BasicStorage;
 import nl.knaw.huygens.timbuctoo.storage.EmptyStorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
-import org.mongojack.DBQuery;
-import org.mongojack.JacksonDBCollection;
+import org.mongojack.internal.stream.JacksonDBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Maps;
-import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
-import com.mongodb.util.JSON;
 
 /**
  * Implementation base for Mongo storage classes.
@@ -109,55 +107,52 @@ public class MongoStorageBase implements BasicStorage {
 
   public <T extends Entity> long count(Class<T> type) {
     Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
-    return getCollection(baseType).count();
+    return getDBCollection(baseType).count();
   }
 
   // -------------------------------------------------------------------
 
   @Override
   public <T extends Entity> T getItem(Class<T> type, String id) throws IOException {
-    return getCollection(type).findOneById(id);
+    DBObject query = queries.selectById(id);
+    return getItem(type, query);
   }
 
   @Override
   public <T extends Entity> StorageIterator<T> getAllByType(Class<T> type) {
-    org.mongojack.DBCursor<T> cursor = getCollection(type).find();
-    return (cursor != null) ? new MongoDBIterator<T>(cursor) : new EmptyStorageIterator<T>();
+    DBObject query = queries.selectAll();
+    return getItems(type, query);
   }
 
   @Override
   public <T extends Entity> String addItem(Class<T> type, T item) throws IOException {
-    item.setCreation(item.getLastChange());
     if (item.getId() == null) {
       setNextId(type, item);
     }
-    getCollection(type).insert(item);
+    JsonNode jsonNode = inducer.induce(type, item);
+    JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
+    getDBCollection(type).insert(insertedItem);
+    // if (TypeRegistry.isDomainEntity(type)) {
+    //   addInitialVersion(type, item.getId(), insertedItem);
+    // }
     return item.getId();
   }
 
   @Override
   public <T extends Entity> void updateItem(Class<T> type, String id, T item) throws IOException {
-    JacksonDBCollection<T, String> col = getCollection(type);
-
-    int oldRev = item.getRev();
-    item.setRev(oldRev + 1);
-
-    BasicDBObject query = new BasicDBObject("_id", id);
-    query.put("^rev", oldRev);
-
-    T oldItemWithCreation = col.findOne(query);
-    if (oldItemWithCreation != null) {
-      item.setCreation(oldItemWithCreation.getCreation());
+    DBObject query = queries.selectById(id);
+    query.put("^rev", item.getRev());
+    DBObject existingNode = getDBCollection(type).findOne(query);
+    if (existingNode == null) {
+      throw new IOException("No entity was found for ID " + id + " and revision " + String.valueOf(item.getRev()) + " !");
     }
-
-    String objectString = new ObjectMapper().writeValueAsString(item);
-
-    DBObject newItem = (DBObject) JSON.parse(objectString);
-
-    T oldItem = col.findAndModify(DBQuery.is("_id", id).is("^rev", oldRev), newItem);
-    if (oldItem == null) {
-      throw new IOException("The entity was modified since you loaded it!");
-    }
+    JsonNode updatedNode = inducer.induce(type, item, existingNode);
+    ((ObjectNode) updatedNode).put("^rev", item.getRev() + 1);
+    JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(updatedNode, JsonNode.class);
+    getDBCollection(type).update(query, updatedDBObj);
+    // if (TypeRegistry.isDomainEntity(type)) {
+    //   addVersion(type, id, updatedDBObj);
+    // }
   }
 
   // --- system entities -----------------------------------------------
@@ -165,38 +160,37 @@ public class MongoStorageBase implements BasicStorage {
   @Override
   public <T extends SystemEntity> T findItemByKey(Class<T> type, String key, String value) throws IOException {
     DBObject query = queries.selectByProperty(key, value);
-    return getCollection(type).findOne(query);
+    return getItem(type, query);
   }
 
   @Override
   public <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException {
     Map<String, Object> properties = mongoMapper.mapObject(type, example);
     DBObject query = queries.selectByProperties(properties);
-    return getCollection(type).findOne(query);
+    return getItem(type, query);
   }
 
   @Override
   public <T extends SystemEntity> void removeItem(Class<T> type, String id) {
     DBObject query = queries.selectById(id);
-    getCollection(type).remove(query);
+    getDBCollection(type).remove(query);
   }
 
   @Override
   public <T extends SystemEntity> int removeAll(Class<T> type) {
     DBObject query = queries.selectAll();
-    return getCollection(type).remove(query).getN();
+    return getDBCollection(type).remove(query).getN();
   }
 
   @Override
   public <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
     DBObject query = queries.selectByDate(dateField, dateValue);
-    return getCollection(type).remove(query).getN();
+    return getDBCollection(type).remove(query).getN();
   }
 
-  // TODO decide whether this needs to be cacheable
-  protected RelationType getRelationType(String id) {
+  protected RelationType getRelationType(String id) throws IOException {
     DBObject query = queries.selectById(id);
-    return getCollection(RelationType.class).findOne(query);
+    return getItem(RelationType.class, query);
   }
 
   // --- domain entities -----------------------------------------------
@@ -226,10 +220,10 @@ public class MongoStorageBase implements BasicStorage {
     return collection;
   }
 
-  protected <T extends Entity> JacksonDBCollection<T, String> getCollection(Class<T> type) {
-    DBCollection col = db.getCollection(getCollectionName(type));
-    return JacksonDBCollection.wrap(col, type, String.class, JsonViews.DBView.class);
-  }
+  // protected <T extends Entity> JacksonDBCollection<T, String> getCollection(Class<T> type) {
+  //   DBCollection col = db.getCollection(getCollectionName(type));
+  //   return JacksonDBCollection.wrap(col, type, String.class, JsonViews.DBView.class);
+  // }
 
   protected String getCollectionName(Class<? extends Entity> type) {
     return type.getSimpleName().toLowerCase();

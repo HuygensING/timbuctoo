@@ -20,10 +20,10 @@ import com.google.common.collect.Maps;
 public class FieldMapper {
 
   /** Separator between parts of a property name, as string. */
-  public static final String SEPARATOR = ".";
+  public static final String SEPARATOR = ":";
 
   /** Separator between parts of a key, as character. */
-  public static final char SEPARATOR_CHAR = '.';
+  public static final char SEPARATOR_CHAR = ':';
 
   /** Returns the name of a key from its parts. */
   public static String propertyName(String prefix, String field) {

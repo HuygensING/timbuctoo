@@ -1,10 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static nl.knaw.huygens.timbuctoo.storage.mongo.FieldMapper.propertyName;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -96,43 +94,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testFindItemMultipleFound() throws IOException {
-    TestSystemEntity example = new TestSystemEntity();
-    String testValue = "testValue";
-    example.setTestValue1(testValue);
-
-    Map<String, Object> testSystemDocumentMap1 = createDefaultMap(0, DEFAULT_ID);
-    String name1 = "doc1";
-    testSystemDocumentMap1.put(propertyName("testsystementity", "name"), name1);
-    testSystemDocumentMap1.put(propertyName("testsystementity", "testValue1"), testValue);
-    TestSystemEntity doc1 = new TestSystemEntity();
-    doc1.setName(name1);
-    doc1.setTestValue1(testValue);
-    DBObject dbObject1 = createDBObject(doc1, testSystemDocumentMap1);
-
-    Map<String, Object> testSystemDocumentMap2 = createDefaultMap(0, DEFAULT_ID);
-    String name2 = "doc2";
-    testSystemDocumentMap1.put(propertyName("testsystementity", "name"), name2);
-    testSystemDocumentMap1.put(propertyName("testsystementity", "testValue1"), testValue);
-    TestSystemEntity doc2 = new TestSystemEntity();
-    doc2.setName(name2);
-    doc2.setTestValue1(testValue);
-    DBObject dbObject2 = createDBObject(testSystemDocumentMap2);
-
-    DBCursor cursor = mock(DBCursor.class);
-    when(cursor.hasNext()).thenReturn(true, true, false);
-    when(cursor.next()).thenReturn(dbObject1, dbObject2);
-
-    DBObject query = new BasicDBObject(propertyName("testsystementity", "testValue1"), testValue);
-    when(anyCollection.find(query, null)).thenReturn(cursor);
-
-    TestSystemEntity actual = storage.findItem(TYPE, example);
-
-    assertEquals(name1, actual.getName());
-    assertEquals(testValue, actual.getTestValue1());
-  }
-
-  @Test
   public void testFindItemNothingFound() throws IOException {
     TestSystemEntity example = new TestSystemEntity();
     String name = "nonExisting";
@@ -159,75 +120,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.findItem(TYPE, example);
   }
 
-  @Test
-  public void testFindItemByKey() throws IOException {
-
-    Map<String, Object> map = createDefaultMap(0, DEFAULT_ID);
-    String key = "testsystementity.name";
-    String value = "test";
-    map.put(key, value);
-    map.put("testValue1", null);
-    map.put("testValue2", null);
-    map.put("propAnnotated", null);
-    map.put("pwaa", null);
-    map.put("date", null);
-
-    DBCursor cursor = createDBCursorWithOneValue(createDBObject(map));
-
-    DBObject query = new BasicDBObject(key, value);
-
-    when(anyCollection.find(query, null)).thenReturn(cursor);
-
-    storage.findItemByKey(TestSystemEntity.class, key, value);
-
-    verify(anyCollection).find(query, null);
-  }
-
-  @Test
-  public void testUpdateItem() throws IOException {
-    TestSystemEntity newDoc = new TestSystemEntity();
-    newDoc.setId(DEFAULT_ID);
-    String testValue1 = "test";
-    newDoc.setTestValue1(testValue1);
-
-    TestSystemEntity oldDoc = new TestSystemEntity();
-    oldDoc.setId(DEFAULT_ID);
-    oldDoc.setTestValue1("testValue");
-
-    Map<String, Object> oldTestSystemDocumentMap = createDefaultMap(0, DEFAULT_ID);
-    oldTestSystemDocumentMap.put("testValue1", "test");
-    DBObject oldDBObject = createDBObject(oldDoc, oldTestSystemDocumentMap);
-
-    DBCursor cursor = createDBCursorWithOneValue(oldDBObject);
-
-    //    Map<String, Object> newTestSystemDocumentMap = createDefaultMap(1);
-    //    newTestSystemDocumentMap.put("testValue1", testValue1);
-    //    newTestSystemDocumentMap.put("name", null);
-    //    newTestSystemDocumentMap.put("testValue2", null);
-    //    newTestSystemDocumentMap.put("date", null);
-    //    newTestSystemDocumentMap.put("propAnnotated", null);
-    //    newTestSystemDocumentMap.put("pwaa", null);
-
-    //DBObject newDBObject = createDBObject(newDoc, newTestSystemDocumentMap);
-
-    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
-    query.put("^rev", 0);
-
-    when(anyCollection.find(query, null)).thenReturn(cursor);
-    // Code should be:
-    //when(anyCollection.findAndModify(query, null, null, false, newDBObject, false, false)).thenReturn(oldDBObject);
-    // But there are some strange things happening with the comparison of DBObjects. 
-    // The next line is a quick fix
-    when(anyCollection.findAndModify(any(DBObject.class), any(DBObject.class), any(DBObject.class), anyBoolean(), any(DBObject.class), anyBoolean(), anyBoolean())).thenReturn(oldDBObject);
-
-    try {
-      storage.updateItem(TYPE, DEFAULT_ID, newDoc);
-    } finally {
-      verify(anyCollection).findAndModify(any(DBObject.class), any(DBObject.class), any(DBObject.class), anyBoolean(), any(DBObject.class), anyBoolean(), anyBoolean());
-      //verify(anyCollection).findAndModify(query, null, null, false, newDBObject, false, false);
-    }
-  }
-
   @Test(expected = IOException.class)
   public void testUpdateItemNonExistent() throws IOException {
     TestSystemEntity expected = new TestSystemEntity();
@@ -240,36 +132,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
     storage.updateItem(TYPE, DEFAULT_ID, expected);
-  }
-
-  @Test(expected = IOException.class)
-  public void testUpdateItemItemChanged() throws IOException {
-    TestSystemEntity newDoc = new TestSystemEntity();
-    newDoc.setId(DEFAULT_ID);
-    String testValue1 = "test";
-    newDoc.setTestValue1(testValue1);
-
-    TestSystemEntity oldDoc = new TestSystemEntity();
-    oldDoc.setId(DEFAULT_ID);
-    oldDoc.setTestValue1("testValue");
-
-    Map<String, Object> oldTestSystemDocumentMap = createDefaultMap(0, DEFAULT_ID);
-    oldTestSystemDocumentMap.put("testValue1", "test");
-    DBObject oldDBObject = createDBObject(oldDoc, oldTestSystemDocumentMap);
-
-    DBCursor cursor = createDBCursorWithOneValue(oldDBObject);
-
-    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
-    query.put("^rev", 0);
-
-    when(anyCollection.find(query, null)).thenReturn(cursor);
-    when(anyCollection.findAndModify(any(DBObject.class), any(DBObject.class), any(DBObject.class), anyBoolean(), any(DBObject.class), anyBoolean(), anyBoolean())).thenReturn(null);
-
-    try {
-      storage.updateItem(TYPE, DEFAULT_ID, newDoc);
-    } finally {
-      verify(anyCollection).findAndModify(any(DBObject.class), any(DBObject.class), any(DBObject.class), anyBoolean(), any(DBObject.class), anyBoolean(), anyBoolean());
-    }
   }
 
   @Test

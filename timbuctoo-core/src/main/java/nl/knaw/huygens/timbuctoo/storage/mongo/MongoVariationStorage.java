@@ -57,12 +57,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Entity> T getItem(Class<T> type, String id) throws IOException {
-    DBObject query = queries.selectById(id);
-    return getItem(type, query);
-  }
-
-  @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws VariationException, IOException {
     DBObject query = queries.selectById(id);
     DBObject item = getDBCollection(type).findOne(query);

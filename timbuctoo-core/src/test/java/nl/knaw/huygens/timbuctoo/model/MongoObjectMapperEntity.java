@@ -21,6 +21,7 @@ public class MongoObjectMapperEntity extends SystemEntity {
   @JsonProperty("propAnnotated")
   private String annotatedProperty;
   private String propWithAnnotatedAccessors;
+  private Class<?> type;
   private Datable date;
   private PersonName personName;
 
@@ -87,6 +88,14 @@ public class MongoObjectMapperEntity extends SystemEntity {
 
   public void setNonPrimitiveTestCollection(List<? extends SystemEntity> nonPrimitiveTestCollection) {
     this.nonPrimitiveTestCollection = nonPrimitiveTestCollection;
+  }
+
+  public Class<?> getType() {
+    return type;
+  }
+
+  public void setType(Class<?> type) {
+    this.type = type;
   }
 
   public Datable getDate() {
