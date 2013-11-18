@@ -8,29 +8,30 @@ import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
+import nl.knaw.huygens.timbuctoo.storage.mongo.EntityIds;
 
 import org.junit.Test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
-public class StorageUtilsTest {
+public class EntityIdsTest {
 
   @Test
   public void testGetIdPrefix() {
-    assertEquals(StorageUtils.UNKNOWN_ID_PREFIX, StorageUtils.getIDPrefix(null));
-    assertEquals(StorageUtils.UNKNOWN_ID_PREFIX, StorageUtils.getIDPrefix(String.class));
-    assertEquals(StorageUtils.UNKNOWN_ID_PREFIX, StorageUtils.getIDPrefix(Entity.class));
-    assertEquals("PERS", StorageUtils.getIDPrefix(Person.class));
-    assertEquals("PERS", StorageUtils.getIDPrefix(XPerson.class));
+    assertEquals(EntityIds.UNKNOWN_ID_PREFIX, EntityIds.getIDPrefix(null));
+    assertEquals(EntityIds.UNKNOWN_ID_PREFIX, EntityIds.getIDPrefix(String.class));
+    assertEquals(EntityIds.UNKNOWN_ID_PREFIX, EntityIds.getIDPrefix(Entity.class));
+    assertEquals("PERS", EntityIds.getIDPrefix(Person.class));
+    assertEquals("PERS", EntityIds.getIDPrefix(XPerson.class));
   }
 
   @Test
   public void testFormatEntityId() {
-    assertEquals("PERS000000000001", StorageUtils.formatEntityId(Person.class, 1));
-    assertEquals("PERS000000001001", StorageUtils.formatEntityId(Person.class, 1001));
-    assertEquals("PERS002147483647", StorageUtils.formatEntityId(Person.class, Integer.MAX_VALUE));
-    assertEquals("PERS002147483648", StorageUtils.formatEntityId(Person.class, Integer.MAX_VALUE + 1L));
+    assertEquals("PERS000000000001", EntityIds.formatEntityId(Person.class, 1));
+    assertEquals("PERS000000001001", EntityIds.formatEntityId(Person.class, 1001));
+    assertEquals("PERS002147483647", EntityIds.formatEntityId(Person.class, Integer.MAX_VALUE));
+    assertEquals("PERS002147483648", EntityIds.formatEntityId(Person.class, Integer.MAX_VALUE + 1L));
   }
 
   // -------------------------------------------------------------------

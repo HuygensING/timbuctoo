@@ -39,3 +39,17 @@
   //      getVersioningCollection(type).insert(changes);
   //    }
   //  }
+
+  
+  
+  public static void sortEntitiesByLastChange(List<Entity> docs) {
+    Collections.sort(docs, new Comparator<Entity>() {
+      @Override
+      public int compare(Entity o1, Entity o2) {
+        long o1s = o1 != null && o1.getLastChange() != null ? o1.getLastChange().dateStamp : 0;
+        long o2s = o2 != null && o2.getLastChange() != null ? o2.getLastChange().dateStamp : 0;
+        long d = o2s - o1s;
+        return d > 0 ? 1 : (d < 0 ? -1 : 0);
+      }
+    });
+  }

@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * An iterator over an empty collection stored entities.
+ * An iterator over an empty collection entities.
  */
 public class EmptyStorageIterator<T> implements StorageIterator<T> {
 

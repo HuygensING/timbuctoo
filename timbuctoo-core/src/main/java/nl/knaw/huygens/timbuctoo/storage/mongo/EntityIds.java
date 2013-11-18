@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.StorageUtils;
 
 import org.mongojack.JacksonDBCollection;
 
@@ -48,7 +48,31 @@ public class EntityIds {
     // return the new object, create if no object exists:
     Counter counter = counters.findAndModify(query, null, null, false, increment, true, true);
 
-    return StorageUtils.formatEntityId(type, counter.next);
+    return formatEntityId(type, counter.next);
+  }
+
+  public static final String UNKNOWN_ID_PREFIX = "UNKN";
+
+  /**
+   * Returns the prefix of an entity id.
+   */
+  public static String getIDPrefix(Class<?> type) {
+    if (type != null && Entity.class.isAssignableFrom(type)) {
+      IDPrefix annotation = type.getAnnotation(IDPrefix.class);
+      if (annotation != null) {
+        return annotation.value();
+      } else {
+        return getIDPrefix(type.getSuperclass());
+      }
+    }
+    return UNKNOWN_ID_PREFIX;
+  }
+
+  /**
+   * Returns a formatted entity id.
+   */
+  public static String formatEntityId(Class<? extends Entity> type, long counter) {
+    return String.format("%s%012d", getIDPrefix(type), counter);
   }
 
   private static class Counter {

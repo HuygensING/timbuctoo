@@ -15,14 +15,10 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
  */
 public interface Storage {
 
-  // --- life cycle ----------------------------------------------------
-
   /**
    * Closes the underlying storage.
    */
   void close();
-
-  // -------------------------------------------------------------------
 
   <T extends Entity> T getItem(Class<T> type, String id) throws IOException;
 
@@ -68,12 +64,12 @@ public interface Storage {
    */
   <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue);
 
-  <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws IOException;
-
   /**
    * Get the given variation of an entity.
    */
   <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) throws IOException;
+
+  <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws IOException;
 
   <T extends DomainEntity> T getRevision(Class<T> type, String id, int revisionId) throws IOException;
 

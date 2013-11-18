@@ -213,7 +213,16 @@ public class StorageManager {
     if (limit == 0) {
       return Collections.<T> emptyList();
     }
-    return StorageUtils.resolveIterator(storage.getAllByType(type), offset, limit);
+    return resolveIterator(storage.getAllByType(type), offset, limit);
+  }
+
+  private <T extends Entity> List<T> resolveIterator(StorageIterator<T> iterator, int offset, int limit) {
+    if (offset > 0) {
+      iterator.skip(offset);
+    }
+    List<T> list = iterator.getSome(limit);
+    iterator.close();
+    return list;
   }
 
   public boolean relationExists(Relation relation) {
