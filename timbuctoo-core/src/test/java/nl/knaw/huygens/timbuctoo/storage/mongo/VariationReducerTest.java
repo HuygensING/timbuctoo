@@ -78,14 +78,16 @@ public class VariationReducerTest extends VariationTestBase {
 
   @Test
   public void testReducePrimitiveFields() throws VariationException, JsonProcessingException {
+    Class<? extends Entity> type = TestSystemEntityPrimitive.class;
+
     Map<String, Object> map = Maps.newHashMap();
-    map.put(propertyName("testsystementityprimitive", "testBoolean"), "true");
-    map.put(propertyName("testsystementityprimitive", "testChar"), "r");
-    map.put(propertyName("testsystementityprimitive", "testDouble"), "3.14");
-    map.put(propertyName("testsystementityprimitive", "testFloat"), "2.13");
-    map.put(propertyName("testsystementityprimitive", "testInt"), "14");
-    map.put(propertyName("testsystementityprimitive", "testLong"), "15098");
-    map.put(propertyName("testsystementityprimitive", "testShort"), "4");
+    map.put(propertyName(type, "testBoolean"), "true");
+    map.put(propertyName(type, "testChar"), "r");
+    map.put(propertyName(type, "testDouble"), "3.14");
+    map.put(propertyName(type, "testFloat"), "2.13");
+    map.put(propertyName(type, "testInt"), "14");
+    map.put(propertyName(type, "testLong"), "15098");
+    map.put(propertyName(type, "testShort"), "4");
 
     ObjectNode node = mapper.valueToTree(map);
 
@@ -98,14 +100,16 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setTestLong(15098l);
     expected.setTestShort((short) 4);
 
-    assertEquals(expected, reducer.reduce(TestSystemEntityPrimitive.class, node));
+    assertEquals(expected, reducer.reduce(type, node));
   }
 
   @Test
   public void testInduceDatable() throws VariationException, JsonProcessingException {
+    Class<? extends Entity> type = DatableSystemEntity.class;
+
     Map<String, Object> map = Maps.newHashMap();
     Datable datable = new Datable("20131011");
-    map.put(propertyName("datablesystementity", "testDatable"), datable.getEDTF());
+    map.put(propertyName(type, "testDatable"), datable.getEDTF());
     map.put("^rev", 0);
     map.put("^deleted", false);
     ObjectNode node = mapper.valueToTree(map);
@@ -115,14 +119,16 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setRev(0);
     expected.setDeleted(false);
 
-    assertEquals(expected, reducer.reduce(DatableSystemEntity.class, node));
+    assertEquals(expected, reducer.reduce(type, node));
   }
 
   @Test
   public void testReduceSystemEntityPrimitiveCollections() throws VariationException, JsonProcessingException {
+    Class<? extends Entity> type = TestSystemEntityPrimitiveCollections.class;
+
     Map<String, Object> map = Maps.newHashMap();
-    map.put(propertyName("testsystementityprimitivecollections", "testStringList"), new String[] { "test", "test1" });
-    map.put(propertyName("testsystementityprimitivecollections", "testIntegerList"), new Integer[] { 1, 13, 42 });
+    map.put(propertyName(type, "testStringList"), new String[] { "test", "test1" });
+    map.put(propertyName(type, "testIntegerList"), new Integer[] { 1, 13, 42 });
 
     ObjectNode node = mapper.valueToTree(map);
 
@@ -130,7 +136,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setTestIntegerList(Lists.newArrayList(1, 13, 42));
     expected.setTestStringList(Lists.newArrayList("test", "test1"));
 
-    assertEquals(expected, reducer.reduce(TestSystemEntityPrimitiveCollections.class, node));
+    assertEquals(expected, reducer.reduce(type, node));
   }
 
   @Test

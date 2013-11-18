@@ -75,12 +75,6 @@ public class MongoVariationStorage extends MongoStorageBase implements Variation
   }
 
   @Override
-  public <T extends Entity> StorageIterator<T> getAllByType(Class<T> type) {
-    DBObject query = queries.selectAll();
-    return getItems(type, query);
-  }
-
-  @Override
   public <T extends DomainEntity> MongoChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
     DBObject query = queries.selectById(id);
     DBObject allRevisions = getRawVersionCollection(type).findOne(query);
