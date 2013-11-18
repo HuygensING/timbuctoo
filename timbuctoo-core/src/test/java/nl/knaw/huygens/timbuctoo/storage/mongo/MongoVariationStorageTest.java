@@ -56,7 +56,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Override
   protected void setupStorage() throws UnknownHostException, MongoException {
-    storage = new MongoStorage(registry, mongo, db, DB_NAME, entityIds);
+    storage = new MongoStorage(registry, mongo, db, entityIds);
   }
 
   @Test
@@ -623,7 +623,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     Map<String, Object> map = Maps.newHashMap();
     map.put("_id", id);
     map.put("^rev", 0);
-    map.put("^deleted", false);
+    map.put(DomainEntity.DELETED, false);
     return map;
   }
 

@@ -10,6 +10,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DatableSystemEntity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
@@ -111,13 +112,11 @@ public class VariationReducerTest extends VariationTestBase {
     Datable datable = new Datable("20131011");
     map.put(propertyName(type, "testDatable"), datable.getEDTF());
     map.put("^rev", 0);
-    map.put("^deleted", false);
     ObjectNode node = mapper.valueToTree(map);
 
     DatableSystemEntity expected = new DatableSystemEntity();
     expected.setTestDatable(datable);
     expected.setRev(0);
-    expected.setDeleted(false);
 
     assertEquals(expected, reducer.reduce(type, node));
   }
@@ -164,7 +163,7 @@ public class VariationReducerTest extends VariationTestBase {
     Map<String, Object> map = Maps.newHashMap();
     map.put(propertyName("projectatestdocwithpersonname", "personName"), PersonNameMapper.createPersonNameMap(name));
     map.put("^rev", 0);
-    map.put("^deleted", false);
+    map.put(DomainEntity.DELETED, false);
     JsonNode node = mapper.valueToTree(map);
 
     assertEquals(expected, reducer.reduce(ProjectATestDocWithPersonName.class, node));

@@ -81,7 +81,6 @@ public class HTMLGeneratorTest {
     assertContains(html, "Creation", "none");
     assertContains(html, "Prop Annotated", "anonProp");
     assertContains(html, "Pwaa", "propWithAnnotatedAccessors");
-    assertContains(html, "Deleted", "no");
   }
 
   @Test

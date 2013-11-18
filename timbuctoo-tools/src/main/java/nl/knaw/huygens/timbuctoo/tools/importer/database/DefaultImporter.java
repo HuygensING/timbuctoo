@@ -114,6 +114,7 @@ public abstract class DefaultImporter extends ToolBase {
     // Make sure the Solr indexes are up-to-date
     indexManager.commitAll();
 
+    System.out.println();
     System.out.println(storageManager.getStatus());
     System.out.println(indexManager.getStatus());
   }

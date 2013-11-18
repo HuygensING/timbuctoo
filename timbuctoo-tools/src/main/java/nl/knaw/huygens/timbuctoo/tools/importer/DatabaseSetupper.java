@@ -54,7 +54,9 @@ public class DatabaseSetupper {
 
   public int run() throws IOException {
     System.out.println("Emptying the database...");
-    storageManager.clear();
+    // TODO Remove non-persistent items only
+    MongoAdmin admin = new MongoAdmin(config);
+    admin.dropDatabase();
     System.out.println("Emptied the database.");
 
     if (config.getBooleanSetting("dataNeedsCleaning", false)) {
