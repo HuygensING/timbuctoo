@@ -56,9 +56,8 @@ public abstract class VariationTestBase {
     Map<String, Object> map = Maps.newHashMap();
     map.put("_id", id);
     map.put("^rev", 0);
-    map.put("^deleted", false);
     map.put(DomainEntity.PID, pid);
-
+    map.put(DomainEntity.DELETED, false);
     return map;
   }
 
