@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.mongo;
+package nl.knaw.huygens.timbuctoo.storage;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -82,7 +82,6 @@ public class FieldMapper {
 
   /**
    * Gets a field name for a field in combination with a class. 
-   * This method will add a prefix for every {@code type} that is not {@code Entity}, {@code DomainEntity} or {@code SystemEntity}.
    * The method will not check if the {@code type} contains the field. It will just create a {@code String). 
    * @param type the type needed for the prefix.
    * @param field the field to get the name for.

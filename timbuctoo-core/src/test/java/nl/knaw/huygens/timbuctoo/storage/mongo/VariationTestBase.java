@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
-import static nl.knaw.huygens.timbuctoo.storage.mongo.FieldMapper.propertyName;
+import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
 
 import java.io.IOException;
 import java.util.Map;

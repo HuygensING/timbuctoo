@@ -13,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.storage.mongo.FieldMapper;
 import nl.knaw.huygens.timbuctoo.util.CSVImporter;
 
 import org.slf4j.Logger;
@@ -61,7 +60,7 @@ public class RelationManager {
     }
   }
 
-  protected static final String REGULAR_NAME = FieldMapper.propertyName(RelationType.class, "regularName");
+  private static final String REGULAR_NAME = FieldMapper.propertyName(RelationType.class, "regularName");
 
   /**
    * Returns the relation type with the specified name,

@@ -13,6 +13,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
+import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 
 import org.apache.commons.lang.StringUtils;
 import org.mongojack.internal.stream.JacksonDBObject;

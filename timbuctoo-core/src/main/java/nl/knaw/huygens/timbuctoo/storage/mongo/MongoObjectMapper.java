@@ -7,6 +7,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
+import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
