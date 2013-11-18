@@ -14,6 +14,13 @@ public abstract class Role implements Variable {
   private List<Reference> varations;
   private String currentVariation;
 
+  private final String roleName = this.getClass().getSimpleName();
+
+  @JsonProperty("@roleName")
+  public String getRoleName() {
+    return roleName;
+  }
+
   @Override
   @JsonProperty("@variations")
   public List<Reference> getVariations() {

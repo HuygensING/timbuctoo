@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Role;
 
 public abstract class GenericDataHandler {
 
@@ -25,11 +26,11 @@ public abstract class GenericDataHandler {
 
   private Map<String, List<String>> objectMapping;
 
-  public <T extends Entity> void importData(String configFile, Class<T> type) throws Exception {
+  public <T extends Entity> void importData(String configFile, Class<T> type, List<Class<? extends Role>> allowedRoles) throws Exception {
     System.out.printf("%n=== Import documents of type '%s'%n", type.getSimpleName());
 
     readMapping(configFile);
-    GenericResultSetConverter<T> converter = new GenericResultSetConverter<T>(objectMapping, type);
+    GenericResultSetConverter<T> converter = new GenericResultSetConverter<T>(type, objectMapping, allowedRoles);
     SQLImporter importer = new SQLImporter(connectionString, userName, password);
     List<T> objects = importer.executeQuery(query, converter);
 

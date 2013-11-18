@@ -1,19 +1,23 @@
 package nl.knaw.huygens.timbuctoo.tools.importer.database;
 
+import static org.junit.Assert.assertEquals;
+
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import junit.framework.Assert;
+import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import com.google.common.collect.Lists;
 
 public class GenericResultSetConverterTest {
 
@@ -34,11 +38,11 @@ public class GenericResultSetConverterTest {
   public void testConvertWithStringOfSingleField() throws SQLException, InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException,
       InvocationTargetException {
     Map<String, List<String>> mapping = new HashMap<String, List<String>>();
-    mapping.put("test", Arrays.asList(new String[] { "test" }));
+    mapping.put("test", Lists.newArrayList("test"));
 
     Class<EntityWithStringField> type = EntityWithStringField.class;
 
-    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(mapping, type);
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping, null);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test", "testValue");
@@ -55,11 +59,11 @@ public class GenericResultSetConverterTest {
   public void testConvertWithStringOfMultipleField() throws InstantiationException, IllegalAccessException, SQLException, NoSuchMethodException, SecurityException, IllegalArgumentException,
       InvocationTargetException {
     Map<String, List<String>> mapping = new HashMap<String, List<String>>();
-    mapping.put("test", Arrays.asList(new String[] { "test1", "test2", "test3" }));
+    mapping.put("test", Lists.newArrayList("test1", "test2", "test3"));
 
     Class<EntityWithStringField> type = EntityWithStringField.class;
 
-    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(mapping, type);
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping, null);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test1", "testValue1");
@@ -78,11 +82,11 @@ public class GenericResultSetConverterTest {
   public void testConvertWithDatable() throws InstantiationException, IllegalAccessException, SQLException, NoSuchMethodException, SecurityException, IllegalArgumentException,
       InvocationTargetException {
     Map<String, List<String>> mapping = new HashMap<String, List<String>>();
-    mapping.put("datable", Arrays.asList(new String[] { "test" }));
+    mapping.put("datable", Lists.newArrayList("test"));
 
     Class<EntityWithDatableField> type = EntityWithDatableField.class;
 
-    GenericResultSetConverter<EntityWithDatableField> instance = new GenericResultSetConverter<EntityWithDatableField>(mapping, type);
+    GenericResultSetConverter<EntityWithDatableField> instance = new GenericResultSetConverter<EntityWithDatableField>(type, mapping, null);
 
     String databableValue = "20130305";
     Map<String, String> resultSetMap = new HashMap<String, String>();
@@ -107,7 +111,7 @@ public class GenericResultSetConverterTest {
 
     Class<EntityWithStringField> type = EntityWithStringField.class;
 
-    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(mapping, type);
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping, null);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test", "testValue");
@@ -123,11 +127,11 @@ public class GenericResultSetConverterTest {
   public void testConvertWithExtendedMappings() throws InstantiationException, IllegalAccessException, SQLException, NoSuchMethodException, SecurityException, IllegalArgumentException,
       InvocationTargetException {
     Map<String, List<String>> mapping = new HashMap<String, List<String>>();
-    mapping.put("test", Arrays.asList(new String[] { "test" }));
+    mapping.put("test", Lists.newArrayList("test"));
 
     Class<EntityWithStringField> type = EntityWithStringField.class;
 
-    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(mapping, type);
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping, null);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test", "testValue");
@@ -145,11 +149,11 @@ public class GenericResultSetConverterTest {
   public void testConvertWithFieldsNotInResultSet() throws InstantiationException, IllegalAccessException, SQLException, NoSuchMethodException, SecurityException, IllegalArgumentException,
       InvocationTargetException {
     Map<String, List<String>> mapping = new HashMap<String, List<String>>();
-    mapping.put("test", Arrays.asList(new String[] { "test", "test2" }));
+    mapping.put("test", Lists.newArrayList("test", "test2"));
 
     Class<EntityWithStringField> type = EntityWithStringField.class;
 
-    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(mapping, type);
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping, null);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test", "testValue");
@@ -165,11 +169,11 @@ public class GenericResultSetConverterTest {
   @Test
   public void testConvertSubclass() throws SQLException, InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException {
     Map<String, List<String>> mapping = new HashMap<String, List<String>>();
-    mapping.put("test", Arrays.asList(new String[] { "test" }));
+    mapping.put("test", Lists.newArrayList("test"));
 
     Class<SubEntityExtension> type = SubEntityExtension.class;
 
-    GenericResultSetConverter<SubEntityExtension> instance = new GenericResultSetConverter<SubEntityExtension>(mapping, type);
+    GenericResultSetConverter<SubEntityExtension> instance = new GenericResultSetConverter<SubEntityExtension>(type, mapping, null);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test", "testValue");
@@ -182,4 +186,37 @@ public class GenericResultSetConverterTest {
     Assert.assertEquals("testValue", result.get(0).getTest());
   }
 
+  @Test
+  public void testConvertClassWithRoles() throws SQLException, SecurityException, IllegalArgumentException, InstantiationException, IllegalAccessException, NoSuchMethodException,
+      InvocationTargetException {
+    Map<String, List<String>> mapping = new HashMap<String, List<String>>();
+    mapping.put("test", Lists.newArrayList("test"));
+    mapping.put("ImportTestRole.roleTest", Lists.newArrayList("roleTest"));
+
+    List<EntityWithStringField> expected = Lists.newArrayList();
+
+    EntityWithStringField entityWithStringField = new EntityWithStringField();
+    entityWithStringField.setTest("testValue");
+    ImportTestRole testRole = new ImportTestRole();
+    testRole.setRoleTest("anotherTestValue");
+    entityWithStringField.addRole(testRole);
+    expected.add(entityWithStringField);
+
+    Class<EntityWithStringField> type = EntityWithStringField.class;
+    List<Class<? extends Role>> allowedRoles = Lists.newArrayList();
+    allowedRoles.add(ImportTestRole.class);
+
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping, allowedRoles);
+
+    Map<String, String> resultSetMap = new HashMap<String, String>();
+    String testValue = "testValue";
+    resultSetMap.put("test", testValue);
+    resultSetMap.put("roleTest", "anotherTestValue");
+
+    ResultSet resultSet = createResultSet(resultSetMap);
+
+    List<EntityWithStringField> actual = instance.convert(resultSet);
+
+    assertEquals(expected, actual);
+  }
 }
