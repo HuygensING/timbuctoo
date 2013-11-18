@@ -28,7 +28,6 @@ import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBGeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBTestRole;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -61,12 +60,6 @@ public class VariationReducerTest extends VariationTestBase {
     mapper = new ObjectMapper();
   }
 
-  @After
-  public void tearDown() {
-    reducer = null;
-    mapper = null;
-  }
-
   @Test
   public void testReduceSystemEntity() throws JsonProcessingException, IOException {
     String name = "test";
@@ -80,9 +73,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setTestValue1(testValue1);
     expected.setTestValue2(testValue2);
 
-    TestSystemEntity actual = reducer.reduce(TestSystemEntity.class, item);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, reducer.reduce(TestSystemEntity.class, item));
   }
 
   @Test
@@ -107,9 +98,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setTestLong(15098l);
     expected.setTestShort((short) 4);
 
-    TestSystemEntityPrimitive actual = reducer.reduce(TestSystemEntityPrimitive.class, node);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, reducer.reduce(TestSystemEntityPrimitive.class, node));
   }
 
   @Test
@@ -126,9 +115,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setRev(0);
     expected.setDeleted(false);
 
-    DatableSystemEntity actual = reducer.reduce(DatableSystemEntity.class, node);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, reducer.reduce(DatableSystemEntity.class, node));
   }
 
   @Test
@@ -143,9 +130,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setTestIntegerList(Lists.newArrayList(1, 13, 42));
     expected.setTestStringList(Lists.newArrayList("test", "test1"));
 
-    TestSystemEntityPrimitiveCollections actual = reducer.reduce(TestSystemEntityPrimitiveCollections.class, node);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, reducer.reduce(TestSystemEntityPrimitiveCollections.class, node));
   }
 
   @Test
@@ -159,9 +144,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setPid(TEST_PID);
     expected.generalTestDocValue = GENERAL_TEST_DOC_VALUE;
 
-    GeneralTestDoc actual = reducer.reduce(GeneralTestDoc.class, node);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, reducer.reduce(GeneralTestDoc.class, node));
   }
 
   @Test
@@ -178,8 +161,7 @@ public class VariationReducerTest extends VariationTestBase {
     map.put("^deleted", false);
     JsonNode node = mapper.valueToTree(map);
 
-    ProjectATestDocWithPersonName actual = reducer.reduce(ProjectATestDocWithPersonName.class, node);
-    assertEquals(expected, actual);
+    assertEquals(expected, reducer.reduce(ProjectATestDocWithPersonName.class, node));
   }
 
   @Test
@@ -197,9 +179,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.projectAGeneralTestDocValue = projectatestvalue;
     expected.setCurrentVariation("projecta");
 
-    ProjectAGeneralTestDoc actual = reducer.reduce(ProjectAGeneralTestDoc.class, node);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, reducer.reduce(ProjectAGeneralTestDoc.class, node));
   }
 
   @Test
@@ -219,9 +199,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.projectAGeneralTestDocValue = projectatestvalue;
     expected.setCurrentVariation("projecta");
 
-    ProjectAGeneralTestDoc actual = reducer.reduce(ProjectAGeneralTestDoc.class, node);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, reducer.reduce(ProjectAGeneralTestDoc.class, node));
   }
 
   @Test
@@ -243,9 +221,7 @@ public class VariationReducerTest extends VariationTestBase {
     roles.add(testRole);
     expected.setRoles(roles);
 
-    GeneralTestDoc actual = reducer.reduce(GeneralTestDoc.class, node);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, reducer.reduce(GeneralTestDoc.class, node));
   }
 
   @Test
@@ -272,9 +248,7 @@ public class VariationReducerTest extends VariationTestBase {
     roles.add(newTestRole);
     expected.setRoles(roles);
 
-    GeneralTestDoc actual = reducer.reduce(GeneralTestDoc.class, node);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, reducer.reduce(GeneralTestDoc.class, node));
   }
 
   @Test
@@ -301,9 +275,7 @@ public class VariationReducerTest extends VariationTestBase {
     roles.add(testRole);
     expected.setRoles(roles);
 
-    ProjectBGeneralTestDoc actual = reducer.reduce(ProjectBGeneralTestDoc.class, node);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, reducer.reduce(ProjectBGeneralTestDoc.class, node));
   }
 
   @Test
@@ -327,9 +299,7 @@ public class VariationReducerTest extends VariationTestBase {
     roles.add(testRole);
     expected.setRoles(roles);
 
-    ProjectAGeneralTestDoc actual = reducer.reduce(ProjectAGeneralTestDoc.class, node);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, reducer.reduce(ProjectAGeneralTestDoc.class, node));
   }
 
   @Test
@@ -365,9 +335,7 @@ public class VariationReducerTest extends VariationTestBase {
     roles.add(projectANewTestRole);
     expected.setRoles(roles);
 
-    ProjectAGeneralTestDoc actual = reducer.reduce(ProjectAGeneralTestDoc.class, node);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, reducer.reduce(ProjectAGeneralTestDoc.class, node));
   }
 
   @Test
@@ -387,9 +355,7 @@ public class VariationReducerTest extends VariationTestBase {
     String requestedVariation = "projecta";
     expected.setCurrentVariation(requestedVariation);
 
-    GeneralTestDoc actual = reducer.reduce(GeneralTestDoc.class, node, requestedVariation);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, reducer.reduce(GeneralTestDoc.class, node, requestedVariation));
   }
 
   @Test
@@ -419,9 +385,7 @@ public class VariationReducerTest extends VariationTestBase {
     roles.add(testRole);
     expected.setRoles(roles);
 
-    GeneralTestDoc actual = reducer.reduce(GeneralTestDoc.class, node, requestedVariation);
-
-    assertEquals(expected, actual);
+    assertEquals(expected, reducer.reduce(GeneralTestDoc.class, node, requestedVariation));
   }
 
   @Test

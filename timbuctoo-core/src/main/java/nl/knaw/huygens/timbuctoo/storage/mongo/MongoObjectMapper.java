@@ -60,6 +60,11 @@ public class MongoObjectMapper {
             if (isHumanReableCollection(value)) {
               map.put(fieldMapper.getFieldName(type, field), value);
             }
+          } else if (Class.class.isAssignableFrom(fieldType)) {
+            Class<?> cls = (Class<?>) field.get(item);
+            if (cls != null) {
+              map.put(fieldMapper.getFieldName(type, field), cls.getName());
+            }
           } else if (Datable.class.isAssignableFrom(fieldType)) {
             Datable datable = (Datable) field.get(item);
             if (datable != null) {

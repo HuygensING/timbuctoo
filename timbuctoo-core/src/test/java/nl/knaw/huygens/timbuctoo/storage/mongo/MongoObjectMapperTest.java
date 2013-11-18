@@ -55,7 +55,6 @@ public class MongoObjectMapperTest {
     expected.put(PWAA_KEY, DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
 
     assertEquals(expected, actual);
-
   }
 
   @Test
@@ -113,17 +112,25 @@ public class MongoObjectMapperTest {
   }
 
   @Test
-  public void testMapObjectWithDatable() {
+  public void testMapObjectWithClass() {
     MongoObjectMapperEntity item = new MongoObjectMapperEntity();
-    Datable datable = new Datable("20031011");
-    item.setDate(datable);
+    item.setType(TYPE);
 
     Map<String, Object> expected = Maps.newHashMap();
-    expected.put(propertyName("mongoobjectmapperentity", "date"), datable.getEDTF());
+    expected.put(propertyName(TYPE, "type"), "nl.knaw.huygens.timbuctoo.model.MongoObjectMapperEntity");
 
-    Map<String, Object> actual = instance.mapObject(TYPE, item);
+    assertEquals(expected, instance.mapObject(TYPE, item));
+  }
 
-    assertEquals(expected, actual);
+  @Test
+  public void testMapObjectWithDatable() {
+    MongoObjectMapperEntity item = new MongoObjectMapperEntity();
+    item.setDate(new Datable("20031011"));
+
+    Map<String, Object> expected = Maps.newHashMap();
+    expected.put(propertyName(TYPE, "date"), "20031011");
+
+    assertEquals(expected, instance.mapObject(TYPE, item));
   }
 
   @Test
@@ -135,7 +142,7 @@ public class MongoObjectMapperTest {
     item.setPersonName(personName);
 
     Map<String, Object> expected = Maps.newLinkedHashMap();
-    expected.put(propertyName("mongoobjectmapperentity", "personName"), PersonNameMapper.createPersonNameMap(personName));
+    expected.put(propertyName(TYPE, "personName"), PersonNameMapper.createPersonNameMap(personName));
 
     Map<String, Object> actual = instance.mapObject(TYPE, item);
 

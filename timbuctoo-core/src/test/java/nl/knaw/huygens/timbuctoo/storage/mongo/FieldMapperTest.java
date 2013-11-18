@@ -85,6 +85,7 @@ public class FieldMapperTest {
     expected.put("testValue2", propertyName(TYPE, "testValue2"));
     expected.put("annotatedProperty", propertyName(TYPE, "propAnnotated"));
     expected.put("propWithAnnotatedAccessors", propertyName(TYPE, "pwaa"));
+    expected.put("type", propertyName(TYPE, "type"));
     expected.put("date", propertyName(TYPE, "date"));
     expected.put("personName", propertyName(TYPE, "personName"));
 

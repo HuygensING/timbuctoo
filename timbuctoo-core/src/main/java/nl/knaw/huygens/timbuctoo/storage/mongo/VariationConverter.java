@@ -74,6 +74,12 @@ class VariationConverter {
       return value.asLong();
     } else if (fieldType == Short.class || fieldType == short.class) {
       return (short) value.asInt();
+    } else if (Class.class.isAssignableFrom(fieldType)) {
+      try {
+        return Class.forName(value.asText());
+      } catch (ClassNotFoundException e) {
+        throw new IOException(e);
+      }
     } else if (Datable.class.isAssignableFrom(fieldType)) {
       return new Datable(value.asText());
     } else if (PersonName.class.isAssignableFrom(fieldType)) {
