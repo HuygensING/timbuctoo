@@ -13,8 +13,10 @@ import com.google.common.collect.Maps;
 public abstract class DomainEntity extends Entity implements Variable {
 
   public static final String PID = "^pid";
+  public static final String DELETED = "^deleted";
 
   private String pid; // the persistent identifier.
+  private boolean deleted;
   private Map<String, List<EntityRef>> relations = Maps.newHashMap();
   protected List<Reference> variations = Lists.newArrayList();
   protected String currentVariation;
@@ -28,6 +30,16 @@ public abstract class DomainEntity extends Entity implements Variable {
   @JsonProperty(PID)
   public void setPid(String pid) {
     this.pid = pid;
+  }
+
+  @JsonProperty(DELETED)
+  public boolean isDeleted() {
+    return deleted;
+  }
+
+  @JsonProperty(DELETED)
+  public void setDeleted(boolean deleted) {
+    this.deleted = deleted;
   }
 
   @JsonProperty("@relations")

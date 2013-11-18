@@ -45,6 +45,7 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
+import com.mongodb.WriteResult;
 
 public class MongoStorage implements Storage {
 
@@ -52,10 +53,9 @@ public class MongoStorage implements Storage {
 
   private final TypeRegistry typeRegistry;
   private final Mongo mongo;
-  private final String dbName;
-  private DB db;
+  private final DB db;
+  private final EntityIds entityIds;
 
-  private EntityIds entityIds;
   private MongoObjectMapper mongoMapper;
   private MongoQueries queries;
   private ObjectMapper objectMapper;
@@ -74,7 +74,7 @@ public class MongoStorage implements Storage {
     int port = config.getIntSetting("database.port", 27017);
     mongo = new Mongo(new ServerAddress(host, port), options);
 
-    dbName = config.getSetting("database.name");
+    String dbName = config.getSetting("database.name");
     db = mongo.getDB(dbName);
 
     String user = config.getSetting("database.user");
@@ -86,15 +86,14 @@ public class MongoStorage implements Storage {
     entityIds = new EntityIds(db, typeRegistry);
 
     initialize();
-    createIndexes();
+    ensureIndexes();
   }
 
   @VisibleForTesting
-  MongoStorage(TypeRegistry registry, Mongo mongo, DB db, String dbName, EntityIds entityIds) {
+  MongoStorage(TypeRegistry registry, Mongo mongo, DB db, EntityIds entityIds) {
     this.typeRegistry = registry;
     this.mongo = mongo;
     this.db = db;
-    this.dbName = dbName;
     this.entityIds = entityIds;
 
     initialize();
@@ -110,20 +109,11 @@ public class MongoStorage implements Storage {
     reducer = new VariationReducer(typeRegistry);
   }
 
-  private void createIndexes() {
+  private void ensureIndexes() {
     DBCollection collection = db.getCollection("relation");
     collection.ensureIndex(new BasicDBObject("^sourceId", 1));
     collection.ensureIndex(new BasicDBObject("^targetId", 1));
     collection.ensureIndex(new BasicDBObject("^sourceId", 1).append("^targetId", 1));
-  }
-
-  @Override
-  public void empty() {
-    db.cleanCursors(true);
-    mongo.dropDatabase(dbName);
-    db = mongo.getDB(dbName);
-    createIndexes();
-    entityIds = new EntityIds(db, typeRegistry);
   }
 
   @Override
@@ -178,14 +168,19 @@ public class MongoStorage implements Storage {
 
   // --- generic storage layer -----------------------------------------
 
-  protected <T extends Entity> T getItem(Class<T> type, DBObject query) throws IOException {
+  private <T extends Entity> T getItem(Class<T> type, DBObject query) throws IOException {
     DBObject item = getDBCollection(type).findOne(query);
     return reducer.reduceDBObject(type, item);
   }
 
-  protected <T extends Entity> StorageIterator<T> getItems(Class<T> type, DBObject query) {
+  private <T extends Entity> StorageIterator<T> getItems(Class<T> type, DBObject query) {
     DBCursor cursor = getDBCollection(type).find(query);
     return (cursor != null) ? new MongoStorageIterator<T>(type, cursor, reducer) : new EmptyStorageIterator<T>();
+  }
+
+  private <T extends Entity> int removeItem(Class<T> type, DBObject query) {
+    WriteResult result = getDBCollection(type).remove(query);
+    return (result != null) ? result.getN() : 0;
   }
 
   public <T extends Entity> long count(Class<T> type) {
@@ -254,24 +249,24 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends SystemEntity> void removeItem(Class<T> type, String id) {
+  public <T extends SystemEntity> int removeItem(Class<T> type, String id) {
     DBObject query = queries.selectById(id);
-    getDBCollection(type).remove(query);
+    return removeItem(type, query);
   }
 
   @Override
   public <T extends SystemEntity> int removeAll(Class<T> type) {
     DBObject query = queries.selectAll();
-    return getDBCollection(type).remove(query).getN();
+    return removeItem(type, query);
   }
 
   @Override
   public <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
     DBObject query = queries.selectByDate(dateField, dateValue);
-    return getDBCollection(type).remove(query).getN();
+    return removeItem(type, query);
   }
 
-  protected RelationType getRelationType(String id) throws IOException {
+  private RelationType getRelationType(String id) throws IOException {
     DBObject query = queries.selectById(id);
     return getItem(RelationType.class, query);
   }
@@ -335,7 +330,7 @@ public class MongoStorage implements Storage {
     } catch (Exception ex) {
       throw new IOException("Couldn't read properly from database.");
     }
-    node.put("^deleted", true);
+    node.put(DomainEntity.DELETED, true);
     node.put(DomainEntity.PID, (String) null);
     JsonNode changeTree = objectMapper.valueToTree(change);
     node.put("^lastChange", changeTree);

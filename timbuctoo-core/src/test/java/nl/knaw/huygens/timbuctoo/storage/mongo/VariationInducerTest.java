@@ -9,6 +9,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DatableSystemEntity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
@@ -118,7 +119,6 @@ public class VariationInducerTest extends VariationTestBase {
     Datable datable = new Datable("20131011");
     expectedMap.put(propertyName("datablesystementity", "testDatable"), datable.getEDTF());
     expectedMap.put("^rev", 0);
-    expectedMap.put("^deleted", false);
     JsonNode expected = mapper.valueToTree(expectedMap);
 
     DatableSystemEntity item = new DatableSystemEntity();
@@ -208,7 +208,7 @@ public class VariationInducerTest extends VariationTestBase {
     Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put(propertyName("projectatestdocwithpersonname", "personName"), PersonNameMapper.createPersonNameMap(name));
     expectedMap.put("^rev", 0);
-    expectedMap.put("^deleted", false);
+    expectedMap.put(DomainEntity.DELETED, false);
     JsonNode expected = mapper.valueToTree(expectedMap);
 
     assertEquals(expected, inducer.induce(ProjectATestDocWithPersonName.class, item));

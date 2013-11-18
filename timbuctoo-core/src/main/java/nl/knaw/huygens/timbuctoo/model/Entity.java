@@ -22,7 +22,6 @@ public abstract class Entity {
   private int rev;
   private Change lastChange;
   private Change creation;
-  private boolean deleted;
 
   /**
    * Returns the name to be displayed for identification of this entity.
@@ -70,16 +69,6 @@ public abstract class Entity {
   @JsonProperty("^creation")
   public void setCreation(Change creation) {
     this.creation = creation;
-  }
-
-  @JsonProperty("^deleted")
-  public boolean isDeleted() {
-    return deleted;
-  }
-
-  @JsonProperty("^deleted")
-  public void setDeleted(boolean deleted) {
-    this.deleted = deleted;
   }
 
 }

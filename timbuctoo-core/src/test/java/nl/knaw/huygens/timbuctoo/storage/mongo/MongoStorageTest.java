@@ -29,8 +29,7 @@ import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 
 /**
- * These unit tests all only check the interaction with the Mongo database. 
- *
+ * These unit tests all only check the interaction with the Mongo database.
  */
 public class MongoStorageTest extends MongoStorageTestBase {
 
@@ -49,7 +48,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Override
   protected void setupStorage() {
-    storage = new MongoStorage(registry, mongo, db, DB_NAME, entityIds);
+    storage = new MongoStorage(registry, mongo, db, entityIds);
   }
 
   @Test
@@ -275,7 +274,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     testSystemDocumentMap.put("^lastChange", null);
     testSystemDocumentMap.put("^creation", null);
     testSystemDocumentMap.put(DomainEntity.PID, null);
-    testSystemDocumentMap.put("^deleted", false);
+    testSystemDocumentMap.put(DomainEntity.DELETED, false);
     testSystemDocumentMap.put("@class", TestSystemEntity.class.getName());
     testSystemDocumentMap.put("@variations", new Object[0]);
     testSystemDocumentMap.put("!currentVariation", null);

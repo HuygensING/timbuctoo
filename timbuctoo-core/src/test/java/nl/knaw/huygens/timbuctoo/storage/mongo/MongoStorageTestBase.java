@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.junit.Before;
@@ -20,31 +19,25 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
-import com.mongodb.MongoOptions;
 
 public abstract class MongoStorageTestBase {
 
-  protected static final String DB_NAME = "test";
-  protected static Configuration config;
-  protected DB db;
   protected Mongo mongo;
+  protected DB db;
   protected DBCollection anyCollection;
   protected EntityIds entityIds;
   protected MongoQueries queries;
-  protected MongoOptions mongoOptions;
-
-  public MongoStorageTestBase() {
-    super();
-  }
 
   @Before
   public void setUp() throws UnknownHostException, MongoException {
+    mongo = mock(Mongo.class);
+    db = mock(DB.class);
     anyCollection = mock(DBCollection.class);
     entityIds = mock(EntityIds.class);
     queries = new MongoQueries();
-    db = mock(DB.class);
+
     when(db.getCollection(anyString())).thenReturn(anyCollection);
-    mongo = mock(Mongo.class);
+
     setupStorage();
   }
 
@@ -73,4 +66,5 @@ public abstract class MongoStorageTestBase {
     when(cursor.count()).thenReturn(0);
     return cursor;
   }
+
 }

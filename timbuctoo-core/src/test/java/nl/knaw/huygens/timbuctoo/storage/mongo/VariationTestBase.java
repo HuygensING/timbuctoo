@@ -25,8 +25,6 @@ public abstract class VariationTestBase {
     addNonNullValueToMap(map, propertyName("testsystementity", "testValue1"), testValue1);
     addNonNullValueToMap(map, propertyName("testsystementity", "testValue2"), testValue2);
     map.put("^rev", 0);
-    map.put("^deleted", false);
-
     return getMapper().valueToTree(map);
   }
 
@@ -58,9 +56,8 @@ public abstract class VariationTestBase {
     Map<String, Object> map = Maps.newHashMap();
     map.put("_id", id);
     map.put("^rev", 0);
-    map.put("^deleted", false);
     map.put(DomainEntity.PID, pid);
-
+    map.put(DomainEntity.DELETED, false);
     return map;
   }
 

@@ -17,8 +17,6 @@ public interface Storage {
 
   // --- life cycle ----------------------------------------------------
 
-  void empty();
-
   /**
    * Closes the underlying storage.
    */
@@ -55,7 +53,7 @@ public interface Storage {
   /**
    * Removes the spcified system entity.
    */
-  <T extends SystemEntity> void removeItem(Class<T> type, String id) throws IOException;
+  <T extends SystemEntity> int removeItem(Class<T> type, String id) throws IOException;
 
   /**
    * Removes all system entities with the specified type.
