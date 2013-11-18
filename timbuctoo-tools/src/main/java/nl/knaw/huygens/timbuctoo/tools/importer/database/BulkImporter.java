@@ -1,16 +1,20 @@
 package nl.knaw.huygens.timbuctoo.tools.importer.database;
 
+import java.util.List;
+
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPerson;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPlace;
-import nl.knaw.huygens.timbuctoo.model.raa.RAACivilServant;
+import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -44,11 +48,15 @@ public class BulkImporter {
       System.out.println("---------------------------------");
 
       String resourceDir = "src/main/resources/";
-      importer.importData(resourceDir + "DWCPlaceMapping.properties", DWCPlace.class);
-      importer.importData(resourceDir + "DWCScientistMapping.properties", DWCPerson.class);
-      importer.importData(resourceDir + "RAACivilServantMapping.properties", RAACivilServant.class);
-      CKCCPersonImporter csvImporter = new CKCCPersonImporter(storageManager);
-      csvImporter.handleFile(resourceDir + "testdata/ckcc-persons.txt", 9, false);
+      importer.importData(resourceDir + "DWCPlaceMapping.properties", DWCPlace.class, null);
+
+      List<Class<? extends Role>> allowedRoles = Lists.newArrayList();
+      allowedRoles.add(DWCScientist.class);
+
+      importer.importData(resourceDir + "DWCScientistMapping.properties", DWCPerson.class, allowedRoles);
+      //importer.importData(resourceDir + "RAACivilServantMapping.properties", RAACivilServant.class);
+      //CKCCPersonImporter csvImporter = new CKCCPersonImporter(storageManager);
+      //csvImporter.handleFile(resourceDir + "testdata/ckcc-persons.txt", 9, false);
 
       System.out.println();
       System.out.println("--------------------------");
@@ -65,7 +73,7 @@ public class BulkImporter {
 
       indexEntities(storageManager, indexManager, DWCPlace.class);
       indexEntities(storageManager, indexManager, DWCPerson.class);
-      indexEntities(storageManager, indexManager, RAACivilServant.class);
+      //indexEntities(storageManager, indexManager, RAACivilServant.class);
 
       long time = (System.currentTimeMillis() - start) / 1000;
       System.out.printf("%n=== Used %d seconds%n%n", time);

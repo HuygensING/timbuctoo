@@ -18,7 +18,7 @@ public abstract class DomainEntity extends Entity implements Variable {
   private Map<String, List<EntityRef>> relations = Maps.newHashMap();
   protected List<Reference> variations = Lists.newArrayList();
   protected String currentVariation;
-  private List<Role> roles;
+  private List<Role> roles = Lists.newArrayList();
 
   @JsonProperty(PID)
   public String getPid() {
@@ -99,6 +99,11 @@ public abstract class DomainEntity extends Entity implements Variable {
 
   public void setRoles(List<Role> roles) {
     this.roles = roles;
+  }
+
+  public void addRole(Role role) {
+    roles.add(role);
+
   }
 
 }
