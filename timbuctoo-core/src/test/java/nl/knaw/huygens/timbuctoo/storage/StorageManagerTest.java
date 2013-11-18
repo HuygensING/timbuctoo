@@ -35,13 +35,13 @@ public class StorageManagerTest {
 
   private Configuration config;
   private StorageManager instance;
-  private VariationStorage storage;
+  private Storage storage;
   private TypeRegistry typeRegistry;
 
   @Before
   public void SetUp() {
     config = mock(Configuration.class);
-    storage = mock(VariationStorage.class);
+    storage = mock(Storage.class);
     typeRegistry = mock(TypeRegistry.class);
     instance = new StorageManager(config, storage);
   }

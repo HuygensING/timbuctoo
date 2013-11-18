@@ -18,7 +18,7 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EmptyStorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.VariationStorage;
+import nl.knaw.huygens.timbuctoo.storage.Storage;
 
 import org.mongojack.DBQuery;
 import org.mongojack.internal.stream.JacksonDBObject;
@@ -40,7 +40,7 @@ import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 
-public class MongoStorageBase implements VariationStorage {
+public class MongoStorageBase implements Storage {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoStorageBase.class);
 
