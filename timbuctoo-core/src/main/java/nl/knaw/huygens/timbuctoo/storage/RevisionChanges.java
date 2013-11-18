@@ -6,8 +6,8 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 
 public interface RevisionChanges<T extends Entity> {
 
-  public String getId();
+  String getId();
 
-  public List<T> getRevisions();
+  List<T> getRevisions();
 
 }
