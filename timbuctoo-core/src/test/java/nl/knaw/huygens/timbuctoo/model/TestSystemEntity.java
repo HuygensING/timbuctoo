@@ -20,6 +20,12 @@ public class TestSystemEntity extends SystemEntity {
   private String propWithAnnotatedAccessors;
   private Date date;
 
+  public TestSystemEntity() {}
+
+  public TestSystemEntity(String id) {
+    setId(id);
+  }
+
   @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
