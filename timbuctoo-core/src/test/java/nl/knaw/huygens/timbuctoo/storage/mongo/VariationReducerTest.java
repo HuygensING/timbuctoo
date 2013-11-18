@@ -19,6 +19,7 @@ import nl.knaw.huygens.timbuctoo.model.TestSystemEntityPrimitiveCollections;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.NewTestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.TestRole;
@@ -78,7 +79,7 @@ public class VariationReducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testReducePrimitiveFields() throws VariationException, JsonProcessingException {
+  public void testReducePrimitiveFields() throws StorageException, JsonProcessingException {
     Class<? extends Entity> type = TestSystemEntityPrimitive.class;
 
     Map<String, Object> map = Maps.newHashMap();
@@ -105,7 +106,7 @@ public class VariationReducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testInduceDatable() throws VariationException, JsonProcessingException {
+  public void testInduceDatable() throws StorageException, JsonProcessingException {
     Class<? extends Entity> type = DatableSystemEntity.class;
 
     Map<String, Object> map = Maps.newHashMap();
@@ -122,7 +123,7 @@ public class VariationReducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testReduceSystemEntityPrimitiveCollections() throws VariationException, JsonProcessingException {
+  public void testReduceSystemEntityPrimitiveCollections() throws StorageException, JsonProcessingException {
     Class<? extends Entity> type = TestSystemEntityPrimitiveCollections.class;
 
     Map<String, Object> map = Maps.newHashMap();
@@ -139,7 +140,7 @@ public class VariationReducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testReduceDomainEntityDefault() throws VariationException, JsonProcessingException {
+  public void testReduceDomainEntityDefault() throws StorageException, JsonProcessingException {
     Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, GENERAL_TEST_DOC_VALUE);
     map.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), "projectatest");
     ObjectNode node = mapper.valueToTree(map);
@@ -153,7 +154,7 @@ public class VariationReducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testReduceDomainEntityProjectWithPersonName() throws VariationException, JsonProcessingException {
+  public void testReduceDomainEntityProjectWithPersonName() throws StorageException, JsonProcessingException {
     ProjectATestDocWithPersonName expected = new ProjectATestDocWithPersonName();
     PersonName name = new PersonName();
     name.addNameComponent(Type.FORENAME, "test");
@@ -170,7 +171,7 @@ public class VariationReducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testReduceDomainEntityProjectSubClass() throws VariationException, JsonProcessingException {
+  public void testReduceDomainEntityProjectSubClass() throws StorageException, JsonProcessingException {
     Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, GENERAL_TEST_DOC_VALUE);
     String projectatestvalue = "projectatest";
     map.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), projectatestvalue);
@@ -188,7 +189,7 @@ public class VariationReducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testReduceDomainEntityProjectSubClassVariation() throws VariationException, JsonProcessingException {
+  public void testReduceDomainEntityProjectSubClassVariation() throws StorageException, JsonProcessingException {
     Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, GENERAL_TEST_DOC_VALUE);
     String projectatestvalue = "projectatest";
     map.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), projectatestvalue);
@@ -208,7 +209,7 @@ public class VariationReducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testReduceDomainEntityWithRole() throws VariationException, JsonProcessingException {
+  public void testReduceDomainEntityWithRole() throws StorageException, JsonProcessingException {
     Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, GENERAL_TEST_DOC_VALUE);
     map.put(propertyName("projectbgeneraltestdoc", "projectBGeneralTestDocValue"), "testB");
     map.put(propertyName("projectbtestrole", "beeName"), "beeName");
@@ -230,7 +231,7 @@ public class VariationReducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testReduceDomainEntityWithMultipleRoles() throws VariationException, JsonProcessingException {
+  public void testReduceDomainEntityWithMultipleRoles() throws StorageException, JsonProcessingException {
     Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, GENERAL_TEST_DOC_VALUE);
     map.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), "testB");
     map.put(propertyName("projectatestrole", "projectANewTestRoleName"), "beeName");
@@ -257,7 +258,7 @@ public class VariationReducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testReduceDomainEntityProjectSubClassWithRole() throws VariationException, JsonProcessingException {
+  public void testReduceDomainEntityProjectSubClassWithRole() throws StorageException, JsonProcessingException {
     Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, GENERAL_TEST_DOC_VALUE);
     String projectBTestDocValue = "testB";
     map.put(propertyName("projectbgeneraltestdoc", "projectBGeneralTestDocValue"), projectBTestDocValue);
@@ -284,7 +285,7 @@ public class VariationReducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testReduceDomainEnityProjectSubClassWithRoleNotFilledIn() throws VariationException, JsonProcessingException {
+  public void testReduceDomainEnityProjectSubClassWithRoleNotFilledIn() throws StorageException, JsonProcessingException {
     Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, GENERAL_TEST_DOC_VALUE);
     map.put(propertyName("projectbgeneraltestdoc", "projectBGeneralTestDocValue"), "testB");
     map.put(propertyName("projectbtestrole", "beeName"), "beeName");
@@ -313,7 +314,7 @@ public class VariationReducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testReduceDomainEntityProjectSubClassWithMultipleRoles() throws VariationException, JsonProcessingException {
+  public void testReduceDomainEntityProjectSubClassWithMultipleRoles() throws StorageException, JsonProcessingException {
     Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, "test");
     map.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), "testB");
     map.put(propertyName("projectatestrole", "projectATestRoleName"), "beeName");
@@ -344,7 +345,7 @@ public class VariationReducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testReduceDomainEntityRequestedVariation() throws VariationException, JsonProcessingException {
+  public void testReduceDomainEntityRequestedVariation() throws StorageException, JsonProcessingException {
     Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, GENERAL_TEST_DOC_VALUE);
     String projectatestvalue = "projectatest";
     map.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), projectatestvalue);
@@ -364,7 +365,7 @@ public class VariationReducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testReduceDomainEntityWithRoleRequestedVariation() throws VariationException, JsonProcessingException {
+  public void testReduceDomainEntityWithRoleRequestedVariation() throws StorageException, JsonProcessingException {
     Map<String, Object> map = createGeneralTestDocMap(TEST_ID, TEST_PID, "test");
     map.put(propertyName("projectbgeneraltestdoc", "projectBGeneralTestDocValue"), "testB");
     map.put(propertyName("projectbtestrole", "beeName"), "beeName");

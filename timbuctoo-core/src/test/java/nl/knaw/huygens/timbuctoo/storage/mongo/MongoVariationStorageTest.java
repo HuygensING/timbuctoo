@@ -21,6 +21,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestDocWithIDPrefix;
@@ -143,7 +144,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     storage.updateItem(TestConcreteDoc.class, DEFAULT_ID, expected);
   }
 
-  @Test(expected = VariationException.class)
+  @Test(expected = StorageException.class)
   public void testUpdateItemMalformed() throws IOException {
     when(anyCollection.findOne(any(DBObject.class))).thenReturn(new BasicDBObject("test", "test"));
 
@@ -209,7 +210,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetItemNonExistent() throws VariationException, IOException {
+  public void testGetItemNonExistent() throws StorageException, IOException {
     assertNull(storage.getItem(TestConcreteDoc.class, "TCD000000001"));
   }
 
