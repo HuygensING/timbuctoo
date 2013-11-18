@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.Variable;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import org.mongojack.internal.stream.JacksonDBObject;
 import org.slf4j.Logger;
@@ -81,12 +82,12 @@ class VariationReducer extends VariationConverter {
     return reduce(type, tree, variation);
   }
 
-  public <T extends Entity> T reduce(Class<T> type, JsonNode node) throws VariationException, JsonProcessingException {
+  public <T extends Entity> T reduce(Class<T> type, JsonNode node) throws StorageException, JsonProcessingException {
     return reduce(type, node, null);
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Entity> T reduce(Class<T> type, JsonNode node, String requestedVariation) throws VariationException, JsonProcessingException {
+  public <T extends Entity> T reduce(Class<T> type, JsonNode node, String requestedVariation) throws StorageException, JsonProcessingException {
     T returnObject = null;
     try {
       returnObject = type.newInstance();

@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import org.apache.commons.lang.StringUtils;
 import org.mongojack.internal.stream.JacksonDBObject;
@@ -37,24 +38,20 @@ class VariationInducer extends VariationConverter {
 
   /**
    * Convenience method for {@code induce(type, item, null)}.
-   * @param type
-   * @param item
-   * @return
-   * @throws VariationException
    */
-  public <T extends Entity> JsonNode induce(Class<T> type, T item) throws VariationException {
+  public <T extends Entity> JsonNode induce(Class<T> type, T item) throws StorageException {
     return induce(type, item, (ObjectNode) null);
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Entity> JsonNode induce(Class<T> type, T item, DBObject existingItem) throws VariationException {
+  public <T extends Entity> JsonNode induce(Class<T> type, T item, DBObject existingItem) throws StorageException {
     ObjectNode node = null;
     if (existingItem instanceof JacksonDBObject) {
       node = (ObjectNode) (((JacksonDBObject<JsonNode>) existingItem).getObject());
     } else if (existingItem instanceof DBJsonNode) {
       node = (ObjectNode) ((DBJsonNode) existingItem).getDelegate();
     } else if (existingItem != null) {
-      throw new VariationException("Unknown type of DBObject!");
+      throw new StorageException("Unknown type of DBObject!");
     }
     return induce(type, item, node);
   }
@@ -66,9 +63,9 @@ class VariationInducer extends VariationConverter {
    * @param item the new item to convert.
    * @param existingItem the existing item.
    * @return the converted and combined item.
-   * @throws VariationException
+   * @throws StorageException
    */
-  public <T extends Entity> JsonNode induce(Class<T> type, T item, ObjectNode existingItem) throws VariationException {
+  public <T extends Entity> JsonNode induce(Class<T> type, T item, ObjectNode existingItem) throws StorageException {
     checkArgument(item != null);
     checkArgument(type != null);
 

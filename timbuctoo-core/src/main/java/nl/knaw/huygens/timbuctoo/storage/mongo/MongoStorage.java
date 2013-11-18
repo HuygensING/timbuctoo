@@ -20,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EmptyStorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 import org.mongojack.DBQuery;
@@ -280,7 +281,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws VariationException, IOException {
+  public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException, IOException {
     DBObject query = queries.selectById(id);
     DBObject item = getDBCollection(type).findOne(query);
     List<T> variations = reducer.getAllForDBObject(item, type);
@@ -422,7 +423,7 @@ public class MongoStorage implements Storage {
     }
   }
 
-  private EntityRef getEntityRef(Reference reference) throws VariationException, IOException {
+  private EntityRef getEntityRef(Reference reference) throws StorageException, IOException {
     String iname = reference.getType();
     String xname = typeRegistry.getXNameForIName(iname);
     Class<? extends Entity> type = typeRegistry.getTypeForIName(iname);
