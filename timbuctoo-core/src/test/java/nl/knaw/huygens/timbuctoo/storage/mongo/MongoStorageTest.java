@@ -275,7 +275,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     testSystemDocumentMap.put("^lastChange", null);
     testSystemDocumentMap.put("^creation", null);
     testSystemDocumentMap.put(DomainEntity.PID, null);
-    testSystemDocumentMap.put("^deleted", false);
+    testSystemDocumentMap.put(DomainEntity.DELETED, false);
     testSystemDocumentMap.put("@class", TestSystemEntity.class.getName());
     testSystemDocumentMap.put("@variations", new Object[0]);
     testSystemDocumentMap.put("!currentVariation", null);
