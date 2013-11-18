@@ -53,7 +53,6 @@ public class MongoStorage implements Storage {
 
   private final TypeRegistry typeRegistry;
   private final Mongo mongo;
-  private final String dbName;
   private final DB db;
   private final EntityIds entityIds;
 
@@ -75,7 +74,7 @@ public class MongoStorage implements Storage {
     int port = config.getIntSetting("database.port", 27017);
     mongo = new Mongo(new ServerAddress(host, port), options);
 
-    dbName = config.getSetting("database.name");
+    String dbName = config.getSetting("database.name");
     db = mongo.getDB(dbName);
 
     String user = config.getSetting("database.user");
@@ -87,15 +86,14 @@ public class MongoStorage implements Storage {
     entityIds = new EntityIds(db, typeRegistry);
 
     initialize();
-    createIndexes();
+    ensureIndexes();
   }
 
   @VisibleForTesting
-  MongoStorage(TypeRegistry registry, Mongo mongo, DB db, String dbName, EntityIds entityIds) {
+  MongoStorage(TypeRegistry registry, Mongo mongo, DB db, EntityIds entityIds) {
     this.typeRegistry = registry;
     this.mongo = mongo;
     this.db = db;
-    this.dbName = dbName;
     this.entityIds = entityIds;
 
     initialize();
@@ -111,7 +109,7 @@ public class MongoStorage implements Storage {
     reducer = new VariationReducer(typeRegistry);
   }
 
-  private void createIndexes() {
+  private void ensureIndexes() {
     DBCollection collection = db.getCollection("relation");
     collection.ensureIndex(new BasicDBObject("^sourceId", 1));
     collection.ensureIndex(new BasicDBObject("^targetId", 1));
