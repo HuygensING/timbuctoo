@@ -40,7 +40,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   private static TypeRegistry registry;
 
-  private MongoStorageBase storage;
+  private MongoStorage storage;
 
   @BeforeClass
   public static void setUpDocTypeRegistry() {
@@ -49,8 +49,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Override
   protected void setupStorage() {
-    storage = new MongoStorageBase(registry, mongo, db, DB_NAME);
-    storage.setEntityIds(entityIds);
+    storage = new MongoStorage(registry, mongo, db, DB_NAME, entityIds);
   }
 
   @Test

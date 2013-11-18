@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.config;
 
 import nl.knaw.huygens.timbuctoo.storage.Storage;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorageFacade;
+import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
@@ -23,7 +23,7 @@ public class BasicInjectionModule extends AbstractModule {
     bind(Configuration.class).toInstance(config);
     bind(TypeRegistry.class).toInstance(registry);
 
-    bind(Storage.class).to(MongoStorageFacade.class);
+    bind(Storage.class).to(MongoStorage.class);
   }
 
 }
