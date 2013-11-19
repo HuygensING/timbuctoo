@@ -22,7 +22,7 @@ public class GenericJsonFileWriter extends GenericDataHandler {
   protected <T extends Entity> void save(Class<T> type, List<T> objects) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     //Make sure the type is added to the json.
-    mapper.enableDefaultTyping(DefaultTyping.OBJECT_AND_NON_CONCRETE, As.PROPERTY);
+    mapper.enableDefaultTyping(DefaultTyping.JAVA_LANG_OBJECT, As.PROPERTY);
 
     File file = new File(testDataDir + type.getSimpleName() + ".json");
     System.out.println("file: " + file.getAbsolutePath());
