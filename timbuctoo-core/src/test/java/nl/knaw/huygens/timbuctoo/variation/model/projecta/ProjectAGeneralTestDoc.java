@@ -15,9 +15,7 @@ public class ProjectAGeneralTestDoc extends GeneralTestDoc {
     }
     ProjectAGeneralTestDoc other = (ProjectAGeneralTestDoc) obj;
 
-    boolean isEqual = super.equals(obj) && Objects.equal(other.projectAGeneralTestDocValue, projectAGeneralTestDocValue);
-
-    return isEqual;
+    return super.equals(obj) && Objects.equal(other.projectAGeneralTestDocValue, projectAGeneralTestDocValue);
   }
 
   @Override
@@ -31,12 +29,11 @@ public class ProjectAGeneralTestDoc extends GeneralTestDoc {
     sb.append(getRoles());
     sb.append("\npid: ");
     sb.append(getPid());
-    sb.append("\ncurrentVariation: ");
-    sb.append(getCurrentVariation());
     sb.append("\nprojectAGeneralTestDocValue: ");
     sb.append(projectAGeneralTestDocValue);
     sb.append("\n}");
 
     return sb.toString();
   }
+
 }

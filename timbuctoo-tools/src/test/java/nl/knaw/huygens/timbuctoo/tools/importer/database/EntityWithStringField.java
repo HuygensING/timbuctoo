@@ -14,7 +14,6 @@ import com.google.common.collect.Sets;
 public class EntityWithStringField extends DomainEntity {
 
   private String test;
-  protected String currentVariation;
 
   @Override
   @JsonIgnore
@@ -69,4 +68,5 @@ public class EntityWithStringField extends DomainEntity {
 
     return sb.toString();
   }
+
 }

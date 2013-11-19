@@ -267,18 +267,17 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   protected Map<String, Object> createDefaultMap(int revision, String id) {
-    Map<String, Object> testSystemDocumentMap = Maps.newHashMap();
-    testSystemDocumentMap.put("_id", id);
+    Map<String, Object> map = Maps.newHashMap();
+    map.put("_id", id);
     // TODO remove when the SystemDocuments and DomainDocuments are better separated   
-    testSystemDocumentMap.put("^rev", revision);
-    testSystemDocumentMap.put("^lastChange", null);
-    testSystemDocumentMap.put("^creation", null);
-    testSystemDocumentMap.put(DomainEntity.PID, null);
-    testSystemDocumentMap.put(DomainEntity.DELETED, false);
-    testSystemDocumentMap.put("@class", TestSystemEntity.class.getName());
-    testSystemDocumentMap.put("@variations", new Object[0]);
-    testSystemDocumentMap.put("!currentVariation", null);
-    return testSystemDocumentMap;
+    map.put("^rev", revision);
+    map.put("^lastChange", null);
+    map.put("^creation", null);
+    map.put(DomainEntity.PID, null);
+    map.put(DomainEntity.DELETED, false);
+    map.put("@class", TestSystemEntity.class.getName());
+    map.put("@variations", new Object[0]);
+    return map;
   }
 
   protected DBObject createDBObject(Map<String, Object> map) {

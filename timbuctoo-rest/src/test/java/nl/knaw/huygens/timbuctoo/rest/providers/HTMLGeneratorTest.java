@@ -92,7 +92,6 @@ public class HTMLGeneratorTest {
     doc.addVariation(ProjectBGeneralTestDoc.class, doc.getId());
     doc.addVariation(GeneralTestDoc.class, doc.getId());
     doc.addVariation(TestConcreteDoc.class, doc.getId());
-    doc.setCurrentVariation("projecta");
     doc.setPid("pid");
 
     String html = generateHtml(doc);
@@ -108,7 +107,6 @@ public class HTMLGeneratorTest {
     assertContains(html, "href=|projectageneraltestdocs/TCD0000000001|");
     assertContains(html, "href=|projectbgeneraltestdocs/TCD0000000001|");
 
-    assertContains(html, "Current Variation", "projecta");
     assertContains(html, "Deleted", "no");
   }
 
@@ -122,7 +120,6 @@ public class HTMLGeneratorTest {
     doc.addVariation(ProjectBGeneralTestDoc.class, doc.getId());
     doc.addVariation(GeneralTestDoc.class, doc.getId());
     doc.addVariation(TestConcreteDoc.class, doc.getId());
-    doc.setCurrentVariation("projecta");
     doc.setPid("pid");
 
     String html = generateHtml(doc);
@@ -139,7 +136,6 @@ public class HTMLGeneratorTest {
     assertContains(html, "href=|projectageneraltestdocs/GTD0000000001|");
     assertContains(html, "href=|projectbgeneraltestdocs/GTD0000000001|");
 
-    assertContains(html, "Current Variation", "projecta");
     assertContains(html, "Deleted", "no");
   }
 
@@ -165,7 +161,7 @@ public class HTMLGeneratorTest {
 
     assertContains(html, "href=|otherdocs/OTD0000000001|");
 
-    assertContains(html, "Current Variation", "none");
     assertContains(html, "Deleted", "no");
   }
+
 }

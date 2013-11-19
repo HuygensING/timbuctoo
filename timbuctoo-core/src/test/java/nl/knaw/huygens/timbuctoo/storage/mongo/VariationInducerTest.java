@@ -164,7 +164,6 @@ public class VariationInducerTest extends VariationTestBase {
   public void testInduceDomainEntityProject() throws StorageException {
     ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
     item.setId(DEFAULT_DOMAIN_ID);
-    item.setCurrentVariation("projecta");
     item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
     item.setPid(DEFAULT_PID);
     item.projectAGeneralTestDocValue = "projectatest";
@@ -242,7 +241,6 @@ public class VariationInducerTest extends VariationTestBase {
 
     ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
     item.setId(DEFAULT_DOMAIN_ID);
-    item.setCurrentVariation("projecta");
     item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
     item.setPid(DEFAULT_PID);
     item.projectAGeneralTestDocValue = "projectatest";
@@ -272,7 +270,6 @@ public class VariationInducerTest extends VariationTestBase {
 
     ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
     item.setId(DEFAULT_DOMAIN_ID);
-    item.setCurrentVariation("projecta");
     item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
     item.setPid(DEFAULT_PID);
     item.projectAGeneralTestDocValue = "projectatest";
@@ -297,7 +294,6 @@ public class VariationInducerTest extends VariationTestBase {
 
     ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
     item.setId(DEFAULT_DOMAIN_ID);
-    item.setCurrentVariation("projecta");
     item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
     item.setPid(DEFAULT_PID);
     item.projectAGeneralTestDocValue = "projectatest";
@@ -322,7 +318,6 @@ public class VariationInducerTest extends VariationTestBase {
 
     ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
     item.setId(DEFAULT_DOMAIN_ID);
-    item.setCurrentVariation("projecta");
     item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
     item.setPid(DEFAULT_PID);
     item.projectAGeneralTestDocValue = "projectatest";
@@ -367,7 +362,6 @@ public class VariationInducerTest extends VariationTestBase {
 
     ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
     item.setId(DEFAULT_DOMAIN_ID);
-    item.setCurrentVariation("projecta");
     item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
     item.setPid(DEFAULT_PID);
     item.projectAGeneralTestDocValue = "projectatest";
@@ -395,7 +389,6 @@ public class VariationInducerTest extends VariationTestBase {
 
     ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
     item.setId(DEFAULT_DOMAIN_ID);
-    item.setCurrentVariation("projecta");
     item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
     item.setPid(DEFAULT_PID);
     item.projectAGeneralTestDocValue = "projectatest";
@@ -433,7 +426,6 @@ public class VariationInducerTest extends VariationTestBase {
 
     ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
     item.setId(DEFAULT_DOMAIN_ID);
-    item.setCurrentVariation("projecta");
     item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
     item.setPid(DEFAULT_PID);
     item.projectAGeneralTestDocValue = "projectatest";

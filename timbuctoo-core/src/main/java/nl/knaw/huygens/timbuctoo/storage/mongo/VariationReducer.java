@@ -135,7 +135,6 @@ class VariationReducer extends VariationConverter {
 
     if (TypeRegistry.isVariable(type)) {
       addVariations(type, returnObject);
-      ((Variable) returnObject).setCurrentVariation(requestedVariation);
     }
 
     return returnObject;

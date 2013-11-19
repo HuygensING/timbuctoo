@@ -10,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 
 import org.bson.BSONObject;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -31,17 +30,11 @@ public class MongoDiffTest {
 
     public int blah;
     protected List<Reference> variations = Lists.newArrayList();
-    protected String currentVariation;
 
     @Override
     public String getDisplayName() {
       return name;
     }
-  }
-
-  @Before
-  public void setUp() throws Exception {
-
   }
 
   @Test

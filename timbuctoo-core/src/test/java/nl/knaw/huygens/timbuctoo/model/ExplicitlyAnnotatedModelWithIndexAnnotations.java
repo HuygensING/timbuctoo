@@ -11,7 +11,6 @@ import com.google.common.collect.Lists;
 public class ExplicitlyAnnotatedModelWithIndexAnnotations extends Entity {
 
   protected List<Reference> variations = Lists.newArrayList();
-  protected String currentVariation;
 
   @Override
   @IndexAnnotation(fieldName = "id")

@@ -277,7 +277,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     assertEquals(name, actual.name);
     assertEquals(DEFAULT_ID, actual.getId());
-    //assertEquals("projecta", actual.getCurrentVariation());
   }
 
   @Test
@@ -557,17 +556,13 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     TestConcreteDoc expected = new TestConcreteDoc();
     expected.name = name;
     expected.setId(id);
-    //expected.setCurrentVariation("model");
     return expected;
   }
 
   private DBObject createTestConcreteDocDBObject(String id, String name) {
     Map<String, Object> map = createDefaultMap(id);
     map.putAll(createTestConcreteDocMap(name, "model"));
-
-    DBJsonNode dbObject = createDBJsonNode(map);
-
-    return dbObject;
+    return createDBJsonNode(map);
   }
 
   private DBObject createGeneralTestDocDBObject(String id, String name, String generalTestDocValue) {

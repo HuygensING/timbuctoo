@@ -39,7 +39,6 @@ public class EntityIdsTest {
   @IDPrefix("PERS")
   private static class Person extends DomainEntity {
     protected List<Reference> variations = Lists.newArrayList();
-    protected String currentVariation;
 
     @Override
     public String getDisplayName() {
@@ -61,18 +60,6 @@ public class EntityIdsTest {
     @Override
     public void addVariation(Class<? extends Entity> refType, String refId) {
       variations.add(new Reference(refType, refId));
-    }
-
-    @Override
-    @JsonProperty("!currentVariation")
-    public String getCurrentVariation() {
-      return currentVariation;
-    }
-
-    @Override
-    @JsonProperty("!currentVariation")
-    public void setCurrentVariation(String currentVariation) {
-      this.currentVariation = currentVariation;
     }
   }
 

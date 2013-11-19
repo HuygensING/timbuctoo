@@ -65,7 +65,6 @@ public abstract class VariationTestBase {
     ProjectBGeneralTestDoc item = new ProjectBGeneralTestDoc();
     item.projectBGeneralTestDocValue = projectBGeneralTestDocValue;
     item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, id), new Reference(ProjectBGeneralTestDoc.class, id)));
-    item.setCurrentVariation("projectb");
     item.setPid(pid);
     item.setId(id);
     return item;
