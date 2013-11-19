@@ -216,7 +216,7 @@ class VariationInducer extends VariationConverter {
     ObjectNode nodeToCleanUp = node.deepCopy();
     while (fieldNames.hasNext()) {
       String fieldName = fieldNames.next();
-      if (fieldName.startsWith("!") || fieldName.startsWith("@")) {
+      if (fieldName.startsWith("@")) {
         nodeToCleanUp.remove(fieldName);
       }
     }
