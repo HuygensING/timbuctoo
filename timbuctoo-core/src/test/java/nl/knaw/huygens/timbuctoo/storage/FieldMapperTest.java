@@ -34,7 +34,6 @@ public class FieldMapperTest {
   public void testPropertyNameForEntity() {
     assertEquals("_x", propertyName(Entity.class, "_x"));
     assertEquals("^x", propertyName(Entity.class, "^x"));
-    assertEquals("!x", propertyName(Entity.class, "!x"));
     assertEquals("@x", propertyName(Entity.class, "@x"));
     assertEquals("entity" + FieldMapper.SEPARATOR + "xx", propertyName(Entity.class, "xx"));
   }
@@ -43,7 +42,6 @@ public class FieldMapperTest {
   public void testPropertyNameForSystemEntity() {
     assertEquals("_x", propertyName(SystemEntity.class, "_x"));
     assertEquals("^x", propertyName(SystemEntity.class, "^x"));
-    assertEquals("!x", propertyName(SystemEntity.class, "!x"));
     assertEquals("@x", propertyName(SystemEntity.class, "@x"));
     assertEquals("systementity" + FieldMapper.SEPARATOR + "xx", propertyName(SystemEntity.class, "xx"));
   }
@@ -52,7 +50,6 @@ public class FieldMapperTest {
   public void testPropertyNameForDomainEntity() {
     assertEquals("_x", propertyName(DomainEntity.class, "_x"));
     assertEquals("^x", propertyName(DomainEntity.class, "^x"));
-    assertEquals("!x", propertyName(DomainEntity.class, "!x"));
     assertEquals("@x", propertyName(DomainEntity.class, "@x"));
     assertEquals("domainentity" + FieldMapper.SEPARATOR + "xx", propertyName(DomainEntity.class, "xx"));
   }
@@ -61,7 +58,6 @@ public class FieldMapperTest {
   public void testPropertyNameForUser() {
     assertEquals("_x", propertyName(User.class, "_x"));
     assertEquals("^x", propertyName(User.class, "^x"));
-    assertEquals("!x", propertyName(User.class, "!x"));
     assertEquals("@x", propertyName(User.class, "@x"));
     assertEquals("user" + FieldMapper.SEPARATOR + "xx", propertyName(User.class, "xx"));
   }
@@ -70,7 +66,6 @@ public class FieldMapperTest {
   public void testPropertyNameForPerson() {
     assertEquals("_x", propertyName(Person.class, "_x"));
     assertEquals("^x", propertyName(Person.class, "^x"));
-    assertEquals("!x", propertyName(Person.class, "!x"));
     assertEquals("@x", propertyName(Person.class, "@x"));
     assertEquals("person" + FieldMapper.SEPARATOR + "xx", propertyName(Person.class, "xx"));
   }
