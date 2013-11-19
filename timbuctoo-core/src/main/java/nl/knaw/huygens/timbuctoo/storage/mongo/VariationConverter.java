@@ -14,17 +14,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * Base class for {@code VariationInducer} and {@code VariationInducer}.
  */
 class VariationConverter {
 
-  protected static final String AGREED = "a";
-  protected static final String VALUE = "v";
   protected static final String BASE_MODEL_PACKAGE = "model";
-  protected static final String DEFAULT_VARIATION = "!defaultVRE";
 
   protected final TypeRegistry typeRegistry;
   protected final ObjectMapper mapper;
@@ -47,15 +43,6 @@ class VariationConverter {
     String typeId = typeRegistry.getINameForType(type);
     String variationId = getPackageName(type);
     return variationId.equals(BASE_MODEL_PACKAGE) ? typeId : variationId + "-" + typeId;
-  }
-
-  @SuppressWarnings("unchecked")
-  protected <T extends Entity> Class<? extends T> variationNameToType(String id) {
-    return (Class<? extends T>) typeRegistry.getTypeForIName(normalize(id));
-  }
-
-  private String normalize(String typeString) {
-    return typeString.replaceFirst("[a-z]*-", "");
   }
 
   protected <T> Object convertValue(Class<T> fieldType, JsonNode value) throws IOException {
@@ -90,12 +77,8 @@ class VariationConverter {
     return value.asText();
   }
 
-  protected Object createCollection(JsonNode value) throws IOException, JsonParseException, JsonMappingException {
-    ArrayNode array = (ArrayNode) value;
-    array.size();
-
-    List<? extends Object> returnValue = mapper.readValue(value.toString(), new TypeReference<List<? extends Object>>() {});
-
-    return returnValue;
+  private Object createCollection(JsonNode value) throws IOException, JsonParseException, JsonMappingException {
+    return mapper.readValue(value.toString(), new TypeReference<List<? extends Object>>() {});
   }
+
 }
