@@ -205,26 +205,4 @@ public class MongoDiffTest {
     assertEquals(testObj, diff);
   }
 
-  @Test
-  public void testNewVariationsNull() throws IOException {
-    Foo x = new Foo();
-    x.setId("foo");
-    Foo y = new Foo();
-    y.setId("foo");
-    x.bars = Lists.newArrayList("a", "b");
-    x.setVariations(Lists.newArrayList(new Reference(Foo.class, "foo")));
-    y.bars = Lists.newArrayList("a", "b", "c");
-    y.setVariations(null);
-    BSONObject diff = MongoDiff.diffDocuments(x, y);
-    BSONObject testObj = new BasicDBObject();
-    testObj.put("bars", Lists.newArrayList("a", "b", "c"));
-    testObj.put("@variations", null);
-    assertEquals(testObj, diff);
-
-    DBObject xBSON = MongoDiff.getObjectForDoc(x);
-    DBObject yBSON = MongoDiff.getObjectForDoc(y);
-    diff = MongoDiff.diffToNewObject(xBSON, yBSON);
-    assertEquals(testObj, diff);
-  }
-
 }
