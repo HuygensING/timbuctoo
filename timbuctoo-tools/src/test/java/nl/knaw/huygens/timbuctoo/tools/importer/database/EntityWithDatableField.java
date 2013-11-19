@@ -14,7 +14,6 @@ public class EntityWithDatableField extends Entity {
 
   private Datable datable;
   protected List<Reference> variations = Lists.newArrayList();
-  protected String currentVariation;
 
   @Override
   @JsonIgnore

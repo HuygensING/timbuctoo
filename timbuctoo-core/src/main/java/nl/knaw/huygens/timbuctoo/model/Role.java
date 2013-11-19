@@ -9,13 +9,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * An abstract super class to define "functions" of {@code Entities}. For example a {@code Person}
  * could have have the {@code Role} {@code Scientist}
  * @author martijnm
- *
  */
 //@see: http://wiki.fasterxml.com/JacksonPolymorphicDeserialization
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public abstract class Role implements Variable {
-  private List<Reference> varations;
-  private String currentVariation;
+
+  private List<Reference> variations;
 
   private final String roleName = this.getClass().getSimpleName();
 
@@ -27,32 +26,18 @@ public abstract class Role implements Variable {
   @Override
   @JsonProperty("@variations")
   public List<Reference> getVariations() {
-    return varations;
+    return variations;
   }
 
   @Override
   @JsonProperty("@variations")
   public void setVariations(List<Reference> variations) {
-    this.varations = variations;
-
+    this.variations = variations;
   }
 
   @Override
   public void addVariation(Class<? extends Entity> refType, String refId) {
-    this.varations.add(new Reference(refType, refId));
-
-  }
-
-  @Override
-  @JsonProperty("!currentVariation")
-  public String getCurrentVariation() {
-    return this.currentVariation;
-  }
-
-  @Override
-  @JsonProperty("!currentVariation")
-  public void setCurrentVariation(String currentVariation) {
-    this.currentVariation = currentVariation;
+    variations.add(new Reference(refType, refId));
   }
 
 }

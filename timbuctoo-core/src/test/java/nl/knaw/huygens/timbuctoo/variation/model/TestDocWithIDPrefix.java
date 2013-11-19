@@ -16,10 +16,9 @@ public class TestDocWithIDPrefix extends GeneralTestDoc {
     sb.append(getRoles());
     sb.append("\npid: ");
     sb.append(getPid());
-    sb.append("\ncurrentVariation: ");
-    sb.append(getCurrentVariation());
     sb.append("\n}");
 
     return sb.toString();
   }
+
 }

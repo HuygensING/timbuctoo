@@ -19,7 +19,6 @@ public abstract class DomainEntity extends Entity implements Variable {
   private boolean deleted;
   private Map<String, List<EntityRef>> relations = Maps.newHashMap();
   protected List<Reference> variations = Lists.newArrayList();
-  protected String currentVariation;
   private List<Role> roles = Lists.newArrayList();
 
   @JsonProperty(PID)
@@ -91,18 +90,6 @@ public abstract class DomainEntity extends Entity implements Variable {
   @Override
   public void addVariation(Class<? extends Entity> refType, String refId) {
     variations.add(new Reference(refType, refId));
-  }
-
-  @Override
-  @JsonProperty("!currentVariation")
-  public String getCurrentVariation() {
-    return currentVariation;
-  }
-
-  @Override
-  @JsonProperty("!currentVariation")
-  public void setCurrentVariation(String currentVariation) {
-    this.currentVariation = currentVariation;
   }
 
   public List<Role> getRoles() {

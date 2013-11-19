@@ -33,7 +33,6 @@ public class GeneralTestDoc extends TestConcreteDoc {
     isEqual &= Objects.equal(other.getPid(), getPid());
     //Order does not matter for us, so compare with sets.
     isEqual &= Objects.equal(createRoleSet(other.getRoles()), createRoleSet(getRoles()));
-    isEqual &= Objects.equal(other.getCurrentVariation(), getCurrentVariation());
 
     return isEqual;
   }
@@ -61,10 +60,9 @@ public class GeneralTestDoc extends TestConcreteDoc {
     sb.append(getRoles());
     sb.append("\npid: ");
     sb.append(getPid());
-    sb.append("\ncurrentVariation: ");
-    sb.append(getCurrentVariation());
     sb.append("\n}");
 
     return sb.toString();
   }
+
 }
