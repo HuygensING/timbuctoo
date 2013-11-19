@@ -16,6 +16,11 @@ public class TestConcreteDoc extends DomainEntity {
     setId(id);
   }
 
+  public TestConcreteDoc(String id, String name) {
+    setId(id);
+    this.name = name;
+  }
+
   @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")

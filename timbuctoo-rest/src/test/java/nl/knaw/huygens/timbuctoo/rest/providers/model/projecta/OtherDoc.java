@@ -9,4 +9,10 @@ public class OtherDoc extends TestInheritsFromTestBaseDoc {
 
   public String otherThing;
 
+  public OtherDoc() {}
+
+  public OtherDoc(String id) {
+    setId(id);
+  }
+
 }

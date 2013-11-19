@@ -11,6 +11,4 @@ public interface Variable {
 
   void setVariations(List<Reference> variations);
 
-  void addVariation(Class<? extends Entity> refType, String refId);
-
 }
