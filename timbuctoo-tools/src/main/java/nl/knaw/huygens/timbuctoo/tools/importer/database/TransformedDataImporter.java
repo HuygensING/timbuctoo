@@ -9,7 +9,9 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.MongoAdmin;
@@ -38,8 +40,9 @@ public class TransformedDataImporter {
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     IndexManager indexManager = injector.getInstance(IndexManager.class);
-    TypeRegistry registry = injector.getInstance(TypeRegistry.class);
+    //TODO enable after the search for the non-persistent items works again
     indexManager.deleteAllEntities();
+    TypeRegistry registry = injector.getInstance(TypeRegistry.class);
 
     String dataPath = args.length > 0 ? args[0] : "src/main/resources/testdata";
     File dataDir = new File(dataPath);
@@ -55,6 +58,9 @@ public class TransformedDataImporter {
       String className = jsonFile.getName().substring(0, jsonFile.getName().indexOf('.'));
 
       Class<? extends Entity> type = registry.getTypeForIName(className.toLowerCase());
+
+      //TODO enable after the search for the non-persistent items works again
+      //removeNonPersistent(TypeRegistry.toDomainEntity(type), storageManager, indexManager);
       save(type, jsonFile, storageManager, indexManager);
 
     }
@@ -72,5 +78,15 @@ public class TransformedDataImporter {
       String id = storageManager.addEntity(type, entity);
       indexManager.addEntity(type, id);
     }
+  }
+
+  public static <T extends DomainEntity> void removeNonPersistent(Class<T> type, StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
+    List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
+    storageManager.removeNonPersistent(type, ids);
+    indexManager.deleteEntities(type, ids);
+    //Remove relations
+    List<String> relationIds = storageManager.getRelationIds(ids);
+    storageManager.removeNonPersistent(Relation.class, relationIds);
+    indexManager.deleteEntities(Relation.class, ids);
   }
 }
