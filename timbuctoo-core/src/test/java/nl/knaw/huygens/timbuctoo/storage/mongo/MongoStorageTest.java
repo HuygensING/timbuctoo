@@ -42,7 +42,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   private MongoStorage storage;
 
   @BeforeClass
-  public static void setUpDocTypeRegistry() {
+  public static void setupTypeRegistry() {
     registry = new TypeRegistry(TYPE.getPackage().getName());
   }
 
@@ -269,21 +269,17 @@ public class MongoStorageTest extends MongoStorageTestBase {
   protected Map<String, Object> createDefaultMap(int revision, String id) {
     Map<String, Object> map = Maps.newHashMap();
     map.put("_id", id);
-    // TODO remove when the SystemDocuments and DomainDocuments are better separated   
     map.put("^rev", revision);
     map.put("^lastChange", null);
     map.put("^creation", null);
     map.put(DomainEntity.PID, null);
     map.put(DomainEntity.DELETED, false);
-    map.put("@class", TestSystemEntity.class.getName());
-    map.put("@variations", new Object[0]);
     return map;
   }
 
   protected DBObject createDBObject(Map<String, Object> map) {
     JacksonDBObject<JsonNode> dbObject = new JacksonDBObject<JsonNode>();
     dbObject.putAll(map);
-
     return dbObject;
   }
 
