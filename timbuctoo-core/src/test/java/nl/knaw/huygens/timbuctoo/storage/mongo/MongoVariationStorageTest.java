@@ -21,6 +21,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
@@ -190,12 +191,14 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   public void testGetItem() throws IOException {
     String name = "getItem";
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, name);
-    expected.addVariation(TestConcreteDoc.class, DEFAULT_ID);
-    expected.addVariation(ProjectAGeneralTestDoc.class, DEFAULT_ID);
-    expected.addVariation(GeneralTestDoc.class, DEFAULT_ID);
-    expected.addVariation(ProjectBGeneralTestDoc.class, DEFAULT_ID);
-    expected.addVariation(TestDocWithIDPrefix.class, DEFAULT_ID);
-    expected.addVariation(ProjectATestDocWithPersonName.class, DEFAULT_ID);
+    List<Reference> variations = Lists.newArrayList();
+    variations.add(new Reference(TestConcreteDoc.class, DEFAULT_ID));
+    variations.add(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_ID));
+    variations.add(new Reference(GeneralTestDoc.class, DEFAULT_ID));
+    variations.add(new Reference(ProjectBGeneralTestDoc.class, DEFAULT_ID));
+    variations.add(new Reference(TestDocWithIDPrefix.class, DEFAULT_ID));
+    variations.add(new Reference(ProjectATestDocWithPersonName.class, DEFAULT_ID));
+    expected.setVariations(variations);
 
     DBObject dbObject = createTestConcreteDocDBObject(DEFAULT_ID, name);
 
@@ -216,16 +219,17 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetItemSubType() throws IOException {
-    GeneralTestDoc expected = new GeneralTestDoc();
-    expected.setId(DEFAULT_ID);
+    GeneralTestDoc expected = new GeneralTestDoc(DEFAULT_ID);
     expected.name = "subType";
     expected.generalTestDocValue = "test";
-    expected.addVariation(TestConcreteDoc.class, DEFAULT_ID);
-    expected.addVariation(ProjectAGeneralTestDoc.class, DEFAULT_ID);
-    expected.addVariation(GeneralTestDoc.class, DEFAULT_ID);
-    expected.addVariation(ProjectBGeneralTestDoc.class, DEFAULT_ID);
-    expected.addVariation(TestDocWithIDPrefix.class, DEFAULT_ID);
-    expected.addVariation(ProjectATestDocWithPersonName.class, DEFAULT_ID);
+    List<Reference> variations = Lists.newArrayList();
+    variations.add(new Reference(TestConcreteDoc.class, DEFAULT_ID));
+    variations.add(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_ID));
+    variations.add(new Reference(GeneralTestDoc.class, DEFAULT_ID));
+    variations.add(new Reference(ProjectBGeneralTestDoc.class, DEFAULT_ID));
+    variations.add(new Reference(TestDocWithIDPrefix.class, DEFAULT_ID));
+    variations.add(new Reference(ProjectATestDocWithPersonName.class, DEFAULT_ID));
+    expected.setVariations(variations);
 
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
 
@@ -569,7 +573,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     Map<String, Object> map = createDefaultMap(id);
     map.putAll(createTestConcreteDocMap(name, "model"));
     map.putAll(createGeneralTestDocMap(generalTestDocValue, "model"));
-
     return createDBJsonNode(map);
   }
 
@@ -578,14 +581,12 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     map.putAll(createTestConcreteDocMap(name, "projecta"));
     map.putAll(createGeneralTestDocMap(generalTestDocValue, "projecta"));
     map.putAll(createProjectAGeneralTestDocMap(projectAGeneralTestDocValue));
-
     return createDBJsonNode(map);
   }
 
   private Map<String, Object> createProjectAGeneralTestDocMap(String projectAGeneralTestDocValue) {
     Map<String, Object> generalTestDocMap = Maps.newHashMap();
     generalTestDocMap.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), projectAGeneralTestDocValue);
-
     return generalTestDocMap;
   }
 
@@ -596,7 +597,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   private Map<String, Object> createTestConcreteDocMap(String name, String variation) {
-
     Map<String, Object> testConcreteDocMap = Maps.newHashMap();
     testConcreteDocMap.put(propertyName("testconcretedoc", "name"), name);
     return testConcreteDocMap;

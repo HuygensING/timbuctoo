@@ -2,9 +2,11 @@ package nl.knaw.huygens.timbuctoo.rest.providers;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.rest.providers.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.rest.providers.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.rest.providers.model.TestInheritsFromTestBaseDoc;
@@ -24,6 +26,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.google.common.collect.Lists;
 
 public class HTMLGeneratorTest {
 
@@ -85,16 +88,17 @@ public class HTMLGeneratorTest {
 
   @Test
   public void testDomainDocumentArchetype() throws JsonGenerationException, JsonMappingException, IOException {
-    TestConcreteDoc doc = new TestConcreteDoc();
-    doc.setId("TCD0000000001");
-    doc.name = "test";
-    doc.addVariation(ProjectAGeneralTestDoc.class, doc.getId());
-    doc.addVariation(ProjectBGeneralTestDoc.class, doc.getId());
-    doc.addVariation(GeneralTestDoc.class, doc.getId());
-    doc.addVariation(TestConcreteDoc.class, doc.getId());
-    doc.setPid("pid");
+    String id = "TCD0000000001";
+    TestConcreteDoc entity = new TestConcreteDoc(id, "test");
+    entity.setPid("pid");
+    List<Reference> variations = Lists.newArrayList();
+    variations.add(new Reference(ProjectAGeneralTestDoc.class, id));
+    variations.add(new Reference(ProjectBGeneralTestDoc.class, id));
+    variations.add(new Reference(GeneralTestDoc.class, id));
+    variations.add(new Reference(TestConcreteDoc.class, id));
+    entity.setVariations(variations);
 
-    String html = generateHtml(doc);
+    String html = generateHtml(entity);
 
     assertContains(html, "Class", TestConcreteDoc.class.getName());
     assertContains(html, "Name", "test");
@@ -112,22 +116,24 @@ public class HTMLGeneratorTest {
 
   @Test
   public void testDomainDocumentSubtype() throws JsonGenerationException, JsonMappingException, IOException {
-    GeneralTestDoc doc = new GeneralTestDoc();
-    doc.setId("GTD0000000001");
-    doc.generalTestDocValue = "generalTestDocValue";
-    doc.name = "test";
-    doc.addVariation(ProjectAGeneralTestDoc.class, doc.getId());
-    doc.addVariation(ProjectBGeneralTestDoc.class, doc.getId());
-    doc.addVariation(GeneralTestDoc.class, doc.getId());
-    doc.addVariation(TestConcreteDoc.class, doc.getId());
-    doc.setPid("pid");
+    String id = "GTD0000000001";
+    GeneralTestDoc entity = new GeneralTestDoc(id);
+    entity.setPid("pid");
+    entity.generalTestDocValue = "generalTestDocValue";
+    entity.name = "test";
+    List<Reference> variations = Lists.newArrayList();
+    variations.add(new Reference(ProjectAGeneralTestDoc.class, id));
+    variations.add(new Reference(ProjectBGeneralTestDoc.class, id));
+    variations.add(new Reference(GeneralTestDoc.class, id));
+    variations.add(new Reference(TestConcreteDoc.class, id));
+    entity.setVariations(variations);
 
-    String html = generateHtml(doc);
+    String html = generateHtml(entity);
 
     assertContains(html, "Class", GeneralTestDoc.class.getName());
     assertContains(html, "Name", "test");
     assertContains(html, "General Test Doc Value", "generalTestDocValue");
-    assertContains(html, "Id", "GTD0000000001");
+    assertContains(html, "Id", id);
     assertContains(html, "Rev", "0");
     assertContains(html, "Last Change", "none");
     assertContains(html, "Creation", "none");
@@ -141,14 +147,16 @@ public class HTMLGeneratorTest {
 
   @Test
   public void testDomainDocumentProjectSubtype() throws JsonGenerationException, JsonMappingException, IOException {
-    OtherDoc doc = new OtherDoc();
-    doc.setId("OTD0000000001");
-    doc.otherThing = "test";
-    doc.setPid("pid");
-    doc.addVariation(OtherDoc.class, doc.getId());
-    doc.addVariation(TestInheritsFromTestBaseDoc.class, doc.getId());
+    String id = "OTD0000000001";
+    OtherDoc entity = new OtherDoc(id);
+    entity.setPid("pid");
+    entity.otherThing = "test";
+    List<Reference> variations = Lists.newArrayList();
+    variations.add(new Reference(OtherDoc.class, id));
+    variations.add(new Reference(TestInheritsFromTestBaseDoc.class, id));
+    entity.setVariations(variations);
 
-    String html = generateHtml(doc);
+    String html = generateHtml(entity);
 
     assertContains(html, "Class", OtherDoc.class.getName());
     assertContains(html, "Name", "none");

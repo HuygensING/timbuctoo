@@ -35,9 +35,4 @@ public abstract class Role implements Variable {
     this.variations = variations;
   }
 
-  @Override
-  public void addVariation(Class<? extends Entity> refType, String refId) {
-    variations.add(new Reference(refType, refId));
-  }
-
 }

@@ -87,11 +87,6 @@ public abstract class DomainEntity extends Entity implements Variable {
     this.variations = variations;
   }
 
-  @Override
-  public void addVariation(Class<? extends Entity> refType, String refId) {
-    variations.add(new Reference(refType, refId));
-  }
-
   public List<Role> getRoles() {
     return roles;
   }
