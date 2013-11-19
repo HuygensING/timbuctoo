@@ -143,14 +143,13 @@ public class VariationInducerTest extends VariationTestBase {
     assertEquals(expected, inducer.induce(GeneralTestDoc.class, item));
   }
 
-  @Ignore("#1896")
+  @Ignore("#1909")
   @Test
   public void testInduceUpdatedDomainEntityPrimitive() throws StorageException {
     Map<String, Object> existingMap = createTestConcreteDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test");
     ObjectNode node = mapper.valueToTree(existingMap);
 
-    Map<String, Object> expectedMap = createTestConcreteDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test");
-    expectedMap.put(propertyName("testconcretedoc", "name"), "test1");
+    Map<String, Object> expectedMap = createTestConcreteDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test1");
     JsonNode expected = mapper.valueToTree(expectedMap);
 
     TestConcreteDoc item = new TestConcreteDoc();
@@ -159,26 +158,6 @@ public class VariationInducerTest extends VariationTestBase {
     item.setId(DEFAULT_DOMAIN_ID);
 
     assertEquals(expected, inducer.induce(TestConcreteDoc.class, item, node));
-  }
-
-  @Ignore("#1896")
-  @Test
-  public void testInduceUpdatedDomainEntityDerivedPrimitive() throws StorageException {
-    Map<String, Object> existingMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test_pid", "testDocValue");
-    existingMap.put(propertyName("testconcretedoc", "name"), "test");
-    ObjectNode node = mapper.valueToTree(existingMap);
-
-    Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test_pid", "testDocValue");
-    expectedMap.put(propertyName("testconcretedoc", "name"), "test1");
-    JsonNode expected = mapper.valueToTree(expectedMap);
-
-    GeneralTestDoc item = new GeneralTestDoc();
-    item.name = "test1";
-    item.generalTestDocValue = "testDocValue";
-    item.setPid("test_pid");
-    item.setId(DEFAULT_DOMAIN_ID);
-
-    assertEquals(expected, inducer.induce(GeneralTestDoc.class, item, node));
   }
 
   @Test
