@@ -3,19 +3,31 @@ package nl.knaw.huygens.timbuctoo.variation.model;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 
-public class GeneralTestDoc extends TestConcreteDoc {
+// Used to extend TestConcreteDoc, but that is not allowed anymore
+public class GeneralTestDoc extends DomainEntity {
 
+  public String name;
   public String generalTestDocValue;
 
   public GeneralTestDoc() {}
 
   public GeneralTestDoc(String id) {
     setId(id);
+  }
+
+  @Override
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "desc")
+  public String getDisplayName() {
+    return null;
   }
 
   @Override
