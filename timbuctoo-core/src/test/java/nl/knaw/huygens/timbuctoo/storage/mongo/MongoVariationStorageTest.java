@@ -198,7 +198,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     variations.add(new Reference(ProjectBGeneralTestDoc.class, DEFAULT_ID));
     variations.add(new Reference(TestDocWithIDPrefix.class, DEFAULT_ID));
     variations.add(new Reference(ProjectATestDocWithPersonName.class, DEFAULT_ID));
-    expected.setVariations(variations);
+    expected.setVariationRefs(variations);
 
     DBObject dbObject = createTestConcreteDocDBObject(DEFAULT_ID, name);
 
@@ -229,7 +229,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     variations.add(new Reference(ProjectBGeneralTestDoc.class, DEFAULT_ID));
     variations.add(new Reference(TestDocWithIDPrefix.class, DEFAULT_ID));
     variations.add(new Reference(ProjectATestDocWithPersonName.class, DEFAULT_ID));
-    expected.setVariations(variations);
+    expected.setVariationRefs(variations);
 
     Class<GeneralTestDoc> type = GeneralTestDoc.class;
 

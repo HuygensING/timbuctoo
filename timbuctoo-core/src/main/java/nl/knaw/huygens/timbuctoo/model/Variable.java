@@ -7,8 +7,8 @@ import java.util.List;
  */
 public interface Variable {
 
-  List<Reference> getVariations();
+  List<Reference> getVariationRefs();
 
-  void setVariations(List<Reference> variations);
+  void setVariationRefs(List<Reference> variationRefs);
 
 }

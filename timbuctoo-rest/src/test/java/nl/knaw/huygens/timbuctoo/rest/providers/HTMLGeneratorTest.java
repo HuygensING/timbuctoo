@@ -96,7 +96,7 @@ public class HTMLGeneratorTest {
     variations.add(new Reference(ProjectBGeneralTestDoc.class, id));
     variations.add(new Reference(GeneralTestDoc.class, id));
     variations.add(new Reference(TestConcreteDoc.class, id));
-    entity.setVariations(variations);
+    entity.setVariationRefs(variations);
 
     String html = generateHtml(entity);
 
@@ -126,7 +126,7 @@ public class HTMLGeneratorTest {
     variations.add(new Reference(ProjectBGeneralTestDoc.class, id));
     variations.add(new Reference(GeneralTestDoc.class, id));
     variations.add(new Reference(TestConcreteDoc.class, id));
-    entity.setVariations(variations);
+    entity.setVariationRefs(variations);
 
     String html = generateHtml(entity);
 
@@ -154,7 +154,7 @@ public class HTMLGeneratorTest {
     List<Reference> variations = Lists.newArrayList();
     variations.add(new Reference(OtherDoc.class, id));
     variations.add(new Reference(TestInheritsFromTestBaseDoc.class, id));
-    entity.setVariations(variations);
+    entity.setVariationRefs(variations);
 
     String html = generateHtml(entity);
 

@@ -17,7 +17,7 @@ public abstract class DomainEntity extends Entity implements Variable {
   private String pid; // the persistent identifier.
   private boolean deleted;
   private Map<String, List<EntityRef>> relations = Maps.newHashMap();
-  protected List<Reference> variations = Lists.newArrayList();
+  protected List<Reference> variationRefs = Lists.newArrayList();
   private List<Role> roles = Lists.newArrayList();
 
   @JsonProperty(PID)
@@ -60,15 +60,15 @@ public abstract class DomainEntity extends Entity implements Variable {
   }
 
   @Override
-  @JsonProperty("@variations")
-  public List<Reference> getVariations() {
-    return variations;
+  @JsonProperty("@variationRefs")
+  public List<Reference> getVariationRefs() {
+    return variationRefs;
   }
 
   @Override
-  @JsonProperty("@variations")
-  public void setVariations(List<Reference> variations) {
-    this.variations = checkNotNull(variations);
+  @JsonProperty("@variationRefs")
+  public void setVariationRefs(List<Reference> variationRefs) {
+    this.variationRefs = checkNotNull(variationRefs);
   }
 
   public List<Role> getRoles() {
