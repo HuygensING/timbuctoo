@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public abstract class Role implements Variable {
 
-  private List<Reference> variations;
+  private List<Reference> variationRefs;
 
   private final String roleName = this.getClass().getSimpleName();
 
@@ -24,15 +24,15 @@ public abstract class Role implements Variable {
   }
 
   @Override
-  @JsonProperty("@variations")
-  public List<Reference> getVariations() {
-    return variations;
+  @JsonProperty("@variationRefs")
+  public List<Reference> getVariationRefs() {
+    return variationRefs;
   }
 
   @Override
-  @JsonProperty("@variations")
-  public void setVariations(List<Reference> variations) {
-    this.variations = variations;
+  @JsonProperty("@variationRefs")
+  public void setVariationRefs(List<Reference> variationRefs) {
+    this.variationRefs = variationRefs;
   }
 
 }

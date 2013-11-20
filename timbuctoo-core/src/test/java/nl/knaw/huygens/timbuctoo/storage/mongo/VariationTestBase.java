@@ -62,12 +62,12 @@ public abstract class VariationTestBase {
   }
 
   protected ProjectBGeneralTestDoc createProjectBGeneralTestDoc(String id, String pid, String projectBGeneralTestDocValue) {
-    ProjectBGeneralTestDoc item = new ProjectBGeneralTestDoc();
-    item.projectBGeneralTestDocValue = projectBGeneralTestDocValue;
-    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, id), new Reference(ProjectBGeneralTestDoc.class, id)));
-    item.setPid(pid);
-    item.setId(id);
-    return item;
+    ProjectBGeneralTestDoc entity = new ProjectBGeneralTestDoc();
+    entity.projectBGeneralTestDocValue = projectBGeneralTestDocValue;
+    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, id), new Reference(ProjectBGeneralTestDoc.class, id)));
+    entity.setPid(pid);
+    entity.setId(id);
+    return entity;
   }
 
 }

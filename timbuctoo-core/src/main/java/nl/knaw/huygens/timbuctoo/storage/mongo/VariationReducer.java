@@ -150,7 +150,7 @@ class VariationReducer extends VariationConverter {
       variations.add(new Reference(variationClass, id));
     }
 
-    ((Variable) returnObject).setVariations(variations);
+    ((Variable) returnObject).setVariationRefs(variations);
   }
 
   private <T extends Role> T createRole(Class<T> type, JsonNode node, String variation) throws InstantiationException, IllegalAccessException {

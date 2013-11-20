@@ -162,18 +162,18 @@ public class VariationInducerTest extends VariationTestBase {
 
   @Test
   public void testInduceDomainEntityProject() throws StorageException {
-    ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
-    item.setId(DEFAULT_DOMAIN_ID);
-    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
-    item.setPid(DEFAULT_PID);
-    item.projectAGeneralTestDocValue = "projectatest";
-    item.generalTestDocValue = "test";
+    ProjectAGeneralTestDoc entity = new ProjectAGeneralTestDoc();
+    entity.setId(DEFAULT_DOMAIN_ID);
+    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
+    entity.setPid(DEFAULT_PID);
+    entity.projectAGeneralTestDocValue = "projectatest";
+    entity.generalTestDocValue = "test";
 
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test");
     expectedMap.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), "projectatest");
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, item));
+    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, entity));
   }
 
   @Test
@@ -239,12 +239,12 @@ public class VariationInducerTest extends VariationTestBase {
 
     ObjectNode existingItem = mapper.valueToTree(existingMap);
 
-    ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
-    item.setId(DEFAULT_DOMAIN_ID);
-    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
-    item.setPid(DEFAULT_PID);
-    item.projectAGeneralTestDocValue = "projectatest";
-    item.generalTestDocValue = "test1A";
+    ProjectAGeneralTestDoc entity = new ProjectAGeneralTestDoc();
+    entity.setId(DEFAULT_DOMAIN_ID);
+    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
+    entity.setPid(DEFAULT_PID);
+    entity.projectAGeneralTestDocValue = "projectatest";
+    entity.generalTestDocValue = "test1A";
 
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test");
     expectedMap.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), "projectatest");
@@ -253,7 +253,7 @@ public class VariationInducerTest extends VariationTestBase {
     expectedMap.put(propertyName("projectbgeneraltestdoc", "generalTestDocValue"), "projectbTestDoc");
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, item, existingItem));
+    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, entity, existingItem));
   }
 
   /* 
@@ -268,12 +268,12 @@ public class VariationInducerTest extends VariationTestBase {
 
     ObjectNode existingItem = mapper.valueToTree(existingMap);
 
-    ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
-    item.setId(DEFAULT_DOMAIN_ID);
-    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
-    item.setPid(DEFAULT_PID);
-    item.projectAGeneralTestDocValue = "projectatest";
-    item.generalTestDocValue = "test1A";
+    ProjectAGeneralTestDoc entity = new ProjectAGeneralTestDoc();
+    entity.setId(DEFAULT_DOMAIN_ID);
+    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
+    entity.setPid(DEFAULT_PID);
+    entity.projectAGeneralTestDocValue = "projectatest";
+    entity.generalTestDocValue = "test1A";
 
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "testB");
     expectedMap.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), "projectatest");
@@ -281,7 +281,7 @@ public class VariationInducerTest extends VariationTestBase {
     expectedMap.put(propertyName("projectbgeneraltestdoc", "generalTestDocValue"), "projectbTestDoc");
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, item, existingItem));
+    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, entity, existingItem));
   }
 
   @Test
@@ -292,19 +292,19 @@ public class VariationInducerTest extends VariationTestBase {
 
     ObjectNode existingItem = mapper.valueToTree(existingMap);
 
-    ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
-    item.setId(DEFAULT_DOMAIN_ID);
-    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
-    item.setPid(DEFAULT_PID);
-    item.projectAGeneralTestDocValue = "projectatest";
-    item.generalTestDocValue = "testB";
+    ProjectAGeneralTestDoc entity = new ProjectAGeneralTestDoc();
+    entity.setId(DEFAULT_DOMAIN_ID);
+    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
+    entity.setPid(DEFAULT_PID);
+    entity.projectAGeneralTestDocValue = "projectatest";
+    entity.generalTestDocValue = "testB";
 
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "testB");
     expectedMap.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), "projectatest");
     expectedMap.put(propertyName("projectbgeneraltestdoc", "generalTestDocValue"), "projectbTestDoc");
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, item, existingItem));
+    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, entity, existingItem));
   }
 
   @Test
@@ -316,19 +316,19 @@ public class VariationInducerTest extends VariationTestBase {
 
     ObjectNode existingItem = mapper.valueToTree(existingMap);
 
-    ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
-    item.setId(DEFAULT_DOMAIN_ID);
-    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
-    item.setPid(DEFAULT_PID);
-    item.projectAGeneralTestDocValue = "projectatest";
-    item.generalTestDocValue = "testB";
+    ProjectAGeneralTestDoc entity = new ProjectAGeneralTestDoc();
+    entity.setId(DEFAULT_DOMAIN_ID);
+    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
+    entity.setPid(DEFAULT_PID);
+    entity.projectAGeneralTestDocValue = "projectatest";
+    entity.generalTestDocValue = "testB";
 
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "testB");
     expectedMap.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), "projectatest");
     expectedMap.put(propertyName("projectbgeneraltestdoc", "generalTestDocValue"), "projectbTestDoc");
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, item, existingItem));
+    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, entity, existingItem));
   }
 
   @Test
@@ -360,12 +360,12 @@ public class VariationInducerTest extends VariationTestBase {
 
     ObjectNode existing = mapper.valueToTree(existingMap);
 
-    ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
-    item.setId(DEFAULT_DOMAIN_ID);
-    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
-    item.setPid(DEFAULT_PID);
-    item.projectAGeneralTestDocValue = "projectatest";
-    item.generalTestDocValue = "testA";
+    ProjectAGeneralTestDoc entity = new ProjectAGeneralTestDoc();
+    entity.setId(DEFAULT_DOMAIN_ID);
+    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
+    entity.setPid(DEFAULT_PID);
+    entity.projectAGeneralTestDocValue = "projectatest";
+    entity.generalTestDocValue = "testA";
 
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test");
     expectedMap.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), "projectatest");
@@ -375,7 +375,7 @@ public class VariationInducerTest extends VariationTestBase {
     expectedMap.put(propertyName("testrole", "roleName"), "roleName");
     ObjectNode expected = mapper.valueToTree(expectedMap);
 
-    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, item, existing));
+    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, entity, existing));
   }
 
   @Test
@@ -387,12 +387,12 @@ public class VariationInducerTest extends VariationTestBase {
 
     ObjectNode existing = mapper.valueToTree(existingMap);
 
-    ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
-    item.setId(DEFAULT_DOMAIN_ID);
-    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
-    item.setPid(DEFAULT_PID);
-    item.projectAGeneralTestDocValue = "projectatest";
-    item.generalTestDocValue = "testA";
+    ProjectAGeneralTestDoc entity = new ProjectAGeneralTestDoc();
+    entity.setId(DEFAULT_DOMAIN_ID);
+    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
+    entity.setPid(DEFAULT_PID);
+    entity.projectAGeneralTestDocValue = "projectatest";
+    entity.generalTestDocValue = "testA";
 
     List<Role> roles = Lists.newArrayList();
     ProjectANewTestRole role = new ProjectANewTestRole();
@@ -400,7 +400,7 @@ public class VariationInducerTest extends VariationTestBase {
     role.setProjectANewTestRoleName("projectANewTestRoleName");
     roles.add(role);
 
-    item.setRoles(roles);
+    entity.setRoles(roles);
 
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test");
     expectedMap.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), "projectatest");
@@ -412,7 +412,7 @@ public class VariationInducerTest extends VariationTestBase {
     expectedMap.put(propertyName("testrole", "roleName"), "roleName");
     ObjectNode expected = mapper.valueToTree(expectedMap);
 
-    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, item, existing));
+    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, entity, existing));
   }
 
   @Test
@@ -424,12 +424,12 @@ public class VariationInducerTest extends VariationTestBase {
 
     ObjectNode existing = mapper.valueToTree(existingMap);
 
-    ProjectAGeneralTestDoc item = new ProjectAGeneralTestDoc();
-    item.setId(DEFAULT_DOMAIN_ID);
-    item.setVariations(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
-    item.setPid(DEFAULT_PID);
-    item.projectAGeneralTestDocValue = "projectatest";
-    item.generalTestDocValue = "testA";
+    ProjectAGeneralTestDoc entity = new ProjectAGeneralTestDoc();
+    entity.setId(DEFAULT_DOMAIN_ID);
+    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBGeneralTestDoc.class, DEFAULT_DOMAIN_ID)));
+    entity.setPid(DEFAULT_PID);
+    entity.projectAGeneralTestDocValue = "projectatest";
+    entity.generalTestDocValue = "testA";
 
     List<Role> roles = Lists.newArrayList();
     ProjectATestRole role = new ProjectATestRole();
@@ -437,7 +437,7 @@ public class VariationInducerTest extends VariationTestBase {
     role.setRoleName("projectARoleName");
     roles.add(role);
 
-    item.setRoles(roles);
+    entity.setRoles(roles);
 
     Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test");
     expectedMap.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), "projectatest");
@@ -449,7 +449,7 @@ public class VariationInducerTest extends VariationTestBase {
     expectedMap.put(propertyName("testrole", "roleName"), "roleName");
     ObjectNode expected = mapper.valueToTree(expectedMap);
 
-    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, item, existing));
+    assertEquals(expected, inducer.induce(ProjectAGeneralTestDoc.class, entity, existing));
   }
 
   @Test(expected = IllegalArgumentException.class)
