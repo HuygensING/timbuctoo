@@ -4,16 +4,16 @@ import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 
 import com.google.common.base.Objects;
 
-public class ProjectAGeneralTestDoc extends GeneralTestDoc {
+public class ProjectADomainEntity extends GeneralTestDoc {
 
   public String projectAGeneralTestDocValue;
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof ProjectAGeneralTestDoc)) {
+    if (!(obj instanceof ProjectADomainEntity)) {
       return false;
     }
-    ProjectAGeneralTestDoc other = (ProjectAGeneralTestDoc) obj;
+    ProjectADomainEntity other = (ProjectADomainEntity) obj;
 
     return super.equals(obj) && Objects.equal(other.projectAGeneralTestDocValue, projectAGeneralTestDocValue);
   }
