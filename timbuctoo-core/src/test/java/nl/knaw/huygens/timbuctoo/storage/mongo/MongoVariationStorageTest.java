@@ -64,21 +64,9 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testAddItem() throws IOException {
-    TestConcreteDoc input = createTestDoc("test");
+    GeneralTestDoc input = new GeneralTestDoc(DEFAULT_ID, "test");
 
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    storage.addItem(type, input);
-
-    // Two additions one normal addition and one addition in the version table.
-    verify(anyCollection, times(2)).insert(any(DBObject.class));
-  }
-
-  @Test
-  public void testAddItemWithId() throws IOException {
-    TestConcreteDoc input = createTestDoc(DEFAULT_ID, "test");
-
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    storage.addItem(type, input);
+    storage.addItem(GeneralTestDoc.class, input);
 
     // Two additions one normal addition and one addition in the version table.
     verify(anyCollection, times(2)).insert(any(DBObject.class));
@@ -99,12 +87,11 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testUpdateItem() throws IOException {
-    TestConcreteDoc input = createTestDoc("test");
-    input.setId(DEFAULT_ID);
+    GeneralTestDoc input = new GeneralTestDoc(DEFAULT_ID, "test");
 
     when(anyCollection.findOne(any(DBObject.class))).thenReturn(createTestConcreteDocDBObject(DEFAULT_ID, "test"));
 
-    storage.updateItem(TestConcreteDoc.class, DEFAULT_ID, input);
+    storage.updateItem(GeneralTestDoc.class, DEFAULT_ID, input);
 
     //Update current version and the version collection
     verify(anyCollection, times(2)).update(any(DBObject.class), any(DBObject.class));
@@ -112,23 +99,21 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test(expected = IOException.class)
   public void testUpdateItemNonExistent() throws IOException {
-    TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "test");
-    storage.updateItem(TestConcreteDoc.class, DEFAULT_ID, expected);
+    GeneralTestDoc expected = new GeneralTestDoc(DEFAULT_ID, "test");
+    storage.updateItem(GeneralTestDoc.class, DEFAULT_ID, expected);
   }
 
   @Test(expected = StorageException.class)
   public void testUpdateItemMalformed() throws IOException {
+    GeneralTestDoc item = new GeneralTestDoc(DEFAULT_ID, "test");
+
     when(anyCollection.findOne(any(DBObject.class))).thenReturn(new BasicDBObject("test", "test"));
 
-    TestConcreteDoc item = createTestDoc(DEFAULT_ID, "test");
-
-    storage.updateItem(TestConcreteDoc.class, DEFAULT_ID, item);
+    storage.updateItem(GeneralTestDoc.class, DEFAULT_ID, item);
   }
 
   @Test
   public void testDeletetem() throws IOException {
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
     DBObject dbObject = createTestConcreteDocDBObject(DEFAULT_ID, "test");
 
     JsonNode revisionNode = mock(JsonNode.class);
@@ -145,17 +130,16 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     when(anyCollection.findOne(new BasicDBObject("_id", DEFAULT_ID))).thenReturn(dbObject);
 
-    storage.deleteItem(type, DEFAULT_ID, null);
+    storage.deleteItem(GeneralTestDoc.class, DEFAULT_ID, null);
 
     // Update the current version
     // Update the version number.
     verify(anyCollection, times(2)).update(any(DBObject.class), any(DBObject.class));
-
   }
 
   @Test(expected = IOException.class)
   public void testDeleteItemNonExistent() throws IOException {
-    storage.deleteItem(TestConcreteDoc.class, DEFAULT_ID, null);
+    storage.deleteItem(GeneralTestDoc.class, DEFAULT_ID, null);
   }
 
   @Test
@@ -173,19 +157,17 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     DBObject dbObject = createTestConcreteDocDBObject(DEFAULT_ID, name);
 
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-
     DBObject query = new BasicDBObject();
     query.put("_id", DEFAULT_ID);
 
     when(anyCollection.findOne(query)).thenReturn(dbObject);
 
-    assertEquals(DEFAULT_ID, storage.getItem(type, DEFAULT_ID).getId());
+    assertEquals(DEFAULT_ID, storage.getItem(GeneralTestDoc.class, DEFAULT_ID).getId());
   }
 
   @Test
   public void testGetItemNonExistent() throws StorageException, IOException {
-    assertNull(storage.getItem(TestConcreteDoc.class, "TCD000000001"));
+    assertNull(storage.getItem(GeneralTestDoc.class, "TCD000000001"));
   }
 
   @Ignore("See Redmine #1919")
@@ -197,7 +179,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBCursor cursor = createCursorWithoutValues();
     when(anyCollection.find(any(DBObject.class))).thenReturn(cursor);
 
-    assertEquals(5, storage.getAllVariations(TestConcreteDoc.class, DEFAULT_ID).size());
+    assertEquals(5, storage.getAllVariations(GeneralTestDoc.class, DEFAULT_ID).size());
   }
 
   @Ignore("See Redmine #1919")
@@ -210,7 +192,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     when(anyCollection.findOne(query)).thenReturn(projectAGeneralTestDBNode);
 
-    TestConcreteDoc actual = storage.getVariation(TestConcreteDoc.class, DEFAULT_ID, "projecta");
+    GeneralTestDoc actual = storage.getVariation(GeneralTestDoc.class, DEFAULT_ID, "projecta");
 
     assertEquals(name, actual.name);
     assertEquals(DEFAULT_ID, actual.getId());
@@ -220,10 +202,9 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   public void testGetVariationVariationNonExisting() throws IOException {
     DBObject query = queries.selectById(DEFAULT_ID);
 
-    String name = "name";
-    DBObject projectAGeneralTestDBNode = createProjectAGeneralTestDBObject(DEFAULT_ID, name, "value1", "value2");
-
-    when(anyCollection.findOne(query)).thenReturn(projectAGeneralTestDBNode);
+    String name = "projecta";
+    DBObject node = createProjectAGeneralTestDBObject(DEFAULT_ID, name, "value1", "value2");
+    when(anyCollection.findOne(query)).thenReturn(node);
 
     TestConcreteDoc actual = storage.getVariation(TestConcreteDoc.class, DEFAULT_ID, "projectb");
 
@@ -243,7 +224,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllRevisions() throws IOException {
-    storage.getAllRevisions(TestConcreteDoc.class, DEFAULT_ID);
+    storage.getAllRevisions(GeneralTestDoc.class, DEFAULT_ID);
     verify(anyCollection).findOne(new BasicDBObject("_id", DEFAULT_ID));
   }
 
@@ -260,7 +241,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllIdsWithoutPIDOfType() throws IOException {
-    DBObject query = queries.selectVariation("testconcretedoc");
+    String collection = TypeNameGenerator.getInternalName(GeneralTestDoc.class);
+    DBObject query = queries.selectVariation(collection);
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
@@ -270,17 +252,18 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBCursor cursor = createDBCursorWithOneValue(dbObject);
     when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
 
-    List<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+    List<String> ids = storage.getAllIdsWithoutPIDOfType(GeneralTestDoc.class);
 
     assertTrue(ids.contains(id1));
 
     verify(anyCollection).find(query, columnsToShow);
-    verify(db).getCollection("testconcretedoc");
+    verify(db).getCollection(collection);
   }
 
   @Test
   public void testGetAllIdsWithoutPIDOfTypeMultipleFound() throws IOException {
-    DBObject query = queries.selectVariation("testconcretedoc");
+    String collection = TypeNameGenerator.getInternalName(GeneralTestDoc.class);
+    DBObject query = queries.selectVariation(collection);
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
@@ -297,47 +280,50 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
 
-    List<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+    List<String> ids = storage.getAllIdsWithoutPIDOfType(GeneralTestDoc.class);
 
     assertTrue(ids.contains(id1));
     assertTrue(ids.contains(id2));
     assertTrue(ids.contains(id3));
 
     verify(anyCollection).find(query, columnsToShow);
-    verify(db).getCollection("testconcretedoc");
+    verify(db).getCollection(collection);
   }
 
   @Test
   public void testGetAllIdsWithoutPIDOfTypeNoneFound() throws IOException {
-    DBObject query = queries.selectVariation("testconcretedoc");
+    String collection = TypeNameGenerator.getInternalName(GeneralTestDoc.class);
+    DBObject query = queries.selectVariation(collection);
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
     DBCursor cursor = createCursorWithoutValues();
     when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
 
-    List<String> ids = storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+    List<String> ids = storage.getAllIdsWithoutPIDOfType(GeneralTestDoc.class);
 
     assertTrue(ids.isEmpty());
 
     verify(anyCollection).find(query, columnsToShow);
-    verify(db).getCollection("testconcretedoc");
+    verify(db).getCollection(collection);
   }
 
   @Test(expected = IOException.class)
   public void testGetAllIdsWithoutPIDFindThrowsException() throws IOException {
-    DBObject query = queries.selectVariation("testconcretedoc");
+    String collection = TypeNameGenerator.getInternalName(GeneralTestDoc.class);
+    DBObject query = queries.selectVariation(collection);
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
     doThrow(MongoException.class).when(anyCollection).find(query, columnsToShow);
 
-    storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+    storage.getAllIdsWithoutPIDOfType(GeneralTestDoc.class);
   }
 
   @Test(expected = IOException.class)
   public void testGetAllIdsWithoutPIDCursorNextThrowsException() throws IOException {
-    DBObject query = queries.selectVariation("testconcretedoc");
+    String collection = TypeNameGenerator.getInternalName(GeneralTestDoc.class);
+    DBObject query = queries.selectVariation(collection);
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
@@ -347,12 +333,13 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
 
-    storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+    storage.getAllIdsWithoutPIDOfType(GeneralTestDoc.class);
   }
 
   @Test(expected = IOException.class)
   public void testGetAllIdsWithoutPIDCursorHasNextThrowsException() throws IOException {
-    DBObject query = queries.selectVariation("testconcretedoc");
+    String collection = TypeNameGenerator.getInternalName(GeneralTestDoc.class);
+    DBObject query = queries.selectVariation(collection);
     query.put(DomainEntity.PID, null);
     DBObject columnsToShow = new BasicDBObject("_id", 1);
 
@@ -361,7 +348,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     when(anyCollection.find(query, columnsToShow)).thenReturn(cursor);
 
-    storage.getAllIdsWithoutPIDOfType(TestConcreteDoc.class);
+    storage.getAllIdsWithoutPIDOfType(GeneralTestDoc.class);
   }
 
   @Test
@@ -452,10 +439,10 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
     query.put(DomainEntity.PID, null);
 
-    storage.removeNonPersistent(TestConcreteDoc.class, ids);
+    storage.removeNonPersistent(GeneralTestDoc.class, ids);
 
     verify(anyCollection).remove(query);
-    verify(db).getCollection("testconcretedoc");
+    verify(db).getCollection(TypeNameGenerator.getInternalName(GeneralTestDoc.class));
   }
 
   @Test(expected = IOException.class)
@@ -465,7 +452,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     query.put(DomainEntity.PID, null);
     doThrow(MongoException.class).when(anyCollection).remove(query);
 
-    storage.removeNonPersistent(TestConcreteDoc.class, ids);
+    storage.removeNonPersistent(GeneralTestDoc.class, ids);
   }
 
   @Test
@@ -495,61 +482,25 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     }
   }
 
-  private TestConcreteDoc createTestDoc(String name) {
-    return createTestDoc(null, name);
-  }
-
-  private TestConcreteDoc createTestDoc(String id, String name) {
-    TestConcreteDoc expected = new TestConcreteDoc();
-    expected.name = name;
-    expected.setId(id);
-    return expected;
-  }
-
   private DBObject createTestConcreteDocDBObject(String id, String name) {
     Map<String, Object> map = createDefaultMap(id);
-    map.putAll(createTestConcreteDocMap(name, "model"));
+    map.put(propertyName(TestConcreteDoc.class, "name"), name);
     return createDBJsonNode(map);
   }
 
   private DBObject createGeneralTestDocDBObject(String id, String name, String generalTestDocValue) {
     Map<String, Object> map = createDefaultMap(id);
-    map.putAll(createTestConcreteDocMap(name, "model"));
-    map.putAll(createGeneralTestDocMap(generalTestDocValue, "model"));
+    map.put(propertyName(TestConcreteDoc.class, "name"), name);
+    map.put(propertyName(GeneralTestDoc.class, "generalTestDocValue"), generalTestDocValue);
     return createDBJsonNode(map);
   }
 
   private DBObject createProjectAGeneralTestDBObject(String id, String name, String generalTestDocValue, String projectAGeneralTestDocValue) {
     Map<String, Object> map = createDefaultMap(id);
-    map.putAll(createTestConcreteDocMap(name, "projecta"));
-    map.putAll(createGeneralTestDocMap(generalTestDocValue, "projecta"));
-    map.putAll(createProjectAGeneralTestDocMap(projectAGeneralTestDocValue));
-    return createDBJsonNode(map);
-  }
-
-  private Map<String, Object> createProjectAGeneralTestDocMap(String projectAGeneralTestDocValue) {
-    Map<String, Object> map = Maps.newHashMap();
-    map.put(propertyName(ProjectADomainEntity.class, "projectAGeneralTestDocValue"), projectAGeneralTestDocValue);
-    return map;
-  }
-
-  private Map<String, Object> createGeneralTestDocMap(String generalTestDocValue, String variation) {
-    Map<String, Object> map = Maps.newHashMap();
+    map.put(propertyName(TestConcreteDoc.class, "name"), "projecta");
     map.put(propertyName(GeneralTestDoc.class, "generalTestDocValue"), generalTestDocValue);
-    return map;
-  }
-
-  private Map<String, Object> createTestConcreteDocMap(String name, String variation) {
-    Map<String, Object> map = Maps.newHashMap();
-    map.put(propertyName(TestConcreteDoc.class, "name"), name);
-    return map;
-  }
-
-  protected Map<String, Object> createValueMap(String name, String variation) {
-    Map<String, Object> map = Maps.newHashMap();
-    map.put("v", name);
-    map.put("a", new String[] { variation });
-    return map;
+    map.put(propertyName(ProjectADomainEntity.class, "projectAGeneralTestDocValue"), projectAGeneralTestDocValue);
+    return createDBJsonNode(map);
   }
 
   private Map<String, Object> createSimpleMap(String id, Object value) {

@@ -9,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
-import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.VTestSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
@@ -195,8 +194,8 @@ public class TypeRegistryTest {
   @Test
   public void testGetCollectionIdForARegisteredClass() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
-    Class<? extends Entity> baseType = registry.getBaseClass(TestConcreteDoc.class);
-    assertEquals("testconcretedoc", registry.getINameForType(baseType));
+    Class<? extends Entity> baseType = registry.getBaseClass(GeneralTestDoc.class);
+    assertEquals("generaltestdoc", registry.getINameForType(baseType));
   }
 
   @Test
