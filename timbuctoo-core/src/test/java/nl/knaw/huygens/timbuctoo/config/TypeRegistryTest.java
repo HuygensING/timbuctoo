@@ -4,9 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-
-import java.util.Set;
-
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -16,12 +13,9 @@ import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.VTestSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestRole;
 
 import org.junit.Test;
-
-import com.google.common.collect.Sets;
 
 /**
  * Tests for the TypeRegistry. Watch-out the register is highly
@@ -117,19 +111,13 @@ public class TypeRegistryTest {
   @Test
   public void testGetBaseClassFromCollectionClass() {
     TypeRegistry registry = new TypeRegistry("");
-    assertEquals(TestConcreteDoc.class, registry.getBaseClass(TestConcreteDoc.class));
-  }
-
-  @Test
-  public void testGetBaseClassInHeritedGeneralClass() {
-    TypeRegistry registry = new TypeRegistry("");
-    assertEquals(TestConcreteDoc.class, registry.getBaseClass(GeneralTestDoc.class));
+    assertEquals(GeneralTestDoc.class, registry.getBaseClass(GeneralTestDoc.class));
   }
 
   @Test
   public void testGetBaseClassForProjectSpecificClass() {
     TypeRegistry registry = new TypeRegistry("");
-    assertEquals(TestConcreteDoc.class, registry.getBaseClass(ProjectADomainEntity.class));
+    assertEquals(GeneralTestDoc.class, registry.getBaseClass(ProjectADomainEntity.class));
   }
 
   @Test
@@ -177,48 +165,31 @@ public class TypeRegistryTest {
   @Test
   public void testGetBaseClassOfEntity() {
     TypeRegistry registry = new TypeRegistry("");
-    assertEquals(TestConcreteDoc.class, registry.getBase(ProjectADomainEntity.class));
-  }
-
-  //TODO: Make test less dependent on adding subclasses.
-  @Test
-  public void testGetSubClassesOfPrimitiveModel() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    Set<Class<? extends Entity>> expected = Sets.newHashSet();
-    expected.add(GeneralTestDoc.class);
-    expected.add(ProjectADomainEntity.class);
-    expected.add(TestConcreteDoc.class);
-    expected.add(ProjectATestDocWithPersonName.class);
-
-    assertEquals(expected, registry.getSubClasses(TestConcreteDoc.class));
+    assertEquals(GeneralTestDoc.class, registry.getBase(ProjectADomainEntity.class));
   }
 
   @Test
   public void testGetSubClassesOfProjectSubClass() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-
-    assertEquals(null, registry.getSubClasses(ProjectADomainEntity.class));
+    assertNull(registry.getSubClasses(ProjectADomainEntity.class));
   }
 
   @Test
   public void testGetSubClassesOfDomainEntity() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-
-    assertEquals(null, registry.getSubClasses(DomainEntity.class));
+    assertNull(registry.getSubClasses(DomainEntity.class));
   }
 
   @Test
   public void testGetSubClassesOfSystemEntity() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-
-    assertEquals(null, registry.getSubClasses(SystemEntity.class));
+    assertNull(registry.getSubClasses(SystemEntity.class));
   }
 
   @Test
   public void testGetSubClassesOfEntity() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-
-    assertEquals(null, registry.getSubClasses(Entity.class));
+    assertNull(registry.getSubClasses(Entity.class));
   }
 
   @Test

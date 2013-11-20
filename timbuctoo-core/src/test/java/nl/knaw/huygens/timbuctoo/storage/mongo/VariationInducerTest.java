@@ -17,7 +17,6 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectANewTestRole;
@@ -126,21 +125,6 @@ public class VariationInducerTest extends VariationTestBase {
     item.setTestDatable(datable);
 
     assertEquals(expected, inducer.induce(DatableSystemEntity.class, item));
-  }
-
-  @Test
-  public void testInduceDomainEntityPrimitive() throws StorageException {
-    Map<String, Object> expectedMap = createGeneralTestDocMap(DEFAULT_DOMAIN_ID, "test_pid", "testDocValue");
-    expectedMap.put(propertyName(TestConcreteDoc.class, "name"), "test");
-    JsonNode expected = mapper.valueToTree(expectedMap);
-
-    GeneralTestDoc item = new GeneralTestDoc();
-    item.name = "test";
-    item.generalTestDocValue = "testDocValue";
-    item.setPid("test_pid");
-    item.setId(DEFAULT_DOMAIN_ID);
-
-    assertEquals(expected, inducer.induce(GeneralTestDoc.class, item));
   }
 
   @Ignore("#1909")

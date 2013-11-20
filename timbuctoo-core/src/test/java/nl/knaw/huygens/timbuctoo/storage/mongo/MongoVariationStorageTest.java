@@ -19,6 +19,7 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNameGenerator;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
@@ -109,27 +110,9 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     verify(anyCollection, times(2)).update(any(DBObject.class), any(DBObject.class));
   }
 
-  @Test
-  public void testUpdateItemWithSubType() throws IOException {
-    TestConcreteDoc input = createTestDoc("test");
-    input.setId(DEFAULT_ID);
-
-    when(anyCollection.findOne(any(DBObject.class))).thenReturn(createTestConcreteDocDBObject(DEFAULT_ID, "test"));
-
-    ProjectADomainEntity subClassInput = new ProjectADomainEntity();
-    subClassInput.name = "updated";
-    subClassInput.setId(DEFAULT_ID);
-
-    storage.updateItem(TestConcreteDoc.class, DEFAULT_ID, subClassInput);
-
-    //Update current version and the version collection
-    verify(anyCollection, times(2)).update(any(DBObject.class), any(DBObject.class));
-  }
-
   @Test(expected = IOException.class)
   public void testUpdateItemNonExistent() throws IOException {
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, "test");
-    expected.name = "updated";
     storage.updateItem(TestConcreteDoc.class, DEFAULT_ID, expected);
   }
 
@@ -178,9 +161,10 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test
   public void testGetItem() throws IOException {
     String name = "getItem";
-    TestConcreteDoc expected = createTestDoc(DEFAULT_ID, name);
+    GeneralTestDoc expected = new GeneralTestDoc();
+    expected.setId(DEFAULT_ID);
+    expected.name = name;
     List<Reference> variations = Lists.newArrayList();
-    variations.add(new Reference(TestConcreteDoc.class, DEFAULT_ID));
     variations.add(new Reference(ProjectADomainEntity.class, DEFAULT_ID));
     variations.add(new Reference(GeneralTestDoc.class, DEFAULT_ID));
     variations.add(new Reference(ProjectBDomainEntity.class, DEFAULT_ID));
@@ -196,34 +180,12 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     when(anyCollection.findOne(query)).thenReturn(dbObject);
 
-    assertEqualDocs(expected, storage.getItem(type, DEFAULT_ID));
+    assertEquals(DEFAULT_ID, storage.getItem(type, DEFAULT_ID).getId());
   }
 
   @Test
   public void testGetItemNonExistent() throws StorageException, IOException {
     assertNull(storage.getItem(TestConcreteDoc.class, "TCD000000001"));
-  }
-
-  @Test
-  public void testGetItemSubType() throws IOException {
-    GeneralTestDoc expected = new GeneralTestDoc(DEFAULT_ID);
-    expected.name = "subType";
-    expected.generalTestDocValue = "test";
-    List<Reference> variations = Lists.newArrayList();
-    variations.add(new Reference(TestConcreteDoc.class, DEFAULT_ID));
-    variations.add(new Reference(ProjectADomainEntity.class, DEFAULT_ID));
-    variations.add(new Reference(GeneralTestDoc.class, DEFAULT_ID));
-    variations.add(new Reference(ProjectBDomainEntity.class, DEFAULT_ID));
-    variations.add(new Reference(ProjectATestDocWithPersonName.class, DEFAULT_ID));
-    expected.setVariationRefs(variations);
-
-    Class<GeneralTestDoc> type = GeneralTestDoc.class;
-
-    DBObject value = createGeneralTestDocDBObject(DEFAULT_ID, "subType", "test");
-
-    when(anyCollection.findOne(any(DBObject.class))).thenReturn(value);
-
-    assertEqualDocs(expected, storage.getItem(type, DEFAULT_ID));
   }
 
   @Ignore("See Redmine #1919")
@@ -508,22 +470,18 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testSetPID() {
-    Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
-
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
     String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
     DBObject update = queries.setProperty(DomainEntity.PID, pid);
 
-    storage.setPID(type, DEFAULT_ID, pid);
+    storage.setPID(ProjectADomainEntity.class, DEFAULT_ID, pid);
 
     verify(anyCollection).update(query, update);
-    verify(db).getCollection("testconcretedoc");
+    verify(db).getCollection(TypeNameGenerator.getInternalName(GeneralTestDoc.class));
   }
 
   @Test(expected = RuntimeException.class)
   public void testSetPIDMongoException() {
-    Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
-
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
     String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
     DBObject update = queries.setProperty(DomainEntity.PID, pid);
@@ -531,9 +489,9 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     doThrow(MongoException.class).when(anyCollection).update(query, update);
 
     try {
-      storage.setPID(type, DEFAULT_ID, pid);
+      storage.setPID(ProjectADomainEntity.class, DEFAULT_ID, pid);
     } finally {
-      verify(db).getCollection("testconcretedoc");
+      verify(db).getCollection(TypeNameGenerator.getInternalName(GeneralTestDoc.class));
     }
   }
 

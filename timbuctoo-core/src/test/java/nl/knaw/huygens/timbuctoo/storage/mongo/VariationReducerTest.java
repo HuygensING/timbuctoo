@@ -402,7 +402,7 @@ public class VariationReducerTest extends VariationTestBase {
 
     JsonNode node = mapper.valueToTree(map);
 
-    assertEquals(5, reducer.getAllForDBObject(new DBJsonNode(node), ProjectADomainEntity.class).size());
+    assertEquals(3, reducer.getAllForDBObject(new DBJsonNode(node), ProjectADomainEntity.class).size());
   }
 
   @Override
