@@ -69,13 +69,9 @@ class VariationInducer extends VariationConverter {
     checkArgument(item != null);
     checkArgument(type != null);
 
-    Map<String, Object> map = Maps.newHashMap();
-
-    Map<String, Object> entityMap = getEntityMap(type, item);
+    Map<String, Object> map = getEntityMap(type, item);
     if (existingItem != null && TypeRegistry.isDomainEntity(type)) {
-      map.putAll(merge(type, entityMap, existingItem));
-    } else {
-      map.putAll(entityMap);
+      map = merge(type, map, existingItem);
     }
 
     if (TypeRegistry.isSystemEntity(type)) {
@@ -83,23 +79,19 @@ class VariationInducer extends VariationConverter {
     }
 
     List<Role> roles = ((DomainEntity) item).getRoles();
-    if (roles != null) {
-      for (Role role : roles) {
-        Map<String, Object> roleMap = Maps.newHashMap();
-        Class<? extends Role> roleType = role.getClass();
-        roleMap.putAll(getRoleMap(roleType, roleType.cast(role)));
-        if (existingItem != null) {
-          map.putAll(merge(roleType, roleMap, existingItem));
-        } else {
-          map.putAll(roleMap);
-        }
+    for (Role role : roles) {
+      Map<String, Object> roleMap = Maps.newHashMap();
+      Class<? extends Role> roleType = role.getClass();
+      roleMap.putAll(getRoleMap(roleType, roleType.cast(role)));
+      if (existingItem != null) {
+        map.putAll(merge(roleType, roleMap, existingItem));
+      } else {
+        map.putAll(roleMap);
       }
     }
 
     ObjectNode newNode = mapper.valueToTree(map);
-
     return cleanUp(newNode);
-    //throw new UnsupportedOperationException("Being revised.");
   }
 
   @SuppressWarnings("unchecked")
