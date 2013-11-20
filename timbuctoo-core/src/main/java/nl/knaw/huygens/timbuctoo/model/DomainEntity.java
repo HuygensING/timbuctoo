@@ -1,15 +1,14 @@
 package nl.knaw.huygens.timbuctoo.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-// Make sure the '@isWritable'-field is not deserialized.
-@JsonIgnoreProperties("@isWritable")
 public abstract class DomainEntity extends Entity implements Variable {
 
   public static final String PID = "^pid";
@@ -47,8 +46,8 @@ public abstract class DomainEntity extends Entity implements Variable {
   }
 
   @JsonProperty("@relations")
-  public void setRelations(Map<String, List<EntityRef>> variations) {
-    this.relations = variations;
+  public void setRelations(Map<String, List<EntityRef>> relations) {
+    this.relations = checkNotNull(relations);
   }
 
   public void addRelation(String name, EntityRef ref) {
@@ -60,21 +59,6 @@ public abstract class DomainEntity extends Entity implements Variable {
     refs.add(ref);
   }
 
-  /**
-   * This method returns if the current object is writable. 
-   * The value will be serialized, but will not be deserialized. 
-   * Because it is dependent on the pid-field.
-   * @return
-   */
-  @JsonProperty("@isWritable")
-  public boolean isWritable() {
-    /* Only DomainDocuments with a persistent identifier should be writable. 
-     * DomainDocuments without one are just there to give the users an opportunity 
-     * to check the batch-imported data.
-     */
-    return getPid() != null;
-  }
-
   @Override
   @JsonProperty("@variations")
   public List<Reference> getVariations() {
@@ -84,7 +68,7 @@ public abstract class DomainEntity extends Entity implements Variable {
   @Override
   @JsonProperty("@variations")
   public void setVariations(List<Reference> variations) {
-    this.variations = variations;
+    this.variations = checkNotNull(variations);
   }
 
   public List<Role> getRoles() {
@@ -92,12 +76,11 @@ public abstract class DomainEntity extends Entity implements Variable {
   }
 
   public void setRoles(List<Role> roles) {
-    this.roles = roles;
+    this.roles = checkNotNull(roles);
   }
 
   public void addRole(Role role) {
     roles.add(role);
-
   }
 
 }

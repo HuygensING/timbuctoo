@@ -27,7 +27,7 @@ public class EntityHTMLProviderTest {
   }
 
   @Test
-  public void documentIsWritable() {
+  public void entityIsWritable() {
     assertIsWritable(true, Entity.class, MediaType.TEXT_HTML_TYPE);
     assertIsWritable(false, Entity.class, MediaType.APPLICATION_JSON_TYPE);
   }

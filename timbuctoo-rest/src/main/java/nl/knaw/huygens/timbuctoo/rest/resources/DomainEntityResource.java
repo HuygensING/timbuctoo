@@ -231,8 +231,12 @@ public class DomainEntityResource extends ResourceBase {
     }
   }
 
+  /**
+   * Domain entities without a persistent identifier are not writable.
+   * They are only available to check batch-imported data.
+   */
   private void checkWritable(DomainEntity entity, Status status) {
-    if (!entity.isWritable()) {
+    if (entity.getPid() == null) {
       LOG.info("Entity with id {} is not writeable", entity.getId());
       throw new WebApplicationException(status);
     }
