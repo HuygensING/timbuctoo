@@ -13,9 +13,9 @@ import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
-import nl.knaw.huygens.timbuctoo.variation.model.TestExtraBaseDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestRole;
-import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.VTestSystemEntity;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestRole;
 
@@ -49,7 +49,7 @@ public class TypeRegistryTest {
   public void testGetTypeForIName() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
     assertEquals(GeneralTestDoc.class, registry.getTypeForIName("generaltestdoc"));
-    assertEquals(TestExtraBaseDoc.class, registry.getTypeForIName("testextrabasedoc"));
+    assertEquals(VTestSystemEntity.class, registry.getTypeForIName("vtestsystementity"));
   }
 
   @Test
@@ -67,15 +67,15 @@ public class TypeRegistryTest {
   @Test
   public void testGetForINameEntity() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
-    assertEquals(TestExtraBaseDoc.class, registry.getForIName("testextrabasedoc"));
+    assertEquals(VTestSystemEntity.class, registry.getForIName("vtestsystementity"));
   }
 
   @Test
   public void testGetTypeForXName() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
     assertEquals(GeneralTestDoc.class, registry.getTypeForXName("generaltestdocs"));
-    // TestExtraBaseDoc has @EntityTypeName("testextrabasedoc")
-    assertEquals(TestExtraBaseDoc.class, registry.getTypeForXName("testextrabasedoc"));
+    // Has @EntityTypeName annotation:
+    assertEquals(VTestSystemEntity.class, registry.getTypeForXName("mysystementity"));
   }
 
   @Test
@@ -129,7 +129,7 @@ public class TypeRegistryTest {
   @Test
   public void testGetBaseClassForProjectSpecificClass() {
     TypeRegistry registry = new TypeRegistry("");
-    assertEquals(TestConcreteDoc.class, registry.getBaseClass(ProjectAGeneralTestDoc.class));
+    assertEquals(TestConcreteDoc.class, registry.getBaseClass(ProjectADomainEntity.class));
   }
 
   @Test
@@ -177,7 +177,7 @@ public class TypeRegistryTest {
   @Test
   public void testGetBaseClassOfEntity() {
     TypeRegistry registry = new TypeRegistry("");
-    assertEquals(TestConcreteDoc.class, registry.getBase(ProjectAGeneralTestDoc.class));
+    assertEquals(TestConcreteDoc.class, registry.getBase(ProjectADomainEntity.class));
   }
 
   //TODO: Make test less dependent on adding subclasses.
@@ -186,7 +186,7 @@ public class TypeRegistryTest {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
     Set<Class<? extends Entity>> expected = Sets.newHashSet();
     expected.add(GeneralTestDoc.class);
-    expected.add(ProjectAGeneralTestDoc.class);
+    expected.add(ProjectADomainEntity.class);
     expected.add(TestConcreteDoc.class);
     expected.add(ProjectATestDocWithPersonName.class);
 
@@ -197,7 +197,7 @@ public class TypeRegistryTest {
   public void testGetSubClassesOfProjectSubClass() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
 
-    assertEquals(null, registry.getSubClasses(ProjectAGeneralTestDoc.class));
+    assertEquals(null, registry.getSubClasses(ProjectADomainEntity.class));
   }
 
   @Test
@@ -249,7 +249,7 @@ public class TypeRegistryTest {
   @Test
   public void testGetClassVariation() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertEquals("projecta", registry.getClassVariation(ProjectAGeneralTestDoc.class));
+    assertEquals("projecta", registry.getClassVariation(ProjectADomainEntity.class));
   }
 
   @Test
@@ -273,7 +273,7 @@ public class TypeRegistryTest {
   @Test
   public void testGetVariationClassForDomainEntity() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertEquals(ProjectAGeneralTestDoc.class, registry.getVariationClass(GeneralTestDoc.class, "projecta"));
+    assertEquals(ProjectADomainEntity.class, registry.getVariationClass(GeneralTestDoc.class, "projecta"));
   }
 
   @Test

@@ -25,9 +25,9 @@ import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
-import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
-import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBGeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBDomainEntity;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -115,7 +115,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     when(anyCollection.findOne(any(DBObject.class))).thenReturn(createTestConcreteDocDBObject(DEFAULT_ID, "test"));
 
-    ProjectAGeneralTestDoc subClassInput = new ProjectAGeneralTestDoc();
+    ProjectADomainEntity subClassInput = new ProjectADomainEntity();
     subClassInput.name = "updated";
     subClassInput.setId(DEFAULT_ID);
 
@@ -180,9 +180,9 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     TestConcreteDoc expected = createTestDoc(DEFAULT_ID, name);
     List<Reference> variations = Lists.newArrayList();
     variations.add(new Reference(TestConcreteDoc.class, DEFAULT_ID));
-    variations.add(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_ID));
+    variations.add(new Reference(ProjectADomainEntity.class, DEFAULT_ID));
     variations.add(new Reference(GeneralTestDoc.class, DEFAULT_ID));
-    variations.add(new Reference(ProjectBGeneralTestDoc.class, DEFAULT_ID));
+    variations.add(new Reference(ProjectBDomainEntity.class, DEFAULT_ID));
     variations.add(new Reference(ProjectATestDocWithPersonName.class, DEFAULT_ID));
     expected.setVariationRefs(variations);
 
@@ -210,9 +210,9 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     expected.generalTestDocValue = "test";
     List<Reference> variations = Lists.newArrayList();
     variations.add(new Reference(TestConcreteDoc.class, DEFAULT_ID));
-    variations.add(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_ID));
+    variations.add(new Reference(ProjectADomainEntity.class, DEFAULT_ID));
     variations.add(new Reference(GeneralTestDoc.class, DEFAULT_ID));
-    variations.add(new Reference(ProjectBGeneralTestDoc.class, DEFAULT_ID));
+    variations.add(new Reference(ProjectBDomainEntity.class, DEFAULT_ID));
     variations.add(new Reference(ProjectATestDocWithPersonName.class, DEFAULT_ID));
     expected.setVariationRefs(variations);
 
@@ -272,7 +272,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBCursor cursor = createCursorWithoutValues();
     when(anyCollection.find(query)).thenReturn(cursor);
 
-    storage.getAllByType(ProjectBGeneralTestDoc.class);
+    storage.getAllByType(ProjectBDomainEntity.class);
     verify(anyCollection).find(query);
   }
 
@@ -285,7 +285,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test
   public void testGetRevision() throws IOException {
     int revisionId = 0;
-    storage.getRevision(ProjectAGeneralTestDoc.class, DEFAULT_ID, revisionId);
+    storage.getRevision(ProjectADomainEntity.class, DEFAULT_ID, revisionId);
 
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
     query.put("versions.^rev", revisionId);
@@ -505,7 +505,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testSetPID() {
-    Class<ProjectAGeneralTestDoc> type = ProjectAGeneralTestDoc.class;
+    Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
 
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
     String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
@@ -519,7 +519,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test(expected = RuntimeException.class)
   public void testSetPIDMongoException() {
-    Class<ProjectAGeneralTestDoc> type = ProjectAGeneralTestDoc.class;
+    Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
 
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
     String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
@@ -568,7 +568,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   private Map<String, Object> createProjectAGeneralTestDocMap(String projectAGeneralTestDocValue) {
     Map<String, Object> map = Maps.newHashMap();
-    map.put(propertyName(ProjectAGeneralTestDoc.class, "projectAGeneralTestDocValue"), projectAGeneralTestDocValue);
+    map.put(propertyName(ProjectADomainEntity.class, "projectAGeneralTestDocValue"), projectAGeneralTestDocValue);
     return map;
   }
 

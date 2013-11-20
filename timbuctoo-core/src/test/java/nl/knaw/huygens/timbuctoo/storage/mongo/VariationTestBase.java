@@ -8,8 +8,8 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
-import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
-import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBGeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
+import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBDomainEntity;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,10 +60,10 @@ public abstract class VariationTestBase {
     return map;
   }
 
-  protected ProjectBGeneralTestDoc createProjectBGeneralTestDoc(String id, String pid, String projectBGeneralTestDocValue) {
-    ProjectBGeneralTestDoc entity = new ProjectBGeneralTestDoc();
+  protected ProjectBDomainEntity createProjectBGeneralTestDoc(String id, String pid, String projectBGeneralTestDocValue) {
+    ProjectBDomainEntity entity = new ProjectBDomainEntity();
     entity.projectBGeneralTestDocValue = projectBGeneralTestDocValue;
-    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectAGeneralTestDoc.class, id), new Reference(ProjectBGeneralTestDoc.class, id)));
+    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectADomainEntity.class, id), new Reference(ProjectBDomainEntity.class, id)));
     entity.setPid(pid);
     entity.setId(id);
     return entity;

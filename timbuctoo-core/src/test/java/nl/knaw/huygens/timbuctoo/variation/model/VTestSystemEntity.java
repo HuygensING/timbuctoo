@@ -6,8 +6,8 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@EntityTypeName("testextrabasedoc")
-public class TestExtraBaseDoc extends SystemEntity {
+@EntityTypeName("mysystementity")
+public class VTestSystemEntity extends SystemEntity {
 
   @Override
   @JsonIgnore
