@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPer
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBDomainEntity;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -225,6 +226,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     assertEqualDocs(expected, storage.getItem(type, DEFAULT_ID));
   }
 
+  @Ignore("See Redmine #1919")
   @Test
   public void testGetAllVariationsWithoutRelations() throws IOException {
     DBObject value = createGeneralTestDocDBObject(DEFAULT_ID, "subType", "test");
@@ -236,6 +238,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     assertEquals(5, storage.getAllVariations(TestConcreteDoc.class, DEFAULT_ID).size());
   }
 
+  @Ignore("See Redmine #1919")
   @Test
   public void testGetVariation() throws IOException {
     DBObject query = new MongoQueries().selectById(DEFAULT_ID);

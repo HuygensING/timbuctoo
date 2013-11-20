@@ -234,7 +234,8 @@ class VariationReducer extends VariationConverter {
       LOG.error("Original value \"{}\" cannot be converted.", originalValue);
     }
 
-    if (TypeRegistry.isVariable(type)) {
+    // TODO this is a very ugly partial fix for [#1919]
+    if (type != Entity.class && type != DomainEntity.class && TypeRegistry.isVariable(type)) {
       @SuppressWarnings("unchecked")
       Class<? extends Variable> subClass = typeRegistry.getVariationClass((Class<? extends Variable>) type, variation);
 

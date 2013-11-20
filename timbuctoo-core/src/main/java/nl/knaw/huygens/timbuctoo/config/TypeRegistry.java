@@ -316,19 +316,19 @@ public class TypeRegistry {
    * @return the class if one is found, if not it returns null.
    */
   public Class<? extends Variable> getVariationClass(Class<? extends Variable> typeForVariation, String variation) {
-    if (variation == null) {
-      return null;
-    }
-
-    if (variationMap.containsKey(variation)) {
+    Class<? extends Variable> result = null;
+    if (variation != null && variationMap.containsKey(variation)) {
       for (Class<? extends Variable> variable : variationMap.get(variation)) {
         if (typeForVariation.isAssignableFrom(variable)) {
-          return variable;
+          if (result != null) {
+            LOG.error("Multiple variables in '{}' for type '{}'", variation, typeForVariation.getSimpleName());
+            throw new IllegalStateException("cannot resolve variation class");
+          }
+          result = variable;
         }
       }
     }
-
-    return null;
+    return result;
   }
 
   /**
