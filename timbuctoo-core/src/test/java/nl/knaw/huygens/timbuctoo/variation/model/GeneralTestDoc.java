@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 
-// Used to extend TestConcreteDoc, but that is not allowed anymore
 public class GeneralTestDoc extends DomainEntity {
 
   public String name;

@@ -17,7 +17,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectANewTestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
@@ -127,21 +127,21 @@ public class VariationInducerTest extends VariationTestBase {
     assertEquals(expected, inducer.induce(DatableSystemEntity.class, item));
   }
 
-  @Ignore("#1909")
+  @Ignore("Redmine #1909")
   @Test
   public void testInduceUpdatedDomainEntityPrimitive() throws StorageException {
-    Map<String, Object> existingMap = createTestConcreteDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test");
-    ObjectNode node = mapper.valueToTree(existingMap);
+    Map<String, Object> map = createDefaultMap(DEFAULT_DOMAIN_ID, DEFAULT_PID);
+    map.put(propertyName(GeneralTestDoc.class, "name"), "test");
+    ObjectNode node = mapper.valueToTree(map);
 
-    Map<String, Object> expectedMap = createTestConcreteDocMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test1");
+    Map<String, Object> expectedMap = createDefaultMap(DEFAULT_DOMAIN_ID, DEFAULT_PID);
+    expectedMap.put(propertyName(GeneralTestDoc.class, "name"), "test1");
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    TestConcreteDoc item = new TestConcreteDoc();
-    item.name = "test1";
+    GeneralTestDoc item = new GeneralTestDoc(DEFAULT_DOMAIN_ID, "test1");
     item.setPid(DEFAULT_PID);
-    item.setId(DEFAULT_DOMAIN_ID);
 
-    assertEquals(expected, inducer.induce(TestConcreteDoc.class, item, node));
+    assertEquals(expected, inducer.induce(GeneralTestDoc.class, item, node));
   }
 
   @Test
