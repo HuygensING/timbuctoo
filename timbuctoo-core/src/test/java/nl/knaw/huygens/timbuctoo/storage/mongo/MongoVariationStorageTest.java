@@ -518,7 +518,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     doThrow(MongoException.class).when(anyCollection).remove(query);
 
     storage.removeNonPersistent(TestConcreteDoc.class, ids);
-
   }
 
   @Test
@@ -585,21 +584,21 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   private Map<String, Object> createProjectAGeneralTestDocMap(String projectAGeneralTestDocValue) {
-    Map<String, Object> generalTestDocMap = Maps.newHashMap();
-    generalTestDocMap.put(propertyName("projectageneraltestdoc", "projectAGeneralTestDocValue"), projectAGeneralTestDocValue);
-    return generalTestDocMap;
+    Map<String, Object> map = Maps.newHashMap();
+    map.put(propertyName(ProjectAGeneralTestDoc.class, "projectAGeneralTestDocValue"), projectAGeneralTestDocValue);
+    return map;
   }
 
   private Map<String, Object> createGeneralTestDocMap(String generalTestDocValue, String variation) {
-    Map<String, Object> generalTestDocMap = Maps.newHashMap();
-    generalTestDocMap.put(propertyName("generaltestdoc", "generalTestDocValue"), generalTestDocValue);
-    return generalTestDocMap;
+    Map<String, Object> map = Maps.newHashMap();
+    map.put(propertyName(GeneralTestDoc.class, "generalTestDocValue"), generalTestDocValue);
+    return map;
   }
 
   private Map<String, Object> createTestConcreteDocMap(String name, String variation) {
-    Map<String, Object> testConcreteDocMap = Maps.newHashMap();
-    testConcreteDocMap.put(propertyName("testconcretedoc", "name"), name);
-    return testConcreteDocMap;
+    Map<String, Object> map = Maps.newHashMap();
+    map.put(propertyName(TestConcreteDoc.class, "name"), name);
+    return map;
   }
 
   protected Map<String, Object> createValueMap(String name, String variation) {

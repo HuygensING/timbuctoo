@@ -7,6 +7,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
+import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBGeneralTestDoc;
 
@@ -37,19 +38,17 @@ public abstract class VariationTestBase {
   }
 
   protected Map<String, Object> createGeneralTestDocMap(String id, String pid, String generalTestDocValue) {
-    Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.putAll(createDefaultMap(id, pid, expectedMap));
-    expectedMap.put(propertyName("generaltestdoc", "generalTestDocValue"), generalTestDocValue);
-
-    return expectedMap;
+    Map<String, Object> map = Maps.newHashMap();
+    map.putAll(createDefaultMap(id, pid, map));
+    map.put(propertyName("generaltestdoc", "generalTestDocValue"), generalTestDocValue);
+    return map;
   }
 
   protected Map<String, Object> createTestConcreteDocMap(String id, String pid, String name) {
-    Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.putAll(createDefaultMap(id, pid, expectedMap));
-    expectedMap.put(propertyName("testconcretedoc", "name"), name);
-
-    return expectedMap;
+    Map<String, Object> map = Maps.newHashMap();
+    map.putAll(createDefaultMap(id, pid, map));
+    map.put(propertyName(TestConcreteDoc.class, "name"), name);
+    return map;
   }
 
   protected Map<String, Object> createDefaultMap(String id, String pid, Map<String, Object> expectedMap) {
