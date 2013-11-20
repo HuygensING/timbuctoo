@@ -12,11 +12,8 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
-import nl.knaw.huygens.timbuctoo.variation.model.TestBaseDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
-import nl.knaw.huygens.timbuctoo.variation.model.TestDocWithIDPrefix;
 import nl.knaw.huygens.timbuctoo.variation.model.TestExtraBaseDoc;
-import nl.knaw.huygens.timbuctoo.variation.model.TestInheritsFromTestBaseDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
@@ -118,12 +115,6 @@ public class TypeRegistryTest {
   }
 
   @Test
-  public void testGetBaseClassFromCollectionBaseClass() {
-    TypeRegistry registry = new TypeRegistry("");
-    assertEquals(TestBaseDoc.class, registry.getBaseClass(TestBaseDoc.class));
-  }
-
-  @Test
   public void testGetBaseClassFromCollectionClass() {
     TypeRegistry registry = new TypeRegistry("");
     assertEquals(TestConcreteDoc.class, registry.getBaseClass(TestConcreteDoc.class));
@@ -133,12 +124,6 @@ public class TypeRegistryTest {
   public void testGetBaseClassInHeritedGeneralClass() {
     TypeRegistry registry = new TypeRegistry("");
     assertEquals(TestConcreteDoc.class, registry.getBaseClass(GeneralTestDoc.class));
-  }
-
-  @Test
-  public void testGetBaseClassFromNonDirectDescendantOfDocument() {
-    TypeRegistry registry = new TypeRegistry("");
-    assertEquals(TestInheritsFromTestBaseDoc.class, registry.getBaseClass(TestInheritsFromTestBaseDoc.class));
   }
 
   @Test
@@ -201,7 +186,6 @@ public class TypeRegistryTest {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
     Set<Class<? extends Entity>> expected = Sets.newHashSet();
     expected.add(GeneralTestDoc.class);
-    expected.add(TestDocWithIDPrefix.class);
     expected.add(ProjectAGeneralTestDoc.class);
     expected.add(TestConcreteDoc.class);
     expected.add(ProjectATestDocWithPersonName.class);
@@ -260,12 +244,6 @@ public class TypeRegistryTest {
   public void testRegisterPackageSubPackage() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
     assertNull(registry.getTypeForIName("testdoc"));
-  }
-
-  @Test
-  public void testRegisterPackageAbstractClass() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
-    assertNull(registry.getTypeForIName("testbasedoc"));
   }
 
   @Test

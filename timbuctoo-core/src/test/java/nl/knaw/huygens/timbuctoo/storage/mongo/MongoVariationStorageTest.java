@@ -25,7 +25,6 @@ import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
-import nl.knaw.huygens.timbuctoo.variation.model.TestDocWithIDPrefix;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectAGeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBGeneralTestDoc;
@@ -67,18 +66,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     Class<TestConcreteDoc> type = TestConcreteDoc.class;
     storage.addItem(type, input);
-
-    // Two additions one normal addition and one addition in the version table.
-    verify(anyCollection, times(2)).insert(any(DBObject.class));
-  }
-
-  @Test
-  public void testAddItemWithIDPrefix() throws IOException {
-    TestDocWithIDPrefix input = new TestDocWithIDPrefix();
-    input.name = "test";
-    input.generalTestDocValue = "TestDocWithIDPrefix";
-
-    storage.addItem(TestDocWithIDPrefix.class, input);
 
     // Two additions one normal addition and one addition in the version table.
     verify(anyCollection, times(2)).insert(any(DBObject.class));
@@ -196,7 +183,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     variations.add(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_ID));
     variations.add(new Reference(GeneralTestDoc.class, DEFAULT_ID));
     variations.add(new Reference(ProjectBGeneralTestDoc.class, DEFAULT_ID));
-    variations.add(new Reference(TestDocWithIDPrefix.class, DEFAULT_ID));
     variations.add(new Reference(ProjectATestDocWithPersonName.class, DEFAULT_ID));
     expected.setVariationRefs(variations);
 
@@ -227,7 +213,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     variations.add(new Reference(ProjectAGeneralTestDoc.class, DEFAULT_ID));
     variations.add(new Reference(GeneralTestDoc.class, DEFAULT_ID));
     variations.add(new Reference(ProjectBGeneralTestDoc.class, DEFAULT_ID));
-    variations.add(new Reference(TestDocWithIDPrefix.class, DEFAULT_ID));
     variations.add(new Reference(ProjectATestDocWithPersonName.class, DEFAULT_ID));
     expected.setVariationRefs(variations);
 
@@ -248,9 +233,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBCursor cursor = createCursorWithoutValues();
     when(anyCollection.find(any(DBObject.class))).thenReturn(cursor);
 
-    List<TestConcreteDoc> variations = storage.getAllVariations(TestConcreteDoc.class, DEFAULT_ID);
-
-    assertEquals(6, variations.size());
+    assertEquals(5, storage.getAllVariations(TestConcreteDoc.class, DEFAULT_ID).size());
   }
 
   @Test
