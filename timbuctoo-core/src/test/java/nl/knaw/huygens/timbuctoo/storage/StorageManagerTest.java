@@ -17,7 +17,6 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
-import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -89,9 +88,9 @@ public class StorageManagerTest {
 
   @Test
   public void testModifyEntity() throws IOException {
-    TestConcreteDoc entity = new TestConcreteDoc("id");
-    manager.modifyEntity(TestConcreteDoc.class, entity);
-    verify(storage).updateItem(TestConcreteDoc.class, "id", entity);
+    GeneralTestDoc entity = new GeneralTestDoc("id");
+    manager.modifyEntity(GeneralTestDoc.class, entity);
+    verify(storage).updateItem(GeneralTestDoc.class, "id", entity);
   }
 
   @Test
@@ -103,11 +102,11 @@ public class StorageManagerTest {
 
   @Test
   public void testRemoveDomainEntity() throws IOException {
-    TestConcreteDoc entity = new TestConcreteDoc("id");
+    GeneralTestDoc entity = new GeneralTestDoc("id");
     Change change = new Change();
     entity.setLastChange(change);
     manager.removeEntity(entity);
-    verify(storage).deleteItem(TestConcreteDoc.class, "id", change);
+    verify(storage).deleteItem(GeneralTestDoc.class, "id", change);
   }
 
   @Test
@@ -125,8 +124,8 @@ public class StorageManagerTest {
 
   @Test
   public void testSetPID() {
-    manager.setPID(TestConcreteDoc.class, "id", "pid");
-    verify(storage).setPID(TestConcreteDoc.class, "id", "pid");
+    manager.setPID(GeneralTestDoc.class, "id", "pid");
+    verify(storage).setPID(GeneralTestDoc.class, "id", "pid");
   }
 
   @Test
@@ -151,22 +150,21 @@ public class StorageManagerTest {
 
   @Test
   public void testGetAllLimited() {
-    List<TestConcreteDoc> limitedList = Lists.newArrayList(mock(TestConcreteDoc.class), mock(TestConcreteDoc.class), mock(TestConcreteDoc.class));
+    List<GeneralTestDoc> limitedList = Lists.newArrayList(mock(GeneralTestDoc.class), mock(GeneralTestDoc.class), mock(GeneralTestDoc.class));
 
     @SuppressWarnings("unchecked")
-    StorageIterator<TestConcreteDoc> iterator = mock(StorageIterator.class);
+    StorageIterator<GeneralTestDoc> iterator = mock(StorageIterator.class);
     when(iterator.getSome(anyInt())).thenReturn(limitedList);
 
-    Class<TestConcreteDoc> type = TestConcreteDoc.class;
-    when(storage.getAllByType(type)).thenReturn(iterator);
+    when(storage.getAllByType(GeneralTestDoc.class)).thenReturn(iterator);
 
-    List<TestConcreteDoc> actualList = manager.getAllLimited(type, 0, 3);
+    List<GeneralTestDoc> actualList = manager.getAllLimited(GeneralTestDoc.class, 0, 3);
     assertEquals(3, actualList.size());
   }
 
   @Test
   public void testGetAllLimitedLimitIsZero() {
-    List<TestConcreteDoc> list = manager.getAllLimited(TestConcreteDoc.class, 3, 0);
+    List<GeneralTestDoc> list = manager.getAllLimited(GeneralTestDoc.class, 3, 0);
     assertTrue(list.isEmpty());
   }
 
