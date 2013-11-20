@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.config;
 
 import static org.junit.Assert.assertEquals;
-import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.VTestSystemEntity;
 
 import org.junit.Test;
@@ -10,12 +10,12 @@ public class TypeNameGeneratorTest {
 
   @Test
   public void testGetInternalName() {
-    assertEquals("testconcretedoc", TypeNameGenerator.getInternalName(TestConcreteDoc.class));
+    assertEquals("generaltestdoc", TypeNameGenerator.getInternalName(GeneralTestDoc.class));
   }
 
   @Test
   public void testGetExternalName() {
-    assertEquals("testconcretedocs", TypeNameGenerator.getExternalName(TestConcreteDoc.class));
+    assertEquals("generaltestdocs", TypeNameGenerator.getExternalName(GeneralTestDoc.class));
   }
 
   @Test

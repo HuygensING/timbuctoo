@@ -23,6 +23,11 @@ public class GeneralTestDoc extends DomainEntity {
     setId(id);
   }
 
+  public GeneralTestDoc(String id, String name) {
+    setId(id);
+    this.name = name;
+  }
+
   @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
