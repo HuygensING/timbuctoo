@@ -36,6 +36,7 @@
     <!-- ## End of project dependencies ## -->
 
     <!-- ## Main libraries ## -->
+    <!-- Huygens persistence -->
     <dependency>
       <groupId>nl.knaw.huygens</groupId>
       <artifactId>huygens-persistence</artifactId>
@@ -47,6 +48,7 @@
         </exclusion>
       </exclusions>
     </dependency>
+    
     <!-- Huygens security -->
     <dependency>
       <groupId>nl.knaw.huygens</groupId>
@@ -207,6 +209,13 @@
       <version>${jackson.version}</version>
     </dependency>
 
+    <!-- Javax security annotations -->
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>jsr250-api</artifactId>
+      <version>${javax.security.annotations.version}</version>
+    </dependency>
+
     <!-- Jersey -->
     <dependency>
       <groupId>com.sun.jersey</groupId>
@@ -229,6 +238,8 @@
       <artifactId>jersey-guice</artifactId>
       <version>${jersey.version}</version>
     </dependency>
+
+
 
     <!-- Guice -->
     <dependency>

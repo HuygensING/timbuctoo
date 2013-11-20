@@ -123,6 +123,7 @@
     <hamcrest-library.version>1.3</hamcrest-library.version>
     <jackson.version>2.1.1</jackson.version>
     <javax.validation.version>1.0.0.GA</javax.validation.version>
+    <javax.security.annotations.version>1.0</javax.security.annotations.version>
     <jersey.version>1.16</jersey.version>
     <junit.version>4.10</junit.version>
     <logback.version>1.0.13</logback.version>
