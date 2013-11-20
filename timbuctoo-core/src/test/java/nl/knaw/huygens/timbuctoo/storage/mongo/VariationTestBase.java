@@ -7,7 +7,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
-import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBDomainEntity;
 
@@ -37,13 +37,13 @@ public abstract class VariationTestBase {
     }
   }
 
-  protected Map<String, Object> createGeneralTestDocMap(String id, String pid, String generalTestDocValue) {
-    Map<String, Object> map = createDefaultMap(id, pid);
-    map.put(propertyName(GeneralTestDoc.class, "generalTestDocValue"), generalTestDocValue);
+  protected Map<String, Object> newBaseDomainEntityMap(String id, String pid, String value) {
+    Map<String, Object> map = newDefaultMap(id, pid);
+    map.put(propertyName(BaseDomainEntity.class, "generalTestDocValue"), value);
     return map;
   }
 
-  protected Map<String, Object> createDefaultMap(String id, String pid) {
+  protected Map<String, Object> newDefaultMap(String id, String pid) {
     Map<String, Object> map = Maps.newHashMap();
     map.put("_id", id);
     map.put("^rev", 0);
@@ -52,7 +52,7 @@ public abstract class VariationTestBase {
     return map;
   }
 
-  protected ProjectBDomainEntity createProjectBGeneralTestDoc(String id, String pid, String projectBGeneralTestDocValue) {
+  protected ProjectBDomainEntity newProjectBDomainEntity(String id, String pid, String projectBGeneralTestDocValue) {
     ProjectBDomainEntity entity = new ProjectBDomainEntity();
     entity.projectBGeneralTestDocValue = projectBGeneralTestDocValue;
     entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectADomainEntity.class, id), new Reference(ProjectBDomainEntity.class, id)));

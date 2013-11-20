@@ -16,7 +16,7 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,8 +38,8 @@ public class StorageManagerTest {
 
   @Test
   public void testGetEntity() throws IOException {
-    manager.getEntity(GeneralTestDoc.class, "id");
-    verify(storage).getItem(GeneralTestDoc.class, "id");
+    manager.getEntity(BaseDomainEntity.class, "id");
+    verify(storage).getItem(BaseDomainEntity.class, "id");
   }
 
   @Test
@@ -57,40 +57,40 @@ public class StorageManagerTest {
 
   @Test
   public void testGetVariation() throws IOException {
-    manager.getVariation(GeneralTestDoc.class, "id", "variation");
-    verify(storage).getVariation(GeneralTestDoc.class, "id", "variation");
+    manager.getVariation(BaseDomainEntity.class, "id", "variation");
+    verify(storage).getVariation(BaseDomainEntity.class, "id", "variation");
   }
 
   @Test
   public void testGetAllVariations() throws IOException {
-    manager.getAllVariations(GeneralTestDoc.class, "id");
-    verify(storage).getAllVariations(GeneralTestDoc.class, "id");
+    manager.getAllVariations(BaseDomainEntity.class, "id");
+    verify(storage).getAllVariations(BaseDomainEntity.class, "id");
   }
 
   @Test
   public void testGetAll() {
-    manager.getAll(GeneralTestDoc.class);
-    verify(storage).getAllByType(GeneralTestDoc.class);
+    manager.getAll(BaseDomainEntity.class);
+    verify(storage).getAllByType(BaseDomainEntity.class);
   }
 
   @Test
   public void testGetVersions() throws IOException {
-    manager.getVersions(GeneralTestDoc.class, "id");
-    verify(storage).getAllRevisions(GeneralTestDoc.class, "id");
+    manager.getVersions(BaseDomainEntity.class, "id");
+    verify(storage).getAllRevisions(BaseDomainEntity.class, "id");
   }
 
   @Test
   public void testAddEntity() throws IOException {
-    GeneralTestDoc entity = new GeneralTestDoc();
-    manager.addEntity(GeneralTestDoc.class, entity);
-    verify(storage).addItem(GeneralTestDoc.class, entity);
+    BaseDomainEntity entity = new BaseDomainEntity();
+    manager.addEntity(BaseDomainEntity.class, entity);
+    verify(storage).addItem(BaseDomainEntity.class, entity);
   }
 
   @Test
   public void testModifyEntity() throws IOException {
-    GeneralTestDoc entity = new GeneralTestDoc("id");
-    manager.modifyEntity(GeneralTestDoc.class, entity);
-    verify(storage).updateItem(GeneralTestDoc.class, "id", entity);
+    BaseDomainEntity entity = new BaseDomainEntity("id");
+    manager.modifyEntity(BaseDomainEntity.class, entity);
+    verify(storage).updateItem(BaseDomainEntity.class, "id", entity);
   }
 
   @Test
@@ -102,11 +102,11 @@ public class StorageManagerTest {
 
   @Test
   public void testRemoveDomainEntity() throws IOException {
-    GeneralTestDoc entity = new GeneralTestDoc("id");
+    BaseDomainEntity entity = new BaseDomainEntity("id");
     Change change = new Change();
     entity.setLastChange(change);
     manager.removeEntity(entity);
-    verify(storage).deleteItem(GeneralTestDoc.class, "id", change);
+    verify(storage).deleteItem(BaseDomainEntity.class, "id", change);
   }
 
   @Test
@@ -124,21 +124,21 @@ public class StorageManagerTest {
 
   @Test
   public void testSetPID() {
-    manager.setPID(GeneralTestDoc.class, "id", "pid");
-    verify(storage).setPID(GeneralTestDoc.class, "id", "pid");
+    manager.setPID(BaseDomainEntity.class, "id", "pid");
+    verify(storage).setPID(BaseDomainEntity.class, "id", "pid");
   }
 
   @Test
   public void testRemoveNonPersistent() throws IOException {
     ArrayList<String> ids = Lists.newArrayList("id1", "id2", "id3");
-    manager.removeNonPersistent(GeneralTestDoc.class, ids);
-    verify(storage).removeNonPersistent(GeneralTestDoc.class, ids);
+    manager.removeNonPersistent(BaseDomainEntity.class, ids);
+    verify(storage).removeNonPersistent(BaseDomainEntity.class, ids);
   }
 
   @Test
   public void testGetAllIdsWithoutPIDOfType() throws IOException {
-    manager.getAllIdsWithoutPIDOfType(GeneralTestDoc.class);
-    verify(storage).getAllIdsWithoutPIDOfType(GeneralTestDoc.class);
+    manager.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
+    verify(storage).getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
   }
 
   @Test
@@ -150,21 +150,21 @@ public class StorageManagerTest {
 
   @Test
   public void testGetAllLimited() {
-    List<GeneralTestDoc> limitedList = Lists.newArrayList(mock(GeneralTestDoc.class), mock(GeneralTestDoc.class), mock(GeneralTestDoc.class));
+    List<BaseDomainEntity> limitedList = Lists.newArrayList(mock(BaseDomainEntity.class), mock(BaseDomainEntity.class), mock(BaseDomainEntity.class));
 
     @SuppressWarnings("unchecked")
-    StorageIterator<GeneralTestDoc> iterator = mock(StorageIterator.class);
+    StorageIterator<BaseDomainEntity> iterator = mock(StorageIterator.class);
     when(iterator.getSome(anyInt())).thenReturn(limitedList);
 
-    when(storage.getAllByType(GeneralTestDoc.class)).thenReturn(iterator);
+    when(storage.getAllByType(BaseDomainEntity.class)).thenReturn(iterator);
 
-    List<GeneralTestDoc> actualList = manager.getAllLimited(GeneralTestDoc.class, 0, 3);
+    List<BaseDomainEntity> actualList = manager.getAllLimited(BaseDomainEntity.class, 0, 3);
     assertEquals(3, actualList.size());
   }
 
   @Test
   public void testGetAllLimitedLimitIsZero() {
-    List<GeneralTestDoc> list = manager.getAllLimited(GeneralTestDoc.class, 3, 0);
+    List<BaseDomainEntity> list = manager.getAllLimited(BaseDomainEntity.class, 3, 0);
     assertTrue(list.isEmpty());
   }
 

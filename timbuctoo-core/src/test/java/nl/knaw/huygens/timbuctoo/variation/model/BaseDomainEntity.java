@@ -11,18 +11,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 
-public class GeneralTestDoc extends DomainEntity {
+public class BaseDomainEntity extends DomainEntity {
 
   public String name;
   public String generalTestDocValue;
 
-  public GeneralTestDoc() {}
+  public BaseDomainEntity() {}
 
-  public GeneralTestDoc(String id) {
+  public BaseDomainEntity(String id) {
     setId(id);
   }
 
-  public GeneralTestDoc(String id, String name) {
+  public BaseDomainEntity(String id, String name) {
     setId(id);
     this.name = name;
   }
@@ -36,11 +36,11 @@ public class GeneralTestDoc extends DomainEntity {
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof GeneralTestDoc)) {
+    if (!(obj instanceof BaseDomainEntity)) {
       return false;
     }
 
-    GeneralTestDoc other = (GeneralTestDoc) obj;
+    BaseDomainEntity other = (BaseDomainEntity) obj;
 
     boolean isEqual = true;
 

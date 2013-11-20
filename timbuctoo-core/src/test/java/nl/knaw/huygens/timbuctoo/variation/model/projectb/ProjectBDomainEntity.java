@@ -1,10 +1,10 @@
 package nl.knaw.huygens.timbuctoo.variation.model.projectb;
 
-import nl.knaw.huygens.timbuctoo.variation.model.GeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 
 import com.google.common.base.Objects;
 
-public class ProjectBDomainEntity extends GeneralTestDoc {
+public class ProjectBDomainEntity extends BaseDomainEntity {
 
   public String projectBGeneralTestDocValue;
 
