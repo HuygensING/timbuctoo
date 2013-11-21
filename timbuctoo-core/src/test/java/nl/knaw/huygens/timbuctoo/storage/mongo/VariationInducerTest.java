@@ -428,8 +428,18 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testInduceNullEntity() throws StorageException {
+  public void testInduceNewEntityWithNullEntity() throws StorageException {
     inducer.induceNewEntity(ProjectBDomainEntity.class, null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testInduceOldEntityWithNullEntity() throws StorageException {
+    inducer.induceOldEntity(ProjectBDomainEntity.class, null, asDBObject(null));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testInduceOldEntityWithNullDBObject() throws StorageException {
+    inducer.induceOldEntity(ProjectBDomainEntity.class, new ProjectBDomainEntity(), null);
   }
 
 }

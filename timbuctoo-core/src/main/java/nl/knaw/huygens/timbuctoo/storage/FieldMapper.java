@@ -69,6 +69,13 @@ public class FieldMapper {
   }
 
   /**
+   * Checks if the there is variation possible for this field.
+   */
+  public boolean isFieldWithVariation(String fieldName) {
+    return fieldName.contains(SEPARATOR);
+  }
+
+  /**
    * A method to retrieve the name of the type the field belongs to.
    * @param fieldName the field to retrieve the type name from.
    * @return the type name or {@code null} if the field does not belong to a type.

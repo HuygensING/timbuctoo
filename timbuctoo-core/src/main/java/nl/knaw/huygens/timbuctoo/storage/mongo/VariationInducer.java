@@ -75,14 +75,14 @@ class VariationInducer extends VariationConverter {
     } else if (dbObject instanceof DBJsonNode) {
       return (ObjectNode) ((DBJsonNode) dbObject).getDelegate();
     } else {
-      LOG.error("Failed to convert type {}", dbObject.getClass().getSimpleName());
+      LOG.error("Failed to convert {}", dbObject.getClass());
       throw new IllegalArgumentException("Unknown DBObject type");
     }
   }
 
   private <T extends Entity> JsonNode induceSystemEntity(Class<T> type, T entity) {
     Map<String, Object> map = getEntityMap(type, entity);
-    return mapper.valueToTree(map);
+    return jsonMapper.valueToTree(map);
   }
 
   private <T extends Entity> JsonNode induceNewDomainEntity(Class<T> type, T entity) {
@@ -95,7 +95,7 @@ class VariationInducer extends VariationConverter {
       map.putAll(getRoleMap(roleType, roleType.cast(role)));
     }
 
-    ObjectNode newNode = mapper.valueToTree(map);
+    ObjectNode newNode = jsonMapper.valueToTree(map);
     return cleanUp(newNode);
   }
 
@@ -114,7 +114,7 @@ class VariationInducer extends VariationConverter {
       map.putAll(roleMap);
     }
 
-    ObjectNode newNode = mapper.valueToTree(map);
+    ObjectNode newNode = jsonMapper.valueToTree(map);
     return cleanUp(newNode);
   }
 
@@ -125,7 +125,7 @@ class VariationInducer extends VariationConverter {
       map.putAll(getEntityMap((Class<T>) type.getSuperclass(), item));
     }
 
-    map.putAll(mongoObjectMapper.mapObject(type, item));
+    map.putAll(propertyMapper.mapObject(type, item));
 
     return map;
   }
@@ -138,23 +138,16 @@ class VariationInducer extends VariationConverter {
       map.putAll(getRoleMap((Class<T>) type.getSuperclass(), role));
     }
 
-    map.putAll(mongoObjectMapper.mapObject(type, (T) role));
+    map.putAll(propertyMapper.mapObject(type, (T) role));
 
     return map;
-  }
-
-  /**
-   * Checks if the there is variation possible for this field.
-   */
-  protected boolean isFieldWithVariation(String fieldName) {
-    return fieldName.contains(FieldMapper.SEPARATOR);
   }
 
   private Map<String, Object> merge(Class<?> type, Map<String, Object> newValues, ObjectNode existingNode) {
     Map<String, Object> mergedMap = Maps.newHashMap();
     for (String key : newValues.keySet()) {
       if (existingNode.has(key)) {
-        if (isFieldWithVariation(key) && !isSameValue(key, newValues, existingNode)) {
+        if (fieldMapper.isFieldWithVariation(key) && !isSameValue(key, newValues, existingNode)) {
           String typeName = fieldMapper.getTypeNameOfFieldName(key);
           String variationName = StringUtils.replace(key, typeName, typeRegistry.getIName(type));
           mergedMap.put(variationName, newValues.get(key));
