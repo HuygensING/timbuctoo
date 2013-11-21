@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
 
-import java.io.IOException;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -11,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBDomainEntity;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
@@ -19,7 +17,7 @@ import com.google.common.collect.Maps;
 
 public abstract class VariationTestBase {
 
-  protected ObjectNode createSystemObjectNode(String id, String name, String testValue1, String testValue2) throws IOException, JsonProcessingException {
+  protected ObjectNode createSystemObjectNode(String id, String name, String testValue1, String testValue2) {
     Map<String, Object> map = Maps.newHashMap();
     addNonNullValueToMap(map, "_id", id);
     addNonNullValueToMap(map, propertyName("testsystementity", "name"), name);

@@ -204,29 +204,29 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Entity> String addItem(Class<T> type, T item) throws IOException {
-    if (item.getId() == null) {
-      setNextId(type, item);
+  public <T extends Entity> String addItem(Class<T> type, T entity) {
+    if (entity.getId() == null) {
+      setNextId(type, entity);
     }
-    JsonNode jsonNode = inducer.induce(type, item);
+    JsonNode jsonNode = inducer.induceNewEntity(type, entity);
     JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
     getDBCollection(type).insert(insertedItem);
     if (TypeRegistry.isDomainEntity(type)) {
-      addInitialVersion(type, item.getId(), insertedItem);
+      addInitialVersion(type, entity.getId(), insertedItem);
     }
-    return item.getId();
+    return entity.getId();
   }
 
   @Override
-  public <T extends Entity> void updateItem(Class<T> type, String id, T item) throws IOException {
+  public <T extends Entity> void updateItem(Class<T> type, String id, T entity) throws IOException {
     DBObject query = queries.selectById(id);
-    query.put("^rev", item.getRev());
+    query.put("^rev", entity.getRev());
     DBObject existingNode = getDBCollection(type).findOne(query);
     if (existingNode == null) {
-      throw new IOException("No entity was found for ID " + id + " and revision " + String.valueOf(item.getRev()) + " !");
+      throw new IOException("No entity was found for ID " + id + " and revision " + entity.getRev());
     }
-    JsonNode updatedNode = inducer.induce(type, item, existingNode);
-    ((ObjectNode) updatedNode).put("^rev", item.getRev() + 1);
+    JsonNode updatedNode = inducer.induceOldEntity(type, entity, existingNode);
+    ((ObjectNode) updatedNode).put("^rev", entity.getRev() + 1);
     JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(updatedNode, JsonNode.class);
     getDBCollection(type).update(query, updatedDBObj);
     if (TypeRegistry.isDomainEntity(type)) {

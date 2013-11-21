@@ -8,6 +8,12 @@ public class ProjectADomainEntity extends BaseDomainEntity {
 
   public String projectAGeneralTestDocValue;
 
+  public ProjectADomainEntity() {}
+
+  public ProjectADomainEntity(String id) {
+    setId(id);
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof ProjectADomainEntity)) {
