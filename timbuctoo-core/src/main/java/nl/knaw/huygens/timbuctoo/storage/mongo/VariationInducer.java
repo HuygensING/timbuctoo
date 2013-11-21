@@ -63,31 +63,60 @@ class VariationInducer extends VariationConverter {
    * @param item the new item to convert.
    * @param existingItem the existing item.
    * @return the converted and combined item.
-   * @throws StorageException
    */
   public <T extends Entity> JsonNode induce(Class<T> type, T item, ObjectNode existingItem) throws StorageException {
     checkArgument(item != null);
-    checkArgument(type != null);
-
-    Map<String, Object> map = getEntityMap(type, item);
-    if (existingItem != null && TypeRegistry.isDomainEntity(type)) {
-      map = merge(type, map, existingItem);
-    }
 
     if (TypeRegistry.isSystemEntity(type)) {
-      return mapper.valueToTree(map);
+      return induceSystemEntity(type, item);
+    } else if (existingItem == null) {
+      return induceNewDomainEntity(type, item);
+    } else {
+      return induceOldDomainEntity(type, item, existingItem);
     }
+  }
+
+  /**
+   * Induces a system entity.
+   */
+  private <T extends Entity> JsonNode induceSystemEntity(Class<T> type, T item) {
+    Map<String, Object> map = getEntityMap(type, item);
+    return mapper.valueToTree(map);
+  }
+
+  /**
+   * Induces a domain entity that is not yet stored in the database.
+   */
+  private <T extends Entity> JsonNode induceNewDomainEntity(Class<T> type, T item) {
+    checkArgument(TypeRegistry.isDomainEntity(type));
+
+    Map<String, Object> map = getEntityMap(type, item);
+
+    for (Role role : ((DomainEntity) item).getRoles()) {
+      Class<? extends Role> roleType = role.getClass();
+      map.putAll(getRoleMap(roleType, roleType.cast(role)));
+    }
+
+    ObjectNode newNode = mapper.valueToTree(map);
+    return cleanUp(newNode);
+  }
+
+  /**
+   * Induces a domain entity that is already stored the database.
+   */
+  private <T extends Entity> JsonNode induceOldDomainEntity(Class<T> type, T item, ObjectNode existingItem) {
+    checkArgument(TypeRegistry.isDomainEntity(type));
+    checkArgument(existingItem != null);
+
+    Map<String, Object> map = getEntityMap(type, item);
+    map = merge(type, map, existingItem);
 
     List<Role> roles = ((DomainEntity) item).getRoles();
     for (Role role : roles) {
-      Map<String, Object> roleMap = Maps.newHashMap();
       Class<? extends Role> roleType = role.getClass();
-      roleMap.putAll(getRoleMap(roleType, roleType.cast(role)));
-      if (existingItem != null) {
-        map.putAll(merge(roleType, roleMap, existingItem));
-      } else {
-        map.putAll(roleMap);
-      }
+      Map<String, Object> roleMap = getRoleMap(roleType, roleType.cast(role));
+      roleMap = merge(roleType, roleMap, existingItem);
+      map.putAll(roleMap);
     }
 
     ObjectNode newNode = mapper.valueToTree(map);
@@ -95,7 +124,7 @@ class VariationInducer extends VariationConverter {
   }
 
   @SuppressWarnings("unchecked")
-  private <T extends Entity> Map<String, Object> getEntityMap(Class<T> type, T item) {
+  protected <T extends Entity> Map<String, Object> getEntityMap(Class<T> type, T item) {
     Map<String, Object> map = Maps.newHashMap();
     if (type != Entity.class) {
       map.putAll(getEntityMap((Class<T>) type.getSuperclass(), item));
@@ -108,7 +137,7 @@ class VariationInducer extends VariationConverter {
 
   //TODO make method work with T role instead of Role role
   @SuppressWarnings("unchecked")
-  private <T extends Role> Map<String, Object> getRoleMap(Class<T> type, Role role) {
+  protected <T extends Role> Map<String, Object> getRoleMap(Class<T> type, Role role) {
     Map<String, Object> map = Maps.newHashMap();
     if (type != Role.class) {
       map.putAll(getRoleMap((Class<T>) type.getSuperclass(), role));
