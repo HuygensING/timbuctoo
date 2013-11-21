@@ -299,21 +299,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testPostOnSuperType() throws IOException, PersistenceException, JMSException {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
-
-    GeneralTestDoc doc = new GeneralTestDoc();
-    doc.name = "test";
-    when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
-
-    ClientResponse response = domainResource("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
-    assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
-    verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
-  }
-
-  @Test
-  @SuppressWarnings("unchecked")
   public void testPostWrongType() throws IOException, PersistenceException, JMSException {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 

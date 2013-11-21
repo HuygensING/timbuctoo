@@ -95,10 +95,15 @@ public class TypeRegistry {
     for (ClassInfo info : classPath.getTopLevelClasses(packageName)) {
       Class<?> type = info.load();
       if (shouldRegisterEntity(type)) {
-        registerClass(toEntity(type));
-        if (isDomainEntity(type)) {
+        if (isValidSystemEntity(type)) {
+          registerClass(toSystemEntity(type));
+        } else if (isValidDomainEntity(type)) {
+          registerClass(toDomainEntity(type));
           registerVariationForClass(toDomainEntity(type));
           registerWithBaseClass(toDomainEntity(type));
+        } else {
+          LOG.error("Not a valid entity: '{}'", type.getName());
+          throw new IllegalStateException("Invalid entity");
         }
         LOG.debug("Registered entity {}", type.getName());
       } else if (shouldRegisterRole(type)) {
@@ -413,6 +418,36 @@ public class TypeRegistry {
       return (Class<T>) type;
     }
     throw new ClassCastException(type.getName() + " is not a domain entity");
+  }
+
+  // -------------------------------------------------------------------
+
+  private static boolean superclass(Class<?> cls, Class<?> target, int level) {
+    while (cls != null && level > 0) {
+      cls = cls.getSuperclass();
+      level--;
+      if (cls == target) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Timbuctoo only accepts primitive system entities,
+   * immediate subclasses of {@code SystemEntity}.
+   */
+  public static boolean isValidSystemEntity(Class<?> cls) {
+    return superclass(cls, SystemEntity.class, 1);
+  }
+
+  /**
+   * Timbuctoo only accepts primitive domain entities,
+   * immediate subclasses of {@code DomainEntity},
+   * and immediate subclasses of primitive domain entities.
+   */
+  public static boolean isValidDomainEntity(Class<?> cls) {
+    return superclass(cls, DomainEntity.class, 2);
   }
 
 }

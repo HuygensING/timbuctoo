@@ -1,11 +1,8 @@
 package nl.knaw.huygens.timbuctoo.rest.providers.model.projecta;
 
-import nl.knaw.huygens.timbuctoo.rest.providers.model.TestInheritsFromTestBaseDoc;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
-/**
- * Another extension of the basic test doc.
- */
-public class OtherDoc extends TestInheritsFromTestBaseDoc {
+public class OtherDoc extends DomainEntity {
 
   public String otherThing;
 
@@ -13,6 +10,11 @@ public class OtherDoc extends TestInheritsFromTestBaseDoc {
 
   public OtherDoc(String id) {
     setId(id);
+  }
+
+  @Override
+  public String getDisplayName() {
+    return null;
   }
 
 }

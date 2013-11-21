@@ -8,7 +8,7 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
-public class ExplicitlyAnnotatedModelWithIndexAnnotations extends Entity {
+public class DomainEntityWithIndexAnnotations extends DomainEntity {
 
   protected List<Reference> variations = Lists.newArrayList();
 
