@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.rest.providers.model;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 
 public class TestConcreteDoc extends DomainEntity {
@@ -21,8 +20,6 @@ public class TestConcreteDoc extends DomainEntity {
     this.name = name;
   }
 
-  @Override
-  @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
   public String getDisplayName() {
     return null;

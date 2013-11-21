@@ -159,7 +159,6 @@ public class HTMLGeneratorTest {
     String html = generateHtml(entity);
 
     assertContains(html, "Class", OtherDoc.class.getName());
-    assertContains(html, "Name", "none");
     assertContains(html, "Other Thing", "test");
     assertContains(html, "Id", "OTD0000000001");
     assertContains(html, "Rev", "0");
