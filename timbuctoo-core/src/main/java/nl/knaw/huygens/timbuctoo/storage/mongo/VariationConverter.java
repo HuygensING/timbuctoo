@@ -23,15 +23,15 @@ class VariationConverter {
   protected static final String BASE_MODEL_PACKAGE = "model";
 
   protected final TypeRegistry typeRegistry;
-  protected final ObjectMapper mapper;
-  protected final MongoObjectMapper mongoObjectMapper;
+  protected final ObjectMapper jsonMapper;
   protected final FieldMapper fieldMapper;
+  protected final MongoObjectMapper propertyMapper;
 
   public VariationConverter(TypeRegistry registry) {
     typeRegistry = registry;
-    mapper = new ObjectMapper();
-    mongoObjectMapper = new MongoObjectMapper();
+    jsonMapper = new ObjectMapper();
     fieldMapper = new FieldMapper();
+    propertyMapper = new MongoObjectMapper();
   }
 
   protected String getPackageName(Class<? extends Entity> type) {
@@ -71,14 +71,14 @@ class VariationConverter {
     } else if (Datable.class.isAssignableFrom(fieldType)) {
       return new Datable(value.asText());
     } else if (PersonName.class.isAssignableFrom(fieldType)) {
-      return mapper.readValue(value.toString(), PersonName.class);
+      return jsonMapper.readValue(value.toString(), PersonName.class);
     }
 
     return value.asText();
   }
 
   private Object createCollection(JsonNode value) throws IOException, JsonParseException, JsonMappingException {
-    return mapper.readValue(value.toString(), new TypeReference<List<? extends Object>>() {});
+    return jsonMapper.readValue(value.toString(), new TypeReference<List<? extends Object>>() {});
   }
 
 }
