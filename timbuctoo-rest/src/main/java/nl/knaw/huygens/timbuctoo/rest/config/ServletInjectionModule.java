@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.rest.config;
 
 import java.util.Map;
 
-import nl.knaw.huygens.security.SecurityResourceFilterFactory;
+import nl.knaw.huygens.security.client.filters.SecurityResourceFilterFactory;
 import nl.knaw.huygens.timbuctoo.rest.CORSFilter;
 import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
 

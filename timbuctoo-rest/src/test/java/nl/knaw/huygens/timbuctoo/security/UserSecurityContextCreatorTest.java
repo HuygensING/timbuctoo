@@ -13,7 +13,8 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.security.Principal;
 
-import nl.knaw.huygens.security.SecurityInformation;
+import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
+import nl.knaw.huygens.security.client.model.SecurityInformation;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
@@ -73,8 +74,7 @@ public class UserSecurityContextCreatorTest {
     Principal principal = mock(Principal.class);
     when(principal.getName()).thenReturn(userId);
 
-    SecurityInformation securityInformation = new SecurityInformation();
-    securityInformation.setApplicationName(applicationName);
+    HuygensSecurityInformation securityInformation = new HuygensSecurityInformation();
     securityInformation.setDisplayName(displayName);
     securityInformation.setPrincipal(principal);
     return securityInformation;

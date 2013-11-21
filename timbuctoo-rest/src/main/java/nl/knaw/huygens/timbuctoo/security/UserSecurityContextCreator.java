@@ -4,8 +4,8 @@ import java.io.IOException;
 
 import javax.ws.rs.core.SecurityContext;
 
-import nl.knaw.huygens.security.SecurityContextCreator;
-import nl.knaw.huygens.security.SecurityInformation;
+import nl.knaw.huygens.security.client.SecurityContextCreator;
+import nl.knaw.huygens.security.client.model.SecurityInformation;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 

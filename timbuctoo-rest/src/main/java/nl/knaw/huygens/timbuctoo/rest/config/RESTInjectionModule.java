@@ -5,9 +5,9 @@ import javax.validation.Validator;
 
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.persistence.PersistenceManagerFactory;
-import nl.knaw.huygens.security.AuthorizationHandler;
-import nl.knaw.huygens.security.SecurityContextCreator;
-import nl.knaw.huygens.security.apis.ApisAuthorizationHandler;
+import nl.knaw.huygens.security.client.AuthorizationHandler;
+import nl.knaw.huygens.security.client.MockAuthorizationHandler;
+import nl.knaw.huygens.security.client.SecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
@@ -29,7 +29,7 @@ public class RESTInjectionModule extends BasicInjectionModule {
   protected void configure() {
 
     bind(SecurityContextCreator.class).to(UserSecurityContextCreator.class);
-    bind(AuthorizationHandler.class).to(ApisAuthorizationHandler.class);
+    bind(AuthorizationHandler.class).to(MockAuthorizationHandler.class);
     bind(Broker.class).to(ActiveMQBroker.class);
     super.configure();
   }

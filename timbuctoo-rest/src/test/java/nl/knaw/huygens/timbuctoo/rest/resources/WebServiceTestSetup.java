@@ -1,16 +1,17 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.security.Principal;
 import java.util.ArrayList;
 
-import nl.knaw.huygens.security.AuthorizationHandler;
-import nl.knaw.huygens.security.SecurityInformation;
-import nl.knaw.huygens.security.SecurityResourceFilterFactory;
-import nl.knaw.huygens.security.UnauthorizedException;
+import nl.knaw.huygens.security.client.AuthorizationHandler;
+import nl.knaw.huygens.security.client.UnauthorizedException;
+import nl.knaw.huygens.security.client.filters.SecurityResourceFilterFactory;
+import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
@@ -29,7 +30,6 @@ import com.sun.jersey.api.container.filter.LoggingFilter;
 import com.sun.jersey.api.container.filter.RolesAllowedResourceFilterFactory;
 import com.sun.jersey.api.core.PackagesResourceConfig;
 import com.sun.jersey.api.core.ResourceConfig;
-import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.test.framework.AppDescriptor;
 import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
@@ -66,14 +66,13 @@ public abstract class WebServiceTestSetup extends JerseyTest {
 
   @Before
   public void setUpAuthorizationHandler() throws UnauthorizedException {
-    SecurityInformation securityInformation = new SecurityInformation();
-    securityInformation.setApplicationName(VRE_ID);
+    HuygensSecurityInformation securityInformation = new HuygensSecurityInformation();
     securityInformation.setDisplayName(USER_ID);
     securityInformation.setDisplayName("test");
     securityInformation.setPrincipal(mock(Principal.class));
 
     AuthorizationHandler authorizationHandler = injector.getInstance(AuthorizationHandler.class);
-    when(authorizationHandler.getSecurityInformation(any(ContainerRequest.class))).thenReturn(securityInformation);
+    when(authorizationHandler.getSecurityInformation(anyString())).thenReturn(securityInformation);
   }
 
   @SuppressWarnings("unchecked")
@@ -126,7 +125,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   protected void setUserNotLoggedIn() {
     try {
       AuthorizationHandler authorizationHandler = injector.getInstance(AuthorizationHandler.class);
-      when(authorizationHandler.getSecurityInformation(any(ContainerRequest.class))).thenThrow(UnauthorizedException.class);
+      when(authorizationHandler.getSecurityInformation(anyString())).thenThrow(UnauthorizedException.class);
     } catch (UnauthorizedException ex) {
       //Do nothing
     }

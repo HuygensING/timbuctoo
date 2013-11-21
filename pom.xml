@@ -124,7 +124,7 @@
     <jackson.version>2.1.1</jackson.version>
     <javax.validation.version>1.0.0.GA</javax.validation.version>
     <javax.security.annotations.version>1.0</javax.security.annotations.version>
-    <jersey.version>1.16</jersey.version>
+    <jersey.version>1.17.1</jersey.version>
     <junit.version>4.10</junit.version>
     <logback.version>1.0.13</logback.version>
     <mockito.version>1.9.0</mockito.version>
