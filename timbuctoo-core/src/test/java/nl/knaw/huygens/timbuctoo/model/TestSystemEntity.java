@@ -26,6 +26,11 @@ public class TestSystemEntity extends SystemEntity {
     setId(id);
   }
 
+  public TestSystemEntity(String id, String name) {
+    setId(id);
+    this.name = name;
+  }
+
   @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")

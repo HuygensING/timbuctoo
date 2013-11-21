@@ -14,7 +14,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import org.apache.commons.lang.StringUtils;
 import org.mongojack.internal.stream.JacksonDBObject;
@@ -36,63 +35,62 @@ class VariationInducer extends VariationConverter {
     super(registry);
   }
 
-  /**
-   * Convenience method for {@code induce(type, item, null)}.
-   */
-  public <T extends Entity> JsonNode induce(Class<T> type, T item) throws StorageException {
-    return induce(type, item, (ObjectNode) null);
-  }
-
-  @SuppressWarnings("unchecked")
-  public <T extends Entity> JsonNode induce(Class<T> type, T item, DBObject existingItem) throws StorageException {
-    ObjectNode node = null;
-    if (existingItem instanceof JacksonDBObject) {
-      node = (ObjectNode) (((JacksonDBObject<JsonNode>) existingItem).getObject());
-    } else if (existingItem instanceof DBJsonNode) {
-      node = (ObjectNode) ((DBJsonNode) existingItem).getDelegate();
-    } else if (existingItem != null) {
-      throw new StorageException("Unknown type of DBObject!");
-    }
-    return induce(type, item, node);
-  }
+  // --- public API ----------------------------------------------------
 
   /**
-   * Converts an Entity to a JsonTree and combines it with the {@code existionItem}. 
-   * If the {@code existionItem} is null it creates a new item. 
-   * @param type the type of the item to convert.
-   * @param item the new item to convert.
-   * @param existingItem the existing item.
-   * @return the converted and combined item.
+   * Converts an entity to a JsonTree.
    */
-  public <T extends Entity> JsonNode induce(Class<T> type, T item, ObjectNode existingItem) throws StorageException {
-    checkArgument(item != null);
+  public <T extends Entity> JsonNode induceNewEntity(Class<T> type, T entity) {
+    checkArgument(entity != null);
 
     if (TypeRegistry.isSystemEntity(type)) {
-      return induceSystemEntity(type, item);
-    } else if (existingItem == null) {
-      return induceNewDomainEntity(type, item);
+      return induceSystemEntity(type, entity);
     } else {
-      return induceOldDomainEntity(type, item, existingItem);
+      return induceNewDomainEntity(type, entity);
     }
   }
 
   /**
-   * Induces a system entity.
+   * Converts an entity to a JsonTree and combines it with an existing DBObject.
    */
-  private <T extends Entity> JsonNode induceSystemEntity(Class<T> type, T item) {
-    Map<String, Object> map = getEntityMap(type, item);
+  public <T extends Entity> JsonNode induceOldEntity(Class<T> type, T entity, DBObject dbObject) {
+    checkArgument(entity != null);
+    checkArgument(dbObject != null);
+
+    if (TypeRegistry.isSystemEntity(type)) {
+      // TODO Decide: do we want to ignore dbObject?
+      return induceSystemEntity(type, entity);
+    } else {
+      ObjectNode node = convertDBObject(dbObject);
+      return induceOldDomainEntity(type, entity, node);
+    }
+  }
+
+  // -------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked")
+  private ObjectNode convertDBObject(DBObject dbObject) {
+    if (dbObject instanceof JacksonDBObject) {
+      return (ObjectNode) (((JacksonDBObject<JsonNode>) dbObject).getObject());
+    } else if (dbObject instanceof DBJsonNode) {
+      return (ObjectNode) ((DBJsonNode) dbObject).getDelegate();
+    } else {
+      LOG.error("Failed to convert type {}", dbObject.getClass().getSimpleName());
+      throw new IllegalArgumentException("Unknown DBObject type");
+    }
+  }
+
+  private <T extends Entity> JsonNode induceSystemEntity(Class<T> type, T entity) {
+    Map<String, Object> map = getEntityMap(type, entity);
     return mapper.valueToTree(map);
   }
 
-  /**
-   * Induces a domain entity that is not yet stored in the database.
-   */
-  private <T extends Entity> JsonNode induceNewDomainEntity(Class<T> type, T item) {
+  private <T extends Entity> JsonNode induceNewDomainEntity(Class<T> type, T entity) {
     checkArgument(TypeRegistry.isDomainEntity(type));
 
-    Map<String, Object> map = getEntityMap(type, item);
+    Map<String, Object> map = getEntityMap(type, entity);
 
-    for (Role role : ((DomainEntity) item).getRoles()) {
+    for (Role role : ((DomainEntity) entity).getRoles()) {
       Class<? extends Role> roleType = role.getClass();
       map.putAll(getRoleMap(roleType, roleType.cast(role)));
     }
@@ -101,17 +99,14 @@ class VariationInducer extends VariationConverter {
     return cleanUp(newNode);
   }
 
-  /**
-   * Induces a domain entity that is already stored the database.
-   */
-  private <T extends Entity> JsonNode induceOldDomainEntity(Class<T> type, T item, ObjectNode existingItem) {
+  private <T extends Entity> JsonNode induceOldDomainEntity(Class<T> type, T entity, ObjectNode existingItem) {
     checkArgument(TypeRegistry.isDomainEntity(type));
     checkArgument(existingItem != null);
 
-    Map<String, Object> map = getEntityMap(type, item);
+    Map<String, Object> map = getEntityMap(type, entity);
     map = merge(type, map, existingItem);
 
-    List<Role> roles = ((DomainEntity) item).getRoles();
+    List<Role> roles = ((DomainEntity) entity).getRoles();
     for (Role role : roles) {
       Class<? extends Role> roleType = role.getClass();
       Map<String, Object> roleMap = getRoleMap(roleType, roleType.cast(role));
