@@ -21,9 +21,9 @@ package nl.knaw.huygens.security.apis;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 
-import nl.knaw.huygens.security.AuthorizationHandler;
-import nl.knaw.huygens.security.SecurityInformation;
-import nl.knaw.huygens.security.UnauthorizedException;
+import nl.knaw.huygens.security.client.UnauthorizedException;
+import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
+import nl.knaw.huygens.security.client.model.SecurityInformation;
 
 import org.apache.commons.codec.binary.Base64;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -49,7 +49,7 @@ import com.sun.jersey.spi.container.ContainerRequest;
  *  
  * @author martijnm
  */
-public class ApisAuthorizationHandler implements AuthorizationHandler {
+public class ApisAuthorizationHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(ApisAuthorizationHandler.class);
   private static final String BEARER = "bearer";
@@ -89,15 +89,14 @@ public class ApisAuthorizationHandler implements AuthorizationHandler {
     this.objectMapper = createObjectMapper();
   }
 
-  @Override
   public SecurityInformation getSecurityInformation(ContainerRequest request) throws UnauthorizedException {
     final String accessToken = getAccessToken(request);
-    SecurityInformation securityInformation = null;
+    HuygensSecurityInformation securityInformation = null;
     if (accessToken != null) {
       VerifyTokenResponse verifyTokenResponse = getVerifyTokenResponse(accessToken);
       if (isValidResponse(verifyTokenResponse)) {
-        securityInformation = new SecurityInformation();
-        securityInformation.setApplicationName(verifyTokenResponse.getAudience());
+        securityInformation = new HuygensSecurityInformation();
+
         securityInformation.setDisplayName(verifyTokenResponse.getPrincipal().getAttributes().get("DISPLAY_NAME"));
         securityInformation.setPrincipal(verifyTokenResponse.getPrincipal());
 

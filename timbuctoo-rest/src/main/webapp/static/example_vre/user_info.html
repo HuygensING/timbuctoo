@@ -17,7 +17,7 @@
 	$(document).ready(function(){
 		var accessToken = readCookie('access_token');
 		$.ajax({
-			url: 'http://' + window.config.serverUri + '/repository/system/user/me',
+			url: 'http://' + window.config.serverUri + '/system/users/me',
 			headers:{
 				Authorization: accessToken
 			},

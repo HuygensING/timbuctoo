@@ -5,8 +5,8 @@ import static org.mockito.Mockito.reset;
 
 import javax.validation.Validator;
 
-import nl.knaw.huygens.security.AuthorizationHandler;
-import nl.knaw.huygens.security.SecurityContextCreator;
+import nl.knaw.huygens.security.client.AuthorizationHandler;
+import nl.knaw.huygens.security.client.SecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
