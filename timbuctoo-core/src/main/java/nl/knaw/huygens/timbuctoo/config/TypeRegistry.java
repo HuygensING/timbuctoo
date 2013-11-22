@@ -94,19 +94,19 @@ public class TypeRegistry {
   private void registerPackage(ClassPath classPath, String packageName) {
     for (ClassInfo info : classPath.getTopLevelClasses(packageName)) {
       Class<?> type = info.load();
-      if (shouldRegisterEntity(type)) {
+      if (isEntity(type) && !shouldNotRegister(type)) {
         if (isValidSystemEntity(type)) {
           registerClass(toSystemEntity(type));
         } else if (isValidDomainEntity(type)) {
           registerClass(toDomainEntity(type));
-          registerVariationForClass(toDomainEntity(type));
           registerWithBaseClass(toDomainEntity(type));
+          registerVariationForClass(toDomainEntity(type));
         } else {
           LOG.error("Not a valid entity: '{}'", type.getName());
           throw new IllegalStateException("Invalid entity");
         }
         LOG.debug("Registered entity {}", type.getName());
-      } else if (shouldRegisterRole(type)) {
+      } else if (isRole(type) && !shouldNotRegister(type)) {
         registerRole(toRole(type));
         registerVariationForClass(toRole(type));
       }
@@ -123,15 +123,6 @@ public class TypeRegistry {
       subClasses.add(type);
       subClassMap.put(baseClass, subClasses);
     }
-  }
-
-  private boolean shouldRegisterRole(Class<?> type) {
-    return isRole(type) && !shouldNotRegister(type);
-  }
-
-  private boolean shouldRegisterEntity(Class<?> type) {
-    return isEntity(type) //
-        && !shouldNotRegister(type);
   }
 
   private boolean shouldNotRegister(Class<?> type) {
@@ -310,8 +301,8 @@ public class TypeRegistry {
     return null;
   }
 
-  public Set<Class<? extends Entity>> getSubClasses(Class<? extends Entity> baseClass) {
-    return subClassMap.get(baseClass);
+  public Set<Class<? extends Entity>> getVarTypes(Class<? extends Entity> type) {
+    return subClassMap.get(getBaseClass(type));
   }
 
   /**

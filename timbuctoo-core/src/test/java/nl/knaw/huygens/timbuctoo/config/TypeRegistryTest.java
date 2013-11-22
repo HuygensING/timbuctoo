@@ -168,30 +168,6 @@ public class TypeRegistryTest {
   }
 
   @Test
-  public void testGetSubClassesOfProjectSubClass() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertNull(registry.getSubClasses(ProjectADomainEntity.class));
-  }
-
-  @Test
-  public void testGetSubClassesOfDomainEntity() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertNull(registry.getSubClasses(DomainEntity.class));
-  }
-
-  @Test
-  public void testGetSubClassesOfSystemEntity() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertNull(registry.getSubClasses(SystemEntity.class));
-  }
-
-  @Test
-  public void testGetSubClassesOfEntity() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertNull(registry.getSubClasses(Entity.class));
-  }
-
-  @Test
   public void testGetCollectionIdForARegisteredClass() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
     Class<? extends Entity> baseType = registry.getBaseClass(BaseDomainEntity.class);
