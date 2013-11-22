@@ -17,8 +17,6 @@ import com.google.inject.Inject;
 public class UserSecurityContextCreator implements SecurityContextCreator {
 
   private static final Logger LOG = LoggerFactory.getLogger(UserSecurityContextCreator.class);
-  private static final String NEW_USER = "NEW_USER";
-  private static final String UNVERIFIED_USER_ROLE = "UNVERIFIED_USER";
 
   private final StorageManager storageManager;
 
@@ -34,13 +32,13 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
     }
 
     User example = new User();
-    example.setPersistentId(securityInformation.getPrincipal().getName());
+    example.setPersistentId(securityInformation.getPersistentID());
 
     User user = findUser(example);
 
     if (user == null) {
       example.setDisplayName(securityInformation.getDisplayName());
-      user = createUser(example);
+      user = createUser(example, securityInformation);
     }
 
     UserSecurityContext userSecurityContext = new UserSecurityContext(securityInformation.getPrincipal(), user);
@@ -48,9 +46,18 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
     return userSecurityContext;
   }
 
-  private User createUser(User user) {
+  private User createUser(User user, SecurityInformation securityInformation) {
     LOG.debug("Create new user: " + user.getDisplayName());
     User returnValue = null;
+
+    user.setCommonName(securityInformation.getCommonName());
+    user.setDisplayName(securityInformation.getDisplayName());
+    user.setEmail(securityInformation.getEmailAddress());
+    user.setFirstName(securityInformation.getGivenName());
+    user.setLastName(securityInformation.getSurname());
+    user.setPersistentId(securityInformation.getPersistentID());
+    user.setOrganisation(securityInformation.getOrganization());
+
     try {
 
       storageManager.addEntity(User.class, user);
