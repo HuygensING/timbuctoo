@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNameGenerator;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.Variable;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -134,25 +134,19 @@ class VariationReducer extends VariationConverter {
     }
 
     if (TypeRegistry.isDomainEntity(type)) {
-      addVariations(type, returnObject);
+      DomainEntity entity = DomainEntity.class.cast(returnObject);
+      for (Class<? extends Entity> varType : typeRegistry.getVarTypes(type)) {
+        String variation = TypeNameGenerator.getInternalName(varType);
+        entity.addVariation(variation);
+      }
     }
 
     return returnObject;
   }
 
-  private <T extends Entity> void addVariations(Class<T> type, T entity) {
-    List<Reference> refs = Lists.newArrayList();
-    String id = entity.getId();
-    for (Class<? extends Entity> varType : typeRegistry.getVarTypes(type)) {
-      refs.add(new Reference(varType, id));
-    }
-    ((Variable) entity).setVariationRefs(refs);
-  }
-
   private <T extends Role> T createRole(Class<T> type, JsonNode node, String variation) throws InstantiationException, IllegalAccessException {
     T returnValue = type.newInstance();
     setFields(type, Role.class, returnValue, node, variation);
-
     return returnValue;
   }
 

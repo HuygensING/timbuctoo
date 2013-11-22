@@ -1,12 +1,11 @@
 package nl.knaw.huygens.timbuctoo.rest.providers;
 
-import java.io.IOException;
 import java.io.StringWriter;
-import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNameGenerator;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.rest.providers.model.GeneralTestDoc;
 import nl.knaw.huygens.timbuctoo.rest.providers.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.rest.providers.model.TestInheritsFromTestBaseDoc;
@@ -18,30 +17,31 @@ import nl.knaw.huygens.timbuctoo.rest.providers.model.projectb.ProjectBGeneralTe
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.google.common.collect.Lists;
 
 public class HTMLGeneratorTest {
 
-  private static final String PACKAGE = "nl.knaw.huygens.timbuctoo.rest.providers.model";
-  private static final String PACKAGEA = "nl.knaw.huygens.timbuctoo.rest.providers.model.projecta";
-  private static final String PACKAGEB = "nl.knaw.huygens.timbuctoo.rest.providers.model.projectb";
-  private static final String MODEL_PACKAGES = PACKAGE + " " + PACKAGEA + " " + PACKAGEB;
+  private static final String PACKAGES = "timbuctoo.rest.providers.model timbuctoo.rest.providers.model.projecta timbuctoo.rest.providers.model.projectb";
+
+  private static TypeRegistry registry;
 
   private HTMLGenerator gen;
   private ObjectMapper mapper;
   private StringWriter writer;
 
+  @BeforeClass
+  public static void setupRegistry() {
+    registry = new TypeRegistry(PACKAGES);
+  }
+
   @Before
-  public void setUp() throws Exception {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGES);
+  public void setup() throws Exception {
     SimpleModule module = new SimpleModule();
     module.addSerializer(new ReferenceSerializer(registry));
     mapper = new ObjectMapper();
@@ -52,9 +52,15 @@ public class HTMLGeneratorTest {
     gen = new HTMLGenerator(realGen);
   }
 
-  private String generateHtml(Entity doc) throws JsonGenerationException, JsonMappingException, IOException {
+  private String generateHtml(Entity doc) throws Exception {
     mapper.writeValue(gen, doc);
     return writer.getBuffer().toString();
+  }
+
+  private void addVariations(DomainEntity entity, Class<?>... types) {
+    for (Class<?> type : types) {
+      entity.addVariation(TypeNameGenerator.getInternalName(type));
+    }
   }
 
   private void assertContains(String html, String key, String value) {
@@ -66,14 +72,14 @@ public class HTMLGeneratorTest {
   }
 
   @Test
-  public void testSystemDocument() throws JsonGenerationException, JsonMappingException, IOException {
-    TestSystemDocument doc = new TestSystemDocument();
-    doc.setAnnotatedProperty("test");
-    doc.setId("TSD0000000001");
-    doc.setAnnotatedProperty("anonProp");
-    doc.setPropWithAnnotatedAccessors("propWithAnnotatedAccessors");
+  public void testSystemEntity() throws Exception {
+    TestSystemDocument entity = new TestSystemDocument();
+    entity.setAnnotatedProperty("test");
+    entity.setId("TSD0000000001");
+    entity.setAnnotatedProperty("anonProp");
+    entity.setPropWithAnnotatedAccessors("propWithAnnotatedAccessors");
 
-    String html = generateHtml(doc);
+    String html = generateHtml(entity);
 
     assertContains(html, "Class", TestSystemDocument.class.getName());
     assertContains(html, "Name", "none");
@@ -87,16 +93,11 @@ public class HTMLGeneratorTest {
   }
 
   @Test
-  public void testDomainDocumentArchetype() throws JsonGenerationException, JsonMappingException, IOException {
+  public void testDomainEntityArchetype() throws Exception {
     String id = "TCD0000000001";
     TestConcreteDoc entity = new TestConcreteDoc(id, "test");
     entity.setPid("pid");
-    List<Reference> variations = Lists.newArrayList();
-    variations.add(new Reference(ProjectAGeneralTestDoc.class, id));
-    variations.add(new Reference(ProjectBGeneralTestDoc.class, id));
-    variations.add(new Reference(GeneralTestDoc.class, id));
-    variations.add(new Reference(TestConcreteDoc.class, id));
-    entity.setVariationRefs(variations);
+    addVariations(entity, ProjectAGeneralTestDoc.class, ProjectBGeneralTestDoc.class, GeneralTestDoc.class, TestConcreteDoc.class);
 
     String html = generateHtml(entity);
 
@@ -115,18 +116,13 @@ public class HTMLGeneratorTest {
   }
 
   @Test
-  public void testDomainDocumentSubtype() throws JsonGenerationException, JsonMappingException, IOException {
+  public void testDomainEntitySubtype() throws Exception {
     String id = "GTD0000000001";
     GeneralTestDoc entity = new GeneralTestDoc(id);
     entity.setPid("pid");
     entity.generalTestDocValue = "generalTestDocValue";
     entity.name = "test";
-    List<Reference> variations = Lists.newArrayList();
-    variations.add(new Reference(ProjectAGeneralTestDoc.class, id));
-    variations.add(new Reference(ProjectBGeneralTestDoc.class, id));
-    variations.add(new Reference(GeneralTestDoc.class, id));
-    variations.add(new Reference(TestConcreteDoc.class, id));
-    entity.setVariationRefs(variations);
+    addVariations(entity, ProjectAGeneralTestDoc.class, ProjectBGeneralTestDoc.class, GeneralTestDoc.class, TestConcreteDoc.class);
 
     String html = generateHtml(entity);
 
@@ -146,15 +142,12 @@ public class HTMLGeneratorTest {
   }
 
   @Test
-  public void testDomainDocumentProjectSubtype() throws JsonGenerationException, JsonMappingException, IOException {
+  public void testDomainEntityProjectSubtype() throws Exception {
     String id = "OTD0000000001";
     OtherDoc entity = new OtherDoc(id);
     entity.setPid("pid");
     entity.otherThing = "test";
-    List<Reference> variations = Lists.newArrayList();
-    variations.add(new Reference(OtherDoc.class, id));
-    variations.add(new Reference(TestInheritsFromTestBaseDoc.class, id));
-    entity.setVariationRefs(variations);
+    addVariations(entity, OtherDoc.class, TestInheritsFromTestBaseDoc.class);
 
     String html = generateHtml(entity);
 
