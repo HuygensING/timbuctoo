@@ -21,7 +21,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 public class DatabaseSetupper {
@@ -78,10 +77,10 @@ public class DatabaseSetupper {
   private void createAdminUser() throws IOException {
     User admin = new User();
     admin.setId(null); // Will be filled in by the storage implementation.
-    admin.email = "admin@example.com";
-    admin.groups = Lists.newArrayList("administrator");
-    admin.firstName = "Joe";
-    admin.lastName = "Administrator";
+    admin.setEmail("admin@example.com");
+    //admin.groups = Lists.newArrayList("administrator");
+    admin.setFirstName("Joe");
+    admin.setLastName("Administrator");
     storageManager.addEntity(User.class, admin);
     System.out.println("Added default user.");
   }

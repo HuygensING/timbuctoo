@@ -22,7 +22,7 @@ public class ServletInjectionModule extends JerseyServletModule {
     Map<String, String> params = Maps.newHashMap();
     params.put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.timbuctoo.rest.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.timbuctoo.rest.providers");
     params.put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, getClassNamesString(LoggingFilter.class));
-    params.put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES, getClassNamesString(SecurityResourceFilterFactory.class, RolesAllowedResourceFilterFactory.class, UserResourceFilterFactory.class));
+    params.put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES, getClassNamesString(SecurityResourceFilterFactory.class, UserResourceFilterFactory.class, RolesAllowedResourceFilterFactory.class));
     params.put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, getClassNamesString(LoggingFilter.class, CORSFilter.class));
     params.put(ServletContainer.PROPERTY_WEB_PAGE_CONTENT_REGEX, "/static.*");
     filter("/*").through(GuiceContainer.class, params);

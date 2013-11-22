@@ -9,16 +9,15 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
+import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
-import org.apache.commons.collections.map.HashedMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -31,6 +30,7 @@ import com.sun.jersey.api.client.WebResource;
 
 public class UserResourceTest extends WebServiceTestSetup {
 
+  private static final String VRE_ID_KEY = "VRE_ID";
   private static final String USERS_RESOURCE = "/" + Paths.SYSTEM_PREFIX + "/users";
   private static final String OTHER_USER_ID = "otherUserId";
   private static final String USER_ROLE = "USER";
@@ -45,35 +45,35 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetAllUsers() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
 
     List<User> expectedList = Lists.<User> newArrayList(createUser("test", "test"), createUser("test1", "test1"), createUser("test", "test"));
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getAllLimited(User.class, 0, 200)).thenReturn(expectedList);
 
     GenericType<List<User>> genericType = new GenericType<List<User>>() {};
-    List<User> actualList = resource.header("Authorization", "bearer 12333322abef").get(genericType);
+    List<User> actualList = resource.header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(genericType);
     assertEquals(expectedList.size(), actualList.size());
   }
 
   @Test
   public void testGetAllUsersNonFound() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
 
     List<User> expectedList = Lists.<User> newArrayList();
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getAllLimited(User.class, 0, 200)).thenReturn(expectedList);
 
     GenericType<List<User>> genericType = new GenericType<List<User>>() {};
-    List<User> actualList = resource.header("Authorization", "bearer 12333322abef").get(genericType);
+    List<User> actualList = resource.header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(genericType);
     assertEquals(expectedList.size(), actualList.size());
   }
 
   @Test
   public void testGetAllUsersNotInRole() {
-    setUpUserRoles(USER_ID, null);
+    setUpUserWithRoles(USER_ID, null);
 
-    ClientResponse response = resource.header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
+    ClientResponse response = resource.header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
   }
 
@@ -87,61 +87,60 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetUserAsAdmin() {
-    setUpUserRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE));
 
     User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
-    User actual = resource.path(USER_ID).header("Authorization", "bearer 12333322abef").get(User.class);
+    User actual = resource.path(USER_ID).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(User.class);
     assertEquals(expected.getId(), actual.getId());
-    assertEquals(expected.firstName, actual.firstName);
-    assertEquals(expected.lastName, actual.lastName);
+    assertEquals(expected.getFirstName(), actual.getFirstName());
+    assertEquals(expected.getLastName(), actual.getLastName());
   }
 
   @Test
   public void testGetUserNotFound() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(null);
 
-    ClientResponse response = resource.path(USER_ID).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
+    ClientResponse response = resource.path(USER_ID).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
   @Test
   public void testGetMyUserDataAsAdmin() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
 
     User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
-    User actual = resource.path("me").header("Authorization", "bearer 12333322abef").get(User.class);
+    User actual = resource.path("me").header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(User.class);
     assertEquals(expected.getId(), actual.getId());
-    assertEquals(expected.firstName, actual.firstName);
-    assertEquals(expected.lastName, actual.lastName);
+    assertEquals(expected.getFirstName(), actual.getFirstName());
+    assertEquals(expected.getLastName(), actual.getLastName());
   }
 
   @Test
   public void testGetMyUserDataAsUser() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
     User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
-    User actual = resource.path("me").header("Authorization", "bearer 12333322abef").get(User.class);
+    User actual = resource.path("me").header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(User.class);
     assertEquals(expected.getId(), actual.getId());
-    assertEquals(expected.firstName, actual.firstName);
-    assertEquals(expected.lastName, actual.lastName);
+    assertEquals(expected.getFirstName(), actual.getFirstName());
+    assertEquals(expected.getLastName(), actual.getLastName());
   }
 
-  @SuppressWarnings("unchecked")
   @Test
-  public void testGetMyUserDataAsUnverifiedUser() throws IOException {
-    setUpUserRoles(USER_ID, Lists.newArrayList("UNVERIFIED_USER"));
+  public void testGetMyUserDataAsNewUser() throws IOException {
+    setUpUser(USER_ID);
 
     MailSender mailSender = injector.getInstance(MailSender.class);
 
@@ -150,47 +149,37 @@ public class UserResourceTest extends WebServiceTestSetup {
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
     final User admin = createUser("admin", "admin");
-    admin.email = "admin@admin.com";
+    admin.setEmail("admin@admin.com");
+    String adminId = "USER00000000002";
+    admin.setId(adminId);
 
-    final Map<String, User> createdUsers = new HashedMap();
+    VREAuthorization adminExample = new VREAuthorization();
+    adminExample.setVreId(VRE_ID);
+    adminExample.setRoles(Lists.newArrayList(ADMIN_ROLE));
 
-    doAnswer(new Answer<Object>() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        User user = (User) invocation.getArguments()[1];
-        user.setId(USER_ID);
-        createdUsers.put(USER_ID, user);
-        return null;
-      }
-    }).when(storageManager).addEntity(any(Class.class), any(User.class));
+    VREAuthorization adminAuth = new VREAuthorization();
+    adminAuth.setVreId(VRE_ID);
+    adminAuth.setUserId(adminId);
+    adminAuth.setRoles(Lists.newArrayList(ADMIN_ROLE));
 
-    doAnswer(new Answer<User>() {
-      @Override
-      public User answer(InvocationOnMock invocation) throws Throwable {
+    when(storageManager.findEntity(VREAuthorization.class, adminExample)).thenReturn(adminAuth);
 
-        User user = (User) invocation.getArguments()[1];
-        if (user.getRoles() != null && user.getRoles().contains("ADMIN")) {
-          return admin;
-        }
+    when(storageManager.getEntity(User.class, adminId)).thenReturn(admin);
 
-        return createdUsers.get(USER_ID);
-      }
-    }).when(storageManager).findEntity(any(Class.class), any(User.class));
-
-    User actual = resource.path("me").header("Authorization", "bearer 12333322abef").get(User.class);
+    User actual = resource.path("me").header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(User.class);
 
     assertEquals(expected.getId(), actual.getId());
-    assertEquals(expected.firstName, actual.firstName);
-    assertEquals(expected.lastName, actual.lastName);
+    assertEquals(expected.getFirstName(), actual.getFirstName());
+    assertEquals(expected.getLastName(), actual.getLastName());
 
     verify(mailSender).sendMail(anyString(), anyString(), anyString());
   }
 
   @Test
   public void testGetUserAsUser() {
-    setUpUserRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE));
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE));
 
-    ClientResponse response = resource.path(USER_ID).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
+    ClientResponse response = resource.path(USER_ID).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
   }
 
@@ -204,19 +193,19 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutUser() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
     MailSender sender = injector.getInstance(MailSender.class);
 
     User user = createUser(USER_ID, "firstName", "lastName");
-    user.email = "test@test.com";
+    user.setEmail("test@test.com");
 
     User original = createUser(USER_ID, "test", "test");
-    original.email = "test@test.com";
+    original.setEmail("test@test.com");
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(original);
 
-    ClientResponse response = resource.path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, user);
+    ClientResponse response = resource.path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, user);
     assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
     verify(sender).sendMail(anyString(), anyString(), anyString());
   }
@@ -224,7 +213,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   @SuppressWarnings("unchecked")
   @Test
   public void testPutUserUserNotFound() throws IOException {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
 
     User user = createUser(USER_ID, "firstName", "lastName");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -237,13 +226,13 @@ public class UserResourceTest extends WebServiceTestSetup {
       }
     }).when(storageManager).modifyEntity(any(Class.class), any(User.class));
 
-    ClientResponse response = resource.path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, user);
+    ClientResponse response = resource.path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, user);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
   @Test
   public void testPutUserNotInRole() {
-    setUpUserRoles(USER_ID, null);
+    setUpUserWithRoles(USER_ID, null);
 
     User user = createUser(USER_ID, "firstName", "lastName");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -267,30 +256,30 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteUser() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
 
     User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
-    ClientResponse response = resource.path(USER_ID).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
+    ClientResponse response = resource.path(USER_ID).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
   }
 
   @Test
   public void testDeleteUserUserNotFound() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(null);
 
-    ClientResponse response = resource.path(USER_ID).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
+    ClientResponse response = resource.path(USER_ID).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
   @Test
   public void testDeleteUserNotInRole() {
-    setUpUserRoles(USER_ID, null);
+    setUpUserWithRoles(USER_ID, null);
 
     User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -313,16 +302,16 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   private User createUser(String firstName, String lastName) {
     User user = new User();
-    user.firstName = firstName;
-    user.lastName = lastName;
+    user.setFirstName(firstName);
+    user.setLastName(lastName);
     return user;
   }
 
   private User createUser(String id, String firstName, String lastName) {
     User user = new User();
     user.setId(id);
-    user.firstName = firstName;
-    user.lastName = lastName;
+    user.setFirstName(firstName);
+    user.setLastName(lastName);
     return user;
   }
 
