@@ -19,6 +19,7 @@ public class User extends SystemEntity {
   private String lastName;
   private String displayName;
   private String commonName;
+  private String organisation;
   private VREAuthorization vreAuthorization;
 
   public String getPersistentId() {
@@ -104,6 +105,14 @@ public class User extends SystemEntity {
   @JsonIgnore
   public List<String> getRoles() {
     return vreAuthorization != null ? vreAuthorization.getRoles() : null;
+  }
+
+  public String getOrganisation() {
+    return organisation;
+  }
+
+  public void setOrganisation(String organisation) {
+    this.organisation = organisation;
   }
 
 }

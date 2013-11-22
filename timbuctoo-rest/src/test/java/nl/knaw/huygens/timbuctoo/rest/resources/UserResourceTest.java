@@ -30,7 +30,6 @@ import com.sun.jersey.api.client.WebResource;
 
 public class UserResourceTest extends WebServiceTestSetup {
 
-  private static final String VRE_ID_KEY = "VRE_ID";
   private static final String USERS_RESOURCE = "/" + Paths.SYSTEM_PREFIX + "/users";
   private static final String OTHER_USER_ID = "otherUserId";
   private static final String USER_ROLE = "USER";
