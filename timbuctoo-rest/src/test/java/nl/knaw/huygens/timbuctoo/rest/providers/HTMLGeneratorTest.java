@@ -6,13 +6,13 @@ import nl.knaw.huygens.timbuctoo.config.TypeNameGenerator;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.rest.model.GeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.rest.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.rest.model.TestInheritsFromTestBaseDoc;
 import nl.knaw.huygens.timbuctoo.rest.model.TestSystemDocument;
-import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDoc;
-import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectAGeneralTestDoc;
-import nl.knaw.huygens.timbuctoo.rest.model.projectb.ProjectBGeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
+import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
+import nl.knaw.huygens.timbuctoo.rest.model.projectb.ProjectBDomainEntity;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -97,7 +97,7 @@ public class HTMLGeneratorTest {
     String id = "TCD0000000001";
     TestConcreteDoc entity = new TestConcreteDoc(id, "test");
     entity.setPid("pid");
-    addVariations(entity, ProjectAGeneralTestDoc.class, ProjectBGeneralTestDoc.class, GeneralTestDoc.class, TestConcreteDoc.class);
+    addVariations(entity, ProjectADomainEntity.class, ProjectBDomainEntity.class, BaseDomainEntity.class, TestConcreteDoc.class);
 
     String html = generateHtml(entity);
 
@@ -109,8 +109,8 @@ public class HTMLGeneratorTest {
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
 
-    assertContains(html, "href=|projectageneraltestdocs/TCD0000000001|");
-    assertContains(html, "href=|projectbgeneraltestdocs/TCD0000000001|");
+    assertContains(html, "href=|projectadomainentities/TCD0000000001|");
+    assertContains(html, "href=|projectbdomainentities/TCD0000000001|");
 
     assertContains(html, "Deleted", "no");
   }
@@ -118,15 +118,15 @@ public class HTMLGeneratorTest {
   @Test
   public void testDomainEntitySubtype() throws Exception {
     String id = "GTD0000000001";
-    GeneralTestDoc entity = new GeneralTestDoc(id);
+    BaseDomainEntity entity = new BaseDomainEntity(id);
     entity.setPid("pid");
     entity.generalTestDocValue = "generalTestDocValue";
     entity.name = "test";
-    addVariations(entity, ProjectAGeneralTestDoc.class, ProjectBGeneralTestDoc.class, GeneralTestDoc.class, TestConcreteDoc.class);
+    addVariations(entity, ProjectADomainEntity.class, ProjectBDomainEntity.class, BaseDomainEntity.class, TestConcreteDoc.class);
 
     String html = generateHtml(entity);
 
-    assertContains(html, "Class", GeneralTestDoc.class.getName());
+    assertContains(html, "Class", BaseDomainEntity.class.getName());
     assertContains(html, "Name", "test");
     assertContains(html, "General Test Doc Value", "generalTestDocValue");
     assertContains(html, "Id", id);
@@ -135,8 +135,8 @@ public class HTMLGeneratorTest {
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
 
-    assertContains(html, "href=|projectageneraltestdocs/GTD0000000001|");
-    assertContains(html, "href=|projectbgeneraltestdocs/GTD0000000001|");
+    assertContains(html, "href=|projectadomainentities/GTD0000000001|");
+    assertContains(html, "href=|projectbdomainentities/GTD0000000001|");
 
     assertContains(html, "Deleted", "no");
   }
@@ -144,14 +144,14 @@ public class HTMLGeneratorTest {
   @Test
   public void testDomainEntityProjectSubtype() throws Exception {
     String id = "OTD0000000001";
-    OtherDoc entity = new OtherDoc(id);
+    OtherDomainEntity entity = new OtherDomainEntity(id);
     entity.setPid("pid");
     entity.otherThing = "test";
-    addVariations(entity, OtherDoc.class, TestInheritsFromTestBaseDoc.class);
+    addVariations(entity, OtherDomainEntity.class, TestInheritsFromTestBaseDoc.class);
 
     String html = generateHtml(entity);
 
-    assertContains(html, "Class", OtherDoc.class.getName());
+    assertContains(html, "Class", OtherDomainEntity.class.getName());
     assertContains(html, "Other Thing", "test");
     assertContains(html, "Id", "OTD0000000001");
     assertContains(html, "Rev", "0");
@@ -159,7 +159,7 @@ public class HTMLGeneratorTest {
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
 
-    assertContains(html, "href=|otherdocs/OTD0000000001|");
+    assertContains(html, "href=|otherdomainentities/OTD0000000001|");
 
     assertContains(html, "Deleted", "no");
   }

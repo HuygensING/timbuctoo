@@ -1,14 +1,16 @@
 package nl.knaw.huygens.timbuctoo.rest.model.projecta;
 
+import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
-public class OtherDoc extends DomainEntity {
+@EntityTypeName("otherdomainentities")
+public class OtherDomainEntity extends DomainEntity {
 
   public String otherThing;
 
-  public OtherDoc() {}
+  public OtherDomainEntity() {}
 
-  public OtherDoc(String id) {
+  public OtherDomainEntity(String id) {
     setId(id);
   }
 
