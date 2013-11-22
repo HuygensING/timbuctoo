@@ -81,14 +81,14 @@ class VariationInducer extends VariationConverter {
   }
 
   private <T extends Entity> JsonNode induceSystemEntity(Class<T> type, T entity) {
-    Map<String, Object> map = getEntityMap(type, entity);
+    Map<String, Object> map = propertyMapper.mapObject(Entity.class, type, entity);
     return jsonMapper.valueToTree(map);
   }
 
   private <T extends Entity> JsonNode induceNewDomainEntity(Class<T> type, T entity) {
     checkArgument(TypeRegistry.isDomainEntity(type));
 
-    Map<String, Object> map = getEntityMap(type, entity);
+    Map<String, Object> map = propertyMapper.mapObject(Entity.class, type, entity);
 
     for (Role role : ((DomainEntity) entity).getRoles()) {
       Class<? extends Role> roleType = role.getClass();
@@ -103,7 +103,7 @@ class VariationInducer extends VariationConverter {
     checkArgument(TypeRegistry.isDomainEntity(type));
     checkArgument(existingItem != null);
 
-    Map<String, Object> map = getEntityMap(type, entity);
+    Map<String, Object> map = propertyMapper.mapObject(Entity.class, type, entity);
     map = merge(type, map, existingItem);
 
     List<Role> roles = ((DomainEntity) entity).getRoles();
@@ -118,21 +118,9 @@ class VariationInducer extends VariationConverter {
     return cleanUp(newNode);
   }
 
+  // TODO make method work with T role instead of Role role
   @SuppressWarnings("unchecked")
-  protected <T extends Entity> Map<String, Object> getEntityMap(Class<T> type, T item) {
-    Map<String, Object> map = Maps.newHashMap();
-    if (type != Entity.class) {
-      map.putAll(getEntityMap((Class<T>) type.getSuperclass(), item));
-    }
-
-    map.putAll(propertyMapper.mapObject(type, item));
-
-    return map;
-  }
-
-  //TODO make method work with T role instead of Role role
-  @SuppressWarnings("unchecked")
-  protected <T extends Role> Map<String, Object> getRoleMap(Class<T> type, Role role) {
+  private <T extends Role> Map<String, Object> getRoleMap(Class<T> type, Role role) {
     Map<String, Object> map = Maps.newHashMap();
     if (type != Role.class) {
       map.putAll(getRoleMap((Class<T>) type.getSuperclass(), role));

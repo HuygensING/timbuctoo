@@ -36,12 +36,36 @@ public class MongoObjectMapper {
   }
 
   /**
+   * Maps an object and its superclasses.
+   *
+   * Note that the bound {@code U extends T} forces the stop class {@code T} to be
+   * a superclass of {@code U}, ensuring that the recursion will terminate properly.
+   */
+  public <T, U extends T, V extends U> Map<String, Object> mapObject(Class<T> stopType, Class<U> type, V item) {
+    Map<String, Object> map = Maps.newHashMap();
+    if (type != stopType) {
+      map.putAll(mapObject(stopType, type.getSuperclass(), item));
+    }
+    map.putAll(mapObject(type, item));
+    return map;
+  }
+
+  public <T> Map<String, Object> mapObject2(Class<? super T> stopType, Class<? super T> type, T item) {
+    Map<String, Object> map = Maps.newHashMap();
+    if (type != stopType) {
+      map.putAll(mapObject2(stopType, type.getSuperclass(), item));
+    }
+    map.putAll(mapObject(type, item));
+    return map;
+  }
+
+  /**
    * Convert the object to a Map ignoring the null keys.
-   * @param type the type to convert, should extends Entity.
+   * @param type the type to convert.
    * @param item the object to convert.
    * @return a map with all the non-null values of the {@code item}.
    */
-  public <T> Map<String, Object> mapObject(Class<T> type, T item) {
+  public <T> Map<String, Object> mapObject(Class<? super T> type, T item) {
     Preconditions.checkArgument(item != null);
     Preconditions.checkArgument(type != null);
 

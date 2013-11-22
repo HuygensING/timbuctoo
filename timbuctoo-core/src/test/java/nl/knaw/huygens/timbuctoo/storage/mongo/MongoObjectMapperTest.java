@@ -11,7 +11,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -26,7 +26,8 @@ public class MongoObjectMapperTest {
   private static final String TEST_VALUE2_KEY = propertyName("mongoobjectmapperentity", "testValue2");
   private static final String TEST_VALUE1_KEY = propertyName("mongoobjectmapperentity", "testValue1");
   private static final String NAME_KEY = propertyName("mongoobjectmapperentity", "name");
-  //default values
+
+  // default values
   private static final String DEFAULT_ID = "testID";
   private static final String DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS = "propWithAnnotatedAccessors";
   private static final String DEFAULT_ANNOTATED_PROPERTY = "annotatedProperty";
@@ -34,18 +35,19 @@ public class MongoObjectMapperTest {
   private static final String DEFAULT_TEST_VALUE1 = "testValue1";
   private static final String DEFAULT_NAME = "name";
   private static final Class<MongoObjectMapperEntity> TYPE = MongoObjectMapperEntity.class;
-  private static MongoObjectMapper instance;
 
-  @BeforeClass
-  public static void setUpClass() {
-    instance = new MongoObjectMapper();
+  private MongoObjectMapper mapper;
+
+  @Before
+  public void setUpClass() {
+    mapper = new MongoObjectMapper();
   }
 
   @Test
   public void testMapObject() {
     MongoObjectMapperEntity testObject = createMongoObjectMapperEntity(DEFAULT_NAME, DEFAULT_TEST_VALUE1, DEFAULT_TEST_VALUE2, DEFAULT_ANNOTATED_PROPERTY, DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
 
-    Map<String, Object> actual = instance.mapObject(TYPE, testObject);
+    Map<String, Object> actual = mapper.mapObject(TYPE, testObject);
 
     Map<String, Object> expected = Maps.newHashMap();
     expected.put(NAME_KEY, DEFAULT_NAME);
@@ -61,7 +63,7 @@ public class MongoObjectMapperTest {
   public void testMapObjectWithNullValues() {
     MongoObjectMapperEntity testObject = createMongoObjectMapperEntity(DEFAULT_NAME, DEFAULT_TEST_VALUE1, DEFAULT_TEST_VALUE2, null, null);
 
-    Map<String, Object> actual = instance.mapObject(TYPE, testObject);
+    Map<String, Object> actual = mapper.mapObject(TYPE, testObject);
 
     Map<String, Object> expected = Maps.newHashMap();
     expected.put(NAME_KEY, DEFAULT_NAME);
@@ -77,7 +79,7 @@ public class MongoObjectMapperTest {
     List<String> primitiveList = Lists.newArrayList("String1", "String2", "String3", "String4");
     testObject.setPrimitiveTestCollection(primitiveList);
 
-    Map<String, Object> actual = instance.mapObject(TYPE, testObject);
+    Map<String, Object> actual = mapper.mapObject(TYPE, testObject);
 
     Map<String, Object> expected = Maps.newHashMap();
     expected.put(NAME_KEY, DEFAULT_NAME);
@@ -99,7 +101,7 @@ public class MongoObjectMapperTest {
     testObject.setId(DEFAULT_ID);
     testObject.setNonPrimitiveTestCollection(Lists.newArrayList(testObject1, testObject2, testObject3));
 
-    Map<String, Object> actual = instance.mapObject(TYPE, testObject);
+    Map<String, Object> actual = mapper.mapObject(TYPE, testObject);
 
     Map<String, Object> expected = Maps.newHashMap();
     expected.put(NAME_KEY, DEFAULT_NAME);
@@ -119,7 +121,7 @@ public class MongoObjectMapperTest {
     Map<String, Object> expected = Maps.newHashMap();
     expected.put(propertyName(TYPE, "type"), "nl.knaw.huygens.timbuctoo.model.MongoObjectMapperEntity");
 
-    assertEquals(expected, instance.mapObject(TYPE, item));
+    assertEquals(expected, mapper.mapObject(TYPE, item));
   }
 
   @Test
@@ -130,7 +132,7 @@ public class MongoObjectMapperTest {
     Map<String, Object> expected = Maps.newHashMap();
     expected.put(propertyName(TYPE, "date"), "20031011");
 
-    assertEquals(expected, instance.mapObject(TYPE, item));
+    assertEquals(expected, mapper.mapObject(TYPE, item));
   }
 
   @Test
@@ -144,7 +146,7 @@ public class MongoObjectMapperTest {
     Map<String, Object> expected = Maps.newLinkedHashMap();
     expected.put(propertyName(TYPE, "personName"), PersonNameMapper.createPersonNameMap(personName));
 
-    Map<String, Object> actual = instance.mapObject(TYPE, item);
+    Map<String, Object> actual = mapper.mapObject(TYPE, item);
 
     // Use the to string because the maps cannot be compared as map.
     assertEquals(expected.toString(), actual.toString());
@@ -154,12 +156,12 @@ public class MongoObjectMapperTest {
   public void testMapObjectTypeNull() {
     MongoObjectMapperEntity testObject = createMongoObjectMapperEntity(DEFAULT_NAME, DEFAULT_TEST_VALUE1, DEFAULT_TEST_VALUE2, DEFAULT_ANNOTATED_PROPERTY, DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
 
-    instance.mapObject(null, testObject);
+    mapper.mapObject(null, testObject);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testMapObjectObjectNull() {
-    instance.mapObject(TYPE, null);
+    mapper.mapObject(TYPE, null);
   }
 
   private MongoObjectMapperEntity createMongoObjectMapperEntity(String name, String testValue1, String testValue2, String annotatedProperty, String propWithAnnotatedAccessors) {
@@ -170,6 +172,38 @@ public class MongoObjectMapperTest {
     doc.setAnnotatedProperty(annotatedProperty);
     doc.setPropWithAnnotatedAccessors(propWithAnnotatedAccessors);
     return doc;
+  }
+
+  // --- recursive mapping ---------------------------------------------
+
+  @Test
+  public void testRecursiveMapping() {
+    ClassD item = new ClassD();
+
+    // See the ClassD instance as ClassC and ClassB
+    Map<String, Object> map = mapper.mapObject(ClassB.class, ClassC.class, item);
+
+    Map<String, Object> expected = Maps.newHashMap();
+    expected.put(propertyName(ClassB.class, "b"), item.b);
+    expected.put(propertyName(ClassC.class, "c"), item.c);
+
+    assertEquals(expected, map);
+  }
+
+  static class ClassA {
+    public String a = "aa";
+  }
+
+  static class ClassB extends ClassA {
+    public String b = "bb";
+  }
+
+  static class ClassC extends ClassB {
+    public String c = "cc";
+  }
+
+  static class ClassD extends ClassC {
+    public String d = "dd";
   }
 
 }
