@@ -133,24 +133,20 @@ class VariationReducer extends VariationConverter {
       LOG.debug("exception", e);
     }
 
-    if (TypeRegistry.isVariable(type)) {
+    if (TypeRegistry.isDomainEntity(type)) {
       addVariations(type, returnObject);
     }
 
     return returnObject;
   }
 
-  protected <T extends Entity> void addVariations(Class<T> type, T returnObject) {
-    List<Reference> variations = Lists.newArrayList();
-    String id = returnObject.getId();
-    Class<? extends Entity> baseClass = typeRegistry.getBaseClass(type);
-    Set<Class<? extends Entity>> variationTypes = typeRegistry.getSubClasses(baseClass);
-
-    for (Class<? extends Entity> variationClass : variationTypes) {
-      variations.add(new Reference(variationClass, id));
+  private <T extends Entity> void addVariations(Class<T> type, T entity) {
+    List<Reference> refs = Lists.newArrayList();
+    String id = entity.getId();
+    for (Class<? extends Entity> varType : typeRegistry.getVarTypes(type)) {
+      refs.add(new Reference(varType, id));
     }
-
-    ((Variable) returnObject).setVariationRefs(variations);
+    ((Variable) entity).setVariationRefs(refs);
   }
 
   private <T extends Role> T createRole(Class<T> type, JsonNode node, String variation) throws InstantiationException, IllegalAccessException {
@@ -269,24 +265,15 @@ class VariationReducer extends VariationConverter {
     return tree;
   }
 
-  /*
-   * This method generates a list of all the types of a type hierarchy, that are found in the DBObject.
-   * Example1: if type is Person.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
-   * Example2:  if type is Scientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
-   * Example3:  if type is ProjectAScientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
-   */
   @SuppressWarnings("unchecked")
   public <T extends Entity> List<T> getAllForDBObject(DBObject item, Class<T> type) throws IOException {
     JsonNode node = convertToTree(item);
-    List<T> rv = Lists.newArrayList();
 
-    Class<? extends Entity> baseClass = typeRegistry.getBaseClass(type);
-    Set<Class<? extends Entity>> variations = typeRegistry.getSubClasses(baseClass);
-
-    for (Class<? extends Entity> typeToReduce : variations) {
-      rv.add((T) this.reduce(typeToReduce, node));
+    List<T> entities = Lists.newArrayList();
+    for (Class<? extends Entity> varType : typeRegistry.getVarTypes(type)) {
+      entities.add((T) reduce(varType, node));
     }
-
-    return rv;
+    return entities;
   }
+
 }
