@@ -23,10 +23,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 
-import com.google.common.collect.Lists;
-
 public class UserSecurityContextCreatorTest {
 
+  private static final String USER_ID = "test123";
+  private static final String DISPLAY_NAME = "displayName";
   private UserSecurityContextCreator instance;
   private StorageManager storageManager;
 
@@ -43,16 +43,12 @@ public class UserSecurityContextCreatorTest {
 
   @Test
   public void testCreateSecurityContextKnownUser() throws IOException {
+    User user = createUser(DISPLAY_NAME, USER_ID);
 
-    String applicationName = "test";
-    String displayName = "displayName";
-    String userId = "test123";
-
-    User user = createUser(applicationName, displayName, userId);
     User example = new User();
-    example.setUserId(userId);
+    example.setPersistentId(USER_ID);
 
-    SecurityInformation securityInformation = createSecurityInformation(applicationName, displayName, userId);
+    SecurityInformation securityInformation = createSecurityInformation(DISPLAY_NAME, USER_ID);
 
     when(storageManager.findEntity(User.class, example)).thenReturn(user);
 
@@ -62,15 +58,14 @@ public class UserSecurityContextCreatorTest {
     verify(storageManager, never()).addEntity(Matchers.<Class<User>> any(), any(User.class));
   }
 
-  protected User createUser(String applicationName, String displayName, String userId) {
+  protected User createUser(String displayName, String userId) {
     User user = new User();
-    user.displayName = displayName;
-    user.setUserId(userId);
-    user.setVreId(applicationName);
+    user.setDisplayName(displayName);
+    user.setPersistentId(userId);
     return user;
   }
 
-  protected SecurityInformation createSecurityInformation(String applicationName, String displayName, String userId) {
+  protected SecurityInformation createSecurityInformation(String displayName, String userId) {
     Principal principal = mock(Principal.class);
     when(principal.getName()).thenReturn(userId);
 
@@ -82,16 +77,11 @@ public class UserSecurityContextCreatorTest {
 
   @Test
   public void testCreateSecurityContextUnknownUser() throws IOException {
-    String applicationName = "test";
-    String displayName = "displayName";
-    String userId = "test123";
-
-    SecurityInformation securityInformation = createSecurityInformation(applicationName, displayName, userId);
-    User user = createUser(applicationName, displayName, userId);
-    user.setRoles(Lists.newArrayList("UNVERIFIED_USER"));
+    SecurityInformation securityInformation = createSecurityInformation(DISPLAY_NAME, USER_ID);
+    User user = createUser(DISPLAY_NAME, USER_ID);
 
     User example = new User();
-    example.setUserId(userId);
+    example.setPersistentId(USER_ID);
 
     when(storageManager.findEntity(Matchers.<Class<User>> any(), any(User.class))).thenReturn(null, user);
 

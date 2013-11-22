@@ -1,24 +1,21 @@
 package nl.knaw.huygens.timbuctoo.security;
 
 import java.security.Principal;
-import java.util.List;
 
 import javax.ws.rs.core.SecurityContext;
 
 import nl.knaw.huygens.timbuctoo.model.User;
 
 public class UserSecurityContext implements SecurityContext {
-	
+
   private Principal principal;
   private User user;
-  private List<String> roles;
   private boolean secure;
   private String authenticationScheme;
 
   public UserSecurityContext(Principal principal, User user) {
     this.principal = principal;
     this.user = user;
-    this.roles = user.getRoles();
   }
 
   @Override
@@ -28,8 +25,8 @@ public class UserSecurityContext implements SecurityContext {
 
   @Override
   public boolean isUserInRole(String role) {
-    if (roles != null) {
-      return roles.contains(role);
+    if (user.getRoles() != null) {
+      return user.getRoles().contains(role);
     }
     return false;
   }
@@ -55,5 +52,4 @@ public class UserSecurityContext implements SecurityContext {
   public User getUser() {
     return user;
   }
-
 }

@@ -13,43 +13,20 @@ public class User extends SystemEntity {
   // Unique definition of prefix; also used in UserResource
   public static final String ID_PREFIX = "USER";
 
-  private String userId; // a unique id to identify the use.
-  private String vreId; // the name of the VRE.
-  public String email;
-  public String firstName;
-  public String lastName;
-  public String displayName;
-  public List<String> groups;
-  private List<String> roles;
+  private String persistentId; // a unique id to identify the use.
+  private String email;
+  private String firstName;
+  private String lastName;
+  private String displayName;
+  private String commonName;
+  private VREAuthorization vreAuthorization;
 
-  @Override
-  @JsonIgnore
-  public String getDisplayName() {
-    return firstName + " " + lastName;
+  public String getPersistentId() {
+    return persistentId;
   }
 
-  public String getUserId() {
-    return userId;
-  }
-
-  public void setUserId(String userId) {
-    this.userId = userId;
-  }
-
-  public String getVreId() {
-    return vreId;
-  }
-
-  public void setVreId(String vREId) {
-    this.vreId = vREId;
-  }
-
-  public List<String> getRoles() {
-    return roles;
-  }
-
-  public void setRoles(List<String> roles) {
-    this.roles = roles;
+  public void setPersistentId(String persistentId) {
+    this.persistentId = persistentId;
   }
 
   @Override
@@ -60,13 +37,73 @@ public class User extends SystemEntity {
 
     User other = (User) obj;
 
-    return Objects.equal(other.userId, userId);
+    return Objects.equal(other.persistentId, persistentId) || Objects.equal(other.getId(), getId());
 
   }
 
   @Override
   public int hashCode() {
     //Google Objects
-    return Objects.hashCode(userId);
+    return Objects.hashCode(persistentId);
   }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  @Override
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
+  }
+
+  public String getCommonName() {
+    return commonName;
+  }
+
+  public void setCommonName(String commonName) {
+    this.commonName = commonName;
+  }
+
+  public String getFirstName() {
+    return firstName;
+  }
+
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
+
+  public String getLastName() {
+    return lastName;
+  }
+
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
+  }
+
+  public VREAuthorization getVreAuthorization() {
+    return vreAuthorization;
+  }
+
+  public void setVreAuthorization(VREAuthorization vreAuthorization) {
+    this.vreAuthorization = vreAuthorization;
+  }
+
+  @JsonIgnore
+  public String getVreId() {
+    return vreAuthorization != null ? vreAuthorization.getVreId() : null;
+  }
+
+  @JsonIgnore
+  public List<String> getRoles() {
+    return vreAuthorization != null ? vreAuthorization.getRoles() : null;
+  }
+
 }

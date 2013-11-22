@@ -85,7 +85,7 @@ public class UserResource extends ResourceBase {
 
   private void sendEmail(User user) {
     StringBuilder contentbuilder = new StringBuilder("Beste ");
-    contentbuilder.append(user.firstName);
+    contentbuilder.append(user.getFirstName());
     contentbuilder.append(",\n");
     contentbuilder.append("Je bent toegelaten tot ");
     String vreId = user.getVreId();
@@ -95,8 +95,8 @@ public class UserResource extends ResourceBase {
     contentbuilder.append("De administrator van ");
     contentbuilder.append(vreId);
 
-    if (!StringUtils.isBlank(user.email)) {
-      mailSender.sendMail(user.email, "U ben toegelaten tot de VRE.", contentbuilder.toString());
+    if (!StringUtils.isBlank(user.getEmail())) {
+      mailSender.sendMail(user.getEmail(), "U ben toegelaten tot de VRE.", contentbuilder.toString());
     }
   }
 

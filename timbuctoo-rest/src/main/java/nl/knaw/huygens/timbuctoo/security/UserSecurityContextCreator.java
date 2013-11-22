@@ -12,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 public class UserSecurityContextCreator implements SecurityContextCreator {
@@ -35,12 +34,12 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
     }
 
     User example = new User();
-    example.setUserId(securityInformation.getPrincipal().getName());
+    example.setPersistentId(securityInformation.getPrincipal().getName());
 
     User user = findUser(example);
 
     if (user == null) {
-      example.displayName = securityInformation.getDisplayName();
+      example.setDisplayName(securityInformation.getDisplayName());
       user = createUser(example);
     }
 
@@ -50,11 +49,9 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
   }
 
   private User createUser(User user) {
-    LOG.debug("Create new user: " + user.displayName);
+    LOG.debug("Create new user: " + user.getDisplayName());
     User returnValue = null;
     try {
-      // Set the role to unverified user so the user can still retrieve her / his own user information.
-      user.setRoles(Lists.newArrayList(UNVERIFIED_USER_ROLE));
 
       storageManager.addEntity(User.class, user);
 
@@ -63,9 +60,6 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
     }
     // This is needed, to be less dependend on the StorageLayer to set the id.
     returnValue = findUser(user);
-
-    // Add this role so the NewUserFilter will detect this user.
-    returnValue.getRoles().add(NEW_USER);
 
     return returnValue;
   }

@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -14,6 +13,7 @@ import nl.knaw.huygens.security.client.filters.SecurityResourceFilterFactory;
 import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.model.User;
+import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
@@ -41,6 +41,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
 
   protected static final String USER_ID = "USER000000001";
   protected static final String VRE_ID = "vreID";
+  protected static final String VRE_ID_KEY = "VRE_ID";
   protected static Injector injector;
   private static ResourceTestModule resourceTestModule;
 
@@ -75,15 +76,29 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     when(authorizationHandler.getSecurityInformation(anyString())).thenReturn(securityInformation);
   }
 
-  @SuppressWarnings("unchecked")
-  protected void setUpUserRoles(String userId, ArrayList<String> userRoles) {
+  protected void setUpUserWithRoles(String userId, ArrayList<String> userRoles) {
+    StorageManager storageManager = setUpUser(userId);
+
+    VREAuthorization vreAuthorization = new VREAuthorization();
+    vreAuthorization.setRoles(userRoles);
+    vreAuthorization.setVreId(VRE_ID);
+    vreAuthorization.setUserId(userId);
+
+    VREAuthorization example = new VREAuthorization();
+    example.setUserId(userId);
+    example.setVreId(VRE_ID);
+
+    when(storageManager.findEntity(VREAuthorization.class, example)).thenReturn(vreAuthorization);
+
+  }
+
+  protected StorageManager setUpUser(String userId) {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     User user = new User();
     user.setId(userId);
-    user.setRoles(userRoles);
-    user.setVreId(VRE_ID);
 
-    when(storageManager.findEntity(any(Class.class), any(User.class))).thenReturn(user);
+    when(storageManager.findEntity(User.class, user)).thenReturn(user);
+    return storageManager;
   }
 
   @After
@@ -98,7 +113,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     webAppDescriptor.getInitParams()
         .put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.timbuctoo.rest.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.timbuctoo.rest.providers");
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
-        SecurityResourceFilterFactory.class.getName() + ";" + RolesAllowedResourceFilterFactory.class.getName() + ";" + UserResourceFilterFactory.class.getName() + ";");
+        SecurityResourceFilterFactory.class.getName() + ";" + UserResourceFilterFactory.class.getName() + ";" + RolesAllowedResourceFilterFactory.class.getName() + ";");
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, LoggingFilter.class.getName());
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, LoggingFilter.class.getName());
 
