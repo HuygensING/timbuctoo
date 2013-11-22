@@ -29,8 +29,8 @@ import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.GeneralTestDoc;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.TestConcreteDoc;
+import nl.knaw.huygens.timbuctoo.rest.model.GeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.rest.model.TestConcreteDoc;
 
 import org.junit.Before;
 import org.junit.Test;

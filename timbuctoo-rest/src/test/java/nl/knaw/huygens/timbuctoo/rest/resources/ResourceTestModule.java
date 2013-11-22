@@ -29,9 +29,9 @@ import com.sun.jersey.guice.JerseyServletModule;
 class ResourceTestModule extends JerseyServletModule {
 
   private static final String M0 = "nl.knaw.huygens.timbuctoo.model";
-  private static final String M1 = "nl.knaw.huygens.timbuctoo.rest.providers.model";
-  private static final String M1A = "nl.knaw.huygens.timbuctoo.rest.providers.model.projecta";
-  private static final String M1B = "nl.knaw.huygens.timbuctoo.rest.providers.model.projectb";
+  private static final String M1 = "nl.knaw.huygens.timbuctoo.rest.model";
+  private static final String M1A = "nl.knaw.huygens.timbuctoo.rest.model.projecta";
+  private static final String M1B = "nl.knaw.huygens.timbuctoo.rest.model.projectb";
   private static final String PACKAGES = M0 + " " + M1 + " " + M1A + " " + M1B;
 
   private Configuration config;

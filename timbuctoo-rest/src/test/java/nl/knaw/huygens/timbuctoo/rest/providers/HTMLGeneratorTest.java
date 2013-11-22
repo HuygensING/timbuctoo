@@ -6,13 +6,13 @@ import nl.knaw.huygens.timbuctoo.config.TypeNameGenerator;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.GeneralTestDoc;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.TestConcreteDoc;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.TestInheritsFromTestBaseDoc;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.TestSystemDocument;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.projecta.OtherDoc;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.projecta.ProjectAGeneralTestDoc;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.projectb.ProjectBGeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.rest.model.GeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.rest.model.TestConcreteDoc;
+import nl.knaw.huygens.timbuctoo.rest.model.TestInheritsFromTestBaseDoc;
+import nl.knaw.huygens.timbuctoo.rest.model.TestSystemDocument;
+import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDoc;
+import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectAGeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.rest.model.projectb.ProjectBGeneralTestDoc;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 
 public class HTMLGeneratorTest {
 
-  private static final String PACKAGES = "timbuctoo.rest.providers.model timbuctoo.rest.providers.model.projecta timbuctoo.rest.providers.model.projectb";
+  private static final String PACKAGES = "timbuctoo.rest.model timbuctoo.rest.model.projecta timbuctoo.rest.model.projectb";
 
   private static TypeRegistry registry;
 
