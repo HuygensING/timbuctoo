@@ -8,7 +8,7 @@ import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.TestConcreteDoc;
+import nl.knaw.huygens.timbuctoo.rest.model.TestConcreteDoc;
 
 import org.junit.Before;
 import org.junit.Test;

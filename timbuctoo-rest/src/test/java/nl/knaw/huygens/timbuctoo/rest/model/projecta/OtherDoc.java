@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.rest.providers.model.projecta;
+package nl.knaw.huygens.timbuctoo.rest.model.projecta;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 

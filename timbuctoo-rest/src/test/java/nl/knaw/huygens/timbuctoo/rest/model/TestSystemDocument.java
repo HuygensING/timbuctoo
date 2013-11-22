@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.rest.providers.model;
+package nl.knaw.huygens.timbuctoo.rest.model;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
