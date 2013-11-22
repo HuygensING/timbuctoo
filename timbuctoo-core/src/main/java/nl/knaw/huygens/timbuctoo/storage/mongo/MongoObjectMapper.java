@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
-import java.io.IOException;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
@@ -12,10 +13,7 @@ import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
@@ -23,7 +21,6 @@ import com.google.common.collect.Maps;
 /**
  * This class converts a Java object to a map with a String key and value. 
  * The values are the current value of the object.
- * @author martijnm
  */
 public class MongoObjectMapper {
 
@@ -37,23 +34,12 @@ public class MongoObjectMapper {
 
   /**
    * Maps an object and its superclasses.
-   *
-   * Note that the bound {@code U extends T} forces the stop class {@code T} to be
-   * a superclass of {@code U}, ensuring that the recursion will terminate properly.
    */
-  public <T, U extends T, V extends U> Map<String, Object> mapObject(Class<T> stopType, Class<U> type, V item) {
+  public <T> Map<String, Object> mapObject(Class<? super T> stopType, Class<? super T> type, T item) {
+    checkArgument(stopType.isAssignableFrom(type), "type must extend stopType");
     Map<String, Object> map = Maps.newHashMap();
     if (type != stopType) {
       map.putAll(mapObject(stopType, type.getSuperclass(), item));
-    }
-    map.putAll(mapObject(type, item));
-    return map;
-  }
-
-  public <T> Map<String, Object> mapObject2(Class<? super T> stopType, Class<? super T> type, T item) {
-    Map<String, Object> map = Maps.newHashMap();
-    if (type != stopType) {
-      map.putAll(mapObject2(stopType, type.getSuperclass(), item));
     }
     map.putAll(mapObject(type, item));
     return map;
@@ -103,17 +89,7 @@ public class MongoObjectMapper {
               try {
                 Map<String, Object> nameMap = om.readValue(om.writeValueAsString(value), new TypeReference<Map<String, Object>>() {});
                 map.put(fieldMapper.getFieldName(type, field), nameMap);
-              } catch (JsonParseException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-              } catch (JsonMappingException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-              } catch (JsonProcessingException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-              } catch (IOException e) {
-                // TODO Auto-generated catch block
+              } catch (Exception e) {
                 e.printStackTrace();
               }
             }

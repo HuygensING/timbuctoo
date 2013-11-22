@@ -176,6 +176,12 @@ public class MongoObjectMapperTest {
 
   // --- recursive mapping ---------------------------------------------
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testRecursiveMappingWithDependencyError() {
+    ClassD item = new ClassD();
+    mapper.mapObject(ClassC.class, ClassB.class, item);
+  }
+
   @Test
   public void testRecursiveMapping() {
     ClassD item = new ClassD();
