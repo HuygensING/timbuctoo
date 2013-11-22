@@ -16,7 +16,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
 
-import javax.jms.JMSException;
 import javax.validation.ConstraintViolation;
 import javax.validation.Path;
 import javax.validation.Validator;
@@ -24,12 +23,11 @@ import javax.validation.metadata.ConstraintDescriptor;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
-import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.rest.model.GeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.rest.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.TestConcreteDoc;
 
 import org.junit.Before;
@@ -53,7 +51,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   private static final String USER_ROLE = "USER";
 
   @Before
-  public void setUpBroker() throws JMSException {
+  public void setUpBroker() throws Exception {
     Broker broker = injector.getInstance(Broker.class);
     when(broker.getProducer(DomainEntityResource.INDEX_MSG_PRODUCER, Broker.INDEX_QUEUE)).thenReturn(getProducer(INDEX_PRODUCER));
     when(broker.getProducer(DomainEntityResource.PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE)).thenReturn(getProducer(PERSISTENCE_PRODUCER));
@@ -112,7 +110,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testPut() throws IOException, PersistenceException, JMSException {
+  public void testPut() throws Exception {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
     TestConcreteDoc entity = new TestConcreteDoc(DEFAULT_ID);
@@ -128,7 +126,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testPutDocExistingDocumentWithoutPID() throws IOException, PersistenceException, JMSException {
+  public void testPutDocExistingDocumentWithoutPID() throws Exception {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
     TestConcreteDoc entity = new TestConcreteDoc(DEFAULT_ID);
@@ -143,7 +141,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testPutDocInvalidDocument() throws IOException, PersistenceException, JMSException {
+  public void testPutDocInvalidDocument() throws Exception {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
     TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
@@ -204,7 +202,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testPutDocNonExistingDocument() throws IOException, PersistenceException, JMSException {
+  public void testPutDocNonExistingDocument() throws Exception {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
     String id = "NULL000000000001";
@@ -221,7 +219,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPutDocNonExistingType() throws PersistenceException, JMSException {
+  public void testPutDocNonExistingType() throws Exception {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
     TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
@@ -233,34 +231,34 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPutDocWrongType() throws PersistenceException, JMSException {
+  public void testPutDocWrongType() throws Exception {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
     TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
 
-    ClientResponse response = domainResource("otherdocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = domainResource("otherdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
-  public void testPutOnSuperClass() throws PersistenceException, JMSException {
+  public void testPutOnSuperClass() throws Exception {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
-    GeneralTestDoc doc = new GeneralTestDoc(DEFAULT_ID);
+    BaseDomainEntity doc = new BaseDomainEntity(DEFAULT_ID);
 
-    ClientResponse response = domainResource("otherdocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = domainResource("otherdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
-  public void testPutOnCollection() throws PersistenceException, JMSException {
-    GeneralTestDoc doc = new GeneralTestDoc(DEFAULT_ID);
+  public void testPutOnCollection() throws Exception {
+    BaseDomainEntity doc = new BaseDomainEntity(DEFAULT_ID);
 
-    ClientResponse response = domainResource("otherdocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
+    ClientResponse response = domainResource("otherdomainentities").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").put(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
@@ -268,7 +266,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testPost() throws IOException, PersistenceException, JMSException {
+  public void testPost() throws Exception {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
     TestConcreteDoc doc = new TestConcreteDoc();
@@ -285,7 +283,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostNonExistingCollection() throws PersistenceException, JMSException {
+  public void testPostNonExistingCollection() throws Exception {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
     TestConcreteDoc doc = new TestConcreteDoc();
@@ -299,21 +297,21 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testPostWrongType() throws IOException, PersistenceException, JMSException {
+  public void testPostWrongType() throws Exception {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(null);
 
-    ClientResponse response = domainResource("otherdocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
+    ClientResponse response = domainResource("otherdomainentities").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").post(ClientResponse.class, doc);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
     verify(getProducer(INDEX_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
   }
 
   @Test
-  public void testPostSpecificDocument() throws PersistenceException, JMSException {
+  public void testPostSpecificDocument() throws Exception {
     TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
     doc.name = "test";
 
@@ -324,7 +322,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testDelete() throws IOException, PersistenceException, JMSException {
+  public void testDelete() throws Exception {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
     TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
@@ -338,7 +336,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testDeleteDocumentWithoutPID() throws IOException, PersistenceException, JMSException {
+  public void testDeleteDocumentWithoutPID() throws Exception {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
     TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
@@ -351,7 +349,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testDeleteDocumentDoesNotExist() throws PersistenceException, JMSException {
+  public void testDeleteDocumentDoesNotExist() throws Exception {
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
     when(getStorageManager().getEntity(TestConcreteDoc.class, DEFAULT_ID)).thenReturn(null);
@@ -363,7 +361,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testDeleteTypeDoesNotExist() throws PersistenceException, JMSException {
+  public void testDeleteTypeDoesNotExist() throws Exception {
     setUpUserRoles(USER_ID, null);
 
     setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
@@ -376,7 +374,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testDeleteCollection() throws PersistenceException, JMSException {
+  public void testDeleteCollection() throws Exception {
     ClientResponse response = domainResource("testconcretedocs").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(any(ActionType.class), Matchers.<Class<? extends Entity>> any(), anyString());
@@ -405,7 +403,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testPutDocUserNotInRole() throws IOException, PersistenceException, JMSException {
+  public void testPutDocUserNotInRole() throws Exception {
     setUpUserRoles(USER_ID, null);
 
     TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
@@ -419,7 +417,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testPutDocUserNotLoggedIn() throws IOException, PersistenceException, JMSException {
+  public void testPutDocUserNotLoggedIn() throws Exception {
     TestConcreteDoc doc = new TestConcreteDoc(DEFAULT_ID);
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
 
@@ -433,7 +431,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testPostUserNotInRole() throws IOException, PersistenceException, JMSException {
+  public void testPostUserNotInRole() throws Exception {
     setUpUserRoles(USER_ID, null);
 
     TestConcreteDoc inputDoc = new TestConcreteDoc();
@@ -448,7 +446,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testPostUserNotLoggedIn() throws IOException, PersistenceException, JMSException {
+  public void testPostUserNotLoggedIn() throws Exception {
     TestConcreteDoc doc = new TestConcreteDoc();
     doc.name = "test";
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(doc);
@@ -462,7 +460,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testDeleteNotLoggedIn() throws PersistenceException, JMSException {
+  public void testDeleteNotLoggedIn() throws Exception {
     setUserNotLoggedIn();
 
     ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).delete(ClientResponse.class);
@@ -472,7 +470,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testDeleteUserNotInRole() throws PersistenceException, JMSException {
+  public void testDeleteUserNotInRole() throws Exception {
     setUpUserRoles(USER_ID, null);
 
     ClientResponse response = domainResource("testconcretedocs", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
