@@ -17,7 +17,7 @@ public abstract class DomainEntity extends Entity implements Variable {
   private String pid; // the persistent identifier.
   private boolean deleted;
   private Map<String, List<EntityRef>> relations = Maps.newHashMap();
-  protected List<Reference> variationRefs = Lists.newArrayList();
+  private List<String> variations = Lists.newArrayList();
   private List<Role> roles = Lists.newArrayList();
 
   @JsonProperty(PID)
@@ -59,17 +59,35 @@ public abstract class DomainEntity extends Entity implements Variable {
     refs.add(ref);
   }
 
-  @Override
-  @JsonProperty("@variationRefs")
-  public List<Reference> getVariationRefs() {
-    return variationRefs;
+  @JsonProperty("^variations")
+  public List<String> getVariations() {
+    return variations;
+  }
+
+  @JsonProperty("^variations")
+  public void setVariations(List<String> variations) {
+    this.variations = checkNotNull(variations);
+  }
+
+  public void addVariation(String variation) {
+    if (!variations.contains(variation)) {
+      variations.add(variation);
+    }
   }
 
   @Override
   @JsonProperty("@variationRefs")
-  public void setVariationRefs(List<Reference> variationRefs) {
-    this.variationRefs = checkNotNull(variationRefs);
+  public List<Reference> getVariationRefs() {
+    List<Reference> refs = Lists.newArrayListWithCapacity(variations.size());
+    for (String variation : variations) {
+      refs.add(new Reference(variation, getId()));
+    }
+    return refs;
   }
+
+  @Override
+  @JsonProperty("@variationRefs")
+  public void setVariationRefs(List<Reference> variationRefs) {}
 
   public List<Role> getRoles() {
     return roles;
