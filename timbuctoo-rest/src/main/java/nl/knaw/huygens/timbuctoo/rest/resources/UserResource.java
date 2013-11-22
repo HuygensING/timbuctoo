@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response.Status;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
+import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import org.apache.commons.lang.StringUtils;
@@ -63,8 +64,15 @@ public class UserResource extends ResourceBase {
   @Path("/me")
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed({ ADMIN_ROLE, USER_ROLE, UNVERIFIED_USER_ROLE })
-  public User getMyUserData(@QueryParam("id") String id) {
-    return storageManager.getEntity(User.class, id);
+  public User getMyUserData(@QueryParam("id") String id, @QueryParam("VRE_ID") String vreId) {
+    User user = storageManager.getEntity(User.class, id);
+    VREAuthorization example = new VREAuthorization();
+    example.setUserId(id);
+    example.setVreId(vreId);
+    VREAuthorization vreAuthorization = storageManager.findEntity(VREAuthorization.class, example);
+    user.setVreAuthorization(vreAuthorization);
+
+    return user;
   }
 
   @PUT
