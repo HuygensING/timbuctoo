@@ -2,8 +2,11 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+
 import com.google.common.base.Objects;
 
+@IDPrefix("VREA")
 public class VREAuthorization extends SystemEntity {
   private String userId;
   private String vreId;

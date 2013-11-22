@@ -65,8 +65,11 @@ public class UserResourceFilterFactory implements ResourceFilterFactory {
       if (securityContext instanceof UserSecurityContext) {
         User user = ((UserSecurityContext) securityContext).getUser();
         String userId = user.getId();
-        request.getQueryParameters().putSingle(USER_ID_KEY, userId);
         String vreId = request.getHeaderValue(VRE_ID_KEY);
+
+        // Set the user id and the current vre id.
+        request.getQueryParameters().putSingle(USER_ID_KEY, userId);
+        request.getQueryParameters().putSingle(VRE_ID_KEY, vreId);
 
         VREAuthorization vreAuthorization = getVreAuthorization(userId, vreId);
 
