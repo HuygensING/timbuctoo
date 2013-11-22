@@ -8,14 +8,14 @@ import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.rest.model.TestConcreteDoc;
+import nl.knaw.huygens.timbuctoo.rest.model.TestDomainEntity;
 
 import org.junit.Before;
 import org.junit.Test;
 
 public class PersistenceWrapperTest {
 
-  private static final Class<TestConcreteDoc> DEFAULT_TYPE = TestConcreteDoc.class;
+  private static final Class<TestDomainEntity> DEFAULT_TYPE = TestDomainEntity.class;
   private PersistenceManager persistenceManager;
   private TypeRegistry typeRegistry;
 
