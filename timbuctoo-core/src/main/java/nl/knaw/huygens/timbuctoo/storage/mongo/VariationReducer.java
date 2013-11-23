@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNameGenerator;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -131,14 +130,6 @@ class VariationReducer extends VariationConverter {
     } catch (IllegalAccessException e) {
       LOG.error("Could not initialize object of type {}.", type);
       LOG.debug("exception", e);
-    }
-
-    if (TypeRegistry.isDomainEntity(type)) {
-      DomainEntity entity = DomainEntity.class.cast(returnObject);
-      for (Class<? extends Entity> varType : typeRegistry.getVarTypes(type)) {
-        String variation = TypeNameGenerator.getInternalName(varType);
-        entity.addVariation(variation);
-      }
     }
 
     return returnObject;
