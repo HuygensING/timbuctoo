@@ -8,7 +8,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.rest.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.TestDomainEntity;
-import nl.knaw.huygens.timbuctoo.rest.model.TestSystemDocument;
+import nl.knaw.huygens.timbuctoo.rest.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.projectb.ProjectBDomainEntity;
 
@@ -71,18 +71,18 @@ public class HTMLGeneratorTest {
 
   @Test
   public void testSystemEntity() throws Exception {
-    TestSystemDocument entity = new TestSystemDocument();
+    String id = "TSYS000000000001";
+    TestSystemEntity entity = new TestSystemEntity(id);
     entity.setAnnotatedProperty("test");
-    entity.setId("TSD0000000001");
     entity.setAnnotatedProperty("anonProp");
     entity.setPropWithAnnotatedAccessors("propWithAnnotatedAccessors");
 
     String html = generateHtml(entity);
 
-    assertContains(html, "Class", TestSystemDocument.class.getName());
+    assertContains(html, "Class", TestSystemEntity.class.getName());
     assertContains(html, "Name", "none");
     assertContains(html, "Test Value", "none");
-    assertContains(html, "Id", "TSD0000000001");
+    assertContains(html, "Id", id);
     assertContains(html, "Rev", "0");
     assertContains(html, "Last Change", "none");
     assertContains(html, "Creation", "none");
