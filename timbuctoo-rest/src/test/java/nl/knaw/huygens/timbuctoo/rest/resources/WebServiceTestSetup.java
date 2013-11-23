@@ -5,7 +5,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.security.Principal;
-import java.util.ArrayList;
 
 import nl.knaw.huygens.security.AuthorizationHandler;
 import nl.knaw.huygens.security.SecurityInformation;
@@ -22,6 +21,7 @@ import org.junit.BeforeClass;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.sun.jersey.api.client.WebResource;
@@ -49,7 +49,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   }
 
   @BeforeClass
-  public static void setUpClass() {
+  public static void setupClass() {
     initLogger();
     resourceTestModule = new ResourceTestModule();
     injector = Guice.createInjector(resourceTestModule);
@@ -65,7 +65,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   }
 
   @Before
-  public void setUpAuthorizationHandler() throws UnauthorizedException {
+  public void setupAuthorizationHandler() throws UnauthorizedException {
     SecurityInformation securityInformation = new SecurityInformation();
     securityInformation.setApplicationName(VRE_ID);
     securityInformation.setDisplayName(USER_ID);
@@ -77,11 +77,11 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   }
 
   @SuppressWarnings("unchecked")
-  protected void setUpUserRoles(String userId, ArrayList<String> userRoles) {
+  protected void setupUser(String userId, String userRole) {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     User user = new User();
     user.setId(userId);
-    user.setRoles(userRoles);
+    user.setRoles(userRole != null ? Lists.newArrayList(userRole) : null);
     user.setVreId(VRE_ID);
 
     when(storageManager.findEntity(any(Class.class), any(User.class))).thenReturn(user);
