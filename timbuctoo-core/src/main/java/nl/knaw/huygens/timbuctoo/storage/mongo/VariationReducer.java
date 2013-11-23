@@ -18,7 +18,6 @@ import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.Variable;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
-import org.mongojack.internal.stream.JacksonDBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +46,7 @@ class VariationReducer extends VariationConverter {
     if (obj == null) {
       return null;
     }
-    JsonNode tree = convertToTree(obj);
+    JsonNode tree = convertDBObjectToJsonNode(obj);
     ArrayNode versionsNode = (ArrayNode) tree.get(VERSIONS_FIELD);
     MongoChanges<T> changes = null;
 
@@ -68,7 +67,7 @@ class VariationReducer extends VariationConverter {
       return null;
     }
 
-    JsonNode tree = convertToTree(obj);
+    JsonNode tree = convertDBObjectToJsonNode(obj);
     ArrayNode versionsNode = (ArrayNode) tree.get(VERSIONS_FIELD);
     JsonNode objectToReduce = versionsNode.get(0);
 
@@ -83,7 +82,7 @@ class VariationReducer extends VariationConverter {
     if (obj == null) {
       return null;
     }
-    JsonNode tree = convertToTree(obj);
+    JsonNode tree = convertDBObjectToJsonNode(obj);
     return reduce(type, tree, variation);
   }
 
@@ -243,23 +242,10 @@ class VariationReducer extends VariationConverter {
     return value;
   }
 
-  @SuppressWarnings("unchecked")
-  private JsonNode convertToTree(DBObject object) throws IOException {
-    JsonNode tree;
-    if (object instanceof JacksonDBObject) {
-      tree = ((JacksonDBObject<JsonNode>) object).getObject();
-    } else if (object instanceof DBJsonNode) {
-      tree = ((DBJsonNode) object).getDelegate();
-    } else {
-      throw new IOException("Huh? DB didn't generate the right type of object out of the data stream...");
-    }
-    return tree;
-  }
-
   public <T extends Entity> List<T> getAllForDBObject(DBObject object, Class<T> type) throws IOException {
     List<T> entities = Lists.newArrayList();
 
-    JsonNode tree = convertToTree(object);
+    JsonNode tree = convertDBObjectToJsonNode(object);
 
     JsonNode node = tree.findValue(DomainEntity.VARIATIONS);
     if (node != null) {
