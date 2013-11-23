@@ -62,8 +62,6 @@ public class TypeRegistry {
   private final Map<Class<? extends Entity>, String> type2iname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> iname2type = Maps.newHashMap();
 
-  private final Map<Class<? extends Entity>, Set<Class<? extends Entity>>> subClassMap = Maps.newHashMap();
-
   private final Map<String, Set<Class<? extends Variable>>> variationMap = Maps.newHashMap();
 
   private final Map<Class<? extends Entity>, String> type2xname = Maps.newHashMap();
@@ -99,7 +97,6 @@ public class TypeRegistry {
           registerClass(toSystemEntity(type));
         } else if (isValidDomainEntity(type)) {
           registerClass(toDomainEntity(type));
-          registerWithBaseClass(toDomainEntity(type));
           registerVariationForClass(toDomainEntity(type));
         } else {
           LOG.error("Not a valid entity: '{}'", type.getName());
@@ -113,18 +110,6 @@ public class TypeRegistry {
     }
   }
 
-  private void registerWithBaseClass(Class<? extends Entity> type) {
-    Class<? extends Entity> baseClass = getBaseClass(type);
-
-    if (subClassMap.containsKey(baseClass)) {
-      subClassMap.get(baseClass).add(type);
-    } else {
-      Set<Class<? extends Entity>> subClasses = Sets.newHashSet();
-      subClasses.add(type);
-      subClassMap.put(baseClass, subClasses);
-    }
-  }
-
   private boolean shouldNotRegister(Class<?> type) {
     return Modifier.isAbstract(type.getModifiers()) //
         || type.isAnnotationPresent(DoNotRegister.class);
@@ -133,14 +118,14 @@ public class TypeRegistry {
   // -------------------------------------------------------------------
 
   private <T extends Entity> void registerClass(Class<T> type) {
-    String iname = TypeNameGenerator.getInternalName(type);
+    String iname = TypeNames.getInternalName(type);
     if (iname2type.containsKey(iname)) {
       throw new IllegalStateException("Duplicate internal type name " + iname);
     }
     iname2type.put(iname, type);
     type2iname.put(type, iname);
 
-    String xname = TypeNameGenerator.getExternalName(type);
+    String xname = TypeNames.getExternalName(type);
     if (xname2type.containsKey(xname)) {
       throw new IllegalStateException("Duplicate internal type name " + xname);
     }
@@ -151,7 +136,7 @@ public class TypeRegistry {
   }
 
   private <T extends Role> void registerRole(Class<T> role) {
-    String iname = TypeNameGenerator.getInternalName(role);
+    String iname = TypeNames.getInternalName(role);
     if (iname2role.containsKey(iname)) {
       throw new IllegalStateException("Duplicate internal type name " + iname);
     }
@@ -299,10 +284,6 @@ public class TypeRegistry {
     }
 
     return null;
-  }
-
-  public Set<Class<? extends Entity>> getVarTypes(Class<? extends Entity> type) {
-    return subClassMap.get(getBaseClass(type));
   }
 
   /**

@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.model;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNameGenerator;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 
 /**
  * A reference to an {@code Entity} instance,
@@ -17,7 +17,7 @@ public class Reference {
   public Reference() {}
 
   public Reference(Class<? extends Entity> typeToken, String id) {
-    this.type = TypeNameGenerator.getInternalName(typeToken);
+    this.type = TypeNames.getInternalName(typeToken);
     this.id = id;
   }
 

@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static com.google.common.base.Preconditions.checkState;
-import static nl.knaw.huygens.timbuctoo.config.TypeNameGenerator.getInternalName;
+import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
