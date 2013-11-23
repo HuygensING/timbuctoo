@@ -387,24 +387,6 @@ public class VariationReducerTest extends VariationTestBase {
     assertEquals(expected, reducer.reduce(BaseDomainEntity.class, node, requestedVariation));
   }
 
-  @Test
-  public void testGetAllForDBObject() throws IOException {
-    Map<String, Object> map = newBaseDomainEntityMap(TEST_ID, TEST_PID, "test");
-    map.put(propertyName(ProjectBDomainEntity.class, "projectBGeneralTestDocValue"), "testB");
-    map.put(propertyName("projectbtestrole", "beeName"), "beeName");
-    map.put(propertyName("testrole", "roleName"), "roleName");
-    String projectatestvalue = "projectatest";
-    map.put(propertyName(ProjectADomainEntity.class, "projectAGeneralTestDocValue"), projectatestvalue);
-    String projectAVariation = "projectAVariation";
-    map.put(propertyName(ProjectADomainEntity.class, "generalTestDocValue"), projectAVariation);
-    map.put(propertyName("projectatestrole", "projectATestRoleName"), "value");
-    map.put(propertyName("projectatestrole", "roleName"), "value");
-
-    JsonNode node = mapper.valueToTree(map);
-
-    assertEquals(3, reducer.getAllForDBObject(new DBJsonNode(node), ProjectADomainEntity.class).size());
-  }
-
   @Override
   protected ObjectMapper getMapper() {
     return this.mapper;

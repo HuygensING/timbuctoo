@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -238,26 +240,35 @@ class VariationReducer extends VariationConverter {
   }
 
   @SuppressWarnings("unchecked")
-  private JsonNode convertToTree(DBObject obj) throws IOException {
+  private JsonNode convertToTree(DBObject object) throws IOException {
     JsonNode tree;
-    if (obj instanceof JacksonDBObject) {
-      tree = ((JacksonDBObject<JsonNode>) obj).getObject();
-    } else if (obj instanceof DBJsonNode) {
-      tree = ((DBJsonNode) obj).getDelegate();
+    if (object instanceof JacksonDBObject) {
+      tree = ((JacksonDBObject<JsonNode>) object).getObject();
+    } else if (object instanceof DBJsonNode) {
+      tree = ((DBJsonNode) object).getDelegate();
     } else {
       throw new IOException("Huh? DB didn't generate the right type of object out of the data stream...");
     }
     return tree;
   }
 
-  @SuppressWarnings("unchecked")
-  public <T extends Entity> List<T> getAllForDBObject(DBObject item, Class<T> type) throws IOException {
-    JsonNode node = convertToTree(item);
-
+  public <T extends Entity> List<T> getAllForDBObject(DBObject object, Class<T> type) throws IOException {
     List<T> entities = Lists.newArrayList();
-    for (Class<? extends Entity> varType : typeRegistry.getVarTypes(type)) {
-      entities.add((T) reduce(varType, node));
+
+    JsonNode tree = convertToTree(object);
+
+    JsonNode node = tree.findValue(DomainEntity.VARIATIONS);
+    if (node != null) {
+      Iterator<JsonNode> iterator = node.elements();
+      while (iterator.hasNext()) {
+        String variation = iterator.next().textValue();
+        Class<? extends Entity> varType = typeRegistry.getTypeForIName(variation);
+        checkNotNull(varType, variation);
+        T entity = type.cast(reduce(varType, tree));
+        entities.add(entity);
+      }
     }
+
     return entities;
   }
 

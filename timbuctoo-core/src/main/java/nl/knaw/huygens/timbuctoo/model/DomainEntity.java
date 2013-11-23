@@ -13,6 +13,7 @@ public abstract class DomainEntity extends Entity implements Variable {
 
   public static final String PID = "^pid";
   public static final String DELETED = "^deleted";
+  public static final String VARIATIONS = "^variations";
 
   private String pid; // the persistent identifier.
   private boolean deleted;
@@ -59,12 +60,12 @@ public abstract class DomainEntity extends Entity implements Variable {
     refs.add(ref);
   }
 
-  @JsonProperty("^variations")
+  @JsonProperty(VARIATIONS)
   public List<String> getVariations() {
     return variations;
   }
 
-  @JsonProperty("^variations")
+  @JsonProperty(VARIATIONS)
   public void setVariations(List<String> variations) {
     this.variations = Lists.newArrayList();
     if (variations != null) {
