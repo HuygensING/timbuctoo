@@ -23,6 +23,13 @@ public class MongoQueries {
     return new BasicDBObject("_id", id);
   }
 
+  public DBObject selectByIdAndRevision(String id, int revision) {
+    DBObject query = new BasicDBObject();
+    query.put("_id", id);
+    query.put("^rev", revision);
+    return query;
+  }
+
   public DBObject selectByProperty(String key, Object value) {
     return new BasicDBObject(key, value);
   }

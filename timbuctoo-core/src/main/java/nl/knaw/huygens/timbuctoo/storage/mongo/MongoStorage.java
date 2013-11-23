@@ -227,14 +227,14 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Entity> void updateItem(Class<T> type, String id, T entity) throws IOException {
-    DBObject query = queries.selectById(id);
-    query.put("^rev", entity.getRev());
+    int revision = entity.getRev();
+    DBObject query = queries.selectByIdAndRevision(id, revision);
     DBObject existingNode = getDBCollection(type).findOne(query);
     if (existingNode == null) {
-      throw new IOException("No entity was found for ID " + id + " and revision " + entity.getRev());
+      throw new IOException("No entity with id " + id + " and revision " + revision);
     }
     JsonNode updatedNode = inducer.induceOldEntity(type, entity, existingNode);
-    ((ObjectNode) updatedNode).put("^rev", entity.getRev() + 1);
+    ((ObjectNode) updatedNode).put("^rev", revision + 1);
     JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(updatedNode, JsonNode.class);
     getDBCollection(type).update(query, updatedDBObj);
     if (TypeRegistry.isDomainEntity(type)) {
