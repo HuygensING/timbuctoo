@@ -10,7 +10,7 @@ import com.google.common.collect.Lists;
 public class DomainEntityTest {
 
   @Test
-  public void testVariationsCannotBeNull() {
+  public void getVariationsCannotBeNull() {
     DomainEntity entity = new BaseDomainEntity();
     assertNotNull(entity.getVariations());
 
@@ -19,7 +19,7 @@ public class DomainEntityTest {
   }
 
   @Test
-  public void testResettingVariationsRemovesExistingItems() {
+  public void setVariationsRemovesExistingItems() {
     DomainEntity entity = new BaseDomainEntity();
     assertEquals(0, entity.getVariations().size());
 
@@ -31,7 +31,14 @@ public class DomainEntityTest {
   }
 
   @Test
-  public void testVariationsCannotContainDuplicates() {
+  public void setVariationsEliminatesDuplicates() {
+    DomainEntity entity = new BaseDomainEntity();
+    entity.setVariations(Lists.newArrayList("a", "b", "a", "b", "b"));
+    assertEquals(Lists.newArrayList("a", "b"), entity.getVariations());
+  }
+
+  @Test
+  public void addVariationEliminatesDuplicates() {
     DomainEntity entity = new BaseDomainEntity();
     entity.addVariation("a");
     assertEquals(Lists.newArrayList("a"), entity.getVariations());
