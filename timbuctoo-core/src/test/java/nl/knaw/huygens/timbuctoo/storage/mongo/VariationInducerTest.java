@@ -10,7 +10,6 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DatableSystemEntity;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
@@ -146,7 +145,6 @@ public class VariationInducerTest extends VariationTestBase {
   @Test
   public void testInduceDomainEntityProject() {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_DOMAIN_ID);
-    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectADomainEntity.class, DEFAULT_DOMAIN_ID)));
     entity.setPid(DEFAULT_PID);
     entity.projectAGeneralTestDocValue = "projectatest";
     entity.generalTestDocValue = "test";
@@ -222,7 +220,6 @@ public class VariationInducerTest extends VariationTestBase {
     ObjectNode existingItem = mapper.valueToTree(existingMap);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_DOMAIN_ID);
-    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectADomainEntity.class, DEFAULT_DOMAIN_ID)));
     entity.setPid(DEFAULT_PID);
     entity.projectAGeneralTestDocValue = "projectatest";
     entity.generalTestDocValue = "test1A";
@@ -250,7 +247,6 @@ public class VariationInducerTest extends VariationTestBase {
     ObjectNode existingItem = mapper.valueToTree(existingMap);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_DOMAIN_ID);
-    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectADomainEntity.class, DEFAULT_DOMAIN_ID)));
     entity.setPid(DEFAULT_PID);
     entity.projectAGeneralTestDocValue = "projectatest";
     entity.generalTestDocValue = "test1A";
@@ -273,7 +269,6 @@ public class VariationInducerTest extends VariationTestBase {
     ObjectNode existingItem = mapper.valueToTree(existingMap);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_DOMAIN_ID);
-    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectADomainEntity.class, DEFAULT_DOMAIN_ID)));
     entity.setPid(DEFAULT_PID);
     entity.projectAGeneralTestDocValue = "projectatest";
     entity.generalTestDocValue = "testB";
@@ -296,7 +291,6 @@ public class VariationInducerTest extends VariationTestBase {
     ObjectNode existingItem = mapper.valueToTree(existingMap);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_DOMAIN_ID);
-    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectADomainEntity.class, DEFAULT_DOMAIN_ID)));
     entity.setPid(DEFAULT_PID);
     entity.projectAGeneralTestDocValue = "projectatest";
     entity.generalTestDocValue = "testB";
@@ -339,7 +333,6 @@ public class VariationInducerTest extends VariationTestBase {
     ObjectNode existing = mapper.valueToTree(existingMap);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_DOMAIN_ID);
-    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectADomainEntity.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBDomainEntity.class, DEFAULT_DOMAIN_ID)));
     entity.setPid(DEFAULT_PID);
     entity.projectAGeneralTestDocValue = "projectatest";
     entity.generalTestDocValue = "testA";
@@ -365,7 +358,6 @@ public class VariationInducerTest extends VariationTestBase {
     ObjectNode existing = mapper.valueToTree(existingMap);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_DOMAIN_ID);
-    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectADomainEntity.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBDomainEntity.class, DEFAULT_DOMAIN_ID)));
     entity.setPid(DEFAULT_PID);
     entity.projectAGeneralTestDocValue = "projectatest";
     entity.generalTestDocValue = "testA";
@@ -401,7 +393,6 @@ public class VariationInducerTest extends VariationTestBase {
     ObjectNode existing = mapper.valueToTree(existingMap);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_DOMAIN_ID);
-    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectADomainEntity.class, DEFAULT_DOMAIN_ID), new Reference(ProjectBDomainEntity.class, DEFAULT_DOMAIN_ID)));
     entity.setPid(DEFAULT_PID);
     entity.projectAGeneralTestDocValue = "projectatest";
     entity.generalTestDocValue = "testA";
