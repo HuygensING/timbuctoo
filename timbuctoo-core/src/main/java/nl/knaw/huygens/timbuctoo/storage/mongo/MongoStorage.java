@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static com.google.common.base.Preconditions.checkState;
+import static nl.knaw.huygens.timbuctoo.config.TypeNameGenerator.getInternalName;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -207,6 +208,13 @@ public class MongoStorage implements Storage {
   public <T extends Entity> String addItem(Class<T> type, T entity) {
     if (entity.getId() == null) {
       setNextId(type, entity);
+    }
+    if (TypeRegistry.isDomainEntity(type)) {
+      // administrative properties must be controlled in the storage layer
+      DomainEntity domainEntity = DomainEntity.class.cast(entity);
+      domainEntity.setVariations(null); // make sure the list is empty
+      domainEntity.addVariation(getInternalName(typeRegistry.getBaseClass(type)));
+      domainEntity.addVariation(getInternalName(type));
     }
     JsonNode jsonNode = inducer.induceNewEntity(type, entity);
     JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
