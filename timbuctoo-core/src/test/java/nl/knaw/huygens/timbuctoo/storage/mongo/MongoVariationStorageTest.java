@@ -19,7 +19,7 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNameGenerator;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -232,7 +232,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllIdsWithoutPIDOfType() throws IOException {
-    String collection = TypeNameGenerator.getInternalName(BaseDomainEntity.class);
+    String collection = TypeNames.getInternalName(BaseDomainEntity.class);
     DBObject query = queries.selectVariation(collection);
     query.put(DomainEntity.PID, null);
 
@@ -252,7 +252,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllIdsWithoutPIDOfTypeMultipleFound() throws IOException {
-    String collection = TypeNameGenerator.getInternalName(BaseDomainEntity.class);
+    String collection = TypeNames.getInternalName(BaseDomainEntity.class);
     DBObject query = queries.selectVariation(collection);
     query.put(DomainEntity.PID, null);
 
@@ -281,7 +281,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllIdsWithoutPIDOfTypeNoneFound() throws IOException {
-    String collection = TypeNameGenerator.getInternalName(BaseDomainEntity.class);
+    String collection = TypeNames.getInternalName(BaseDomainEntity.class);
     DBObject query = queries.selectVariation(collection);
     query.put(DomainEntity.PID, null);
 
@@ -298,7 +298,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test(expected = IOException.class)
   public void testGetAllIdsWithoutPIDFindThrowsException() throws IOException {
-    String collection = TypeNameGenerator.getInternalName(BaseDomainEntity.class);
+    String collection = TypeNames.getInternalName(BaseDomainEntity.class);
     DBObject query = queries.selectVariation(collection);
     query.put(DomainEntity.PID, null);
 
@@ -309,7 +309,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test(expected = IOException.class)
   public void testGetAllIdsWithoutPIDCursorNextThrowsException() throws IOException {
-    String collection = TypeNameGenerator.getInternalName(BaseDomainEntity.class);
+    String collection = TypeNames.getInternalName(BaseDomainEntity.class);
     DBObject query = queries.selectVariation(collection);
     query.put(DomainEntity.PID, null);
 
@@ -324,7 +324,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test(expected = IOException.class)
   public void testGetAllIdsWithoutPIDCursorHasNextThrowsException() throws IOException {
-    String collection = TypeNameGenerator.getInternalName(BaseDomainEntity.class);
+    String collection = TypeNames.getInternalName(BaseDomainEntity.class);
     DBObject query = queries.selectVariation(collection);
     query.put(DomainEntity.PID, null);
 
@@ -424,7 +424,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     storage.removeNonPersistent(BaseDomainEntity.class, ids);
 
     verify(anyCollection).remove(query);
-    verify(db).getCollection(TypeNameGenerator.getInternalName(BaseDomainEntity.class));
+    verify(db).getCollection(TypeNames.getInternalName(BaseDomainEntity.class));
   }
 
   @Test(expected = IOException.class)
@@ -446,7 +446,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     storage.setPID(ProjectADomainEntity.class, DEFAULT_ID, pid);
 
     verify(anyCollection).update(query, update);
-    verify(db).getCollection(TypeNameGenerator.getInternalName(BaseDomainEntity.class));
+    verify(db).getCollection(TypeNames.getInternalName(BaseDomainEntity.class));
   }
 
   @Test(expected = RuntimeException.class)
@@ -460,7 +460,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     try {
       storage.setPID(ProjectADomainEntity.class, DEFAULT_ID, pid);
     } finally {
-      verify(db).getCollection(TypeNameGenerator.getInternalName(BaseDomainEntity.class));
+      verify(db).getCollection(TypeNames.getInternalName(BaseDomainEntity.class));
     }
   }
 

@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNameGenerator;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
@@ -39,7 +39,7 @@ public class FieldMapper {
 
   /** Returns the name of a key from its parts. */
   public static String propertyName(Class<?> type, String field) {
-    return propertyName(TypeNameGenerator.getInternalName(type), field);
+    return propertyName(TypeNames.getInternalName(type), field);
   }
 
   private static final String GET_ACCESSOR = "get";
