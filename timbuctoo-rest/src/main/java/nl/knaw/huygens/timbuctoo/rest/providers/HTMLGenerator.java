@@ -13,11 +13,16 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.SerializableString;
 import com.fasterxml.jackson.core.util.JsonGeneratorDelegate;
 
-// Generate human-readable HTML instead of JSON
+/**
+ * Generates human-readable HTML.
+ * 
+ * {@code HTMLGenerator} does not know about the proper structure of entities.
+ * For example, it does not know which variations can be present.
+ */
 public class HTMLGenerator extends JsonGeneratorDelegate {
 
-  public HTMLGenerator(JsonGenerator d) {
-    super(d);
+  public HTMLGenerator(JsonGenerator generator) {
+    super(generator);
   }
 
   private final static String NULL_STR = "none";
@@ -40,11 +45,7 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
     this.writeRaw("<tr><th>" + camelCaseUnescape(fieldName.getValue()) + "</th>");
   }
 
-  /*
-   * /********************************************************** /* Public API,
-   * write methods, structural
-   * /**********************************************************
-   */
+  // --- Public API, write methods, structural -------------------------
 
   @Override
   public void writeStartArray() throws IOException, JsonGenerationException {
@@ -90,11 +91,7 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
     }
   }
 
-  /*
-   * /********************************************************** /* Public API,
-   * write methods, text/String values
-   * /**********************************************************
-   */
+  // --- Public API, write methods, text/String values -----------------
 
   @Override
   public void writeString(String text) throws IOException, JsonGenerationException {
@@ -121,11 +118,7 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
     writeFieldValue(htmlEscape(text, offset, length));
   }
 
-  /*
-   * /********************************************************** /* Public API,
-   * write methods, other value types
-   * /**********************************************************
-   */
+  // --- Public API, write methods, other value types ------------------
 
   @Override
   public void writeNumber(int v) throws IOException, JsonGenerationException {
@@ -237,4 +230,5 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
   private String jsonUnescape(byte[] text, int offset, int length) {
     return StringEscapeUtils.unescapeJavaScript(new String(text, offset, length));
   }
+
 }

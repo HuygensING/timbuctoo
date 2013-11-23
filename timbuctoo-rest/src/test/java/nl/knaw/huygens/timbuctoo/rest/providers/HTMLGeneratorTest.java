@@ -10,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.rest.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.TestDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
-import nl.knaw.huygens.timbuctoo.rest.model.projectb.ProjectBDomainEntity;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -95,20 +94,19 @@ public class HTMLGeneratorTest {
     String id = "TCD0000000001";
     TestDomainEntity entity = new TestDomainEntity(id, "test");
     entity.setPid("pid");
-    addVariations(entity, ProjectADomainEntity.class, ProjectBDomainEntity.class, BaseDomainEntity.class, TestDomainEntity.class);
+    addVariations(entity, TestDomainEntity.class);
 
     String html = generateHtml(entity);
 
     assertContains(html, "Class", TestDomainEntity.class.getName());
     assertContains(html, "Name", "test");
-    assertContains(html, "Id", "TCD0000000001");
+    assertContains(html, "Id", id);
     assertContains(html, "Rev", "0");
     assertContains(html, "Last Change", "none");
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
 
-    assertContains(html, "href=|projectadomainentities/TCD0000000001|");
-    assertContains(html, "href=|projectbdomainentities/TCD0000000001|");
+    assertContains(html, "href=|testdomainentities/TCD0000000001|");
 
     assertContains(html, "Deleted", "no");
   }
@@ -116,15 +114,15 @@ public class HTMLGeneratorTest {
   @Test
   public void testDomainEntitySubtype() throws Exception {
     String id = "GTD0000000001";
-    BaseDomainEntity entity = new BaseDomainEntity(id);
+    ProjectADomainEntity entity = new ProjectADomainEntity(id);
     entity.setPid("pid");
     entity.generalTestDocValue = "generalTestDocValue";
     entity.name = "test";
-    addVariations(entity, ProjectADomainEntity.class, ProjectBDomainEntity.class, BaseDomainEntity.class, TestDomainEntity.class);
+    addVariations(entity, BaseDomainEntity.class, ProjectADomainEntity.class);
 
     String html = generateHtml(entity);
 
-    assertContains(html, "Class", BaseDomainEntity.class.getName());
+    assertContains(html, "Class", ProjectADomainEntity.class.getName());
     assertContains(html, "Name", "test");
     assertContains(html, "General Test Doc Value", "generalTestDocValue");
     assertContains(html, "Id", id);
@@ -133,8 +131,8 @@ public class HTMLGeneratorTest {
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
 
+    assertContains(html, "href=|basedomainentitys/GTD0000000001|");
     assertContains(html, "href=|projectadomainentities/GTD0000000001|");
-    assertContains(html, "href=|projectbdomainentities/GTD0000000001|");
 
     assertContains(html, "Deleted", "no");
   }
