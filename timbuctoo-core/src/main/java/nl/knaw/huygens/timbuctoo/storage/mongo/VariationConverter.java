@@ -9,16 +9,20 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 
+import org.mongojack.internal.stream.JacksonDBObject;
+import org.slf4j.Logger;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.DBObject;
 
 /**
  * Base class for {@code VariationInducer} and {@code VariationInducer}.
  */
-class VariationConverter {
+abstract class VariationConverter {
 
   protected static final String BASE_MODEL_PACKAGE = "model";
 
@@ -32,6 +36,20 @@ class VariationConverter {
     jsonMapper = new ObjectMapper();
     fieldMapper = new FieldMapper();
     propertyMapper = new MongoObjectMapper();
+  }
+
+  protected abstract Logger getLogger();
+
+  @SuppressWarnings("unchecked")
+  protected JsonNode convertDBObjectToJsonNode(DBObject object) throws IOException {
+    if (object instanceof JacksonDBObject) {
+      return (((JacksonDBObject<JsonNode>) object).getObject());
+    } else if (object instanceof DBJsonNode) {
+      return ((DBJsonNode) object).getDelegate();
+    } else {
+      getLogger().error("Failed to convert {}", object.getClass());
+      throw new IOException("Unknown DBObject type");
+    }
   }
 
   protected String getPackageName(Class<? extends Entity> type) {
