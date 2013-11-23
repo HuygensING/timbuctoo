@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
 import java.util.Map;
@@ -61,15 +62,17 @@ public abstract class DomainEntity extends Entity implements Variable {
 
   @JsonProperty("^variations")
   public List<String> getVariations() {
+    checkState(variations != null);
     return variations;
   }
 
   @JsonProperty("^variations")
   public void setVariations(List<String> variations) {
-    this.variations = checkNotNull(variations);
+    this.variations = (variations != null) ? variations : Lists.<String> newArrayList();
   }
 
   public void addVariation(String variation) {
+    checkState(variations != null);
     if (!variations.contains(variation)) {
       variations.add(variation);
     }
