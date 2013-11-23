@@ -115,7 +115,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPut() throws Exception {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setupUser(USER_ID, USER_ROLE);
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
@@ -129,7 +129,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutDocExistingDocumentWithoutPID() throws Exception {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setupUser(USER_ID, USER_ROLE);
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID);
     when(getStorageManager().getEntity(TestDomainEntity.class, DEFAULT_ID)).thenReturn(entity);
@@ -144,7 +144,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   @SuppressWarnings("unchecked")
   public void testPutDocInvalidDocument() throws Exception {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setupUser(USER_ID, USER_ROLE);
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID);
     whenJsonProviderReadFromThenReturn(entity);
@@ -204,7 +204,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutDocNonExistingDocument() throws Exception {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setupUser(USER_ID, USER_ROLE);
 
     String id = "NULL000000000001";
     TestDomainEntity entity = new TestDomainEntity(id);
@@ -221,7 +221,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutDocNonExistingType() throws Exception {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setupUser(USER_ID, USER_ROLE);
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID);
 
@@ -233,7 +233,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutDocWrongType() throws Exception {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setupUser(USER_ID, USER_ROLE);
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID);
 
@@ -245,7 +245,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutOnSuperClass() throws Exception {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setupUser(USER_ID, USER_ROLE);
 
     BaseDomainEntity entity = new BaseDomainEntity(DEFAULT_ID);
 
@@ -267,7 +267,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPost() throws Exception {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setupUser(USER_ID, USER_ROLE);
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID, "test");
     when(getStorageManager().addEntity(TestDomainEntity.class, entity)).thenReturn(DEFAULT_ID);
@@ -282,7 +282,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostNonExistingCollection() throws Exception {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setupUser(USER_ID, USER_ROLE);
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID, "test");
 
@@ -294,7 +294,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostWrongType() throws Exception {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setupUser(USER_ID, USER_ROLE);
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID, "test");
     whenJsonProviderReadFromThenReturn(entity);
@@ -317,7 +317,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDelete() throws Exception {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setupUser(USER_ID, USER_ROLE);
 
     TestDomainEntity doc = new TestDomainEntity(DEFAULT_ID);
     doc.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
@@ -331,7 +331,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteDocumentWithoutPID() throws Exception {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setupUser(USER_ID, USER_ROLE);
 
     TestDomainEntity doc = new TestDomainEntity(DEFAULT_ID);
     when(getStorageManager().getEntity(TestDomainEntity.class, DEFAULT_ID)).thenReturn(doc);
@@ -344,7 +344,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteDocumentDoesNotExist() throws Exception {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setupUser(USER_ID, USER_ROLE);
 
     when(getStorageManager().getEntity(TestDomainEntity.class, DEFAULT_ID)).thenReturn(null);
 
@@ -356,9 +356,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteTypeDoesNotExist() throws Exception {
-    setUpUserRoles(USER_ID, null);
+    setupUser(USER_ID, USER_ROLE);
 
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
     when(getStorageManager().getEntity(TestDomainEntity.class, DEFAULT_ID)).thenReturn(null);
 
     ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
@@ -397,7 +396,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutDocUserNotInRole() throws Exception {
-    setUpUserRoles(USER_ID, null);
+    setupUser(USER_ID, null);
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID);
     whenJsonProviderReadFromThenReturn(entity);
@@ -423,7 +422,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostUserNotInRole() throws Exception {
-    setUpUserRoles(USER_ID, null);
+    setupUser(USER_ID, null);
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID, "test");
     whenJsonProviderReadFromThenReturn(entity);
@@ -459,7 +458,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteUserNotInRole() throws Exception {
-    setUpUserRoles(USER_ID, null);
+    setupUser(USER_ID, null);
 
     ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());

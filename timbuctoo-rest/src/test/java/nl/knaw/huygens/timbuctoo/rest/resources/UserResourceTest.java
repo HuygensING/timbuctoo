@@ -45,9 +45,9 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetAllUsers() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setupUser(USER_ID, ADMIN_ROLE);
 
-    List<User> expectedList = Lists.<User> newArrayList(createUser("test", "test"), createUser("test1", "test1"), createUser("test", "test"));
+    List<User> expectedList = Lists.newArrayList(createUser("test", "test"), createUser("test1", "test1"), createUser("test", "test"));
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getAllLimited(User.class, 0, 200)).thenReturn(expectedList);
 
@@ -58,9 +58,9 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetAllUsersNonFound() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setupUser(USER_ID, ADMIN_ROLE);
 
-    List<User> expectedList = Lists.<User> newArrayList();
+    List<User> expectedList = Lists.newArrayList();
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getAllLimited(User.class, 0, 200)).thenReturn(expectedList);
 
@@ -71,7 +71,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetAllUsersNotInRole() {
-    setUpUserRoles(USER_ID, null);
+    setupUser(USER_ID, null);
 
     ClientResponse response = resource.header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
@@ -87,7 +87,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetUserAsAdmin() {
-    setUpUserRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setupUser(OTHER_USER_ID, ADMIN_ROLE);
 
     User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -101,7 +101,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetUserNotFound() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setupUser(USER_ID, ADMIN_ROLE);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(null);
@@ -112,7 +112,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetMyUserDataAsAdmin() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setupUser(USER_ID, ADMIN_ROLE);
 
     User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -126,7 +126,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetMyUserDataAsUser() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setupUser(USER_ID, USER_ROLE);
 
     User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -141,7 +141,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   @SuppressWarnings("unchecked")
   @Test
   public void testGetMyUserDataAsUnverifiedUser() throws IOException {
-    setUpUserRoles(USER_ID, Lists.newArrayList("UNVERIFIED_USER"));
+    setupUser(USER_ID, "UNVERIFIED_USER");
 
     MailSender mailSender = injector.getInstance(MailSender.class);
 
@@ -188,7 +188,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetUserAsUser() {
-    setUpUserRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE));
+    setupUser(OTHER_USER_ID, USER_ROLE);
 
     ClientResponse response = resource.path(USER_ID).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
@@ -204,7 +204,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutUser() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setupUser(USER_ID, ADMIN_ROLE);
     MailSender sender = injector.getInstance(MailSender.class);
 
     User user = createUser(USER_ID, "firstName", "lastName");
@@ -224,7 +224,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   @SuppressWarnings("unchecked")
   @Test
   public void testPutUserUserNotFound() throws IOException {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setupUser(USER_ID, ADMIN_ROLE);
 
     User user = createUser(USER_ID, "firstName", "lastName");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -243,7 +243,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutUserNotInRole() {
-    setUpUserRoles(USER_ID, null);
+    setupUser(USER_ID, null);
 
     User user = createUser(USER_ID, "firstName", "lastName");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -267,7 +267,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteUser() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setupUser(USER_ID, ADMIN_ROLE);
 
     User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -279,7 +279,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteUserUserNotFound() {
-    setUpUserRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setupUser(USER_ID, ADMIN_ROLE);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(null);
@@ -290,7 +290,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteUserNotInRole() {
-    setUpUserRoles(USER_ID, null);
+    setupUser(USER_ID, null);
 
     User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
