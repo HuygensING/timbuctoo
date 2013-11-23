@@ -16,7 +16,6 @@ import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 
 import org.apache.commons.lang.StringUtils;
-import org.mongojack.internal.stream.JacksonDBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,24 +64,12 @@ class VariationInducer extends VariationConverter {
       // TODO Decide: do we want to ignore dbObject?
       return induceSystemEntity(type, entity);
     } else {
-      ObjectNode node = convertDBObject(dbObject);
+      JsonNode node = convertDBObjectToJsonNode(dbObject);
       return induceOldDomainEntity(type, entity, node);
     }
   }
 
   // -------------------------------------------------------------------
-
-  @SuppressWarnings("unchecked")
-  private ObjectNode convertDBObject(DBObject dbObject) throws IOException {
-    if (dbObject instanceof JacksonDBObject) {
-      return (ObjectNode) (((JacksonDBObject<JsonNode>) dbObject).getObject());
-    } else if (dbObject instanceof DBJsonNode) {
-      return (ObjectNode) ((DBJsonNode) dbObject).getDelegate();
-    } else {
-      LOG.error("Failed to convert {}", dbObject.getClass());
-      throw new IOException("Unknown DBObject type");
-    }
-  }
 
   private <T extends Entity> JsonNode induceSystemEntity(Class<T> type, T entity) {
     Map<String, Object> map = propertyMapper.mapObject(Entity.class, type, entity);
@@ -103,7 +90,7 @@ class VariationInducer extends VariationConverter {
     return cleanUp(newNode);
   }
 
-  private <T extends Entity> JsonNode induceOldDomainEntity(Class<T> type, T entity, ObjectNode existingItem) {
+  private <T extends Entity> JsonNode induceOldDomainEntity(Class<T> type, T entity, JsonNode existingItem) {
     checkArgument(TypeRegistry.isDomainEntity(type));
     checkArgument(existingItem != null);
 
@@ -135,7 +122,7 @@ class VariationInducer extends VariationConverter {
     return map;
   }
 
-  private Map<String, Object> merge(Class<?> type, Map<String, Object> newValues, ObjectNode existingNode) {
+  private Map<String, Object> merge(Class<?> type, Map<String, Object> newValues, JsonNode existingNode) {
     Map<String, Object> mergedMap = Maps.newHashMap();
     for (String key : newValues.keySet()) {
       if (existingNode.has(key)) {
@@ -189,11 +176,11 @@ class VariationInducer extends VariationConverter {
     return similarKeys;
   }
 
-  private boolean isSameValue(String key, Map<String, Object> newValues, ObjectNode existingNode) {
+  private boolean isSameValue(String key, Map<String, Object> newValues, JsonNode existingNode) {
     return isSameValue(key, key, newValues, existingNode);
   }
 
-  protected boolean isSameValue(String key, String keyInNode, Map<String, Object> newValues, ObjectNode existingNode) {
+  protected boolean isSameValue(String key, String keyInNode, Map<String, Object> newValues, JsonNode existingNode) {
     Object newValue = newValues.get(key);
 
     if (newValue == null) {
