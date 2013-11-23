@@ -39,6 +39,10 @@ class VariationReducer extends VariationConverter {
     super(registry);
   }
 
+  protected Logger getLogger() {
+    return LOG;
+  }
+
   public <T extends Entity> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {
     if (obj == null) {
       return null;

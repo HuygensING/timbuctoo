@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +14,6 @@ import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectANewTestRole;
@@ -30,7 +28,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mongojack.internal.stream.JacksonDBObject;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -70,7 +67,7 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testInduceSystemEntity() {
+  public void testInduceSystemEntity() throws Exception {
     String testValue1 = "value";
     String testValue2 = "testValue2";
 
@@ -84,7 +81,7 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testInduceSystemEntityWithNullValues() {
+  public void testInduceSystemEntityWithNullValues() throws Exception {
     String testValue1 = "value";
 
     JsonNode expected = createSystemObjectNode(TEST_SYSTEM_ID, null, testValue1, null);
@@ -96,7 +93,7 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testInduceUpdatedSystemEntity() throws JsonProcessingException, IOException {
+  public void testInduceUpdatedSystemEntity() throws Exception {
     String testValue1 = "value";
     String testValue2 = "testValue2";
     String name2 = "name2";
@@ -112,7 +109,7 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testInduceDatable() {
+  public void testInduceDatable() throws Exception {
     Map<String, Object> expectedMap = Maps.newHashMap();
     Datable datable = new Datable("20131011");
     expectedMap.put(propertyName("datablesystementity", "testDatable"), datable.getEDTF());
@@ -127,7 +124,7 @@ public class VariationInducerTest extends VariationTestBase {
 
   @Ignore("Redmine #1909")
   @Test
-  public void testInduceUpdatedDomainEntityPrimitive() throws StorageException {
+  public void testInduceUpdatedDomainEntityPrimitive() throws Exception {
     Map<String, Object> map = newDefaultMap(DEFAULT_DOMAIN_ID, DEFAULT_PID);
     map.put(propertyName(BaseDomainEntity.class, "name"), "test");
     ObjectNode node = mapper.valueToTree(map);
@@ -143,7 +140,7 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testInduceDomainEntityProject() {
+  public void testInduceDomainEntityProject() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_DOMAIN_ID);
     entity.setPid(DEFAULT_PID);
     entity.projectAGeneralTestDocValue = "projectatest";
@@ -157,7 +154,7 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testInduceDomainEntityProjectWithPersonName() {
+  public void testInduceDomainEntityProjectWithPersonName() throws Exception {
     ProjectATestDocWithPersonName item = new ProjectATestDocWithPersonName();
     PersonName name = new PersonName();
     name.addNameComponent(Type.FORENAME, "test");
@@ -174,7 +171,7 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testInduceDomainEntityNewVariationAddValue() throws StorageException {
+  public void testInduceDomainEntityNewVariationAddValue() throws Exception {
     Map<String, Object> existingMap = newBaseDomainEntityMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test");
     existingMap.put(propertyName(ProjectADomainEntity.class, "projectAGeneralTestDocValue"), "projectatest");
     ObjectNode existing = mapper.valueToTree(existingMap);
@@ -190,7 +187,7 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testInduceDomainEntityNewVariationExistingValue() throws StorageException {
+  public void testInduceDomainEntityNewVariationExistingValue() throws Exception {
     Map<String, Object> existingMap = newBaseDomainEntityMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test");
     existingMap.put(propertyName(ProjectADomainEntity.class, "projectAGeneralTestDocValue"), "projectatest");
     ObjectNode existing = mapper.valueToTree(existingMap);
@@ -211,7 +208,7 @@ public class VariationInducerTest extends VariationTestBase {
    * Project value equals to the default value is updated.
    */
   @Test
-  public void testInduceDomainEntityVariationUpdated() throws StorageException {
+  public void testInduceDomainEntityVariationUpdated() throws Exception {
     Map<String, Object> existingMap = newBaseDomainEntityMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test");
     existingMap.put(propertyName(ProjectADomainEntity.class, "projectAGeneralTestDocValue"), "projectatest");
     existingMap.put(propertyName(ProjectBDomainEntity.class, "projectBGeneralTestDocValue"), "testB");
@@ -239,7 +236,7 @@ public class VariationInducerTest extends VariationTestBase {
    * is updated on the key that is not the general accepted.
    */
   @Test
-  public void testInduceDomainEntitySecondVariationUpdated() throws StorageException {
+  public void testInduceDomainEntitySecondVariationUpdated() throws Exception {
     Map<String, Object> existingMap = newBaseDomainEntityMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "testB");
     existingMap.put(propertyName(ProjectADomainEntity.class, "projectAGeneralTestDocValue"), "projectatest");
     existingMap.put(propertyName(ProjectBDomainEntity.class, "generalTestDocValue"), "projectbTestDoc");
@@ -261,7 +258,7 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testInduceProjectVariationUpdatedWithExistingValue() throws StorageException {
+  public void testInduceProjectVariationUpdatedWithExistingValue() throws Exception {
     Map<String, Object> existingMap = newBaseDomainEntityMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "testB");
     existingMap.put(propertyName(ProjectADomainEntity.class, "projectAGeneralTestDocValue"), "projectatest");
     existingMap.put(propertyName(ProjectBDomainEntity.class, "generalTestDocValue"), "projectbTestDoc");
@@ -282,7 +279,7 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testInduceProjectVariationUpdatedToDefault() throws StorageException {
+  public void testInduceProjectVariationUpdatedToDefault() throws Exception {
     Map<String, Object> existingMap = newBaseDomainEntityMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "testB");
     existingMap.put(propertyName(ProjectADomainEntity.class, "projectAGeneralTestDocValue"), "projectatest");
     existingMap.put(propertyName(ProjectADomainEntity.class, "generalTestDocValue"), "testB");
@@ -304,7 +301,7 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testInduceDomainEntityWithRole() {
+  public void testInduceDomainEntityWithRole() throws Exception {
     ProjectBDomainEntity item = newProjectBDomainEntity(DEFAULT_DOMAIN_ID, DEFAULT_PID, "testB");
     item.generalTestDocValue = "test";
     ProjectBTestRole role = new ProjectBTestRole();
@@ -324,7 +321,7 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testInduceUpdatedDomainEntityWithRoleNewVariation() throws StorageException {
+  public void testInduceUpdatedDomainEntityWithRoleNewVariation() throws Exception {
     Map<String, Object> existingMap = newBaseDomainEntityMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test");
     existingMap.put(propertyName(ProjectBDomainEntity.class, "projectBGeneralTestDocValue"), "testB");
     existingMap.put(propertyName("projectbtestrole", "beeName"), "beeName");
@@ -349,7 +346,7 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testInduceUpdatedDomainEntityWithRolesNewRole() throws StorageException {
+  public void testInduceUpdatedDomainEntityWithRolesNewRole() throws Exception {
     Map<String, Object> existingMap = newBaseDomainEntityMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test");
     existingMap.put(propertyName(ProjectBDomainEntity.class, "projectBGeneralTestDocValue"), "testB");
     existingMap.put(propertyName("projectbtestrole", "beeName"), "beeName");
@@ -384,7 +381,7 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test
-  public void testInduceUpdatedDomainEntityWithRolesNewVariationForRole() throws StorageException {
+  public void testInduceUpdatedDomainEntityWithRolesNewVariationForRole() throws Exception {
     Map<String, Object> existingMap = newBaseDomainEntityMap(DEFAULT_DOMAIN_ID, DEFAULT_PID, "test");
     existingMap.put(propertyName(ProjectBDomainEntity.class, "projectBGeneralTestDocValue"), "testB");
     existingMap.put(propertyName("projectbtestrole", "beeName"), "beeName");
@@ -419,17 +416,17 @@ public class VariationInducerTest extends VariationTestBase {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testInduceNewEntityWithNullEntity() throws StorageException {
+  public void testInduceNewEntityWithNullEntity() throws Exception {
     inducer.induceNewEntity(ProjectBDomainEntity.class, null);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testInduceOldEntityWithNullEntity() throws StorageException {
+  public void testInduceOldEntityWithNullEntity() throws Exception {
     inducer.induceOldEntity(ProjectBDomainEntity.class, null, asDBObject(null));
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testInduceOldEntityWithNullDBObject() throws StorageException {
+  public void testInduceOldEntityWithNullDBObject() throws Exception {
     inducer.induceOldEntity(ProjectBDomainEntity.class, new ProjectBDomainEntity(), null);
   }
 

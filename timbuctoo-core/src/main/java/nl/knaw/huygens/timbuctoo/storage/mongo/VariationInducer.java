@@ -35,12 +35,16 @@ class VariationInducer extends VariationConverter {
     super(registry);
   }
 
+  protected Logger getLogger() {
+    return LOG;
+  }
+
   // --- public API ----------------------------------------------------
 
   /**
    * Converts an entity to a JsonTree.
    */
-  public <T extends Entity> JsonNode induceNewEntity(Class<T> type, T entity) {
+  public <T extends Entity> JsonNode induceNewEntity(Class<T> type, T entity) throws IOException {
     checkArgument(entity != null);
 
     if (TypeRegistry.isSystemEntity(type)) {
@@ -53,7 +57,7 @@ class VariationInducer extends VariationConverter {
   /**
    * Converts an entity to a JsonTree and combines it with an existing DBObject.
    */
-  public <T extends Entity> JsonNode induceOldEntity(Class<T> type, T entity, DBObject dbObject) {
+  public <T extends Entity> JsonNode induceOldEntity(Class<T> type, T entity, DBObject dbObject) throws IOException {
     checkArgument(entity != null);
     checkArgument(dbObject != null);
 
@@ -69,14 +73,14 @@ class VariationInducer extends VariationConverter {
   // -------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private ObjectNode convertDBObject(DBObject dbObject) {
+  private ObjectNode convertDBObject(DBObject dbObject) throws IOException {
     if (dbObject instanceof JacksonDBObject) {
       return (ObjectNode) (((JacksonDBObject<JsonNode>) dbObject).getObject());
     } else if (dbObject instanceof DBJsonNode) {
       return (ObjectNode) ((DBJsonNode) dbObject).getDelegate();
     } else {
       LOG.error("Failed to convert {}", dbObject.getClass());
-      throw new IllegalArgumentException("Unknown DBObject type");
+      throw new IOException("Unknown DBObject type");
     }
   }
 

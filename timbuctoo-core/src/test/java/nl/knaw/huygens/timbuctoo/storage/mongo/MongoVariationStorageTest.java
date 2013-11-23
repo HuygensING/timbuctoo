@@ -103,7 +103,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     storage.updateItem(BaseDomainEntity.class, DEFAULT_ID, expected);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = IOException.class)
   public void testUpdateItemMalformed() throws IOException {
     BaseDomainEntity item = new BaseDomainEntity(DEFAULT_ID, "test");
 

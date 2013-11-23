@@ -205,7 +205,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Entity> String addItem(Class<T> type, T entity) {
+  public <T extends Entity> String addItem(Class<T> type, T entity) throws IOException {
     if (entity.getId() == null) {
       setNextId(type, entity);
     }
