@@ -22,19 +22,21 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
+/**
+ * Note that {@code HTMLGenerator} does not know about the proper structure
+ * of entities. E.g., it does not know which variations can be present.
+ */
 public class HTMLGeneratorTest {
-
-  private static final String PACKAGES = "timbuctoo.rest.model timbuctoo.rest.model.projecta timbuctoo.rest.model.projectb";
 
   private static TypeRegistry registry;
 
-  private HTMLGenerator gen;
+  private HTMLGenerator htmlGenerator;
   private ObjectMapper mapper;
   private StringWriter writer;
 
   @BeforeClass
   public static void setupRegistry() {
-    registry = new TypeRegistry(PACKAGES);
+    registry = new TypeRegistry("timbuctoo.rest.model timbuctoo.rest.model.projecta timbuctoo.rest.model.projectb");
   }
 
   @Before
@@ -44,13 +46,12 @@ public class HTMLGeneratorTest {
     mapper = new ObjectMapper();
     mapper.registerModule(module);
     writer = new StringWriter();
-    JsonFactory factory = new JsonFactory();
-    JsonGenerator realGen = factory.createGenerator(writer);
-    gen = new HTMLGenerator(realGen);
+    JsonGenerator jsonGenerator = new JsonFactory().createGenerator(writer);
+    htmlGenerator = new HTMLGenerator(jsonGenerator);
   }
 
   private String generateHtml(Entity doc) throws Exception {
-    mapper.writeValue(gen, doc);
+    mapper.writeValue(htmlGenerator, doc);
     return writer.getBuffer().toString();
   }
 

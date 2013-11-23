@@ -15,9 +15,6 @@ import com.fasterxml.jackson.core.util.JsonGeneratorDelegate;
 
 /**
  * Generates human-readable HTML.
- * 
- * {@code HTMLGenerator} does not know about the proper structure of entities.
- * For example, it does not know which variations can be present.
  */
 public class HTMLGenerator extends JsonGeneratorDelegate {
 
