@@ -5,14 +5,11 @@ import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBDomainEntity;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public abstract class VariationTestBase {
@@ -51,11 +48,9 @@ public abstract class VariationTestBase {
   }
 
   protected ProjectBDomainEntity newProjectBDomainEntity(String id, String pid, String projectBGeneralTestDocValue) {
-    ProjectBDomainEntity entity = new ProjectBDomainEntity();
+    ProjectBDomainEntity entity = new ProjectBDomainEntity(id);
     entity.projectBGeneralTestDocValue = projectBGeneralTestDocValue;
-    entity.setVariationRefs(Lists.newArrayList(new Reference(ProjectADomainEntity.class, id), new Reference(ProjectBDomainEntity.class, id)));
     entity.setPid(pid);
-    entity.setId(id);
     return entity;
   }
 
