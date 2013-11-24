@@ -33,10 +33,6 @@ class VariationInducer extends VariationConverter {
     super(registry);
   }
 
-  protected Logger getLogger() {
-    return LOG;
-  }
-
   // --- public API ----------------------------------------------------
 
   /**

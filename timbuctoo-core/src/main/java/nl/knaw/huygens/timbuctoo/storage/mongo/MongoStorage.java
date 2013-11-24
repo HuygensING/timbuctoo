@@ -144,7 +144,7 @@ public class MongoStorage implements Storage {
     return collection;
   }
 
-  private <T extends Entity> DBCollection getRawVersionCollection(Class<T> type) {
+  private <T extends Entity> DBCollection getVersionCollection(Class<T> type) {
     Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
     DBCollection col = db.getCollection(getVersioningCollectionName(baseType));
     col.setDBDecoderFactory(treeDecoderFactory);
@@ -184,7 +184,7 @@ public class MongoStorage implements Storage {
 
   private <T extends Entity> T getItem(Class<T> type, DBObject query) throws IOException {
     DBObject item = getDBCollection(type).findOne(query);
-    return reducer.reduceDBObject(type, item);
+    return (item != null) ? reducer.reduceVariant(type, toJsonNode(item), null) : null;
   }
 
   private <T extends Entity> StorageIterator<T> getItems(Class<T> type, DBObject query) {
@@ -304,7 +304,10 @@ public class MongoStorage implements Storage {
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException, IOException {
     DBObject query = queries.selectById(id);
     DBObject item = getDBCollection(type).findOne(query);
-    List<T> variations = reducer.getAllForDBObject(item, type);
+    if (item == null) {
+      return null;
+    }
+    List<T> variations = reducer.reduceAllVariations(type, toJsonNode(item));
     for (T variation : variations) {
       addRelationsTo(variation.getClass(), id, variation);
     }
@@ -315,22 +318,22 @@ public class MongoStorage implements Storage {
   public <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) throws IOException {
     DBObject query = queries.selectById(id);
     DBObject item = getDBCollection(type).findOne(query);
-    return reducer.reduceDBObject(item, type, variation);
+    return (item != null) ? reducer.reduceVariant(type, toJsonNode(item), variation) : null;
   }
 
   @Override
   public <T extends DomainEntity> MongoChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
     DBObject query = queries.selectById(id);
-    DBObject allRevisions = getRawVersionCollection(type).findOne(query);
-    return reducer.reduceMultipleRevisions(type, allRevisions);
+    DBObject item = getVersionCollection(type).findOne(query);
+    return (item != null) ? reducer.reduceAllRevisions(type, toJsonNode(item)) : null;
   }
 
   @Override
   public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revisionId) throws IOException {
     DBObject query = queries.selectById(id);
     query.put("versions.^rev", revisionId);
-    DBObject item = getRawVersionCollection(type).findOne(query);
-    return reducer.reduceRevision(type, item);
+    DBObject item = getVersionCollection(type).findOne(query);
+    return (item != null) ? reducer.reduceRevision(type, toJsonNode(item)) : null;
   }
 
   @Override
@@ -373,7 +376,7 @@ public class MongoStorage implements Storage {
     itemNode.put("versions", versionsNode);
     itemNode.put("_id", id);
 
-    getRawVersionCollection(type).insert(new JacksonDBObject<JsonNode>(itemNode, JsonNode.class));
+    getVersionCollection(type).insert(new JacksonDBObject<JsonNode>(itemNode, JsonNode.class));
   }
 
   private <T extends Entity> void addVersion(Class<T> type, String id, JacksonDBObject<JsonNode> newVersion) {
@@ -386,7 +389,7 @@ public class MongoStorage implements Storage {
     update.put("$push", versionNode);
     DBObject updateObj = new JacksonDBObject<JsonNode>(update, JsonNode.class);
 
-    getRawVersionCollection(type).update(new BasicDBObject("_id", id), updateObj);
+    getVersionCollection(type).update(new BasicDBObject("_id", id), updateObj);
   }
 
   @Override
