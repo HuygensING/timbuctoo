@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.mongojack.internal.stream.JacksonDBObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -41,25 +40,19 @@ public class VariationInducerTest extends VariationTestBase {
   private static final String DEFAULT_DOMAIN_ID = "GTD0000000012";
   private static final String TEST_NAME = "test";
   private final static String TEST_SYSTEM_ID = "TSD";
+
   private static TypeRegistry registry;
 
-  ObjectMapper mapper;
   private VariationInducer inducer;
 
   @BeforeClass
-  public static void setupMapper() {
+  public static void setupRegistry() {
     registry = new TypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb timbuctoo.model");
   }
 
   @Before
-  public void setUp() throws Exception {
-    mapper = new ObjectMapper();
+  public void setup() throws Exception {
     inducer = new VariationInducer(registry);
-  }
-
-  @Override
-  protected ObjectMapper getMapper() {
-    return mapper;
   }
 
   private DBObject asDBObject(ObjectNode node) {
