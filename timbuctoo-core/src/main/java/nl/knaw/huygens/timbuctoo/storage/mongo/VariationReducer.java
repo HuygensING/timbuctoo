@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.mongodb.DBObject;
 
 class VariationReducer extends VariationConverter {
 
@@ -38,20 +37,14 @@ class VariationReducer extends VariationConverter {
     super(registry);
   }
 
-  protected Logger getLogger() {
-    return LOG;
-  }
+  public <T extends Entity> MongoChanges<T> reduceAllRevisions(Class<T> type, JsonNode tree) throws IOException {
+    checkNotNull(tree);
 
-  public <T extends Entity> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {
-    if (obj == null) {
-      return null;
-    }
-    JsonNode tree = convertDBObjectToJsonNode(obj);
     ArrayNode versionsNode = (ArrayNode) tree.get(VERSIONS_FIELD);
     MongoChanges<T> changes = null;
 
     for (int i = 0; versionsNode.hasNonNull(i); i++) {
-      T item = reduce(type, versionsNode.get(i));
+      T item = reduceVariant(type, versionsNode.get(i));
       if (i == 0) {
         changes = new MongoChanges<T>(item.getId(), item);
       } else {
@@ -62,36 +55,23 @@ class VariationReducer extends VariationConverter {
     return changes;
   }
 
-  public <T extends Entity> T reduceRevision(Class<T> type, DBObject obj) throws IOException {
-    if (obj == null) {
-      return null;
-    }
+  public <T extends Entity> T reduceRevision(Class<T> type, JsonNode tree) throws IOException {
+    checkNotNull(tree);
 
-    JsonNode tree = convertDBObjectToJsonNode(obj);
     ArrayNode versionsNode = (ArrayNode) tree.get(VERSIONS_FIELD);
-    JsonNode objectToReduce = versionsNode.get(0);
+    JsonNode node = versionsNode.get(0);
 
-    return reduce(type, objectToReduce);
+    return reduceVariant(type, node);
   }
 
-  public <T extends Entity> T reduceDBObject(Class<T> type, DBObject obj) throws IOException {
-    return reduceDBObject(obj, type, null);
-  }
-
-  public <T extends Entity> T reduceDBObject(DBObject obj, Class<T> type, String variation) throws IOException {
-    if (obj == null) {
-      return null;
-    }
-    JsonNode tree = convertDBObjectToJsonNode(obj);
-    return reduce(type, tree, variation);
-  }
-
-  public <T extends Entity> T reduce(Class<T> type, JsonNode node) throws StorageException, JsonProcessingException {
-    return reduce(type, node, null);
+  public <T extends Entity> T reduceVariant(Class<T> type, JsonNode node) throws StorageException, JsonProcessingException {
+    return reduceVariant(type, node, null);
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Entity> T reduce(Class<T> type, JsonNode node, String requestedVariation) throws StorageException, JsonProcessingException {
+  public <T extends Entity> T reduceVariant(Class<T> type, JsonNode node, String requestedVariation) throws StorageException, JsonProcessingException {
+    checkNotNull(node);
+
     T returnObject = null;
     try {
       returnObject = type.newInstance();
@@ -242,10 +222,10 @@ class VariationReducer extends VariationConverter {
     return value;
   }
 
-  public <T extends Entity> List<T> getAllForDBObject(DBObject object, Class<T> type) throws IOException {
-    List<T> entities = Lists.newArrayList();
+  public <T extends Entity> List<T> reduceAllVariations(Class<T> type, JsonNode tree) throws IOException {
+    checkNotNull(tree);
 
-    JsonNode tree = convertDBObjectToJsonNode(object);
+    List<T> entities = Lists.newArrayList();
 
     JsonNode node = tree.findValue(DomainEntity.VARIATIONS);
     if (node != null) {
@@ -254,7 +234,7 @@ class VariationReducer extends VariationConverter {
         String variation = iterator.next().textValue();
         Class<? extends Entity> varType = typeRegistry.getTypeForIName(variation);
         checkNotNull(varType, variation);
-        T entity = type.cast(reduce(varType, tree));
+        T entity = type.cast(reduceVariant(varType, tree));
         entities.add(entity);
       }
     }
