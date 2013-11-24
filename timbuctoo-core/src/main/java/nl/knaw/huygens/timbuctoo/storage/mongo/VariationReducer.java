@@ -37,6 +37,85 @@ class VariationReducer extends VariationConverter {
     super(registry);
   }
 
+  public <T extends Entity> T reduceVariation(Class<T> type, JsonNode node) throws StorageException, JsonProcessingException {
+    return reduceVariation(type, node, null);
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T extends Entity> T reduceVariation(Class<T> type, JsonNode node, String variation) throws StorageException, JsonProcessingException {
+    checkNotNull(node);
+
+    T returnObject = null;
+    try {
+      returnObject = type.newInstance();
+
+      if (variation == null && DomainEntity.class.isAssignableFrom(type)) {
+        variation = typeRegistry.getClassVariation((Class<? extends DomainEntity>) type);
+      }
+
+      setFields(type, Entity.class, returnObject, node, variation);
+
+      String typeVariation = TypeRegistry.isDomainEntity(type) ? typeRegistry.getClassVariation((Class<? extends DomainEntity>) type) : null;
+
+      Set<Class<? extends Role>> rolesInNode = getRolesInNode(node, typeVariation);
+      List<Role> roles = Lists.newLinkedList();
+      for (Class<? extends Role> roleType : rolesInNode) {
+        roles.add(createRole(roleType, node, variation));
+      }
+
+      if (!roles.isEmpty()) {
+        try {
+          Method setRolesMethod = type.getMethod("setRoles", List.class);
+          setRolesMethod.invoke(returnObject, roles);
+        } catch (SecurityException e) {
+          LOG.error("Could not access method setRoles of type {}.", type);
+        } catch (NoSuchMethodException e) {
+          LOG.error("Could not get method setRoles of type {}.", type);
+        } catch (IllegalArgumentException e) {
+          LOG.error("Method setRoles of type {} got a wrong parameter.", type);
+        } catch (InvocationTargetException e) {
+          LOG.error("Could not invoke method setRoles of type {}.", type);
+        }
+      }
+
+    } catch (InstantiationException e) {
+      LOG.error("Could not initialize object of type {}.", type);
+    } catch (IllegalAccessException e) {
+      LOG.error("Could not initialize object of type {}.", type);
+    }
+
+    return returnObject;
+  }
+
+  public <T extends Entity> List<T> reduceAllVariations(Class<T> type, JsonNode tree) throws IOException {
+    checkNotNull(tree);
+
+    List<T> entities = Lists.newArrayList();
+
+    JsonNode node = tree.findValue(DomainEntity.VARIATIONS);
+    if (node != null) {
+      Iterator<JsonNode> iterator = node.elements();
+      while (iterator.hasNext()) {
+        String variation = iterator.next().textValue();
+        Class<? extends Entity> varType = typeRegistry.getTypeForIName(variation);
+        checkNotNull(varType, variation);
+        T entity = type.cast(reduceVariation(varType, tree));
+        entities.add(entity);
+      }
+    }
+
+    return entities;
+  }
+
+  public <T extends Entity> T reduceRevision(Class<T> type, JsonNode tree) throws IOException {
+    checkNotNull(tree);
+
+    ArrayNode versionsNode = (ArrayNode) tree.get(VERSIONS_FIELD);
+    JsonNode node = versionsNode.get(0);
+
+    return reduceVariation(type, node);
+  }
+
   public <T extends Entity> MongoChanges<T> reduceAllRevisions(Class<T> type, JsonNode tree) throws IOException {
     checkNotNull(tree);
 
@@ -44,7 +123,7 @@ class VariationReducer extends VariationConverter {
     MongoChanges<T> changes = null;
 
     for (int i = 0; versionsNode.hasNonNull(i); i++) {
-      T item = reduceVariant(type, versionsNode.get(i));
+      T item = reduceVariation(type, versionsNode.get(i));
       if (i == 0) {
         changes = new MongoChanges<T>(item.getId(), item);
       } else {
@@ -55,70 +134,7 @@ class VariationReducer extends VariationConverter {
     return changes;
   }
 
-  public <T extends Entity> T reduceRevision(Class<T> type, JsonNode tree) throws IOException {
-    checkNotNull(tree);
-
-    ArrayNode versionsNode = (ArrayNode) tree.get(VERSIONS_FIELD);
-    JsonNode node = versionsNode.get(0);
-
-    return reduceVariant(type, node);
-  }
-
-  public <T extends Entity> T reduceVariant(Class<T> type, JsonNode node) throws StorageException, JsonProcessingException {
-    return reduceVariant(type, node, null);
-  }
-
-  @SuppressWarnings("unchecked")
-  public <T extends Entity> T reduceVariant(Class<T> type, JsonNode node, String requestedVariation) throws StorageException, JsonProcessingException {
-    checkNotNull(node);
-
-    T returnObject = null;
-    try {
-      returnObject = type.newInstance();
-
-      if (requestedVariation == null && DomainEntity.class.isAssignableFrom(type)) {
-        requestedVariation = typeRegistry.getClassVariation((Class<? extends DomainEntity>) type);
-      }
-
-      setFields(type, Entity.class, returnObject, node, requestedVariation);
-
-      String typeVariation = TypeRegistry.isDomainEntity(type) ? typeRegistry.getClassVariation((Class<? extends DomainEntity>) type) : null;
-
-      Set<Class<? extends Role>> rolesInNode = getRolesInNode(node, typeVariation);
-      List<Role> roles = Lists.newLinkedList();
-      for (Class<? extends Role> roleType : rolesInNode) {
-        roles.add(createRole(roleType, node, requestedVariation));
-      }
-
-      if (!roles.isEmpty()) {
-        try {
-          Method setRolesMethod = type.getMethod("setRoles", List.class);
-          setRolesMethod.invoke(returnObject, roles);
-        } catch (SecurityException e) {
-          LOG.error("Could not access method setRoles of type {}.", type);
-          LOG.debug("exception", e);
-        } catch (NoSuchMethodException e) {
-          LOG.error("Could not get method setRoles of type {}.", type);
-          LOG.debug("exception", e);
-        } catch (IllegalArgumentException e) {
-          LOG.error("Method setRoles of type {} got a wrong parameter.", type);
-          LOG.debug("exception", e);
-        } catch (InvocationTargetException e) {
-          LOG.error("Could not invoke method setRoles of type {}.", type);
-          LOG.debug("exception", e);
-        }
-      }
-
-    } catch (InstantiationException e) {
-      LOG.error("Could not initialize object of type {}.", type);
-      LOG.debug("exception", e);
-    } catch (IllegalAccessException e) {
-      LOG.error("Could not initialize object of type {}.", type);
-      LOG.debug("exception", e);
-    }
-
-    return returnObject;
-  }
+  // -------------------------------------------------------------------
 
   private <T extends Role> T createRole(Class<T> type, JsonNode node, String variation) throws InstantiationException, IllegalAccessException {
     T returnValue = type.newInstance();
@@ -178,16 +194,12 @@ class VariationReducer extends VariationConverter {
         }
       } catch (SecurityException e) {
         LOG.error("Field {} of type {} could not be retrieved.", javaFieldName, type);
-        LOG.debug("exception", e);
       } catch (NoSuchFieldException e) {
         LOG.error("Field {} of type {} could not be retrieved.", javaFieldName, type);
-        LOG.debug("exception", e);
       } catch (IllegalArgumentException e) {
         LOG.error("Field {} of type {} received the wrong value.", javaFieldName, type);
-        LOG.debug("exception", e);
       } catch (IllegalAccessException e) {
         LOG.error("Field {} of type {} could not be accessed.", javaFieldName, type);
-        LOG.debug("exception", e);
       }
     }
   }
@@ -220,26 +232,6 @@ class VariationReducer extends VariationConverter {
     }
 
     return value;
-  }
-
-  public <T extends Entity> List<T> reduceAllVariations(Class<T> type, JsonNode tree) throws IOException {
-    checkNotNull(tree);
-
-    List<T> entities = Lists.newArrayList();
-
-    JsonNode node = tree.findValue(DomainEntity.VARIATIONS);
-    if (node != null) {
-      Iterator<JsonNode> iterator = node.elements();
-      while (iterator.hasNext()) {
-        String variation = iterator.next().textValue();
-        Class<? extends Entity> varType = typeRegistry.getTypeForIName(variation);
-        checkNotNull(varType, variation);
-        T entity = type.cast(reduceVariant(varType, tree));
-        entities.add(entity);
-      }
-    }
-
-    return entities;
   }
 
 }

@@ -70,7 +70,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setTestValue1(testValue1);
     expected.setTestValue2(testValue2);
 
-    assertEquals(expected, reducer.reduceVariant(TestSystemEntity.class, item));
+    assertEquals(expected, reducer.reduceVariation(TestSystemEntity.class, item));
   }
 
   @Test
@@ -97,7 +97,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setTestLong(15098l);
     expected.setTestShort((short) 4);
 
-    assertEquals(expected, reducer.reduceVariant(type, node));
+    assertEquals(expected, reducer.reduceVariation(type, node));
   }
 
   @Test
@@ -114,7 +114,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setTestDatable(datable);
     expected.setRev(0);
 
-    assertEquals(expected, reducer.reduceVariant(type, node));
+    assertEquals(expected, reducer.reduceVariation(type, node));
   }
 
   @Test
@@ -131,7 +131,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setTestIntegerList(Lists.newArrayList(1, 13, 42));
     expected.setTestStringList(Lists.newArrayList("test", "test1"));
 
-    assertEquals(expected, reducer.reduceVariant(type, node));
+    assertEquals(expected, reducer.reduceVariation(type, node));
   }
 
   @Test
@@ -145,7 +145,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.setPid(TEST_PID);
     expected.generalTestDocValue = GENERAL_TEST_DOC_VALUE;
 
-    assertEquals(expected, reducer.reduceVariant(BaseDomainEntity.class, node));
+    assertEquals(expected, reducer.reduceVariation(BaseDomainEntity.class, node));
   }
 
   @Test
@@ -162,7 +162,7 @@ public class VariationReducerTest extends VariationTestBase {
     map.put(DomainEntity.DELETED, false);
     JsonNode node = mapper.valueToTree(map);
 
-    assertEquals(expected, reducer.reduceVariant(ProjectATestDocWithPersonName.class, node));
+    assertEquals(expected, reducer.reduceVariation(ProjectATestDocWithPersonName.class, node));
   }
 
   @Test
@@ -179,7 +179,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.generalTestDocValue = GENERAL_TEST_DOC_VALUE;
     expected.projectAGeneralTestDocValue = projectatestvalue;
 
-    assertEquals(expected, reducer.reduceVariant(ProjectADomainEntity.class, node));
+    assertEquals(expected, reducer.reduceVariation(ProjectADomainEntity.class, node));
   }
 
   @Test
@@ -198,7 +198,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.generalTestDocValue = projectAVariation;
     expected.projectAGeneralTestDocValue = projectatestvalue;
 
-    assertEquals(expected, reducer.reduceVariant(ProjectADomainEntity.class, node));
+    assertEquals(expected, reducer.reduceVariation(ProjectADomainEntity.class, node));
   }
 
   @Test
@@ -220,7 +220,7 @@ public class VariationReducerTest extends VariationTestBase {
     roles.add(testRole);
     expected.setRoles(roles);
 
-    assertEquals(expected, reducer.reduceVariant(BaseDomainEntity.class, node));
+    assertEquals(expected, reducer.reduceVariation(BaseDomainEntity.class, node));
   }
 
   @Test
@@ -247,7 +247,7 @@ public class VariationReducerTest extends VariationTestBase {
     roles.add(newTestRole);
     expected.setRoles(roles);
 
-    assertEquals(expected, reducer.reduceVariant(BaseDomainEntity.class, node));
+    assertEquals(expected, reducer.reduceVariation(BaseDomainEntity.class, node));
   }
 
   @Test
@@ -273,7 +273,7 @@ public class VariationReducerTest extends VariationTestBase {
     roles.add(testRole);
     expected.setRoles(roles);
 
-    assertEquals(expected, reducer.reduceVariant(ProjectBDomainEntity.class, node));
+    assertEquals(expected, reducer.reduceVariation(ProjectBDomainEntity.class, node));
   }
 
   @Test
@@ -296,7 +296,7 @@ public class VariationReducerTest extends VariationTestBase {
     roles.add(testRole);
     expected.setRoles(roles);
 
-    assertEquals(expected, reducer.reduceVariant(ProjectADomainEntity.class, node));
+    assertEquals(expected, reducer.reduceVariation(ProjectADomainEntity.class, node));
   }
 
   @Test
@@ -326,7 +326,7 @@ public class VariationReducerTest extends VariationTestBase {
     roles.add(projectANewTestRole);
     expected.setRoles(roles);
 
-    assertEquals(expected, reducer.reduceVariant(ProjectADomainEntity.class, node));
+    assertEquals(expected, reducer.reduceVariation(ProjectADomainEntity.class, node));
   }
 
   @Test
@@ -345,7 +345,7 @@ public class VariationReducerTest extends VariationTestBase {
     expected.generalTestDocValue = projectAVariation;
     String requestedVariation = "projecta";
 
-    assertEquals(expected, reducer.reduceVariant(BaseDomainEntity.class, node, requestedVariation));
+    assertEquals(expected, reducer.reduceVariation(BaseDomainEntity.class, node, requestedVariation));
   }
 
   @Test
@@ -374,7 +374,7 @@ public class VariationReducerTest extends VariationTestBase {
     roles.add(testRole);
     expected.setRoles(roles);
 
-    assertEquals(expected, reducer.reduceVariant(BaseDomainEntity.class, node, requestedVariation));
+    assertEquals(expected, reducer.reduceVariation(BaseDomainEntity.class, node, requestedVariation));
   }
 
   //TODO: add tests for reducing revisions / multiple revisions.

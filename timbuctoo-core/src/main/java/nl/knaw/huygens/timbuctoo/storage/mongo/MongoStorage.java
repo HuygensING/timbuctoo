@@ -184,7 +184,7 @@ public class MongoStorage implements Storage {
 
   private <T extends Entity> T getItem(Class<T> type, DBObject query) throws IOException {
     DBObject item = getDBCollection(type).findOne(query);
-    return (item != null) ? reducer.reduceVariant(type, toJsonNode(item), null) : null;
+    return (item != null) ? reducer.reduceVariation(type, toJsonNode(item), null) : null;
   }
 
   private <T extends Entity> StorageIterator<T> getItems(Class<T> type, DBObject query) {
@@ -318,7 +318,7 @@ public class MongoStorage implements Storage {
   public <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) throws IOException {
     DBObject query = queries.selectById(id);
     DBObject item = getDBCollection(type).findOne(query);
-    return (item != null) ? reducer.reduceVariant(type, toJsonNode(item), variation) : null;
+    return (item != null) ? reducer.reduceVariation(type, toJsonNode(item), variation) : null;
   }
 
   @Override
