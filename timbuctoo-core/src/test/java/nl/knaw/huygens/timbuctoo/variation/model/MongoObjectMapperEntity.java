@@ -1,9 +1,10 @@
-package nl.knaw.huygens.timbuctoo.model;
+package nl.knaw.huygens.timbuctoo.variation.model;
 
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 

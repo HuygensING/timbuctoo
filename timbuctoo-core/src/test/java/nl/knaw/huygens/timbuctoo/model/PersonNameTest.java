@@ -16,6 +16,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 public class PersonNameTest {
+
   @Test
   public void testEqualsEqual() {
     PersonName first = createPersonName("test", "test2");
