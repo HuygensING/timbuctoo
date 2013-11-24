@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.mongodb.DBObject;
 
 class VariationInducer extends VariationConverter {
 
@@ -54,17 +53,16 @@ class VariationInducer extends VariationConverter {
   }
 
   /**
-   * Converts an entity to a JsonTree and combines it with an existing DBObject.
+   * Converts an entity to a Json tree and combines it with an existing Json tree.
    */
-  public <T extends Entity> JsonNode induceOldEntity(Class<T> type, T entity, DBObject dbObject) throws IOException {
+  public <T extends Entity> JsonNode induceOldEntity(Class<T> type, T entity, JsonNode node) throws IOException {
     checkArgument(entity != null);
-    checkArgument(dbObject != null);
+    checkArgument(node != null);
 
     if (TypeRegistry.isSystemEntity(type)) {
       // TODO Decide: do we want to ignore dbObject?
       return induceSystemEntity(type, entity);
     } else {
-      JsonNode node = convertDBObjectToJsonNode(dbObject);
       return induceOldDomainEntity(type, entity, node);
     }
   }
