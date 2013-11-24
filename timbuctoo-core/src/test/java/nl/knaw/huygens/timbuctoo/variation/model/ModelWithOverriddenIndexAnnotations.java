@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.model;
+package nl.knaw.huygens.timbuctoo.variation.model;
 
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;

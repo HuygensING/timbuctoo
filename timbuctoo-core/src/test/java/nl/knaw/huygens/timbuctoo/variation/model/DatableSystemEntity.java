@@ -1,5 +1,6 @@
-package nl.knaw.huygens.timbuctoo.model;
+package nl.knaw.huygens.timbuctoo.variation.model;
 
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 import com.google.common.base.Objects;
@@ -10,7 +11,6 @@ public class DatableSystemEntity extends SystemEntity {
 
   @Override
   public String getDisplayName() {
-    // TODO Auto-generated method stub
     return null;
   }
 

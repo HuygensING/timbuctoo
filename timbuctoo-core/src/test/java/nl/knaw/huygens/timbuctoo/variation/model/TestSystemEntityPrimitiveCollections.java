@@ -1,12 +1,15 @@
-package nl.knaw.huygens.timbuctoo.model;
+package nl.knaw.huygens.timbuctoo.variation.model;
 
 import java.util.List;
 import java.util.Set;
+
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 
 public class TestSystemEntityPrimitiveCollections extends SystemEntity {
+
   private List<String> testStringList;
   private List<Integer> testIntegerList;
 

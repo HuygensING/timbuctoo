@@ -14,9 +14,9 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
+import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
 
 import org.junit.Before;
 import org.junit.Test;
