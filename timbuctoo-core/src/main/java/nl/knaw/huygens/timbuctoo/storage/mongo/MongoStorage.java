@@ -168,6 +168,18 @@ public class MongoStorage implements Storage {
     entity.setId(entityIds.getNextId(type));
   }
 
+  @SuppressWarnings("unchecked")
+  private JsonNode toJsonNode(DBObject object) throws IOException {
+    if (object instanceof JacksonDBObject) {
+      return (((JacksonDBObject<JsonNode>) object).getObject());
+    } else if (object instanceof DBJsonNode) {
+      return ((DBJsonNode) object).getDelegate();
+    } else {
+      LOG.error("Failed to convert {}", object.getClass());
+      throw new IOException("Unknown DBObject type");
+    }
+  }
+
   // --- generic storage layer -----------------------------------------
 
   private <T extends Entity> T getItem(Class<T> type, DBObject query) throws IOException {
@@ -233,7 +245,7 @@ public class MongoStorage implements Storage {
     if (existingNode == null) {
       throw new IOException("No entity with id " + id + " and revision " + revision);
     }
-    JsonNode updatedNode = inducer.induceOldEntity(type, entity, existingNode);
+    JsonNode updatedNode = inducer.induceOldEntity(type, entity, toJsonNode(existingNode));
     ((ObjectNode) updatedNode).put("^rev", revision + 1);
     JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(updatedNode, JsonNode.class);
     getDBCollection(type).update(query, updatedDBObj);
