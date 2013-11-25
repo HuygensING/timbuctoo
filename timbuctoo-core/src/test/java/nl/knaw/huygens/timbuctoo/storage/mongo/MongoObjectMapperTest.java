@@ -141,13 +141,6 @@ public class MongoObjectMapperTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testMapObjectTypeNull() {
-    MongoObjectMapperEntity testObject = createMongoObjectMapperEntity(DEFAULT_NAME, DEFAULT_TEST_VALUE1, DEFAULT_TEST_VALUE2, DEFAULT_ANNOTATED_PROPERTY, DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
-
-    mapper.mapObject(null, testObject);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
   public void testMapObjectObjectNull() {
     mapper.mapObject(TYPE, null);
   }
