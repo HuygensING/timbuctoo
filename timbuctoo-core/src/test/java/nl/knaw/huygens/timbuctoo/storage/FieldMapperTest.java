@@ -26,7 +26,7 @@ public class FieldMapperTest {
   private FieldMapper instance;
 
   @Before
-  public void setUp() {
+  public void setup() {
     instance = new FieldMapper();
   }
 
@@ -117,7 +117,7 @@ public class FieldMapperTest {
     testGetFieldName(SystemEntity.class, Entity.class.getDeclaredField("id"), "_id");
   }
 
-  protected void testGetFieldName(Class<? extends Entity> type, Field declaredField, String expected) throws NoSuchFieldException {
+  private void testGetFieldName(Class<? extends Entity> type, Field declaredField, String expected) throws NoSuchFieldException {
     String actual = instance.getFieldName(type, declaredField);
     assertEquals(expected, actual);
   }
