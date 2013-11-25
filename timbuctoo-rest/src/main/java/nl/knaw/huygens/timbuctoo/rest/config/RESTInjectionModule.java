@@ -6,7 +6,7 @@ import javax.validation.Validator;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.persistence.PersistenceManagerFactory;
 import nl.knaw.huygens.security.client.AuthorizationHandler;
-import nl.knaw.huygens.security.client.MockAuthorizationHandler;
+import nl.knaw.huygens.security.client.HuygensAuthorizationHandler;
 import nl.knaw.huygens.security.client.SecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
@@ -18,6 +18,7 @@ import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.sun.jersey.api.client.Client;
 
 public class RESTInjectionModule extends BasicInjectionModule {
 
@@ -29,9 +30,16 @@ public class RESTInjectionModule extends BasicInjectionModule {
   protected void configure() {
 
     bind(SecurityContextCreator.class).to(UserSecurityContextCreator.class);
-    bind(AuthorizationHandler.class).to(MockAuthorizationHandler.class);
+    //bind(AuthorizationHandler.class).to(MockAuthorizationHandler.class);
     bind(Broker.class).to(ActiveMQBroker.class);
     super.configure();
+  }
+
+  @Provides
+  @Singleton
+  AuthorizationHandler provideAuthorizationHandler() {
+    Client client = new Client();
+    return new HuygensAuthorizationHandler(client, config.getSetting("security.hss.url"));
   }
 
   @Provides
