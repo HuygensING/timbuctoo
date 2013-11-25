@@ -209,7 +209,7 @@ class VariationReducer extends VariationConverter {
     try {
       value = convertValue(field.getType(), originalValue);
     } catch (IOException e) {
-      LOG.error("Original value \"{}\" cannot be converted.", originalValue);
+      LOG.error("Value '{}' cannot be converted.", originalValue);
     }
 
     // TODO this is a very ugly partial fix for [#1919]
