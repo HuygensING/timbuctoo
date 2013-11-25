@@ -1,29 +1,27 @@
-package nl.knaw.huygens.timbuctoo.model;
-
-import java.util.List;
+package nl.knaw.huygens.timbuctoo.rest.model;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.model.util.PersonName;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@IDPrefix("TSTD")
-public class MongoObjectMapperEntity extends SystemEntity {
+@IDPrefix("TSYS")
+public class TestSystemEntity extends SystemEntity {
 
-  private List<String> primitiveTestCollection;
-  private List<? extends SystemEntity> nonPrimitiveTestCollection;
   private String name;
   private String testValue1;
   private String testValue2;
   @JsonProperty("propAnnotated")
   private String annotatedProperty;
   private String propWithAnnotatedAccessors;
-  private Class<?> type;
-  private Datable date;
-  private PersonName personName;
+
+  public TestSystemEntity() {}
+
+  public TestSystemEntity(String id) {
+    setId(id);
+  }
 
   @Override
   @JsonIgnore
@@ -72,46 +70,6 @@ public class MongoObjectMapperEntity extends SystemEntity {
   @JsonProperty("pwaa")
   public void setPropWithAnnotatedAccessors(String propWithAnnotatedAccessors) {
     this.propWithAnnotatedAccessors = propWithAnnotatedAccessors;
-  }
-
-  public List<String> getPrimitiveTestCollection() {
-    return primitiveTestCollection;
-  }
-
-  public void setPrimitiveTestCollection(List<String> primitiveTestCollection) {
-    this.primitiveTestCollection = primitiveTestCollection;
-  }
-
-  public List<? extends SystemEntity> getNonPrimitiveTestCollection() {
-    return nonPrimitiveTestCollection;
-  }
-
-  public void setNonPrimitiveTestCollection(List<? extends SystemEntity> nonPrimitiveTestCollection) {
-    this.nonPrimitiveTestCollection = nonPrimitiveTestCollection;
-  }
-
-  public Class<?> getType() {
-    return type;
-  }
-
-  public void setType(Class<?> type) {
-    this.type = type;
-  }
-
-  public Datable getDate() {
-    return date;
-  }
-
-  public void setDate(Datable date) {
-    this.date = date;
-  }
-
-  public PersonName getPersonName() {
-    return personName;
-  }
-
-  public void setPersonName(PersonName personName) {
-    this.personName = personName;
   }
 
 }

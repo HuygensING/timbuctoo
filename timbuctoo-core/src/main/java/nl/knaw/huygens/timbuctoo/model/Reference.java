@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.model;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+
 /**
  * A reference to an {@code Entity} instance,
  * allowing it to be retrieved from the storage.
@@ -15,7 +17,12 @@ public class Reference {
   public Reference() {}
 
   public Reference(Class<? extends Entity> typeToken, String id) {
-    this.type = typeToken.getSimpleName().toLowerCase();
+    this.type = TypeNames.getInternalName(typeToken);
+    this.id = id;
+  }
+
+  public Reference(String type, String id) {
+    this.type = type;
     this.id = id;
   }
 

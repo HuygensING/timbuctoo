@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static com.google.common.base.Preconditions.checkState;
+import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -143,7 +144,7 @@ public class MongoStorage implements Storage {
     return collection;
   }
 
-  private <T extends Entity> DBCollection getRawVersionCollection(Class<T> type) {
+  private <T extends Entity> DBCollection getVersionCollection(Class<T> type) {
     Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
     DBCollection col = db.getCollection(getVersioningCollectionName(baseType));
     col.setDBDecoderFactory(treeDecoderFactory);
@@ -167,11 +168,23 @@ public class MongoStorage implements Storage {
     entity.setId(entityIds.getNextId(type));
   }
 
+  @SuppressWarnings("unchecked")
+  private JsonNode toJsonNode(DBObject object) throws IOException {
+    if (object instanceof JacksonDBObject) {
+      return (((JacksonDBObject<JsonNode>) object).getObject());
+    } else if (object instanceof DBJsonNode) {
+      return ((DBJsonNode) object).getDelegate();
+    } else {
+      LOG.error("Failed to convert {}", object.getClass());
+      throw new IOException("Unknown DBObject type");
+    }
+  }
+
   // --- generic storage layer -----------------------------------------
 
   private <T extends Entity> T getItem(Class<T> type, DBObject query) throws IOException {
     DBObject item = getDBCollection(type).findOne(query);
-    return reducer.reduceDBObject(type, item);
+    return (item != null) ? reducer.reduceVariation(type, toJsonNode(item), null) : null;
   }
 
   private <T extends Entity> StorageIterator<T> getItems(Class<T> type, DBObject query) {
@@ -204,9 +217,16 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Entity> String addItem(Class<T> type, T entity) {
+  public <T extends Entity> String addItem(Class<T> type, T entity) throws IOException {
     if (entity.getId() == null) {
       setNextId(type, entity);
+    }
+    if (TypeRegistry.isDomainEntity(type)) {
+      // administrative properties must be controlled in the storage layer
+      DomainEntity domainEntity = DomainEntity.class.cast(entity);
+      domainEntity.setVariations(null); // make sure the list is empty
+      domainEntity.addVariation(getInternalName(typeRegistry.getBaseClass(type)));
+      domainEntity.addVariation(getInternalName(type));
     }
     JsonNode jsonNode = inducer.induceNewEntity(type, entity);
     JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
@@ -219,14 +239,14 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Entity> void updateItem(Class<T> type, String id, T entity) throws IOException {
-    DBObject query = queries.selectById(id);
-    query.put("^rev", entity.getRev());
+    int revision = entity.getRev();
+    DBObject query = queries.selectByIdAndRevision(id, revision);
     DBObject existingNode = getDBCollection(type).findOne(query);
     if (existingNode == null) {
-      throw new IOException("No entity was found for ID " + id + " and revision " + entity.getRev());
+      throw new IOException("No entity with id " + id + " and revision " + revision);
     }
-    JsonNode updatedNode = inducer.induceOldEntity(type, entity, existingNode);
-    ((ObjectNode) updatedNode).put("^rev", entity.getRev() + 1);
+    JsonNode updatedNode = inducer.induceOldEntity(type, entity, toJsonNode(existingNode));
+    ((ObjectNode) updatedNode).put("^rev", revision + 1);
     JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(updatedNode, JsonNode.class);
     getDBCollection(type).update(query, updatedDBObj);
     if (TypeRegistry.isDomainEntity(type)) {
@@ -284,7 +304,10 @@ public class MongoStorage implements Storage {
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException, IOException {
     DBObject query = queries.selectById(id);
     DBObject item = getDBCollection(type).findOne(query);
-    List<T> variations = reducer.getAllForDBObject(item, type);
+    if (item == null) {
+      return null;
+    }
+    List<T> variations = reducer.reduceAllVariations(type, toJsonNode(item));
     for (T variation : variations) {
       addRelationsTo(variation.getClass(), id, variation);
     }
@@ -295,22 +318,22 @@ public class MongoStorage implements Storage {
   public <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) throws IOException {
     DBObject query = queries.selectById(id);
     DBObject item = getDBCollection(type).findOne(query);
-    return reducer.reduceDBObject(item, type, variation);
+    return (item != null) ? reducer.reduceVariation(type, toJsonNode(item), variation) : null;
   }
 
   @Override
   public <T extends DomainEntity> MongoChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
     DBObject query = queries.selectById(id);
-    DBObject allRevisions = getRawVersionCollection(type).findOne(query);
-    return reducer.reduceMultipleRevisions(type, allRevisions);
+    DBObject item = getVersionCollection(type).findOne(query);
+    return (item != null) ? reducer.reduceAllRevisions(type, toJsonNode(item)) : null;
   }
 
   @Override
   public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revisionId) throws IOException {
     DBObject query = queries.selectById(id);
     query.put("versions.^rev", revisionId);
-    DBObject item = getRawVersionCollection(type).findOne(query);
-    return reducer.reduceRevision(type, item);
+    DBObject item = getVersionCollection(type).findOne(query);
+    return (item != null) ? reducer.reduceRevision(type, toJsonNode(item)) : null;
   }
 
   @Override
@@ -353,7 +376,7 @@ public class MongoStorage implements Storage {
     itemNode.put("versions", versionsNode);
     itemNode.put("_id", id);
 
-    getRawVersionCollection(type).insert(new JacksonDBObject<JsonNode>(itemNode, JsonNode.class));
+    getVersionCollection(type).insert(new JacksonDBObject<JsonNode>(itemNode, JsonNode.class));
   }
 
   private <T extends Entity> void addVersion(Class<T> type, String id, JacksonDBObject<JsonNode> newVersion) {
@@ -366,7 +389,7 @@ public class MongoStorage implements Storage {
     update.put("$push", versionNode);
     DBObject updateObj = new JacksonDBObject<JsonNode>(update, JsonNode.class);
 
-    getRawVersionCollection(type).update(new BasicDBObject("_id", id), updateObj);
+    getVersionCollection(type).update(new BasicDBObject("_id", id), updateObj);
   }
 
   @Override

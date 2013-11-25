@@ -1,21 +1,23 @@
-package nl.knaw.huygens.timbuctoo.rest.providers.model;
+package nl.knaw.huygens.timbuctoo.rest.model;
 
+import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import com.google.common.base.Objects;
 
-public class TestConcreteDoc extends DomainEntity {
+@EntityTypeName("testdomainentities")
+public class TestDomainEntity extends DomainEntity {
 
   public String name;
 
-  public TestConcreteDoc() {}
+  public TestDomainEntity() {}
 
-  public TestConcreteDoc(String id) {
+  public TestDomainEntity(String id) {
     setId(id);
   }
 
-  public TestConcreteDoc(String id, String name) {
+  public TestDomainEntity(String id, String name) {
     setId(id);
     this.name = name;
   }
@@ -27,18 +29,17 @@ public class TestConcreteDoc extends DomainEntity {
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof TestConcreteDoc)) {
+    if (!(obj instanceof TestDomainEntity)) {
       return false;
     }
 
-    TestConcreteDoc other = (TestConcreteDoc) obj;
+    TestDomainEntity other = (TestDomainEntity) obj;
 
     return Objects.equal(other.name, name) && Objects.equal(other.getId(), getId());
   }
 
   @Override
   public int hashCode() {
-    // TODO Auto-generated method stub
     return Objects.hashCode(name);
   }
 

@@ -1,35 +1,30 @@
-package nl.knaw.huygens.timbuctoo.model;
+package nl.knaw.huygens.timbuctoo.variation.model;
 
-import java.util.Date;
+import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
 
 @IDPrefix("TSTD")
-public class TestSystemEntity extends SystemEntity {
+public class MongoObjectMapperEntity extends SystemEntity {
 
+  private List<String> primitiveTestCollection;
+  private List<? extends SystemEntity> nonPrimitiveTestCollection;
   private String name;
   private String testValue1;
   private String testValue2;
   @JsonProperty("propAnnotated")
   private String annotatedProperty;
   private String propWithAnnotatedAccessors;
-  private Date date;
-
-  public TestSystemEntity() {}
-
-  public TestSystemEntity(String id) {
-    setId(id);
-  }
-
-  public TestSystemEntity(String id, String name) {
-    setId(id);
-    this.name = name;
-  }
+  private Class<?> type;
+  private Datable date;
+  private PersonName personName;
 
   @Override
   @JsonIgnore
@@ -80,39 +75,44 @@ public class TestSystemEntity extends SystemEntity {
     this.propWithAnnotatedAccessors = propWithAnnotatedAccessors;
   }
 
-  public Date getDate() {
+  public List<String> getPrimitiveTestCollection() {
+    return primitiveTestCollection;
+  }
+
+  public void setPrimitiveTestCollection(List<String> primitiveTestCollection) {
+    this.primitiveTestCollection = primitiveTestCollection;
+  }
+
+  public List<? extends SystemEntity> getNonPrimitiveTestCollection() {
+    return nonPrimitiveTestCollection;
+  }
+
+  public void setNonPrimitiveTestCollection(List<? extends SystemEntity> nonPrimitiveTestCollection) {
+    this.nonPrimitiveTestCollection = nonPrimitiveTestCollection;
+  }
+
+  public Class<?> getType() {
+    return type;
+  }
+
+  public void setType(Class<?> type) {
+    this.type = type;
+  }
+
+  public Datable getDate() {
     return date;
   }
 
-  public void setDate(Date date) {
+  public void setDate(Datable date) {
     this.date = date;
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (!(obj instanceof TestSystemEntity)) {
-      return false;
-    }
-
-    boolean isEqual = true;
-    TestSystemEntity other = (TestSystemEntity) obj;
-    isEqual &= Objects.equal(other.name, name);
-    isEqual &= Objects.equal(other.testValue1, testValue1);
-    isEqual &= Objects.equal(other.testValue2, testValue2);
-    isEqual &= Objects.equal(other.annotatedProperty, annotatedProperty);
-    isEqual &= Objects.equal(other.propWithAnnotatedAccessors, propWithAnnotatedAccessors);
-
-    return isEqual;
+  public PersonName getPersonName() {
+    return personName;
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(name, testValue1, testValue2, annotatedProperty, propWithAnnotatedAccessors);
+  public void setPersonName(PersonName personName) {
+    this.personName = personName;
   }
 
-  @Override
-  public String toString() {
-    return "TestSystemEntity{\nname: " + name + "\ntestValue1: " + testValue1 + "\ntestValue2: " + testValue2 + "\nannotatedProperty: " + annotatedProperty + "propWithAnnotatedAccessors: "
-        + propWithAnnotatedAccessors + "\n}";
-  }
 }

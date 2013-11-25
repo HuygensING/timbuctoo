@@ -1,60 +1,64 @@
 package nl.knaw.huygens.timbuctoo.rest.providers;
 
-import java.io.IOException;
 import java.io.StringWriter;
-import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Reference;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.GeneralTestDoc;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.TestConcreteDoc;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.TestInheritsFromTestBaseDoc;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.TestSystemDocument;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.projecta.OtherDoc;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.projecta.ProjectAGeneralTestDoc;
-import nl.knaw.huygens.timbuctoo.rest.providers.model.projectb.ProjectBGeneralTestDoc;
+import nl.knaw.huygens.timbuctoo.rest.model.BaseDomainEntity;
+import nl.knaw.huygens.timbuctoo.rest.model.TestDomainEntity;
+import nl.knaw.huygens.timbuctoo.rest.model.TestSystemEntity;
+import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.google.common.collect.Lists;
 
+/**
+ * Note that {@code HTMLGenerator} does not know about the proper structure
+ * of entities. E.g., it does not know which variations can be present.
+ */
 public class HTMLGeneratorTest {
 
-  private static final String PACKAGE = "nl.knaw.huygens.timbuctoo.rest.providers.model";
-  private static final String PACKAGEA = "nl.knaw.huygens.timbuctoo.rest.providers.model.projecta";
-  private static final String PACKAGEB = "nl.knaw.huygens.timbuctoo.rest.providers.model.projectb";
-  private static final String MODEL_PACKAGES = PACKAGE + " " + PACKAGEA + " " + PACKAGEB;
+  private static TypeRegistry registry;
 
-  private HTMLGenerator gen;
+  private HTMLGenerator htmlGenerator;
   private ObjectMapper mapper;
   private StringWriter writer;
 
+  @BeforeClass
+  public static void setupRegistry() {
+    registry = new TypeRegistry("timbuctoo.rest.model timbuctoo.rest.model.projecta timbuctoo.rest.model.projectb");
+  }
+
   @Before
-  public void setUp() throws Exception {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGES);
+  public void setup() throws Exception {
     SimpleModule module = new SimpleModule();
     module.addSerializer(new ReferenceSerializer(registry));
     mapper = new ObjectMapper();
     mapper.registerModule(module);
     writer = new StringWriter();
-    JsonFactory factory = new JsonFactory();
-    JsonGenerator realGen = factory.createGenerator(writer);
-    gen = new HTMLGenerator(realGen);
+    JsonGenerator jsonGenerator = new JsonFactory().createGenerator(writer);
+    htmlGenerator = new HTMLGenerator(jsonGenerator);
   }
 
-  private String generateHtml(Entity doc) throws JsonGenerationException, JsonMappingException, IOException {
-    mapper.writeValue(gen, doc);
+  private String generateHtml(Entity doc) throws Exception {
+    mapper.writeValue(htmlGenerator, doc);
     return writer.getBuffer().toString();
+  }
+
+  private void addVariations(DomainEntity entity, Class<?>... types) {
+    for (Class<?> type : types) {
+      entity.addVariation(TypeNames.getInternalName(type));
+    }
   }
 
   private void assertContains(String html, String key, String value) {
@@ -66,19 +70,19 @@ public class HTMLGeneratorTest {
   }
 
   @Test
-  public void testSystemDocument() throws JsonGenerationException, JsonMappingException, IOException {
-    TestSystemDocument doc = new TestSystemDocument();
-    doc.setAnnotatedProperty("test");
-    doc.setId("TSD0000000001");
-    doc.setAnnotatedProperty("anonProp");
-    doc.setPropWithAnnotatedAccessors("propWithAnnotatedAccessors");
+  public void testSystemEntity() throws Exception {
+    String id = "TSYS000000000001";
+    TestSystemEntity entity = new TestSystemEntity(id);
+    entity.setAnnotatedProperty("test");
+    entity.setAnnotatedProperty("anonProp");
+    entity.setPropWithAnnotatedAccessors("propWithAnnotatedAccessors");
 
-    String html = generateHtml(doc);
+    String html = generateHtml(entity);
 
-    assertContains(html, "Class", TestSystemDocument.class.getName());
+    assertContains(html, "Class", TestSystemEntity.class.getName());
     assertContains(html, "Name", "none");
     assertContains(html, "Test Value", "none");
-    assertContains(html, "Id", "TSD0000000001");
+    assertContains(html, "Id", id);
     assertContains(html, "Rev", "0");
     assertContains(html, "Last Change", "none");
     assertContains(html, "Creation", "none");
@@ -87,50 +91,39 @@ public class HTMLGeneratorTest {
   }
 
   @Test
-  public void testDomainDocumentArchetype() throws JsonGenerationException, JsonMappingException, IOException {
+  public void testDomainEntityArchetype() throws Exception {
     String id = "TCD0000000001";
-    TestConcreteDoc entity = new TestConcreteDoc(id, "test");
+    TestDomainEntity entity = new TestDomainEntity(id, "test");
     entity.setPid("pid");
-    List<Reference> variations = Lists.newArrayList();
-    variations.add(new Reference(ProjectAGeneralTestDoc.class, id));
-    variations.add(new Reference(ProjectBGeneralTestDoc.class, id));
-    variations.add(new Reference(GeneralTestDoc.class, id));
-    variations.add(new Reference(TestConcreteDoc.class, id));
-    entity.setVariationRefs(variations);
+    addVariations(entity, TestDomainEntity.class);
 
     String html = generateHtml(entity);
 
-    assertContains(html, "Class", TestConcreteDoc.class.getName());
+    assertContains(html, "Class", TestDomainEntity.class.getName());
     assertContains(html, "Name", "test");
-    assertContains(html, "Id", "TCD0000000001");
+    assertContains(html, "Id", id);
     assertContains(html, "Rev", "0");
     assertContains(html, "Last Change", "none");
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
 
-    assertContains(html, "href=|projectageneraltestdocs/TCD0000000001|");
-    assertContains(html, "href=|projectbgeneraltestdocs/TCD0000000001|");
+    assertContains(html, "href=|testdomainentities/TCD0000000001|");
 
     assertContains(html, "Deleted", "no");
   }
 
   @Test
-  public void testDomainDocumentSubtype() throws JsonGenerationException, JsonMappingException, IOException {
+  public void testDomainEntitySubtype() throws Exception {
     String id = "GTD0000000001";
-    GeneralTestDoc entity = new GeneralTestDoc(id);
+    ProjectADomainEntity entity = new ProjectADomainEntity(id);
     entity.setPid("pid");
     entity.generalTestDocValue = "generalTestDocValue";
     entity.name = "test";
-    List<Reference> variations = Lists.newArrayList();
-    variations.add(new Reference(ProjectAGeneralTestDoc.class, id));
-    variations.add(new Reference(ProjectBGeneralTestDoc.class, id));
-    variations.add(new Reference(GeneralTestDoc.class, id));
-    variations.add(new Reference(TestConcreteDoc.class, id));
-    entity.setVariationRefs(variations);
+    addVariations(entity, BaseDomainEntity.class, ProjectADomainEntity.class);
 
     String html = generateHtml(entity);
 
-    assertContains(html, "Class", GeneralTestDoc.class.getName());
+    assertContains(html, "Class", ProjectADomainEntity.class.getName());
     assertContains(html, "Name", "test");
     assertContains(html, "General Test Doc Value", "generalTestDocValue");
     assertContains(html, "Id", id);
@@ -139,34 +132,8 @@ public class HTMLGeneratorTest {
     assertContains(html, "Creation", "none");
     assertContains(html, "Pid", "pid");
 
-    assertContains(html, "href=|projectageneraltestdocs/GTD0000000001|");
-    assertContains(html, "href=|projectbgeneraltestdocs/GTD0000000001|");
-
-    assertContains(html, "Deleted", "no");
-  }
-
-  @Test
-  public void testDomainDocumentProjectSubtype() throws JsonGenerationException, JsonMappingException, IOException {
-    String id = "OTD0000000001";
-    OtherDoc entity = new OtherDoc(id);
-    entity.setPid("pid");
-    entity.otherThing = "test";
-    List<Reference> variations = Lists.newArrayList();
-    variations.add(new Reference(OtherDoc.class, id));
-    variations.add(new Reference(TestInheritsFromTestBaseDoc.class, id));
-    entity.setVariationRefs(variations);
-
-    String html = generateHtml(entity);
-
-    assertContains(html, "Class", OtherDoc.class.getName());
-    assertContains(html, "Other Thing", "test");
-    assertContains(html, "Id", "OTD0000000001");
-    assertContains(html, "Rev", "0");
-    assertContains(html, "Last Change", "none");
-    assertContains(html, "Creation", "none");
-    assertContains(html, "Pid", "pid");
-
-    assertContains(html, "href=|otherdocs/OTD0000000001|");
+    assertContains(html, "href=|basedomainentitys/GTD0000000001|");
+    assertContains(html, "href=|projectadomainentities/GTD0000000001|");
 
     assertContains(html, "Deleted", "no");
   }

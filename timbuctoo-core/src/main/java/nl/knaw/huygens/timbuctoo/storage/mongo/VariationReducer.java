@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -12,12 +14,10 @@ import java.util.Set;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.Variable;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
-import org.mongojack.internal.stream.JacksonDBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.mongodb.DBObject;
 
 class VariationReducer extends VariationConverter {
 
@@ -38,16 +37,93 @@ class VariationReducer extends VariationConverter {
     super(registry);
   }
 
-  public <T extends Entity> MongoChanges<T> reduceMultipleRevisions(Class<T> type, DBObject obj) throws IOException {
-    if (obj == null) {
-      return null;
+  public <T extends Entity> T reduceVariation(Class<T> type, JsonNode node) throws StorageException, JsonProcessingException {
+    return reduceVariation(type, node, null);
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T extends Entity> T reduceVariation(Class<T> type, JsonNode node, String variation) throws StorageException, JsonProcessingException {
+    checkNotNull(node);
+
+    T returnObject = null;
+    try {
+      returnObject = type.newInstance();
+
+      if (variation == null && DomainEntity.class.isAssignableFrom(type)) {
+        variation = typeRegistry.getClassVariation((Class<? extends DomainEntity>) type);
+      }
+
+      setFields(type, Entity.class, returnObject, node, variation);
+
+      String typeVariation = TypeRegistry.isDomainEntity(type) ? typeRegistry.getClassVariation((Class<? extends DomainEntity>) type) : null;
+
+      Set<Class<? extends Role>> rolesInNode = getRolesInNode(node, typeVariation);
+      List<Role> roles = Lists.newLinkedList();
+      for (Class<? extends Role> roleType : rolesInNode) {
+        roles.add(createRole(roleType, node, variation));
+      }
+
+      if (!roles.isEmpty()) {
+        try {
+          Method setRolesMethod = type.getMethod("setRoles", List.class);
+          setRolesMethod.invoke(returnObject, roles);
+        } catch (SecurityException e) {
+          LOG.error("Could not access method setRoles of type {}.", type);
+        } catch (NoSuchMethodException e) {
+          LOG.error("Could not get method setRoles of type {}.", type);
+        } catch (IllegalArgumentException e) {
+          LOG.error("Method setRoles of type {} got a wrong parameter.", type);
+        } catch (InvocationTargetException e) {
+          LOG.error("Could not invoke method setRoles of type {}.", type);
+        }
+      }
+
+    } catch (InstantiationException e) {
+      LOG.error("Could not initialize object of type {}.", type);
+    } catch (IllegalAccessException e) {
+      LOG.error("Could not initialize object of type {}.", type);
     }
-    JsonNode tree = convertToTree(obj);
+
+    return returnObject;
+  }
+
+  public <T extends Entity> List<T> reduceAllVariations(Class<T> type, JsonNode tree) throws IOException {
+    checkNotNull(tree);
+
+    List<T> entities = Lists.newArrayList();
+
+    JsonNode node = tree.findValue(DomainEntity.VARIATIONS);
+    if (node != null) {
+      Iterator<JsonNode> iterator = node.elements();
+      while (iterator.hasNext()) {
+        String variation = iterator.next().textValue();
+        Class<? extends Entity> varType = typeRegistry.getTypeForIName(variation);
+        checkNotNull(varType, variation);
+        T entity = type.cast(reduceVariation(varType, tree));
+        entities.add(entity);
+      }
+    }
+
+    return entities;
+  }
+
+  public <T extends Entity> T reduceRevision(Class<T> type, JsonNode tree) throws IOException {
+    checkNotNull(tree);
+
+    ArrayNode versionsNode = (ArrayNode) tree.get(VERSIONS_FIELD);
+    JsonNode node = versionsNode.get(0);
+
+    return reduceVariation(type, node);
+  }
+
+  public <T extends Entity> MongoChanges<T> reduceAllRevisions(Class<T> type, JsonNode tree) throws IOException {
+    checkNotNull(tree);
+
     ArrayNode versionsNode = (ArrayNode) tree.get(VERSIONS_FIELD);
     MongoChanges<T> changes = null;
 
     for (int i = 0; versionsNode.hasNonNull(i); i++) {
-      T item = reduce(type, versionsNode.get(i));
+      T item = reduceVariation(type, versionsNode.get(i));
       if (i == 0) {
         changes = new MongoChanges<T>(item.getId(), item);
       } else {
@@ -58,105 +134,11 @@ class VariationReducer extends VariationConverter {
     return changes;
   }
 
-  public <T extends Entity> T reduceRevision(Class<T> type, DBObject obj) throws IOException {
-    if (obj == null) {
-      return null;
-    }
-
-    JsonNode tree = convertToTree(obj);
-    ArrayNode versionsNode = (ArrayNode) tree.get(VERSIONS_FIELD);
-    JsonNode objectToReduce = versionsNode.get(0);
-
-    return reduce(type, objectToReduce);
-  }
-
-  public <T extends Entity> T reduceDBObject(Class<T> type, DBObject obj) throws IOException {
-    return reduceDBObject(obj, type, null);
-  }
-
-  public <T extends Entity> T reduceDBObject(DBObject obj, Class<T> type, String variation) throws IOException {
-    if (obj == null) {
-      return null;
-    }
-    JsonNode tree = convertToTree(obj);
-    return reduce(type, tree, variation);
-  }
-
-  public <T extends Entity> T reduce(Class<T> type, JsonNode node) throws StorageException, JsonProcessingException {
-    return reduce(type, node, null);
-  }
-
-  @SuppressWarnings("unchecked")
-  public <T extends Entity> T reduce(Class<T> type, JsonNode node, String requestedVariation) throws StorageException, JsonProcessingException {
-    T returnObject = null;
-    try {
-      returnObject = type.newInstance();
-
-      if (requestedVariation == null && DomainEntity.class.isAssignableFrom(type)) {
-        requestedVariation = typeRegistry.getClassVariation((Class<? extends DomainEntity>) type);
-      }
-
-      setFields(type, Entity.class, returnObject, node, requestedVariation);
-
-      String typeVariation = TypeRegistry.isDomainEntity(type) ? typeRegistry.getClassVariation((Class<? extends DomainEntity>) type) : null;
-
-      Set<Class<? extends Role>> rolesInNode = getRolesInNode(node, typeVariation);
-      List<Role> roles = Lists.newLinkedList();
-      for (Class<? extends Role> roleType : rolesInNode) {
-        roles.add(createRole(roleType, node, requestedVariation));
-      }
-
-      if (!roles.isEmpty()) {
-        try {
-          Method setRolesMethod = type.getMethod("setRoles", List.class);
-          setRolesMethod.invoke(returnObject, roles);
-        } catch (SecurityException e) {
-          LOG.error("Could not access method setRoles of type {}.", type);
-          LOG.debug("exception", e);
-        } catch (NoSuchMethodException e) {
-          LOG.error("Could not get method setRoles of type {}.", type);
-          LOG.debug("exception", e);
-        } catch (IllegalArgumentException e) {
-          LOG.error("Method setRoles of type {} got a wrong parameter.", type);
-          LOG.debug("exception", e);
-        } catch (InvocationTargetException e) {
-          LOG.error("Could not invoke method setRoles of type {}.", type);
-          LOG.debug("exception", e);
-        }
-      }
-
-    } catch (InstantiationException e) {
-      LOG.error("Could not initialize object of type {}.", type);
-      LOG.debug("exception", e);
-    } catch (IllegalAccessException e) {
-      LOG.error("Could not initialize object of type {}.", type);
-      LOG.debug("exception", e);
-    }
-
-    if (TypeRegistry.isVariable(type)) {
-      addVariations(type, returnObject);
-    }
-
-    return returnObject;
-  }
-
-  protected <T extends Entity> void addVariations(Class<T> type, T returnObject) {
-    List<Reference> variations = Lists.newArrayList();
-    String id = returnObject.getId();
-    Class<? extends Entity> baseClass = typeRegistry.getBaseClass(type);
-    Set<Class<? extends Entity>> variationTypes = typeRegistry.getSubClasses(baseClass);
-
-    for (Class<? extends Entity> variationClass : variationTypes) {
-      variations.add(new Reference(variationClass, id));
-    }
-
-    ((Variable) returnObject).setVariationRefs(variations);
-  }
+  // -------------------------------------------------------------------
 
   private <T extends Role> T createRole(Class<T> type, JsonNode node, String variation) throws InstantiationException, IllegalAccessException {
     T returnValue = type.newInstance();
     setFields(type, Role.class, returnValue, node, variation);
-
     return returnValue;
   }
 
@@ -212,16 +194,12 @@ class VariationReducer extends VariationConverter {
         }
       } catch (SecurityException e) {
         LOG.error("Field {} of type {} could not be retrieved.", javaFieldName, type);
-        LOG.debug("exception", e);
       } catch (NoSuchFieldException e) {
         LOG.error("Field {} of type {} could not be retrieved.", javaFieldName, type);
-        LOG.debug("exception", e);
       } catch (IllegalArgumentException e) {
         LOG.error("Field {} of type {} received the wrong value.", javaFieldName, type);
-        LOG.debug("exception", e);
       } catch (IllegalAccessException e) {
         LOG.error("Field {} of type {} could not be accessed.", javaFieldName, type);
-        LOG.debug("exception", e);
       }
     }
   }
@@ -231,7 +209,7 @@ class VariationReducer extends VariationConverter {
     try {
       value = convertValue(field.getType(), originalValue);
     } catch (IOException e) {
-      LOG.error("Original value \"{}\" cannot be converted.", originalValue);
+      LOG.error("Value '{}' cannot be converted.", originalValue);
     }
 
     // TODO this is a very ugly partial fix for [#1919]
@@ -256,37 +234,4 @@ class VariationReducer extends VariationConverter {
     return value;
   }
 
-  @SuppressWarnings("unchecked")
-  private JsonNode convertToTree(DBObject obj) throws IOException {
-    JsonNode tree;
-    if (obj instanceof JacksonDBObject) {
-      tree = ((JacksonDBObject<JsonNode>) obj).getObject();
-    } else if (obj instanceof DBJsonNode) {
-      tree = ((DBJsonNode) obj).getDelegate();
-    } else {
-      throw new IOException("Huh? DB didn't generate the right type of object out of the data stream...");
-    }
-    return tree;
-  }
-
-  /*
-   * This method generates a list of all the types of a type hierarchy, that are found in the DBObject.
-   * Example1: if type is Person.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
-   * Example2:  if type is Scientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
-   * Example3:  if type is ProjectAScientist.class, it will retrieve Person, Scientist, CivilServant and their project related subtypes.
-   */
-  @SuppressWarnings("unchecked")
-  public <T extends Entity> List<T> getAllForDBObject(DBObject item, Class<T> type) throws IOException {
-    JsonNode node = convertToTree(item);
-    List<T> rv = Lists.newArrayList();
-
-    Class<? extends Entity> baseClass = typeRegistry.getBaseClass(type);
-    Set<Class<? extends Entity>> variations = typeRegistry.getSubClasses(baseClass);
-
-    for (Class<? extends Entity> typeToReduce : variations) {
-      rv.add((T) this.reduce(typeToReduce, node));
-    }
-
-    return rv;
-  }
 }

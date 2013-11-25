@@ -1,4 +1,6 @@
-package nl.knaw.huygens.timbuctoo.rest.providers.model;
+package nl.knaw.huygens.timbuctoo.variation.model;
+
+import java.util.Date;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
@@ -6,9 +8,10 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
 
 @IDPrefix("TSTD")
-public class TestSystemDocument extends SystemEntity {
+public class TestSystemEntity extends SystemEntity {
 
   private String name;
   private String testValue1;
@@ -16,6 +19,18 @@ public class TestSystemDocument extends SystemEntity {
   @JsonProperty("propAnnotated")
   private String annotatedProperty;
   private String propWithAnnotatedAccessors;
+  private Date date;
+
+  public TestSystemEntity() {}
+
+  public TestSystemEntity(String id) {
+    setId(id);
+  }
+
+  public TestSystemEntity(String id, String name) {
+    setId(id);
+    this.name = name;
+  }
 
   @Override
   @JsonIgnore
@@ -66,4 +81,39 @@ public class TestSystemDocument extends SystemEntity {
     this.propWithAnnotatedAccessors = propWithAnnotatedAccessors;
   }
 
+  public Date getDate() {
+    return date;
+  }
+
+  public void setDate(Date date) {
+    this.date = date;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof TestSystemEntity)) {
+      return false;
+    }
+
+    boolean isEqual = true;
+    TestSystemEntity other = (TestSystemEntity) obj;
+    isEqual &= Objects.equal(other.name, name);
+    isEqual &= Objects.equal(other.testValue1, testValue1);
+    isEqual &= Objects.equal(other.testValue2, testValue2);
+    isEqual &= Objects.equal(other.annotatedProperty, annotatedProperty);
+    isEqual &= Objects.equal(other.propWithAnnotatedAccessors, propWithAnnotatedAccessors);
+
+    return isEqual;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(name, testValue1, testValue2, annotatedProperty, propWithAnnotatedAccessors);
+  }
+
+  @Override
+  public String toString() {
+    return "TestSystemEntity{\nname: " + name + "\ntestValue1: " + testValue1 + "\ntestValue2: " + testValue2 + "\nannotatedProperty: " + annotatedProperty + "propWithAnnotatedAccessors: "
+        + propWithAnnotatedAccessors + "\n}";
+  }
 }
