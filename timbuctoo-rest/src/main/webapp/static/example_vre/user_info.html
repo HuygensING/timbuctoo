@@ -19,7 +19,14 @@
 	<script type="text/javascript" src="../config.js"></script>
 	<script type="text/javascript">
 	$(document).ready(function(){
-		var accessToken = readCookie('access_token');
+		var accessToken = getParameterByName('hsid');
+		var wl = window.location;
+	    var hsurl = wl.protocol + wl.port + wl.pathname;
+	    
+	    if (accessToken.length < 1) {
+	         window.location ='https://'+ window.config.securityUri+'/saml2/login?hsurl=' + hsurl;
+	    }
+	    
 		$.ajax({
 			url: 'http://' + window.config.serverUri + '/system/users/me',
 			headers:{
@@ -28,6 +35,9 @@
 			},
 			error: function(data){
 				console.log(data);
+				if(data.status===401){
+					window.location = 'https://secure.huygens.knaw.nl/saml2/login?hsurl=' + window.location;
+				}
 			},			
 			success:function(data){
 				var table = $('#data');
@@ -57,15 +67,11 @@
 			type: 'GET'
 		});
 		
-		function readCookie(name) {
-    		var nameEQ = name + "=";
-		    var ca = document.cookie.split(';');
-		    for(var i=0;i < ca.length;i++) {
-		        var c = ca[i];
-		        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-		        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-		    }
-		    return null;
+		function getParameterByName(name) {
+		    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+		    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+		        results = regex.exec(location.search);
+		    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 		}
 	});
 </script>
