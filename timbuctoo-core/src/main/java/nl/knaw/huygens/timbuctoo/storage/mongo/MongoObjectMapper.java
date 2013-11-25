@@ -2,10 +2,12 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
@@ -46,7 +48,7 @@ public class MongoObjectMapper {
   }
 
   /**
-   * Convert the object to a Map ignoring the null values.
+   * Converts the object to a Map ignoring the null values.
    */
   public <T> Map<String, Object> mapObject(Class<? super T> type, T item) {
     Preconditions.checkArgument(item != null);
@@ -59,37 +61,15 @@ public class MongoObjectMapper {
       try {
         Field field = type.getDeclaredField(fieldName);
         field.setAccessible(true);
-        Class<?> fieldType = field.getType();
-        if (isHumanReadable(fieldType)) {
-          Object value = field.get(item);
-          if (value != null) {
-            map.put(mappedName, value);
-          }
-        } else if (Collection.class.isAssignableFrom(fieldType)) {
-          Collection<?> value = (Collection<?>) field.get(item);
-          if (isHumanReableCollection(value)) {
-            map.put(mappedName, value);
-          }
-        } else if (Class.class.isAssignableFrom(fieldType)) {
-          Class<?> cls = (Class<?>) field.get(item);
-          if (cls != null) {
-            map.put(mappedName, cls.getName());
-          }
-        } else if (Datable.class.isAssignableFrom(fieldType)) {
-          Datable datable = (Datable) field.get(item);
-          if (datable != null) {
-            map.put(mappedName, datable.getEDTF());
-          }
-        } else if (PersonName.class.isAssignableFrom(fieldType)) {
-          // Quick fix for serialize an Object.
-          Object value = field.get(item);
-          if (value != null) {
-            ObjectMapper om = new ObjectMapper();
-            Map<String, Object> nameMap = om.readValue(om.writeValueAsString(value), new TypeReference<Map<String, Object>>() {});
-            map.put(mappedName, nameMap);
-          }
+        Object value = convertValue(fieldName, field.getType(), field.get(item));
+        if (value != null) {
+          map.put(mappedName, value);
         }
-      } catch (Exception e) {
+      } catch (NoSuchFieldException e) {
+        LOG.error("Error for field {} type {} {}", fieldName, type.getSimpleName(), e.getClass().getSimpleName());
+      } catch (IllegalAccessException e) {
+        LOG.error("Error for field {} type {} {}", fieldName, type.getSimpleName(), e.getClass().getSimpleName());
+      } catch (IOException e) {
         LOG.error("Error for field {} type {} {}", fieldName, type.getSimpleName(), e.getClass().getSimpleName());
       }
     }
@@ -97,19 +77,39 @@ public class MongoObjectMapper {
     return map;
   }
 
-  private boolean isHumanReadable(Class<?> type) {
-    return type.isPrimitive() || isWrapperClass(type);
-  }
-
-  private boolean isWrapperClass(Class<?> type) {
-    return Number.class.isAssignableFrom(type) || String.class.equals(type) || Boolean.class.equals(type) || Character.class.equals(type);
-  }
-
-  private boolean isHumanReableCollection(Collection<?> collection) {
-    if (collection != null && !collection.isEmpty()) {
-      return isHumanReadable(collection.toArray()[0].getClass());
+  private Object convertValue(String fieldName, Class<?> fieldType, Object value) throws IOException {
+    if (value == null) {
+      return null;
+    } else if (isSimpleType(fieldType)) {
+      return value;
+    } else if (Collection.class.isAssignableFrom(fieldType)) {
+      Collection<?> collection = Collection.class.cast(value);
+      if (collection.isEmpty()) {
+        // Because of type erase the element type is unknown...
+        return null;
+      }
+      Class<?> elementType = collection.iterator().next().getClass();
+      if (isSimpleType(elementType)) {
+        return value;
+      } else if (Role.class.isAssignableFrom(elementType)) {
+        // Explicitly handled by inducer and reducer
+        return null;
+      }
+    } else if (Class.class.isAssignableFrom(fieldType)) {
+      return Class.class.cast(value).getName();
+    } else if (Datable.class.isAssignableFrom(fieldType)) {
+      return Datable.class.cast(value).getEDTF();
+    } else if (PersonName.class.isAssignableFrom(fieldType)) {
+      // Quick fix for serialize an Object.
+      ObjectMapper om = new ObjectMapper();
+      return om.readValue(om.writeValueAsString(value), new TypeReference<Map<String, Object>>() {});
     }
-    return false;
+    LOG.error("Cannot convert field {} with type '{}' and value '{}'", fieldName, fieldType.getSimpleName(), value);
+    throw new IllegalStateException("Cannot convert type " + fieldType.getSimpleName());
+  }
+
+  private boolean isSimpleType(Class<?> type) {
+    return type.isPrimitive() || Number.class.isAssignableFrom(type) || String.class == type || Boolean.class == type || Character.class == type;
   }
 
 }

@@ -68,20 +68,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     storage.addItem(BaseDomainEntity.class, input);
 
-    // Two additions one normal addition and one addition in the version table.
-    verify(anyCollection, times(2)).insert(any(DBObject.class));
-  }
-
-  @Test
-  public void addItemSubType() throws IOException {
-    BaseDomainEntity input = new BaseDomainEntity();
-    input.setId(DEFAULT_ID);
-    input.name = "subType";
-    input.generalTestDocValue = "test";
-
-    storage.addItem(BaseDomainEntity.class, input);
-
-    // Two additions one normal addition and one addition in the version table.
+    // Two additions: one normal addition and one addition in the version collection.
     verify(anyCollection, times(2)).insert(any(DBObject.class));
   }
 
@@ -93,7 +80,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     storage.updateItem(BaseDomainEntity.class, DEFAULT_ID, input);
 
-    //Update current version and the version collection
+    // Update current version and the version collection
     verify(anyCollection, times(2)).update(any(DBObject.class), any(DBObject.class));
   }
 

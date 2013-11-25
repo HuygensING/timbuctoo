@@ -92,25 +92,13 @@ public class MongoObjectMapperTest {
     assertEquals(expected, actual);
   }
 
-  @Test
+  @Test(expected = IllegalStateException.class)
   public void testMapObjectWithNonPrimitiveCollectionFields() {
     MongoObjectMapperEntity testObject = createMongoObjectMapperEntity(DEFAULT_NAME, DEFAULT_TEST_VALUE1, DEFAULT_TEST_VALUE2, DEFAULT_ANNOTATED_PROPERTY, DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
-    MongoObjectMapperEntity testObject1 = createMongoObjectMapperEntity(DEFAULT_NAME, DEFAULT_TEST_VALUE1, DEFAULT_TEST_VALUE2, DEFAULT_ANNOTATED_PROPERTY, DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
-    MongoObjectMapperEntity testObject2 = createMongoObjectMapperEntity(DEFAULT_NAME, DEFAULT_TEST_VALUE1, DEFAULT_TEST_VALUE2, DEFAULT_ANNOTATED_PROPERTY, DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
-    MongoObjectMapperEntity testObject3 = createMongoObjectMapperEntity(DEFAULT_NAME, DEFAULT_TEST_VALUE1, DEFAULT_TEST_VALUE2, DEFAULT_ANNOTATED_PROPERTY, DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
     testObject.setId(DEFAULT_ID);
-    testObject.setNonPrimitiveTestCollection(Lists.newArrayList(testObject1, testObject2, testObject3));
+    testObject.setNonPrimitiveTestCollection(Lists.newArrayList(testObject));
 
-    Map<String, Object> actual = mapper.mapObject(TYPE, testObject);
-
-    Map<String, Object> expected = Maps.newHashMap();
-    expected.put(NAME_KEY, DEFAULT_NAME);
-    expected.put(TEST_VALUE1_KEY, DEFAULT_TEST_VALUE1);
-    expected.put(TEST_VALUE2_KEY, DEFAULT_TEST_VALUE2);
-    expected.put(PROP_ANNOTATED_KEY, DEFAULT_ANNOTATED_PROPERTY);
-    expected.put(PWAA_KEY, DEFAULT_PROP_WITH_ANNOTATED_ACCESSORS);
-
-    assertEquals(expected, actual);
+    mapper.mapObject(TYPE, testObject);
   }
 
   @Test
