@@ -46,7 +46,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testGetAllUsers() {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
 
-    List<User> expectedList = Lists.<User> newArrayList(createUser("test", "test"), createUser("test1", "test1"), createUser("test", "test"));
+    List<User> expectedList = Lists.newArrayList(createUser("test", "test"), createUser("test1", "test1"), createUser("test", "test"));
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getAllLimited(User.class, 0, 200)).thenReturn(expectedList);
 
@@ -59,7 +59,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testGetAllUsersNonFound() {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
 
-    List<User> expectedList = Lists.<User> newArrayList();
+    List<User> expectedList = Lists.newArrayList();
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getAllLimited(User.class, 0, 200)).thenReturn(expectedList);
 

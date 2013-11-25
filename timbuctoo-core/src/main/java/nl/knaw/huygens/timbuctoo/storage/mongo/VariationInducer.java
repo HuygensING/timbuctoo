@@ -16,7 +16,6 @@ import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 
 import org.apache.commons.lang.StringUtils;
-import org.mongojack.internal.stream.JacksonDBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +24,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.mongodb.DBObject;
 
 class VariationInducer extends VariationConverter {
 
@@ -40,7 +38,7 @@ class VariationInducer extends VariationConverter {
   /**
    * Converts an entity to a JsonTree.
    */
-  public <T extends Entity> JsonNode induceNewEntity(Class<T> type, T entity) {
+  public <T extends Entity> JsonNode induceNewEntity(Class<T> type, T entity) throws IOException {
     checkArgument(entity != null);
 
     if (TypeRegistry.isSystemEntity(type)) {
@@ -51,34 +49,21 @@ class VariationInducer extends VariationConverter {
   }
 
   /**
-   * Converts an entity to a JsonTree and combines it with an existing DBObject.
+   * Converts an entity to a Json tree and combines it with an existing Json tree.
    */
-  public <T extends Entity> JsonNode induceOldEntity(Class<T> type, T entity, DBObject dbObject) {
+  public <T extends Entity> JsonNode induceOldEntity(Class<T> type, T entity, JsonNode node) throws IOException {
     checkArgument(entity != null);
-    checkArgument(dbObject != null);
+    checkArgument(node != null);
 
     if (TypeRegistry.isSystemEntity(type)) {
       // TODO Decide: do we want to ignore dbObject?
       return induceSystemEntity(type, entity);
     } else {
-      ObjectNode node = convertDBObject(dbObject);
       return induceOldDomainEntity(type, entity, node);
     }
   }
 
   // -------------------------------------------------------------------
-
-  @SuppressWarnings("unchecked")
-  private ObjectNode convertDBObject(DBObject dbObject) {
-    if (dbObject instanceof JacksonDBObject) {
-      return (ObjectNode) (((JacksonDBObject<JsonNode>) dbObject).getObject());
-    } else if (dbObject instanceof DBJsonNode) {
-      return (ObjectNode) ((DBJsonNode) dbObject).getDelegate();
-    } else {
-      LOG.error("Failed to convert {}", dbObject.getClass());
-      throw new IllegalArgumentException("Unknown DBObject type");
-    }
-  }
 
   private <T extends Entity> JsonNode induceSystemEntity(Class<T> type, T entity) {
     Map<String, Object> map = propertyMapper.mapObject(Entity.class, type, entity);
@@ -99,7 +84,7 @@ class VariationInducer extends VariationConverter {
     return cleanUp(newNode);
   }
 
-  private <T extends Entity> JsonNode induceOldDomainEntity(Class<T> type, T entity, ObjectNode existingItem) {
+  private <T extends Entity> JsonNode induceOldDomainEntity(Class<T> type, T entity, JsonNode existingItem) {
     checkArgument(TypeRegistry.isDomainEntity(type));
     checkArgument(existingItem != null);
 
@@ -131,7 +116,7 @@ class VariationInducer extends VariationConverter {
     return map;
   }
 
-  private Map<String, Object> merge(Class<?> type, Map<String, Object> newValues, ObjectNode existingNode) {
+  private Map<String, Object> merge(Class<?> type, Map<String, Object> newValues, JsonNode existingNode) {
     Map<String, Object> mergedMap = Maps.newHashMap();
     for (String key : newValues.keySet()) {
       if (existingNode.has(key)) {
@@ -185,11 +170,11 @@ class VariationInducer extends VariationConverter {
     return similarKeys;
   }
 
-  private boolean isSameValue(String key, Map<String, Object> newValues, ObjectNode existingNode) {
+  private boolean isSameValue(String key, Map<String, Object> newValues, JsonNode existingNode) {
     return isSameValue(key, key, newValues, existingNode);
   }
 
-  protected boolean isSameValue(String key, String keyInNode, Map<String, Object> newValues, ObjectNode existingNode) {
+  protected boolean isSameValue(String key, String keyInNode, Map<String, Object> newValues, JsonNode existingNode) {
     Object newValue = newValues.get(key);
 
     if (newValue == null) {

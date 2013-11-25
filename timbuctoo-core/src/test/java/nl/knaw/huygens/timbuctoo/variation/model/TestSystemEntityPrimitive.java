@@ -1,6 +1,9 @@
-package nl.knaw.huygens.timbuctoo.model;
+package nl.knaw.huygens.timbuctoo.variation.model;
+
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 public class TestSystemEntityPrimitive extends SystemEntity {
+
   private int testInt;
   private boolean testBoolean;
   private long testLong;

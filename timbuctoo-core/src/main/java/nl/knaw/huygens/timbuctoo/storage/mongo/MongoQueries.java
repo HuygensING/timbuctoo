@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
+import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
+
 import java.util.Date;
 import java.util.Map;
 
@@ -23,8 +25,19 @@ public class MongoQueries {
     return new BasicDBObject("_id", id);
   }
 
+  public DBObject selectByIdAndRevision(String id, int revision) {
+    DBObject query = new BasicDBObject();
+    query.put("_id", id);
+    query.put("^rev", revision);
+    return query;
+  }
+
   public DBObject selectByProperty(String key, Object value) {
     return new BasicDBObject(key, value);
+  }
+
+  public DBObject selectByProperty(Class<?> type, String field, Object value) {
+    return new BasicDBObject(propertyName(type, field), value);
   }
 
   public DBObject selectByProperties(Map<String, Object> properties) {

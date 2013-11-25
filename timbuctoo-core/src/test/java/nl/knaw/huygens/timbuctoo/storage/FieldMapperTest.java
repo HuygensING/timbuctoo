@@ -9,10 +9,10 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.MongoObjectMapperEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.User;
+import nl.knaw.huygens.timbuctoo.variation.model.MongoObjectMapperEntity;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +26,7 @@ public class FieldMapperTest {
   private FieldMapper instance;
 
   @Before
-  public void setUp() {
+  public void setup() {
     instance = new FieldMapper();
   }
 
@@ -117,7 +117,7 @@ public class FieldMapperTest {
     testGetFieldName(SystemEntity.class, Entity.class.getDeclaredField("id"), "_id");
   }
 
-  protected void testGetFieldName(Class<? extends Entity> type, Field declaredField, String expected) throws NoSuchFieldException {
+  private void testGetFieldName(Class<? extends Entity> type, Field declaredField, String expected) throws NoSuchFieldException {
     String actual = instance.getFieldName(type, declaredField);
     assertEquals(expected, actual);
   }

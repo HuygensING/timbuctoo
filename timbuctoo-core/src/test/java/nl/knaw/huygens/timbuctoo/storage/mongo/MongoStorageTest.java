@@ -14,7 +14,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.TestSystemEntity;
+import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -57,13 +57,13 @@ public class MongoStorageTest extends MongoStorageTestBase {
     TestSystemEntity example = new TestSystemEntity();
     example.setName(name);
 
-    Map<String, Object> testSystemDocumentMap = createDefaultMap(0, DEFAULT_ID);
-    testSystemDocumentMap.put(propertyName("testsystementity", "name"), name);
-    DBObject dbObject = createDBObject(testSystemDocumentMap);
+    Map<String, Object> map = createDefaultMap(0, DEFAULT_ID);
+    map.put(propertyName(TYPE, "name"), name);
+    DBObject dbObject = createDBObject(map);
 
     DBCursor cursor = createDBCursorWithOneValue(dbObject);
 
-    DBObject query = new BasicDBObject(propertyName("testsystementity", "name"), name);
+    DBObject query = queries.selectByProperty(TYPE, "name", name);
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
     storage.findItem(TYPE, example);
@@ -77,29 +77,15 @@ public class MongoStorageTest extends MongoStorageTestBase {
     String testValue1 = "testValue";
     example.setTestValue1(testValue1);
 
-    Map<String, Object> testSystemDocumentMap = createDefaultMap(0, DEFAULT_ID);
-    testSystemDocumentMap.put(propertyName("testsystementity", "name"), name);
-    testSystemDocumentMap.put(propertyName("testsystementity", "testValue1"), testValue1);
-    DBObject dbObject = createDBObject(testSystemDocumentMap);
+    Map<String, Object> map = createDefaultMap(0, DEFAULT_ID);
+    map.put(propertyName(TYPE, "name"), name);
+    map.put(propertyName(TYPE, "testValue1"), testValue1);
+    DBObject dbObject = createDBObject(map);
 
     DBCursor cursor = createDBCursorWithOneValue(dbObject);
 
-    DBObject query = new BasicDBObject(propertyName("testsystementity", "name"), name);
-    query.put(propertyName("testsystementity", "testValue1"), testValue1);
-    when(anyCollection.find(query, null)).thenReturn(cursor);
-
-    storage.findItem(TYPE, example);
-  }
-
-  @Test
-  public void testFindItemNothingFound() throws IOException {
-    TestSystemEntity example = new TestSystemEntity();
-    String name = "nonExisting";
-    example.setName(name);
-
-    DBCursor cursor = createCursorWithoutValues();
-
-    DBObject query = new BasicDBObject(propertyName("testsystementity", "name"), name);
+    DBObject query = queries.selectByProperty(TYPE, "name", name);
+    query.put(propertyName(TYPE, "testValue1"), testValue1);
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
     storage.findItem(TYPE, example);
@@ -112,7 +98,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     DBCursor cursor = createCursorWithoutValues();
 
-    DBObject query = new BasicDBObject(propertyName("testsystementity", "name"), "nonExisting");
+    DBObject query = queries.selectByProperty(TYPE, "name", "nonExisting");
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
     storage.findItem(TYPE, example);
@@ -120,79 +106,72 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test(expected = IOException.class)
   public void testUpdateItemNonExistent() throws IOException {
-    TestSystemEntity expected = new TestSystemEntity();
-    expected.setId(DEFAULT_ID);
-    expected.setTestValue1("test");
+    TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
+    entity.setTestValue1("test");
 
     DBCursor cursor = createCursorWithoutValues();
-    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
-    query.put("^rev", 0);
-    when(anyCollection.find(query, null)).thenReturn(cursor);
+    DBObject query = queries.selectByIdAndRevision(DEFAULT_ID, 0);
+    when(anyCollection.find(query)).thenReturn(cursor);
 
-    storage.updateItem(TYPE, DEFAULT_ID, expected);
+    storage.updateItem(TYPE, DEFAULT_ID, entity);
   }
 
   @Test
   public void testAddItem() throws IOException {
-    TestSystemEntity doc = new TestSystemEntity();
-    doc.setTestValue1("test");
+    TestSystemEntity entity = new TestSystemEntity();
+    entity.setTestValue1("test");
 
-    storage.addItem(TYPE, doc);
+    storage.addItem(TYPE, entity);
 
     verify(anyCollection).insert(any(DBObject.class));
   }
 
   @Test
   public void testAddItemWithId() throws IOException {
-    TestSystemEntity doc = new TestSystemEntity();
-    String id = DEFAULT_ID;
-    doc.setId(id);
-    doc.setTestValue1("test");
+    TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
+    entity.setTestValue1("test");
 
-    storage.addItem(TYPE, doc);
+    storage.addItem(TYPE, entity);
 
     verify(anyCollection).insert(any(DBObject.class));
   }
 
   @Test(expected = MongoException.class)
   public void testMongoException() throws IOException {
-    TestSystemEntity doc = new TestSystemEntity();
-    String id = DEFAULT_ID;
-    doc.setId(id);
-    doc.setTestValue1("test");
+    TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
+    entity.setTestValue1("test");
 
     doThrow(MongoException.class).when(anyCollection).insert(any(DBObject.class));
 
-    storage.addItem(TYPE, doc);
+    storage.addItem(TYPE, entity);
   }
 
   @Test
   public void testGetItem() throws IOException {
-    TestSystemEntity expected = new TestSystemEntity();
-    expected.setId(DEFAULT_ID);
-    expected.setTestValue1("test");
+    TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
+    entity.setTestValue1("test");
 
-    Map<String, Object> testSystemDocumentMap = createDefaultMap(0, DEFAULT_ID);
-    testSystemDocumentMap.put("testValue1", "test");
-    DBObject dbObject = createDBObject(testSystemDocumentMap);
+    Map<String, Object> map = createDefaultMap(0, DEFAULT_ID);
+    map.put("testValue1", "test");
+    DBObject dbObject = createDBObject(map);
 
     DBCursor cursor = createDBCursorWithOneValue(dbObject);
 
-    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
-    when(anyCollection.find(query, null)).thenReturn(cursor);
+    DBObject query = queries.selectById(DEFAULT_ID);
+    when(anyCollection.find(query)).thenReturn(cursor);
 
     storage.getItem(TYPE, DEFAULT_ID);
   }
 
   @Test
   public void testGetItemCreatedWithoutId() throws IOException {
-    Map<String, Object> testSystemDocumentMap = createDefaultMap(0, null);
-    testSystemDocumentMap.put("testValue1", "test");
-    DBObject dbObject = createDBObject(testSystemDocumentMap);
+    Map<String, Object> map = createDefaultMap(0, null);
+    map.put("testValue1", "test");
+    DBObject dbObject = createDBObject(map);
 
     DBCursor cursor = createDBCursorWithOneValue(dbObject);
-    DBObject query = new BasicDBObject("_id", null);
-    when(anyCollection.find(query, null)).thenReturn(cursor);
+    DBObject query = queries.selectById(null);
+    when(anyCollection.find(query)).thenReturn(cursor);
 
     storage.getItem(TYPE, (String) null);
   }
@@ -201,17 +180,17 @@ public class MongoStorageTest extends MongoStorageTestBase {
   public void testGetItemNonExistent() throws IOException {
     DBCursor cursor = createCursorWithoutValues();
 
-    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
-    when(anyCollection.find(query, null)).thenReturn(cursor);
+    DBObject query = queries.selectById(DEFAULT_ID);
+    when(anyCollection.find(query)).thenReturn(cursor);
 
     assertNull(storage.getItem(TYPE, DEFAULT_ID));
   }
 
   @Test
   public void testGetAllByType() throws IOException {
-    Map<String, Object> testSystemDocumentMap = createDefaultMap(0, null);
-    testSystemDocumentMap.put("testValue1", "test");
-    DBObject dbObject = createDBObject(testSystemDocumentMap);
+    Map<String, Object> map = createDefaultMap(0, null);
+    map.put("testValue1", "test");
+    DBObject dbObject = createDBObject(map);
 
     DBCursor cursor = createDBCursorWithOneValue(dbObject);
     when(anyCollection.find()).thenReturn(cursor);
@@ -220,17 +199,8 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetAllByTypeNonFound() throws IOException {
-    DBCursor cursor = createCursorWithoutValues();
-
-    when(anyCollection.find()).thenReturn(cursor);
-
-    storage.getAllByType(TYPE);
-  }
-
-  @Test
   public void testRemoveItem() throws IOException {
-    storage.removeItem(TestSystemEntity.class, DEFAULT_ID);
+    storage.removeItem(TYPE, DEFAULT_ID);
     // just verify that the underlying storage is called
     // whether that call is successful or not is irrelevant
     verify(anyCollection).remove(any(DBObject.class));
@@ -241,9 +211,10 @@ public class MongoStorageTest extends MongoStorageTestBase {
     WriteResult writeResult = mock(WriteResult.class);
     when(writeResult.getN()).thenReturn(3);
 
-    when(anyCollection.remove(new BasicDBObject())).thenReturn(writeResult);
+    DBObject query = queries.selectAll();
+    when(anyCollection.remove(query)).thenReturn(writeResult);
 
-    storage.removeAll(TestSystemEntity.class);
+    storage.removeAll(TYPE);
   }
 
   @Test
@@ -257,7 +228,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = new BasicDBObject("date", new BasicDBObject("$lt", dateValue));
     when(anyCollection.remove(query)).thenReturn(writeResult);
 
-    storage.removeByDate(TestSystemEntity.class, "date", dateValue);
+    storage.removeByDate(TYPE, "date", dateValue);
 
     verify(anyCollection).remove(query);
   }
@@ -266,7 +237,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     return new Date(date.getTime() + millis);
   }
 
-  protected Map<String, Object> createDefaultMap(int revision, String id) {
+  private Map<String, Object> createDefaultMap(int revision, String id) {
     Map<String, Object> map = Maps.newHashMap();
     map.put("_id", id);
     map.put("^rev", revision);
@@ -277,16 +248,9 @@ public class MongoStorageTest extends MongoStorageTestBase {
     return map;
   }
 
-  protected DBObject createDBObject(Map<String, Object> map) {
+  private DBObject createDBObject(Map<String, Object> map) {
     JacksonDBObject<JsonNode> dbObject = new JacksonDBObject<JsonNode>();
     dbObject.putAll(map);
-    return dbObject;
-  }
-
-  protected DBObject createDBObject(TestSystemEntity doc, Map<String, Object> map) {
-    JacksonDBObject<TestSystemEntity> dbObject = new JacksonDBObject<TestSystemEntity>();
-    dbObject.putAll(map);
-    dbObject.setObject(doc);
     return dbObject;
   }
 

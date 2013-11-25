@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNameGenerator;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
@@ -25,7 +25,7 @@ public class FieldMapper {
   /** Separator between parts of a key, as character. */
   public static final char SEPARATOR_CHAR = ':';
 
-  /** Returns the name of a key from its parts. */
+  /** Returns the name of a property from its parts. */
   public static String propertyName(String prefix, String field) {
     checkArgument(field != null && field.length() != 0);
 
@@ -37,18 +37,16 @@ public class FieldMapper {
     return builder.toString();
   }
 
-  /** Returns the name of a key from its parts. */
+  /** Returns the name of a property from its parts. */
   public static String propertyName(Class<?> type, String field) {
-    return propertyName(TypeNameGenerator.getInternalName(type), field);
+    return propertyName(TypeNames.getInternalName(type), field);
   }
 
   private static final String GET_ACCESSOR = "get";
   private static final String IS_ACCESSOR = "is"; // get accesor for booleans.
 
   /**
-   * Generates a field map with for the {@code type} with object fields as keys and database fields as values.
-   * @param type the type to create the map for.
-   * @return the field map.
+   * Generates a map for {@code type} with object fields as keys and database fields as values.
    */
   public Map<String, String> getFieldMap(Class<?> type) {
     Map<String, String> map = Maps.newHashMap();
@@ -63,13 +61,12 @@ public class FieldMapper {
   /**
    * Indicates whether a field qualifies as property.
    */
-  public boolean isProperty(Field field) {
-    int modifiers = field.getModifiers();
-    return !Modifier.isStatic(modifiers);
+  private boolean isProperty(Field field) {
+    return !Modifier.isStatic(field.getModifiers());
   }
 
   /**
-   * Checks if the there is variation possible for this field.
+   * Checks if there is variation possible for this field.
    */
   public boolean isFieldWithVariation(String fieldName) {
     return fieldName.contains(SEPARATOR);

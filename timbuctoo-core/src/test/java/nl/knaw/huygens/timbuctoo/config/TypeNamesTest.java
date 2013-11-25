@@ -6,26 +6,26 @@ import nl.knaw.huygens.timbuctoo.variation.model.VTestSystemEntity;
 
 import org.junit.Test;
 
-public class TypeNameGeneratorTest {
+public class TypeNamesTest {
 
   @Test
   public void testGetInternalName() {
-    assertEquals("basedomainentity", TypeNameGenerator.getInternalName(BaseDomainEntity.class));
+    assertEquals("basedomainentity", TypeNames.getInternalName(BaseDomainEntity.class));
   }
 
   @Test
   public void testGetExternalName() {
-    assertEquals("basedomainentitys", TypeNameGenerator.getExternalName(BaseDomainEntity.class));
+    assertEquals("basedomainentitys", TypeNames.getExternalName(BaseDomainEntity.class));
   }
 
   @Test
   public void testGetInternalNameForAnnotation() {
-    assertEquals("vtestsystementity", TypeNameGenerator.getInternalName(VTestSystemEntity.class));
+    assertEquals("vtestsystementity", TypeNames.getInternalName(VTestSystemEntity.class));
   }
 
   @Test
   public void testGetExternalNameForAnnotation() {
-    assertEquals("mysystementity", TypeNameGenerator.getExternalName(VTestSystemEntity.class));
+    assertEquals("mysystementity", TypeNames.getExternalName(VTestSystemEntity.class));
   }
 
 }

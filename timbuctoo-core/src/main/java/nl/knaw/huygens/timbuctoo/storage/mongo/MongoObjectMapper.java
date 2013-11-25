@@ -46,60 +46,54 @@ public class MongoObjectMapper {
   }
 
   /**
-   * Convert the object to a Map ignoring the null keys.
-   * @param type the type to convert.
-   * @param item the object to convert.
-   * @return a map with all the non-null values of the {@code item}.
+   * Convert the object to a Map ignoring the null values.
    */
   public <T> Map<String, Object> mapObject(Class<? super T> type, T item) {
     Preconditions.checkArgument(item != null);
     Preconditions.checkArgument(type != null);
 
     Map<String, Object> map = Maps.newHashMap();
-    for (Field field : type.getDeclaredFields()) {
-      if (fieldMapper.isProperty(field)) {
-        try {
-          field.setAccessible(true);
-          Class<?> fieldType = field.getType();
-          if (isHumanReadable(fieldType)) {
-            Object value = field.get(item);
-            if (value != null) {
-              map.put(fieldMapper.getFieldName(type, field), value);
-            }
-          } else if (Collection.class.isAssignableFrom(fieldType)) {
-            Collection<?> value = (Collection<?>) field.get(item);
-            if (isHumanReableCollection(value)) {
-              map.put(fieldMapper.getFieldName(type, field), value);
-            }
-          } else if (Class.class.isAssignableFrom(fieldType)) {
-            Class<?> cls = (Class<?>) field.get(item);
-            if (cls != null) {
-              map.put(fieldMapper.getFieldName(type, field), cls.getName());
-            }
-          } else if (Datable.class.isAssignableFrom(fieldType)) {
-            Datable datable = (Datable) field.get(item);
-            if (datable != null) {
-              map.put(fieldMapper.getFieldName(type, field), datable.getEDTF());
-            }
-          } else if (PersonName.class.isAssignableFrom(fieldType)) {
-            // Quick fix for serialize an Object.
-            Object value = field.get(item);
-            if (value != null) {
-              ObjectMapper om = new ObjectMapper();
-              try {
-                Map<String, Object> nameMap = om.readValue(om.writeValueAsString(value), new TypeReference<Map<String, Object>>() {});
-                map.put(fieldMapper.getFieldName(type, field), nameMap);
-              } catch (Exception e) {
-                e.printStackTrace();
-              }
-            }
+    for (Map.Entry<String, String> entry : fieldMapper.getFieldMap(type).entrySet()) {
+      String fieldName = entry.getKey();
+      String mappedName = entry.getValue();
+      try {
+        Field field = type.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        Class<?> fieldType = field.getType();
+        if (isHumanReadable(fieldType)) {
+          Object value = field.get(item);
+          if (value != null) {
+            map.put(mappedName, value);
           }
-        } catch (IllegalAccessException e) {
-          LOG.error("Field {} is not accessible in type {}.", field.getName(), type);
-          LOG.debug("", e);
+        } else if (Collection.class.isAssignableFrom(fieldType)) {
+          Collection<?> value = (Collection<?>) field.get(item);
+          if (isHumanReableCollection(value)) {
+            map.put(mappedName, value);
+          }
+        } else if (Class.class.isAssignableFrom(fieldType)) {
+          Class<?> cls = (Class<?>) field.get(item);
+          if (cls != null) {
+            map.put(mappedName, cls.getName());
+          }
+        } else if (Datable.class.isAssignableFrom(fieldType)) {
+          Datable datable = (Datable) field.get(item);
+          if (datable != null) {
+            map.put(mappedName, datable.getEDTF());
+          }
+        } else if (PersonName.class.isAssignableFrom(fieldType)) {
+          // Quick fix for serialize an Object.
+          Object value = field.get(item);
+          if (value != null) {
+            ObjectMapper om = new ObjectMapper();
+            Map<String, Object> nameMap = om.readValue(om.writeValueAsString(value), new TypeReference<Map<String, Object>>() {});
+            map.put(mappedName, nameMap);
+          }
         }
+      } catch (Exception e) {
+        LOG.error("Error for field {} type {} {}", fieldName, type.getSimpleName(), e.getClass().getSimpleName());
       }
     }
+
     return map;
   }
 

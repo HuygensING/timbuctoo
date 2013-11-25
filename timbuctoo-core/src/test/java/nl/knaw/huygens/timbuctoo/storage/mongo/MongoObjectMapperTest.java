@@ -6,10 +6,10 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.model.MongoObjectMapperEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
+import nl.knaw.huygens.timbuctoo.variation.model.MongoObjectMapperEntity;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -119,7 +119,7 @@ public class MongoObjectMapperTest {
     item.setType(TYPE);
 
     Map<String, Object> expected = Maps.newHashMap();
-    expected.put(propertyName(TYPE, "type"), "nl.knaw.huygens.timbuctoo.model.MongoObjectMapperEntity");
+    expected.put(propertyName(TYPE, "type"), "nl.knaw.huygens.timbuctoo.variation.model.MongoObjectMapperEntity");
 
     assertEquals(expected, mapper.mapObject(TYPE, item));
   }

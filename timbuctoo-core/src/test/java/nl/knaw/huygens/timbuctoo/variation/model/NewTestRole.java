@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.model.Role;
 import com.google.common.base.Objects;
 
 public class NewTestRole extends Role {
+
   private String newTestRoleName;
 
   public String getNewTestRoleName() {

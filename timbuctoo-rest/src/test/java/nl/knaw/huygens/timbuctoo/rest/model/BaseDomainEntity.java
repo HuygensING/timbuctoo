@@ -1,15 +1,15 @@
-package nl.knaw.huygens.timbuctoo.rest.providers.model;
+package nl.knaw.huygens.timbuctoo.rest.model;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
-public class GeneralTestDoc extends DomainEntity {
+public class BaseDomainEntity extends DomainEntity {
 
   public String name;
   public String generalTestDocValue;
 
-  public GeneralTestDoc() {}
+  public BaseDomainEntity() {}
 
-  public GeneralTestDoc(String id) {
+  public BaseDomainEntity(String id) {
     setId(id);
   }
 
