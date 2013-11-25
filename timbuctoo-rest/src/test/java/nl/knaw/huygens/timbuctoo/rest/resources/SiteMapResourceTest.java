@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 
 import org.junit.Test;
 
+import com.google.common.collect.Lists;
 import com.sun.jersey.api.client.ClientResponse;
 
 public class SiteMapResourceTest extends WebServiceTestSetup {

@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.security.Principal;
+import java.util.List;
 
 import nl.knaw.huygens.security.client.AuthorizationHandler;
 import nl.knaw.huygens.security.client.UnauthorizedException;
@@ -22,7 +23,6 @@ import org.junit.BeforeClass;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.sun.jersey.api.client.WebResource;
@@ -76,7 +76,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     when(authorizationHandler.getSecurityInformation(anyString())).thenReturn(securityInformation);
   }
 
-  protected void setUpUserWithRoles(String userId, ArrayList<String> userRoles) {
+  protected void setUpUserWithRoles(String userId, List<String> userRoles) {
     StorageManager storageManager = setUpUser(userId);
 
     VREAuthorization vreAuthorization = new VREAuthorization();
