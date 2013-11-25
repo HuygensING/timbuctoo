@@ -120,6 +120,10 @@
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.database.DutchCaribbeanImporter</mainClass>
               <name>ducaImport</name>
             </program>
+            <program>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.database.TransformedDataImporter</mainClass>
+              <name>basicImport</name>
+            </program>
           </programs>
         </configuration>
       </plugin>
