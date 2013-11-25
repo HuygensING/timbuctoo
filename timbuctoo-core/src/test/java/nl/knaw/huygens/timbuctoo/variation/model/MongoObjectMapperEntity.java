@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class MongoObjectMapperEntity extends SystemEntity {
 
   private List<String> primitiveTestCollection;
+  // Will not serialize if non-null
   private List<? extends SystemEntity> nonPrimitiveTestCollection;
   private String name;
   private String testValue1;
