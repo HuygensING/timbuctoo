@@ -217,23 +217,35 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Entity> String addItem(Class<T> type, T entity) throws IOException {
+  public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException {
     if (entity.getId() == null) {
       setNextId(type, entity);
     }
-    if (TypeRegistry.isDomainEntity(type)) {
-      // administrative properties must be controlled in the storage layer
-      DomainEntity domainEntity = DomainEntity.class.cast(entity);
-      domainEntity.setVariations(null); // make sure the list is empty
-      domainEntity.addVariation(getInternalName(typeRegistry.getBaseClass(type)));
-      domainEntity.addVariation(getInternalName(type));
-    }
-    JsonNode jsonNode = inducer.induceNewEntity(type, entity);
+
+    JsonNode jsonNode = inducer.induceNewSystemEntity(type, entity);
     JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
     getDBCollection(type).insert(insertedItem);
-    if (TypeRegistry.isDomainEntity(type)) {
-      addInitialVersion(type, entity.getId(), insertedItem);
+
+    return entity.getId();
+  }
+
+  @Override
+  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) throws IOException {
+    if (entity.getId() == null) {
+      setNextId(type, entity);
     }
+
+    DomainEntity domainEntity = DomainEntity.class.cast(entity);
+    domainEntity.setVariations(null); // make sure the list is empty
+    domainEntity.addVariation(getInternalName(typeRegistry.getBaseClass(type)));
+    domainEntity.addVariation(getInternalName(type));
+
+    JsonNode jsonNode = inducer.induceNewDomainEntity(type, entity);
+    JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
+    getDBCollection(type).insert(insertedItem);
+
+    addInitialVersion(type, entity.getId(), insertedItem);
+
     return entity.getId();
   }
 

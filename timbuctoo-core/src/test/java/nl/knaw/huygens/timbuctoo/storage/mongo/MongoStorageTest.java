@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,7 +24,6 @@ import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 
 /**
@@ -121,7 +119,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     TestSystemEntity entity = new TestSystemEntity();
     entity.setTestValue1("test");
 
-    storage.addItem(TYPE, entity);
+    storage.addSystemEntity(TYPE, entity);
 
     verify(anyCollection).insert(any(DBObject.class));
   }
@@ -131,19 +129,9 @@ public class MongoStorageTest extends MongoStorageTestBase {
     TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
     entity.setTestValue1("test");
 
-    storage.addItem(TYPE, entity);
+    storage.addSystemEntity(TYPE, entity);
 
     verify(anyCollection).insert(any(DBObject.class));
-  }
-
-  @Test(expected = MongoException.class)
-  public void testMongoException() throws IOException {
-    TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
-    entity.setTestValue1("test");
-
-    doThrow(MongoException.class).when(anyCollection).insert(any(DBObject.class));
-
-    storage.addItem(TYPE, entity);
   }
 
   @Test

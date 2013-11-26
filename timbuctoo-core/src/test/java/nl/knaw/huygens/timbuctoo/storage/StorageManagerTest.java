@@ -80,10 +80,17 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testAddEntity() throws IOException {
+  public void testAddSystemEntity() throws IOException {
+    TestSystemEntity entity = new TestSystemEntity();
+    manager.addEntity(TestSystemEntity.class, entity);
+    verify(storage).addSystemEntity(TestSystemEntity.class, entity);
+  }
+
+  @Test
+  public void testAddDomainEntity() throws IOException {
     BaseDomainEntity entity = new BaseDomainEntity();
     manager.addEntity(BaseDomainEntity.class, entity);
-    verify(storage).addItem(BaseDomainEntity.class, entity);
+    verify(storage).addDomainEntity(BaseDomainEntity.class, entity);
   }
 
   @Test
