@@ -34,46 +34,59 @@ public class MongoObjectMapper {
     fieldMapper = new FieldMapper();
   }
 
-  /**
-   * Maps an object and its superclasses.
-   */
-  public <T> Map<String, Object> mapObject(Class<? super T> stopType, Class<? super T> type, T item) {
-    checkArgument(stopType.isAssignableFrom(type), "type must extend stopType");
-    Map<String, Object> map = Maps.newHashMap();
-    if (type != stopType) {
-      map.putAll(mapObject(stopType, type.getSuperclass(), item));
-    }
-    map.putAll(mapObject(type, item));
-    return map;
+  public MongoObjectMapper(FieldMapper fieldMapper) {
+    this.fieldMapper = fieldMapper;
   }
 
   /**
-   * Converts the object to a Map ignoring the null values.
+   * Adds properties to a map, ignoring null values.
    */
-  public <T> Map<String, Object> mapObject(Class<? super T> type, T item) {
-    Preconditions.checkArgument(item != null);
-    Preconditions.checkArgument(type != null);
+  public <T> void addObject(Class<? super T> type, T object, Map<String, Object> map) {
+    Preconditions.checkNotNull(object);
+    Preconditions.checkNotNull(map);
 
-    Map<String, Object> map = Maps.newHashMap();
     for (Map.Entry<String, String> entry : fieldMapper.getFieldMap(type).entrySet()) {
       String fieldName = entry.getKey();
       String mappedName = entry.getValue();
       try {
         Field field = type.getDeclaredField(fieldName);
         field.setAccessible(true);
-        Object value = convertValue(fieldName, field.getType(), field.get(item));
+        Object value = convertValue(fieldName, field.getType(), field.get(object));
         if (value != null) {
           map.put(mappedName, value);
         }
       } catch (NoSuchFieldException e) {
-        LOG.error("Error for field {} type {} {}", fieldName, type.getSimpleName(), e.getClass().getSimpleName());
+        LOG.error("Field {}, type {}: {}", fieldName, type.getSimpleName(), e.getClass().getSimpleName());
       } catch (IllegalAccessException e) {
-        LOG.error("Error for field {} type {} {}", fieldName, type.getSimpleName(), e.getClass().getSimpleName());
+        LOG.error("Field {}, type {}: {}", fieldName, type.getSimpleName(), e.getClass().getSimpleName());
       } catch (IOException e) {
-        LOG.error("Error for field {} type {} {}", fieldName, type.getSimpleName(), e.getClass().getSimpleName());
+        LOG.error("Field {}, type {}: {}", fieldName, type.getSimpleName(), e.getClass().getSimpleName());
       }
     }
+  }
 
+  /**
+   * Converts the object to a Map ignoring the null values.
+   */
+  public <T> Map<String, Object> mapObject(Class<? super T> type, T object) {
+    Preconditions.checkArgument(object != null);
+
+    Map<String, Object> map = Maps.newHashMap();
+    addObject(type, object, map);
+    return map;
+  }
+
+  /**
+   * Maps an object and its superclasses.
+   */
+  public <T> Map<String, Object> mapObject(Class<? super T> stopType, Class<? super T> type, T object) {
+    checkArgument(stopType.isAssignableFrom(type), "type must extend stopType");
+
+    Map<String, Object> map = Maps.newHashMap();
+    if (type != stopType) {
+      map.putAll(mapObject(stopType, type.getSuperclass(), object));
+    }
+    map.putAll(mapObject(type, object));
     return map;
   }
 
