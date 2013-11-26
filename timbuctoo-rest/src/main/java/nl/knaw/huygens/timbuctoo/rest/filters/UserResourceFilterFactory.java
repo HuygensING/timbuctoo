@@ -1,5 +1,8 @@
 package nl.knaw.huygens.timbuctoo.rest.filters;
 
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -48,8 +51,6 @@ public class UserResourceFilterFactory implements ResourceFilterFactory {
     private static final Logger LOG = LoggerFactory.getLogger(UserResourceFilter.class);
     private static final String VRE_ID_KEY = "VRE_ID";
     private static final String USER_ID_KEY = "id";
-    private static final String ADMIN_ROLE = "ADMIN";
-    private static final String UNVERIFIED_USER_ROLE = "UNVERIFIED_USER";
     private final StorageManager storageManager;
     private final MailSender mailSender;
 
