@@ -11,7 +11,6 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
 
 /**
@@ -52,7 +51,7 @@ public class FieldMapper {
     Map<String, String> map = Maps.newHashMap();
     for (Field field : type.getDeclaredFields()) {
       if (isProperty(field)) {
-        String mappedName = getFieldName(type, field);
+        String mappedName = propertyName(type, getFieldName(type, field));
         if (mappedName.indexOf('@') < 0) { // exclude virtual properties
           map.put(field.getName(), mappedName);
         }
@@ -88,19 +87,11 @@ public class FieldMapper {
   }
 
   /**
-   * Gets the prefix name of the specified field in the specified class.
-   */
-  public String getFieldName(Class<?> type, Field field) {
-    return propertyName(type, getRawFieldName(type, field));
-  }
-
-  /**
    * Gets the name of the specified field in the specified class, without a prefix.
    * It uses the name specified in {@code JsonProperty} annotations on the field
    * itself or the getter corresponding to the field (in that order).
    */
-  @VisibleForTesting
-  String getRawFieldName(Class<?> type, Field field) {
+  public String getFieldName(Class<?> type, Field field) {
     JsonProperty annotation = field.getAnnotation(JsonProperty.class);
     if (annotation != null) {
       return annotation.value();
