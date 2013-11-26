@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -25,14 +26,9 @@ public abstract class Role implements Variable {
 
   @Override
   @JsonProperty("@variationRefs")
+  //Should ignore the variationRefs during deserialization.
+  @JsonIgnoreProperties(ignoreUnknown = true)
   public List<Reference> getVariationRefs() {
     return variationRefs;
   }
-
-  @Override
-  @JsonProperty("@variationRefs")
-  public void setVariationRefs(List<Reference> variationRefs) {
-    this.variationRefs = variationRefs;
-  }
-
 }
