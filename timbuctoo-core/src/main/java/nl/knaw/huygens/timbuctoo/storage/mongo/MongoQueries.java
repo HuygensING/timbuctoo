@@ -5,6 +5,7 @@ import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
 import java.util.Date;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 
 import org.mongojack.DBQuery;
@@ -57,7 +58,7 @@ public class MongoQueries {
   }
 
   public DBObject selectVariation(String name) {
-    return new BasicDBObject("^variations", name);
+    return new BasicDBObject(DomainEntity.VARIATIONS, name);
   }
 
   public DBObject setProperty(String key, Object value) {
