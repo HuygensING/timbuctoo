@@ -69,21 +69,23 @@ public class FieldMapperTest {
     assertEquals("person" + FieldMapper.SEPARATOR + "xx", propertyName(Person.class, "xx"));
   }
 
+  private static class Foo {}
+
   @Test
   public void testGetFieldMap() {
     Map<String, String> expected = Maps.newHashMap();
-    expected.put("primitiveTestCollection", propertyName(TYPE, "primitiveTestCollection"));
-    expected.put("nonPrimitiveTestCollection", propertyName(TYPE, "nonPrimitiveTestCollection"));
-    expected.put("name", propertyName(TYPE, "name"));
-    expected.put("testValue1", propertyName(TYPE, "testValue1"));
-    expected.put("testValue2", propertyName(TYPE, "testValue2"));
-    expected.put("annotatedProperty", propertyName(TYPE, "propAnnotated"));
-    expected.put("propWithAnnotatedAccessors", propertyName(TYPE, "pwaa"));
-    expected.put("type", propertyName(TYPE, "type"));
-    expected.put("date", propertyName(TYPE, "date"));
-    expected.put("personName", propertyName(TYPE, "personName"));
+    expected.put("primitiveTestCollection", propertyName(Foo.class, "primitiveTestCollection"));
+    expected.put("nonPrimitiveTestCollection", propertyName(Foo.class, "nonPrimitiveTestCollection"));
+    expected.put("name", propertyName(Foo.class, "name"));
+    expected.put("testValue1", propertyName(Foo.class, "testValue1"));
+    expected.put("testValue2", propertyName(Foo.class, "testValue2"));
+    expected.put("annotatedProperty", propertyName(Foo.class, "propAnnotated"));
+    expected.put("propWithAnnotatedAccessors", propertyName(Foo.class, "pwaa"));
+    expected.put("type", propertyName(Foo.class, "type"));
+    expected.put("date", propertyName(Foo.class, "date"));
+    expected.put("personName", propertyName(Foo.class, "personName"));
 
-    assertEquals(expected, fieldMapper.getFieldMap(TYPE));
+    assertEquals(expected, fieldMapper.getFieldMap(Foo.class, TYPE));
   }
 
   @Test

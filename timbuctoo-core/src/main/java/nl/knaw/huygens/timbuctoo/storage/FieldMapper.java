@@ -45,13 +45,14 @@ public class FieldMapper {
   // -------------------------------------------------------------------
 
   /**
-   * Generates a map for {@code type} with object fields as keys and database fields as values.
+   * Generates a mapping of the declared fields of the specified type
+   * to a property name with a specified prefix type.
    */
-  public Map<String, String> getFieldMap(Class<?> type) {
+  public Map<String, String> getFieldMap(Class<?> prefixType, Class<?> type) {
     Map<String, String> map = Maps.newHashMap();
     for (Field field : type.getDeclaredFields()) {
       if (isProperty(field)) {
-        String mappedName = propertyName(type, getFieldName(type, field));
+        String mappedName = propertyName(prefixType, getFieldName(type, field));
         if (mappedName.indexOf('@') < 0) { // exclude virtual properties
           map.put(field.getName(), mappedName);
         }
