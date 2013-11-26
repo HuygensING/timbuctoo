@@ -24,7 +24,7 @@ public class TestScope extends AbstractScope {
 
   @Override
   public <T extends DomainEntity> boolean inScope(Class<T> type, String id) {
-    return true;
+    return super.inScope(type, id);
   }
 
   @Override

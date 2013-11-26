@@ -110,10 +110,17 @@ public class IndexManager {
 
   public <T extends DomainEntity> void deleteEntities(Class<T> type, List<String> ids) throws IndexException {
     // No need to check for being in scope: it doesn't harm to remove an item that's not there
+    if (ids == null || ids.isEmpty()) {
+      return;
+    }
+
     try {
       for (Scope scope : scopes) {
-        String coreName = getCoreName(scope, type);
-        server.deleteById(coreName, ids);
+        List<String> filteredIds = filterIds(type, ids, scope);
+        if (!filteredIds.isEmpty()) {
+          String coreName = getCoreName(scope, type);
+          server.deleteById(coreName, ids);
+        }
       }
     } catch (Exception e) {
       throw new IndexException("Failed to delete entities", e);
@@ -192,6 +199,16 @@ public class IndexManager {
     for (T entity : entities) {
       if (scope.inScope(entity)) {
         list.add(entity);
+      }
+    }
+    return list;
+  }
+
+  private List<String> filterIds(Class<? extends DomainEntity> type, List<String> ids, Scope scope) {
+    List<String> list = Lists.newArrayList();
+    for (String id : ids) {
+      if (scope.inScope(type, id)) {
+        list.add(id);
       }
     }
     return list;
