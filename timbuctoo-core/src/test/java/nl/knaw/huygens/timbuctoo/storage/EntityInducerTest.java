@@ -9,13 +9,13 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBDomainEntity;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import test.model.BaseDomainEntity;
+import test.model.TestSystemEntity;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,20 +24,18 @@ import com.google.common.collect.Maps;
 
 public class EntityInducerTest {
 
-  private final static String SYSTEM_ID = "TSTD000000000042";
-
-  private static final String DEFAULT_PID = "test pid";
-  private static final String DOMAIN_ID = "GTD0000000012";
-  private static final String TEST_NAME = "test";
+  private final static String SYSTEM_ID = "TSYS000000000042";
+  private static final String DOMAIN_ID = "TDOM000000000007";
+  private static final String PID = "test_pid";
 
   private static TypeRegistry registry;
 
   private EntityInducer inducer;
-  protected ObjectMapper mapper;
+  private ObjectMapper mapper;
 
   @BeforeClass
   public static void setupRegistry() {
-    registry = new TypeRegistry("timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb timbuctoo.model");
+    registry = new TypeRegistry("test.model test.model.projecta");
   }
 
   @Before
@@ -46,77 +44,60 @@ public class EntityInducerTest {
     mapper = new ObjectMapper();
   }
 
-  protected void addNonNullValue(Map<String, Object> map, String key, String value) {
+  private void addValue(Map<String, Object> map, String key, String value) {
     if (value != null) {
       map.put(key, value);
     }
   }
 
-  protected ObjectNode newSystemEntityNode(String id, String name, String testValue1, String testValue2) {
-    Map<String, Object> map = Maps.newHashMap();
-    addNonNullValue(map, "_id", id);
-    addNonNullValue(map, propertyName(TestSystemEntity.class, "name"), name);
-    addNonNullValue(map, propertyName(TestSystemEntity.class, "testValue1"), testValue1);
-    addNonNullValue(map, propertyName(TestSystemEntity.class, "testValue2"), testValue2);
+  private ObjectNode newSystemEntityTree(String id, String value1, String value2) {
+    Map<String, Object> map = Maps.newTreeMap();
+    addValue(map, "_id", id);
     map.put("^rev", 0);
+    addValue(map, propertyName(TestSystemEntity.class, "value1"), value1);
+    addValue(map, propertyName(TestSystemEntity.class, "value2"), value2);
     return mapper.valueToTree(map);
   }
 
-  protected Map<String, Object> newDomainEntityMap(String id, String pid) {
-    Map<String, Object> map = Maps.newHashMap();
-    map.put("_id", id);
-    map.put("^rev", 0);
-    map.put(DomainEntity.PID, pid);
+  private Map<String, Object> newDomainEntityMap(String id, String pid) {
+    Map<String, Object> map = Maps.newTreeMap();
+    addValue(map, "_id", id);
+    addValue(map, DomainEntity.PID, pid);
     map.put(DomainEntity.DELETED, false);
+    map.put("^rev", 0);
     return map;
   }
 
-  protected Map<String, Object> newBaseDomainEntityMap(String id, String pid, String value) {
+  private ObjectNode newBaseDomainEntityTree(String id, String pid, String value1, String value2) {
     Map<String, Object> map = newDomainEntityMap(id, pid);
-    addNonNullValue(map, propertyName(BaseDomainEntity.class, "name"), value);
-    return map;
-  }
-
-  protected ProjectBDomainEntity newProjectBDomainEntity(String id, String pid, String projectBGeneralTestDocValue) {
-    ProjectBDomainEntity entity = new ProjectBDomainEntity(id);
-    entity.projectBGeneralTestDocValue = projectBGeneralTestDocValue;
-    entity.setPid(pid);
-    return entity;
+    addValue(map, propertyName(BaseDomainEntity.class, "value1"), value1);
+    addValue(map, propertyName(BaseDomainEntity.class, "value2"), value2);
+    return mapper.valueToTree(map);
   }
 
   // --- new system entity ---------------------------------------------
 
   @Test
   public void induceSystemEntityAsPrimitive() throws Exception {
-    TestSystemEntity entity = new TestSystemEntity(SYSTEM_ID, TEST_NAME);
-    entity.setTestValue1("value1");
-    entity.setTestValue2("value2");
+    TestSystemEntity entity = new TestSystemEntity(SYSTEM_ID, "v1", "v2");
 
-    System.out.println(inducer.induceNewEntity(TestSystemEntity.class, entity));
-
-    JsonNode expected = newSystemEntityNode(SYSTEM_ID, TEST_NAME, "value1", "value2");
+    JsonNode expected = newSystemEntityTree(SYSTEM_ID, "v1", "v2");
 
     assertEquals(expected, inducer.induceNewEntity(TestSystemEntity.class, entity));
   }
 
   @Test
   public void induceSystemEntityAsSystemEntity() throws Exception {
-    TestSystemEntity entity = new TestSystemEntity(SYSTEM_ID, TEST_NAME);
-    entity.setTestValue1("value1");
-    entity.setTestValue2("value2");
+    TestSystemEntity entity = new TestSystemEntity(SYSTEM_ID, "v1", "v2");
 
-    System.out.println(inducer.induceNewEntity(SystemEntity.class, entity));
-
-    JsonNode expected = newSystemEntityNode(SYSTEM_ID, null, null, null);
+    JsonNode expected = newSystemEntityTree(SYSTEM_ID, null, null);
 
     assertEquals(expected, inducer.induceNewEntity(SystemEntity.class, entity));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void induceSystemEntityAsEntity() throws Exception {
-    TestSystemEntity entity = new TestSystemEntity(SYSTEM_ID, TEST_NAME);
-    entity.setTestValue1("value1");
-    entity.setTestValue2("value2");
+    TestSystemEntity entity = new TestSystemEntity(SYSTEM_ID, "v1", "v2");
 
     inducer.induceNewEntity(Entity.class, entity);
   }
@@ -125,34 +106,25 @@ public class EntityInducerTest {
 
   @Test
   public void inducePrimitiveDomainEntityAsPrimitive() throws Exception {
-    BaseDomainEntity entity = new BaseDomainEntity(DOMAIN_ID, "test1");
-    entity.setPid(DEFAULT_PID);
+    BaseDomainEntity entity = new BaseDomainEntity(DOMAIN_ID, PID, "v1", "v2");
 
-    System.out.println(inducer.induceNewEntity(BaseDomainEntity.class, entity));
-
-    Map<String, Object> map = newBaseDomainEntityMap(DOMAIN_ID, DEFAULT_PID, "test1");
-    JsonNode expected = mapper.valueToTree(map);
+    JsonNode expected = newBaseDomainEntityTree(DOMAIN_ID, PID, "v1", "v2");
 
     assertEquals(expected, inducer.induceNewEntity(BaseDomainEntity.class, entity));
   }
 
   @Test
   public void inducePrimitiveDomainEntityAsDomainEntity() throws Exception {
-    BaseDomainEntity entity = new BaseDomainEntity(DOMAIN_ID, "test1");
-    entity.setPid(DEFAULT_PID);
+    BaseDomainEntity entity = new BaseDomainEntity(DOMAIN_ID, PID, "v1", "v2");
 
-    System.out.println(inducer.induceNewEntity(DomainEntity.class, entity));
-
-    Map<String, Object> map = newBaseDomainEntityMap(DOMAIN_ID, DEFAULT_PID, null);
-    JsonNode expected = mapper.valueToTree(map);
+    JsonNode expected = newBaseDomainEntityTree(DOMAIN_ID, PID, null, null);
 
     assertEquals(expected, inducer.induceNewEntity(DomainEntity.class, entity));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void inducePrimitiveDomainEntityAsEntity() throws Exception {
-    BaseDomainEntity entity = new BaseDomainEntity(DOMAIN_ID, "test1");
-    entity.setPid(DEFAULT_PID);
+    BaseDomainEntity entity = new BaseDomainEntity(DOMAIN_ID, PID, "v1", "v2");
 
     inducer.induceNewEntity(Entity.class, entity);
   }
