@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -32,8 +34,6 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   private static final String USERS_RESOURCE = "/" + Paths.SYSTEM_PREFIX + "/users";
   private static final String OTHER_USER_ID = "otherUserId";
-  private static final String USER_ROLE = "USER";
-  private static final String ADMIN_ROLE = "ADMIN";
 
   private WebResource resource;
 
