@@ -451,6 +451,7 @@ public class MongoStorage implements Storage {
     String xname = typeRegistry.getXNameForIName(iname);
     Class<? extends Entity> type = typeRegistry.getTypeForIName(iname);
     Entity entity = getItem(type, reference.getId());
+
     return new EntityRef(iname, xname, reference.getId(), entity.getDisplayName());
   }
 
@@ -459,15 +460,16 @@ public class MongoStorage implements Storage {
     List<String> list = Lists.newArrayList();
 
     try {
-      String variationName = reducer.typeToVariationName(type);
+      String variationName = typeRegistry.getIName(type);
       DBObject query = queries.selectVariation(variationName);
-      query.put(DomainEntity.PID, null);
+      query.put(DomainEntity.PID, new BasicDBObject("$exists", false));
       DBObject columnsToShow = new BasicDBObject("_id", 1);
 
       DBCursor cursor = getDBCollection(type).find(query, columnsToShow);
       while (cursor.hasNext()) {
         list.add((String) cursor.next().get("_id"));
       }
+
     } catch (MongoException e) {
       LOG.error("Error while retrieving objects without pid of type {}", type.getSimpleName());
       throw new IOException(e);
