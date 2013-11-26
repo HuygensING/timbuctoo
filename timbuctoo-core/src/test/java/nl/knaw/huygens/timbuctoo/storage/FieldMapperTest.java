@@ -4,7 +4,6 @@ import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import java.lang.reflect.Field;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -23,11 +22,11 @@ public class FieldMapperTest {
 
   private static final Class<? extends Entity> TYPE = MongoObjectMapperEntity.class;
 
-  private FieldMapper instance;
+  private FieldMapper fieldMapper;
 
   @Before
   public void setup() {
-    instance = new FieldMapper();
+    fieldMapper = new FieldMapper();
   }
 
   @Test
@@ -84,59 +83,54 @@ public class FieldMapperTest {
     expected.put("date", propertyName(TYPE, "date"));
     expected.put("personName", propertyName(TYPE, "personName"));
 
-    assertEquals(expected, instance.getFieldMap(TYPE));
+    assertEquals(expected, fieldMapper.getFieldMap(TYPE));
   }
 
   @Test
-  public void testGetFieldNameSimpleField() throws NoSuchFieldException {
-    testGetFieldName(TYPE, TYPE.getDeclaredField("name"), propertyName(TYPE, "name"));
+  public void testGetFieldNameSimpleField() throws Exception {
+    assertEquals("name", fieldMapper.getRawFieldName(TYPE, TYPE.getDeclaredField("name")));
   }
 
   @Test
-  public void testGetFieldNameForFieldWithAnnotation() throws NoSuchFieldException {
-    testGetFieldName(TYPE, TYPE.getDeclaredField("annotatedProperty"), propertyName(TYPE, "propAnnotated"));
+  public void testGetFieldNameForFieldWithAnnotation() throws Exception {
+    assertEquals("propAnnotated", fieldMapper.getRawFieldName(TYPE, TYPE.getDeclaredField("annotatedProperty")));
   }
 
   @Test
-  public void testGetFieldNameFieldForAccessorWithAnnotation() throws NoSuchFieldException {
-    testGetFieldName(TYPE, TYPE.getDeclaredField("propWithAnnotatedAccessors"), propertyName(TYPE, "pwaa"));
+  public void testGetFieldNameFieldForAccessorWithAnnotation() throws Exception {
+    assertEquals("pwaa", fieldMapper.getRawFieldName(TYPE, TYPE.getDeclaredField("propWithAnnotatedAccessors")));
   }
 
   @Test
-  public void testGetFieldNameForEntity() throws NoSuchFieldException {
-    testGetFieldName(Entity.class, Entity.class.getDeclaredField("id"), "_id");
+  public void testGetFieldNameForEntity() throws Exception {
+    assertEquals("_id", fieldMapper.getRawFieldName(Entity.class, Entity.class.getDeclaredField("id")));
   }
 
   @Test
-  public void testGetFieldNameForDomainEntity() throws NoSuchFieldException {
-    testGetFieldName(DomainEntity.class, Entity.class.getDeclaredField("id"), "_id");
+  public void testGetFieldNameForDomainEntity() throws Exception {
+    assertEquals("_id", fieldMapper.getRawFieldName(DomainEntity.class, Entity.class.getDeclaredField("id")));
   }
 
   @Test
-  public void testGetFieldNameForSystemEntity() throws NoSuchFieldException {
-    testGetFieldName(SystemEntity.class, Entity.class.getDeclaredField("id"), "_id");
-  }
-
-  private void testGetFieldName(Class<? extends Entity> type, Field declaredField, String expected) throws NoSuchFieldException {
-    String actual = instance.getFieldName(type, declaredField);
-    assertEquals(expected, actual);
+  public void testGetFieldNameForSystemEntity() throws Exception {
+    assertEquals("_id", fieldMapper.getRawFieldName(SystemEntity.class, Entity.class.getDeclaredField("id")));
   }
 
   @Test
-  public void testGetTypeNameOfFieldNameFieldNameWithDot() {
+  public void testGetTypeNameOfFieldNameWithSeparator() {
     String fieldName = propertyName("test", "testField");
-    assertEquals("test", instance.getTypeNameOfFieldName(fieldName));
+    assertEquals("test", fieldMapper.getTypeNameOfFieldName(fieldName));
   }
 
   @Test
-  public void testGetTypeNameOfFieldNameFieldNameWithoutDot() {
+  public void testGetTypeNameOfFieldNameWithoutSeparator() {
     String fieldName = "testField";
-    assertNull(instance.getTypeNameOfFieldName(fieldName));
+    assertNull(fieldMapper.getTypeNameOfFieldName(fieldName));
   }
 
   @Test(expected = NullPointerException.class)
-  public void testGetTypeNameOfFieldNameFieldNameNull() {
-    instance.getTypeNameOfFieldName(null);
+  public void testGetTypeNameOfFieldNameNull() {
+    fieldMapper.getTypeNameOfFieldName(null);
   }
 
 }

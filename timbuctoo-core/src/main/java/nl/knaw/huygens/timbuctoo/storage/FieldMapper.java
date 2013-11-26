@@ -11,6 +11,7 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
 
 /**
@@ -18,9 +19,6 @@ import com.google.common.collect.Maps;
  * to the fields in the database.
  */
 public class FieldMapper {
-
-  private static final String GET_ACCESSOR = "get";
-  private static final String IS_ACCESSOR = "is"; // get accesor for booleans.
 
   /** Separator between parts of a property name, as string. */
   public static final String SEPARATOR = ":";
@@ -90,46 +88,59 @@ public class FieldMapper {
   }
 
   /**
-   * Gets a field name for a field in combination with a class. 
-   * The method will not check if the {@code type} contains the field. It will just create a {@code String). 
-   * @param type the type needed for the prefix.
-   * @param field the field to get the name for.
-   * @return the field name.
+   * Gets the prefix name of the specified field in the specified class.
    */
   public String getFieldName(Class<?> type, Field field) {
+    return propertyName(type, getRawFieldName(type, field));
+  }
+
+  /**
+   * Gets the name of the specified field in the specified class, without a prefix.
+   * It uses the name specified in {@code JsonProperty} annotations on the field
+   * itself or the getter corresponding to the field (in that order).
+   */
+  @VisibleForTesting
+  String getRawFieldName(Class<?> type, Field field) {
     JsonProperty annotation = field.getAnnotation(JsonProperty.class);
     if (annotation != null) {
-      return propertyName(type, annotation.value());
+      return annotation.value();
     }
 
-    Method method = getMethodOfField(type, field);
+    Method method = getMethodByName(type, getMethodName(field));
     if (method != null && method.getAnnotation(JsonProperty.class) != null) {
-      return propertyName(type, method.getAnnotation(JsonProperty.class).value());
+      return method.getAnnotation(JsonProperty.class).value();
     }
 
-    return propertyName(type, field.getName());
+    return field.getName();
   }
 
-  private Method getMethodOfField(Class<?> type, Field field) {
-    String methodName = getMethodName(field);
-    for (Method method : type.getMethods()) {
-      if (method.getName().equals(methodName)) {
-        return method;
-      }
+  /**
+   * Searches for a public method in the specified class or its superclasses
+   * and -interfaces that matches the specified name and has no parameters.
+   */
+  private Method getMethodByName(Class<?> type, String methodName) {
+    try {
+      // TODO decide: use type.getDeclaredMethod(methodName)?
+      return type.getMethod(methodName);
+    } catch (NoSuchMethodException e) {
+      return null;
     }
-    return null;
   }
+
+  private static final String GET_ACCESSOR = "get";
+  private static final String IS_ACCESSOR = "is"; // get accesor for booleans.
 
   private String getMethodName(Field field) {
     char[] fieldNameChars = field.getName().toCharArray();
 
     fieldNameChars[0] = Character.toUpperCase(fieldNameChars[0]);
 
-    if (field.getType() == boolean.class || field.getType() == Boolean.class) {
-      return IS_ACCESSOR.concat(String.valueOf(fieldNameChars));
-    }
+    String accessor = isBoolean(field.getType()) ? IS_ACCESSOR : GET_ACCESSOR;
+    return accessor.concat(String.valueOf(fieldNameChars));
+  }
 
-    return GET_ACCESSOR.concat(String.valueOf(fieldNameChars));
+  private boolean isBoolean(Class<?> cls) {
+    return cls == boolean.class || cls == Boolean.class;
   }
 
 }
