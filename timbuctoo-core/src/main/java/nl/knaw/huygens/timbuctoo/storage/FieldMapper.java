@@ -19,6 +19,9 @@ import com.google.common.collect.Maps;
  */
 public class FieldMapper {
 
+  private static final String GET_ACCESSOR = "get";
+  private static final String IS_ACCESSOR = "is"; // get accesor for booleans.
+
   /** Separator between parts of a property name, as string. */
   public static final String SEPARATOR = ":";
 
@@ -42,8 +45,7 @@ public class FieldMapper {
     return propertyName(TypeNames.getInternalName(type), field);
   }
 
-  private static final String GET_ACCESSOR = "get";
-  private static final String IS_ACCESSOR = "is"; // get accesor for booleans.
+  // -------------------------------------------------------------------
 
   /**
    * Generates a map for {@code type} with object fields as keys and database fields as values.
