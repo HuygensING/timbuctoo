@@ -71,21 +71,24 @@ public class EntityInducer {
 
   // -------------------------------------------------------------------
 
-  private <T extends SystemEntity> JsonNode induceSystemEntity(Class<? super T> type, T entity) {
+  private <T extends SystemEntity> JsonNode induceSystemEntity(final Class<? super T> type, T entity) {
     Map<String, Object> map = Maps.newTreeMap();
-    while (Entity.class.isAssignableFrom(type)) {
-      propertyMapper.addObject(type, entity, map);
-      type = type.getSuperclass();
+    Class<? super T> viewType = type;
+    while (Entity.class.isAssignableFrom(viewType)) {
+      propertyMapper.addObject(type, viewType, entity, map);
+      viewType = viewType.getSuperclass();
     }
     return jsonMapper.valueToTree(map);
   }
 
-  // first take: fails for non-primitives
-  private <T extends DomainEntity> JsonNode induceNewDomainEntity(Class<? super T> type, T entity) {
+  private <T extends DomainEntity> JsonNode induceNewDomainEntity(final Class<? super T> type, T entity) {
+    LOG.info("Enter induceNewDomainEntity");
     Map<String, Object> map = Maps.newTreeMap();
-    while (Entity.class.isAssignableFrom(type)) {
-      propertyMapper.addObject(type, entity, map);
-      type = type.getSuperclass();
+    Class<? super T> viewType = type;
+    while (Entity.class.isAssignableFrom(viewType)) {
+      System.out.println("view as " + viewType.getSimpleName());
+      propertyMapper.addObject(type, viewType, entity, map);
+      viewType = viewType.getSuperclass();
     }
     return jsonMapper.valueToTree(map);
   }

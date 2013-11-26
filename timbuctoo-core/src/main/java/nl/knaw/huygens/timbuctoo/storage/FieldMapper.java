@@ -52,9 +52,9 @@ public class FieldMapper {
     Map<String, String> map = Maps.newHashMap();
     for (Field field : type.getDeclaredFields()) {
       if (isProperty(field)) {
-        String mappedName = propertyName(prefixType, getFieldName(type, field));
-        if (mappedName.indexOf('@') < 0) { // exclude virtual properties
-          map.put(field.getName(), mappedName);
+        String fieldName = getFieldName(type, field);
+        if (fieldName.indexOf('@') < 0) { // exclude virtual properties
+          map.put(field.getName(), propertyName(prefixType, fieldName));
         }
       }
     }
