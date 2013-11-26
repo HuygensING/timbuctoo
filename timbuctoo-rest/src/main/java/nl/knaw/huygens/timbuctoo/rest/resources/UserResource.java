@@ -1,5 +1,9 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -31,9 +35,6 @@ import com.google.inject.Inject;
 public class UserResource extends ResourceBase {
 
   private static final String ID_REGEX = "/{id:" + User.ID_PREFIX + "\\d+}";
-  private static final String UNVERIFIED_USER_ROLE = "UNVERIFIED_USER";
-  private static final String USER_ROLE = "USER";
-  private static final String ADMIN_ROLE = "ADMIN";
   private static final String ID_PARAM = "id";
 
   private final StorageManager storageManager;
