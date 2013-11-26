@@ -137,8 +137,11 @@ public abstract class DefaultImporter extends ToolBase {
    */
   protected void removeNonPersistentEnties(Class<? extends DomainEntity> type, StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
     List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
+
+    Class<? extends DomainEntity> baseType = TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type));
+
     storageManager.removeNonPersistent(type, ids);
-    indexManager.deleteEntities(type, ids);
+    indexManager.deleteEntities(baseType, ids);
     //Remove relations
     List<String> relationIds = storageManager.getRelationIds(ids);
     storageManager.removeNonPersistent(Relation.class, relationIds);

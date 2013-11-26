@@ -14,7 +14,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
-import nl.knaw.huygens.timbuctoo.tools.importer.MongoAdmin;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
@@ -34,14 +33,8 @@ public class TransformedDataImporter {
     Configuration config = new Configuration("config.xml");
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
-    // TODO Remove non-persistent items only
-    MongoAdmin admin = new MongoAdmin(config);
-    admin.dropDatabase();
-
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     IndexManager indexManager = injector.getInstance(IndexManager.class);
-    //TODO enable after the search for the non-persistent items works again
-    indexManager.deleteAllEntities();
     TypeRegistry registry = injector.getInstance(TypeRegistry.class);
 
     String dataPath = args.length > 0 ? args[0] : "src/main/resources/testdata";
@@ -56,12 +49,12 @@ public class TransformedDataImporter {
 
     for (File jsonFile : jsonFiles) {
       String className = jsonFile.getName().substring(0, jsonFile.getName().indexOf('.'));
-
       Class<? extends Entity> type = registry.getTypeForIName(className.toLowerCase());
 
-      //TODO enable after the search for the non-persistent items works again
-      //removeNonPersistent(TypeRegistry.toDomainEntity(type), storageManager, indexManager);
-      save(type, jsonFile, storageManager, indexManager);
+      if (TypeRegistry.isDomainEntity(type)) {
+        removeNonPersistent(TypeRegistry.toDomainEntity(type), storageManager, indexManager, registry);
+        save(TypeRegistry.toDomainEntity(type), jsonFile, storageManager, indexManager);
+      }
 
     }
 
@@ -70,8 +63,8 @@ public class TransformedDataImporter {
 
   }
 
-  public static <T extends Entity> void save(Class<T> type, File jsonFile, StorageManager storageManager, IndexManager indexManager) throws JsonParseException, JsonMappingException, IOException,
-      IndexException {
+  public static <T extends DomainEntity> void save(Class<T> type, File jsonFile, StorageManager storageManager, IndexManager indexManager) throws JsonParseException, JsonMappingException,
+      IOException, IndexException {
     LOG.info("Saving for type {}", type);
     List<T> entities = new ObjectMapper().readValue(jsonFile, new TypeReference<List<? extends Entity>>() {});
     for (T entity : entities) {
@@ -80,10 +73,13 @@ public class TransformedDataImporter {
     }
   }
 
-  public static <T extends DomainEntity> void removeNonPersistent(Class<T> type, StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
+  public static <T extends DomainEntity> void removeNonPersistent(Class<T> type, StorageManager storageManager, IndexManager indexManager, TypeRegistry registry) throws IOException, IndexException {
     List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
     storageManager.removeNonPersistent(type, ids);
-    indexManager.deleteEntities(type, ids);
+
+    Class<T> baseType = TypeRegistry.toDomainEntity(registry.getBaseClass(type));
+
+    indexManager.deleteEntities(baseType, ids);
     //Remove relations
     List<String> relationIds = storageManager.getRelationIds(ids);
     storageManager.removeNonPersistent(Relation.class, relationIds);
