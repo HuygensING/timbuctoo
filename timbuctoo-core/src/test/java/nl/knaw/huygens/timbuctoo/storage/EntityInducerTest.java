@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntity;
+import test.model.projecta.ProjectADomainEntity;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -75,6 +76,14 @@ public class EntityInducerTest {
     return mapper.valueToTree(map);
   }
 
+  private ObjectNode newProjectADomainEntityTree(String id, String pid, String value1, String value2, String valuea) {
+    Map<String, Object> map = newDomainEntityMap(id, pid);
+    addValue(map, propertyName(ProjectADomainEntity.class, "value1"), value1);
+    addValue(map, propertyName(ProjectADomainEntity.class, "value2"), value2);
+    addValue(map, propertyName(ProjectADomainEntity.class, "valuea"), valuea);
+    return mapper.valueToTree(map);
+  }
+
   // --- new system entity ---------------------------------------------
 
   @Test
@@ -128,5 +137,30 @@ public class EntityInducerTest {
 
     inducer.induceNewEntity(Entity.class, entity);
   }
+
+  // --- new project domain entitiy ------------------------------------
+
+  @Test
+  public void induceDerivedDomainEntityAsDerived() throws Exception {
+    ProjectADomainEntity entity = new ProjectADomainEntity(DOMAIN_ID, PID, "v1", "v2", "va");
+
+    JsonNode expected = newProjectADomainEntityTree(DOMAIN_ID, PID, "v1", "v2", "va");
+
+    System.out.println(expected);
+    System.out.println(inducer.induceNewEntity(ProjectADomainEntity.class, entity));
+
+    assertEquals(expected, inducer.induceNewEntity(ProjectADomainEntity.class, entity));
+  }
+
+  //  {"^deleted":false,"^pid":"test_pid","^rev":0,"_id":"TDOM000000000007","projectadomainentity:value1":"v1","projectadomainentity:value2":"v2","projectadomainentity:valuea":"va"}
+  //  view as ProjectADomainEntity
+  //  view as BaseDomainEntity
+  //  view as DomainEntity
+  //  view as Entity
+  //  {"^deleted":false,"^pid":"test_pid","^rev":0,"_id":"TDOM000000000007","projectadomainentity:value1":"v1","projectadomainentity:value2":"v2","projectadomainentity:valuea":"va"}
+  //  view as ProjectADomainEntity
+  //  view as BaseDomainEntity
+  //  view as DomainEntity
+  //  view as Entity
 
 }

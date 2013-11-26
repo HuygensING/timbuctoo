@@ -41,11 +41,11 @@ public class MongoObjectMapper {
   /**
    * Adds properties to a map, ignoring null values.
    */
-  public <T> void addObject(Class<? super T> type, T object, Map<String, Object> map) {
+  public <T> void addObject(Class<?> prefixType, Class<? super T> type, T object, Map<String, Object> map) {
     Preconditions.checkNotNull(object);
     Preconditions.checkNotNull(map);
 
-    for (Map.Entry<String, String> entry : fieldMapper.getFieldMap(type, type).entrySet()) {
+    for (Map.Entry<String, String> entry : fieldMapper.getFieldMap(prefixType, type).entrySet()) {
       String fieldName = entry.getKey();
       String mappedName = entry.getValue();
       try {
@@ -72,7 +72,7 @@ public class MongoObjectMapper {
     Preconditions.checkArgument(object != null);
 
     Map<String, Object> map = Maps.newHashMap();
-    addObject(type, object, map);
+    addObject(type, type, object, map);
     return map;
   }
 
