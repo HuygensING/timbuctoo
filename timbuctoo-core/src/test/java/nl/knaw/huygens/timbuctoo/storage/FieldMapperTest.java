@@ -88,32 +88,32 @@ public class FieldMapperTest {
 
   @Test
   public void testGetFieldNameSimpleField() throws Exception {
-    assertEquals("name", fieldMapper.getRawFieldName(TYPE, TYPE.getDeclaredField("name")));
+    assertEquals("name", fieldMapper.getFieldName(TYPE, TYPE.getDeclaredField("name")));
   }
 
   @Test
   public void testGetFieldNameForFieldWithAnnotation() throws Exception {
-    assertEquals("propAnnotated", fieldMapper.getRawFieldName(TYPE, TYPE.getDeclaredField("annotatedProperty")));
+    assertEquals("propAnnotated", fieldMapper.getFieldName(TYPE, TYPE.getDeclaredField("annotatedProperty")));
   }
 
   @Test
   public void testGetFieldNameFieldForAccessorWithAnnotation() throws Exception {
-    assertEquals("pwaa", fieldMapper.getRawFieldName(TYPE, TYPE.getDeclaredField("propWithAnnotatedAccessors")));
+    assertEquals("pwaa", fieldMapper.getFieldName(TYPE, TYPE.getDeclaredField("propWithAnnotatedAccessors")));
   }
 
   @Test
   public void testGetFieldNameForEntity() throws Exception {
-    assertEquals("_id", fieldMapper.getRawFieldName(Entity.class, Entity.class.getDeclaredField("id")));
+    assertEquals("_id", fieldMapper.getFieldName(Entity.class, Entity.class.getDeclaredField("id")));
   }
 
   @Test
   public void testGetFieldNameForDomainEntity() throws Exception {
-    assertEquals("_id", fieldMapper.getRawFieldName(DomainEntity.class, Entity.class.getDeclaredField("id")));
+    assertEquals("_id", fieldMapper.getFieldName(DomainEntity.class, Entity.class.getDeclaredField("id")));
   }
 
   @Test
   public void testGetFieldNameForSystemEntity() throws Exception {
-    assertEquals("_id", fieldMapper.getRawFieldName(SystemEntity.class, Entity.class.getDeclaredField("id")));
+    assertEquals("_id", fieldMapper.getFieldName(SystemEntity.class, Entity.class.getDeclaredField("id")));
   }
 
   @Test

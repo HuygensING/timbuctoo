@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.Variable;
+import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import org.slf4j.Logger;
@@ -218,7 +219,8 @@ class VariationReducer extends VariationConverter {
       Class<? extends Variable> subClass = typeRegistry.getVariationClass((Class<? extends Variable>) type, variation);
 
       if (subClass != null) {
-        String overridenDBKey = fieldMapper.getFieldName(subClass, field);
+        String fieldName = fieldMapper.getFieldName(subClass, field);
+        String overridenDBKey = FieldMapper.propertyName(subClass, fieldName);
 
         if (record.has(overridenDBKey)) {
 
