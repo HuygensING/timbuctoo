@@ -303,7 +303,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   public void testGetNoResults() {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
-    setUpSearchResult(Lists.<String> newArrayList(), storageManager, Lists.<FacetCount> newArrayList());
+    setUpSearchResult(null, storageManager, Lists.<FacetCount> newArrayList());
 
     Map<String, Object> expected = createExpectedResult(Lists.<String> newArrayList(), Lists.<Person> newArrayList(), Lists.<FacetCount> newArrayList(), 0, 0, SORTABLE_FIELDS, 0, null, null);
 
