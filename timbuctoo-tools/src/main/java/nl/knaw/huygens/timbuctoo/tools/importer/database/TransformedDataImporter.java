@@ -49,11 +49,13 @@ public class TransformedDataImporter {
 
     for (File jsonFile : jsonFiles) {
       String className = jsonFile.getName().substring(0, jsonFile.getName().indexOf('.'));
-      Class<? extends Entity> type = registry.getTypeForIName(className.toLowerCase());
+      Class<? extends Entity> type = registry.getTypeForIName(className);
 
       if (TypeRegistry.isDomainEntity(type)) {
         removeNonPersistent(TypeRegistry.toDomainEntity(type), storageManager, indexManager, registry);
         save(TypeRegistry.toDomainEntity(type), jsonFile, storageManager, indexManager);
+      } else {
+        LOG.error("{} is not a DomainEntity.", className);
       }
 
     }
