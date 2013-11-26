@@ -45,7 +45,7 @@ public class MongoObjectMapper {
     Preconditions.checkNotNull(object);
     Preconditions.checkNotNull(map);
 
-    for (Map.Entry<String, String> entry : fieldMapper.getFieldMap(type).entrySet()) {
+    for (Map.Entry<String, String> entry : fieldMapper.getFieldMap(type, type).entrySet()) {
       String fieldName = entry.getKey();
       String mappedName = entry.getValue();
       try {

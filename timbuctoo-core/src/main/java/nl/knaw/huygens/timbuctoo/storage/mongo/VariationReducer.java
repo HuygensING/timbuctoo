@@ -178,7 +178,7 @@ class VariationReducer extends VariationConverter {
       setFields((Class<T>) type.getSuperclass(), classToStop, instance, node, requestedVariation);
     }
 
-    Map<String, String> fieldMap = fieldMapper.getFieldMap(type);
+    Map<String, String> fieldMap = fieldMapper.getFieldMap(type, type);
 
     for (String javaFieldName : fieldMap.keySet()) {
 
