@@ -138,9 +138,10 @@ public class SearchResource {
     }
     Class<? extends DomainEntity> type = TypeRegistry.toDomainEntity(entityType);
 
-    List<String> ids = result.getIds();
-    int lo = toRange(start, 0, ids.size());
-    int hi = toRange(lo + rows, 0, ids.size());
+    List<String> ids = result.getIds() != null ? result.getIds() : Lists.<String> newArrayList();
+    int idsSize = ids.size();
+    int lo = toRange(start, 0, idsSize);
+    int hi = toRange(lo + rows, 0, idsSize);
 
     List<String> idsToGet = ids.subList(lo, hi);
     List<DomainEntity> entities = retrieveEntities(type, idsToGet);
@@ -150,7 +151,7 @@ public class SearchResource {
     Map<String, Object> returnValue = Maps.newHashMap();
     returnValue.put("term", result.getTerm());
     returnValue.put("facets", result.getFacets());
-    returnValue.put("numFound", ids.size());
+    returnValue.put("numFound", idsSize);
     returnValue.put("ids", idsToGet);
     returnValue.put("refs", entityRefs);
     returnValue.put("results", entities);
@@ -167,7 +168,7 @@ public class SearchResource {
       returnValue.put("_prev", uriBuilder.build());
     }
 
-    if (hi < ids.size()) {
+    if (hi < idsSize) {
       UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
       uriBuilder.queryParam("start", start + rows).queryParam("rows", rows);
       returnValue.put("_next", uriBuilder.build());
