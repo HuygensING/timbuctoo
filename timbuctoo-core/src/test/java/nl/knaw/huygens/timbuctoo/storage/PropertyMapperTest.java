@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.mongo;
+package nl.knaw.huygens.timbuctoo.storage;
 
 import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
 import static org.junit.Assert.assertEquals;
@@ -9,6 +9,7 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
+import nl.knaw.huygens.timbuctoo.storage.mongo.PersonNameMapper;
 import nl.knaw.huygens.timbuctoo.variation.model.MongoObjectMapperEntity;
 
 import org.junit.Before;
@@ -17,7 +18,7 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-public class MongoObjectMapperTest {
+public class PropertyMapperTest {
 
   // keys
   private static final String PRIMITIVE_TEST_COLLECTION_KEY = propertyName("mongoobjectmapperentity", "primitiveTestCollection");
@@ -36,11 +37,11 @@ public class MongoObjectMapperTest {
   private static final String DEFAULT_NAME = "name";
   private static final Class<MongoObjectMapperEntity> TYPE = MongoObjectMapperEntity.class;
 
-  private MongoObjectMapper mapper;
+  private PropertyMapper mapper;
 
   @Before
   public void setUpClass() {
-    mapper = new MongoObjectMapper();
+    mapper = new PropertyMapper();
   }
 
   @Test

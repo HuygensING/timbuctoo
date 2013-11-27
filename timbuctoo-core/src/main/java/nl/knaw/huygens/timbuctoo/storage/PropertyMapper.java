@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.mongo;
+package nl.knaw.huygens.timbuctoo.storage;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -10,7 +10,6 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,17 +23,17 @@ import com.google.common.collect.Maps;
  * This class converts a Java object to a map with a String key and value. 
  * The values are the current value of the object.
  */
-public class MongoObjectMapper {
+public class PropertyMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MongoObjectMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PropertyMapper.class);
 
   private final FieldMapper fieldMapper;
 
-  public MongoObjectMapper() {
+  public PropertyMapper() {
     fieldMapper = new FieldMapper();
   }
 
-  public MongoObjectMapper(FieldMapper fieldMapper) {
+  public PropertyMapper(FieldMapper fieldMapper) {
     this.fieldMapper = fieldMapper;
   }
 

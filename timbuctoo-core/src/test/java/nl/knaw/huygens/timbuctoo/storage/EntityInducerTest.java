@@ -5,12 +5,10 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import test.model.BaseDomainEntity;
@@ -27,19 +25,12 @@ public class EntityInducerTest {
   private final static String ID = "TEST042";
   private static final String PID = "test_pid";
 
-  private static TypeRegistry registry;
-
   private EntityInducer inducer;
   private ObjectMapper mapper;
 
-  @BeforeClass
-  public static void setupRegistry() {
-    registry = new TypeRegistry("test.model test.model.projecta");
-  }
-
   @Before
   public void setup() throws Exception {
-    inducer = new EntityInducer(registry);
+    inducer = new EntityInducer();
     mapper = new ObjectMapper();
   }
 
@@ -120,5 +111,7 @@ public class EntityInducerTest {
     SubADomainEntity entity = new SubADomainEntity(ID, PID, "v1", "v2", "va");
     inducer.induceNewEntity(BaseDomainEntity.class, entity);
   }
+
+  // --- old system entity ---------------------------------------------
 
 }
