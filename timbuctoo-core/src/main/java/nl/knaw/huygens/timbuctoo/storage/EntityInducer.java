@@ -48,9 +48,9 @@ public class EntityInducer {
     checkArgument(entity != null);
 
     if (isSystemEntity(type)) {
-      return induceNewSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity);
+      return induceSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity);
     } else {
-      return induceNewDomainEntity((Class<DomainEntity>) type, (DomainEntity) entity);
+      return induceDomainEntity((Class<DomainEntity>) type, (DomainEntity) entity);
     }
   }
 
@@ -63,49 +63,64 @@ public class EntityInducer {
     checkArgument(node != null);
 
     if (isSystemEntity(type)) {
-      return induceOldSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity, node);
+      return induceSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity, node);
     } else {
-      return induceOldDomainEntity(type, entity, node);
+      return induceDomainEntity(type, entity, node);
     }
   }
 
   // -------------------------------------------------------------------
 
-  private <T extends SystemEntity> JsonNode induceNewSystemEntity(Class<? super T> type, T entity) {
+  private <T extends SystemEntity> JsonNode induceSystemEntity(Class<T> type, T entity) {
     checkArgument(BusinessRules.allowSystemEntityAdd(type));
 
     Map<String, Object> map = Maps.newTreeMap();
+
+    // Add (primitive) system entity
     Class<? super T> viewType = type;
     while (Entity.class.isAssignableFrom(viewType)) {
       propertyMapper.addObject(type, viewType, entity, map);
       viewType = viewType.getSuperclass();
     }
+
     return jsonMapper.valueToTree(map);
   }
 
-  private <T extends DomainEntity> JsonNode induceNewDomainEntity(final Class<? super T> type, T entity) {
+  private <T extends SystemEntity> JsonNode induceSystemEntity(final Class<? super T> type, T entity, JsonNode existingItem) {
+    Map<String, Object> map = Maps.newTreeMap();
+
+    // TODO implement
+
+    return jsonMapper.valueToTree(map);
+  }
+
+  private <T extends DomainEntity> JsonNode induceDomainEntity(final Class<T> type, T entity) {
     checkArgument(BusinessRules.allowDomainEntityAdd(type));
 
     Map<String, Object> map = Maps.newTreeMap();
+
+    // Add (derived) domain entity
     Class<? super T> viewType = type;
     while (Entity.class.isAssignableFrom(viewType)) {
       propertyMapper.addObject(type, viewType, entity, map);
       viewType = viewType.getSuperclass();
     }
+
+    // Add primitive domain entity
+    Class<? super T> baseType = type.getSuperclass();
+    propertyMapper.addObject(baseType, baseType, entity, map);
+
     return jsonMapper.valueToTree(map);
   }
 
-  private <T extends SystemEntity> JsonNode induceOldSystemEntity(final Class<? super T> type, T entity, JsonNode existingItem) {
-    Map<String, Object> map = Maps.newTreeMap();
-    return jsonMapper.valueToTree(map);
-  }
-
-  private <T extends Entity> JsonNode induceOldDomainEntity(Class<T> type, T entity, JsonNode existingItem) {
-    LOG.info("Enter induceOldDomainEntity");
+  private <T extends Entity> JsonNode induceDomainEntity(Class<T> type, T entity, JsonNode existingItem) {
     checkArgument(isDomainEntity(type));
     checkArgument(existingItem != null);
 
     Map<String, Object> map = Maps.newHashMap();
+
+    // TODO implement
+
     return jsonMapper.valueToTree(map);
   }
 

@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntity;
-import test.model.projecta.ProjectADomainEntity;
+import test.model.projecta.SubADomainEntity;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,8 +24,7 @@ import com.google.common.collect.Maps;
 
 public class EntityInducerTest {
 
-  private final static String SYSTEM_ID = "TSYS000000000042";
-  private static final String DOMAIN_ID = "TDOM000000000007";
+  private final static String ID = "TEST042";
   private static final String PID = "test_pid";
 
   private static TypeRegistry registry;
@@ -68,11 +67,13 @@ public class EntityInducerTest {
     return map;
   }
 
-  private ObjectNode newProjectADomainEntityTree(String id, String pid, String value1, String value2, String valuea) {
+  private ObjectNode newSubADomainEntityTree(String id, String pid, String value1, String value2, String valuea) {
     Map<String, Object> map = newDomainEntityMap(id, pid);
-    addValue(map, propertyName(ProjectADomainEntity.class, "value1"), value1);
-    addValue(map, propertyName(ProjectADomainEntity.class, "value2"), value2);
-    addValue(map, propertyName(ProjectADomainEntity.class, "valuea"), valuea);
+    addValue(map, propertyName(SubADomainEntity.class, "value1"), value1);
+    addValue(map, propertyName(SubADomainEntity.class, "value2"), value2);
+    addValue(map, propertyName(SubADomainEntity.class, "valuea"), valuea);
+    addValue(map, propertyName(BaseDomainEntity.class, "value1"), value1);
+    addValue(map, propertyName(BaseDomainEntity.class, "value2"), value2);
     return mapper.valueToTree(map);
   }
 
@@ -80,14 +81,14 @@ public class EntityInducerTest {
 
   @Test
   public void induceSystemEntityAsPrimitive() throws Exception {
-    TestSystemEntity entity = new TestSystemEntity(SYSTEM_ID, "v1", "v2");
-    JsonNode expected = newSystemEntityTree(SYSTEM_ID, "v1", "v2");
+    TestSystemEntity entity = new TestSystemEntity(ID, "v1", "v2");
+    JsonNode expected = newSystemEntityTree(ID, "v1", "v2");
     assertEquals(expected, inducer.induceNewEntity(TestSystemEntity.class, entity));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void induceSystemEntityAsSystemEntity() throws Exception {
-    TestSystemEntity entity = new TestSystemEntity(SYSTEM_ID, "v1", "v2");
+    TestSystemEntity entity = new TestSystemEntity(ID, "v1", "v2");
     inducer.induceNewEntity(SystemEntity.class, entity);
   }
 
@@ -95,13 +96,13 @@ public class EntityInducerTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void inducePrimitiveDomainEntityAsPrimitive() throws Exception {
-    BaseDomainEntity entity = new BaseDomainEntity(DOMAIN_ID, PID, "v1", "v2");
+    BaseDomainEntity entity = new BaseDomainEntity(ID, PID, "v1", "v2");
     inducer.induceNewEntity(BaseDomainEntity.class, entity);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void inducePrimitiveDomainEntityAsDomainEntity() throws Exception {
-    BaseDomainEntity entity = new BaseDomainEntity(DOMAIN_ID, PID, "v1", "v2");
+    BaseDomainEntity entity = new BaseDomainEntity(ID, PID, "v1", "v2");
     inducer.induceNewEntity(DomainEntity.class, entity);
   }
 
@@ -109,14 +110,15 @@ public class EntityInducerTest {
 
   @Test
   public void induceDerivedDomainEntityAsDerived() throws Exception {
-    ProjectADomainEntity entity = new ProjectADomainEntity(DOMAIN_ID, PID, "v1", "v2", "va");
+    SubADomainEntity entity = new SubADomainEntity(ID, PID, "v1", "v2", "va");
+    JsonNode expected = newSubADomainEntityTree(ID, PID, "v1", "v2", "va");
+    assertEquals(expected, inducer.induceNewEntity(SubADomainEntity.class, entity));
+  }
 
-    JsonNode expected = newProjectADomainEntityTree(DOMAIN_ID, PID, "v1", "v2", "va");
-
-    System.out.println(expected);
-    System.out.println(inducer.induceNewEntity(ProjectADomainEntity.class, entity));
-
-    assertEquals(expected, inducer.induceNewEntity(ProjectADomainEntity.class, entity));
+  @Test(expected = IllegalArgumentException.class)
+  public void induceDerivedDomainEntityAsPrimitive() throws Exception {
+    SubADomainEntity entity = new SubADomainEntity(ID, PID, "v1", "v2", "va");
+    inducer.induceNewEntity(BaseDomainEntity.class, entity);
   }
 
 }
