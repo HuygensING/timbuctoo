@@ -9,4 +9,6 @@ public interface Variable {
 
   List<Reference> getVariationRefs();
 
+  void setVariationRefs(List<Reference> variationRefs);
+
 }

@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -62,13 +61,11 @@ public abstract class DomainEntity extends Entity implements Variable {
   }
 
   @JsonProperty(VARIATIONS)
-  @JsonIgnore
   public List<String> getVariations() {
     return variations;
   }
 
   @JsonProperty(VARIATIONS)
-  @JsonIgnore
   public void setVariations(List<String> variations) {
     this.variations = Lists.newArrayList();
     if (variations != null) {
@@ -78,7 +75,6 @@ public abstract class DomainEntity extends Entity implements Variable {
     }
   }
 
-  @JsonIgnore
   public void addVariation(String variation) {
     if (!variations.contains(variation)) {
       variations.add(variation);
@@ -94,6 +90,10 @@ public abstract class DomainEntity extends Entity implements Variable {
     }
     return refs;
   }
+
+  @Override
+  @JsonProperty("@variationRefs")
+  public void setVariationRefs(List<Reference> variationRefs) {}
 
   public List<Role> getRoles() {
     return roles;
