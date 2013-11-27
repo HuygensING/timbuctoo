@@ -13,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 
 import org.apache.commons.lang.StringUtils;
@@ -37,35 +36,42 @@ class VariationInducer extends VariationConverter {
   // --- public API ----------------------------------------------------
 
   /**
+   * Converts an entity to a JsonTree.
+   */
+  public <T extends Entity> JsonNode induceNewEntity(Class<T> type, T entity) throws IOException {
+    checkArgument(entity != null);
+
+    if (TypeRegistry.isSystemEntity(type)) {
+      return induceSystemEntity(type, entity);
+    } else {
+      return induceNewDomainEntity(type, entity);
+    }
+  }
+
+  /**
    * Converts an entity to a Json tree and combines it with an existing Json tree.
    */
-  @SuppressWarnings("unchecked")
   public <T extends Entity> JsonNode induceOldEntity(Class<T> type, T entity, JsonNode node) throws IOException {
     checkArgument(entity != null);
     checkArgument(node != null);
 
     if (TypeRegistry.isSystemEntity(type)) {
-      return induceNewSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity);
+      // TODO Decide: do we want to ignore dbObject?
+      return induceSystemEntity(type, entity);
     } else {
       return induceOldDomainEntity(type, entity, node);
     }
   }
 
-  /**
-   * Converts a system entity to a JsonTree.
-   */
-  public <T extends SystemEntity> JsonNode induceNewSystemEntity(Class<T> type, T entity) {
-    checkNotNull(entity);
+  // -------------------------------------------------------------------
 
+  private <T extends Entity> JsonNode induceSystemEntity(Class<T> type, T entity) {
     Map<String, Object> map = propertyMapper.mapObject(Entity.class, type, entity);
     return jsonMapper.valueToTree(map);
   }
 
-  /**
-   * Converts a domain entity to a JsonTree.
-   */
-  public <T extends DomainEntity> JsonNode induceNewDomainEntity(Class<T> type, T entity) {
-    checkNotNull(entity);
+  private <T extends Entity> JsonNode induceNewDomainEntity(Class<T> type, T entity) {
+    checkArgument(TypeRegistry.isDomainEntity(type));
 
     Map<String, Object> map = propertyMapper.mapObject(Entity.class, type, entity);
 
@@ -77,8 +83,6 @@ class VariationInducer extends VariationConverter {
     ObjectNode newNode = jsonMapper.valueToTree(map);
     return cleanUp(newNode);
   }
-
-  // -------------------------------------------------------------------
 
   private <T extends Entity> JsonNode induceOldDomainEntity(Class<T> type, T entity, JsonNode existingItem) {
     checkArgument(TypeRegistry.isDomainEntity(type));

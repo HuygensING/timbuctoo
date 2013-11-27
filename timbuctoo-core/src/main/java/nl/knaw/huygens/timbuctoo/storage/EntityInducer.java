@@ -39,6 +39,21 @@ public class EntityInducer {
   // --- public API ----------------------------------------------------
 
   /**
+   * Converts an entity to a JsonTree.
+   */
+  @SuppressWarnings("unchecked")
+  public <T extends Entity> JsonNode induceNewEntity(Class<? super T> type, T entity) throws IOException {
+    checkArgument(type != null && (isSystemEntity(type) || isDomainEntity(type)));
+    checkArgument(entity != null);
+
+    if (isSystemEntity(type)) {
+      return induceSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity);
+    } else {
+      return induceNewDomainEntity((Class<DomainEntity>) type, (DomainEntity) entity);
+    }
+  }
+
+  /**
    * Converts an entity to a Json tree and combines it with an existing Json tree.
    */
   @SuppressWarnings("unchecked")
@@ -48,7 +63,7 @@ public class EntityInducer {
     checkArgument(node != null);
 
     if (isSystemEntity(type)) {
-      return induceNewSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity);
+      return induceSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity);
     } else {
       return induceOldDomainEntity(type, entity, node);
     }
@@ -56,13 +71,7 @@ public class EntityInducer {
 
   // -------------------------------------------------------------------
 
-  /**
-   * Converts a system entity to a JsonTree.
-   */
-  public <T extends SystemEntity> JsonNode induceNewSystemEntity(Class<? super T> type, T entity) {
-    checkArgument(TypeRegistry.isSystemEntity(type));
-    checkArgument(entity != null);
-
+  private <T extends SystemEntity> JsonNode induceSystemEntity(final Class<? super T> type, T entity) {
     Map<String, Object> map = Maps.newTreeMap();
     Class<? super T> viewType = type;
     while (Entity.class.isAssignableFrom(viewType)) {
@@ -72,16 +81,12 @@ public class EntityInducer {
     return jsonMapper.valueToTree(map);
   }
 
-  /**
-   * Converts a domain entity to a JsonTree.
-   */
-  public <T extends DomainEntity> JsonNode induceNewDomainEntity(Class<? super T> type, T entity) {
-    checkArgument(TypeRegistry.isDomainEntity(type));
-    checkArgument(entity != null);
-
+  private <T extends DomainEntity> JsonNode induceNewDomainEntity(final Class<? super T> type, T entity) {
+    LOG.info("Enter induceNewDomainEntity");
     Map<String, Object> map = Maps.newTreeMap();
     Class<? super T> viewType = type;
     while (Entity.class.isAssignableFrom(viewType)) {
+      System.out.println("view as " + viewType.getSimpleName());
       propertyMapper.addObject(type, viewType, entity, map);
       viewType = viewType.getSuperclass();
     }

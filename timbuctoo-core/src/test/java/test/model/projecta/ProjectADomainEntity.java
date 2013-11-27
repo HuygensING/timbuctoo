@@ -2,17 +2,17 @@ package test.model.projecta;
 
 import test.model.BaseDomainEntity;
 
-public class SubADomainEntity extends BaseDomainEntity {
+public class ProjectADomainEntity extends BaseDomainEntity {
 
   private String valuea;
 
-  public SubADomainEntity() {}
+  public ProjectADomainEntity() {}
 
-  public SubADomainEntity(String id) {
+  public ProjectADomainEntity(String id) {
     setId(id);
   }
 
-  public SubADomainEntity(String id, String pid, String value1, String value2, String valuea) {
+  public ProjectADomainEntity(String id, String pid, String value1, String value2, String valuea) {
     setId(id);
     setPid(pid);
     setValue1(value1);

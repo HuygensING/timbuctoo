@@ -64,7 +64,7 @@ public class VariationInducerTest extends VariationTestBase {
     entity.setTestValue1(testValue1);
     entity.setTestValue2(testValue2);
 
-    assertEquals(expected, inducer.induceNewSystemEntity(TestSystemEntity.class, entity));
+    assertEquals(expected, inducer.induceNewEntity(TestSystemEntity.class, entity));
   }
 
   @Test
@@ -76,7 +76,7 @@ public class VariationInducerTest extends VariationTestBase {
     TestSystemEntity entity = new TestSystemEntity(TEST_SYSTEM_ID);
     entity.setTestValue1(testValue1);
 
-    assertEquals(expected, inducer.induceNewSystemEntity(TestSystemEntity.class, entity));
+    assertEquals(expected, inducer.induceNewEntity(TestSystemEntity.class, entity));
   }
 
   @Test
@@ -106,7 +106,7 @@ public class VariationInducerTest extends VariationTestBase {
     DatableSystemEntity item = new DatableSystemEntity();
     item.setTestDatable(datable);
 
-    assertEquals(expected, inducer.induceNewSystemEntity(DatableSystemEntity.class, item));
+    assertEquals(expected, inducer.induceNewEntity(DatableSystemEntity.class, item));
   }
 
   @Ignore("Redmine #1909")
@@ -137,7 +137,7 @@ public class VariationInducerTest extends VariationTestBase {
     expectedMap.put(propertyName(ProjectADomainEntity.class, "projectAGeneralTestDocValue"), "projectatest");
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    assertEquals(expected, inducer.induceNewDomainEntity(ProjectADomainEntity.class, entity));
+    assertEquals(expected, inducer.induceNewEntity(ProjectADomainEntity.class, entity));
   }
 
   @Test
@@ -154,7 +154,7 @@ public class VariationInducerTest extends VariationTestBase {
     expectedMap.put(DomainEntity.DELETED, false);
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    assertEquals(expected, inducer.induceNewDomainEntity(ProjectATestDocWithPersonName.class, item));
+    assertEquals(expected, inducer.induceNewEntity(ProjectATestDocWithPersonName.class, item));
   }
 
   @Test
@@ -304,7 +304,7 @@ public class VariationInducerTest extends VariationTestBase {
     expectedMap.put(propertyName("testrole", "roleName"), "roleName");
     JsonNode expected = mapper.valueToTree(expectedMap);
 
-    assertEquals(expected, inducer.induceNewDomainEntity(ProjectBDomainEntity.class, item));
+    assertEquals(expected, inducer.induceNewEntity(ProjectBDomainEntity.class, item));
   }
 
   @Test
@@ -402,9 +402,9 @@ public class VariationInducerTest extends VariationTestBase {
     assertEquals(expected, inducer.induceOldEntity(ProjectADomainEntity.class, entity, existing));
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void testInduceNewEntityWithNullEntity() throws Exception {
-    inducer.induceNewDomainEntity(ProjectBDomainEntity.class, null);
+    inducer.induceNewEntity(ProjectBDomainEntity.class, null);
   }
 
   @Test(expected = IllegalArgumentException.class)

@@ -20,10 +20,6 @@ public interface Storage {
    */
   void close();
 
-  <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException;
-
-  <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) throws IOException;
-
   <T extends Entity> T getItem(Class<T> type, String id) throws IOException;
 
   <T extends Entity> StorageIterator<T> getAllByType(Class<T> type);
@@ -32,6 +28,11 @@ public interface Storage {
    * Returns the number of items in the collection corresponding with the specified type.
    */
   <T extends Entity> long count(Class<T> type);
+
+  /**
+   * Adds the specified entity to the storage; returns its assigned id.
+   */
+  <T extends Entity> String addItem(Class<T> type, T item) throws IOException;
 
   <T extends Entity> void updateItem(Class<T> type, String id, T item) throws IOException;
 
