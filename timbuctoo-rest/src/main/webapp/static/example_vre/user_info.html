@@ -21,10 +21,10 @@
 	$(document).ready(function(){
 		var accessToken = getParameterByName('hsid');
 		var wl = window.location;
-	    var hsurl = wl.protocol + wl.port + wl.pathname;
+	    var hsurl = wl.origin + wl.pathname;
 	    
 	    if (accessToken.length < 1) {
-	         window.location ='https://'+ window.config.securityUri+'/saml2/login?hsurl=' + hsurl;
+	         window.location.replace('https://'+ window.config.securityUri+'/saml2/login?hsurl=' + encodeURIComponent(hsurl));
 	    }
 	    
 		$.ajax({
@@ -34,9 +34,9 @@
 				VRE_ID: "example_vre"
 			},
 			error: function(data){
-				console.log(data);
 				if(data.status===401){
-					window.location = 'https://secure.huygens.knaw.nl/saml2/login?hsurl=' + window.location;
+					window.location.replace('https://secure.huygens.knaw.nl/saml2/login?hsurl=' + encodeURIComponent(hsurl));
+					
 				}
 			},			
 			success:function(data){
