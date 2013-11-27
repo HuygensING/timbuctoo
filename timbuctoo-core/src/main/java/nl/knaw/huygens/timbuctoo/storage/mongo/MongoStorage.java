@@ -20,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EmptyStorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.PropertyMapper;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -58,7 +59,7 @@ public class MongoStorage implements Storage {
   private final DB db;
   private final EntityIds entityIds;
 
-  private MongoObjectMapper mongoMapper;
+  private PropertyMapper propertyMapper;
   private MongoQueries queries;
   private ObjectMapper objectMapper;
   private TreeEncoderFactory treeEncoderFactory;
@@ -102,7 +103,7 @@ public class MongoStorage implements Storage {
   }
 
   private void initialize() {
-    mongoMapper = new MongoObjectMapper();
+    propertyMapper = new PropertyMapper();
     queries = new MongoQueries();
     objectMapper = new ObjectMapper();
     treeEncoderFactory = new TreeEncoderFactory(objectMapper);
@@ -264,7 +265,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException {
-    Map<String, Object> properties = mongoMapper.mapObject(type, example);
+    Map<String, Object> properties = propertyMapper.mapObject(type, example);
     DBObject query = queries.selectByProperties(properties);
     return getItem(type, query);
   }
