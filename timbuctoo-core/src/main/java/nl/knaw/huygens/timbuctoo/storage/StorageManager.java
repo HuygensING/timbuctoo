@@ -142,15 +142,8 @@ public class StorageManager {
     }
   }
 
-  @SuppressWarnings("unchecked")
   public <T extends Entity> String addEntity(Class<T> type, T entity) throws IOException {
-    if (TypeRegistry.isSystemEntity(type)) {
-      return storage.addSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity);
-    }
-    if (TypeRegistry.isDomainEntity(type)) {
-      return storage.addDomainEntity((Class<DomainEntity>) type, (DomainEntity) entity);
-    }
-    throw new IllegalArgumentException("Illegal type " + type.getSimpleName());
+    return storage.addItem(type, entity);
   }
 
   public <T extends Entity> void modifyEntity(Class<T> type, T entity) throws IOException {

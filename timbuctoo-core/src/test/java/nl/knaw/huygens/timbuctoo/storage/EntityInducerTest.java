@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntity;
-import test.model.projecta.SubADomainEntity;
+import test.model.projecta.ProjectADomainEntity;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,7 +25,8 @@ import com.google.common.collect.Maps;
 
 public class EntityInducerTest {
 
-  private final static String ID = "TEST042";
+  private final static String SYSTEM_ID = "TSYS000000000042";
+  private static final String DOMAIN_ID = "TDOM000000000007";
   private static final String PID = "test_pid";
 
   private static TypeRegistry registry;
@@ -44,7 +45,7 @@ public class EntityInducerTest {
     mapper = new ObjectMapper();
   }
 
-  private void addToMap(Map<String, Object> map, String key, String value) {
+  private void addValue(Map<String, Object> map, String key, String value) {
     if (value != null) {
       map.put(key, value);
     }
@@ -52,17 +53,17 @@ public class EntityInducerTest {
 
   private ObjectNode newSystemEntityTree(String id, String value1, String value2) {
     Map<String, Object> map = Maps.newTreeMap();
-    addToMap(map, "_id", id);
-    addToMap(map, propertyName(TestSystemEntity.class, "value1"), value1);
-    addToMap(map, propertyName(TestSystemEntity.class, "value2"), value2);
+    addValue(map, "_id", id);
     map.put("^rev", 0);
+    addValue(map, propertyName(TestSystemEntity.class, "value1"), value1);
+    addValue(map, propertyName(TestSystemEntity.class, "value2"), value2);
     return mapper.valueToTree(map);
   }
 
   private Map<String, Object> newDomainEntityMap(String id, String pid) {
     Map<String, Object> map = Maps.newTreeMap();
-    addToMap(map, "_id", id);
-    addToMap(map, DomainEntity.PID, pid);
+    addValue(map, "_id", id);
+    addValue(map, DomainEntity.PID, pid);
     map.put(DomainEntity.DELETED, false);
     map.put("^rev", 0);
     return map;
@@ -70,16 +71,16 @@ public class EntityInducerTest {
 
   private ObjectNode newBaseDomainEntityTree(String id, String pid, String value1, String value2) {
     Map<String, Object> map = newDomainEntityMap(id, pid);
-    addToMap(map, propertyName(BaseDomainEntity.class, "value1"), value1);
-    addToMap(map, propertyName(BaseDomainEntity.class, "value2"), value2);
+    addValue(map, propertyName(BaseDomainEntity.class, "value1"), value1);
+    addValue(map, propertyName(BaseDomainEntity.class, "value2"), value2);
     return mapper.valueToTree(map);
   }
 
-  private ObjectNode newSubADomainEntityTree(String id, String pid, String value1, String value2, String valuea) {
+  private ObjectNode newProjectADomainEntityTree(String id, String pid, String value1, String value2, String valuea) {
     Map<String, Object> map = newDomainEntityMap(id, pid);
-    addToMap(map, propertyName(SubADomainEntity.class, "value1"), value1);
-    addToMap(map, propertyName(SubADomainEntity.class, "value2"), value2);
-    addToMap(map, propertyName(SubADomainEntity.class, "valuea"), valuea);
+    addValue(map, propertyName(ProjectADomainEntity.class, "value1"), value1);
+    addValue(map, propertyName(ProjectADomainEntity.class, "value2"), value2);
+    addValue(map, propertyName(ProjectADomainEntity.class, "valuea"), valuea);
     return mapper.valueToTree(map);
   }
 
@@ -87,73 +88,79 @@ public class EntityInducerTest {
 
   @Test
   public void induceSystemEntityAsPrimitive() throws Exception {
-    TestSystemEntity entity = new TestSystemEntity(ID, "v1", "v2");
-    JsonNode expected = newSystemEntityTree(ID, "v1", "v2");
-    assertEquals(expected, inducer.induceNewSystemEntity(TestSystemEntity.class, entity));
+    TestSystemEntity entity = new TestSystemEntity(SYSTEM_ID, "v1", "v2");
+
+    JsonNode expected = newSystemEntityTree(SYSTEM_ID, "v1", "v2");
+
+    assertEquals(expected, inducer.induceNewEntity(TestSystemEntity.class, entity));
   }
 
   @Test
   public void induceSystemEntityAsSystemEntity() throws Exception {
-    TestSystemEntity entity = new TestSystemEntity(ID, "v1", "v2");
-    JsonNode expected = newSystemEntityTree(ID, null, null);
-    assertEquals(expected, inducer.induceNewSystemEntity(SystemEntity.class, entity));
+    TestSystemEntity entity = new TestSystemEntity(SYSTEM_ID, "v1", "v2");
+
+    JsonNode expected = newSystemEntityTree(SYSTEM_ID, null, null);
+
+    assertEquals(expected, inducer.induceNewEntity(SystemEntity.class, entity));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void induceSystemEntityAsEntity() throws Exception {
-    TestSystemEntity entity = new TestSystemEntity(ID, "v1", "v2");
-    inducer.induceNewSystemEntity(Entity.class, entity);
+    TestSystemEntity entity = new TestSystemEntity(SYSTEM_ID, "v1", "v2");
+
+    inducer.induceNewEntity(Entity.class, entity);
   }
 
   // --- new primitive domain entitiy ----------------------------------
 
   @Test
   public void inducePrimitiveDomainEntityAsPrimitive() throws Exception {
-    BaseDomainEntity entity = new BaseDomainEntity(ID, PID, "v1", "v2");
-    JsonNode expected = newBaseDomainEntityTree(ID, PID, "v1", "v2");
-    assertEquals(expected, inducer.induceNewDomainEntity(BaseDomainEntity.class, entity));
+    BaseDomainEntity entity = new BaseDomainEntity(DOMAIN_ID, PID, "v1", "v2");
+
+    JsonNode expected = newBaseDomainEntityTree(DOMAIN_ID, PID, "v1", "v2");
+
+    assertEquals(expected, inducer.induceNewEntity(BaseDomainEntity.class, entity));
   }
 
   @Test
   public void inducePrimitiveDomainEntityAsDomainEntity() throws Exception {
-    BaseDomainEntity entity = new BaseDomainEntity(ID, PID, "v1", "v2");
-    JsonNode expected = newBaseDomainEntityTree(ID, PID, null, null);
-    assertEquals(expected, inducer.induceNewDomainEntity(DomainEntity.class, entity));
+    BaseDomainEntity entity = new BaseDomainEntity(DOMAIN_ID, PID, "v1", "v2");
+
+    JsonNode expected = newBaseDomainEntityTree(DOMAIN_ID, PID, null, null);
+
+    assertEquals(expected, inducer.induceNewEntity(DomainEntity.class, entity));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void inducePrimitiveDomainEntityAsEntity() throws Exception {
-    BaseDomainEntity entity = new BaseDomainEntity(ID, PID, "v1", "v2");
-    inducer.induceNewDomainEntity(Entity.class, entity);
+    BaseDomainEntity entity = new BaseDomainEntity(DOMAIN_ID, PID, "v1", "v2");
+
+    inducer.induceNewEntity(Entity.class, entity);
   }
 
   // --- new project domain entitiy ------------------------------------
 
   @Test
   public void induceDerivedDomainEntityAsDerived() throws Exception {
-    SubADomainEntity entity = new SubADomainEntity(ID, PID, "v1", "v2", "va");
-    JsonNode expected = newSubADomainEntityTree(ID, PID, "v1", "v2", "va");
-    assertEquals(expected, inducer.induceNewDomainEntity(SubADomainEntity.class, entity));
+    ProjectADomainEntity entity = new ProjectADomainEntity(DOMAIN_ID, PID, "v1", "v2", "va");
+
+    JsonNode expected = newProjectADomainEntityTree(DOMAIN_ID, PID, "v1", "v2", "va");
+
+    System.out.println(expected);
+    System.out.println(inducer.induceNewEntity(ProjectADomainEntity.class, entity));
+
+    assertEquals(expected, inducer.induceNewEntity(ProjectADomainEntity.class, entity));
   }
 
-  @Test
-  public void induceDerivedDomainEntityAsPrimitive() throws Exception {
-    SubADomainEntity entity = new SubADomainEntity(ID, PID, "v1", "v2", "va");
-    JsonNode expected = newBaseDomainEntityTree(ID, PID, "v1", "v2");
-    assertEquals(expected, inducer.induceNewDomainEntity(BaseDomainEntity.class, entity));
-  }
-
-  @Test
-  public void induceDerivedDomainEntityAsDomainEntity() throws Exception {
-    SubADomainEntity entity = new SubADomainEntity(ID, PID, "v1", "v2", "va");
-    JsonNode expected = newBaseDomainEntityTree(ID, PID, null, null);
-    assertEquals(expected, inducer.induceNewDomainEntity(DomainEntity.class, entity));
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void induceDerivedDomainEntityAsEntity() throws Exception {
-    SubADomainEntity entity = new SubADomainEntity(ID, PID, "v1", "v2", "va");
-    inducer.induceNewDomainEntity(Entity.class, entity);
-  }
+  //  {"^deleted":false,"^pid":"test_pid","^rev":0,"_id":"TDOM000000000007","projectadomainentity:value1":"v1","projectadomainentity:value2":"v2","projectadomainentity:valuea":"va"}
+  //  view as ProjectADomainEntity
+  //  view as BaseDomainEntity
+  //  view as DomainEntity
+  //  view as Entity
+  //  {"^deleted":false,"^pid":"test_pid","^rev":0,"_id":"TDOM000000000007","projectadomainentity:value1":"v1","projectadomainentity:value2":"v2","projectadomainentity:valuea":"va"}
+  //  view as ProjectADomainEntity
+  //  view as BaseDomainEntity
+  //  view as DomainEntity
+  //  view as Entity
 
 }
