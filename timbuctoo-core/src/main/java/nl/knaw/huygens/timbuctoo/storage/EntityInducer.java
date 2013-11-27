@@ -5,6 +5,7 @@ import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.isDomainEntity;
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.isSystemEntity;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
@@ -14,16 +15,12 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoObjectMapper;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Maps;
 
 public class EntityInducer {
-
-  private static final Logger LOG = LoggerFactory.getLogger(EntityInducer.class);
 
   protected final TypeRegistry typeRegistry;
   protected final ObjectMapper jsonMapper;
@@ -87,11 +84,11 @@ public class EntityInducer {
   }
 
   private <T extends SystemEntity> JsonNode induceSystemEntity(final Class<? super T> type, T entity, JsonNode existingItem) {
-    Map<String, Object> map = Maps.newTreeMap();
+    Map<String, Object> map = Maps.newHashMap();
+    propertyMapper.addObject(type, type, entity, map);
+    JsonNode newTree = jsonMapper.valueToTree(map);
 
-    // TODO implement
-
-    return jsonMapper.valueToTree(map);
+    return merge(fieldMapper.getFieldMap(type, type).values(), newTree, (ObjectNode) existingItem);
   }
 
   private <T extends DomainEntity> JsonNode induceDomainEntity(final Class<T> type, T entity) {
@@ -114,14 +111,27 @@ public class EntityInducer {
   }
 
   private <T extends Entity> JsonNode induceDomainEntity(Class<T> type, T entity, JsonNode existingItem) {
-    checkArgument(isDomainEntity(type));
-    checkArgument(existingItem != null);
-
     Map<String, Object> map = Maps.newHashMap();
+    propertyMapper.addObject(type, type, entity, map);
+    JsonNode newTree = jsonMapper.valueToTree(map);
 
-    // TODO implement
+    return merge(fieldMapper.getFieldMap(type, type).values(), newTree, (ObjectNode) existingItem);
+  }
 
-    return jsonMapper.valueToTree(map);
+  /**
+   * Merges the values corresponding to the specified keys of the new tree into the old tree.
+   */
+  private JsonNode merge(Collection<String> keys, JsonNode newTree, ObjectNode oldTree) {
+    for (String key : keys) {
+      JsonNode newValue = newTree.get(key);
+      JsonNode oldValue = oldTree.get(key);
+      if (newValue != null) {
+        oldTree.put(key, newValue);
+      } else if (oldValue != null) {
+        oldTree.remove(key);
+      }
+    }
+    return oldTree;
   }
 
 }
