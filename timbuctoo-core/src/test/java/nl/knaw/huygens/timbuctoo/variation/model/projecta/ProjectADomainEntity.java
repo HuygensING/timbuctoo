@@ -14,6 +14,10 @@ public class ProjectADomainEntity extends BaseDomainEntity {
     setId(id);
   }
 
+  public ProjectADomainEntity(String id, String name) {
+    super(id, name);
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof ProjectADomainEntity)) {

@@ -65,9 +65,9 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testAddItem() throws IOException {
-    BaseDomainEntity input = new BaseDomainEntity(DEFAULT_ID, "test");
+    ProjectADomainEntity input = new ProjectADomainEntity(DEFAULT_ID, "test");
 
-    storage.addItem(BaseDomainEntity.class, input);
+    storage.addItem(ProjectADomainEntity.class, input);
 
     // Two additions: one normal addition and one addition in the version collection.
     verify(anyCollection, times(2)).insert(any(DBObject.class));
