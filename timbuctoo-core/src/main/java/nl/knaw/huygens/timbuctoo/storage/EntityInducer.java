@@ -7,6 +7,7 @@ import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.isSystemEntity;
 import java.io.IOException;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -47,7 +48,7 @@ public class EntityInducer {
     checkArgument(entity != null);
 
     if (isSystemEntity(type)) {
-      return induceSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity);
+      return induceNewSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity);
     } else {
       return induceNewDomainEntity((Class<DomainEntity>) type, (DomainEntity) entity);
     }
@@ -58,12 +59,11 @@ public class EntityInducer {
    */
   @SuppressWarnings("unchecked")
   public <T extends Entity> JsonNode induceOldEntity(Class<T> type, T entity, JsonNode node) throws IOException {
-    LOG.info("Enter induceOldEntity");
     checkArgument(entity != null);
     checkArgument(node != null);
 
     if (isSystemEntity(type)) {
-      return induceSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity);
+      return induceOldSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity, node);
     } else {
       return induceOldDomainEntity(type, entity, node);
     }
@@ -71,7 +71,9 @@ public class EntityInducer {
 
   // -------------------------------------------------------------------
 
-  private <T extends SystemEntity> JsonNode induceSystemEntity(final Class<? super T> type, T entity) {
+  private <T extends SystemEntity> JsonNode induceNewSystemEntity(Class<? super T> type, T entity) {
+    checkArgument(BusinessRules.allowSystemEntityAdd(type));
+
     Map<String, Object> map = Maps.newTreeMap();
     Class<? super T> viewType = type;
     while (Entity.class.isAssignableFrom(viewType)) {
@@ -82,14 +84,19 @@ public class EntityInducer {
   }
 
   private <T extends DomainEntity> JsonNode induceNewDomainEntity(final Class<? super T> type, T entity) {
-    LOG.info("Enter induceNewDomainEntity");
+    checkArgument(BusinessRules.allowDomainEntityAdd(type));
+
     Map<String, Object> map = Maps.newTreeMap();
     Class<? super T> viewType = type;
     while (Entity.class.isAssignableFrom(viewType)) {
-      System.out.println("view as " + viewType.getSimpleName());
       propertyMapper.addObject(type, viewType, entity, map);
       viewType = viewType.getSuperclass();
     }
+    return jsonMapper.valueToTree(map);
+  }
+
+  private <T extends SystemEntity> JsonNode induceOldSystemEntity(final Class<? super T> type, T entity, JsonNode existingItem) {
+    Map<String, Object> map = Maps.newTreeMap();
     return jsonMapper.valueToTree(map);
   }
 
