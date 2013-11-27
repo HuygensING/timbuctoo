@@ -28,16 +28,16 @@ public class BusinessRules {
   }
 
   /**
-   * Can a system entity with the specfied type to be added the data store.
+   * Can a system entity with the specfied type be added to the data store.
    */
-  public static boolean allowSystemEntityAdd(Class<? extends SystemEntity> type) {
+  public static boolean allowSystemEntityAdd(Class<?> type) {
     return type != null && type.getSuperclass() == SystemEntity.class;
   }
 
   /**
-   * Can a domain entity with the specfied type to be added the data store.
+   * Can a domain entity with the specfied type be added to the data store.
    */
-  public static boolean allowDomainEntityAdd(Class<? extends DomainEntity> type) {
+  public static boolean allowDomainEntityAdd(Class<?> type) {
     return type != null && type.getSuperclass() != null && type.getSuperclass().getSuperclass() == DomainEntity.class;
   }
 

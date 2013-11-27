@@ -7,7 +7,6 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.junit.Before;
@@ -69,13 +68,6 @@ public class EntityInducerTest {
     return map;
   }
 
-  private ObjectNode newBaseDomainEntityTree(String id, String pid, String value1, String value2) {
-    Map<String, Object> map = newDomainEntityMap(id, pid);
-    addValue(map, propertyName(BaseDomainEntity.class, "value1"), value1);
-    addValue(map, propertyName(BaseDomainEntity.class, "value2"), value2);
-    return mapper.valueToTree(map);
-  }
-
   private ObjectNode newProjectADomainEntityTree(String id, String pid, String value1, String value2, String valuea) {
     Map<String, Object> map = newDomainEntityMap(id, pid);
     addValue(map, propertyName(ProjectADomainEntity.class, "value1"), value1);
@@ -89,53 +81,28 @@ public class EntityInducerTest {
   @Test
   public void induceSystemEntityAsPrimitive() throws Exception {
     TestSystemEntity entity = new TestSystemEntity(SYSTEM_ID, "v1", "v2");
-
     JsonNode expected = newSystemEntityTree(SYSTEM_ID, "v1", "v2");
-
     assertEquals(expected, inducer.induceNewEntity(TestSystemEntity.class, entity));
   }
 
-  @Test
+  @Test(expected = IllegalArgumentException.class)
   public void induceSystemEntityAsSystemEntity() throws Exception {
     TestSystemEntity entity = new TestSystemEntity(SYSTEM_ID, "v1", "v2");
-
-    JsonNode expected = newSystemEntityTree(SYSTEM_ID, null, null);
-
-    assertEquals(expected, inducer.induceNewEntity(SystemEntity.class, entity));
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void induceSystemEntityAsEntity() throws Exception {
-    TestSystemEntity entity = new TestSystemEntity(SYSTEM_ID, "v1", "v2");
-
-    inducer.induceNewEntity(Entity.class, entity);
+    inducer.induceNewEntity(SystemEntity.class, entity);
   }
 
   // --- new primitive domain entitiy ----------------------------------
 
-  @Test
+  @Test(expected = IllegalArgumentException.class)
   public void inducePrimitiveDomainEntityAsPrimitive() throws Exception {
     BaseDomainEntity entity = new BaseDomainEntity(DOMAIN_ID, PID, "v1", "v2");
-
-    JsonNode expected = newBaseDomainEntityTree(DOMAIN_ID, PID, "v1", "v2");
-
-    assertEquals(expected, inducer.induceNewEntity(BaseDomainEntity.class, entity));
-  }
-
-  @Test
-  public void inducePrimitiveDomainEntityAsDomainEntity() throws Exception {
-    BaseDomainEntity entity = new BaseDomainEntity(DOMAIN_ID, PID, "v1", "v2");
-
-    JsonNode expected = newBaseDomainEntityTree(DOMAIN_ID, PID, null, null);
-
-    assertEquals(expected, inducer.induceNewEntity(DomainEntity.class, entity));
+    inducer.induceNewEntity(BaseDomainEntity.class, entity);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void inducePrimitiveDomainEntityAsEntity() throws Exception {
+  public void inducePrimitiveDomainEntityAsDomainEntity() throws Exception {
     BaseDomainEntity entity = new BaseDomainEntity(DOMAIN_ID, PID, "v1", "v2");
-
-    inducer.induceNewEntity(Entity.class, entity);
+    inducer.induceNewEntity(DomainEntity.class, entity);
   }
 
   // --- new project domain entitiy ------------------------------------
@@ -151,16 +118,5 @@ public class EntityInducerTest {
 
     assertEquals(expected, inducer.induceNewEntity(ProjectADomainEntity.class, entity));
   }
-
-  //  {"^deleted":false,"^pid":"test_pid","^rev":0,"_id":"TDOM000000000007","projectadomainentity:value1":"v1","projectadomainentity:value2":"v2","projectadomainentity:valuea":"va"}
-  //  view as ProjectADomainEntity
-  //  view as BaseDomainEntity
-  //  view as DomainEntity
-  //  view as Entity
-  //  {"^deleted":false,"^pid":"test_pid","^rev":0,"_id":"TDOM000000000007","projectadomainentity:value1":"v1","projectadomainentity:value2":"v2","projectadomainentity:valuea":"va"}
-  //  view as ProjectADomainEntity
-  //  view as BaseDomainEntity
-  //  view as DomainEntity
-  //  view as Entity
 
 }
