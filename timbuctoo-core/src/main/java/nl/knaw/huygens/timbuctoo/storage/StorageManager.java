@@ -70,14 +70,24 @@ public class StorageManager {
 
   // --- add entities --------------------------------------------------
 
-  public <T extends Entity> String addSystemEntity(Class<T> type, T entity) throws IOException {
+  public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException {
     checkArgument(BusinessRules.allowSystemEntityAdd(type), "Not allowed to add %s", type);
     return storage.addItem(type, entity);
   }
 
-  public <T extends Entity> String addDomainEntity(Class<T> type, T entity) throws IOException {
+  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) throws IOException {
     checkArgument(BusinessRules.allowDomainEntityAdd(type), "Not allowed to add %s", type);
     return storage.addItem(type, entity);
+  }
+
+  // --- update entities -----------------------------------------------
+
+  public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws IOException {
+    storage.updateItem(type, entity.getId(), entity);
+  }
+
+  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity) throws IOException {
+    storage.updateItem(type, entity.getId(), entity);
   }
 
   // -------------------------------------------------------------------
@@ -155,10 +165,6 @@ public class StorageManager {
       LOG.error("Error while handling {} {}", type.getName(), id);
       return null;
     }
-  }
-
-  public <T extends Entity> void modifyEntity(Class<T> type, T entity) throws IOException {
-    storage.updateItem(type, entity.getId(), entity);
   }
 
   public <T extends Entity> void removeEntity(T entity) throws IOException {

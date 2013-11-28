@@ -82,7 +82,7 @@ public class UserResource extends ResourceBase {
   @RolesAllowed(ADMIN_ROLE)
   public Response put(@PathParam(ID_PARAM) String id, User user) throws IOException {
     try {
-      storageManager.modifyEntity(User.class, user);
+      storageManager.updateSystemEntity(User.class, user);
     } catch (IOException ex) {
       throw new WebApplicationException(Status.NOT_FOUND);
     }

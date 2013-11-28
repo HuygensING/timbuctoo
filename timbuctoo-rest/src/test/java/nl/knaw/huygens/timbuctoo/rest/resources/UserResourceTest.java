@@ -223,7 +223,7 @@ public class UserResourceTest extends WebServiceTestSetup {
         // only if the document version does not exist an IOException is thrown.
         throw new IOException();
       }
-    }).when(storageManager).modifyEntity(any(Class.class), any(User.class));
+    }).when(storageManager).updateSystemEntity(any(Class.class), any(User.class));
 
     ClientResponse response = resource.path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, user);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());

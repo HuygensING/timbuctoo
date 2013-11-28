@@ -133,7 +133,7 @@ public class DomainEntityResource extends ResourceBase {
     checkWritable(entity, Status.FORBIDDEN);
 
     try {
-      storageManager.modifyEntity((Class<T>) type, (T) input);
+      storageManager.updateDomainEntity((Class<T>) type, (T) input);
     } catch (IOException e) {
       // TODO improve the logic, we already have checked existnce
       // storage manager should no throw an exception

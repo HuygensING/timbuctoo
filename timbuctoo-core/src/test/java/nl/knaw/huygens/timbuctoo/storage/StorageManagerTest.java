@@ -96,7 +96,7 @@ public class StorageManagerTest {
   @Test
   public void testModifyEntity() throws IOException {
     BaseDomainEntity entity = new BaseDomainEntity("id");
-    manager.modifyEntity(BaseDomainEntity.class, entity);
+    manager.updateDomainEntity(BaseDomainEntity.class, entity);
     verify(storage).updateItem(BaseDomainEntity.class, "id", entity);
   }
 

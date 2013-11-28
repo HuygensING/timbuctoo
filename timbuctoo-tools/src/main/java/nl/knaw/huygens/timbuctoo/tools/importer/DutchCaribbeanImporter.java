@@ -280,7 +280,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
         referenceMap.put(jsonId, new Reference(DCARKeyword.class, storedId));
 
         if (UPDATE_TEST) {
-          modEntity(DCARKeyword.class, keyword);
+          updateDomainEntity(DCARKeyword.class, keyword);
           keyword.setValue(keyword.getValue() + "-mod");
 
           ATLGKeyword newKeyword = new ATLGKeyword();
@@ -290,7 +290,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
           newKeyword.setType(keyword.getType());
           newKeyword.setValue(keyword.getValue());
           newKeyword.setLabel("ATLG-" + keyword.getLabel());
-          modEntity(ATLGKeyword.class, newKeyword);
+          updateDomainEntity(ATLGKeyword.class, newKeyword);
         }
       }
     }
