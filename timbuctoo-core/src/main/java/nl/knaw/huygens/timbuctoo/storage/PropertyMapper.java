@@ -37,6 +37,27 @@ public class PropertyMapper {
     this.fieldMapper = fieldMapper;
   }
 
+  public Map<String, Object> getPropertyMap(Map<String, Field> fieldMap, Object object) {
+    Map<String, Object> map = Maps.newHashMap();
+    if (fieldMap != null && object != null) {
+      for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
+        Field field = entry.getValue();
+        try {
+          field.setAccessible(true);
+          Object value = convertValue(field.getName(), field.getType(), field.get(object));
+          if (value != null) {
+            map.put(entry.getKey(), value);
+          }
+        } catch (IllegalAccessException e) {
+          LOG.error("Field {}: {}", field.getName(), e.getClass().getSimpleName());
+        } catch (IOException e) {
+          LOG.error("Field {}: {}", field.getName(), e.getClass().getSimpleName());
+        }
+      }
+    }
+    return map;
+  }
+
   /**
    * Adds properties to a map, ignoring null values.
    */

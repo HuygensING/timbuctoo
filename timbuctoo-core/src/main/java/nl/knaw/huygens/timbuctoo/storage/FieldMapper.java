@@ -45,6 +45,30 @@ public class FieldMapper {
   // -------------------------------------------------------------------
 
   /**
+   * Adds declared fields of the specified view type to the field map,
+   * using as keys the corresponding property names.
+   */
+  public void addToFieldMap(Class<?> prefixType, Class<?> viewType, Map<String, Field> map) {
+    String prefix = TypeNames.getInternalName(prefixType);
+    for (Field field : viewType.getDeclaredFields()) {
+      if (isProperty(field)) {
+        String fieldName = getFieldName(viewType, field);
+        if (fieldName.indexOf('@') < 0) { // exclude virtual properties
+          map.put(propertyName(prefix, fieldName), field);
+        }
+      }
+    }
+  }
+
+  public Map<String, Field> getSimpleFieldMap(Class<?> prefixType, Class<?> viewType) {
+    Map<String, Field> map = Maps.newHashMap();
+    addToFieldMap(prefixType, viewType, map);
+    return map;
+  }
+
+  // -------------------------------------------------------------------
+
+  /**
    * Generates a mapping of the declared fields of the specified type
    * to a property name with a specified prefix type.
    */
