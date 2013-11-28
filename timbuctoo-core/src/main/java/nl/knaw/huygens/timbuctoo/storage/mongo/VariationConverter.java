@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
-import nl.knaw.huygens.timbuctoo.storage.PropertyMapper;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -26,13 +25,11 @@ class VariationConverter {
   protected final TypeRegistry typeRegistry;
   protected final ObjectMapper jsonMapper;
   protected final FieldMapper fieldMapper;
-  protected final PropertyMapper propertyMapper;
 
   public VariationConverter(TypeRegistry registry) {
     typeRegistry = registry;
     jsonMapper = new ObjectMapper();
     fieldMapper = new FieldMapper();
-    propertyMapper = new PropertyMapper();
   }
 
   protected String getPackageName(Class<? extends Entity> type) {

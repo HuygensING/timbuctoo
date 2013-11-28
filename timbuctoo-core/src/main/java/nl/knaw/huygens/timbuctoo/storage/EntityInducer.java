@@ -19,14 +19,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class EntityInducer {
 
-  protected final ObjectMapper jsonMapper;
-  protected final FieldMapper fieldMapper;
-  protected final PropertyMapper propertyMapper;
+  private final FieldMapper fieldMapper;
+  private final ObjectMapper jsonMapper;
 
   public EntityInducer() {
-    jsonMapper = new ObjectMapper();
     fieldMapper = new FieldMapper();
-    propertyMapper = new PropertyMapper(fieldMapper);
+    jsonMapper = new ObjectMapper();
   }
 
   /**
@@ -91,8 +89,8 @@ public class EntityInducer {
    * Creates a Json tree given a field map and an object.
    */
   private JsonNode createTree(Map<String, Field> fieldMap, Object object) {
-    Map<String, Object> map = propertyMapper.getPropertyMap(fieldMap, object);
-    return jsonMapper.valueToTree(map);
+    PropertyMap properties = new PropertyMap(fieldMap, object);
+    return jsonMapper.valueToTree(properties);
   }
 
   /**
