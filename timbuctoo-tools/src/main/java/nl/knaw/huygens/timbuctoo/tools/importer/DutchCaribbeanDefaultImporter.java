@@ -34,7 +34,7 @@ public abstract class DutchCaribbeanDefaultImporter extends DefaultImporter {
 
   protected void setup(RelationManager relationManager) {
     if (relationManager != null) {
-      relationManager.importRelationTypes(RELATION_TYPE_DEFS);
+      new RelationTypeImporter(relationManager, this.typeRegistry).importRelationTypes(RELATION_TYPE_DEFS);
     }
   }
 
