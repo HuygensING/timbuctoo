@@ -2,11 +2,14 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Date;
 import java.util.Map;
+
+import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import test.model.TestSystemEntity;
 
 import com.google.common.collect.Maps;
 import com.mongodb.DBObject;
@@ -48,11 +51,13 @@ public class MongoQueriesTest {
 
   @Test
   public void testSelectByProperties() {
-    Map<String, Object> expected = Maps.newHashMap();
-    expected.put("key1", "value1");
-    expected.put("key2", new Date());
+    TestSystemEntity entity = new TestSystemEntity("id", "v1", "v2");
+    DBObject query = queries.selectByProperties(TestSystemEntity.class, entity);
 
-    DBObject query = queries.selectByProperties(expected);
+    Map<String, Object> expected = Maps.newHashMap();
+    expected.put(FieldMapper.propertyName(TestSystemEntity.class, "value1"), "v1");
+    expected.put(FieldMapper.propertyName(TestSystemEntity.class, "value2"), "v2");
+
     assertEquals(expected, query.toMap());
   }
 
