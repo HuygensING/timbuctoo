@@ -9,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import test.model.BaseDomainEntity;
@@ -134,39 +133,119 @@ public class EntityInducerTest {
 
   // --- old domain entity ---------------------------------------------
 
-  @Ignore
   @Test
-  public void updateDomainEntityWithDerivedView() throws Exception {
-    SubADomainEntity entity = new SubADomainEntity(ID, PID, "xv1", null, "xva");
-    JsonNode oldTree = newSubADomainEntityTree(ID, PID, "v1", "v2", "v1", "v2", "va");
-    JsonNode newTree = newSubADomainEntityTree(ID, PID, "v1", "v2", "v1", "v2", "xva");
+  public void updateOfProjectMustNotAffectPrimitive() throws Exception {
+    // tree to be updated
+    Map<String, Object> oldMap = newDomainEntityMap(ID, PID);
+    oldMap.put(propertyName(BaseDomainEntity.class, "value1"), "v1");
+    oldMap.put(propertyName(BaseDomainEntity.class, "value2"), "v2");
+    oldMap.put(propertyName(SubADomainEntity.class, "value1"), "v1");
+    oldMap.put(propertyName(SubADomainEntity.class, "value2"), "v2");
+    oldMap.put(propertyName(SubADomainEntity.class, "valuea"), "va");
+    JsonNode oldTree = mapper.valueToTree(oldMap);
+
+    // entity to update with
+    SubADomainEntity entity = new SubADomainEntity(ID, PID);
+    entity.setValue1("xv1");
+    entity.setValue2(null);
+    entity.setValuea("xva");
+
+    // expected tree after update
+    Map<String, Object> newMap = newDomainEntityMap(ID, PID);
+    newMap.put(propertyName(BaseDomainEntity.class, "value1"), "v1");
+    newMap.put(propertyName(BaseDomainEntity.class, "value2"), "v2");
+    newMap.put(propertyName(SubADomainEntity.class, "value1"), "xv1");
+    newMap.put(propertyName(SubADomainEntity.class, "valuea"), "xva");
+    JsonNode newTree = mapper.valueToTree(newMap);
+
     assertEquals(newTree, inducer.induceOldEntity(SubADomainEntity.class, entity, oldTree));
   }
 
-  @Ignore
   @Test
-  public void updateDomainEntityWithPrimitiveView() throws Exception {
-    SubADomainEntity entity = new SubADomainEntity(ID, PID, "xv1", null, "xva");
-    JsonNode oldTree = newSubADomainEntityTree(ID, PID, "v1", "v2", "v1", "v2", "va");
-    JsonNode newTree = newSubADomainEntityTree(ID, PID, "xv1", null, "v1", "v2", "va");
+  public void updateOfPrimitiveMustNotAffectProject() throws Exception {
+    // tree to be updated
+    Map<String, Object> oldMap = newDomainEntityMap(ID, PID);
+    oldMap.put(propertyName(BaseDomainEntity.class, "value1"), "v1");
+    oldMap.put(propertyName(BaseDomainEntity.class, "value2"), "v2");
+    oldMap.put(propertyName(SubADomainEntity.class, "value1"), "v1");
+    oldMap.put(propertyName(SubADomainEntity.class, "value2"), "v2");
+    oldMap.put(propertyName(SubADomainEntity.class, "valuea"), "va");
+    JsonNode oldTree = mapper.valueToTree(oldMap);
+
+    // entity to update with
+    SubADomainEntity entity = new SubADomainEntity(ID, PID);
+    entity.setValue1("xv1");
+    entity.setValue2(null);
+    entity.setValuea("xva");
+
+    // expected tree after update
+    Map<String, Object> newMap = newDomainEntityMap(ID, PID);
+    newMap.put(propertyName(BaseDomainEntity.class, "value1"), "xv1");
+    newMap.put(propertyName(SubADomainEntity.class, "value1"), "v1");
+    newMap.put(propertyName(SubADomainEntity.class, "value2"), "v2");
+    newMap.put(propertyName(SubADomainEntity.class, "valuea"), "va");
+    JsonNode newTree = mapper.valueToTree(newMap);
+
     assertEquals(newTree, inducer.induceOldEntity(BaseDomainEntity.class, entity, oldTree));
   }
 
-  @Ignore
   @Test
-  public void updateDomainEntityWithWrongView() throws Exception {
-    SubADomainEntity entity = new SubADomainEntity(ID, PID, "xv1", null, "xva");
-    JsonNode oldTree = newSubADomainEntityTree(ID, PID, "v1", "v2", "v1", "v2", "va");
-    JsonNode newTree = newSubADomainEntityTree(ID, PID, "v1", "v2", "v1", "v2", "va");
-    assertEquals(newTree, inducer.induceOldEntity(BaseDomainEntity.class, entity, oldTree));
+  public void updateOfAdministrativeMustNotAffectData() throws Exception {
+    // tree to be updated
+    Map<String, Object> oldMap = newDomainEntityMap(ID, PID);
+    oldMap.put(propertyName(BaseDomainEntity.class, "value1"), "v1");
+    oldMap.put(propertyName(BaseDomainEntity.class, "value2"), "v2");
+    oldMap.put(propertyName(SubADomainEntity.class, "value1"), "v1");
+    oldMap.put(propertyName(SubADomainEntity.class, "value2"), "v2");
+    oldMap.put(propertyName(SubADomainEntity.class, "valuea"), "va");
+    JsonNode oldTree = mapper.valueToTree(oldMap);
+
+    // entity to update with
+    SubADomainEntity entity = new SubADomainEntity(ID, PID);
+    entity.setValue1("xv1");
+    entity.setValue2(null);
+    entity.setValuea("xva");
+
+    // expected tree after update
+    Map<String, Object> newMap = newDomainEntityMap(ID, PID);
+    newMap.put(propertyName(BaseDomainEntity.class, "value1"), "v1");
+    newMap.put(propertyName(BaseDomainEntity.class, "value2"), "v2");
+    newMap.put(propertyName(SubADomainEntity.class, "value1"), "v1");
+    newMap.put(propertyName(SubADomainEntity.class, "value2"), "v2");
+    newMap.put(propertyName(SubADomainEntity.class, "valuea"), "va");
+    JsonNode newTree = mapper.valueToTree(newMap);
+
+    assertEquals(newTree, inducer.induceOldEntity(DomainEntity.class, entity, oldTree));
   }
 
-  @Ignore
   @Test
   public void updateDomainEntityWithOtherVariant() throws Exception {
-    SubBDomainEntity entity = new SubBDomainEntity(ID, PID, "xv1", null, "xvb");
-    JsonNode oldTree = newSubADomainEntityTree(ID, PID, "v1", "v2", "v1", "v2", "va");
-    JsonNode newTree = newSubADomainEntityTree(ID, PID, "v1", "v2", "v1", "v2", "va");
+    // tree to be updated
+    Map<String, Object> oldMap = newDomainEntityMap(ID, PID);
+    oldMap.put(propertyName(BaseDomainEntity.class, "value1"), "v1");
+    oldMap.put(propertyName(BaseDomainEntity.class, "value2"), "v2");
+    oldMap.put(propertyName(SubADomainEntity.class, "value1"), "v1");
+    oldMap.put(propertyName(SubADomainEntity.class, "value2"), "v2");
+    oldMap.put(propertyName(SubADomainEntity.class, "valuea"), "va");
+    JsonNode oldTree = mapper.valueToTree(oldMap);
+
+    // entity to update with
+    SubBDomainEntity entity = new SubBDomainEntity(ID, PID);
+    entity.setValue1("x1");
+    entity.setValue2(null);
+    entity.setValueb("xb");
+
+    // expected tree after update
+    Map<String, Object> newMap = newDomainEntityMap(ID, PID);
+    newMap.put(propertyName(BaseDomainEntity.class, "value1"), "v1");
+    newMap.put(propertyName(BaseDomainEntity.class, "value2"), "v2");
+    newMap.put(propertyName(SubADomainEntity.class, "value1"), "v1");
+    newMap.put(propertyName(SubADomainEntity.class, "value2"), "v2");
+    newMap.put(propertyName(SubADomainEntity.class, "valuea"), "va");
+    newMap.put(propertyName(SubBDomainEntity.class, "value1"), "x1");
+    newMap.put(propertyName(SubBDomainEntity.class, "valueb"), "xb");
+    JsonNode newTree = mapper.valueToTree(newMap);
+
     assertEquals(newTree, inducer.induceOldEntity(SubBDomainEntity.class, entity, oldTree));
   }
 

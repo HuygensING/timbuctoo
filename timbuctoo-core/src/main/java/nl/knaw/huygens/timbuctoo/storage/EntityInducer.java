@@ -4,8 +4,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.isSystemEntity;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -15,7 +16,6 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Maps;
 
 public class EntityInducer {
 
@@ -35,8 +35,10 @@ public class EntityInducer {
   @SuppressWarnings("unchecked")
   public <T extends Entity> JsonNode induceNewEntity(Class<? super T> type, T entity) throws IOException {
     if (isSystemEntity(type)) {
+      checkArgument(BusinessRules.allowSystemEntityAdd(type));
       return induceSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity);
     } else {
+      checkArgument(BusinessRules.allowDomainEntityAdd(type));
       return induceDomainEntity((Class<DomainEntity>) type, (DomainEntity) entity);
     }
   }
@@ -56,88 +58,47 @@ public class EntityInducer {
   // -------------------------------------------------------------------
 
   private <T extends SystemEntity> JsonNode induceSystemEntity(Class<T> type, T entity) {
-    checkArgument(BusinessRules.allowSystemEntityAdd(type));
+    Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, Entity.class);
 
-    Map<String, Object> map = Maps.newHashMap();
-
-    // Add (primitive) system entity
-    Class<? super T> viewType = type;
-    while (Entity.class.isAssignableFrom(viewType)) {
-      propertyMapper.addObject(type, viewType, entity, map);
-      viewType = viewType.getSuperclass();
-    }
-
-    return jsonMapper.valueToTree(map);
+    return createTree(fieldMap, entity);
   }
 
-  private <T extends DomainEntity> JsonNode induceDomainEntity(final Class<T> type, T entity) {
-    checkArgument(BusinessRules.allowDomainEntityAdd(type));
-
-    Map<String, Object> map = Maps.newHashMap();
-
-    // Add (derived) domain entity
-    Class<? super T> viewType = type;
-    while (Entity.class.isAssignableFrom(viewType)) {
-      propertyMapper.addObject(type, viewType, entity, map);
-      viewType = viewType.getSuperclass();
-    }
-
-    // Add primitive domain entity
-    Class<? super T> baseType = type.getSuperclass();
-    propertyMapper.addObject(baseType, baseType, entity, map);
-
+  private <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity) {
+    Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, Entity.class);
+    fieldMapper.addToFieldMap(type.getSuperclass(), type.getSuperclass(), fieldMap);
     // TODO handle roles
 
-    return jsonMapper.valueToTree(map);
+    return createTree(fieldMap, entity);
   }
 
-  private <T extends SystemEntity> JsonNode induceSystemEntity(Class<T> type, T entity, JsonNode existingItem) {
-    checkArgument(entity != null);
-    checkArgument(existingItem != null);
+  private <T extends SystemEntity> JsonNode induceSystemEntity(Class<T> type, T entity, JsonNode tree) {
+    Map<String, Field> fieldMap = fieldMapper.getSimpleFieldMap(type, type);
 
-    Map<String, Object> map = Maps.newHashMap();
-    propertyMapper.addObject(type, type, entity, map);
-    JsonNode newTree = jsonMapper.valueToTree(map);
-
-    return merge(fieldMapper.getFieldMap(type, type).values(), newTree, (ObjectNode) existingItem);
+    JsonNode newTree = createTree(fieldMap, entity);
+    return merge(fieldMap.keySet(), newTree, (ObjectNode) tree);
   }
 
-  private <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity, JsonNode existingItem) {
-    checkArgument(entity != null);
-    checkArgument(existingItem != null);
-
-    Map<String, Object> map = Maps.newHashMap();
-    Class<? super T> viewType = type;
-    while (viewType != DomainEntity.class) {
-      propertyMapper.addObject(type, viewType, entity, map);
-      viewType = viewType.getSuperclass();
-    }
-    JsonNode newTree = jsonMapper.valueToTree(map);
-
+  private <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity, JsonNode tree) {
+    Class<?> stopType = (type.getSuperclass() == DomainEntity.class) ? type : type.getSuperclass();
+    Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, stopType);
     // TODO handle roles
 
-    merge(fieldMapper.getFieldMap(type, type).values(), newTree, (ObjectNode) existingItem);
-
-    Class<? super T> baseType = type.getSuperclass();
-    if (baseType != type) {
-      merge(fieldMapper.getFieldMap(type, baseType).values(), newTree, (ObjectNode) existingItem);
-    }
-    return existingItem;
+    JsonNode newTree = createTree(fieldMap, entity);
+    return merge(fieldMap.keySet(), newTree, (ObjectNode) tree);
   }
 
-  //
-  // de truc is dat nu alleen de field map van de "hoogste" instantie gebruikt wordt
-  // de correcte oplsossing ligt voor de hand:
-  // bij het samenstellen van de property map moet je itereren over de klasse hierarchie!
-  // daarna gebruik je de resulerende map voor:
-  // - het bepalen van de property map
-  // - de merge, indie van toepassing
-  // !!!!!
+  /**
+   * Creates a Json tree given a field map and an object.
+   */
+  private JsonNode createTree(Map<String, Field> fieldMap, Object object) {
+    Map<String, Object> map = propertyMapper.getPropertyMap(fieldMap, object);
+    return jsonMapper.valueToTree(map);
+  }
 
   /**
    * Merges the values corresponding to the specified keys of the new tree into the old tree.
    */
-  private JsonNode merge(Collection<String> keys, JsonNode newTree, ObjectNode oldTree) {
+  private JsonNode merge(Set<String> keys, JsonNode newTree, ObjectNode oldTree) {
     for (String key : keys) {
       JsonNode newValue = newTree.get(key);
       if (newValue != null) {

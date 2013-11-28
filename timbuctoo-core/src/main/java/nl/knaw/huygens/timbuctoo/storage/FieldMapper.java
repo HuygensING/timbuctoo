@@ -60,9 +60,27 @@ public class FieldMapper {
     }
   }
 
+  /**
+   * Returns a field map for the specified view type with the specified prefix.
+   */
   public Map<String, Field> getSimpleFieldMap(Class<?> prefixType, Class<?> viewType) {
     Map<String, Field> map = Maps.newHashMap();
     addToFieldMap(prefixType, viewType, map);
+    return map;
+  }
+
+  /**
+   * Returns a composite field map for all types starting with ViewType up to and
+   * including the stoptype. To get a non-empty map stopType must be a superclass
+   * of viewType.
+   */
+  public Map<String, Field> getCompositeFieldMap(Class<?> prefixType, Class<?> viewType, Class<?> stopType) {
+    Map<String, Field> map = Maps.newHashMap();
+    Class<?> type = viewType;
+    while (stopType.isAssignableFrom(type)) {
+      addToFieldMap(prefixType, type, map);
+      type = type.getSuperclass();
+    }
     return map;
   }
 
