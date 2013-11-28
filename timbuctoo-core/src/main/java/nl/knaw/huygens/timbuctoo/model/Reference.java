@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 
 /**
@@ -17,6 +18,7 @@ public class Reference {
   public Reference() {}
 
   public Reference(Class<? extends Entity> typeToken, String id) {
+    checkNotNull(typeToken);
     this.type = TypeNames.getInternalName(typeToken);
     this.id = id;
   }
@@ -63,6 +65,17 @@ public class Reference {
   @Override
   public String toString() {
     return String.format("{%s,%s}", type, id);
+  }
+
+  /**
+   * Checks if the reference refers to a type.
+   * @param typeToCheck the type to check
+   * @return {@code true} if it refers to the type, {@code false} if not.
+   * @throws NullPointerException if {@code typeToCheck} is equal to null.
+   */
+  public boolean refersToType(Class<? extends Entity> typeToCheck) {
+    checkNotNull(typeToCheck);
+    return type.equals(TypeNames.getInternalName(typeToCheck));
   }
 
 }

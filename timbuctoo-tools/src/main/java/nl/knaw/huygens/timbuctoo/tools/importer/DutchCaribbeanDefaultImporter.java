@@ -1,7 +1,6 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.database;
+package nl.knaw.huygens.timbuctoo.tools.importer;
 
 import java.io.IOException;
-import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
@@ -9,28 +8,25 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.EntityRef;
-import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.tools.ToolBase;
 
-public abstract class DefaultImporter extends ToolBase {
+/**
+ * A class that contains the base functionality used in both the {@code DutchCaribbeanImporter} 
+ * as the now removed {@code AtlantischeGidsImporter}.
+ * Those importers use(d) the data from the AtlantischeGids project.
+ */
+public abstract class DutchCaribbeanDefaultImporter extends DefaultImporter {
 
   /** File with {@code RelationType} definitions; must be present on classpath. */
   private static final String RELATION_TYPE_DEFS = "relationtype-defs.txt";
 
-  protected final TypeRegistry typeRegistry;
-  protected final StorageManager storageManager;
-  protected final IndexManager indexManager;
-
   private String prevMessage;
   private int errors;
 
-  public DefaultImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager) {
-    this.typeRegistry = registry;
-    this.storageManager = storageManager;
-    this.indexManager = indexManager;
+  public DutchCaribbeanDefaultImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager) {
+    super(registry, storageManager, indexManager);
     prevMessage = "";
     errors = 0;
     setup(relationManager);
@@ -129,23 +125,6 @@ public abstract class DefaultImporter extends ToolBase {
     String itype = typeRegistry.getINameForType(type);
     String xtype = typeRegistry.getXNameForType(type);
     return new EntityRef(itype, xtype, id, null);
-  }
-
-  /**
-   * Removes the non persisted entity's of {@code type} and it's relations from the storage and the index.
-   * Use with project specific entities. If you use generic entities all (including the entities of other projects) non persisted entities will be removed.
-   */
-  protected void removeNonPersistentEnties(Class<? extends DomainEntity> type, StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
-    List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
-
-    Class<? extends DomainEntity> baseType = TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type));
-
-    storageManager.removeNonPersistent(type, ids);
-    indexManager.deleteEntities(baseType, ids);
-    //Remove relations
-    List<String> relationIds = storageManager.getRelationIds(ids);
-    storageManager.removeNonPersistent(Relation.class, relationIds);
-    indexManager.deleteEntities(Relation.class, ids);
   }
 
 }

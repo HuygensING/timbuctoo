@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.database;
+package nl.knaw.huygens.timbuctoo.tools.importer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_KEYWORD;
@@ -56,7 +56,7 @@ import com.google.inject.Injector;
  * Note that the Mongo database and the Solr index are built from scratch, any existing data is deleted.
  * Future versions of this importer must use a more subtle approach.
  */
-public class DutchCaribbeanImporter extends DefaultImporter {
+public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
 
   public static boolean UPDATE_TEST = false;
 
@@ -206,11 +206,11 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   }
 
   private void removeNonPersistentEnties(StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
-    removeNonPersistentEnties(DCARKeyword.class, storageManager, indexManager);
-    removeNonPersistentEnties(DCARPerson.class, storageManager, indexManager);
-    removeNonPersistentEnties(DCARArchive.class, storageManager, indexManager);
-    removeNonPersistentEnties(DCARArchiver.class, storageManager, indexManager);
-    removeNonPersistentEnties(DCARLegislation.class, storageManager, indexManager);
+    removeNonPersistentEntities(DCARKeyword.class);
+    removeNonPersistentEntities(DCARPerson.class);
+    removeNonPersistentEntities(DCARArchive.class);
+    removeNonPersistentEntities(DCARArchiver.class);
+    removeNonPersistentEntities(DCARLegislation.class);
   }
 
   private void printBoxedText(String text) {

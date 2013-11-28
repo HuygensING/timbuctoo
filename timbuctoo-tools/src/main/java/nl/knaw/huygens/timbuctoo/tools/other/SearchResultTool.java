@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.storage;
+package nl.knaw.huygens.timbuctoo.tools.other;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -23,7 +23,8 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 /**
- * Tool for managing stored search results.
+ * Tool for managing stored search results. 
+ * This class is mainly used for deleting {@code SearchResults}.
  */
 public class SearchResultTool {
 

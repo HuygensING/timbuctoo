@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.database;
+package nl.knaw.huygens.timbuctoo.tools.importer;
 
 import nl.knaw.huygens.timbuctoo.model.Role;
 
