@@ -116,7 +116,7 @@ public class UserResource extends ResourceBase {
   public Response delete(@PathParam(ID_PARAM) String id) throws IOException {
     User user = checkNotNull(storageManager.getEntity(User.class, id), Status.NOT_FOUND);
 
-    storageManager.removeEntity(user);
+    storageManager.deleteSystemEntity(user);
 
     return Response.status(Status.NO_CONTENT).build();
   }

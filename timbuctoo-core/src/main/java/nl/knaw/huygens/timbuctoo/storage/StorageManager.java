@@ -9,7 +9,6 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -90,6 +89,42 @@ public class StorageManager {
     storage.updateItem(type, entity.getId(), entity);
   }
 
+  public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) {
+    storage.setPID(type, id, pid);
+  }
+
+  // --- delete entities -----------------------------------------------
+
+  public <T extends SystemEntity> void deleteSystemEntity(T entity) throws IOException {
+    storage.removeItem(entity.getClass(), entity.getId());
+  }
+
+  public <T extends DomainEntity> void deleteDomainEntity(T entity) throws IOException {
+    storage.deleteItem(entity.getClass(), entity.getId(), entity.getLastChange());
+  }
+
+  /**
+   * Deletes non-persistent domain entities with the specified type and id's..
+   * The idea behind this method is that domain entities without persistent identifier are not validated yet.
+   * After a bulk import non of the imported entity will have a persistent identifier, until a user has agreed with the imported collection.  
+   * 
+   * @param <T> extends {@code DomainEntity}, because system entities have no persistent identifiers.
+   * @param type the type all of the objects should removed permanently from
+   * @param ids the id's to remove permanently
+   * @throws IOException when the storage layer throws an exception it will be forwarded
+   */
+  public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws IOException {
+    storage.removeNonPersistent(type, ids);
+  }
+
+  public int deleteAllSearchResults() {
+    return storage.removeAll(SearchResult.class);
+  }
+
+  public int deleteSearchResultsBefore(Date date) {
+    return storage.removeByDate(SearchResult.class, SearchResult.DATE_FIELD, date);
+  }
+
   // -------------------------------------------------------------------
 
   public <T extends Entity> T getEntity(Class<T> type, String id) {
@@ -167,28 +202,6 @@ public class StorageManager {
     }
   }
 
-  public <T extends Entity> void removeEntity(T entity) throws IOException {
-    Class<? extends Entity> type = entity.getClass();
-    if (TypeRegistry.isSystemEntity(type)) {
-      storage.removeItem(TypeRegistry.toSystemEntity(type), entity.getId());
-    }
-    if (TypeRegistry.isDomainEntity(type)) {
-      storage.deleteItem(TypeRegistry.toDomainEntity(type), entity.getId(), entity.getLastChange());
-    }
-  }
-
-  public int removeAllSearchResults() {
-    return storage.removeAll(SearchResult.class);
-  }
-
-  public int removeSearchResultsBefore(Date date) {
-    return storage.removeByDate(SearchResult.class, SearchResult.DATE_FIELD, date);
-  }
-
-  public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) {
-    storage.setPID(type, id, pid);
-  }
-
   /**
    * Retrieves all the id's of type {@code <T>} that does not have a persistent id. 
    * 
@@ -210,20 +223,6 @@ public class StorageManager {
    */
   public List<String> getRelationIds(List<String> ids) throws IOException {
     return storage.getRelationIds(ids);
-  }
-
-  /**
-   * Removes non-persistent domain entities with the specified type and id's..
-   * The idea behind this method is that domain entities without persistent identifier are not validated yet.
-   * After a bulk import non of the imported entity will have a persistent identifier, until a user has agreed with the imported collection.  
-   * 
-   * @param <T> extends {@code DomainEntity}, because system entities have no persistent identifiers.
-   * @param type the type all of the objects should removed permanently from
-   * @param ids the id's to remove permanently
-   * @throws IOException when the storage layer throws an exception it will be forwarded
-   */
-  public <T extends DomainEntity> void removeNonPersistent(Class<T> type, List<String> ids) throws IOException {
-    storage.removeNonPersistent(type, ids);
   }
 
   public <T extends Entity> List<T> getAllLimited(Class<T> type, int offset, int limit) {

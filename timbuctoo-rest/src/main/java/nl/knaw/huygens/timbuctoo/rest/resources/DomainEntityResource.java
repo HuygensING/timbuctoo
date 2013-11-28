@@ -156,7 +156,7 @@ public class DomainEntityResource extends ResourceBase {
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
     checkWritable(entity, Status.FORBIDDEN);
 
-    storageManager.removeEntity(entity);
+    storageManager.deleteDomainEntity(entity);
     notifyChange(ActionType.DEL, type, id);
 
     return Response.status(Status.NO_CONTENT).build();

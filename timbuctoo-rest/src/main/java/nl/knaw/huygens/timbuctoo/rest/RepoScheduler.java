@@ -79,7 +79,7 @@ public class RepoScheduler {
       long ttl = context.getMergedJobDataMap().getLongValue("ttl");
       Date date = new Date(System.currentTimeMillis() - ttl);
       StorageManager manager = RepoScheduler.injector.getInstance(StorageManager.class);
-      int n = manager.removeSearchResultsBefore(date);
+      int n = manager.deleteSearchResultsBefore(date);
       LOG.info("Removed {} search results", n);
     }
   }
