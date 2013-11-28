@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.database;
+package nl.knaw.huygens.timbuctoo.tools.importer;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -11,7 +11,6 @@ import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 
@@ -26,7 +25,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class TransformedDataImporter {
+/**
+ * This importer uses json-files created by the {@code BulkDataTransformer}, to import into a database.
+ * This json-files are named like {internal class name}.json. The structure of the classes in these 
+ * files should be the same as the structure that is communicated with client applications.
+ *
+ */
+public class TransformedDataImporter extends DefaultImporter {
   private static final Logger LOG = LoggerFactory.getLogger(TransformedDataImporter.class);
 
   public static void main(String[] args) throws ConfigurationException, ClassNotFoundException, IndexException, JsonParseException, JsonMappingException, IOException {
@@ -38,22 +43,23 @@ public class TransformedDataImporter {
     TypeRegistry registry = injector.getInstance(TypeRegistry.class);
 
     String dataPath = args.length > 0 ? args[0] : "src/main/resources/testdata";
-    File dataDir = new File(dataPath);
-    File[] jsonFiles = dataDir.listFiles(new FileFilter() {
+    new TransformedDataImporter(storageManager, registry, indexManager).importData(dataPath);
+  }
 
-      @Override
-      public boolean accept(File file) {
-        return file.getName().endsWith(".json");
-      }
-    });
+  public TransformedDataImporter(StorageManager storageManager, TypeRegistry typeRegistry, IndexManager indexManager) {
+    super(typeRegistry, storageManager, indexManager);
+  }
+
+  protected void importData(String dataPath) throws IOException, IndexException, JsonParseException, JsonMappingException {
+    File[] jsonFiles = getJsonFiles(dataPath);
 
     for (File jsonFile : jsonFiles) {
       String className = jsonFile.getName().substring(0, jsonFile.getName().indexOf('.'));
-      Class<? extends Entity> type = registry.getTypeForIName(className);
+      Class<? extends Entity> type = typeRegistry.getTypeForIName(className);
 
       if (TypeRegistry.isDomainEntity(type)) {
-        removeNonPersistent(TypeRegistry.toDomainEntity(type), storageManager, indexManager, registry);
-        save(TypeRegistry.toDomainEntity(type), jsonFile, storageManager, indexManager);
+        super.removeNonPersistentEntities(TypeRegistry.toDomainEntity(type));
+        save(TypeRegistry.toDomainEntity(type), jsonFile);
       } else {
         LOG.error("{} is not a DomainEntity.", className);
       }
@@ -62,29 +68,25 @@ public class TransformedDataImporter {
 
     storageManager.close();
     indexManager.close();
-
   }
 
-  public static <T extends DomainEntity> void save(Class<T> type, File jsonFile, StorageManager storageManager, IndexManager indexManager) throws JsonParseException, JsonMappingException,
-      IOException, IndexException {
+  protected File[] getJsonFiles(String dataPath) {
+    File dataDir = new File(dataPath);
+    File[] jsonFiles = dataDir.listFiles(new FileFilter() {
+      @Override
+      public boolean accept(File file) {
+        return file.getName().endsWith(".json");
+      }
+    });
+    return jsonFiles;
+  }
+
+  public <T extends DomainEntity> void save(Class<T> type, File jsonFile) throws JsonParseException, JsonMappingException, IOException, IndexException {
     LOG.info("Saving for type {}", type);
     List<T> entities = new ObjectMapper().readValue(jsonFile, new TypeReference<List<? extends Entity>>() {});
     for (T entity : entities) {
       String id = storageManager.addEntity(type, entity);
       indexManager.addEntity(type, id);
     }
-  }
-
-  public static <T extends DomainEntity> void removeNonPersistent(Class<T> type, StorageManager storageManager, IndexManager indexManager, TypeRegistry registry) throws IOException, IndexException {
-    List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
-    storageManager.removeNonPersistent(type, ids);
-
-    Class<T> baseType = TypeRegistry.toDomainEntity(registry.getBaseClass(type));
-
-    indexManager.deleteEntities(baseType, ids);
-    //Remove relations
-    List<String> relationIds = storageManager.getRelationIds(ids);
-    storageManager.removeNonPersistent(Relation.class, relationIds);
-    indexManager.deleteEntities(Relation.class, ids);
   }
 }

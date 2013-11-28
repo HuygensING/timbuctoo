@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.database;
+package nl.knaw.huygens.timbuctoo.tools.importer;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 
@@ -26,7 +27,7 @@ public abstract class GenericDataHandler {
 
   private Map<String, List<String>> objectMapping;
 
-  public <T extends Entity> void importData(String configFile, Class<T> type, List<Class<? extends Role>> allowedRoles) throws Exception {
+  public <T extends DomainEntity> void importData(String configFile, Class<T> type, List<Class<? extends Role>> allowedRoles) throws Exception {
     System.out.printf("%n=== Import documents of type '%s'%n", type.getSimpleName());
 
     readMapping(configFile);

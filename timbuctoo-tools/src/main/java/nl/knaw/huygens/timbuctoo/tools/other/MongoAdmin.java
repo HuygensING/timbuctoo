@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer;
+package nl.knaw.huygens.timbuctoo.tools.other;
 
 import java.net.UnknownHostException;
 
