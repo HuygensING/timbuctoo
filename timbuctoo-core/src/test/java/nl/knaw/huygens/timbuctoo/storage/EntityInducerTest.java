@@ -9,11 +9,13 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntity;
 import test.model.projecta.SubADomainEntity;
+import test.model.projectb.SubBDomainEntity;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,13 +60,13 @@ public class EntityInducerTest {
     return map;
   }
 
-  private ObjectNode newSubADomainEntityTree(String id, String pid, String value1, String value2, String valuea) {
+  private ObjectNode newSubADomainEntityTree(String id, String pid, String bv1, String bv2, String sv1, String sv2, String sva) {
     Map<String, Object> map = newDomainEntityMap(id, pid);
-    addValue(map, propertyName(SubADomainEntity.class, "value1"), value1);
-    addValue(map, propertyName(SubADomainEntity.class, "value2"), value2);
-    addValue(map, propertyName(SubADomainEntity.class, "valuea"), valuea);
-    addValue(map, propertyName(BaseDomainEntity.class, "value1"), value1);
-    addValue(map, propertyName(BaseDomainEntity.class, "value2"), value2);
+    addValue(map, propertyName(BaseDomainEntity.class, "value1"), bv1);
+    addValue(map, propertyName(BaseDomainEntity.class, "value2"), bv2);
+    addValue(map, propertyName(SubADomainEntity.class, "value1"), sv1);
+    addValue(map, propertyName(SubADomainEntity.class, "value2"), sv2);
+    addValue(map, propertyName(SubADomainEntity.class, "valuea"), sva);
     return mapper.valueToTree(map);
   }
 
@@ -102,7 +104,7 @@ public class EntityInducerTest {
   @Test
   public void induceDerivedDomainEntityAsDerived() throws Exception {
     SubADomainEntity entity = new SubADomainEntity(ID, PID, "v1", "v2", "va");
-    JsonNode expected = newSubADomainEntityTree(ID, PID, "v1", "v2", "va");
+    JsonNode expected = newSubADomainEntityTree(ID, PID, "v1", "v2", "v1", "v2", "va");
     assertEquals(expected, inducer.induceNewEntity(SubADomainEntity.class, entity));
   }
 
@@ -113,5 +115,59 @@ public class EntityInducerTest {
   }
 
   // --- old system entity ---------------------------------------------
+
+  @Test
+  public void updateSystemEntityWithPrimitiveView() throws Exception {
+    TestSystemEntity entity = new TestSystemEntity(ID, "updated", null);
+    JsonNode oldTree = newSystemEntityTree(ID, "v1", "v2");
+    JsonNode newTree = newSystemEntityTree(ID, "updated", null);
+    assertEquals(newTree, inducer.induceOldEntity(TestSystemEntity.class, entity, oldTree));
+  }
+
+  @Test
+  public void updateSystemEntityWithWrongView() throws Exception {
+    TestSystemEntity entity = new TestSystemEntity(ID, "updated", null);
+    JsonNode oldTree = newSystemEntityTree(ID, "v1", "v2");
+    JsonNode newTree = newSystemEntityTree(ID, "v1", "v2");
+    assertEquals(newTree, inducer.induceOldEntity(SystemEntity.class, entity, oldTree));
+  }
+
+  // --- old domain entity ---------------------------------------------
+
+  @Ignore
+  @Test
+  public void updateDomainEntityWithDerivedView() throws Exception {
+    SubADomainEntity entity = new SubADomainEntity(ID, PID, "xv1", null, "xva");
+    JsonNode oldTree = newSubADomainEntityTree(ID, PID, "v1", "v2", "v1", "v2", "va");
+    JsonNode newTree = newSubADomainEntityTree(ID, PID, "v1", "v2", "v1", "v2", "xva");
+    assertEquals(newTree, inducer.induceOldEntity(SubADomainEntity.class, entity, oldTree));
+  }
+
+  @Ignore
+  @Test
+  public void updateDomainEntityWithPrimitiveView() throws Exception {
+    SubADomainEntity entity = new SubADomainEntity(ID, PID, "xv1", null, "xva");
+    JsonNode oldTree = newSubADomainEntityTree(ID, PID, "v1", "v2", "v1", "v2", "va");
+    JsonNode newTree = newSubADomainEntityTree(ID, PID, "xv1", null, "v1", "v2", "va");
+    assertEquals(newTree, inducer.induceOldEntity(BaseDomainEntity.class, entity, oldTree));
+  }
+
+  @Ignore
+  @Test
+  public void updateDomainEntityWithWrongView() throws Exception {
+    SubADomainEntity entity = new SubADomainEntity(ID, PID, "xv1", null, "xva");
+    JsonNode oldTree = newSubADomainEntityTree(ID, PID, "v1", "v2", "v1", "v2", "va");
+    JsonNode newTree = newSubADomainEntityTree(ID, PID, "v1", "v2", "v1", "v2", "va");
+    assertEquals(newTree, inducer.induceOldEntity(BaseDomainEntity.class, entity, oldTree));
+  }
+
+  @Ignore
+  @Test
+  public void updateDomainEntityWithOtherVariant() throws Exception {
+    SubBDomainEntity entity = new SubBDomainEntity(ID, PID, "xv1", null, "xvb");
+    JsonNode oldTree = newSubADomainEntityTree(ID, PID, "v1", "v2", "v1", "v2", "va");
+    JsonNode newTree = newSubADomainEntityTree(ID, PID, "v1", "v2", "v1", "v2", "va");
+    assertEquals(newTree, inducer.induceOldEntity(SubBDomainEntity.class, entity, oldTree));
+  }
 
 }
