@@ -12,6 +12,11 @@ public class SubADomainEntity extends BaseDomainEntity {
     setId(id);
   }
 
+  public SubADomainEntity(String id, String pid) {
+    setId(id);
+    setPid(pid);
+  }
+
   public SubADomainEntity(String id, String pid, String value1, String value2, String valuea) {
     setId(id);
     setPid(pid);

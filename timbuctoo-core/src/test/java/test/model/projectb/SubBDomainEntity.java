@@ -12,20 +12,17 @@ public class SubBDomainEntity extends BaseDomainEntity {
     setId(id);
   }
 
-  public SubBDomainEntity(String id, String pid, String value1, String value2, String valueb) {
+  public SubBDomainEntity(String id, String pid) {
     setId(id);
     setPid(pid);
-    setValue1(value1);
-    setValue2(value2);
-    setValueb(valueb);
   }
 
   public String getValueb() {
     return valueb;
   }
 
-  public void setValueb(String valueb) {
-    this.valueb = valueb;
+  public void setValueb(String value) {
+    valueb = value;
   }
 
 }
