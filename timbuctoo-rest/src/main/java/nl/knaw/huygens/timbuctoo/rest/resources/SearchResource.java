@@ -96,7 +96,7 @@ public class SearchResource {
     // Process
     try {
       SearchResult result = searchManager.search(scope, TypeRegistry.toDomainEntity(type), searchParams);
-      storageManager.addEntity(SearchResult.class, result);
+      storageManager.addSystemEntity(SearchResult.class, result);
       String queryId = result.getId();
       return Response.created(new URI(queryId)).build();
     } catch (NoSuchFacetException e) {

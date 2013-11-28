@@ -83,9 +83,9 @@ public class TransformedDataImporter extends DefaultImporter {
 
   public <T extends DomainEntity> void save(Class<T> type, File jsonFile) throws JsonParseException, JsonMappingException, IOException, IndexException {
     LOG.info("Saving for type {}", type);
-    List<T> entities = new ObjectMapper().readValue(jsonFile, new TypeReference<List<? extends Entity>>() {});
+    List<T> entities = new ObjectMapper().readValue(jsonFile, new TypeReference<List<? extends DomainEntity>>() {});
     for (T entity : entities) {
-      String id = storageManager.addEntity(type, entity);
+      String id = storageManager.addDomainEntity(type, entity);
       indexManager.addEntity(type, id);
     }
   }

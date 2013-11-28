@@ -279,7 +279,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID, "test");
-    when(getStorageManager().addEntity(TestDomainEntity.class, entity)).thenReturn(DEFAULT_ID);
+    when(getStorageManager().addDomainEntity(TestDomainEntity.class, entity)).thenReturn(DEFAULT_ID);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = domainResource("testdomainentities").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)

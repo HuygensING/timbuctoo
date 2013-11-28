@@ -61,7 +61,7 @@ public class LanguageImporter extends CSVImporter {
     language.setName(items[3]);
 
     try {
-      storageManager.addEntity(Language.class, language);
+      storageManager.addDomainEntity(Language.class, language);
     } catch (IOException e) {
       displayError(e.getMessage(), items);
     }

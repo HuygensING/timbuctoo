@@ -96,10 +96,9 @@ public class UserResourceFilterFactory implements ResourceFilterFactory {
       vreAuthorization.setVreId(vreId);
       vreAuthorization.setRoles(Lists.newArrayList(UNVERIFIED_USER_ROLE));
 
-      vreAuthorization.setId(storageManager.addEntity(VREAuthorization.class, vreAuthorization));
+      vreAuthorization.setId(storageManager.addSystemEntity(VREAuthorization.class, vreAuthorization));
 
       return vreAuthorization;
-
     }
 
     private VREAuthorization getVreAuthorization(String userId, String vreId) {
@@ -109,7 +108,6 @@ public class UserResourceFilterFactory implements ResourceFilterFactory {
       example.setUserId(userId);
 
       return storageManager.findEntity(VREAuthorization.class, example);
-
     }
 
     /**

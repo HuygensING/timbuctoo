@@ -276,7 +276,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
         handleError("[%s] Duplicate keyword id %s", KEYWORD_FILE, jsonId);
       } else {
         DCARKeyword keyword = convert(xkeyword);
-        String storedId = addEntity(DCARKeyword.class, keyword);
+        String storedId = addDomainEntity(DCARKeyword.class, keyword);
         referenceMap.put(jsonId, new Reference(DCARKeyword.class, storedId));
 
         if (UPDATE_TEST) {
@@ -337,7 +337,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
         handleError("[%s] Duplicate person id %s", PERSON_FILE, jsonId);
       } else {
         DCARPerson person = convert(xperson);
-        String storedId = addEntity(DCARPerson.class, person);
+        String storedId = addDomainEntity(DCARPerson.class, person);
         referenceMap.put(jsonId, new Reference(DCARPerson.class, storedId));
       }
     }
@@ -389,7 +389,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
           handleError("[%s] Duplicate 'wetgeving' id %s", file.getName(), jsonId);
         } else {
           DCARLegislation legislation = convert(wetgeving);
-          String storedId = addEntity(DCARLegislation.class, legislation);
+          String storedId = addDomainEntity(DCARLegislation.class, legislation);
           referenceMap.put(jsonId, new Reference(DCARLegislation.class, storedId));
         }
       }
@@ -464,7 +464,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
           handleError("[%s] Duplicate 'archiefmat' id %s", file.getName(), jsonId);
         } else {
           DCARArchive archive = convert(archiefmat);
-          String storedId = addEntity(DCARArchive.class, archive);
+          String storedId = addDomainEntity(DCARArchive.class, archive);
           referenceMap.put(jsonId, new Reference(DCARArchive.class, storedId));
         }
       }
@@ -560,7 +560,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
           handleError("[%s] Duplicate 'creator' id %s", file.getName(), jsonId);
         } else {
           DCARArchiver archiver = convert(creator);
-          String storedId = addEntity(DCARArchiver.class, archiver);
+          String storedId = addDomainEntity(DCARArchiver.class, archiver);
           referenceMap.put(jsonId, new Reference(DCARArchiver.class, storedId));
         }
       }
