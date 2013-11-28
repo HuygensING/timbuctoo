@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.database;
+package nl.knaw.huygens.timbuctoo.tools.importer;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.util.CSVImporter;
 
 /**
  * Imports CKCC person data from a CSV file.
+ * This importer is used to enrich the DWC-BIA data.
  */
 public class CKCCPersonImporter extends CSVImporter {
 

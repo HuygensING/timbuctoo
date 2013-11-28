@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.database;
+package nl.knaw.huygens.timbuctoo.tools.importer;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
@@ -9,8 +9,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
+/**
+ * A class that basicly executes a SQL query and lets a {@code GenericResultSetConverter} create a {@code List} of {@code DomainEntities}.
+ */
 public class SQLImporter {
 
   protected final String connectionString;
@@ -23,8 +26,8 @@ public class SQLImporter {
     this.password = password;
   }
 
-  public <T extends Entity> List<T> executeQuery(String query, GenericResultSetConverter<T> converter) throws SQLException, InstantiationException, IllegalAccessException, NoSuchMethodException,
-      SecurityException, IllegalArgumentException, InvocationTargetException {
+  public <T extends DomainEntity> List<T> executeQuery(String query, GenericResultSetConverter<T> converter) throws SQLException, InstantiationException, IllegalAccessException,
+      NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException {
     List<T> returnValue = new ArrayList<T>();
 
     Connection connection = null;

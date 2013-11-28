@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.database;
+package nl.knaw.huygens.timbuctoo.tools.importer;
 
 import java.util.List;
 
@@ -16,6 +16,7 @@ import com.google.inject.Injector;
 
 /**
  * Extracts data from database and transforms it to json-files.
+ * The data is imported from a database using properties files that contain connection settings, a query and an object mapping.
  * @author martijnm
  */
 public class BulkDataTransformer {

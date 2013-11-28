@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.database;
+package nl.knaw.huygens.timbuctoo.tools.importer;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.tools.importer.MongoAdmin;
+import nl.knaw.huygens.timbuctoo.tools.other.MongoAdmin;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Guice;
@@ -21,6 +21,7 @@ import com.google.inject.Injector;
 
 /**
  * Performs bulk import of test data, which is stored and indexed.
+ * The data is imported from a database using properties files that contain connection settings, a query and an object mapping.
  */
 public class BulkImporter {
 
