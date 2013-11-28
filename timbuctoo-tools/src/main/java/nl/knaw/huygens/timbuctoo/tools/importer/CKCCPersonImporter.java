@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.util.CSVImporter;
 
 /**
  * Imports CKCC person data from a CSV file.
+ * This importer is used to enrich the DWC-BIA data.
  */
 public class CKCCPersonImporter extends CSVImporter {
 
