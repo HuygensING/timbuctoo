@@ -8,25 +8,40 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class RelationManagerTest {
+  private StorageManager storageManager;
+  private TypeRegistry typeRegistry;
+
+  private RelationManager relationManager;
+
+  @Before
+  public void setUp() {
+    typeRegistry = mock(TypeRegistry.class);
+    storageManager = mock(StorageManager.class);
+    relationManager = new RelationManager(typeRegistry, storageManager);
+  }
+
+  @After
+  public void tearDown() {
+    typeRegistry = null;
+    storageManager = null;
+    relationManager = null;
+  }
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetRelationTypeWithWrongReference() {
-    TypeRegistry registry = mock(TypeRegistry.class);
-    StorageManager storageMgr = mock(StorageManager.class);
-    RelationManager relationMgr = new RelationManager(registry, storageMgr);
-    relationMgr.getRelationType(new Reference(DomainEntity.class, "id"));
+    relationManager.getRelationType(new Reference(DomainEntity.class, "id"));
   }
 
   @Test
   public void testGetRelationTypeWithCorrectReference() {
-    TypeRegistry registry = mock(TypeRegistry.class);
-    StorageManager storageMgr = mock(StorageManager.class);
-    when(storageMgr.getEntity(RelationType.class, "id")).thenReturn(new RelationType());
-    RelationManager relationMgr = new RelationManager(registry, storageMgr);
-    assertNotNull(relationMgr.getRelationType(new Reference(RelationType.class, "id")));
+    when(storageManager.getEntity(RelationType.class, "id")).thenReturn(new RelationType());
+
+    assertNotNull(relationManager.getRelationType(new Reference(RelationType.class, "id")));
   }
 
 }

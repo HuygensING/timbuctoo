@@ -83,7 +83,7 @@ public class RelationManager {
    * or {@code null} if it does not exist.
    */
   public RelationType getRelationType(Reference reference) {
-    checkArgument(reference.getType().equals("relationtype"), "got type %s", reference.getType());
+    checkArgument(reference.refersToType(RelationType.class), "got type %s", reference.getType());
     return getRelationTypeById(reference.getId());
   }
 
