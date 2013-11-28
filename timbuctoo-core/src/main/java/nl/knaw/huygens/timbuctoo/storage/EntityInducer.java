@@ -91,17 +91,6 @@ public class EntityInducer {
     return jsonMapper.valueToTree(map);
   }
 
-  private <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity, JsonNode existingItem) {
-    checkArgument(entity != null);
-    checkArgument(existingItem != null);
-
-    Map<String, Object> map = Maps.newHashMap();
-    propertyMapper.addObject(type, type, entity, map);
-    JsonNode newTree = jsonMapper.valueToTree(map);
-
-    return merge(fieldMapper.getFieldMap(type, type).values(), newTree, (ObjectNode) existingItem);
-  }
-
   private <T extends SystemEntity> JsonNode induceSystemEntity(Class<T> type, T entity, JsonNode existingItem) {
     checkArgument(entity != null);
     checkArgument(existingItem != null);
@@ -110,10 +99,40 @@ public class EntityInducer {
     propertyMapper.addObject(type, type, entity, map);
     JsonNode newTree = jsonMapper.valueToTree(map);
 
-    // TODO handle roles
-
     return merge(fieldMapper.getFieldMap(type, type).values(), newTree, (ObjectNode) existingItem);
   }
+
+  private <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity, JsonNode existingItem) {
+    checkArgument(entity != null);
+    checkArgument(existingItem != null);
+
+    Map<String, Object> map = Maps.newHashMap();
+    Class<? super T> viewType = type;
+    while (viewType != DomainEntity.class) {
+      propertyMapper.addObject(type, viewType, entity, map);
+      viewType = viewType.getSuperclass();
+    }
+    JsonNode newTree = jsonMapper.valueToTree(map);
+
+    // TODO handle roles
+
+    merge(fieldMapper.getFieldMap(type, type).values(), newTree, (ObjectNode) existingItem);
+
+    Class<? super T> baseType = type.getSuperclass();
+    if (baseType != type) {
+      merge(fieldMapper.getFieldMap(type, baseType).values(), newTree, (ObjectNode) existingItem);
+    }
+    return existingItem;
+  }
+
+  //
+  // de truc is dat nu alleen de field map van de "hoogste" instantie gebruikt wordt
+  // de correcte oplsossing ligt voor de hand:
+  // bij het samenstellen van de property map moet je itereren over de klasse hierarchie!
+  // daarna gebruik je de resulerende map voor:
+  // - het bepalen van de property map
+  // - de merge, indie van toepassing
+  // !!!!!
 
   /**
    * Merges the values corresponding to the specified keys of the new tree into the old tree.
