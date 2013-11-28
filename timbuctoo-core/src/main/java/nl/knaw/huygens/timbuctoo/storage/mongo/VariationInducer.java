@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
+import nl.knaw.huygens.timbuctoo.storage.PropertyMapper;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -29,8 +30,11 @@ class VariationInducer extends VariationConverter {
 
   private static final Logger LOG = LoggerFactory.getLogger(VariationInducer.class);
 
+  private final PropertyMapper propertyMapper;
+
   public VariationInducer(TypeRegistry registry) {
     super(registry);
+    propertyMapper = new PropertyMapper();
   }
 
   // --- public API ----------------------------------------------------

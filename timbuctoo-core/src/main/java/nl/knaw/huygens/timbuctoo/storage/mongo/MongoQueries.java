@@ -2,12 +2,15 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
 
+import java.lang.reflect.Field;
 import java.util.Date;
+import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.storage.PropertyMapper;
+import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
+import nl.knaw.huygens.timbuctoo.storage.PropertyMap;
 
 import org.mongojack.DBQuery;
 
@@ -46,8 +49,9 @@ public class MongoQueries {
    * Generates a query based on the non-null values of an entity.
    */
   public <T extends Entity> DBObject selectByProperties(Class<? super T> type, T entity) {
-    PropertyMapper mapper = new PropertyMapper();
-    return new BasicDBObject(mapper.mapObject(type, entity));
+    Map<String, Field> fieldMap = new FieldMapper().getCompositeFieldMap(type, type, type);
+    PropertyMap properties = new PropertyMap(fieldMap, entity);
+    return new BasicDBObject(properties);
   }
 
   public DBObject selectByDate(String dateField, Date dateValue) {
