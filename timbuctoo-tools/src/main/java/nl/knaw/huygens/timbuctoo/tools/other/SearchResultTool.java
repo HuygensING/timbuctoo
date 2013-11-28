@@ -80,9 +80,9 @@ public class SearchResultTool {
       if (delete) {
         int n;
         if (date != null) {
-          n = storageManager.removeSearchResultsBefore(date);
+          n = storageManager.deleteSearchResultsBefore(date);
         } else {
-          n = storageManager.removeAllSearchResults();
+          n = storageManager.deleteAllSearchResults();
         }
         System.out.printf("Search results removed   : %5d%n", n);
         displayStatus(false);

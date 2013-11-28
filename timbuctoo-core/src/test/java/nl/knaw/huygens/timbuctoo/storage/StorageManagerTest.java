@@ -101,31 +101,31 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testRemoveSystemEntity() throws IOException {
+  public void testDeleteSystemEntity() throws IOException {
     TestSystemEntity entity = new TestSystemEntity("id");
-    manager.removeEntity(entity);
+    manager.deleteSystemEntity(entity);
     verify(storage).removeItem(TestSystemEntity.class, "id");
   }
 
   @Test
-  public void testRemoveDomainEntity() throws IOException {
+  public void testDeleteDomainEntity() throws IOException {
     BaseDomainEntity entity = new BaseDomainEntity("id");
     Change change = new Change();
     entity.setLastChange(change);
-    manager.removeEntity(entity);
+    manager.deleteDomainEntity(entity);
     verify(storage).deleteItem(BaseDomainEntity.class, "id", change);
   }
 
   @Test
-  public void testRemoveAllSearchResults() {
-    manager.removeAllSearchResults();
+  public void testDeleteAllSearchResults() {
+    manager.deleteAllSearchResults();
     verify(storage).removeAll(SearchResult.class);
   }
 
   @Test
-  public void testRemoveSearchResultsBefore() {
+  public void testDeleteSearchResultsBefore() {
     Date date = new Date();
-    manager.removeSearchResultsBefore(date);
+    manager.deleteSearchResultsBefore(date);
     verify(storage).removeByDate(SearchResult.class, "date", date);
   }
 
@@ -136,9 +136,9 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testRemoveNonPersistent() throws IOException {
+  public void testDeleteNonPersistent() throws IOException {
     ArrayList<String> ids = Lists.newArrayList("id1", "id2", "id3");
-    manager.removeNonPersistent(BaseDomainEntity.class, ids);
+    manager.deleteNonPersistent(BaseDomainEntity.class, ids);
     verify(storage).removeNonPersistent(BaseDomainEntity.class, ids);
   }
 

@@ -28,7 +28,7 @@ public abstract class DefaultImporter {
   }
 
   /**
-   * Removes the non persisted entity's of {@code type} and it's relations from the storage and the index.
+   * Deletes the non persisted entity's of {@code type} and it's relations from the storage and the index.
    * Use with project specific entities. If you use generic entities all (including the entities of other projects) non persisted entities will be removed.
    */
   protected void removeNonPersistentEntities(Class<? extends DomainEntity> type) throws IOException, IndexException {
@@ -36,11 +36,11 @@ public abstract class DefaultImporter {
 
     Class<? extends DomainEntity> baseType = TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type));
 
-    storageManager.removeNonPersistent(type, ids);
+    storageManager.deleteNonPersistent(type, ids);
     indexManager.deleteEntities(baseType, ids);
-    //Remove relations
+    // Remove relations
     List<String> relationIds = storageManager.getRelationIds(ids);
-    storageManager.removeNonPersistent(Relation.class, relationIds);
+    storageManager.deleteNonPersistent(Relation.class, relationIds);
     indexManager.deleteEntities(Relation.class, ids);
   }
 
