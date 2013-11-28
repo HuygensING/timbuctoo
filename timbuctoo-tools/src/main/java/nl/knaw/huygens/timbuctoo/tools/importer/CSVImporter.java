@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.util;
+package nl.knaw.huygens.timbuctoo.tools.importer;
 
 import java.io.BufferedReader;
 import java.io.File;
