@@ -17,6 +17,7 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -79,11 +80,17 @@ public class StorageManagerTest {
     verify(storage).getAllRevisions(BaseDomainEntity.class, "id");
   }
 
-  @Test
-  public void testAddEntity() throws IOException {
+  @Test(expected = IllegalArgumentException.class)
+  public void testAddPrimitiveDomainEntity() throws IOException {
     BaseDomainEntity entity = new BaseDomainEntity();
-    manager.addEntity(BaseDomainEntity.class, entity);
-    verify(storage).addItem(BaseDomainEntity.class, entity);
+    manager.addDomainEntity(BaseDomainEntity.class, entity);
+  }
+
+  @Test
+  public void testAddDerivedDomainEntity() throws IOException {
+    ProjectADomainEntity entity = new ProjectADomainEntity();
+    manager.addDomainEntity(ProjectADomainEntity.class, entity);
+    verify(storage).addItem(ProjectADomainEntity.class, entity);
   }
 
   @Test

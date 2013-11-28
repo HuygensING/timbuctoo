@@ -60,7 +60,7 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
 
     try {
 
-      storageManager.addEntity(User.class, user);
+      storageManager.addSystemEntity(User.class, user);
 
     } catch (IOException e) {
       LOG.error(e.getMessage());

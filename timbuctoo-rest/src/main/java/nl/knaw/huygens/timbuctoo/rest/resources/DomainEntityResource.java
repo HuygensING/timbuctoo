@@ -93,7 +93,7 @@ public class DomainEntityResource extends ResourceBase {
       throw new WebApplicationException(Status.BAD_REQUEST);
     }
 
-    String id = storageManager.addEntity((Class<T>) type, (T) input);
+    String id = storageManager.addDomainEntity((Class<T>) type, (T) input);
     notifyChange(ActionType.ADD, type, id);
 
     String baseUri = CharMatcher.is('/').trimTrailingFrom(uriInfo.getBaseUri().toString());

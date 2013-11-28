@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 
 public abstract class GenericDataHandler {
@@ -68,6 +67,6 @@ public abstract class GenericDataHandler {
     return values;
   }
 
-  protected abstract <T extends Entity> void save(Class<T> type, List<T> objects) throws IOException;
+  protected abstract <T extends DomainEntity> void save(Class<T> type, List<T> objects) throws IOException;
 
 }

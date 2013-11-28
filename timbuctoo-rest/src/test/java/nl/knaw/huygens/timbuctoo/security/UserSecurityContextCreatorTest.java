@@ -55,7 +55,7 @@ public class UserSecurityContextCreatorTest {
     instance.createSecurityContext(securityInformation);
 
     verify(storageManager, only()).findEntity(User.class, example);
-    verify(storageManager, never()).addEntity(Matchers.<Class<User>> any(), any(User.class));
+    verify(storageManager, never()).addSystemEntity(Matchers.<Class<User>> any(), any(User.class));
   }
 
   protected User createUser(String displayName, String userId) {
@@ -88,7 +88,7 @@ public class UserSecurityContextCreatorTest {
     instance.createSecurityContext(securityInformation);
 
     verify(storageManager, times(2)).findEntity(Matchers.<Class<User>> any(), any(User.class));
-    verify(storageManager, times(1)).addEntity(Matchers.<Class<User>> any(), any(User.class));
+    verify(storageManager, times(1)).addSystemEntity(Matchers.<Class<User>> any(), any(User.class));
   }
 
   @Test

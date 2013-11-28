@@ -1,10 +1,13 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -63,6 +66,18 @@ public class StorageManager {
 
   private KV<Long> getCount(Class<? extends Entity> type) {
     return new KV<Long>(type.getSimpleName(), storage.count(type));
+  }
+
+  // --- add entities --------------------------------------------------
+
+  public <T extends Entity> String addSystemEntity(Class<T> type, T entity) throws IOException {
+    checkArgument(BusinessRules.allowSystemEntityAdd(type), "Not allowed to add %s", type);
+    return storage.addItem(type, entity);
+  }
+
+  public <T extends Entity> String addDomainEntity(Class<T> type, T entity) throws IOException {
+    checkArgument(BusinessRules.allowDomainEntityAdd(type), "Not allowed to add %s", type);
+    return storage.addItem(type, entity);
   }
 
   // -------------------------------------------------------------------
@@ -140,10 +155,6 @@ public class StorageManager {
       LOG.error("Error while handling {} {}", type.getName(), id);
       return null;
     }
-  }
-
-  public <T extends Entity> String addEntity(Class<T> type, T entity) throws IOException {
-    return storage.addItem(type, entity);
   }
 
   public <T extends Entity> void modifyEntity(Class<T> type, T entity) throws IOException {

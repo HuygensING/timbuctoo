@@ -63,9 +63,9 @@ public abstract class DutchCaribbeanDefaultImporter extends DefaultImporter {
     return storageManager.getEntity(type, id);
   }
 
-  protected <T extends Entity> String addEntity(Class<T> type, T entity) {
+  protected <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) {
     try {
-      storageManager.addEntity(type, entity);
+      storageManager.addDomainEntity(type, entity);
       return entity.getId();
     } catch (IOException e) {
       handleError("Failed to add %s; %s", entity.getDisplayName(), e.getMessage());

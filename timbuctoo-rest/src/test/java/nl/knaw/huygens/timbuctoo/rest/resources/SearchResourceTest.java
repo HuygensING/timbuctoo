@@ -83,7 +83,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertEquals(expected, actual);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    verify(storageManager).addEntity(SearchResult.class, searchResult);
+    verify(storageManager).addSystemEntity(SearchResult.class, searchResult);
   }
 
   @Test
@@ -98,7 +98,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    verify(storageManager).addEntity(SearchResult.class, searchResult);
+    verify(storageManager).addSystemEntity(SearchResult.class, searchResult);
 
     assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
     assertEquals(expected, actual);
@@ -113,7 +113,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
-    verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
@@ -128,7 +128,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
-    verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
@@ -143,7 +143,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
-    verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
@@ -158,7 +158,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
-    verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
@@ -173,7 +173,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
-    verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
@@ -190,7 +190,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
-    verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
 
@@ -205,7 +205,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     ClientResponse clientResponse = getResourceBuilder().post(ClientResponse.class, searchParameters);
 
-    verify(storageManager, never()).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     assertEquals(ClientResponse.Status.INTERNAL_SERVER_ERROR, clientResponse.getClientResponseStatus());
   }
 
@@ -215,7 +215,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     setupSearchManager(searchResult);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
-    doThrow(IOException.class).when(storageManager).addEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    doThrow(IOException.class).when(storageManager).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
 
     SearchParameters searchParameters = createSearchParameters(SCOPE_ID, typeString, null, TERM);
 
