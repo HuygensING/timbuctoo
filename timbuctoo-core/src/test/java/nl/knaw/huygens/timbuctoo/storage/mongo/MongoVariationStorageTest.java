@@ -67,7 +67,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   public void testAddItem() throws IOException {
     ProjectADomainEntity input = new ProjectADomainEntity(DEFAULT_ID, "test");
 
-    storage.addItem(ProjectADomainEntity.class, input);
+    storage.addEntity(ProjectADomainEntity.class, input);
 
     // Two additions: one normal addition and one addition in the version collection.
     verify(anyCollection, times(2)).insert(any(DBObject.class));
@@ -79,7 +79,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     when(anyCollection.findOne(any(DBObject.class))).thenReturn(createTestConcreteDocDBObject(DEFAULT_ID, "test"));
 
-    storage.updateItem(BaseDomainEntity.class, DEFAULT_ID, input);
+    storage.updateEntity(BaseDomainEntity.class, DEFAULT_ID, input);
 
     // Update current version and the version collection
     verify(anyCollection, times(2)).update(any(DBObject.class), any(DBObject.class));
@@ -88,7 +88,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test(expected = IOException.class)
   public void testUpdateItemNonExistent() throws IOException {
     BaseDomainEntity expected = new BaseDomainEntity(DEFAULT_ID, "test");
-    storage.updateItem(BaseDomainEntity.class, DEFAULT_ID, expected);
+    storage.updateEntity(BaseDomainEntity.class, DEFAULT_ID, expected);
   }
 
   @Test(expected = IOException.class)
@@ -97,7 +97,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     when(anyCollection.findOne(any(DBObject.class))).thenReturn(new BasicDBObject("test", "test"));
 
-    storage.updateItem(BaseDomainEntity.class, DEFAULT_ID, item);
+    storage.updateEntity(BaseDomainEntity.class, DEFAULT_ID, item);
   }
 
   @Test
@@ -118,7 +118,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     when(anyCollection.findOne(new BasicDBObject("_id", DEFAULT_ID))).thenReturn(dbObject);
 
-    storage.deleteItem(BaseDomainEntity.class, DEFAULT_ID, null);
+    storage.deleteDomainEntity(BaseDomainEntity.class, DEFAULT_ID, null);
 
     // Update the current version
     // Update the version number.
@@ -127,7 +127,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test(expected = IOException.class)
   public void testDeleteItemNonExistent() throws IOException {
-    storage.deleteItem(BaseDomainEntity.class, DEFAULT_ID, null);
+    storage.deleteDomainEntity(BaseDomainEntity.class, DEFAULT_ID, null);
   }
 
   @Test
@@ -409,7 +409,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
     query.put(DomainEntity.PID, null);
 
-    storage.removeNonPersistent(BaseDomainEntity.class, ids);
+    storage.deleteNonPersistent(BaseDomainEntity.class, ids);
 
     verify(anyCollection).remove(query);
     verify(db).getCollection(TypeNames.getInternalName(BaseDomainEntity.class));
@@ -422,7 +422,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     query.put(DomainEntity.PID, null);
     doThrow(MongoException.class).when(anyCollection).remove(query);
 
-    storage.removeNonPersistent(BaseDomainEntity.class, ids);
+    storage.deleteNonPersistent(BaseDomainEntity.class, ids);
   }
 
   @Test

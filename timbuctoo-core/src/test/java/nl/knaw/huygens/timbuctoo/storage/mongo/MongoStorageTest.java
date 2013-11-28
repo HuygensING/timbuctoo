@@ -113,7 +113,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = queries.selectByIdAndRevision(DEFAULT_ID, 0);
     when(anyCollection.find(query)).thenReturn(cursor);
 
-    storage.updateItem(TYPE, DEFAULT_ID, entity);
+    storage.updateEntity(TYPE, DEFAULT_ID, entity);
   }
 
   @Test
@@ -121,7 +121,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     TestSystemEntity entity = new TestSystemEntity();
     entity.setTestValue1("test");
 
-    storage.addItem(TYPE, entity);
+    storage.addEntity(TYPE, entity);
 
     verify(anyCollection).insert(any(DBObject.class));
   }
@@ -131,7 +131,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
     entity.setTestValue1("test");
 
-    storage.addItem(TYPE, entity);
+    storage.addEntity(TYPE, entity);
 
     verify(anyCollection).insert(any(DBObject.class));
   }
@@ -143,7 +143,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     doThrow(MongoException.class).when(anyCollection).insert(any(DBObject.class));
 
-    storage.addItem(TYPE, entity);
+    storage.addEntity(TYPE, entity);
   }
 
   @Test
@@ -200,7 +200,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testRemoveItem() throws IOException {
-    storage.removeItem(TYPE, DEFAULT_ID);
+    storage.deleteSystemEntity(TYPE, DEFAULT_ID);
     // just verify that the underlying storage is called
     // whether that call is successful or not is irrelevant
     verify(anyCollection).remove(any(DBObject.class));
@@ -214,7 +214,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = queries.selectAll();
     when(anyCollection.remove(query)).thenReturn(writeResult);
 
-    storage.removeAll(TYPE);
+    storage.deleteAll(TYPE);
   }
 
   @Test
@@ -228,7 +228,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = new BasicDBObject("date", new BasicDBObject("$lt", dateValue));
     when(anyCollection.remove(query)).thenReturn(writeResult);
 
-    storage.removeByDate(TYPE, "date", dateValue);
+    storage.deleteByDate(TYPE, "date", dateValue);
 
     verify(anyCollection).remove(query);
   }
