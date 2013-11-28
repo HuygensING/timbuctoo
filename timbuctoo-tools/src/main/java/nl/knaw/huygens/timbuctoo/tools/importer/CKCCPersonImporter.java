@@ -45,7 +45,7 @@ public class CKCCPersonImporter extends CSVImporter {
       if (exists) {
         person.setId(retrieved.getId());
         person.setPid(retrieved.getPid());
-        storageManager.modifyEntity(CKCCPerson.class, person);
+        storageManager.updateDomainEntity(CKCCPerson.class, person);
       } else {
         storageManager.addDomainEntity(CKCCPerson.class, person);
       }

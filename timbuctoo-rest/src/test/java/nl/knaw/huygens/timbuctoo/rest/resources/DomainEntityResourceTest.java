@@ -215,7 +215,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
     whenJsonProviderReadFromThenReturn(entity);
 
-    doThrow(IOException.class).when(getStorageManager()).modifyEntity(Matchers.<Class<TestDomainEntity>> any(), any(TestDomainEntity.class));
+    doThrow(IOException.class).when(getStorageManager()).updateDomainEntity(Matchers.<Class<TestDomainEntity>> any(), any(TestDomainEntity.class));
 
     ClientResponse response = domainResource("testdomainentities", id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);

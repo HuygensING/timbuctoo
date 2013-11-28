@@ -87,7 +87,7 @@ public class RelationManager {
         if (storageManager.relationExists(relation)) {
           LOG.info("Ignored duplicate {}", relation.getDisplayName());
         } else {
-          return storageManager.addSystemEntity(Relation.class, relation);
+          return storageManager.addDomainEntity(Relation.class, relation);
         }
       } catch (IOException e) {
         LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
