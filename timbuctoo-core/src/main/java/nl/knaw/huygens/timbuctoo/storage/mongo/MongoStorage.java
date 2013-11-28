@@ -215,7 +215,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Entity> String addItem(Class<T> type, T entity) throws IOException {
+  public <T extends Entity> String addEntity(Class<T> type, T entity) throws IOException {
     if (entity.getId() == null) {
       setNextId(type, entity);
     }
@@ -236,7 +236,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Entity> void updateItem(Class<T> type, String id, T entity) throws IOException {
+  public <T extends Entity> void updateEntity(Class<T> type, String id, T entity) throws IOException {
     int revision = entity.getRev();
     DBObject query = queries.selectByIdAndRevision(id, revision);
     DBObject existingNode = getDBCollection(type).findOne(query);
@@ -267,19 +267,19 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends SystemEntity> int removeItem(Class<T> type, String id) {
+  public <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) {
     DBObject query = queries.selectById(id);
     return removeItem(type, query);
   }
 
   @Override
-  public <T extends SystemEntity> int removeAll(Class<T> type) {
+  public <T extends SystemEntity> int deleteAll(Class<T> type) {
     DBObject query = queries.selectAll();
     return removeItem(type, query);
   }
 
   @Override
-  public <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue) {
+  public <T extends SystemEntity> int deleteByDate(Class<T> type, String dateField, Date dateValue) {
     DBObject query = queries.selectByDate(dateField, dateValue);
     return removeItem(type, query);
   }
@@ -334,7 +334,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends DomainEntity> void deleteItem(Class<T> type, String id, Change change) throws IOException {
+  public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws IOException {
     DBObject query = queries.selectById(id);
     DBObject existingNode = getDBCollection(type).findOne(query);
     if (existingNode == null) {
@@ -496,7 +496,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends DomainEntity> void removeNonPersistent(Class<T> type, List<String> ids) throws IOException {
+  public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws IOException {
     try {
       DBObject query = DBQuery.in("_id", ids);
       query.put(DomainEntity.PID, null);

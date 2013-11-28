@@ -90,21 +90,21 @@ public class StorageManagerTest {
   public void testAddDerivedDomainEntity() throws IOException {
     ProjectADomainEntity entity = new ProjectADomainEntity();
     manager.addDomainEntity(ProjectADomainEntity.class, entity);
-    verify(storage).addItem(ProjectADomainEntity.class, entity);
+    verify(storage).addEntity(ProjectADomainEntity.class, entity);
   }
 
   @Test
   public void testModifyEntity() throws IOException {
     BaseDomainEntity entity = new BaseDomainEntity("id");
     manager.updateDomainEntity(BaseDomainEntity.class, entity);
-    verify(storage).updateItem(BaseDomainEntity.class, "id", entity);
+    verify(storage).updateEntity(BaseDomainEntity.class, "id", entity);
   }
 
   @Test
   public void testDeleteSystemEntity() throws IOException {
     TestSystemEntity entity = new TestSystemEntity("id");
     manager.deleteSystemEntity(entity);
-    verify(storage).removeItem(TestSystemEntity.class, "id");
+    verify(storage).deleteSystemEntity(TestSystemEntity.class, "id");
   }
 
   @Test
@@ -113,20 +113,20 @@ public class StorageManagerTest {
     Change change = new Change();
     entity.setLastChange(change);
     manager.deleteDomainEntity(entity);
-    verify(storage).deleteItem(BaseDomainEntity.class, "id", change);
+    verify(storage).deleteDomainEntity(BaseDomainEntity.class, "id", change);
   }
 
   @Test
   public void testDeleteAllSearchResults() {
     manager.deleteAllSearchResults();
-    verify(storage).removeAll(SearchResult.class);
+    verify(storage).deleteAll(SearchResult.class);
   }
 
   @Test
   public void testDeleteSearchResultsBefore() {
     Date date = new Date();
     manager.deleteSearchResultsBefore(date);
-    verify(storage).removeByDate(SearchResult.class, "date", date);
+    verify(storage).deleteByDate(SearchResult.class, "date", date);
   }
 
   @Test
@@ -139,7 +139,7 @@ public class StorageManagerTest {
   public void testDeleteNonPersistent() throws IOException {
     ArrayList<String> ids = Lists.newArrayList("id1", "id2", "id3");
     manager.deleteNonPersistent(BaseDomainEntity.class, ids);
-    verify(storage).removeNonPersistent(BaseDomainEntity.class, ids);
+    verify(storage).deleteNonPersistent(BaseDomainEntity.class, ids);
   }
 
   @Test

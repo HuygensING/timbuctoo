@@ -20,6 +20,48 @@ public interface Storage {
    */
   void close();
 
+  // --- add entities --------------------------------------------------
+
+  /**
+   * Adds the specified entity to the storage; returns its assigned id.
+   */
+  <T extends Entity> String addEntity(Class<T> type, T entity) throws IOException;
+
+  // --- update entities -----------------------------------------------
+
+  <T extends Entity> void updateEntity(Class<T> type, String id, T entity) throws IOException;
+
+  <T extends DomainEntity> void setPID(Class<T> type, String id, String pid);
+
+  // --- delete entities -----------------------------------------------
+
+  /**
+   * Deletes the spcified system entity.
+   */
+  <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws IOException;
+
+  /**
+   * Deletes all system entities with the specified type.
+   * @return The number of entities removed.
+   */
+  <T extends SystemEntity> int deleteAll(Class<T> type);
+
+  /**
+   * Deletes system entities that have a value of the specified date field
+   * that is older than the specified date.
+   * @return The number of entities removed.
+   */
+  <T extends SystemEntity> int deleteByDate(Class<T> type, String dateField, Date dateValue);
+
+  <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws IOException;
+
+  /**
+   * Deletes non-persistent domain entities with the specified type and id's..
+   */
+  <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws IOException;
+
+  // -------------------------------------------------------------------
+
   <T extends Entity> T getItem(Class<T> type, String id) throws IOException;
 
   <T extends Entity> StorageIterator<T> getAllByType(Class<T> type);
@@ -30,13 +72,6 @@ public interface Storage {
   <T extends Entity> long count(Class<T> type);
 
   /**
-   * Adds the specified entity to the storage; returns its assigned id.
-   */
-  <T extends Entity> String addItem(Class<T> type, T item) throws IOException;
-
-  <T extends Entity> void updateItem(Class<T> type, String id, T item) throws IOException;
-
-  /**
    * Find a system entity which has the specified key/value pair.
    */
   <T extends SystemEntity> T findItemByKey(Class<T> type, String key, String value) throws IOException;
@@ -45,24 +80,6 @@ public interface Storage {
    * Find a system entity which has the non-null properties of the example object.
    */
   <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException;
-
-  /**
-   * Removes the spcified system entity.
-   */
-  <T extends SystemEntity> int removeItem(Class<T> type, String id) throws IOException;
-
-  /**
-   * Removes all system entities with the specified type.
-   * @return The number of entities removed.
-   */
-  <T extends SystemEntity> int removeAll(Class<T> type);
-
-  /**
-   * Removes system entities that have a value of the specified date field
-   * that is older than the specified date.
-   * @return The number of entities removed.
-   */
-  <T extends SystemEntity> int removeByDate(Class<T> type, String dateField, Date dateValue);
 
   /**
    * Get the given variation of an entity.
@@ -88,8 +105,6 @@ public interface Storage {
 
   void addRelationsTo(Class<? extends DomainEntity> type, String id, DomainEntity entity);
 
-  <T extends DomainEntity> void setPID(Class<T> type, String id, String pid);
-
   /**
   * Returns the id's of the domain entities of the specified type, that are not persisted.
   * 
@@ -110,12 +125,5 @@ public interface Storage {
    * @throws IOException wrapped exception around the database exceptions
    */
   List<String> getRelationIds(List<String> ids) throws IOException;
-
-  /**
-   * Removes non-persistent domain entities with the specified type and id's..
-   */
-  <T extends DomainEntity> void removeNonPersistent(Class<T> type, List<String> ids) throws IOException;
-
-  <T extends DomainEntity> void deleteItem(Class<T> type, String id, Change change) throws IOException;
 
 }

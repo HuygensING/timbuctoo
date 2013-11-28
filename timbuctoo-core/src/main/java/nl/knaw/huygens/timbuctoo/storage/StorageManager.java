@@ -71,22 +71,22 @@ public class StorageManager {
 
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException {
     checkArgument(BusinessRules.allowSystemEntityAdd(type), "Not allowed to add %s", type);
-    return storage.addItem(type, entity);
+    return storage.addEntity(type, entity);
   }
 
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) throws IOException {
     checkArgument(BusinessRules.allowDomainEntityAdd(type), "Not allowed to add %s", type);
-    return storage.addItem(type, entity);
+    return storage.addEntity(type, entity);
   }
 
   // --- update entities -----------------------------------------------
 
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws IOException {
-    storage.updateItem(type, entity.getId(), entity);
+    storage.updateEntity(type, entity.getId(), entity);
   }
 
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity) throws IOException {
-    storage.updateItem(type, entity.getId(), entity);
+    storage.updateEntity(type, entity.getId(), entity);
   }
 
   public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) {
@@ -96,11 +96,11 @@ public class StorageManager {
   // --- delete entities -----------------------------------------------
 
   public <T extends SystemEntity> void deleteSystemEntity(T entity) throws IOException {
-    storage.removeItem(entity.getClass(), entity.getId());
+    storage.deleteSystemEntity(entity.getClass(), entity.getId());
   }
 
   public <T extends DomainEntity> void deleteDomainEntity(T entity) throws IOException {
-    storage.deleteItem(entity.getClass(), entity.getId(), entity.getLastChange());
+    storage.deleteDomainEntity(entity.getClass(), entity.getId(), entity.getLastChange());
   }
 
   /**
@@ -114,15 +114,15 @@ public class StorageManager {
    * @throws IOException when the storage layer throws an exception it will be forwarded
    */
   public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws IOException {
-    storage.removeNonPersistent(type, ids);
+    storage.deleteNonPersistent(type, ids);
   }
 
   public int deleteAllSearchResults() {
-    return storage.removeAll(SearchResult.class);
+    return storage.deleteAll(SearchResult.class);
   }
 
   public int deleteSearchResultsBefore(Date date) {
-    return storage.removeByDate(SearchResult.class, SearchResult.DATE_FIELD, date);
+    return storage.deleteByDate(SearchResult.class, SearchResult.DATE_FIELD, date);
   }
 
   // -------------------------------------------------------------------
