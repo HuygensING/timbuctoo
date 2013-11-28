@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.database;
+package nl.knaw.huygens.timbuctoo.tools.importer;
 
 import static org.junit.Assert.assertEquals;
 
@@ -13,6 +13,7 @@ import java.util.Set;
 import junit.framework.Assert;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.tools.importer.GenericResultSetConverter;
 
 import org.junit.Test;
 import org.mockito.Mockito;

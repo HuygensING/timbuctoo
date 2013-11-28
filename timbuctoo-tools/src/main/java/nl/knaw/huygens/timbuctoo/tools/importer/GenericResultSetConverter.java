@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.database;
+package nl.knaw.huygens.timbuctoo.tools.importer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
@@ -23,7 +23,11 @@ import org.apache.commons.lang.StringUtils;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 
-public class GenericResultSetConverter<T extends Entity> {
+/**
+ * A class that transforms a {@code ResultSet} to a List of {@code DomainEntities}.
+ *  @param <T> every type used in this class should extend {@code DomainEntity}.
+ */
+public class GenericResultSetConverter<T extends DomainEntity> {
 
   private Map<String, List<String>> propertyMapping;
   private Class<T> type;
@@ -53,6 +57,15 @@ public class GenericResultSetConverter<T extends Entity> {
     return returnValue;
   }
 
+  /**
+   * This method converts the {@code resultSet} into {@code List} of {@code Roles}. 
+   * @param resultSet the {@code ResultSet} to get the data from.
+   * @return a {@code List} of {@code Roles}
+   * @throws IllegalArgumentException
+   * @throws SQLException
+   * @throws InstantiationException
+   * @throws IllegalAccessException
+   */
   private List<Role> getRoles(ResultSet resultSet) throws IllegalArgumentException, SQLException, InstantiationException, IllegalAccessException {
     List<Role> roles = Lists.newArrayList();
 
@@ -76,6 +89,16 @@ public class GenericResultSetConverter<T extends Entity> {
     return roles;
   }
 
+  /**
+   * A method that creates an instance of {@code type}.
+   * @param type the type that is used to create an instance of. This could be a {@code Role} or a {@code DomainEntity}
+   * @param resultSet the {@code ResultSet} that contains the data the instance will be filled with. 
+   * @return an instance of {@code type}.
+   * @throws SQLException
+   * @throws InstantiationException
+   * @throws IllegalAccessException
+   * @throws IllegalArgumentException
+   */
   private <U> U createInstance(Class<U> type, ResultSet resultSet) throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException {
     List<Field> fields = Lists.newArrayList();
     getAllFields(fields, type);
@@ -101,6 +124,7 @@ public class GenericResultSetConverter<T extends Entity> {
   }
 
   private String getFieldName(Class<?> type, Field field) {
+    //Mapped fields for Roles should start with the name of the Role.  
     if (Role.class.isAssignableFrom(type)) {
       return type.getSimpleName() + "." + field.getName();
     }

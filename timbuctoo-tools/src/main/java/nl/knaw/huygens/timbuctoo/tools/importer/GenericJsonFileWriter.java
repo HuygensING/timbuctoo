@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.database;
+package nl.knaw.huygens.timbuctoo.tools.importer;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +11,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 
+/**
+ * A sub class of the GenericDataHandler, that exports the into a json-file for later use. 
+ */
 public class GenericJsonFileWriter extends GenericDataHandler {
   private final String testDataDir;
   private final TypeRegistry typeRegistry;
