@@ -39,7 +39,7 @@ public class RESTInjectionModule extends BasicInjectionModule {
   @Singleton
   AuthorizationHandler provideAuthorizationHandler() {
     Client client = new Client();
-    return new HuygensAuthorizationHandler(client, config.getSetting("security.hss.url"));
+    return new HuygensAuthorizationHandler(client, config.getSetting("security.hss.url"), config.getSetting("security.hss.credentials"));
   }
 
   @Provides
