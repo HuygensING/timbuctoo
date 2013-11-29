@@ -71,22 +71,22 @@ public class StorageManager {
 
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException {
     checkArgument(BusinessRules.allowSystemEntityAdd(type), "Not allowed to add %s", type);
-    return storage.addEntity(type, entity);
+    return storage.addSystemEntity(type, entity);
   }
 
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) throws IOException {
-    checkArgument(BusinessRules.allowDomainEntityAdd(type), "Not allowed to add %s", type);
-    return storage.addEntity(type, entity);
+    checkArgument(type == Relation.class || BusinessRules.allowDomainEntityAdd(type), "Not allowed to add %s", type);
+    return storage.addDomainEntity(type, entity);
   }
 
   // --- update entities -----------------------------------------------
 
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws IOException {
-    storage.updateEntity(type, entity.getId(), entity);
+    storage.updateSystemEntity(type, entity.getId(), entity);
   }
 
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity) throws IOException {
-    storage.updateEntity(type, entity.getId(), entity);
+    storage.updateDomainEntity(type, entity.getId(), entity);
   }
 
   public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) {

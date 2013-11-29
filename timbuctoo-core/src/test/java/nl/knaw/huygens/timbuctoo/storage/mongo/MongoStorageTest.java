@@ -113,7 +113,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = queries.selectByIdAndRevision(DEFAULT_ID, 0);
     when(anyCollection.find(query)).thenReturn(cursor);
 
-    storage.updateEntity(TYPE, DEFAULT_ID, entity);
+    storage.updateSystemEntity(TYPE, DEFAULT_ID, entity);
   }
 
   @Test
@@ -121,7 +121,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     TestSystemEntity entity = new TestSystemEntity();
     entity.setTestValue1("test");
 
-    storage.addEntity(TYPE, entity);
+    storage.addSystemEntity(TYPE, entity);
 
     verify(anyCollection).insert(any(DBObject.class));
   }
@@ -131,7 +131,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
     entity.setTestValue1("test");
 
-    storage.addEntity(TYPE, entity);
+    storage.addSystemEntity(TYPE, entity);
 
     verify(anyCollection).insert(any(DBObject.class));
   }
@@ -143,7 +143,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     doThrow(MongoException.class).when(anyCollection).insert(any(DBObject.class));
 
-    storage.addEntity(TYPE, entity);
+    storage.addSystemEntity(TYPE, entity);
   }
 
   @Test

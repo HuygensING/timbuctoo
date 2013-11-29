@@ -90,14 +90,14 @@ public class StorageManagerTest {
   public void testAddDerivedDomainEntity() throws IOException {
     ProjectADomainEntity entity = new ProjectADomainEntity();
     manager.addDomainEntity(ProjectADomainEntity.class, entity);
-    verify(storage).addEntity(ProjectADomainEntity.class, entity);
+    verify(storage).addDomainEntity(ProjectADomainEntity.class, entity);
   }
 
   @Test
   public void testModifyEntity() throws IOException {
     BaseDomainEntity entity = new BaseDomainEntity("id");
     manager.updateDomainEntity(BaseDomainEntity.class, entity);
-    verify(storage).updateEntity(BaseDomainEntity.class, "id", entity);
+    verify(storage).updateDomainEntity(BaseDomainEntity.class, "id", entity);
   }
 
   @Test
