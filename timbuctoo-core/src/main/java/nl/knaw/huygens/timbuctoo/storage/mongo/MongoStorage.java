@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
-import static com.google.common.base.Preconditions.checkState;
 import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
 
 import java.io.IOException;
@@ -131,31 +130,22 @@ public class MongoStorage implements Storage {
     DBCollection collection = collectionCache.get(type);
     if (collection == null) {
       Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
-      String collectionName = typeRegistry.getINameForType(baseType);
-      checkState(collectionName != null, "Unregistered type %s", type.getSimpleName());
+      String collectionName = getInternalName(baseType);
       collection = db.getCollection(collectionName);
       collection.setDBDecoderFactory(treeDecoderFactory);
       collection.setDBEncoderFactory(treeEncoderFactory);
       collectionCache.put(type, collection);
-      LOG.info("Added {} to collection cache", type.getSimpleName());
     }
     return collection;
   }
 
   private <T extends Entity> DBCollection getVersionCollection(Class<T> type) {
     Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
-    DBCollection col = db.getCollection(getVersioningCollectionName(baseType));
-    col.setDBDecoderFactory(treeDecoderFactory);
-    col.setDBEncoderFactory(treeEncoderFactory);
-    return col;
-  }
-
-  private String getCollectionName(Class<? extends Entity> type) {
-    return type.getSimpleName().toLowerCase();
-  }
-
-  private String getVersioningCollectionName(Class<? extends Entity> type) {
-    return getCollectionName(type) + "_versions";
+    String collectionName = getInternalName(baseType) + "_versions";
+    DBCollection collection = db.getCollection(collectionName);
+    collection.setDBDecoderFactory(treeDecoderFactory);
+    collection.setDBEncoderFactory(treeEncoderFactory);
+    return collection;
   }
 
   /**
@@ -215,7 +205,17 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Entity> String addEntity(Class<T> type, T entity) throws IOException {
+  public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException {
+    return addEntity(type, entity);
+  }
+
+  @Override
+  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) throws IOException {
+    return addEntity(type, entity);
+  }
+
+  // For now we have just one implementation
+  private <T extends Entity> String addEntity(Class<T> type, T entity) throws IOException {
     if (entity.getId() == null) {
       setNextId(type, entity);
     }
@@ -236,7 +236,17 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Entity> void updateEntity(Class<T> type, String id, T entity) throws IOException {
+  public <T extends SystemEntity> void updateSystemEntity(Class<T> type, String id, T entity) throws IOException {
+    updateEntity(type, id, entity);
+  }
+
+  @Override
+  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, String id, T entity) throws IOException {
+    updateEntity(type, id, entity);
+  }
+
+  // For now we have just one implementation
+  private <T extends Entity> void updateEntity(Class<T> type, String id, T entity) throws IOException {
     int revision = entity.getRev();
     DBObject query = queries.selectByIdAndRevision(id, revision);
     DBObject existingNode = getDBCollection(type).findOne(query);
