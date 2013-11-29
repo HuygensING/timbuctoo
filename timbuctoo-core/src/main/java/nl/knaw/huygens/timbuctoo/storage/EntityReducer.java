@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
@@ -22,6 +23,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 public class EntityReducer {
@@ -53,23 +56,58 @@ public class EntityReducer {
     return reduceEntity(type, tree);
   }
 
+  // TODO This is the "old" behaviour, but we need to re-think the resposibilities
+  // Who knows about the way variations are stored? It's either the storage layer.
+  // in which case reduceAllVariations shouldn't be part of the reducer, or it is
+  // the inducer/reducer, in which case adding maintaining the variation list
+  // should be part of the inducer and not of MongoStorage.
   public <T extends Entity> List<T> reduceAllVariations(Class<T> type, JsonNode tree) throws IOException {
     checkNotNull(tree);
 
-    return Lists.newArrayList();
+    List<T> entities = Lists.newArrayList();
+
+    JsonNode variations = tree.findValue(DomainEntity.VARIATIONS);
+    if (variations != null) {
+      for (JsonNode node : ImmutableList.copyOf(variations.elements())) {
+        String variation = node.textValue();
+        Class<? extends Entity> varType = typeRegistry.getTypeForIName(variation);
+        if (varType != null && type.isAssignableFrom(varType)) {
+          T entity = type.cast(reduceVariation(varType, tree));
+          entities.add(entity);
+        } else {
+          LOG.error("Not a variation of {}: {}", type, variation);
+        }
+      }
+    }
+
+    return entities;
   }
 
   public <T extends Entity> T reduceRevision(Class<T> type, JsonNode tree) throws IOException {
     checkNotNull(tree);
 
-    return createEntityInstance(type);
+    ArrayNode versionsNode = (ArrayNode) tree.get("versions");
+    JsonNode node = versionsNode.get(0);
+
+    return reduceVariation(type, node);
   }
 
   public <T extends Entity> MongoChanges<T> reduceAllRevisions(Class<T> type, JsonNode tree) throws IOException {
     checkNotNull(tree);
 
-    T entity = createEntityInstance(type);
-    return new MongoChanges<T>("id", entity);
+    ArrayNode versionsNode = (ArrayNode) tree.get("versions");
+    MongoChanges<T> changes = null;
+
+    for (int i = 0; versionsNode.hasNonNull(i); i++) {
+      T item = reduceVariation(type, versionsNode.get(i));
+      if (i == 0) {
+        changes = new MongoChanges<T>(item.getId(), item);
+      } else {
+        changes.getRevisions().add(item);
+      }
+    }
+
+    return changes;
   }
 
   // -------------------------------------------------------------------
