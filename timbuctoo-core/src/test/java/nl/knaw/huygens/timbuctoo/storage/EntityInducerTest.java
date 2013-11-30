@@ -162,6 +162,7 @@ public class EntityInducerTest {
   }
 
   @Test
+  // A similar test failed with old inducer [#1909]
   public void updateOfPrimitiveMustNotAffectProject() throws Exception {
     // tree to be updated
     Map<String, Object> oldMap = newDomainEntityMap(ID, PID);
@@ -174,13 +175,13 @@ public class EntityInducerTest {
 
     // entity to update with
     SubADomainEntity entity = new SubADomainEntity(ID, PID);
-    entity.setValue1("xv1");
+    entity.setValue1("x1");
     entity.setValue2(null);
-    entity.setValuea("xva");
+    entity.setValuea("xa");
 
     // expected tree after update
     Map<String, Object> newMap = newDomainEntityMap(ID, PID);
-    newMap.put(propertyName(BaseDomainEntity.class, "value1"), "xv1");
+    newMap.put(propertyName(BaseDomainEntity.class, "value1"), "x1");
     newMap.put(propertyName(SubADomainEntity.class, "value1"), "v1");
     newMap.put(propertyName(SubADomainEntity.class, "value2"), "v2");
     newMap.put(propertyName(SubADomainEntity.class, "valuea"), "va");
