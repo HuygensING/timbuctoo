@@ -26,6 +26,7 @@ import nl.knaw.huygens.timbuctoo.model.dcar.DCARArchiver;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARKeyword;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARLegislation;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
+import nl.knaw.huygens.timbuctoo.model.dcar.DCARRelation;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
@@ -250,7 +251,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
   private void addRegularRelations(Reference sourceRef, Reference relTypeRef, Map<String, Reference> map, String[] keys) {
     if (keys != null) {
       for (String key : keys) {
-        relationManager.storeRelation(sourceRef, relTypeRef, map.get(key));
+        relationManager.storeRelation(DCARRelation.class, sourceRef, relTypeRef, map.get(key));
       }
     }
   }
@@ -258,7 +259,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
   private void addInverseRelations(Reference targetRef, Reference relTypeRef, Map<String, Reference> map, String[] keys) {
     if (keys != null) {
       for (String key : keys) {
-        relationManager.storeRelation(map.get(key), relTypeRef, targetRef);
+        relationManager.storeRelation(DCARRelation.class, map.get(key), relTypeRef, targetRef);
       }
     }
   }

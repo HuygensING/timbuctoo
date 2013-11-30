@@ -69,9 +69,11 @@ public class RelationManager {
     return getRelationTypeById(reference.getId());
   }
 
-  public String storeRelation(Reference sourceRef, Reference relTypeRef, Reference targetRef) {
+  public <T extends Relation> String storeRelation(Class<T> type, Reference sourceRef, Reference relTypeRef, Reference targetRef) {
+    RelationBuilder<T> builder = getBuilder(type);
+
     RelationType relationType = getRelationType(relTypeRef);
-    RelationBuilder builder = getBuilder().type(relTypeRef);
+    builder.type(relTypeRef);
     /* 
      * If the relationType is symmetric order the relation on id.
      * This way we can be sure the relation is saved once.  
@@ -81,13 +83,13 @@ public class RelationManager {
     } else {
       builder.source(sourceRef).target(targetRef);
     }
-    Relation relation = builder.build();
+    T relation = builder.build();
     if (relation != null) {
       try {
         if (storageManager.relationExists(relation)) {
           LOG.info("Ignored duplicate {}", relation.getDisplayName());
         } else {
-          return storageManager.addDomainEntity(Relation.class, relation);
+          return storageManager.addDomainEntity(type, relation);
         }
       } catch (IOException e) {
         LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
@@ -98,46 +100,51 @@ public class RelationManager {
 
   // -------------------------------------------------------------------
 
-  public RelationBuilder getBuilder() {
-    return new RelationBuilder();
+  public <T extends Relation> RelationBuilder<T> getBuilder(Class<T> type) {
+    checkArgument(type != null && type.getSuperclass() == Relation.class);
+    return new RelationBuilder<T>(type);
   }
 
-  public class RelationBuilder {
-    private Relation relation;
+  public class RelationBuilder<T extends Relation> {
+    private T relation;
 
-    public RelationBuilder() {
-      relation = new Relation();
+    public RelationBuilder(Class<T> type) {
+      try {
+        relation = type.newInstance();
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to create instance of " + type);
+      }
     }
 
-    public RelationBuilder type(Reference ref) {
+    public RelationBuilder<T> type(Reference ref) {
       relation.setTypeRef(ref);
       return this;
     }
 
-    public RelationBuilder source(Reference ref) {
+    public RelationBuilder<T> source(Reference ref) {
       relation.setSourceRef(ref);
       return this;
     }
 
-    public RelationBuilder source(Class<? extends Entity> typeToken, String id) {
+    public RelationBuilder<T> source(Class<? extends Entity> typeToken, String id) {
       return source(new Reference(typeToken, id));
     }
 
-    public RelationBuilder target(Reference ref) {
+    public RelationBuilder<T> target(Reference ref) {
       relation.setTargetRef(ref);
       return this;
     }
 
-    public RelationBuilder target(Class<? extends Entity> typeToken, String id) {
+    public RelationBuilder<T> target(Class<? extends Entity> typeToken, String id) {
       return target(new Reference(typeToken, id));
     }
 
-    public RelationBuilder accept(boolean accepted) {
+    public RelationBuilder<T> accept(boolean accepted) {
       relation.setAccepted(accepted);
       return this;
     }
 
-    public Relation build() {
+    public T build() {
       if (relation.getTypeRef() == null) {
         LOG.error("Missing relation type ref");
         return null;
