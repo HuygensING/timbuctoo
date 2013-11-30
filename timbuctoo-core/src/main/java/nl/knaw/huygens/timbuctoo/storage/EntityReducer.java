@@ -50,7 +50,7 @@ public class EntityReducer {
   public <T extends Entity> T reduceVariation(Class<T> type, JsonNode tree, String variation) throws StorageException, JsonProcessingException {
     checkNotNull(tree);
 
-    // For the time being I'm not quite sure wether variation should be used at all
+    // For the time being I'm not quite sure whether variation should be used at all
     // because we can arrange things by looking at the type.
 
     return reduceEntity(type, tree);
