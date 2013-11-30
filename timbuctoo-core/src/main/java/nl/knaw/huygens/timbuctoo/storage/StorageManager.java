@@ -75,7 +75,7 @@ public class StorageManager {
   }
 
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) throws IOException {
-    checkArgument(type == Relation.class || BusinessRules.allowDomainEntityAdd(type), "Not allowed to add %s", type);
+    checkArgument(BusinessRules.allowDomainEntityAdd(type), "Not allowed to add %s", type);
     return storage.addDomainEntity(type, entity);
   }
 
