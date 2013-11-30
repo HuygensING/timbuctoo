@@ -9,6 +9,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.slf4j.Logger;
@@ -45,12 +46,24 @@ public class ActiveMQConsumer implements Consumer {
 
     String action = message.getStringProperty(Broker.PROP_ACTION);
     ActionType actionType = ActionType.getFromString(action);
+
     String typeString = message.getStringProperty(Broker.PROP_DOC_TYPE);
-    Class<? extends Entity> type = typeRegistry.getTypeForIName(typeString);
-    
+    Class<? extends DomainEntity> type = getType(typeString);
+
     String id = message.getStringProperty(Broker.PROP_DOC_ID);
 
     return new Action(actionType, type, id);
+  }
+
+  private Class<? extends DomainEntity> getType(String typeString) throws JMSException {
+    Class<? extends Entity> type = typeRegistry.getTypeForIName(typeString);
+    if (type == null) {
+      throw new JMSException("Unknown type: " + typeString);
+    } else if (!TypeRegistry.isDomainEntity(type)) {
+      throw new JMSException("Not a domain type: " + typeString);
+    } else {
+      return TypeRegistry.toDomainEntity(type);
+    }
   }
 
   @Override
