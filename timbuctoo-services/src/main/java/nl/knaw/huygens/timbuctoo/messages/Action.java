@@ -1,14 +1,14 @@
 package nl.knaw.huygens.timbuctoo.messages;
 
-import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 public class Action {
 
   private final ActionType actionType;
   private final String id;
-  private final Class<? extends Entity> type;
+  private final Class<? extends DomainEntity> type;
 
-  public Action(ActionType actionType, Class<? extends Entity> type, String id) {
+  public Action(ActionType actionType, Class<? extends DomainEntity> type, String id) {
     this.actionType = actionType;
     this.id = id;
     this.type = type;
@@ -22,7 +22,7 @@ public class Action {
     return id;
   }
 
-  public Class<? extends Entity> getType() {
+  public Class<? extends DomainEntity> getType() {
     return type;
   }
 

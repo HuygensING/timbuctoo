@@ -10,7 +10,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,7 @@ public class ActiveMQProducer implements Producer {
 
   // ActiveMQ message producers are not thread-safe
   @Override
-  public synchronized void send(ActionType action, Class<? extends Entity> type, String id) throws JMSException {
+  public synchronized void send(ActionType action, Class<? extends DomainEntity> type, String id) throws JMSException {
     Message message = session.createMessage();
     message.setStringProperty(Broker.PROP_ACTION, action.getStringRepresentation());
     message.setStringProperty(Broker.PROP_DOC_TYPE, typeRegistry.getINameForType(type));
