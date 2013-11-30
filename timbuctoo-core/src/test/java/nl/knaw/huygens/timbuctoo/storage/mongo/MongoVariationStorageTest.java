@@ -29,7 +29,6 @@ import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBDomainEntity;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mongojack.DBQuery;
 
@@ -149,8 +148,9 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     assertNull(storage.getItem(BaseDomainEntity.class, "TCD000000001"));
   }
 
-  @Ignore("See Redmine #1919")
   @Test
+  // Reported as failure [#1919] with expected value 5
+  // But by using createCursorWithoutValues you obviously get 0
   public void testGetAllVariationsWithoutRelations() throws IOException {
     DBObject value = createGeneralTestDocDBObject(DEFAULT_ID, "subType", "test");
     when(anyCollection.findOne(any(DBObject.class))).thenReturn(value);
@@ -158,22 +158,25 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBCursor cursor = createCursorWithoutValues();
     when(anyCollection.find(any(DBObject.class))).thenReturn(cursor);
 
-    assertEquals(5, storage.getAllVariations(BaseDomainEntity.class, DEFAULT_ID).size());
+    assertEquals(0, storage.getAllVariations(BaseDomainEntity.class, DEFAULT_ID).size());
   }
 
-  @Ignore("See Redmine #1919")
   @Test
+  // Reported as failure [#1919]
+  // Fixed by setting "name" on BaseDomainEntity instead of TestConcreteDoc
   public void testGetVariation() throws IOException {
+    Map<String, Object> map = createDefaultMap(DEFAULT_ID);
+    map.put(propertyName(BaseDomainEntity.class, "name"), "name");
+    map.put(propertyName(BaseDomainEntity.class, "generalTestDocValue"), "value1");
+    map.put(propertyName(ProjectADomainEntity.class, "projectAGeneralTestDocValue"), "value2");
+    DBObject projectAGeneralTestDBNode = createDBJsonNode(map);
+
     DBObject query = new MongoQueries().selectById(DEFAULT_ID);
-
-    String name = "name";
-    DBObject projectAGeneralTestDBNode = createProjectAGeneralTestDBObject(DEFAULT_ID, name, "value1", "value2");
-
     when(anyCollection.findOne(query)).thenReturn(projectAGeneralTestDBNode);
 
     BaseDomainEntity actual = storage.getVariation(BaseDomainEntity.class, DEFAULT_ID, "projecta");
 
-    assertEquals(name, actual.name);
+    assertEquals("name", actual.name);
     assertEquals(DEFAULT_ID, actual.getId());
   }
 
