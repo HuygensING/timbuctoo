@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
+import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.DatableSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
@@ -24,7 +25,6 @@ import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBTestRole;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -109,9 +109,11 @@ public class VariationInducerTest extends VariationTestBase {
     assertEquals(expected, inducer.induceNewEntity(DatableSystemEntity.class, item));
   }
 
-  @Ignore("Redmine #1909")
   @Test
   public void testInduceUpdatedDomainEntityPrimitive() throws Exception {
+    // Demonstrates fix of #1909 with new inducer
+    EntityInducer inducer = new EntityInducer();
+
     Map<String, Object> map = newDefaultMap(DEFAULT_DOMAIN_ID, DEFAULT_PID);
     map.put(propertyName(BaseDomainEntity.class, "name"), "test");
     ObjectNode node = mapper.valueToTree(map);
