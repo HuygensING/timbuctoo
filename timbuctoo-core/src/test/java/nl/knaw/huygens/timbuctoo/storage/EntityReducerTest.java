@@ -103,6 +103,7 @@ public class EntityReducerTest {
   }
 
   @Test
+  // A similar test failed with old reducer [#1919]
   public void testReduceAllVariations() throws Exception {
     JsonNode tree = newTestDomainEntityTree();
 
