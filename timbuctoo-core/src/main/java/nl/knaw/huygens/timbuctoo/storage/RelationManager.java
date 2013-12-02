@@ -75,7 +75,7 @@ public class RelationManager {
     RelationType relationType = getRelationType(relTypeRef);
     builder.type(relTypeRef);
     /* 
-     * If the relationType is symmetric order the relation on id.
+     * If the relationType is symmetric, order the relation on id.
      * This way we can be sure the relation is saved once.  
      */
     if (relationType.isSymmetric() && sourceRef.getId().compareTo(targetRef.getId()) > 0) {
@@ -100,12 +100,12 @@ public class RelationManager {
 
   // -------------------------------------------------------------------
 
-  public <T extends Relation> RelationBuilder<T> getBuilder(Class<T> type) {
+  private <T extends Relation> RelationBuilder<T> getBuilder(Class<T> type) {
     checkArgument(type != null && type.getSuperclass() == Relation.class);
     return new RelationBuilder<T>(type);
   }
 
-  public class RelationBuilder<T extends Relation> {
+  private class RelationBuilder<T extends Relation> {
     private T relation;
 
     public RelationBuilder(Class<T> type) {
@@ -126,17 +126,9 @@ public class RelationManager {
       return this;
     }
 
-    public RelationBuilder<T> source(Class<? extends Entity> typeToken, String id) {
-      return source(new Reference(typeToken, id));
-    }
-
     public RelationBuilder<T> target(Reference ref) {
       relation.setTargetRef(ref);
       return this;
-    }
-
-    public RelationBuilder<T> target(Class<? extends Entity> typeToken, String id) {
-      return target(new Reference(typeToken, id));
     }
 
     public RelationBuilder<T> accept(boolean accepted) {
@@ -166,13 +158,13 @@ public class RelationManager {
       Class<? extends Entity> actualType = registry.getTypeForIName(iname);
       if (!relationType.getSourceDocType().isAssignableFrom(actualType)) {
         LOG.error("Incompatible source type {}", iname);
-        return null;
+        throw new IllegalArgumentException();
       }
       iname = relation.getTargetRef().getType();
       actualType = registry.getTypeForIName(iname);
       if (!relationType.getTargetDocType().isAssignableFrom(actualType)) {
         LOG.error("Incompatible target type {}", iname);
-        return null;
+        throw new IllegalArgumentException();
       }
       return relation;
     }
