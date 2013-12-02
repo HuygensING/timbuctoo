@@ -11,6 +11,7 @@ import java.util.Set;
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -64,9 +65,14 @@ public class EntityInducer {
   private <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity) {
     Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, Entity.class);
     fieldMapper.addToFieldMap(type.getSuperclass(), type.getSuperclass(), fieldMap);
-    // TODO handle roles
+    PropertyMap properties = new PropertyMap(fieldMap, entity);
 
-    return createTree(fieldMap, entity);
+    for (Role role : entity.getRoles()) {
+      fieldMap = fieldMapper.getSimpleFieldMap(role.getClass(), role.getClass());
+      properties.putAll(new PropertyMap(fieldMap, role));
+    }
+
+    return jsonMapper.valueToTree(properties);
   }
 
   private <T extends SystemEntity> JsonNode induceSystemEntity(Class<T> type, T entity, JsonNode tree) {
