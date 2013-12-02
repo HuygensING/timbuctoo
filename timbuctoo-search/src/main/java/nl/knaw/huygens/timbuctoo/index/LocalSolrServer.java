@@ -145,6 +145,10 @@ class LocalSolrServer {
     }
   }
 
+  public boolean coreExits(String coreName) {
+    return solrServers.containsKey(coreName);
+  }
+
   private Set<String> getCoreNames() {
     return solrServers.keySet();
   }
