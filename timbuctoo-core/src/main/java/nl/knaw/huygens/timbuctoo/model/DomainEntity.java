@@ -14,6 +14,7 @@ public abstract class DomainEntity extends Entity implements Variable {
 
   public static final String PID = "^pid";
   public static final String DELETED = "^deleted";
+  public static final String ROLES = "^roles";
   public static final String VARIATIONS = "^variations";
 
   private String pid; // the persistent identifier.
@@ -95,10 +96,12 @@ public abstract class DomainEntity extends Entity implements Variable {
     return refs;
   }
 
+  @JsonProperty(ROLES)
   public List<Role> getRoles() {
     return roles;
   }
 
+  @JsonProperty(ROLES)
   public void setRoles(List<Role> roles) {
     this.roles = checkNotNull(roles);
   }
