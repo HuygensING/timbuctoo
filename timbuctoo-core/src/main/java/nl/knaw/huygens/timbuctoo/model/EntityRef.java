@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import nl.knaw.huygens.timbuctoo.config.Paths;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Joiner;
 
@@ -12,13 +11,11 @@ import com.google.common.base.Joiner;
  *
  * It is an open question whether we should include the variation.
  */
-//Make sure the '@path'-field is not deserialized.
-@JsonIgnoreProperties("@path")
 public class EntityRef {
 
   private String itype;
-  private String xtype;
   private String id;
+  private String path;
   private String displayName;
 
   // For deserialization...
@@ -26,8 +23,8 @@ public class EntityRef {
 
   public EntityRef(String itype, String xtype, String id, String displayName) {
     this.itype = itype;
-    this.xtype = xtype;
     this.id = id;
+    this.path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
     this.displayName = displayName;
   }
 
@@ -39,20 +36,22 @@ public class EntityRef {
     this.itype = itype;
   }
 
-  public String getXType() {
-    return xtype;
-  }
-
-  public void setXType(String xtype) {
-    this.xtype = xtype;
-  }
-
   public String getId() {
     return id;
   }
 
   public void setId(String id) {
     this.id = id;
+  }
+
+  @JsonProperty("@path")
+  public String getPath() {
+    return path;
+  }
+
+  @JsonProperty("@path")
+  public void setPath(String path) {
+    this.path = path;
   }
 
   public String getDisplayName() {
@@ -63,19 +62,12 @@ public class EntityRef {
     this.displayName = displayName;
   }
 
-  @JsonProperty("@path")
-  public String getPath() {
-    return Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
-  }
-
   @Override
   public boolean equals(Object object) {
     if (object instanceof EntityRef) {
       EntityRef that = (EntityRef) object;
       return (this.itype == null ? that.itype == null : this.itype.equals(that.itype)) //
-          && (this.xtype == null ? that.xtype == null : this.xtype.equals(that.xtype)) //
-          && (this.id == null ? that.id == null : this.id.equals(that.id)) //
-          && (this.displayName == null ? that.displayName == null : this.displayName.equals(that.displayName));
+          && (this.id == null ? that.id == null : this.id.equals(that.id));
     }
     return false;
   }
