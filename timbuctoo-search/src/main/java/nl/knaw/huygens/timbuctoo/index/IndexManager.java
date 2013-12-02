@@ -116,10 +116,12 @@ public class IndexManager {
 
     try {
       for (Scope scope : scopes) {
-        List<String> filteredIds = filterIds(type, ids, scope);
-        if (!filteredIds.isEmpty()) {
+        if (!ids.isEmpty()) {
           String coreName = getCoreName(scope, type);
-          server.deleteById(coreName, ids);
+          //It is needed to check if the core exists. If it does not exist an exception will be thrown.
+          if (server.coreExits(coreName)) {
+            server.deleteById(coreName, ids);
+          }
         }
       }
     } catch (Exception e) {
@@ -203,15 +205,4 @@ public class IndexManager {
     }
     return list;
   }
-
-  private List<String> filterIds(Class<? extends DomainEntity> type, List<String> ids, Scope scope) {
-    List<String> list = Lists.newArrayList();
-    for (String id : ids) {
-      if (scope.inScope(type, id)) {
-        list.add(id);
-      }
-    }
-    return list;
-  }
-
 }
