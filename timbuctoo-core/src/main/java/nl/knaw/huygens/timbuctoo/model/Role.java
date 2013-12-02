@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -17,11 +19,9 @@ public abstract class Role implements Variable {
 
   private List<Reference> variationRefs;
 
-  private final String roleName = this.getClass().getSimpleName();
-
   @JsonProperty("@roleName")
   public String getRoleName() {
-    return roleName;
+    return TypeNames.getInternalName(getClass());
   }
 
   @Override
@@ -31,4 +31,5 @@ public abstract class Role implements Variable {
   public List<Reference> getVariationRefs() {
     return variationRefs;
   }
+
 }
