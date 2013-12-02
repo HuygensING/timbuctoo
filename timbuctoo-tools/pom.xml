@@ -114,11 +114,11 @@
           <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
           <programs>
             <program>
-              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.database.DutchCaribbeanImporter</mainClass>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.DutchCaribbeanImporter</mainClass>
               <name>ducaImport</name>
             </program>
             <program>
-              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.database.TransformedDataImporter</mainClass>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.TransformedDataImporter</mainClass>
               <name>basicImport</name>
             </program>
           </programs>
