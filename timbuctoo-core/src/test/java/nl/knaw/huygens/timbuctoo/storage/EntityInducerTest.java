@@ -12,6 +12,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import test.model.BaseDomainEntity;
+import test.model.TestRole1;
+import test.model.TestRole2;
 import test.model.TestSystemEntity;
 import test.model.projecta.SubADomainEntity;
 import test.model.projectb.SubBDomainEntity;
@@ -59,13 +61,18 @@ public class EntityInducerTest {
     return map;
   }
 
-  private ObjectNode newSubADomainEntityTree(String id, String pid, String bv1, String bv2, String sv1, String sv2, String sva) {
+  private Map<String, Object> newSubADomainEntityMap(String id, String pid, String bv1, String bv2, String sv1, String sv2, String sva) {
     Map<String, Object> map = newDomainEntityMap(id, pid);
     addValue(map, propertyName(BaseDomainEntity.class, "value1"), bv1);
     addValue(map, propertyName(BaseDomainEntity.class, "value2"), bv2);
     addValue(map, propertyName(SubADomainEntity.class, "value1"), sv1);
     addValue(map, propertyName(SubADomainEntity.class, "value2"), sv2);
     addValue(map, propertyName(SubADomainEntity.class, "valuea"), sva);
+    return map;
+  }
+
+  private ObjectNode newSubADomainEntityTree(String id, String pid, String bv1, String bv2, String sv1, String sv2, String sva) {
+    Map<String, Object> map = newSubADomainEntityMap(id, pid, bv1, bv2, sv1, sv2, sva);
     return mapper.valueToTree(map);
   }
 
@@ -100,6 +107,12 @@ public class EntityInducerTest {
 
   // --- new project domain entitiy ------------------------------------
 
+  @Test(expected = IllegalArgumentException.class)
+  public void induceDerivedDomainEntityAsPrimitive() throws Exception {
+    SubADomainEntity entity = new SubADomainEntity(ID, PID, "v1", "v2", "va");
+    inducer.induceNewEntity(BaseDomainEntity.class, entity);
+  }
+
   @Test
   public void induceDerivedDomainEntityAsDerived() throws Exception {
     SubADomainEntity entity = new SubADomainEntity(ID, PID, "v1", "v2", "va");
@@ -107,10 +120,17 @@ public class EntityInducerTest {
     assertEquals(expected, inducer.induceNewEntity(SubADomainEntity.class, entity));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void induceDerivedDomainEntityAsPrimitive() throws Exception {
+  @Test
+  public void induceDerivedDomainEntityWithRoles() throws Exception {
     SubADomainEntity entity = new SubADomainEntity(ID, PID, "v1", "v2", "va");
-    inducer.induceNewEntity(BaseDomainEntity.class, entity);
+    entity.addRole(new TestRole1("p1"));
+    entity.addRole(new TestRole2("p2"));
+    Map<String, Object> map = newSubADomainEntityMap(ID, PID, "v1", "v2", "v1", "v2", "va");
+    map.put(DomainEntity.ROLES, new String[] { "testrole1", "testrole2" });
+    map.put(propertyName(TestRole1.class, "property"), "p1");
+    map.put(propertyName(TestRole2.class, "property"), "p2");
+    JsonNode expected = mapper.valueToTree(map);
+    assertEquals(expected, inducer.induceNewEntity(SubADomainEntity.class, entity));
   }
 
   // --- old system entity ---------------------------------------------
