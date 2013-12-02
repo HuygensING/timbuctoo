@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import nl.knaw.huygens.timbuctoo.config.Paths;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Joiner;
 
 /**
@@ -44,12 +43,10 @@ public class EntityRef {
     this.id = id;
   }
 
-  @JsonProperty("@path")
   public String getPath() {
     return path;
   }
 
-  @JsonProperty("@path")
   public void setPath(String path) {
     this.path = path;
   }
