@@ -184,7 +184,12 @@ public class SearchResource {
   private <T extends DomainEntity> List<DomainEntity> retrieveEntities(Class<T> type, List<String> ids) {
     List<DomainEntity> list = Lists.newArrayList();
     for (String id : ids) {
-      list.add(storageManager.getEntity(type, id));
+      T entity = storageManager.getEntity(type, id);
+      if (entity != null) {
+        list.add(entity);
+      } else {
+        LOG.warn("Solr index is out of synch. {} {} not in database.", type.getSimpleName(), id);
+      }
     }
     return list;
   }
