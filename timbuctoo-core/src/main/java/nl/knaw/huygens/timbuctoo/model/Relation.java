@@ -198,4 +198,23 @@ public class Relation extends DomainEntity {
     return result;
   }
 
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Relation{\ntypeType: ");
+    sb.append(typeType);
+    sb.append("\ntypeId: ");
+    sb.append(typeId);
+    sb.append("\nsourceType: ");
+    sb.append(sourceType);
+    sb.append("\nsourceId: ");
+    sb.append(sourceId);
+    sb.append("\ntargetType: ");
+    sb.append(targetType);
+    sb.append("\ntargetId: ");
+    sb.append(targetId);
+
+    return sb.toString();
+  }
+
 }

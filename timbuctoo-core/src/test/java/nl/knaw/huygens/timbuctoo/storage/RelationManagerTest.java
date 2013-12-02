@@ -2,11 +2,18 @@ package nl.knaw.huygens.timbuctoo.storage;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectARelation;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
 
 import org.junit.After;
 import org.junit.Before;
@@ -20,7 +27,7 @@ public class RelationManagerTest {
 
   @Before
   public void setUp() {
-    typeRegistry = mock(TypeRegistry.class);
+    typeRegistry = new TypeRegistry("timbuctoo.variation.model timbuctoo.model timbuctoo.variation.model.projecta");
     storageManager = mock(StorageManager.class);
     relationManager = new RelationManager(typeRegistry, storageManager);
   }
@@ -42,6 +49,138 @@ public class RelationManagerTest {
     when(storageManager.getEntity(RelationType.class, "id")).thenReturn(new RelationType());
 
     assertNotNull(relationManager.getRelationType(new Reference(RelationType.class, "id")));
+  }
+
+  @Test
+  public void testStoreRelation() throws IOException {
+    String relationTypeId = "relationTypeId";
+    setUpGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
+
+    Reference typeRef = new Reference(RelationType.class, relationTypeId);
+    Reference sourceRef = new Reference(ProjectADomainEntity.class, "test");
+    Reference targetRef = new Reference(ProjectATestDocWithPersonName.class, "test23");
+
+    ProjectARelation expectedRelation = new ProjectARelation(sourceRef, typeRef, targetRef);
+    expectedRelation.setAccepted(true);
+
+    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef);
+
+    verify(storageManager).addDomainEntity(ProjectARelation.class, expectedRelation);
+  }
+
+  @Test
+  public void testStoreSymetricRelation() throws IOException {
+    String relationTypeId = "relationTypeId";
+    setUpGetRelationType(ProjectADomainEntity.class, ProjectADomainEntity.class, relationTypeId, true);
+
+    Reference typeRef = new Reference(RelationType.class, relationTypeId);
+    Reference sourceRef = new Reference(ProjectADomainEntity.class, "test");
+    Reference targetRef = new Reference(ProjectADomainEntity.class, "test23");
+
+    ProjectARelation expectedRelation = new ProjectARelation(sourceRef, typeRef, targetRef);
+    expectedRelation.setAccepted(true);
+
+    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef);
+
+    verify(storageManager).addDomainEntity(ProjectARelation.class, expectedRelation);
+  }
+
+  @Test
+  public void testStoreSymetricRelationSwitchIds() throws IOException {
+    String relationTypeId = "relationTypeId";
+    setUpGetRelationType(ProjectADomainEntity.class, ProjectADomainEntity.class, relationTypeId, true);
+
+    Reference typeRef = new Reference(RelationType.class, relationTypeId);
+    Reference sourceRef = new Reference(ProjectADomainEntity.class, "zztest23");
+    Reference targetRef = new Reference(ProjectADomainEntity.class, "test");
+
+    ProjectARelation expectedRelation = new ProjectARelation(targetRef, typeRef, sourceRef);
+    expectedRelation.setAccepted(true);
+
+    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef);
+
+    verify(storageManager).addDomainEntity(ProjectARelation.class, expectedRelation);
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testStoreRelationSourceRefNull() {
+    String relationTypeId = "relationTypeId";
+    setUpGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
+
+    Reference typeRef = new Reference(RelationType.class, relationTypeId);
+    Reference sourceRef = null;
+    Reference targetRef = new Reference(ProjectATestDocWithPersonName.class, "test23");
+
+    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef);
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testStoreRelationTypeRefNull() {
+    String relationTypeId = "relationTypeId";
+    setUpGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
+
+    Reference typeRef = null;
+    Reference sourceRef = new Reference(ProjectADomainEntity.class, "test");
+    Reference targetRef = new Reference(ProjectATestDocWithPersonName.class, "test23");
+
+    ProjectARelation expectedRelation = new ProjectARelation(sourceRef, typeRef, targetRef);
+    expectedRelation.setAccepted(true);
+
+    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef);
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testStoreRelationTargetRefNull() {
+    String relationTypeId = "relationTypeId";
+    setUpGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
+
+    Reference typeRef = new Reference(RelationType.class, relationTypeId);
+    Reference sourceRef = new Reference(ProjectADomainEntity.class, "test");
+    Reference targetRef = null;
+
+    ProjectARelation expectedRelation = new ProjectARelation(sourceRef, typeRef, targetRef);
+    expectedRelation.setAccepted(true);
+
+    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testStoreRelationSourceRefWrongType() {
+    String relationTypeId = "relationTypeId";
+    setUpGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
+
+    Reference typeRef = new Reference(RelationType.class, relationTypeId);
+    Reference sourceRef = new Reference(ProjectATestDocWithPersonName.class, "test");
+    Reference targetRef = new Reference(ProjectATestDocWithPersonName.class, "test23");
+
+    ProjectARelation expectedRelation = new ProjectARelation(sourceRef, typeRef, targetRef);
+    expectedRelation.setAccepted(true);
+
+    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testStoreRelationTargetRefWrongType() {
+    String relationTypeId = "relationTypeId";
+    setUpGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
+
+    Reference typeRef = new Reference(RelationType.class, relationTypeId);
+    Reference sourceRef = new Reference(ProjectADomainEntity.class, "test");
+    Reference targetRef = new Reference(ProjectADomainEntity.class, "test23");
+
+    ProjectARelation expectedRelation = new ProjectARelation(sourceRef, typeRef, targetRef);
+    expectedRelation.setAccepted(true);
+
+    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef);
+  }
+
+  protected void setUpGetRelationType(Class<? extends DomainEntity> sourceClass, Class<? extends DomainEntity> targetClass, String relationTypeId, boolean symmetric) {
+    RelationType relationType = new RelationType();
+    relationType.setSourceDocType(sourceClass);
+    relationType.setTargetDocType(targetClass);
+    relationType.setSymmetric(symmetric);
+
+    when(storageManager.getEntity(RelationType.class, relationTypeId)).thenReturn(relationType);
   }
 
 }
