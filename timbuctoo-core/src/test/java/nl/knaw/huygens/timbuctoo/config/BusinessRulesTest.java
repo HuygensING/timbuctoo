@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.config;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.junit.Test;
@@ -31,6 +32,16 @@ public class BusinessRulesTest {
   }
 
   @Test
+  public void testIsValidRole() {
+    assertFalse(BusinessRules.isValidRole(null));
+    assertFalse(BusinessRules.isValidRole(String.class));
+    assertFalse(BusinessRules.isValidRole(Role.class));
+    assertTrue(BusinessRules.isValidRole(Level1Role.class));
+    assertTrue(BusinessRules.isValidRole(Level2Role.class));
+    assertFalse(BusinessRules.isValidRole(Level3Role.class));
+  }
+
+  @Test
   public void testAllowSystemEntityAdd() {
     assertFalse(BusinessRules.allowSystemEntityAdd(null));
     assertFalse(BusinessRules.allowSystemEntityAdd(SystemEntity.class));
@@ -45,6 +56,15 @@ public class BusinessRulesTest {
     assertFalse(BusinessRules.allowDomainEntityAdd(Level1DomainEntity.class));
     assertTrue(BusinessRules.allowDomainEntityAdd(Level2DomainEntity.class));
     assertFalse(BusinessRules.allowDomainEntityAdd(Level3DomainEntity.class));
+  }
+
+  @Test
+  public void testAllowRoleAdd() {
+    assertFalse(BusinessRules.allowRoleAdd(null));
+    assertFalse(BusinessRules.allowRoleAdd(Role.class));
+    assertFalse(BusinessRules.allowRoleAdd(Level1Role.class));
+    assertTrue(BusinessRules.allowRoleAdd(Level2Role.class));
+    assertFalse(BusinessRules.allowRoleAdd(Level3Role.class));
   }
 
   // -------------------------------------------------------------------
@@ -68,5 +88,11 @@ public class BusinessRulesTest {
   private static class Level2DomainEntity extends Level1DomainEntity {}
 
   private static class Level3DomainEntity extends Level2DomainEntity {}
+
+  private class Level1Role extends Role {}
+
+  private class Level2Role extends Level1Role {}
+
+  private class Level3Role extends Level2Role {}
 
 }

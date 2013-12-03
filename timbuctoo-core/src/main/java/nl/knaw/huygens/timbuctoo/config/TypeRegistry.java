@@ -101,8 +101,13 @@ public class TypeRegistry {
         }
         LOG.debug("Registered entity {}", type.getName());
       } else if (isRole(type) && !shouldNotRegister(type)) {
-        registerRole(toRole(type));
-        registerVariationForClass(toRole(type));
+        if (BusinessRules.isValidRole(type)) {
+          registerRole(toRole(type));
+          registerVariationForClass(toRole(type));
+        } else {
+          LOG.error("Not a valid role: '{}'", type.getName());
+          throw new IllegalStateException("Invalid role");
+        }
       }
     }
   }
