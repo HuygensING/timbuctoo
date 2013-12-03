@@ -2,13 +2,13 @@ package test.model;
 
 import nl.knaw.huygens.timbuctoo.model.Role;
 
-public class TestRole2 extends Role {
+public class TestRole extends Role {
 
   private String property;
 
-  public TestRole2() {}
+  public TestRole() {}
 
-  public TestRole2(String property) {
+  public TestRole(String property) {
     setProperty(property);
   }
 

@@ -14,11 +14,16 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class EntityInducer {
+
+  private static final Logger LOG = LoggerFactory.getLogger(EntityInducer.class);
 
   private final FieldMapper fieldMapper;
   private final ObjectMapper jsonMapper;
@@ -59,17 +64,24 @@ public class EntityInducer {
   private <T extends SystemEntity> JsonNode induceSystemEntity(Class<T> type, T entity) {
     Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, Entity.class);
 
-    return createTree(fieldMap, entity);
+    return createJsonTree(entity, fieldMap);
   }
 
   private <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity) {
     Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, Entity.class);
     fieldMapper.addToFieldMap(type.getSuperclass(), type.getSuperclass(), fieldMap);
-    ObjectNode tree = createTree(fieldMap, entity);
+    ObjectNode tree = createJsonTree(entity, fieldMap);
 
     for (Role role : entity.getRoles()) {
-      fieldMap = fieldMapper.getSimpleFieldMap(role.getClass(), role.getClass());
-      updateTree(fieldMap, role, tree);
+      Class<? extends Role> roleType = role.getClass();
+      if (BusinessRules.allowRoleAdd(roleType)) {
+        fieldMap = fieldMapper.getCompositeFieldMap(roleType, roleType, Role.class);
+        fieldMapper.addToFieldMap(roleType.getSuperclass(), roleType.getSuperclass(), fieldMap);
+        tree = updateJsonTree(tree, role, fieldMap);
+      } else {
+        LOG.error("Not allowed to add {}", roleType);
+        throw new IllegalStateException("Not allowed to add role");
+      }
     }
 
     return tree;
@@ -77,41 +89,40 @@ public class EntityInducer {
 
   private <T extends SystemEntity> JsonNode induceSystemEntity(Class<T> type, T entity, ObjectNode tree) {
     Map<String, Field> fieldMap = fieldMapper.getSimpleFieldMap(type, type);
-    updateTree(fieldMap, entity, tree);
-
-    return tree;
+    return updateJsonTree(tree, entity, fieldMap);
   }
 
   private <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity, ObjectNode tree) {
     Class<?> stopType = (type.getSuperclass() == DomainEntity.class) ? type : type.getSuperclass();
     Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, stopType);
-    updateTree(fieldMap, entity, tree);
+    tree = updateJsonTree(tree, entity, fieldMap);
 
     for (Role role : entity.getRoles()) {
-      fieldMap = fieldMapper.getSimpleFieldMap(role.getClass(), role.getClass());
-      updateTree(fieldMap, role, tree);
+      Class<? extends Role> roleType = role.getClass();
+      fieldMap = fieldMapper.getSimpleFieldMap(roleType, roleType);
+      tree = updateJsonTree(tree, role, fieldMap);
     }
 
     return tree;
   }
 
-  private void updateTree(Map<String, Field> fieldMap, Object object, ObjectNode oldTree) {
-    ObjectNode newTree = createTree(fieldMap, object);
-    merge(fieldMap.keySet(), newTree, oldTree);
+  private ObjectNode updateJsonTree(ObjectNode oldTree, Object object, Map<String, Field> fieldMap) {
+    ObjectNode newTree = createJsonTree(object, fieldMap);
+    return merge(oldTree, newTree, fieldMap.keySet());
   }
 
   /**
    * Creates a Json tree given a field map and an object.
    */
-  private ObjectNode createTree(Map<String, Field> fieldMap, Object object) {
-    PropertyMap properties = new PropertyMap(fieldMap, object);
+  private ObjectNode createJsonTree(Object object, Map<String, Field> fieldMap) {
+    PropertyMap properties = new PropertyMap(object, fieldMap);
     return jsonMapper.valueToTree(properties);
   }
 
   /**
    * Merges the values corresponding to the specified keys of the new tree into the old tree.
    */
-  private void merge(Set<String> keys, ObjectNode newTree, ObjectNode oldTree) {
+  private ObjectNode merge(ObjectNode oldTree, ObjectNode newTree, Set<String> keys) {
     for (String key : keys) {
       JsonNode newValue = newTree.get(key);
       if (newValue != null) {
@@ -120,6 +131,7 @@ public class EntityInducer {
         oldTree.remove(key);
       }
     }
+    return oldTree;
   }
 
 }

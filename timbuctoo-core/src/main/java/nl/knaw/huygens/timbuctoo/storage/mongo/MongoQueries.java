@@ -50,7 +50,7 @@ public class MongoQueries {
    */
   public <T extends Entity> DBObject selectByProperties(Class<? super T> type, T entity) {
     Map<String, Field> fieldMap = new FieldMapper().getCompositeFieldMap(type, type, type);
-    PropertyMap properties = new PropertyMap(fieldMap, entity);
+    PropertyMap properties = new PropertyMap(entity, fieldMap);
     return new BasicDBObject(properties);
   }
 
