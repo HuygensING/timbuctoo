@@ -7,7 +7,6 @@ import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Set;
 
-import nl.knaw.huygens.timbuctoo.annotations.DoNotRegister;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
@@ -37,8 +36,6 @@ import com.google.inject.Singleton;
  *
  * <p>The type registry scans specified Java packages for concrete
  * (i.e. not abstract) classes that subclass {@code Entity}.
- * The developer has the option to prevent registration by providing
- * a {@code DoNotRegister} annotation on a class.</p>
  *
  * <p>The use of classes as type tokens is connected to type erasure
  * of Java generics. In addition to type tokens we use two string
@@ -94,9 +91,9 @@ public class TypeRegistry {
       Class<?> type = info.load();
       if (isEntity(type) && !shouldNotRegister(type)) {
         if (BusinessRules.isValidSystemEntity(type)) {
-          registerClass(toSystemEntity(type));
+          registerEntity(toSystemEntity(type));
         } else if (BusinessRules.isValidDomainEntity(type)) {
-          registerClass(toDomainEntity(type));
+          registerEntity(toDomainEntity(type));
           registerVariationForClass(toDomainEntity(type));
         } else {
           LOG.error("Not a valid entity: '{}'", type.getName());
@@ -111,13 +108,12 @@ public class TypeRegistry {
   }
 
   private boolean shouldNotRegister(Class<?> type) {
-    return Modifier.isAbstract(type.getModifiers()) //
-        || type.isAnnotationPresent(DoNotRegister.class);
+    return Modifier.isAbstract(type.getModifiers());
   }
 
   // -------------------------------------------------------------------
 
-  private <T extends Entity> void registerClass(Class<T> type) {
+  private <T extends Entity> void registerEntity(Class<T> type) {
     String iname = TypeNames.getInternalName(type);
     if (iname2type.containsKey(iname)) {
       throw new IllegalStateException("Duplicate internal type name " + iname);
