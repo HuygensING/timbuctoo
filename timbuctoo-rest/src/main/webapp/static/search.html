@@ -95,7 +95,7 @@
       success: function (data) {
         var html = '<table><tr><th>Id</th><th>Name</th></tr>';
         $.each(data.refs, function (i, item) {
-          html += '<tr><td><a href="' + baseUrl + item.path + '">' + item.id + '</a></td><td>' + item.displayName + '</td></tr>';
+        	html += '<tr><td><a href="' + baseUrl + item['@path'] + '">' + item.id + '</a></td><td>' + item.displayName + '</td></tr>';
         });
         html += '</table>';
         $('#results').html(html);
