@@ -125,7 +125,7 @@ public class VariationInducerTest extends VariationTestBase {
     BaseDomainEntity item = new BaseDomainEntity(DEFAULT_DOMAIN_ID, "test1");
     item.setPid(DEFAULT_PID);
 
-    assertEquals(expected, inducer.induceOldEntity(BaseDomainEntity.class, item, node));
+    assertEquals(expected, inducer.induceDomainEntity(BaseDomainEntity.class, item, node));
   }
 
   @Test
