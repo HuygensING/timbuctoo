@@ -15,6 +15,9 @@
         <dependent-module archiveName="huygens-persistence-1.0.6.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/persistence/persistence">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="security-client-2.1.1.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/security-client/security-client">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <dependent-module archiveName="security-core-2.1.1.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/security-core/security-core">
             <dependency-type>uses</dependency-type>
         </dependent-module>
