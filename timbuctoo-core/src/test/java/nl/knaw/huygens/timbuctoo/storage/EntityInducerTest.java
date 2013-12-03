@@ -290,7 +290,7 @@ public class EntityInducerTest {
     entity.setValue1("xv1");
     entity.setValue2(null);
     entity.setValuea("xva");
-    entity.addRole(new TestRole1("p", "px1"));
+    entity.addRole(new TestRole1("px", "px1"));
 
     // expected tree after update
     Map<String, Object> newMap = newDomainEntityMap(ID, PID);
@@ -299,7 +299,7 @@ public class EntityInducerTest {
     newMap.put(propertyName(SubADomainEntity.class, "value1"), "xv1");
     newMap.put(propertyName(SubADomainEntity.class, "valuea"), "xva");
     newMap.put(propertyName(TestRole.class, "property"), "p");
-    newMap.put(propertyName(TestRole1.class, "property"), "p");
+    newMap.put(propertyName(TestRole1.class, "property"), "px");
     newMap.put(propertyName(TestRole1.class, "property1"), "px1");
     ObjectNode newTree = mapper.valueToTree(newMap);
 

@@ -31,11 +31,9 @@ public class EntityReducer {
 
   private static final Logger LOG = LoggerFactory.getLogger(EntityReducer.class);
 
-  protected static final String BASE_MODEL_PACKAGE = "model";
-
-  protected final TypeRegistry typeRegistry;
-  protected final ObjectMapper jsonMapper;
-  protected final FieldMapper fieldMapper;
+  private final TypeRegistry typeRegistry;
+  private final ObjectMapper jsonMapper;
+  private final FieldMapper fieldMapper;
 
   public EntityReducer(TypeRegistry registry) {
     typeRegistry = registry;
@@ -53,7 +51,7 @@ public class EntityReducer {
     // For the time being I'm not quite sure whether variation should be used at all
     // because we can arrange things by looking at the type.
 
-    return reduceEntity(type, tree);
+    return reduceObject(tree, type);
   }
 
   // TODO This is the "old" behaviour, but we need to re-think the resposibilities
@@ -112,9 +110,9 @@ public class EntityReducer {
 
   // -------------------------------------------------------------------
 
-  private <T extends Entity> T reduceEntity(Class<T> type, JsonNode tree) throws StorageException {
+  private <T> T reduceObject(JsonNode tree, Class<T> type) throws StorageException {
     try {
-      T entity = createEntityInstance(type);
+      T entity = newInstance(type);
 
       Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, Entity.class);
       for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
@@ -123,7 +121,7 @@ public class EntityReducer {
         if (node != null) {
           Field field = entry.getValue();
           Object value = convertJsonNodeToValue(field.getType(), node);
-          setValue(field, entity, value);
+          setValue(entity, field, value);
           LOG.debug("Assigned: {} := {}", field.getName(), value);
         } else {
           LOG.debug("No value for property {}", key);
@@ -138,10 +136,9 @@ public class EntityReducer {
   }
 
   /**
-   * Encapsulates creation of an entity.
-   * If this fails we're simply done....
+   * Encapsulates creation of an object.
    */
-  private <T extends Entity> T createEntityInstance(Class<T> type) {
+  private <T> T newInstance(Class<T> type) {
     try {
       return type.newInstance();
     } catch (InstantiationException e) {
@@ -153,9 +150,8 @@ public class EntityReducer {
 
   /**
    * Encapsulates assigning of a value to the field of an object.
-   * If this fails we're simply done....
    */
-  private void setValue(Field field, Object object, Object value) {
+  private void setValue(Object object, Field field, Object value) {
     try {
       field.setAccessible(true);
       field.set(object, value);
