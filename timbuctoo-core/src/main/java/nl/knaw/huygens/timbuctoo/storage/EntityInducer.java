@@ -83,8 +83,9 @@ public class EntityInducer {
     tree = updateJsonTree(tree, entity, fieldMap);
 
     for (Role role : entity.getRoles()) {
-      Class<? extends Role> roleType = role.getClass();
-      fieldMap = fieldMapper.getSimpleFieldMap(roleType, roleType);
+      Class<?> roleType = role.getClass();
+      Class<?> baseType = (roleType.getSuperclass() == Role.class) ? roleType : roleType.getSuperclass();
+      fieldMap = fieldMapper.getCompositeFieldMap(roleType, roleType, baseType);
       tree = updateJsonTree(tree, role, fieldMap);
     }
 
@@ -96,9 +97,9 @@ public class EntityInducer {
   /**
    * Updates a Json tree given an object and a field map.
    */
-  private ObjectNode updateJsonTree(ObjectNode oldTree, Object object, Map<String, Field> fieldMap) {
+  private ObjectNode updateJsonTree(ObjectNode tree, Object object, Map<String, Field> fieldMap) {
     ObjectNode newTree = createJsonTree(object, fieldMap);
-    return merge(oldTree, newTree, fieldMap.keySet());
+    return merge(tree, newTree, fieldMap.keySet());
   }
 
   /**
@@ -110,18 +111,18 @@ public class EntityInducer {
   }
 
   /**
-   * Merges the values corresponding to the specified keys of the new tree into the old tree.
+   * Merges into a tree the values corresponding to the specified keys of the new tree.
    */
-  private ObjectNode merge(ObjectNode oldTree, ObjectNode newTree, Set<String> keys) {
+  private ObjectNode merge(ObjectNode tree, ObjectNode newTree, Set<String> keys) {
     for (String key : keys) {
       JsonNode newValue = newTree.get(key);
       if (newValue != null) {
-        oldTree.put(key, newValue);
+        tree.put(key, newValue);
       } else {
-        oldTree.remove(key);
+        tree.remove(key);
       }
     }
-    return oldTree;
+    return tree;
   }
 
 }
