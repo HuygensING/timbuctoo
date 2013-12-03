@@ -46,7 +46,7 @@ public class EntityInducer {
    * Converts an entity to a Json tree and combines it with an existing Json tree.
    */
   @SuppressWarnings("unchecked")
-  public <T extends Entity> JsonNode induceOldEntity(Class<T> type, T entity, JsonNode node) throws IOException {
+  public <T extends Entity> JsonNode induceOldEntity(Class<T> type, T entity, ObjectNode node) throws IOException {
     if (isSystemEntity(type)) {
       return induceSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity, node);
     } else {
@@ -65,36 +65,45 @@ public class EntityInducer {
   private <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity) {
     Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, Entity.class);
     fieldMapper.addToFieldMap(type.getSuperclass(), type.getSuperclass(), fieldMap);
-    PropertyMap properties = new PropertyMap(fieldMap, entity);
+    ObjectNode tree = createTree(fieldMap, entity);
 
     for (Role role : entity.getRoles()) {
       fieldMap = fieldMapper.getSimpleFieldMap(role.getClass(), role.getClass());
-      properties.putAll(new PropertyMap(fieldMap, role));
+      updateTree(fieldMap, role, tree);
     }
 
-    return jsonMapper.valueToTree(properties);
+    return tree;
   }
 
-  private <T extends SystemEntity> JsonNode induceSystemEntity(Class<T> type, T entity, JsonNode tree) {
+  private <T extends SystemEntity> JsonNode induceSystemEntity(Class<T> type, T entity, ObjectNode tree) {
     Map<String, Field> fieldMap = fieldMapper.getSimpleFieldMap(type, type);
+    updateTree(fieldMap, entity, tree);
 
-    JsonNode newTree = createTree(fieldMap, entity);
-    return merge(fieldMap.keySet(), newTree, (ObjectNode) tree);
+    return tree;
   }
 
-  private <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity, JsonNode tree) {
+  private <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity, ObjectNode tree) {
     Class<?> stopType = (type.getSuperclass() == DomainEntity.class) ? type : type.getSuperclass();
     Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, stopType);
-    // TODO handle roles
+    updateTree(fieldMap, entity, tree);
 
-    JsonNode newTree = createTree(fieldMap, entity);
-    return merge(fieldMap.keySet(), newTree, (ObjectNode) tree);
+    for (Role role : entity.getRoles()) {
+      fieldMap = fieldMapper.getSimpleFieldMap(role.getClass(), role.getClass());
+      updateTree(fieldMap, role, tree);
+    }
+
+    return tree;
+  }
+
+  private void updateTree(Map<String, Field> fieldMap, Object object, ObjectNode oldTree) {
+    ObjectNode newTree = createTree(fieldMap, object);
+    merge(fieldMap.keySet(), newTree, oldTree);
   }
 
   /**
    * Creates a Json tree given a field map and an object.
    */
-  private JsonNode createTree(Map<String, Field> fieldMap, Object object) {
+  private ObjectNode createTree(Map<String, Field> fieldMap, Object object) {
     PropertyMap properties = new PropertyMap(fieldMap, object);
     return jsonMapper.valueToTree(properties);
   }
@@ -102,7 +111,7 @@ public class EntityInducer {
   /**
    * Merges the values corresponding to the specified keys of the new tree into the old tree.
    */
-  private JsonNode merge(Set<String> keys, JsonNode newTree, ObjectNode oldTree) {
+  private void merge(Set<String> keys, ObjectNode newTree, ObjectNode oldTree) {
     for (String key : keys) {
       JsonNode newValue = newTree.get(key);
       if (newValue != null) {
@@ -111,7 +120,6 @@ public class EntityInducer {
         oldTree.remove(key);
       }
     }
-    return oldTree;
   }
 
 }

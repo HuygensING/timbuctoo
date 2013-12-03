@@ -3,8 +3,6 @@ package nl.knaw.huygens.timbuctoo.storage;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -17,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 
 public class PropertyMap extends TreeMap<String, Object> {
 
@@ -61,9 +58,7 @@ public class PropertyMap extends TreeMap<String, Object> {
         return value;
       } else if (Role.class.isAssignableFrom(elementType)) {
         // Explicitly handled by inducer and reducer
-        @SuppressWarnings("unchecked")
-        Iterator<Role> roles = (Iterator<Role>) collection.iterator();
-        return convertRoles(roles);
+        return null;
       }
     } else if (Class.class.isAssignableFrom(fieldType)) {
       return Class.class.cast(value).getName();
@@ -80,14 +75,6 @@ public class PropertyMap extends TreeMap<String, Object> {
 
   private boolean isSimpleType(Class<?> type) {
     return type.isPrimitive() || Number.class.isAssignableFrom(type) || String.class == type || Boolean.class == type || Character.class == type;
-  }
-
-  private List<String> convertRoles(Iterator<Role> roles) {
-    List<String> roleNames = Lists.newArrayList();
-    while (roles.hasNext()) {
-      roleNames.add(roles.next().getRoleName());
-    }
-    return roleNames;
   }
 
 }
