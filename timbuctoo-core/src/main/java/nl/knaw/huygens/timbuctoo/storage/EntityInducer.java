@@ -1,9 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.isSystemEntity;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Set;
@@ -34,40 +32,29 @@ public class EntityInducer {
   }
 
   /**
-   * Converts an entity to a JsonTree.
+   * Converts a system entity to a Json tree.
    */
-  @SuppressWarnings("unchecked")
-  public <T extends Entity> JsonNode induceNewEntity(Class<? super T> type, T entity) throws IOException {
-    if (isSystemEntity(type)) {
-      checkArgument(BusinessRules.allowSystemEntityAdd(type));
-      return induceSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity);
-    } else {
-      checkArgument(BusinessRules.allowDomainEntityAdd(type));
-      return induceDomainEntity((Class<DomainEntity>) type, (DomainEntity) entity);
-    }
-  }
+  public <T extends SystemEntity> JsonNode induceSystemEntity(Class<T> type, T entity) {
+    checkArgument(BusinessRules.allowSystemEntityAdd(type));
 
-  /**
-   * Converts an entity to a Json tree and combines it with an existing Json tree.
-   */
-  @SuppressWarnings("unchecked")
-  public <T extends Entity> JsonNode induceOldEntity(Class<T> type, T entity, ObjectNode node) throws IOException {
-    if (isSystemEntity(type)) {
-      return induceSystemEntity((Class<SystemEntity>) type, (SystemEntity) entity, node);
-    } else {
-      return induceDomainEntity((Class<DomainEntity>) type, (DomainEntity) entity, node);
-    }
-  }
-
-  // -------------------------------------------------------------------
-
-  private <T extends SystemEntity> JsonNode induceSystemEntity(Class<T> type, T entity) {
     Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, Entity.class);
-
     return createJsonTree(entity, fieldMap);
   }
 
-  private <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity) {
+  /**
+   * Converts a system entity to a Json tree and combines it with an existing Json tree.
+   */
+  public <T extends SystemEntity> JsonNode induceSystemEntity(Class<T> type, T entity, ObjectNode tree) {
+    Map<String, Field> fieldMap = fieldMapper.getSimpleFieldMap(type, type);
+    return updateJsonTree(tree, entity, fieldMap);
+  }
+
+  /**
+   * Converts a domain entity to a Json tree.
+   */
+  public <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity) {
+    checkArgument(BusinessRules.allowDomainEntityAdd(type));
+
     Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, Entity.class);
     fieldMapper.addToFieldMap(type.getSuperclass(), type.getSuperclass(), fieldMap);
     ObjectNode tree = createJsonTree(entity, fieldMap);
@@ -87,12 +74,10 @@ public class EntityInducer {
     return tree;
   }
 
-  private <T extends SystemEntity> JsonNode induceSystemEntity(Class<T> type, T entity, ObjectNode tree) {
-    Map<String, Field> fieldMap = fieldMapper.getSimpleFieldMap(type, type);
-    return updateJsonTree(tree, entity, fieldMap);
-  }
-
-  private <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity, ObjectNode tree) {
+  /**
+   * Converts a domain entity to a Json tree and combines it with an existing Json tree.
+   */
+  public <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity, ObjectNode tree) {
     Class<?> stopType = (type.getSuperclass() == DomainEntity.class) ? type : type.getSuperclass();
     Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, stopType);
     tree = updateJsonTree(tree, entity, fieldMap);
@@ -106,13 +91,18 @@ public class EntityInducer {
     return tree;
   }
 
+  // -------------------------------------------------------------------
+
+  /**
+   * Updates a Json tree given an object and a field map.
+   */
   private ObjectNode updateJsonTree(ObjectNode oldTree, Object object, Map<String, Field> fieldMap) {
     ObjectNode newTree = createJsonTree(object, fieldMap);
     return merge(oldTree, newTree, fieldMap.keySet());
   }
 
   /**
-   * Creates a Json tree given a field map and an object.
+   * Creates a Json tree given an object and a field map.
    */
   private ObjectNode createJsonTree(Object object, Map<String, Field> fieldMap) {
     PropertyMap properties = new PropertyMap(object, fieldMap);
