@@ -41,7 +41,6 @@ public abstract class WebServiceTestSetup extends JerseyTest {
 
   protected static final String USER_ID = "USER000000001";
   protected static final String VRE_ID = "vreID";
-  protected static final String VRE_ID_KEY = "VRE_ID";
   protected static Injector injector;
   private static ResourceTestModule resourceTestModule;
 

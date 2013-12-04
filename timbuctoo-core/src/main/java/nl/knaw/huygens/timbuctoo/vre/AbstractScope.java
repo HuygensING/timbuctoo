@@ -64,6 +64,11 @@ public abstract class AbstractScope implements Scope {
     return allTypes.contains(entity.getClass());
   }
 
+  @Override
+  public <T extends DomainEntity> boolean isTypeInScope(Class<T> type) {
+    return allTypes.contains(type);
+  }
+
   protected final void addPackage(String name) throws IOException {
     checkState(builder != null);
     String packageName = name.replaceFirst("^timbuctoo", "nl.knaw.huygens.timbuctoo");

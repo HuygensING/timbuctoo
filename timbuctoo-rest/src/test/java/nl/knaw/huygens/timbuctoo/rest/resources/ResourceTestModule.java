@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Provides;
@@ -34,6 +35,7 @@ class ResourceTestModule extends JerseyServletModule {
   private static final String M1B = "nl.knaw.huygens.timbuctoo.rest.model.projectb";
   private static final String PACKAGES = M0 + " " + M1 + " " + M1A + " " + M1B;
 
+  //All the classes are instance variables because we need to be able to reset them after each test.
   private Configuration config;
   private TypeRegistry typeRegistry;
   private StorageManager storageManager;
@@ -46,6 +48,7 @@ class ResourceTestModule extends JerseyServletModule {
   private Broker broker;
   private Producer indexProducer;
   private Producer persistenceProducer;
+  private VREManager vreManager;
 
   public ResourceTestModule() {
     config = mock(Configuration.class);
@@ -60,6 +63,7 @@ class ResourceTestModule extends JerseyServletModule {
     broker = mock(Broker.class);
     indexProducer = mock(Producer.class);
     persistenceProducer = mock(Producer.class);
+    vreManager = mock(VREManager.class);
   }
 
   /* Because the RestAutoResourceModule is used in a static way for multiple tests,
@@ -67,7 +71,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(config, storageManager, jsonProvider, validator, mailSender, searchManager, authorizationHandler, broker, indexProducer, persistenceProducer);
+    reset(config, storageManager, jsonProvider, validator, mailSender, searchManager, authorizationHandler, broker, indexProducer, persistenceProducer, vreManager);
   }
 
   @Override
@@ -163,5 +167,10 @@ class ResourceTestModule extends JerseyServletModule {
   @Named("persistenceProducer")
   public Producer providePersistenceProducer() {
     return this.persistenceProducer;
+  }
+
+  @Provides
+  public VREManager provideVreManager() {
+    return this.vreManager;
   }
 }
