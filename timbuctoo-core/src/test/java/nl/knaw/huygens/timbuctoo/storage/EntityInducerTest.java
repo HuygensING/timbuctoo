@@ -16,6 +16,7 @@ import test.model.TestRole;
 import test.model.TestSystemEntity;
 import test.model.projecta.SubADomainEntity;
 import test.model.projecta.TestRoleA1;
+import test.model.projecta.TestRoleA2;
 import test.model.projectb.SubBDomainEntity;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -43,12 +44,13 @@ public class EntityInducerTest {
     }
   }
 
-  private ObjectNode newSystemEntityTree(String id, String value1, String value2) {
+  private ObjectNode newSystemEntityTree(String id, String value1, String value2, String value3) {
     Map<String, Object> map = Maps.newTreeMap();
     addValue(map, "_id", id);
     map.put("^rev", 0);
     addValue(map, propertyName(TestSystemEntity.class, "value1"), value1);
     addValue(map, propertyName(TestSystemEntity.class, "value2"), value2);
+    addValue(map, propertyName(TestSystemEntity.class, "value3"), value3);
     return mapper.valueToTree(map);
   }
 
@@ -80,8 +82,8 @@ public class EntityInducerTest {
 
   @Test
   public void induceSystemEntityAsPrimitive() throws Exception {
-    TestSystemEntity entity = new TestSystemEntity(ID, "v1", "v2");
-    JsonNode expected = newSystemEntityTree(ID, "v1", "v2");
+    TestSystemEntity entity = new TestSystemEntity(ID, "v1", "v2", null);
+    JsonNode expected = newSystemEntityTree(ID, "v1", "v2", null);
     assertEquals(expected, inducer.induceSystemEntity(TestSystemEntity.class, entity));
   }
 
@@ -138,17 +140,17 @@ public class EntityInducerTest {
 
   @Test
   public void updateSystemEntityWithPrimitiveView() throws Exception {
-    TestSystemEntity entity = new TestSystemEntity(ID, "updated", null);
-    ObjectNode oldTree = newSystemEntityTree(ID, "v1", "v2");
-    ObjectNode newTree = newSystemEntityTree(ID, "updated", null);
+    TestSystemEntity entity = new TestSystemEntity(ID, "updated", null, null);
+    ObjectNode oldTree = newSystemEntityTree(ID, "v1", "v2", null);
+    ObjectNode newTree = newSystemEntityTree(ID, "updated", null, null);
     assertEquals(newTree, inducer.induceSystemEntity(TestSystemEntity.class, entity, oldTree));
   }
 
   @Test
   public void updateSystemEntityWithWrongView() throws Exception {
-    TestSystemEntity entity = new TestSystemEntity(ID, "updated", null);
-    ObjectNode oldTree = newSystemEntityTree(ID, "v1", "v2");
-    ObjectNode newTree = newSystemEntityTree(ID, "v1", "v2");
+    TestSystemEntity entity = new TestSystemEntity(ID, "updated", null, null);
+    ObjectNode oldTree = newSystemEntityTree(ID, "v1", "v2", null);
+    ObjectNode newTree = newSystemEntityTree(ID, "v1", "v2", null);
     assertEquals(newTree, inducer.induceSystemEntity(SystemEntity.class, entity, oldTree));
   }
 
@@ -291,6 +293,7 @@ public class EntityInducerTest {
     entity.setValue2(null);
     entity.setValuea("xva");
     entity.addRole(new TestRoleA1("px", "px1"));
+    entity.addRole(new TestRoleA2("py", "pA2"));
 
     // expected tree after update
     Map<String, Object> newMap = newDomainEntityMap(ID, PID);
@@ -301,6 +304,8 @@ public class EntityInducerTest {
     newMap.put(propertyName(TestRole.class, "property"), "p");
     newMap.put(propertyName(TestRoleA1.class, "property"), "px");
     newMap.put(propertyName(TestRoleA1.class, "propertyA1"), "px1");
+    newMap.put(propertyName(TestRoleA2.class, "property"), "py");
+    newMap.put(propertyName(TestRoleA2.class, "propertyA2"), "pA2");
     ObjectNode newTree = mapper.valueToTree(newMap);
 
     assertEquals(newTree, inducer.induceDomainEntity(SubADomainEntity.class, entity, oldTree));

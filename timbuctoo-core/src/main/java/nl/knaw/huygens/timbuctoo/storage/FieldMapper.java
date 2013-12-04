@@ -107,7 +107,7 @@ public class FieldMapper {
    * Indicates whether a field qualifies as property.
    */
   private boolean isProperty(Field field) {
-    return !Modifier.isStatic(field.getModifiers());
+    return (field.getModifiers() & (Modifier.STATIC | Modifier.TRANSIENT)) == 0;
   }
 
   /**
