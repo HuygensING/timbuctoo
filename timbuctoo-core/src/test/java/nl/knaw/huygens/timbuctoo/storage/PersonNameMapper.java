@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.mongo;
+package nl.knaw.huygens.timbuctoo.storage;
 
 import java.util.List;
 import java.util.Map;
@@ -32,4 +32,5 @@ public class PersonNameMapper {
 
     return nameComponent;
   }
+
 }
