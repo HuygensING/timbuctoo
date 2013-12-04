@@ -7,7 +7,17 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.PersonName;
+import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
+import nl.knaw.huygens.timbuctoo.storage.mongo.PersonNameMapper;
+import nl.knaw.huygens.timbuctoo.variation.model.DatableSystemEntity;
+import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntityPrimitive;
+import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntityPrimitiveCollections;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -23,6 +33,8 @@ import test.model.projectb.SubBDomainEntity;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class EntityReducerTest {
@@ -95,6 +107,7 @@ public class EntityReducerTest {
     assertEquals(ID, entity.getId());
     assertEquals("v1", entity.getValue1());
     assertEquals("v2", entity.getValue2());
+    assertEquals(null, entity.getValue3());
     assertEquals(0, entity.getRev());
   }
 
@@ -169,6 +182,84 @@ public class EntityReducerTest {
     TestRoleA2 roleA2 = TestRoleA2.class.cast(roles.get(1 - indexA1));
     assertEquals("p", roleA2.getProperty());
     assertEquals("pA2", roleA2.getPropertyA2());
+  }
+
+  @Test
+  public void testReducePrimitiveFields() throws Exception {
+    Class<? extends Entity> type = TestSystemEntityPrimitive.class;
+
+    Map<String, Object> map = Maps.newHashMap();
+    map.put(propertyName(type, "testBoolean"), "true");
+    map.put(propertyName(type, "testChar"), "r");
+    map.put(propertyName(type, "testDouble"), "3.14");
+    map.put(propertyName(type, "testFloat"), "2.13");
+    map.put(propertyName(type, "testInt"), "14");
+    map.put(propertyName(type, "testLong"), "15098");
+    map.put(propertyName(type, "testShort"), "4");
+
+    ObjectNode node = mapper.valueToTree(map);
+
+    TestSystemEntityPrimitive expected = new TestSystemEntityPrimitive();
+    expected.setTestBoolean(true);
+    expected.setTestChar('r');
+    expected.setTestDouble(3.14);
+    expected.setTestFloat(2.13f);
+    expected.setTestInt(14);
+    expected.setTestLong(15098l);
+    expected.setTestShort((short) 4);
+
+    assertEquals(expected, reducer.reduceVariation(type, node));
+  }
+
+  @Test
+  public void testInduceDatable() throws Exception {
+    Class<? extends Entity> type = DatableSystemEntity.class;
+
+    Map<String, Object> map = Maps.newHashMap();
+    Datable datable = new Datable("20131011");
+    map.put(propertyName(type, "testDatable"), datable.getEDTF());
+    map.put("^rev", 0);
+    ObjectNode node = mapper.valueToTree(map);
+
+    DatableSystemEntity expected = new DatableSystemEntity();
+    expected.setTestDatable(datable);
+    expected.setRev(0);
+
+    assertEquals(expected, reducer.reduceVariation(type, node));
+  }
+
+  @Test
+  public void testReduceSystemEntityPrimitiveCollections() throws Exception {
+    Class<? extends Entity> type = TestSystemEntityPrimitiveCollections.class;
+
+    Map<String, Object> map = Maps.newHashMap();
+    map.put(propertyName(type, "testStringList"), new String[] { "test", "test1" });
+    map.put(propertyName(type, "testIntegerList"), new Integer[] { 1, 13, 42 });
+
+    ObjectNode node = mapper.valueToTree(map);
+
+    TestSystemEntityPrimitiveCollections expected = new TestSystemEntityPrimitiveCollections();
+    expected.setTestIntegerList(Lists.newArrayList(1, 13, 42));
+    expected.setTestStringList(Lists.newArrayList("test", "test1"));
+
+    assertEquals(expected, reducer.reduceVariation(type, node));
+  }
+
+  @Test
+  public void testReduceDomainEntityProjectWithPersonName() throws Exception {
+    ProjectATestDocWithPersonName expected = new ProjectATestDocWithPersonName();
+    PersonName name = new PersonName();
+    name.addNameComponent(Type.FORENAME, "test");
+    name.addNameComponent(Type.SURNAME, "test");
+    expected.setPersonName(name);
+
+    Map<String, Object> map = Maps.newHashMap();
+    map.put(propertyName(ProjectATestDocWithPersonName.class, "personName"), PersonNameMapper.createPersonNameMap(name));
+    map.put("^rev", 0);
+    map.put(DomainEntity.DELETED, false);
+    JsonNode node = mapper.valueToTree(map);
+
+    assertEquals(expected, reducer.reduceVariation(ProjectATestDocWithPersonName.class, node));
   }
 
 }
