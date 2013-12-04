@@ -126,48 +126,6 @@ public class TypeRegistryTest {
   }
 
   @Test
-  public void testGetBaseRoleOfBaseRole() {
-    TypeRegistry registry = new TypeRegistry("");
-    assertEquals(TestRole.class, registry.getBaseRole(TestRole.class));
-  }
-
-  @Test
-  public void testGetBaseRoleOfProjectSpecificBaseRole() {
-    TypeRegistry registry = new TypeRegistry("");
-    assertEquals(TestRole.class, registry.getBaseRole(ProjectATestRole.class));
-  }
-
-  @Test
-  public void testGetBaseRoleOfNull() {
-    TypeRegistry registry = new TypeRegistry("");
-    assertEquals(null, registry.getBaseRole(null));
-  }
-
-  @Test
-  public void testGetBaseOfBaseRole() {
-    TypeRegistry registry = new TypeRegistry("");
-    assertEquals(TestRole.class, registry.getBase(ProjectATestRole.class));
-  }
-
-  @Test
-  public void testGetBaseOfNull() {
-    TypeRegistry registry = new TypeRegistry("");
-    assertEquals(null, registry.getBase(null));
-  }
-
-  @Test
-  public void testGetBaseOfOtherType() {
-    TypeRegistry registry = new TypeRegistry("");
-    assertEquals(null, registry.getBase(String.class));
-  }
-
-  @Test
-  public void testGetBaseClassOfEntity() {
-    TypeRegistry registry = new TypeRegistry("");
-    assertEquals(BaseDomainEntity.class, registry.getBase(ProjectADomainEntity.class));
-  }
-
-  @Test
   public void testGetCollectionIdForARegisteredClass() {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
     Class<? extends Entity> baseType = registry.getBaseClass(BaseDomainEntity.class);
@@ -284,15 +242,6 @@ public class TypeRegistryTest {
     assertTrue(registry.isRole("projectatestrole"));
     assertFalse(registry.isRole("anentity"));
     assertFalse(registry.isRole((String) null));
-  }
-
-  @Test
-  public void testIsVariable() {
-    assertTrue(TypeRegistry.isVariable(TestRole.class));
-    assertTrue(TypeRegistry.isVariable(ProjectATestRole.class));
-    assertFalse(TypeRegistry.isVariable(AnEntity.class));
-    assertTrue(TypeRegistry.isVariable(DomainEntity.class));
-    assertFalse(TypeRegistry.isVariable(null));
   }
 
   @Test(expected = ClassCastException.class)
