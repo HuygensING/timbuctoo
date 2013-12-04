@@ -13,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
-import nl.knaw.huygens.timbuctoo.storage.mongo.PersonNameMapper;
 import nl.knaw.huygens.timbuctoo.variation.model.DatableSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntityPrimitive;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntityPrimitiveCollections;
