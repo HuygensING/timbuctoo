@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.rest.filters;
 
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
-import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.*;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -113,11 +113,9 @@ public class UserResourceFilterFactory implements ResourceFilterFactory {
     /**
      * sends an email to the admin of the VRE the new user is trying to use. 
      * @param user
-     * @param vreId TODO
+     * @param vreId 
      */
     private void sendEmail(User user, String vreId) {
-      //TODO get the VRE id from the request. Do a search for a VREAuthorization object and add it to the user. 
-
       User admin = getFirstAdminOfVRE(vreId);
 
       StringBuilder contentbuilder = new StringBuilder("Beste admin,\n");
