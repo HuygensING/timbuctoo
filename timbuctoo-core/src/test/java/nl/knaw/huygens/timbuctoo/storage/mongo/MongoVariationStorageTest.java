@@ -26,7 +26,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.projectb.ProjectBDomainEntity;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -200,7 +199,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBCursor cursor = createCursorWithoutValues();
     when(anyCollection.find(query)).thenReturn(cursor);
 
-    storage.getAllByType(ProjectBDomainEntity.class);
+    storage.getAllByType(ProjectADomainEntity.class);
     verify(anyCollection).find(query);
   }
 

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation.model;
+package test.model;
 
 public class ObjectWithModifiers {
 
