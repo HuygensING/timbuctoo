@@ -13,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
-import nl.knaw.huygens.timbuctoo.variation.model.DatableSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntityPrimitive;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntityPrimitiveCollections;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
@@ -23,6 +22,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import test.model.BaseDomainEntity;
+import test.model.DatableSystemEntity;
 import test.model.TestRole;
 import test.model.TestSystemEntity;
 import test.model.projecta.SubADomainEntity;
