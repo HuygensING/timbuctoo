@@ -13,6 +13,7 @@ public class TestSystemEntity extends SystemEntity {
 
   private String value1;
   private String value2;
+  private String value3;
 
   public TestSystemEntity() {}
 
@@ -26,6 +27,13 @@ public class TestSystemEntity extends SystemEntity {
     setValue2(value2);
   }
 
+  public TestSystemEntity(String id, String value1, String value2, String value3) {
+    setId(id);
+    setValue1(value1);
+    setValue2(value2);
+    setValue3(value3);
+  }
+
   @Override
   public String getDisplayName() {
     return null;
@@ -35,16 +43,24 @@ public class TestSystemEntity extends SystemEntity {
     return value1;
   }
 
-  public void setValue1(String value1) {
-    this.value1 = value1;
+  public void setValue1(String value) {
+    value1 = value;
   }
 
   public String getValue2() {
     return value2;
   }
 
-  public void setValue2(String value2) {
-    this.value2 = value2;
+  public void setValue2(String value) {
+    value2 = value;
+  }
+
+  public String getValue3() {
+    return value3;
+  }
+
+  public void setValue3(String value) {
+    value3 = value;
   }
 
 }
