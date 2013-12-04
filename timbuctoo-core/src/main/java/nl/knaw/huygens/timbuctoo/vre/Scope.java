@@ -41,4 +41,11 @@ public interface Scope {
    */
   <T extends DomainEntity> boolean inScope(T entity);
 
+  /**
+   * Checks if the {@code type} is in scope. A light method to check if it is needed to do a further check.
+   * @param type the type to check if it is in scope.
+   * @return {@code true} if the type is in scope {@code false} if not.
+   */
+  <T extends DomainEntity> boolean isTypeInScope(Class<T> type);
+
 }

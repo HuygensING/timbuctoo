@@ -57,4 +57,12 @@ public class BaseScopeTest {
     assertFalse(scope.inScope(new CKCCPerson()));
   }
 
+  @Test
+  public void testIsTypeInScope() {
+    assertTrue(scope.isTypeInScope(Person.class));
+    assertTrue(scope.isTypeInScope(Place.class));
+    assertFalse(scope.isTypeInScope(DCARPerson.class));
+    assertFalse(scope.isTypeInScope(CKCCPerson.class));
+  }
+
 }

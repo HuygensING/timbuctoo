@@ -8,7 +8,6 @@ import com.google.common.collect.Lists;
 
 public class SearchParameters {
 
-  private String scopeId = "";
   private String term = "*";
   private String sort = SolrFields.SCORE;
   private String sortDir = "asc";
@@ -19,15 +18,6 @@ public class SearchParameters {
   private Map<String, FacetInfo> facetInfoMap;
   private List<String> orderLevels = Lists.newArrayList();
   private boolean fuzzy = false;
-
-  public SearchParameters setScopeId(String scopeId) {
-    this.scopeId = scopeId;
-    return this;
-  }
-
-  public String getScopeId() {
-    return scopeId;
-  }
 
   public SearchParameters setTerm(final String term) {
     if ("".equals(term)) {

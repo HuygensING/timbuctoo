@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -22,7 +23,6 @@ import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
-import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -33,6 +33,8 @@ import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,28 +51,30 @@ public class SearchResource {
   private static final Logger LOG = LoggerFactory.getLogger(SearchResource.class);
 
   @Inject
-  private Configuration config;
-  @Inject
   private TypeRegistry registry;
   @Inject
   private StorageManager storageManager;
   @Inject
   private SearchManager searchManager;
+  @Inject
+  VREManager vreManager;
 
   @POST
   @APIDesc("Searches the Solr index")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response post(SearchParameters searchParams) {
-    String scopeId = searchParams.getScopeId();
-    if (Strings.isNullOrEmpty(scopeId)) {
-      LOG.error("POST - no 'scopeId' specified");
-      throw new WebApplicationException(Response.Status.BAD_REQUEST);
-    }
-    Scope scope = config.getScopeById(scopeId);
-    if (scope == null) {
-      LOG.error("POST - no such scope: {}", scopeId);
+  public Response post(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
+    LOG.info("VRE: {}", vreId);
+
+    VRE vre = Strings.isNullOrEmpty(vreId) ? vreManager.getDefaultVRE() : vreManager.getVREById(vreId);
+
+    if (vre == null) {
+      LOG.error("POST - no such VRE: {}", vreId);
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
+
+    Scope scope = vre.getScope();
+
+    LOG.info("scope: {}", scope);
 
     String typeString = searchParams.getTypeString();
     if (Strings.isNullOrEmpty(typeString)) {
@@ -83,6 +87,11 @@ public class SearchResource {
       throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
     if (!TypeRegistry.isDomainEntity(type)) {
+      LOG.error("POST - not a domain entity type: {}", typeString);
+      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+    }
+
+    if (!scope.isTypeInScope(TypeRegistry.toDomainEntity(type))) {
       LOG.error("POST - not a domain entity type: {}", typeString);
       throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
@@ -206,6 +215,13 @@ public class SearchResource {
       }
     }
     return list;
+  }
+
+  @GET
+  @Path("/vres")
+  @Produces({ MediaType.APPLICATION_JSON })
+  public Set<String> getAvailableVREs() {
+    return vreManager.getAvailableVREs();
   }
 
 }
