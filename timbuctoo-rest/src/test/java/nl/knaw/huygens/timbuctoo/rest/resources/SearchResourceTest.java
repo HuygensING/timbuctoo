@@ -101,6 +101,8 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     verify(storageManager).addSystemEntity(SearchResult.class, searchResult);
+
+    verify(vreManager).getVREById(anyString());
   }
 
   @Test
@@ -118,6 +120,8 @@ public class SearchResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     verify(storageManager).addSystemEntity(SearchResult.class, searchResult);
 
+    verify(vreManager).getVREById(anyString());
+
     assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
     assertEquals(expected, actual);
   }
@@ -132,6 +136,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     ClientResponse clientResponse = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, searchParameters);
 
+    verify(vreManager).getVREById(anyString());
     verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
@@ -148,6 +153,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     ClientResponse clientResponse = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, searchParameters);
 
+    verify(vreManager).getVREById(anyString());
     verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
@@ -164,6 +170,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     ClientResponse clientResponse = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, searchParameters);
 
+    verify(vreManager).getVREById(anyString());
     verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
@@ -175,7 +182,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
     setUpVREManager(true, true);
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
-    //SearchManager searchManager = injector.getInstance(SearchManager.class);
     SearchResult searchResult = createPostSearchResult();
     setupSearchManager(searchResult);
 
@@ -271,6 +277,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse clientResponse = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, searchParameters);
 
     assertEquals(ClientResponse.Status.INTERNAL_SERVER_ERROR, clientResponse.getClientResponseStatus());
+    verify(vreManager).getVREById(anyString());
   }
 
   @Test
