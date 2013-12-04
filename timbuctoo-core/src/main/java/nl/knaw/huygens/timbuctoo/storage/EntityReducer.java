@@ -72,11 +72,12 @@ public class EntityReducer {
 
     JsonNode variations = tree.findValue(DomainEntity.VARIATIONS);
     if (variations != null) {
+      Set<String> prefixes = getPrefixes(tree);
       for (JsonNode node : ImmutableList.copyOf(variations.elements())) {
         String variation = node.textValue();
         Class<? extends Entity> varType = typeRegistry.getTypeForIName(variation);
         if (varType != null && type.isAssignableFrom(varType)) {
-          T entity = type.cast(reduceVariation(varType, tree));
+          T entity = type.cast(reduceObject(tree, prefixes, varType, Entity.class));
           entities.add(entity);
         } else {
           LOG.error("Not a variation of {}: {}", type, variation);

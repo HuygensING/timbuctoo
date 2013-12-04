@@ -19,6 +19,8 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EmptyStorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
+import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -61,8 +63,8 @@ public class MongoStorage implements Storage {
   private ObjectMapper objectMapper;
   private TreeEncoderFactory treeEncoderFactory;
   private TreeDecoderFactory treeDecoderFactory;
-  private VariationInducer inducer;
-  private VariationReducer reducer;
+  private EntityInducer inducer;
+  private EntityReducer reducer;
 
   @Inject
   public MongoStorage(TypeRegistry registry, Configuration config) throws UnknownHostException, MongoException {
@@ -104,8 +106,8 @@ public class MongoStorage implements Storage {
     objectMapper = new ObjectMapper();
     treeEncoderFactory = new TreeEncoderFactory(objectMapper);
     treeDecoderFactory = new TreeDecoderFactory();
-    inducer = new VariationInducer(typeRegistry);
-    reducer = new VariationReducer(typeRegistry);
+    inducer = new EntityInducer();
+    reducer = new EntityReducer(typeRegistry);
   }
 
   private void ensureIndexes() {
@@ -206,60 +208,64 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException {
-    return addEntity(type, entity);
+    if (entity.getId() == null) {
+      setNextId(type, entity);
+    }
+    JsonNode jsonNode = inducer.induceSystemEntity(type, entity);
+    JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
+    getDBCollection(type).insert(insertedItem);
+    return entity.getId();
   }
 
   @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) throws IOException {
-    return addEntity(type, entity);
-  }
-
-  // For now we have just one implementation
-  private <T extends Entity> String addEntity(Class<T> type, T entity) throws IOException {
     if (entity.getId() == null) {
       setNextId(type, entity);
     }
-    if (TypeRegistry.isDomainEntity(type)) {
-      // administrative properties must be controlled in the storage layer
-      DomainEntity domainEntity = DomainEntity.class.cast(entity);
-      domainEntity.setVariations(null); // make sure the list is empty
-      domainEntity.addVariation(getInternalName(typeRegistry.getBaseClass(type)));
-      domainEntity.addVariation(getInternalName(type));
-    }
-    JsonNode jsonNode = inducer.induceNewEntity(type, entity);
+
+    // administrative properties must be controlled in the storage layer
+    DomainEntity domainEntity = DomainEntity.class.cast(entity);
+    domainEntity.setVariations(null); // make sure the list is empty
+    domainEntity.addVariation(getInternalName(typeRegistry.getBaseClass(type)));
+    domainEntity.addVariation(getInternalName(type));
+
+    JsonNode jsonNode = inducer.induceDomainEntity(type, entity);
     JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
     getDBCollection(type).insert(insertedItem);
-    if (TypeRegistry.isDomainEntity(type)) {
-      addInitialVersion(type, entity.getId(), insertedItem);
-    }
+
+    addInitialVersion(type, entity.getId(), insertedItem);
+
     return entity.getId();
   }
 
   @Override
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, String id, T entity) throws IOException {
-    updateEntity(type, id, entity);
-  }
-
-  @Override
-  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, String id, T entity) throws IOException {
-    updateEntity(type, id, entity);
-  }
-
-  // For now we have just one implementation
-  private <T extends Entity> void updateEntity(Class<T> type, String id, T entity) throws IOException {
     int revision = entity.getRev();
     DBObject query = queries.selectByIdAndRevision(id, revision);
     DBObject existingNode = getDBCollection(type).findOne(query);
     if (existingNode == null) {
       throw new IOException("No entity with id " + id + " and revision " + revision);
     }
-    JsonNode updatedNode = inducer.induceOldEntity(type, entity, toJsonNode(existingNode));
+    JsonNode updatedNode = inducer.induceSystemEntity(type, entity, (ObjectNode) toJsonNode(existingNode));
     ((ObjectNode) updatedNode).put("^rev", revision + 1);
     JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(updatedNode, JsonNode.class);
     getDBCollection(type).update(query, updatedDBObj);
-    if (TypeRegistry.isDomainEntity(type)) {
-      addVersion(type, id, updatedDBObj);
+  }
+
+  @Override
+  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, String id, T entity) throws IOException {
+    int revision = entity.getRev();
+    DBObject query = queries.selectByIdAndRevision(id, revision);
+    DBObject existingNode = getDBCollection(type).findOne(query);
+    if (existingNode == null) {
+      throw new IOException("No entity with id " + id + " and revision " + revision);
     }
+    JsonNode updatedNode = inducer.induceDomainEntity(type, entity, (ObjectNode) toJsonNode(existingNode));
+    ((ObjectNode) updatedNode).put("^rev", revision + 1);
+    JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(updatedNode, JsonNode.class);
+    getDBCollection(type).update(query, updatedDBObj);
+
+    addVersion(type, id, updatedDBObj);
   }
 
   // --- system entities -----------------------------------------------

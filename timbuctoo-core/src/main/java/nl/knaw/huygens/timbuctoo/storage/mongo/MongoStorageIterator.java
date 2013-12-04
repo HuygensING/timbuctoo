@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 import org.mongojack.internal.stream.JacksonDBObject;
@@ -20,10 +21,10 @@ class MongoStorageIterator<T extends Entity> implements StorageIterator<T> {
 
   private final Class<T> type;
   private final DBCursor delegate;
-  private final VariationReducer reducer;
+  private final EntityReducer reducer;
   private boolean closed;
 
-  public MongoStorageIterator(Class<T> type, DBCursor delegate, VariationReducer reducer) {
+  public MongoStorageIterator(Class<T> type, DBCursor delegate, EntityReducer reducer) {
     this.type = type;
     this.delegate = Preconditions.checkNotNull(delegate);
     this.reducer = reducer;
