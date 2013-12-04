@@ -4,12 +4,16 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoChanges;
@@ -26,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class EntityReducer {
 
@@ -51,7 +56,8 @@ public class EntityReducer {
     // For the time being I'm not quite sure whether variation should be used at all
     // because we can arrange things by looking at the type.
 
-    return reduceObject(tree, type);
+    Set<String> prefixes = getPrefixes(tree);
+    return reduceObject(tree, prefixes, type, Entity.class);
   }
 
   // TODO This is the "old" behaviour, but we need to re-think the resposibilities
@@ -110,25 +116,51 @@ public class EntityReducer {
 
   // -------------------------------------------------------------------
 
-  private <T> T reduceObject(JsonNode tree, Class<T> type) throws StorageException {
-    try {
-      T entity = newInstance(type);
+  /**
+   * Returns the prefixes of the fields in the specified Json tree.
+   * These prefixes correpond with the names of entities and roles.
+   */
+  private Set<String> getPrefixes(JsonNode tree) {
+    Set<String> prefixes = Sets.newTreeSet();
+    Iterator<String> iterator = tree.fieldNames();
+    while (iterator.hasNext()) {
+      String name = iterator.next();
+      int pos = name.indexOf(FieldMapper.SEPARATOR_CHAR);
+      if (pos > 0) {
+        prefixes.add(name.substring(0, pos));
+      }
+    }
+    return prefixes;
+  }
 
-      Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, Entity.class);
+  private <T> T reduceObject(JsonNode tree, Set<String> prefixes, Class<T> type, Class<?> stopType) throws StorageException {
+    try {
+      T object = newInstance(type);
+
+      Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, stopType);
       for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
         String key = entry.getKey();
         JsonNode node = tree.findValue(key);
         if (node != null) {
           Field field = entry.getValue();
           Object value = convertJsonNodeToValue(field.getType(), node);
-          setValue(entity, field, value);
+          setValue(object, field, value);
           LOG.debug("Assigned: {} := {}", field.getName(), value);
         } else {
           LOG.debug("No value for property {}", key);
         }
       }
 
-      return entity;
+      if (TypeRegistry.isDomainEntity(type)) {
+        DomainEntity entity = DomainEntity.class.cast(object);
+        for (Class<? extends Role> role : typeRegistry.getAllowedRolesFor(type)) {
+          if (prefixes.contains(TypeNames.getInternalName(role))) {
+            entity.addRole(reduceObject(tree, prefixes, role, Role.class));
+          }
+        }
+      }
+
+      return object;
     } catch (Exception e) {
       // TODO improve error handling
       throw new StorageException(e);
