@@ -4,11 +4,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.Variable;
@@ -69,6 +71,8 @@ public class TypeRegistry {
   private final Map<String, Class<? extends Role>> iname2role = Maps.newHashMap();
   private final Map<Class<? extends Role>, String> role2iname = Maps.newHashMap();
 
+  private final Map<Class<? extends Entity>, Set<Class<? extends Role>>> allowedRoles = Maps.newHashMap();
+
   public TypeRegistry(String packageNames) {
     checkArgument(packageNames != null, "'packageNames' must not be null");
 
@@ -87,14 +91,19 @@ public class TypeRegistry {
   }
 
   private void registerPackage(ClassPath classPath, String packageName) {
+    Set<Class<? extends Role>> roles = Sets.newHashSet();
     for (ClassInfo info : classPath.getTopLevelClasses(packageName)) {
       Class<?> type = info.load();
       if (isEntity(type) && !shouldNotRegister(type)) {
         if (BusinessRules.isValidSystemEntity(type)) {
           registerEntity(toSystemEntity(type));
         } else if (BusinessRules.isValidDomainEntity(type)) {
-          registerEntity(toDomainEntity(type));
-          registerVariationForClass(toDomainEntity(type));
+          Class<? extends DomainEntity> entityType = toDomainEntity(type);
+          registerEntity(entityType);
+          registerVariationForClass(entityType);
+          if (!Relation.class.isAssignableFrom(entityType)) {
+            allowedRoles.put(entityType, roles);
+          }
         } else {
           LOG.error("Not a valid entity: '{}'", type.getName());
           throw new IllegalStateException("Invalid entity");
@@ -102,8 +111,10 @@ public class TypeRegistry {
         LOG.debug("Registered entity {}", type.getName());
       } else if (isRole(type) && !shouldNotRegister(type)) {
         if (BusinessRules.isValidRole(type)) {
-          registerRole(toRole(type));
-          registerVariationForClass(toRole(type));
+          Class<? extends Role> roleType = toRole(type);
+          registerRole(roleType);
+          registerVariationForClass(roleType);
+          roles.add(roleType);
         } else {
           LOG.error("Not a valid role: '{}'", type.getName());
           throw new IllegalStateException("Invalid role");
@@ -298,6 +309,27 @@ public class TypeRegistry {
     }
 
     return packageName.substring(packageName.lastIndexOf('.') + 1);
+  }
+
+  /**
+   * Returns the types of the roles that may be assigned to an entity.
+   */
+  public Set<Class<? extends Role>> getAllowedRolesFor(Class<?> type) {
+    Set<Class<? extends Role>> roles = allowedRoles.get(type);
+    if (roles != null) {
+      return roles;
+    } else {
+      return Collections.emptySet();
+    }
+  }
+
+  public void displayAllowedRoles() {
+    for (Class<?> type : allowedRoles.keySet()) {
+      System.out.println("Allowed roles for " + type.getSimpleName());
+      for (Class<?> role : allowedRoles.get(type)) {
+        System.out.println(".. " + role.getSimpleName());
+      }
+    }
   }
 
   public boolean isRole(String typeName) {

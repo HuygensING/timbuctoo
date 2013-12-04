@@ -4,14 +4,21 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Set;
+
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
+import nl.knaw.huygens.timbuctoo.variation.model.NewTestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.TestRole;
+import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.VTestSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectANewTestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestRole;
 
 import org.junit.Test;
@@ -282,6 +289,25 @@ public class TypeRegistryTest {
   @Test(expected = ClassCastException.class)
   public void testToRoleFail() {
     TypeRegistry.toRole(ADomainEntity.class);
+  }
+
+  @Test
+  public void testGetAllowedRolesForModelPackage() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+    assertEquals(0, registry.getAllowedRolesFor(TestSystemEntity.class).size());
+    Set<Class<? extends Role>> roles = registry.getAllowedRolesFor(BaseDomainEntity.class);
+    assertEquals(2, roles.size());
+    assertTrue(roles.contains(TestRole.class));
+    assertTrue(roles.contains(NewTestRole.class));
+  }
+
+  @Test
+  public void testGetAllowedRolesForProjectPackage() {
+    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+    Set<Class<? extends Role>> roles = registry.getAllowedRolesFor(ProjectADomainEntity.class);
+    assertEquals(2, roles.size());
+    assertTrue(roles.contains(ProjectATestRole.class));
+    assertTrue(roles.contains(ProjectANewTestRole.class));
   }
 
   // -------------------------------------------------------------------

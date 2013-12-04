@@ -15,7 +15,7 @@ import test.model.BaseDomainEntity;
 import test.model.TestRole;
 import test.model.TestSystemEntity;
 import test.model.projecta.SubADomainEntity;
-import test.model.projecta.TestRole1;
+import test.model.projecta.TestRoleA1;
 import test.model.projectb.SubBDomainEntity;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -123,12 +123,12 @@ public class EntityInducerTest {
   @Test
   public void induceDerivedDomainEntityWithRoles() throws Exception {
     SubADomainEntity entity = new SubADomainEntity(ID, PID, "v1", "v2", "va");
-    entity.addRole(new TestRole1("p", "p1"));
+    entity.addRole(new TestRoleA1("p", "pa1"));
 
     Map<String, Object> map = newSubADomainEntityMap(ID, PID, "v1", "v2", "v1", "v2", "va");
     map.put(propertyName(TestRole.class, "property"), "p");
-    map.put(propertyName(TestRole1.class, "property"), "p");
-    map.put(propertyName(TestRole1.class, "property1"), "p1");
+    map.put(propertyName(TestRoleA1.class, "property"), "p");
+    map.put(propertyName(TestRoleA1.class, "propertyA1"), "pa1");
     JsonNode expected = mapper.valueToTree(map);
 
     assertEquals(expected, inducer.induceDomainEntity(SubADomainEntity.class, entity));
@@ -281,8 +281,8 @@ public class EntityInducerTest {
     oldMap.put(propertyName(SubADomainEntity.class, "value2"), "v2");
     oldMap.put(propertyName(SubADomainEntity.class, "valuea"), "va");
     oldMap.put(propertyName(TestRole.class, "property"), "p");
-    oldMap.put(propertyName(TestRole1.class, "property"), "p");
-    oldMap.put(propertyName(TestRole1.class, "property1"), "p1");
+    oldMap.put(propertyName(TestRoleA1.class, "property"), "p");
+    oldMap.put(propertyName(TestRoleA1.class, "propertyA1"), "p1");
     ObjectNode oldTree = mapper.valueToTree(oldMap);
 
     // entity to update with
@@ -290,7 +290,7 @@ public class EntityInducerTest {
     entity.setValue1("xv1");
     entity.setValue2(null);
     entity.setValuea("xva");
-    entity.addRole(new TestRole1("px", "px1"));
+    entity.addRole(new TestRoleA1("px", "px1"));
 
     // expected tree after update
     Map<String, Object> newMap = newDomainEntityMap(ID, PID);
@@ -299,8 +299,8 @@ public class EntityInducerTest {
     newMap.put(propertyName(SubADomainEntity.class, "value1"), "xv1");
     newMap.put(propertyName(SubADomainEntity.class, "valuea"), "xva");
     newMap.put(propertyName(TestRole.class, "property"), "p");
-    newMap.put(propertyName(TestRole1.class, "property"), "px");
-    newMap.put(propertyName(TestRole1.class, "property1"), "px1");
+    newMap.put(propertyName(TestRoleA1.class, "property"), "px");
+    newMap.put(propertyName(TestRoleA1.class, "propertyA1"), "px1");
     ObjectNode newTree = mapper.valueToTree(newMap);
 
     assertEquals(newTree, inducer.induceDomainEntity(SubADomainEntity.class, entity, oldTree));
