@@ -264,29 +264,6 @@ public class TypeRegistry {
     return lastType;
   }
 
-  @SuppressWarnings("unchecked")
-  public <T extends Role> Class<T> getBaseRole(Class<T> type) {
-    if (type != null && type.getSuperclass() != Role.class) {
-      return getBaseRole((Class<T>) type.getSuperclass());
-    }
-    return type;
-  }
-
-  /**
-   * Convenience method that returns {@code getBaseClass} or {@code getBaseRole} or null depending on the parameter. 
-   * @param type the type to get the base from. 
-   * @return
-   */
-  public Class<?> getBase(Class<?> type) {
-    if (isEntity(type)) {
-      return getBaseClass(toEntity(type));
-    } else if (isRole(type)) {
-      return getBaseRole(toRole(type));
-    }
-
-    return null;
-  }
-
   /**
    * Gets a sub class of the primitive that correspondents with the {@code variation}.
    * @param typeForVariation should be a class of the model package.
@@ -341,10 +318,6 @@ public class TypeRegistry {
     return cls == null ? false : DomainEntity.class.isAssignableFrom(cls);
   }
 
-  public static boolean isVariable(Class<?> cls) {
-    return cls == null ? false : Variable.class.isAssignableFrom(cls);
-  }
-
   public static boolean isRole(Class<?> cls) {
     return cls == null ? false : Role.class.isAssignableFrom(cls);
   }
@@ -390,7 +363,7 @@ public class TypeRegistry {
     if (isRole(type)) {
       return (Class<T>) type;
     }
-    throw new ClassCastException(type.getName() + " is not a domain entity");
+    throw new ClassCastException(type.getName() + " is not a role");
   }
 
 }
