@@ -23,7 +23,7 @@ import com.google.inject.Inject;
 public class RelationTypeResource extends ResourceBase {
 
   private static final String ID_PARAM = "id";
-  private static final String ID_PATH = "/{id: [a-zA-Z]{4}\\d+}";
+  private static final String ID_PATH = "/{id: " + RelationType.ID_PREFIX + "\\d+}";
 
   private final StorageManager storageManager;
 
