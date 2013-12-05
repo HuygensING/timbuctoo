@@ -7,8 +7,9 @@ import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
  *
  * (This resembles an RDF predicate.)
  */
-@IDPrefix("RELT")
+@IDPrefix(RelationType.ID_PREFIX)
 public class RelationType extends SystemEntity {
+  public static final String ID_PREFIX = "RELT";
 
   /** The name of this relation type. */
   private String regularName;
