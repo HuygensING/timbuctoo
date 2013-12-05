@@ -15,7 +15,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import test.model.BaseDomainEntity;
-import test.model.DomainEntityWithDates;
 import test.model.DomainEntityWithMiscTypes;
 import test.model.DomainEntityWithReferences;
 import test.model.TestSystemEntity;
@@ -86,21 +85,6 @@ public class EntityInducerReducerTest {
   }
 
   @Test
-  public void testDomainEntityWithDates() throws Exception {
-    long time = new Date().getTime();
-    DomainEntityWithDates initial = new DomainEntityWithDates(ID);
-    initial.setSharedDate(new Date(time + 1000));
-    initial.setUniqueDate(new Date(time + 2000));
-
-    JsonNode tree = inducer.induceDomainEntity(DomainEntityWithDates.class, initial);
-    DomainEntityWithDates reduced = reducer.reduceVariation(DomainEntityWithDates.class, tree);
-
-    validateBaseDomainEntityProperties(initial, reduced);
-    assertEquals(initial.getSharedDate(), reduced.getSharedDate());
-    assertEquals(initial.getUniqueDate(), reduced.getUniqueDate());
-  }
-
-  @Test
   public void testDomainEntityWithComplexProperty() throws Exception {
     DomainEntityWithReferences initial = new DomainEntityWithReferences(ID);
     initial.setSharedReference(new Reference("type1", "id1"));
@@ -117,12 +101,14 @@ public class EntityInducerReducerTest {
   @Test
   public void testDomainEntityWithMiscTypes() throws Exception {
     DomainEntityWithMiscTypes initial = new DomainEntityWithMiscTypes(ID);
+    initial.setDate(new Date());
     initial.setType(String.class);
 
     JsonNode tree = inducer.induceDomainEntity(DomainEntityWithMiscTypes.class, initial);
     DomainEntityWithMiscTypes reduced = reducer.reduceVariation(DomainEntityWithMiscTypes.class, tree);
 
     validateBaseDomainEntityProperties(initial, reduced);
+    assertEquals(initial.getDate(), reduced.getDate());
     assertEquals(initial.getType(), reduced.getType());
   }
 

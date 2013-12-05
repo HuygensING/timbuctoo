@@ -40,19 +40,16 @@ public class PersonNameComponent {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (!(obj instanceof PersonNameComponent)) {
-      return false;
+  public boolean equals(Object object) {
+    if (object instanceof PersonNameComponent) {
+      PersonNameComponent that = (PersonNameComponent) object;
+      return Objects.equal(this.type, that.type) && Objects.equal(this.value, that.value);
     }
-
-    PersonNameComponent other = (PersonNameComponent) obj;
-
-    return Objects.equal(other.type, type) && Objects.equal(other.value, value);
+    return false;
   }
 
   @Override
   public int hashCode() {
-
     return Objects.hashCode(type, value);
   }
 
