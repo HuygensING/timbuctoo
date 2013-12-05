@@ -1,6 +1,9 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
 import static org.junit.Assert.assertEquals;
+
+import java.util.Date;
+
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -11,6 +14,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import test.model.BaseDomainEntity;
+import test.model.DomainEntityWithDates;
 import test.model.DomainEntityWithReferences;
 import test.model.TestSystemEntity;
 
@@ -58,6 +63,12 @@ public class EntityInducerReducerTest {
     assertEquals(initial.getVariations(), reduced.getVariations());
   }
 
+  private void validateBaseDomainEntityProperties(BaseDomainEntity initial, BaseDomainEntity reduced) {
+    validateDomainEntityProperties(initial, reduced);
+    assertEquals(initial.getValue1(), reduced.getValue1());
+    assertEquals(initial.getValue2(), reduced.getValue2());
+  }
+
   // -------------------------------------------------------------------
 
   @Test
@@ -68,10 +79,24 @@ public class EntityInducerReducerTest {
     TestSystemEntity reduced = reducer.reduceVariation(TestSystemEntity.class, tree);
 
     validateSystemEntityProperties(initial, reduced);
-    // TestSystemEntity
     assertEquals(initial.getValue1(), reduced.getValue1());
     assertEquals(initial.getValue2(), reduced.getValue2());
     assertEquals(initial.getValue3(), reduced.getValue3());
+  }
+
+  @Test
+  public void testDomainEntityWithDates() throws Exception {
+    long time = new Date().getTime();
+    DomainEntityWithDates initial = new DomainEntityWithDates(ID);
+    initial.setSharedDate(new Date(time + 1000));
+    initial.setUniqueDate(new Date(time + 2000));
+
+    JsonNode tree = inducer.induceDomainEntity(DomainEntityWithDates.class, initial);
+    DomainEntityWithDates reduced = reducer.reduceVariation(DomainEntityWithDates.class, tree);
+
+    validateBaseDomainEntityProperties(initial, reduced);
+    assertEquals(initial.getSharedDate(), reduced.getSharedDate());
+    assertEquals(initial.getUniqueDate(), reduced.getUniqueDate());
   }
 
   @Test
@@ -83,11 +108,7 @@ public class EntityInducerReducerTest {
     JsonNode tree = inducer.induceDomainEntity(DomainEntityWithReferences.class, initial);
     DomainEntityWithReferences reduced = reducer.reduceVariation(DomainEntityWithReferences.class, tree);
 
-    validateDomainEntityProperties(initial, reduced);
-    // BaseDomainEntity
-    assertEquals(initial.getValue1(), reduced.getValue1());
-    assertEquals(initial.getValue2(), reduced.getValue2());
-    // DomainEntityWithReferences
+    validateBaseDomainEntityProperties(initial, reduced);
     assertEquals(initial.getSharedReference(), reduced.getSharedReference());
     assertEquals(initial.getUniqueReference(), reduced.getUniqueReference());
   }

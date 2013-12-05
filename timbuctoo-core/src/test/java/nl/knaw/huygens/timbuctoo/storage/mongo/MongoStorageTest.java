@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.Map;
 
@@ -218,23 +219,23 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testRemoveByDate() throws IOException {
-    Date now = new Date();
+  public void testRemoveByDate() throws Exception {
+    injectMockMongoQueries();
 
-    WriteResult writeResult = mock(WriteResult.class);
-    when(writeResult.getN()).thenReturn(3);
-    Date dateValue = offsetDate(now, -4000);
+    Date date = new Date();
+    DBObject query = new BasicDBObject();
+    when(queries.selectByDate(TYPE, "date", date)).thenReturn(query);
 
-    DBObject query = new BasicDBObject("date", new BasicDBObject("$lt", dateValue));
-    when(anyCollection.remove(query)).thenReturn(writeResult);
-
-    storage.deleteByDate(TYPE, "date", dateValue);
+    storage.deleteByDate(TYPE, "date", date);
 
     verify(anyCollection).remove(query);
   }
 
-  private Date offsetDate(Date date, long millis) {
-    return new Date(date.getTime() + millis);
+  private void injectMockMongoQueries() throws Exception {
+    queries = mock(MongoQueries.class);
+    Field field = MongoStorage.class.getDeclaredField("queries");
+    field.setAccessible(true);
+    field.set(storage, queries);
   }
 
   private Map<String, Object> createDefaultMap(int revision, String id) {

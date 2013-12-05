@@ -12,8 +12,6 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.storage.PropertyMap;
 
-import org.mongojack.DBQuery;
-
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
@@ -54,8 +52,9 @@ public class MongoQueries {
     return new BasicDBObject(properties);
   }
 
-  public DBObject selectByDate(String dateField, Date dateValue) {
-    return DBQuery.lessThan(dateField, dateValue);
+  public DBObject selectByDate(Class<?> type, String dateField, Date dateValue) {
+    String key = propertyName(type, dateField);
+    return new BasicDBObject(key, new BasicDBObject("$lt", dateValue.getTime()));
   }
 
   public DBObject selectRelation(Relation relation) {

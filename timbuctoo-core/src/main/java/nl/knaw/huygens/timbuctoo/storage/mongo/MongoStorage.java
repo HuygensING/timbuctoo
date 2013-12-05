@@ -183,6 +183,7 @@ public class MongoStorage implements Storage {
   }
 
   private <T extends Entity> int removeItem(Class<T> type, DBObject query) {
+    // LOG.debug("Query: {}", objectMapper.valueToTree(query));
     WriteResult result = getDBCollection(type).remove(query);
     return (result != null) ? result.getN() : 0;
   }
@@ -296,7 +297,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends SystemEntity> int deleteByDate(Class<T> type, String dateField, Date dateValue) {
-    DBObject query = queries.selectByDate(dateField, dateValue);
+    DBObject query = queries.selectByDate(type, dateField, dateValue);
     return removeItem(type, query);
   }
 
