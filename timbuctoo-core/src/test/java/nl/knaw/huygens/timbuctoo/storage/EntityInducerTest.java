@@ -6,12 +6,14 @@ import static org.junit.Assert.assertEquals;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import test.model.BaseDomainEntity;
+import test.model.DomainEntityWithReferences;
 import test.model.TestRole;
 import test.model.TestSystemEntity;
 import test.model.projecta.SubADomainEntity;
@@ -309,6 +311,26 @@ public class EntityInducerTest {
     ObjectNode newTree = mapper.valueToTree(newMap);
 
     assertEquals(newTree, inducer.induceDomainEntity(SubADomainEntity.class, entity, oldTree));
+  }
+
+  // --- specific cases ------------------------------------------------
+
+  @Test
+  // [#1781] Test that prefix '^' works for complex properties
+  public void induceDomainEntityWithReferences() throws Exception {
+    Reference sharedReference = new Reference("type1", "id1");
+    Reference uniqueReference = new Reference("type2", "id2");
+
+    DomainEntityWithReferences entity = new DomainEntityWithReferences(ID);
+    entity.setSharedReference(sharedReference);
+    entity.setUniqueReference(uniqueReference);
+
+    Map<String, Object> map = newDomainEntityMap(ID, null);
+    map.put(propertyName(DomainEntityWithReferences.class, "sharedReference"), sharedReference);
+    map.put("^uniqueReference", uniqueReference);
+    JsonNode expected = mapper.valueToTree(map);
+
+    assertEquals(expected, inducer.induceDomainEntity(DomainEntityWithReferences.class, entity));
   }
 
 }
