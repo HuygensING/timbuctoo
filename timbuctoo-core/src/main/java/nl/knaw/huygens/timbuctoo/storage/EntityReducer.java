@@ -211,12 +211,6 @@ public class EntityReducer {
       return node.asLong();
     } else if (fieldType == Short.class || fieldType == short.class) {
       return (short) node.asInt();
-    } else if (Class.class.isAssignableFrom(fieldType)) {
-      try {
-        return Class.forName(node.asText());
-      } catch (ClassNotFoundException e) {
-        throw new IOException(e);
-      }
     } else if (Datable.class.isAssignableFrom(fieldType)) {
       return new Datable(node.asText());
     } else {
