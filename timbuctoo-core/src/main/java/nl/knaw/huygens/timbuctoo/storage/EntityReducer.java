@@ -15,7 +15,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoChanges;
 
 import org.slf4j.Logger;
@@ -220,11 +219,9 @@ public class EntityReducer {
       }
     } else if (Datable.class.isAssignableFrom(fieldType)) {
       return new Datable(node.asText());
-    } else if (PersonName.class.isAssignableFrom(fieldType)) {
-      return jsonMapper.readValue(node.toString(), PersonName.class);
+    } else {
+      return jsonMapper.convertValue(node, fieldType);
     }
-
-    return node.asText();
   }
 
   private Object createCollection(JsonNode value) throws IOException, JsonParseException, JsonMappingException {
