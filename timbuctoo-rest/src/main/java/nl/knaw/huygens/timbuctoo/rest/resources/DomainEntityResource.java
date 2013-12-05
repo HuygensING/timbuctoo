@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -43,7 +45,7 @@ import com.google.inject.Inject;
 /**
  * A REST resource for adressing collections of domain entities.
  */
-@Path(Paths.DOMAIN_PREFIX + "/{" + DomainEntityResource.ENTITY_PARAM + ": [a-zA-Z]+}")
+@Path(Paths.DOMAIN_PREFIX + "/{" + DomainEntityResource.ENTITY_PARAM + ": " + Paths.ENTITY_REGEX + "}")
 public class DomainEntityResource extends ResourceBase {
 
   public static final String ENTITY_PARAM = "entityName";
@@ -51,7 +53,7 @@ public class DomainEntityResource extends ResourceBase {
   private static final Logger LOG = LoggerFactory.getLogger(DomainEntityResource.class);
 
   private static final String ID_PARAM = "id";
-  private static final String ID_PATH = "/{id: [a-zA-Z]{4}\\d+}";
+  private static final String ID_PATH = "/{id: " + Paths.ID_REGEX + "}";
 
   private final TypeRegistry typeRegistry;
   private final StorageManager storageManager;
@@ -82,7 +84,7 @@ public class DomainEntityResource extends ResourceBase {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @JsonView(JsonViews.WebView.class)
-  @RolesAllowed("USER")
+  @RolesAllowed(USER_ROLE)
   public <T extends DomainEntity> Response post( //
       @PathParam(ENTITY_PARAM) String entityName, //
       DomainEntity input, //
@@ -118,7 +120,7 @@ public class DomainEntityResource extends ResourceBase {
   @Path(ID_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @JsonView(JsonViews.WebView.class)
-  @RolesAllowed("USER")
+  @RolesAllowed(USER_ROLE)
   public <T extends DomainEntity> void put( //
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id, //
@@ -146,7 +148,7 @@ public class DomainEntityResource extends ResourceBase {
   @DELETE
   @Path(ID_PATH)
   @JsonView(JsonViews.WebView.class)
-  @RolesAllowed("USER")
+  @RolesAllowed(USER_ROLE)
   public Response delete( //
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id //
