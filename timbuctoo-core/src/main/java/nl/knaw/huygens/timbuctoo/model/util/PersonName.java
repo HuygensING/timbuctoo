@@ -9,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 /**
  * A person name consisting of components (the order is important).
@@ -89,16 +88,11 @@ public class PersonName {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (!(obj instanceof PersonName)) {
-      return false;
+  public boolean equals(Object object) {
+    if (object instanceof PersonName) {
+      return Objects.equal(components, ((PersonName) object).components);
     }
-    PersonName other = (PersonName) obj;
-
-    Set<PersonNameComponent> thisComponents = components != null ? Sets.newHashSet(components) : null;
-    Set<PersonNameComponent> otherComponents = other.components != null ? Sets.newHashSet(other.components) : null;
-
-    return Objects.equal(otherComponents, thisComponents);
+    return false;
   }
 
   @Override
