@@ -8,13 +8,9 @@ import java.util.TreeMap;
 
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class PropertyMap extends TreeMap<String, Object> {
 
@@ -30,19 +26,22 @@ public class PropertyMap extends TreeMap<String, Object> {
         try {
           Field field = entry.getValue();
           field.setAccessible(true);
-          Object value = convertValue(field.getType(), field.get(object));
+          Object value = convertToSerializable(field.getType(), field.get(object));
           if (value != null) {
             put(entry.getKey(), value);
           }
         } catch (Exception e) {
-          LOG.error("Error for field {}", entry.getValue().getName());
+          LOG.error("Error for field '{}'", entry.getValue());
           throw new RuntimeException(e);
         }
       }
     }
   }
 
-  private Object convertValue(Class<?> fieldType, Object value) throws IOException {
+  /**
+   * Converts a property value to a value that can be serialized to Json.
+   */
+  private Object convertToSerializable(Class<?> fieldType, Object value) throws IOException {
     if (value == null) {
       return null;
     } else if (isSimpleType(fieldType)) {
@@ -64,10 +63,9 @@ public class PropertyMap extends TreeMap<String, Object> {
       return Class.class.cast(value).getName();
     } else if (Datable.class.isAssignableFrom(fieldType)) {
       return Datable.class.cast(value).getEDTF();
-    } else if (PersonName.class.isAssignableFrom(fieldType)) {
-      // Quick fix for serialize an Object.
-      ObjectMapper om = new ObjectMapper();
-      return om.readValue(om.writeValueAsString(value), new TypeReference<Map<String, Object>>() {});
+    } else {
+      // Assume Jackson can handle it
+      return value;
     }
     LOG.error("Cannot convert type '{}' with value '{}'", fieldType.getSimpleName(), value);
     throw new IllegalStateException("Cannot convert type " + fieldType.getSimpleName());
