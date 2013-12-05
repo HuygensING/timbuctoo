@@ -64,14 +64,10 @@ public class SearchResult extends SystemEntity implements Persistent {
     this.sort = sort;
   }
 
-  // FIXME #1959
-  @JsonProperty("@date")
   public Date getDate() {
     return date;
   }
 
-  // FIXME #1959
-  @JsonProperty("@date")
   public void setDate(Date date) {
     this.date = date;
   }
