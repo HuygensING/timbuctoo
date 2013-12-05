@@ -7,8 +7,6 @@ import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 @IDPrefix(SearchResult.ID_PREFIX)
 @EntityTypeName("search")
 public class SearchResult extends SystemEntity implements Persistent {
@@ -80,14 +78,10 @@ public class SearchResult extends SystemEntity implements Persistent {
     searchType = type;
   }
 
-  // FIXME #1959
-  @JsonProperty("@facets")
   public List<FacetCount> getFacets() {
     return facets;
   }
 
-  // FIXME #1959
-  @JsonProperty("@facets")
   public void setFacets(List<FacetCount> facets) {
     this.facets = facets;
   }

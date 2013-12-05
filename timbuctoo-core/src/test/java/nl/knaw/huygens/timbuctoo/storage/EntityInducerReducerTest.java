@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import test.model.BaseDomainEntity;
 import test.model.DomainEntityWithDates;
+import test.model.DomainEntityWithMiscTypes;
 import test.model.DomainEntityWithReferences;
 import test.model.TestSystemEntity;
 
@@ -111,6 +112,18 @@ public class EntityInducerReducerTest {
     validateBaseDomainEntityProperties(initial, reduced);
     assertEquals(initial.getSharedReference(), reduced.getSharedReference());
     assertEquals(initial.getUniqueReference(), reduced.getUniqueReference());
+  }
+
+  @Test
+  public void testDomainEntityWithMiscTypes() throws Exception {
+    DomainEntityWithMiscTypes initial = new DomainEntityWithMiscTypes(ID);
+    initial.setType(String.class);
+
+    JsonNode tree = inducer.induceDomainEntity(DomainEntityWithMiscTypes.class, initial);
+    DomainEntityWithMiscTypes reduced = reducer.reduceVariation(DomainEntityWithMiscTypes.class, tree);
+
+    validateBaseDomainEntityProperties(initial, reduced);
+    assertEquals(initial.getType(), reduced.getType());
   }
 
 }

@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
@@ -41,38 +40,24 @@ public class PropertyMap extends TreeMap<String, Object> {
   /**
    * Converts a property value to a value that can be serialized to Json.
    */
-  private Object convertToSerializable(Class<?> fieldType, Object value) throws IOException {
+  private Object convertToSerializable(Class<?> type, Object value) {
     if (value == null) {
       return null;
-    } else if (isSimpleType(fieldType)) {
-      return value;
-    } else if (Collection.class.isAssignableFrom(fieldType)) {
+    } else if (type == Datable.class) {
+      return Datable.class.cast(value).getEDTF();
+    } else if (Collection.class.isAssignableFrom(type)) {
       Collection<?> collection = Collection.class.cast(value);
       if (collection.isEmpty()) {
-        // Because of type erasure the element type is unknown...
         return null;
+      } else {
+        // Roles are explicitly handled by inducer and reducer
+        Class<?> elementType = collection.iterator().next().getClass();
+        return (Role.class.isAssignableFrom(elementType)) ? null : value;
       }
-      Class<?> elementType = collection.iterator().next().getClass();
-      if (isSimpleType(elementType)) {
-        return value;
-      } else if (Role.class.isAssignableFrom(elementType)) {
-        // Explicitly handled by inducer and reducer
-        return null;
-      }
-    } else if (Class.class.isAssignableFrom(fieldType)) {
-      return Class.class.cast(value).getName();
-    } else if (Datable.class.isAssignableFrom(fieldType)) {
-      return Datable.class.cast(value).getEDTF();
     } else {
       // Assume Jackson can handle it
       return value;
     }
-    LOG.error("Cannot convert type '{}' with value '{}'", fieldType.getSimpleName(), value);
-    throw new IllegalStateException("Cannot convert type " + fieldType.getSimpleName());
-  }
-
-  private boolean isSimpleType(Class<?> type) {
-    return type.isPrimitive() || Number.class.isAssignableFrom(type) || String.class == type || Boolean.class == type || Character.class == type;
   }
 
 }
