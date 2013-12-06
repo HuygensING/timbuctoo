@@ -1,12 +1,11 @@
 package nl.knaw.huygens.timbuctoo.rest.filters;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import javax.ws.rs.WebApplicationException;
@@ -14,15 +13,16 @@ import javax.ws.rs.WebApplicationException;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.rest.filters.VREAuthorizationFilterFactory.VREAuthorizationResourceFilter;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders;
+import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -30,23 +30,27 @@ import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.spi.container.ContainerRequest;
 
 public class VREAuthorizationResourceFilterTest {
+  private static final String DEFAULT_USER_ID = "USER00000000012";
+  private static final String USER_PATH = Paths.SYSTEM_PREFIX + "/" + Paths.USER_PATH;
+  private static final String DEFAULT_ID = "PADE00000000001";
   private static final Class<ProjectADomainEntity> DEFAULT_TYPE = ProjectADomainEntity.class;
   private static final String VRE_ID = "testVRE";
   private VREAuthorizationResourceFilter instance;
   private VREManager vreManager;
   private TypeRegistry typeRegistry;
+  private StorageManager storageManager;
 
   @Before
   public void setUp() {
     vreManager = mock(VREManager.class);
     typeRegistry = new TypeRegistry("timbuctoo.rest.model timbuctoo.rest.model.projecta");
-    instance = new VREAuthorizationResourceFilter(vreManager, typeRegistry);
+    storageManager = mock(StorageManager.class);
+    instance = new VREAuthorizationResourceFilter(vreManager, typeRegistry, storageManager);
   }
 
   @Test
   public void testFilterDomainEntityInVREScope() {
-    String id = "PADE00000000001";
-    ContainerRequest request = setupRequest(VRE_ID, DEFAULT_TYPE, id);
+    ContainerRequest request = setupRequestForDomainEntities(VRE_ID, DEFAULT_TYPE, DEFAULT_ID);
 
     Scope scope = setUpScopeForItem(true);
     VRE vre = setUpVRE(VRE_ID, scope);
@@ -55,12 +59,13 @@ public class VREAuthorizationResourceFilterTest {
 
     verify(vreManager, only()).getVREById(VRE_ID);
     verify(vre, only()).getScope();
-    verify(scope, only()).inScope(DEFAULT_TYPE, id);
+    verify(scope, only()).inScope(DEFAULT_TYPE, DEFAULT_ID);
+    verifyZeroInteractions(storageManager);
   }
 
   @Test
   public void testFilterDomainEntityCollectionInVREScope() {
-    ContainerRequest request = setupRequest(VRE_ID, DEFAULT_TYPE, null);
+    ContainerRequest request = setupRequestForDomainEntities(VRE_ID, DEFAULT_TYPE, null);
 
     Scope scope = setupScopeForType(true);
     VRE vre = setUpVRE(VRE_ID, scope);
@@ -70,23 +75,24 @@ public class VREAuthorizationResourceFilterTest {
     verify(vreManager, only()).getVREById(VRE_ID);
     verify(vre, only()).getScope();
     verify(scope, only()).isTypeInScope(DEFAULT_TYPE);
+    verifyZeroInteractions(storageManager);
   }
 
   @Test
   public void testFilterNoVREIdSent() {
-    ContainerRequest request = setupRequest(null, DEFAULT_TYPE, null);
+    ContainerRequest request = setupRequestForDomainEntities(null, DEFAULT_TYPE, null);
 
     try {
       instance.filter(request);
     } catch (WebApplicationException ex) {
       assertEquals(Status.UNAUTHORIZED.getStatusCode(), ex.getResponse().getStatus());
-      verify(vreManager, never()).getVREById(VRE_ID);
+      verifyZeroInteractions(vreManager, storageManager);
     }
   }
 
   @Test
   public void testFilterUnknownVRE() {
-    ContainerRequest request = setupRequest(VRE_ID, DEFAULT_TYPE, null);
+    ContainerRequest request = setupRequestForDomainEntities(VRE_ID, DEFAULT_TYPE, null);
     when(vreManager.getVREById(VRE_ID)).thenReturn(null);
 
     try {
@@ -94,14 +100,14 @@ public class VREAuthorizationResourceFilterTest {
     } catch (WebApplicationException ex) {
       assertEquals(Status.FORBIDDEN.getStatusCode(), ex.getResponse().getStatus());
       verify(vreManager, only()).getVREById(VRE_ID);
+      verifyZeroInteractions(storageManager);
     }
 
   }
 
   @Test
   public void testFilterDomainEntityNotInSope() {
-    String id = "PADE00000000001";
-    ContainerRequest request = setupRequest(VRE_ID, DEFAULT_TYPE, id);
+    ContainerRequest request = setupRequestForDomainEntities(VRE_ID, DEFAULT_TYPE, DEFAULT_ID);
 
     Scope scope = setUpScopeForItem(true);
     VRE vre = setUpVRE(VRE_ID, scope);
@@ -113,13 +119,14 @@ public class VREAuthorizationResourceFilterTest {
 
       verify(vreManager, only()).getVREById(VRE_ID);
       verify(vre, only()).getScope();
-      verify(scope, only()).inScope(DEFAULT_TYPE, id);
+      verify(scope, only()).inScope(DEFAULT_TYPE, DEFAULT_ID);
+      verifyZeroInteractions(storageManager);
     }
   }
 
   @Test
   public void testFilterDomainEntityCollectionNotInScope() {
-    ContainerRequest request = setupRequest(VRE_ID, DEFAULT_TYPE, null);
+    ContainerRequest request = setupRequestForDomainEntities(VRE_ID, DEFAULT_TYPE, null);
 
     Scope scope = setupScopeForType(false);
     VRE vre = setUpVRE(VRE_ID, scope);
@@ -132,22 +139,85 @@ public class VREAuthorizationResourceFilterTest {
       verify(vreManager, only()).getVREById(VRE_ID);
       verify(vre, only()).getScope();
       verify(scope, only()).isTypeInScope(DEFAULT_TYPE);
+      verifyZeroInteractions(storageManager);
     }
   }
 
   @Test
-  @Ignore
-  public void testFilterUserInfo() {
-    fail("Yet to be implemented.");
+  public void testFilterUserInfoUserKnownInVRE() {
+    ContainerRequest request = mock(ContainerRequest.class);
+    when(request.getHeaderValue(CustomHeaders.VRE_ID_KEY)).thenReturn(VRE_ID);
+    when(request.getPath()).thenReturn(USER_PATH + "/" + DEFAULT_USER_ID);
+
+    VREAuthorization example = createVREAuthorizationExample(DEFAULT_USER_ID);
+    when(storageManager.findEntity(VREAuthorization.class, example)).thenReturn(example);
+
+    VRE vre = setUpVRE(VRE_ID, null);
+
+    instance.filter(request);
+
+    verify(vreManager).getVREById(VRE_ID);
+    verifyZeroInteractions(vre);
+    verify(storageManager, only()).findEntity(VREAuthorization.class, example);
   }
 
   @Test
-  @Ignore
-  public void testFilterSystemEntityCollection() {
-    fail("Yet to be implemented");
+  public void testFilterUserCollection() {
+    ContainerRequest request = mock(ContainerRequest.class);
+    when(request.getHeaderValue(CustomHeaders.VRE_ID_KEY)).thenReturn(VRE_ID);
+    when(request.getPath()).thenReturn(USER_PATH);
+
+    VRE vre = setUpVRE(VRE_ID, null);
+
+    instance.filter(request);
+
+    verify(vreManager).getVREById(VRE_ID);
+
+    verifyZeroInteractions(storageManager, vre);
   }
 
-  protected ContainerRequest setupRequest(String vreId, Class<ProjectADomainEntity> type, String id) {
+  @Test
+  public void testFilterUserInfoUserNotKnownInVRE() {
+    ContainerRequest request = mock(ContainerRequest.class);
+    when(request.getHeaderValue(CustomHeaders.VRE_ID_KEY)).thenReturn(VRE_ID);
+    when(request.getPath()).thenReturn(USER_PATH + "/" + DEFAULT_USER_ID);
+
+    VREAuthorization example = createVREAuthorizationExample(DEFAULT_USER_ID);
+    when(storageManager.findEntity(VREAuthorization.class, example)).thenReturn(example);
+
+    Scope scope = setUpScopeForItem(true);
+    setUpVRE(VRE_ID, scope);
+
+    try {
+      instance.filter(request);
+    } catch (WebApplicationException ex) {
+      assertEquals(Status.FORBIDDEN.getStatusCode(), ex.getResponse().getStatus());
+
+      verify(vreManager).getVREById(VRE_ID);
+      verify(storageManager, only()).findEntity(VREAuthorization.class, example);
+    }
+  }
+
+  @Test
+  public void testFilterSystemEntity() {
+    ContainerRequest request = mock(ContainerRequest.class);
+    when(request.getHeaderValue(CustomHeaders.VRE_ID_KEY)).thenReturn(VRE_ID);
+    when(request.getPath()).thenReturn(Paths.SYSTEM_PREFIX + "/" + "relationtypes");
+
+    Scope scope = setUpScopeForItem(true);
+    VRE vre = setUpVRE(VRE_ID, scope);
+
+    try {
+      instance.filter(request);
+    } catch (WebApplicationException ex) {
+
+      assertEquals(Status.FORBIDDEN.getStatusCode(), ex.getResponse().getStatus());
+      verify(vreManager, only()).getVREById(VRE_ID);
+      verifyZeroInteractions(vre);
+    }
+  }
+
+  protected ContainerRequest setupRequestForDomainEntities(String vreId, Class<ProjectADomainEntity> type, String id) {
     ContainerRequest request = mock(ContainerRequest.class);
     when(request.getHeaderValue(CustomHeaders.VRE_ID_KEY)).thenReturn(vreId);
     when(request.getPath()).thenReturn(createPath(type, id));
@@ -171,6 +241,13 @@ public class VREAuthorizationResourceFilterTest {
     when(vre.getScope()).thenReturn(scope);
     when(vreManager.getVREById(vreId)).thenReturn(vre);
     return vre;
+  }
+
+  protected VREAuthorization createVREAuthorizationExample(String userId) {
+    VREAuthorization example = new VREAuthorization();
+    example.setUserId(userId);
+    example.setVreId(VRE_ID);
+    return example;
   }
 
   private String createPath(Class<? extends DomainEntity> type, String id) {
