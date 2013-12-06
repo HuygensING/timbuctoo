@@ -20,9 +20,12 @@ public abstract class Entity {
   @Pattern(regexp = Paths.ID_REGEX)
   private String id;
 
+  /** Revison number; also used for integrity of updates. */
   private int rev;
-  private Change lastChange;
+  /** Provides info about creation. */
   private Change creation;
+  /** Provides info about last update. */
+  private Change lastChange;
 
   /**
    * Returns the name to be displayed for identification of this entity.
@@ -52,16 +55,6 @@ public abstract class Entity {
     this.rev = rev;
   }
 
-  @JsonProperty("^lastChange")
-  public Change getLastChange() {
-    return lastChange;
-  }
-
-  @JsonProperty("^lastChange")
-  public void setLastChange(Change lastChange) {
-    this.lastChange = lastChange;
-  }
-
   @JsonProperty("^creation")
   public Change getCreation() {
     return creation;
@@ -70,6 +63,16 @@ public abstract class Entity {
   @JsonProperty("^creation")
   public void setCreation(Change creation) {
     this.creation = creation;
+  }
+
+  @JsonProperty("^lastChange")
+  public Change getLastChange() {
+    return lastChange;
+  }
+
+  @JsonProperty("^lastChange")
+  public void setLastChange(Change lastChange) {
+    this.lastChange = lastChange;
   }
 
 }
