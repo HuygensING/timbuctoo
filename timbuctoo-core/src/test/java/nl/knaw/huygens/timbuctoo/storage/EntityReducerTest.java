@@ -7,15 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.model.util.PersonName;
-import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntityPrimitive;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntityPrimitiveCollections;
-import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -242,23 +238,6 @@ public class EntityReducerTest {
     expected.setTestStringList(Lists.newArrayList("test", "test1"));
 
     assertEquals(expected, reducer.reduceVariation(type, node));
-  }
-
-  @Test
-  public void testReduceDomainEntityProjectWithPersonName() throws Exception {
-    ProjectATestDocWithPersonName expected = new ProjectATestDocWithPersonName();
-    PersonName name = new PersonName();
-    name.addNameComponent(Type.FORENAME, "test");
-    name.addNameComponent(Type.SURNAME, "test");
-    expected.setPersonName(name);
-
-    Map<String, Object> map = Maps.newHashMap();
-    map.put(propertyName(ProjectATestDocWithPersonName.class, "personName"), PersonNameMapper.createPersonNameMap(name));
-    map.put("^rev", 0);
-    map.put(DomainEntity.DELETED, false);
-    JsonNode node = mapper.valueToTree(map);
-
-    assertEquals(expected, reducer.reduceVariation(ProjectATestDocWithPersonName.class, node));
   }
 
 }

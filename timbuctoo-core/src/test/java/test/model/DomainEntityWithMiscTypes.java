@@ -2,6 +2,8 @@ package test.model;
 
 import java.util.Date;
 
+import nl.knaw.huygens.timbuctoo.model.util.PersonName;
+
 /**
  * Used for testing properties with various types.
  */
@@ -9,6 +11,7 @@ public class DomainEntityWithMiscTypes extends BaseDomainEntity {
 
   private Class<?> type;
   private Date date;
+  private PersonName personName;
 
   public DomainEntityWithMiscTypes() {}
 
@@ -30,6 +33,14 @@ public class DomainEntityWithMiscTypes extends BaseDomainEntity {
 
   public void setDate(Date date) {
     this.date = date;
+  }
+
+  public PersonName getPersonName() {
+    return personName;
+  }
+
+  public void setPersonName(PersonName personName) {
+    this.personName = personName;
   }
 
 }
