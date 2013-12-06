@@ -31,7 +31,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.google.inject.Inject;
 
-@Path(Paths.SYSTEM_PREFIX + "/users")
+@Path(Paths.SYSTEM_PREFIX + "/" + Paths.USER_PATH)
 public class UserResource extends ResourceBase {
 
   private static final String ID_REGEX = "/{id:" + User.ID_PREFIX + "\\d+}";
