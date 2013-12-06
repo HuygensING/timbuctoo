@@ -9,6 +9,8 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.model.util.PersonName;
+import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -103,6 +105,10 @@ public class EntityInducerReducerTest {
     DomainEntityWithMiscTypes initial = new DomainEntityWithMiscTypes(ID);
     initial.setDate(new Date());
     initial.setType(String.class);
+    PersonName name = new PersonName();
+    name.addNameComponent(Type.FORENAME, "test");
+    name.addNameComponent(Type.SURNAME, "test");
+    initial.setPersonName(name);
 
     JsonNode tree = inducer.induceDomainEntity(DomainEntityWithMiscTypes.class, initial);
     DomainEntityWithMiscTypes reduced = reducer.reduceVariation(DomainEntityWithMiscTypes.class, tree);
@@ -110,6 +116,7 @@ public class EntityInducerReducerTest {
     validateBaseDomainEntityProperties(initial, reduced);
     assertEquals(initial.getDate(), reduced.getDate());
     assertEquals(initial.getType(), reduced.getType());
+    assertEquals(initial.getPersonName(), reduced.getPersonName());
   }
 
 }
