@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.model;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 
@@ -16,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public abstract class Entity {
 
   @NotNull
-  @Pattern(regexp = "[A-Z]{3}\\d{10}")
+  @Pattern(regexp = Paths.ID_REGEX)
   private String id;
 
   private int rev;
