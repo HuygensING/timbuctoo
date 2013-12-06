@@ -158,6 +158,10 @@ public class MongoStorage implements Storage {
     entity.setId(entityIds.getNextId(type));
   }
 
+  private DBObject toDBObject(JsonNode node) {
+    return new JacksonDBObject<JsonNode>(node, JsonNode.class);
+  }
+
   @SuppressWarnings("unchecked")
   private JsonNode toJsonNode(DBObject object) throws IOException {
     if (object instanceof JacksonDBObject) {
@@ -213,8 +217,8 @@ public class MongoStorage implements Storage {
       setNextId(type, entity);
     }
     JsonNode jsonNode = inducer.induceSystemEntity(type, entity);
-    JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
-    getDBCollection(type).insert(insertedItem);
+
+    getDBCollection(type).insert(toDBObject(jsonNode));
     return entity.getId();
   }
 
@@ -225,16 +229,14 @@ public class MongoStorage implements Storage {
     }
 
     // administrative properties must be controlled in the storage layer
-    DomainEntity domainEntity = DomainEntity.class.cast(entity);
-    domainEntity.setVariations(null); // make sure the list is empty
-    domainEntity.addVariation(getInternalName(typeRegistry.getBaseClass(type)));
-    domainEntity.addVariation(getInternalName(type));
+    entity.setVariations(null); // make sure the list is empty
+    entity.addVariation(getInternalName(typeRegistry.getBaseClass(type)));
+    entity.addVariation(getInternalName(type));
 
     JsonNode jsonNode = inducer.induceDomainEntity(type, entity);
-    JacksonDBObject<JsonNode> insertedItem = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
-    getDBCollection(type).insert(insertedItem);
 
-    addInitialVersion(type, entity.getId(), insertedItem);
+    getDBCollection(type).insert(toDBObject(jsonNode));
+    addInitialVersion(type, entity.getId(), jsonNode);
 
     return entity.getId();
   }
@@ -249,8 +251,8 @@ public class MongoStorage implements Storage {
     }
     JsonNode updatedNode = inducer.induceSystemEntity(type, entity, (ObjectNode) toJsonNode(existingNode));
     ((ObjectNode) updatedNode).put("^rev", revision + 1);
-    JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(updatedNode, JsonNode.class);
-    getDBCollection(type).update(query, updatedDBObj);
+
+    getDBCollection(type).update(query, toDBObject(updatedNode));
   }
 
   @Override
@@ -263,10 +265,9 @@ public class MongoStorage implements Storage {
     }
     JsonNode updatedNode = inducer.induceDomainEntity(type, entity, (ObjectNode) toJsonNode(existingNode));
     ((ObjectNode) updatedNode).put("^rev", revision + 1);
-    JacksonDBObject<JsonNode> updatedDBObj = new JacksonDBObject<JsonNode>(updatedNode, JsonNode.class);
-    getDBCollection(type).update(query, updatedDBObj);
 
-    addVersion(type, id, updatedDBObj);
+    getDBCollection(type).update(query, toDBObject(updatedNode));
+    addVersion(type, id, updatedNode);
   }
 
   // --- system entities -----------------------------------------------
@@ -375,14 +376,12 @@ public class MongoStorage implements Storage {
     int rev = node.get("^rev").asInt();
     node.put("^rev", rev + 1);
     query.put("^rev", rev);
-    JacksonDBObject<JsonNode> updatedNode = new JacksonDBObject<JsonNode>(node, JsonNode.class);
-    getDBCollection(type).update(query, updatedNode);
-    addVersion(type, id, updatedNode);
+
+    getDBCollection(type).update(query, toDBObject(node));
+    addVersion(type, id, node);
   }
 
-  private <T extends Entity> void addInitialVersion(Class<T> type, String id, JacksonDBObject<JsonNode> initialVersion) {
-    JsonNode actualVersion = initialVersion.getObject();
-
+  private <T extends Entity> void addInitialVersion(Class<T> type, String id, JsonNode actualVersion) {
     ArrayNode versionsNode = objectMapper.createArrayNode();
     versionsNode.add(actualVersion);
 
@@ -390,20 +389,17 @@ public class MongoStorage implements Storage {
     itemNode.put("versions", versionsNode);
     itemNode.put("_id", id);
 
-    getVersionCollection(type).insert(new JacksonDBObject<JsonNode>(itemNode, JsonNode.class));
+    getVersionCollection(type).insert(toDBObject(itemNode));
   }
 
-  private <T extends Entity> void addVersion(Class<T> type, String id, JacksonDBObject<JsonNode> newVersion) {
-    JsonNode actualVersion = newVersion.getObject();
-
+  private <T extends Entity> void addVersion(Class<T> type, String id, JsonNode actualVersion) {
     ObjectNode versionNode = objectMapper.createObjectNode();
     versionNode.put("versions", actualVersion);
 
     ObjectNode update = objectMapper.createObjectNode();
     update.put("$push", versionNode);
-    DBObject updateObj = new JacksonDBObject<JsonNode>(update, JsonNode.class);
 
-    getVersionCollection(type).update(new BasicDBObject("_id", id), updateObj);
+    getVersionCollection(type).update(new BasicDBObject("_id", id), toDBObject(update));
   }
 
   @Override
