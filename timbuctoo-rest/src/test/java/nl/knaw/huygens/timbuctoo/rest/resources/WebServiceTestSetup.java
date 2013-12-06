@@ -14,6 +14,7 @@ import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
+import nl.knaw.huygens.timbuctoo.rest.config.ServletInjectionModelHelper;
 import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
@@ -112,7 +113,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     webAppDescriptor.getInitParams()
         .put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.timbuctoo.rest.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.timbuctoo.rest.providers");
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
-        SecurityResourceFilterFactory.class.getName() + ";" + UserResourceFilterFactory.class.getName() + ";" + RolesAllowedResourceFilterFactory.class.getName() + ";");
+        ServletInjectionModelHelper.getClassNamesString(SecurityResourceFilterFactory.class, UserResourceFilterFactory.class, RolesAllowedResourceFilterFactory.class));
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, LoggingFilter.class.getName());
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, LoggingFilter.class.getName());
 
