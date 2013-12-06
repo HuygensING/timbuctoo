@@ -21,24 +21,12 @@ public class ServletInjectionModule extends JerseyServletModule {
   protected void configureServlets() {
     Map<String, String> params = Maps.newHashMap();
     params.put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.timbuctoo.rest.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.timbuctoo.rest.providers");
-    params.put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, getClassNamesString(LoggingFilter.class));
-    params.put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES, getClassNamesString(SecurityResourceFilterFactory.class, UserResourceFilterFactory.class, RolesAllowedResourceFilterFactory.class));
-    params.put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, getClassNamesString(LoggingFilter.class, CORSFilter.class));
+    params.put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, ServletInjectionModelHelper.getClassNamesString(LoggingFilter.class));
+    params.put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
+        ServletInjectionModelHelper.getClassNamesString(SecurityResourceFilterFactory.class, UserResourceFilterFactory.class, RolesAllowedResourceFilterFactory.class));
+    params.put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, ServletInjectionModelHelper.getClassNamesString(LoggingFilter.class, CORSFilter.class));
     params.put(ServletContainer.PROPERTY_WEB_PAGE_CONTENT_REGEX, "/static.*");
     filter("/*").through(GuiceContainer.class, params);
-  }
-
-  private String getClassNamesString(Class<?>... classes) {
-    StringBuilder sb = new StringBuilder();
-    boolean first = true;
-    for (Class<?> cls : classes) {
-      if (!first) {
-        sb.append(";");
-      }
-      sb.append(cls.getName());
-      first = false;
-    }
-    return sb.toString();
   }
 
 }

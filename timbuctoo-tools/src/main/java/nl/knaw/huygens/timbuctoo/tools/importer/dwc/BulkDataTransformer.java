@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer;
+package nl.knaw.huygens.timbuctoo.tools.importer.dwc;
 
 import java.util.List;
 
@@ -9,6 +9,8 @@ import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPerson;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import nl.knaw.huygens.timbuctoo.tools.importer.GenericDataHandler;
+import nl.knaw.huygens.timbuctoo.tools.importer.GenericJsonFileWriter;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Guice;
