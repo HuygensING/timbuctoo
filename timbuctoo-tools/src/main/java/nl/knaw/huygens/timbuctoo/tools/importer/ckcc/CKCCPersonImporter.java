@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer;
+package nl.knaw.huygens.timbuctoo.tools.importer.ckcc;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
 
 /**
  * Imports CKCC person data from a CSV file.

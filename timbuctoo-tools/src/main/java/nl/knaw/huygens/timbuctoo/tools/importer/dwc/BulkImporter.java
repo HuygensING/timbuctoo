@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer;
+package nl.knaw.huygens.timbuctoo.tools.importer.dwc;
 
 import java.util.List;
 
@@ -13,6 +13,7 @@ import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.tools.importer.GenericImporter;
 import nl.knaw.huygens.timbuctoo.tools.other.MongoAdmin;
 
 import com.google.common.collect.Lists;
