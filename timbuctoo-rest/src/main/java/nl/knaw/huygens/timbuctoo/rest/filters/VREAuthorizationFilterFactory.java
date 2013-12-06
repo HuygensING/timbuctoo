@@ -11,7 +11,9 @@ import nl.knaw.huygens.security.client.filters.BypassFilter;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders;
+import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
@@ -30,16 +32,18 @@ public class VREAuthorizationFilterFactory extends AbstractRolesAllowedResourceF
 
   private final VREManager vreManager;
   private final TypeRegistry typeRegistry;
+  private final StorageManager storageManager;
 
   @Inject
-  public VREAuthorizationFilterFactory(VREManager vreManager, TypeRegistry typeRegistry) {
+  public VREAuthorizationFilterFactory(VREManager vreManager, TypeRegistry typeRegistry, StorageManager storageManager) {
     this.vreManager = vreManager;
     this.typeRegistry = typeRegistry;
+    this.storageManager = storageManager;
   }
 
   @Override
   protected ResourceFilter createResourceFilter(AbstractMethod am) {
-    return new VREAuthorizationResourceFilter(this.vreManager, this.typeRegistry);
+    return new VREAuthorizationResourceFilter(this.vreManager, this.typeRegistry, this.storageManager);
   }
 
   @Override
@@ -48,7 +52,9 @@ public class VREAuthorizationFilterFactory extends AbstractRolesAllowedResourceF
   }
 
   /**
-   * This class filters the requests to see if the user is logged in into a valid VRE.
+   * This class filters the requests to see if the user is logged in into a valid {@code VRE}, 
+   * and if the requested data is in the {@code Scope} of the {@code VRE}.
+   * This filter is only used for protected resources.
    */
   protected static class VREAuthorizationResourceFilter implements ResourceFilter, ContainerRequestFilter {
     private static final Logger LOG = LoggerFactory.getLogger(VREAuthorizationResourceFilter.class);
@@ -56,21 +62,21 @@ public class VREAuthorizationFilterFactory extends AbstractRolesAllowedResourceF
     private static final String COLLECTION_REGEX = String.format("%s/(%s)", Paths.DOMAIN_PREFIX, Paths.ENTITY_REGEX);
     private final VREManager vreManager;
     private final TypeRegistry typeRegistry;
+    private final StorageManager storageManager;
 
-    public VREAuthorizationResourceFilter(VREManager vreManager, TypeRegistry typeRegistry) {
+    public VREAuthorizationResourceFilter(VREManager vreManager, TypeRegistry typeRegistry, StorageManager storageManager) {
       this.vreManager = vreManager;
       this.typeRegistry = typeRegistry;
+      this.storageManager = storageManager;
     }
 
     @Override
     public ContainerRequest filter(ContainerRequest request) {
-      // Allow every registered user to request their own information.
-      //      if ("GET".equals(request.getMethod()) && request.getPath().contains("/users/me")) {
-      //        return request;
-      //      }
+      // Get the requested path
+      String path = request.getPath();
+
       // Get the VRE.
       String vreId = request.getHeaderValue(CustomHeaders.VRE_ID_KEY);
-
       if (vreId == null) {
         LOG.error("No VRE id was send with the request.");
         throw new WebApplicationException(Status.UNAUTHORIZED);
@@ -83,10 +89,14 @@ public class VREAuthorizationFilterFactory extends AbstractRolesAllowedResourceF
         throw new WebApplicationException(Status.FORBIDDEN);
       }
 
-      Scope scope = vre.getScope();
+      if (!isAllowedToShowSystemEntity(path, vreId) && !isDomainEntityInScope(path, vre.getScope())) {
+        throw new WebApplicationException(Status.FORBIDDEN);
+      }
 
-      String path = request.getPath();
+      return request;
+    }
 
+    private boolean isDomainEntityInScope(String path, Scope scope) {
       if (path.matches(ITEM_REGEX)) {
         Pattern pattern = Pattern.compile(ITEM_REGEX);
         Matcher matcher = pattern.matcher(path);
@@ -102,7 +112,7 @@ public class VREAuthorizationFilterFactory extends AbstractRolesAllowedResourceF
         Class<? extends Entity> type = typeRegistry.getTypeForXName(typeString);
 
         if (TypeRegistry.isDomainEntity(type) && !scope.inScope(TypeRegistry.toDomainEntity(type), id)) {
-          throw new WebApplicationException(Status.FORBIDDEN);
+          return false;
         }
       } else if (path.matches(COLLECTION_REGEX)) {
         Pattern pattern = Pattern.compile(COLLECTION_REGEX);
@@ -116,16 +126,37 @@ public class VREAuthorizationFilterFactory extends AbstractRolesAllowedResourceF
 
         Class<? extends Entity> type = typeRegistry.getTypeForXName(typeString);
         if (TypeRegistry.isDomainEntity(type) && !scope.isTypeInScope(TypeRegistry.toDomainEntity(type))) {
-          throw new WebApplicationException(Status.FORBIDDEN);
+          return false;
         }
       }
+      return true;
+    }
 
-      // kijk of de entity binnen de scope van de VRE valt.
-      // Haal de entity naam uit het pad.
-      // Haal het type op
-      // kijk of het pad een id bevat.
+    private boolean isAllowedToShowSystemEntity(String path, String vreId) {
+      return path.contains(Paths.SYSTEM_PREFIX) && isUserInScope(path, vreId);
+    }
 
-      return request;
+    private boolean isUserInScope(String path, String vreId) {
+
+      String userItemRegex = String.format("%s/%s/(%s)", Paths.SYSTEM_PREFIX, Paths.USER_PATH, Paths.ID_REGEX);
+      if (path.matches(userItemRegex)) {
+        Pattern pattern = Pattern.compile(userItemRegex);
+        Matcher matcher = pattern.matcher(path);
+
+        String userId = null;
+        if (matcher.find()) {
+          userId = matcher.group(1);
+        }
+
+        VREAuthorization example = new VREAuthorization();
+        example.setUserId(userId);
+        example.setVreId(vreId);
+
+        return this.storageManager.findEntity(VREAuthorization.class, example) != null;
+
+      }
+
+      return path.contains(Paths.USER_PATH);
     }
 
     @Override
