@@ -1,9 +1,14 @@
 package nl.knaw.huygens.timbuctoo.rest.util;
 
 /**
- * An helper interface which contains all the custom headers used in timbuctoo.
+ * An helper class which contains all the custom headers used in timbuctoo.
  *
  */
-public interface CustomHeaders {
-  String VRE_ID_KEY = "VRE_ID";
+public class CustomHeaders {
+
+  public static final String VRE_ID_KEY = "VRE_ID";
+
+  private CustomHeaders() {
+    throw new AssertionError("Non-instantiable class");
+  }
 }
