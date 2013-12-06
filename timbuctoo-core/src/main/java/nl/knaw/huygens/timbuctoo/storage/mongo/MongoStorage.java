@@ -150,14 +150,6 @@ public class MongoStorage implements Storage {
     return collection;
   }
 
-  /**
-   * Sets the id of the specified entity to the next value
-   * for the collection in which the entity is stored.
-   */
-  private <T extends Entity> void setNextId(Class<T> type, T entity) {
-    entity.setId(entityIds.getNextId(type));
-  }
-
   private DBObject toDBObject(JsonNode node) {
     return new JacksonDBObject<JsonNode>(node, JsonNode.class);
   }
@@ -213,32 +205,50 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException {
-    if (entity.getId() == null) {
-      setNextId(type, entity);
-    }
-    JsonNode jsonNode = inducer.induceSystemEntity(type, entity);
+    String id = entityIds.getNextId(type);
 
+    entity.setId(id);
+    entity.setRev(1);
+    entity.setCreation(null);
+    entity.setLastChange(null);
+
+    JsonNode jsonNode = inducer.induceSystemEntity(type, entity);
     getDBCollection(type).insert(toDBObject(jsonNode));
-    return entity.getId();
+
+    return id;
   }
 
   @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) throws IOException {
-    if (entity.getId() == null) {
-      setNextId(type, entity);
-    }
+    String id = entityIds.getNextId(type);
 
-    // administrative properties must be controlled in the storage layer
+    entity.setId(id);
+    entity.setRev(1);
+    entity.setCreation(null);
+    entity.setLastChange(null);
+
+    entity.setPid(null);
+    entity.setDeleted(false);
     entity.setVariations(null); // make sure the list is empty
     entity.addVariation(getInternalName(typeRegistry.getBaseClass(type)));
     entity.addVariation(getInternalName(type));
 
     JsonNode jsonNode = inducer.induceDomainEntity(type, entity);
-
     getDBCollection(type).insert(toDBObject(jsonNode));
-    addInitialVersion(type, entity.getId(), jsonNode);
+    addInitialVersion(type, id, jsonNode);
 
-    return entity.getId();
+    return id;
+  }
+
+  private <T extends Entity> void addInitialVersion(Class<T> type, String id, JsonNode actualVersion) {
+    ArrayNode versionsNode = objectMapper.createArrayNode();
+    versionsNode.add(actualVersion);
+
+    ObjectNode itemNode = objectMapper.createObjectNode();
+    itemNode.put("versions", versionsNode);
+    itemNode.put("_id", id);
+
+    getVersionCollection(type).insert(toDBObject(itemNode));
   }
 
   @Override
@@ -249,6 +259,7 @@ public class MongoStorage implements Storage {
     if (existingNode == null) {
       throw new IOException("No entity with id " + id + " and revision " + revision);
     }
+
     JsonNode updatedNode = inducer.induceSystemEntity(type, entity, (ObjectNode) toJsonNode(existingNode));
     ((ObjectNode) updatedNode).put("^rev", revision + 1);
 
@@ -263,11 +274,52 @@ public class MongoStorage implements Storage {
     if (existingNode == null) {
       throw new IOException("No entity with id " + id + " and revision " + revision);
     }
+
     JsonNode updatedNode = inducer.induceDomainEntity(type, entity, (ObjectNode) toJsonNode(existingNode));
     ((ObjectNode) updatedNode).put("^rev", revision + 1);
 
     getDBCollection(type).update(query, toDBObject(updatedNode));
     addVersion(type, id, updatedNode);
+  }
+
+  @Override
+  public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws IOException {
+    DBObject query = queries.selectById(id);
+    DBObject existingNode = getDBCollection(type).findOne(query);
+    if (existingNode == null) {
+      throw new IOException("No entity was found for ID " + id);
+    }
+    ObjectNode node;
+    try {
+      DBJsonNode realNode = (DBJsonNode) existingNode;
+      JsonNode jsonNode = realNode.getDelegate();
+      if (!jsonNode.isObject()) {
+        throw new Exception();
+      }
+      node = (ObjectNode) jsonNode;
+    } catch (Exception ex) {
+      throw new IOException("Couldn't read properly from database.");
+    }
+    node.put(DomainEntity.DELETED, true);
+    node.put(DomainEntity.PID, (String) null);
+    JsonNode changeTree = objectMapper.valueToTree(change);
+    node.put("^lastChange", changeTree);
+    int rev = node.get("^rev").asInt();
+    node.put("^rev", rev + 1);
+    query.put("^rev", rev);
+
+    getDBCollection(type).update(query, toDBObject(node));
+    addVersion(type, id, node);
+  }
+
+  private <T extends Entity> void addVersion(Class<T> type, String id, JsonNode actualVersion) {
+    ObjectNode versionNode = objectMapper.createObjectNode();
+    versionNode.put("versions", actualVersion);
+
+    ObjectNode update = objectMapper.createObjectNode();
+    update.put("$push", versionNode);
+
+    getVersionCollection(type).update(new BasicDBObject("_id", id), toDBObject(update));
   }
 
   // --- system entities -----------------------------------------------
@@ -349,57 +401,6 @@ public class MongoStorage implements Storage {
     query.put("versions.^rev", revisionId);
     DBObject item = getVersionCollection(type).findOne(query);
     return (item != null) ? reducer.reduceRevision(type, toJsonNode(item)) : null;
-  }
-
-  @Override
-  public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws IOException {
-    DBObject query = queries.selectById(id);
-    DBObject existingNode = getDBCollection(type).findOne(query);
-    if (existingNode == null) {
-      throw new IOException("No entity was found for ID " + id);
-    }
-    ObjectNode node;
-    try {
-      DBJsonNode realNode = (DBJsonNode) existingNode;
-      JsonNode jsonNode = realNode.getDelegate();
-      if (!jsonNode.isObject()) {
-        throw new Exception();
-      }
-      node = (ObjectNode) jsonNode;
-    } catch (Exception ex) {
-      throw new IOException("Couldn't read properly from database.");
-    }
-    node.put(DomainEntity.DELETED, true);
-    node.put(DomainEntity.PID, (String) null);
-    JsonNode changeTree = objectMapper.valueToTree(change);
-    node.put("^lastChange", changeTree);
-    int rev = node.get("^rev").asInt();
-    node.put("^rev", rev + 1);
-    query.put("^rev", rev);
-
-    getDBCollection(type).update(query, toDBObject(node));
-    addVersion(type, id, node);
-  }
-
-  private <T extends Entity> void addInitialVersion(Class<T> type, String id, JsonNode actualVersion) {
-    ArrayNode versionsNode = objectMapper.createArrayNode();
-    versionsNode.add(actualVersion);
-
-    ObjectNode itemNode = objectMapper.createObjectNode();
-    itemNode.put("versions", versionsNode);
-    itemNode.put("_id", id);
-
-    getVersionCollection(type).insert(toDBObject(itemNode));
-  }
-
-  private <T extends Entity> void addVersion(Class<T> type, String id, JsonNode actualVersion) {
-    ObjectNode versionNode = objectMapper.createObjectNode();
-    versionNode.put("versions", actualVersion);
-
-    ObjectNode update = objectMapper.createObjectNode();
-    update.put("$push", versionNode);
-
-    getVersionCollection(type).update(new BasicDBObject("_id", id), toDBObject(update));
   }
 
   @Override
