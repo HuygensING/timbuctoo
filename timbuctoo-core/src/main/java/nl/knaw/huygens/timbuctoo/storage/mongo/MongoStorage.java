@@ -209,8 +209,8 @@ public class MongoStorage implements Storage {
 
     entity.setId(id);
     entity.setRev(1);
-    entity.setCreation(null);
-    entity.setLastChange(null);
+    entity.setCreated(null);
+    entity.setModified(null);
 
     JsonNode jsonNode = inducer.induceSystemEntity(type, entity);
     getDBCollection(type).insert(toDBObject(jsonNode));
@@ -224,8 +224,8 @@ public class MongoStorage implements Storage {
 
     entity.setId(id);
     entity.setRev(1);
-    entity.setCreation(null);
-    entity.setLastChange(null);
+    entity.setCreated(null);
+    entity.setModified(null);
 
     entity.setPid(null);
     entity.setDeleted(false);

@@ -100,7 +100,7 @@ public class StorageManager {
   }
 
   public <T extends DomainEntity> void deleteDomainEntity(T entity) throws IOException {
-    storage.deleteDomainEntity(entity.getClass(), entity.getId(), entity.getLastChange());
+    storage.deleteDomainEntity(entity.getClass(), entity.getId(), entity.getModified());
   }
 
   /**

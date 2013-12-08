@@ -2,28 +2,24 @@ package nl.knaw.huygens.timbuctoo.model.util;
 
 public class Change {
 
-  private long dateStamp;
+  private long timeStamp;
   private String authorId;
-  private String authorPrettyName;
   private String vreId;
-  private String vrePrettyName;
 
   public Change() {}
 
-  public Change(long dateStamp, String authorId, String authorPrettyName, String vreId, String vrePrettyName) {
-    this.dateStamp = dateStamp;
+  public Change(long timeStamp, String authorId, String vreId) {
+    this.timeStamp = timeStamp;
     this.authorId = authorId;
-    this.authorPrettyName = authorPrettyName;
     this.vreId = vreId;
-    this.vrePrettyName = vrePrettyName;
   }
 
-  public long getDateStamp() {
-    return dateStamp;
+  public long getTimeStamp() {
+    return timeStamp;
   }
 
-  public void setDateStamp(long dateStamp) {
-    this.dateStamp = dateStamp;
+  public void setTimeStamp(long timeStamp) {
+    this.timeStamp = timeStamp;
   }
 
   public String getAuthorId() {
@@ -34,28 +30,12 @@ public class Change {
     this.authorId = authorId;
   }
 
-  public String getAuthorPrettyName() {
-    return authorPrettyName;
-  }
-
-  public void setAuthorPrettyName(String authorPrettyName) {
-    this.authorPrettyName = authorPrettyName;
-  }
-
   public String getVreId() {
     return vreId;
   }
 
   public void setVreId(String vreId) {
     this.vreId = vreId;
-  }
-
-  public String getVrePrettyName() {
-    return vrePrettyName;
-  }
-
-  public void setVrePrettyName(String vrePrettyName) {
-    this.vrePrettyName = vrePrettyName;
   }
 
 }
