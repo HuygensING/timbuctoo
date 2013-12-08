@@ -51,8 +51,8 @@ public class EntityInducerReducerTest {
   private void validateEntityProperties(Entity initial, Entity reduced) {
     assertEquals(initial.getId(), reduced.getId());
     assertEquals(initial.getRev(), reduced.getRev());
-    assertEquals(initial.getLastChange(), reduced.getLastChange());
-    assertEquals(initial.getCreation(), reduced.getCreation());
+    assertEquals(initial.getCreated(), reduced.getCreated());
+    assertEquals(initial.getModified(), reduced.getModified());
   }
 
   private void validateSystemEntityProperties(SystemEntity initial, SystemEntity reduced) {

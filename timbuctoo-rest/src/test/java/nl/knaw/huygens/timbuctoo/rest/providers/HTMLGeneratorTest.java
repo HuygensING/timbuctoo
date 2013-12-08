@@ -84,8 +84,8 @@ public class HTMLGeneratorTest {
     assertContains(html, "Test Value", "none");
     assertContains(html, "Id", id);
     assertContains(html, "Rev", "0");
-    assertContains(html, "Last Change", "none");
-    assertContains(html, "Creation", "none");
+    assertContains(html, "Created", "none");
+    assertContains(html, "Modified", "none");
     assertContains(html, "Prop Annotated", "anonProp");
     assertContains(html, "Pwaa", "propWithAnnotatedAccessors");
   }
@@ -103,8 +103,8 @@ public class HTMLGeneratorTest {
     assertContains(html, "Name", "test");
     assertContains(html, "Id", id);
     assertContains(html, "Rev", "0");
-    assertContains(html, "Last Change", "none");
-    assertContains(html, "Creation", "none");
+    assertContains(html, "Created", "none");
+    assertContains(html, "Modified", "none");
     assertContains(html, "Pid", "pid");
 
     assertContains(html, "href=|testdomainentities/TCD0000000001|");
@@ -128,8 +128,8 @@ public class HTMLGeneratorTest {
     assertContains(html, "General Test Doc Value", "generalTestDocValue");
     assertContains(html, "Id", id);
     assertContains(html, "Rev", "0");
-    assertContains(html, "Last Change", "none");
-    assertContains(html, "Creation", "none");
+    assertContains(html, "Created", "none");
+    assertContains(html, "Modified", "none");
     assertContains(html, "Pid", "pid");
 
     assertContains(html, "href=|basedomainentitys/GTD0000000001|");

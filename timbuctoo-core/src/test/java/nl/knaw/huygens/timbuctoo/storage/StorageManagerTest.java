@@ -111,7 +111,7 @@ public class StorageManagerTest {
   public void testDeleteDomainEntity() throws IOException {
     BaseDomainEntity entity = new BaseDomainEntity("id");
     Change change = new Change();
-    entity.setLastChange(change);
+    entity.setModified(change);
     manager.deleteDomainEntity(entity);
     verify(storage).deleteDomainEntity(BaseDomainEntity.class, "id", change);
   }

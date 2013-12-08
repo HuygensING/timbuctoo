@@ -23,9 +23,9 @@ public abstract class Entity {
   /** Revison number; also used for integrity of updates. */
   private int rev;
   /** Provides info about creation. */
-  private Change creation;
+  private Change created;
   /** Provides info about last update. */
-  private Change lastChange;
+  private Change modified;
 
   /**
    * Returns the name to be displayed for identification of this entity.
@@ -55,24 +55,24 @@ public abstract class Entity {
     this.rev = rev;
   }
 
-  @JsonProperty("^creation")
-  public Change getCreation() {
-    return creation;
+  @JsonProperty("^created")
+  public Change getCreated() {
+    return created;
   }
 
-  @JsonProperty("^creation")
-  public void setCreation(Change creation) {
-    this.creation = creation;
+  @JsonProperty("^created")
+  public void setCreated(Change created) {
+    this.created = created;
   }
 
-  @JsonProperty("^lastChange")
-  public Change getLastChange() {
-    return lastChange;
+  @JsonProperty("^modified")
+  public Change getModified() {
+    return modified;
   }
 
-  @JsonProperty("^lastChange")
-  public void setLastChange(Change lastChange) {
-    this.lastChange = lastChange;
+  @JsonProperty("^modified")
+  public void setModified(Change modified) {
+    this.modified = modified;
   }
 
 }
