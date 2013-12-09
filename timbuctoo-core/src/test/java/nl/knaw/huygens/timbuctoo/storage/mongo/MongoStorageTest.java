@@ -36,15 +36,13 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   private static final String DEFAULT_ID = "TSTD000000000001";
 
-  private static final Class<TestSystemEntity> TYPE = TestSystemEntity.class;
-
   private static TypeRegistry registry;
 
   private MongoStorage storage;
 
   @BeforeClass
   public static void setupTypeRegistry() {
-    registry = new TypeRegistry(TYPE.getPackage().getName());
+    registry = new TypeRegistry(TestSystemEntity.class.getPackage().getName());
   }
 
   @Override
@@ -59,15 +57,15 @@ public class MongoStorageTest extends MongoStorageTestBase {
     example.setName(name);
 
     Map<String, Object> map = createDefaultMap(0, DEFAULT_ID);
-    map.put(propertyName(TYPE, "name"), name);
+    map.put(propertyName(TestSystemEntity.class, "name"), name);
     DBObject dbObject = createDBObject(map);
 
     DBCursor cursor = createDBCursorWithOneValue(dbObject);
 
-    DBObject query = queries.selectByProperty(TYPE, "name", name);
+    DBObject query = queries.selectByProperty(TestSystemEntity.class, "name", name);
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
-    storage.findItem(TYPE, example);
+    storage.findItem(TestSystemEntity.class, example);
   }
 
   @Test
@@ -79,17 +77,17 @@ public class MongoStorageTest extends MongoStorageTestBase {
     example.setTestValue1(testValue1);
 
     Map<String, Object> map = createDefaultMap(0, DEFAULT_ID);
-    map.put(propertyName(TYPE, "name"), name);
-    map.put(propertyName(TYPE, "testValue1"), testValue1);
+    map.put(propertyName(TestSystemEntity.class, "name"), name);
+    map.put(propertyName(TestSystemEntity.class, "testValue1"), testValue1);
     DBObject dbObject = createDBObject(map);
 
     DBCursor cursor = createDBCursorWithOneValue(dbObject);
 
-    DBObject query = queries.selectByProperty(TYPE, "name", name);
-    query.put(propertyName(TYPE, "testValue1"), testValue1);
+    DBObject query = queries.selectByProperty(TestSystemEntity.class, "name", name);
+    query.put(propertyName(TestSystemEntity.class, "testValue1"), testValue1);
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
-    storage.findItem(TYPE, example);
+    storage.findItem(TestSystemEntity.class, example);
   }
 
   @Test
@@ -99,10 +97,10 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     DBCursor cursor = createCursorWithoutValues();
 
-    DBObject query = queries.selectByProperty(TYPE, "name", "nonExisting");
+    DBObject query = queries.selectByProperty(TestSystemEntity.class, "name", "nonExisting");
     when(anyCollection.find(query, null)).thenReturn(cursor);
 
-    storage.findItem(TYPE, example);
+    storage.findItem(TestSystemEntity.class, example);
   }
 
   @Test(expected = IOException.class)
@@ -114,37 +112,16 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = queries.selectByIdAndRevision(DEFAULT_ID, 0);
     when(anyCollection.find(query)).thenReturn(cursor);
 
-    storage.updateSystemEntity(TYPE, DEFAULT_ID, entity);
-  }
-
-  @Test
-  public void testAddItem() throws IOException {
-    TestSystemEntity entity = new TestSystemEntity();
-    entity.setTestValue1("test");
-
-    storage.addSystemEntity(TYPE, entity);
-
-    verify(anyCollection).insert(any(DBObject.class));
-  }
-
-  @Test
-  public void testAddItemWithId() throws IOException {
-    TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
-    entity.setTestValue1("test");
-
-    storage.addSystemEntity(TYPE, entity);
-
-    verify(anyCollection).insert(any(DBObject.class));
+    storage.updateSystemEntity(TestSystemEntity.class, DEFAULT_ID, entity);
   }
 
   @Test(expected = MongoException.class)
   public void testMongoException() throws IOException {
-    TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
-    entity.setTestValue1("test");
+    TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID, "test");
 
     doThrow(MongoException.class).when(anyCollection).insert(any(DBObject.class));
 
-    storage.addSystemEntity(TYPE, entity);
+    storage.addSystemEntity(TestSystemEntity.class, entity);
   }
 
   @Test
@@ -161,7 +138,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = queries.selectById(DEFAULT_ID);
     when(anyCollection.find(query)).thenReturn(cursor);
 
-    storage.getItem(TYPE, DEFAULT_ID);
+    storage.getItem(TestSystemEntity.class, DEFAULT_ID);
   }
 
   @Test
@@ -174,7 +151,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = queries.selectById(null);
     when(anyCollection.find(query)).thenReturn(cursor);
 
-    storage.getItem(TYPE, (String) null);
+    storage.getItem(TestSystemEntity.class, (String) null);
   }
 
   @Test
@@ -184,7 +161,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = queries.selectById(DEFAULT_ID);
     when(anyCollection.find(query)).thenReturn(cursor);
 
-    assertNull(storage.getItem(TYPE, DEFAULT_ID));
+    assertNull(storage.getItem(TestSystemEntity.class, DEFAULT_ID));
   }
 
   @Test
@@ -196,12 +173,12 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBCursor cursor = createDBCursorWithOneValue(dbObject);
     when(anyCollection.find()).thenReturn(cursor);
 
-    storage.getAllByType(TYPE);
+    storage.getAllByType(TestSystemEntity.class);
   }
 
   @Test
   public void testRemoveItem() throws IOException {
-    storage.deleteSystemEntity(TYPE, DEFAULT_ID);
+    storage.deleteSystemEntity(TestSystemEntity.class, DEFAULT_ID);
     // just verify that the underlying storage is called
     // whether that call is successful or not is irrelevant
     verify(anyCollection).remove(any(DBObject.class));
@@ -215,7 +192,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = queries.selectAll();
     when(anyCollection.remove(query)).thenReturn(writeResult);
 
-    storage.deleteAll(TYPE);
+    storage.deleteAll(TestSystemEntity.class);
   }
 
   @Test
@@ -224,9 +201,9 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     Date date = new Date();
     DBObject query = new BasicDBObject();
-    when(queries.selectByDate(TYPE, "date", date)).thenReturn(query);
+    when(queries.selectByDate(TestSystemEntity.class, "date", date)).thenReturn(query);
 
-    storage.deleteByDate(TYPE, "date", date);
+    storage.deleteByDate(TestSystemEntity.class, "date", date);
 
     verify(anyCollection).remove(query);
   }

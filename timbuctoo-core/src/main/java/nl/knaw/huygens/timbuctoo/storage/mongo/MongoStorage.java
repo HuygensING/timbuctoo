@@ -203,6 +203,18 @@ public class MongoStorage implements Storage {
     return getItems(type, query);
   }
 
+  /**
+   * Insert an item into the Mongo database and verify that it succeeded.
+   * (Maybe a bit paranoia, but better safe than sorry).
+   */
+  private void doMongoInsert(DBCollection collection, String id, JsonNode jsonNode) throws IOException {
+    collection.insert(toDBObject(jsonNode));
+    if (collection.findOne(queries.selectById(id)) == null) {
+      LOG.error("Failed to insert ({}, {})", collection.getName(), id);
+      throw new IOException("Insert failed");
+    }
+  }
+
   @Override
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException {
     String id = entityIds.getNextId(type);
@@ -213,7 +225,7 @@ public class MongoStorage implements Storage {
     entity.setModified(null);
 
     JsonNode jsonNode = inducer.induceSystemEntity(type, entity);
-    getDBCollection(type).insert(toDBObject(jsonNode));
+    doMongoInsert(getDBCollection(type), id, jsonNode);
 
     return id;
   }
@@ -234,21 +246,22 @@ public class MongoStorage implements Storage {
     entity.addVariation(getInternalName(type));
 
     JsonNode jsonNode = inducer.induceDomainEntity(type, entity);
-    getDBCollection(type).insert(toDBObject(jsonNode));
+    doMongoInsert(getDBCollection(type), id, jsonNode);
+
     addInitialVersion(type, id, jsonNode);
 
     return id;
   }
 
-  private <T extends Entity> void addInitialVersion(Class<T> type, String id, JsonNode actualVersion) {
+  private <T extends Entity> void addInitialVersion(Class<T> type, String id, JsonNode actualVersion) throws IOException {
     ArrayNode versionsNode = objectMapper.createArrayNode();
     versionsNode.add(actualVersion);
 
     ObjectNode itemNode = objectMapper.createObjectNode();
-    itemNode.put("versions", versionsNode);
     itemNode.put("_id", id);
+    itemNode.put("versions", versionsNode);
 
-    getVersionCollection(type).insert(toDBObject(itemNode));
+    doMongoInsert(getVersionCollection(type), id, itemNode);
   }
 
   @Override

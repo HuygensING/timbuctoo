@@ -61,15 +61,50 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     returnIdField = new BasicDBObject("_id", 1);
   }
 
-  @Test
-  public void testAddItem() throws IOException {
-    ProjectADomainEntity input = new ProjectADomainEntity(DEFAULT_ID, "test");
-
-    storage.addDomainEntity(ProjectADomainEntity.class, input);
-
-    // Two additions: one normal addition and one addition in the version collection.
-    verify(anyCollection, times(2)).insert(any(DBObject.class));
+  private DBObject createTestConcreteDocDBObject(String id, String name) {
+    Map<String, Object> map = createDefaultMap(id);
+    map.put(propertyName(TestConcreteDoc.class, "name"), name);
+    return createDBJsonNode(map);
   }
+
+  private DBObject createGeneralTestDocDBObject(String id, String name, String generalTestDocValue) {
+    Map<String, Object> map = createDefaultMap(id);
+    map.put(propertyName(TestConcreteDoc.class, "name"), name);
+    map.put(propertyName(BaseDomainEntity.class, "generalTestDocValue"), generalTestDocValue);
+    return createDBJsonNode(map);
+  }
+
+  private DBObject createProjectAGeneralTestDBObject(String id, String name, String generalTestDocValue, String projectAGeneralTestDocValue) {
+    Map<String, Object> map = createDefaultMap(id);
+    map.put(propertyName(TestConcreteDoc.class, "name"), "projecta");
+    map.put(propertyName(BaseDomainEntity.class, "generalTestDocValue"), generalTestDocValue);
+    map.put(propertyName(ProjectADomainEntity.class, "projectAGeneralTestDocValue"), projectAGeneralTestDocValue);
+    return createDBJsonNode(map);
+  }
+
+  private Map<String, Object> createSimpleMap(String id, Object value) {
+    Map<String, Object> map = Maps.newHashMap();
+    map.put(id, value);
+    return map;
+  }
+
+  private Map<String, Object> createDefaultMap(String id) {
+    Map<String, Object> map = Maps.newHashMap();
+    map.put("_id", id);
+    map.put("^rev", 0);
+    map.put(DomainEntity.DELETED, false);
+    return map;
+  }
+
+  /**
+   * Creates a JsonNode from a map. This is used is several tests.
+   */
+  private DBJsonNode createDBJsonNode(Map<String, Object> map) {
+    ObjectMapper mapper = new ObjectMapper();
+    return new DBJsonNode(mapper.valueToTree(map));
+  }
+
+  // -------------------------------------------------------------------
 
   @Test
   public void testUpdateItem() throws IOException {
@@ -452,49 +487,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     } finally {
       verify(db).getCollection(TypeNames.getInternalName(BaseDomainEntity.class));
     }
-  }
-
-  private DBObject createTestConcreteDocDBObject(String id, String name) {
-    Map<String, Object> map = createDefaultMap(id);
-    map.put(propertyName(TestConcreteDoc.class, "name"), name);
-    return createDBJsonNode(map);
-  }
-
-  private DBObject createGeneralTestDocDBObject(String id, String name, String generalTestDocValue) {
-    Map<String, Object> map = createDefaultMap(id);
-    map.put(propertyName(TestConcreteDoc.class, "name"), name);
-    map.put(propertyName(BaseDomainEntity.class, "generalTestDocValue"), generalTestDocValue);
-    return createDBJsonNode(map);
-  }
-
-  private DBObject createProjectAGeneralTestDBObject(String id, String name, String generalTestDocValue, String projectAGeneralTestDocValue) {
-    Map<String, Object> map = createDefaultMap(id);
-    map.put(propertyName(TestConcreteDoc.class, "name"), "projecta");
-    map.put(propertyName(BaseDomainEntity.class, "generalTestDocValue"), generalTestDocValue);
-    map.put(propertyName(ProjectADomainEntity.class, "projectAGeneralTestDocValue"), projectAGeneralTestDocValue);
-    return createDBJsonNode(map);
-  }
-
-  private Map<String, Object> createSimpleMap(String id, Object value) {
-    Map<String, Object> map = Maps.newHashMap();
-    map.put(id, value);
-    return map;
-  }
-
-  private Map<String, Object> createDefaultMap(String id) {
-    Map<String, Object> map = Maps.newHashMap();
-    map.put("_id", id);
-    map.put("^rev", 0);
-    map.put(DomainEntity.DELETED, false);
-    return map;
-  }
-
-  /**
-   * Creates a JsonNode from a map. This is used is several tests.
-   */
-  private DBJsonNode createDBJsonNode(Map<String, Object> map) {
-    ObjectMapper mapper = new ObjectMapper();
-    return new DBJsonNode(mapper.valueToTree(map));
   }
 
 }
