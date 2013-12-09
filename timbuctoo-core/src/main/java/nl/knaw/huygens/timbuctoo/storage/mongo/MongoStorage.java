@@ -240,7 +240,6 @@ public class MongoStorage implements Storage {
     entity.setRev(1);
     entity.setCreated(change);
     entity.setModified(change);
-
     entity.setPid(null);
     entity.setDeleted(false);
     entity.setVariations(null); // make sure the list is empty
@@ -283,6 +282,7 @@ public class MongoStorage implements Storage {
 
     JsonNode tree = inducer.induceSystemEntity(type, storedEntity);
     JsonNode updated = inducer.induceSystemEntity(type, entity, (ObjectNode) tree);
+
     WriteResult writeResult = getDBCollection(type).update(query, toDBObject(updated));
     if (writeResult.getN() == 0) {
       LOG.error("Failed to update entity with id {} and revision {}", id, revision);
@@ -292,18 +292,43 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, String id, T entity) throws IOException {
+    Change change = Change.newInstance();
     int revision = entity.getRev();
     DBObject query = queries.selectByIdAndRevision(id, revision);
-    DBObject existingNode = getDBCollection(type).findOne(query);
-    if (existingNode == null) {
-      throw new IOException("No entity with id " + id + " and revision " + revision);
+
+    // this is everything that is stored
+    DBObject dbObject = getDBCollection(type).findOne(query);
+    if (dbObject == null) {
+      LOG.error("No entity with id {} and revision {}", id, revision);
+      throw new IOException("Update failed");
     }
 
-    JsonNode updatedNode = inducer.induceDomainEntity(type, entity, (ObjectNode) toJsonNode(existingNode));
-    ((ObjectNode) updatedNode).put("^rev", revision + 1);
+    JsonNode tree = toJsonNode(dbObject);
 
-    getDBCollection(type).update(query, toDBObject(updatedNode));
-    addVersion(type, id, updatedNode);
+    Class<? extends DomainEntity> baseType = TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type));
+    DomainEntity domainEntity = reducer.reduceVariation(baseType, tree);
+    if (domainEntity == null) {
+      LOG.error("Internal error : no primitive entity with id {} and revision {}", id, revision);
+      throw new IOException("Update failed");
+    }
+
+    // administrative update
+    domainEntity.setRev(revision + 1);
+    domainEntity.setModified(change);
+    domainEntity.setPid(null);
+    domainEntity.addVariation(getInternalName(type));
+    tree = inducer.adminDomainEntity(domainEntity, (ObjectNode) tree);
+
+    // update of "real" content
+    tree = inducer.induceDomainEntity(type, entity, (ObjectNode) tree);
+
+    WriteResult writeResult = getDBCollection(type).update(query, toDBObject(tree));
+    if (writeResult.getN() == 0) {
+      LOG.error("Failed to update entity with id {} and revision {}", id, revision);
+      throw new IOException("Update failed");
+    }
+
+    addVersion(type, id, tree);
   }
 
   @Override
@@ -336,14 +361,18 @@ public class MongoStorage implements Storage {
     addVersion(type, id, node);
   }
 
-  private <T extends Entity> void addVersion(Class<T> type, String id, JsonNode actualVersion) {
+  private <T extends Entity> void addVersion(Class<T> type, String id, JsonNode actualVersion) throws IOException {
     ObjectNode versionNode = objectMapper.createObjectNode();
     versionNode.put("versions", actualVersion);
 
     ObjectNode update = objectMapper.createObjectNode();
     update.put("$push", versionNode);
 
-    getVersionCollection(type).update(new BasicDBObject("_id", id), toDBObject(update));
+    WriteResult writeResult = getVersionCollection(type).update(new BasicDBObject("_id", id), toDBObject(update));
+    if (writeResult.getN() != 1) {
+      LOG.error("Failed to update version collection for {}", id);
+      throw new IOException("Failed to update version collection");
+    }
   }
 
   // --- system entities -----------------------------------------------
