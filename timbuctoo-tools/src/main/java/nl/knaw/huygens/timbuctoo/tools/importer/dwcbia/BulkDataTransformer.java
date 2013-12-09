@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.dwc;
+package nl.knaw.huygens.timbuctoo.tools.importer.dwcbia;
 
 import java.util.List;
 
