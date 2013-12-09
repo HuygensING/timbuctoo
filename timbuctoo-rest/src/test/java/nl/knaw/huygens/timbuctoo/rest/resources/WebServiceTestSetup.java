@@ -12,11 +12,16 @@ import nl.knaw.huygens.security.client.UnauthorizedException;
 import nl.knaw.huygens.security.client.filters.SecurityResourceFilterFactory;
 import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
 import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.rest.config.ServletInjectionModelHelper;
 import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
+import nl.knaw.huygens.timbuctoo.rest.filters.VREAuthorizationFilterFactory;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.vre.Scope;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.After;
 import org.junit.Before;
@@ -112,8 +117,10 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     WebAppDescriptor webAppDescriptor = new WebAppDescriptor.Builder().build();
     webAppDescriptor.getInitParams()
         .put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.timbuctoo.rest.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.timbuctoo.rest.providers");
-    webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
-        ServletInjectionModelHelper.getClassNamesString(SecurityResourceFilterFactory.class, UserResourceFilterFactory.class, RolesAllowedResourceFilterFactory.class));
+    webAppDescriptor.getInitParams().put(
+        ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
+        ServletInjectionModelHelper.getClassNamesString(SecurityResourceFilterFactory.class, VREAuthorizationFilterFactory.class, UserResourceFilterFactory.class,
+            RolesAllowedResourceFilterFactory.class));
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, LoggingFilter.class.getName());
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, LoggingFilter.class.getName());
 
@@ -134,6 +141,33 @@ public abstract class WebServiceTestSetup extends JerseyTest {
       resource = resource.path(pathElement);
     }
     return resource;
+  }
+
+  protected void setUpVREManager(String vreId, boolean vreExists) {
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(vreId)).thenReturn(vreExists);
+  }
+
+  protected void setUpScopeForEntity(Class<? extends DomainEntity> type, String id, String vreId, boolean isInScope) {
+    Scope scope = mock(Scope.class);
+    when(scope.inScope(type, id)).thenReturn(isInScope);
+
+    setupScope(vreId, scope);
+  }
+
+  protected void setUpScopeForCollection(Class<? extends DomainEntity> collectionType, String vreId, boolean isInScope) {
+    Scope scope = mock(Scope.class);
+    when(scope.isTypeInScope(collectionType)).thenReturn(isInScope);
+
+    setupScope(vreId, scope);
+  }
+
+  private void setupScope(String vreId, Scope scope) {
+    VRE vre = mock(VRE.class);
+    when(vre.getScope()).thenReturn(scope);
+
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.getVREById(vreId)).thenReturn(vre);
   }
 
   @SuppressWarnings("unchecked")

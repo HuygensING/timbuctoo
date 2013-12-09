@@ -5,11 +5,11 @@ import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -30,9 +30,9 @@ import javax.ws.rs.core.MultivaluedMap;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.TestDomainEntity;
+import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -49,7 +49,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   private static final String PERSISTENCE_PRODUCER = "persistenceProducer";
   private static final String INDEX_PRODUCER = "indexProducer";
-  private static final Class<? extends DomainEntity> DEFAULT_TYPE = TestDomainEntity.class;
+  private static final Class<TestDomainEntity> DEFAULT_TYPE = TestDomainEntity.class;
   private static final String DEFAULT_ID = "TEST000000000001";
 
   @Before
@@ -61,10 +61,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   private Producer getProducer(String name) {
     return injector.getInstance(Key.get(Producer.class, Names.named(name)));
-  }
-
-  private void verifyNoMessageProducedBy(String name) throws JMSException {
-    verify(getProducer(name), never()).send(any(ActionType.class), Matchers.<Class<? extends DomainEntity>> any(), anyString());
   }
 
   @SuppressWarnings("unchecked")
@@ -121,11 +117,16 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPut() throws Exception {
+    Class<TestDomainEntity> type = TestDomainEntity.class;
+
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setUpVREManager(VRE_ID, true);
+    setUpScopeForEntity(type, DEFAULT_ID, VRE_ID, true);
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
-    when(getStorageManager().getEntity(TestDomainEntity.class, DEFAULT_ID)).thenReturn(entity);
+
+    when(getStorageManager().getEntity(type, DEFAULT_ID)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
     ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
@@ -135,24 +136,50 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPutDocExistingDocumentWithoutPID() throws Exception {
+  public void testPutItemNotInScope() throws Exception {
+    Class<TestDomainEntity> type = TestDomainEntity.class;
+
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setUpVREManager(VRE_ID, true);
+    setUpScopeForEntity(type, DEFAULT_ID, VRE_ID, false);
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID);
-    when(getStorageManager().getEntity(TestDomainEntity.class, DEFAULT_ID)).thenReturn(entity);
+    entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
+
+    when(getStorageManager().getEntity(type, DEFAULT_ID)).thenReturn(entity);
+    whenJsonProviderReadFromThenReturn(entity);
+    ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
+        .put(ClientResponse.class, entity);
+    assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
+
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+  }
+
+  @Test
+  public void testPutDocExistingDocumentWithoutPID() throws Exception {
+    Class<TestDomainEntity> type = TestDomainEntity.class;
+
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setUpVREManager(VRE_ID, true);
+    setUpScopeForEntity(type, DEFAULT_ID, VRE_ID, true);
+
+    TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID);
+    when(getStorageManager().getEntity(type, DEFAULT_ID)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void testPutDocInvalidDocument() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setUpVREManager(VRE_ID, true);
+    setUpScopeForEntity(TestDomainEntity.class, DEFAULT_ID, VRE_ID, true);
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID);
     whenJsonProviderReadFromThenReturn(entity);
@@ -207,65 +234,77 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
   public void testPutDocNonExistingDocument() throws Exception {
+    Class<TestDomainEntity> type = TestDomainEntity.class;
+
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setUpVREManager(VRE_ID, true);
+    setUpScopeForEntity(type, DEFAULT_ID, VRE_ID, true);
 
     String id = "NULL000000000001";
     TestDomainEntity entity = new TestDomainEntity(id);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
     whenJsonProviderReadFromThenReturn(entity);
 
-    doThrow(IOException.class).when(getStorageManager()).updateDomainEntity(Matchers.<Class<TestDomainEntity>> any(), any(TestDomainEntity.class));
+    doThrow(IOException.class).when(getStorageManager()).updateDomainEntity(Matchers.<Class<TestDomainEntity>> any(), any(type));
 
     ClientResponse response = domainResource("testdomainentities", id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
   public void testPutDocNonExistingType() throws PersistenceException, JMSException {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
+    setUpVREManager(VRE_ID, true);
+
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID);
 
     ClientResponse response = domainResource("unknown", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
   public void testPutDocWrongType() throws PersistenceException, JMSException {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
+    setUpVREManager(VRE_ID, true);
+    setUpScopeForEntity(OtherDomainEntity.class, DEFAULT_ID, VRE_ID, true);
+
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID);
 
     ClientResponse response = domainResource("otherdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
   public void testPutOnSuperClass() throws PersistenceException, JMSException {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
+    setUpVREManager(VRE_ID, true);
+    setUpScopeForEntity(OtherDomainEntity.class, DEFAULT_ID, VRE_ID, true);
+
     BaseDomainEntity entity = new BaseDomainEntity(DEFAULT_ID);
 
     ClientResponse response = domainResource("otherdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
@@ -275,16 +314,19 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = domainResource("otherdomainentities").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
   public void testPost() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
+    setUpVREManager(VRE_ID, true);
+    setUpScopeForCollection(DEFAULT_TYPE, VRE_ID, true);
+
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID, "test");
-    when(getStorageManager().addDomainEntity(TestDomainEntity.class, entity)).thenReturn(DEFAULT_ID);
+    when(getStorageManager().addDomainEntity(DEFAULT_TYPE, entity)).thenReturn(DEFAULT_ID);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = domainResource("testdomainentities").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
@@ -296,6 +338,24 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
+  public void testPostCollectionNotInScope() throws Exception {
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+
+    setUpVREManager(VRE_ID, true);
+    setUpScopeForCollection(DEFAULT_TYPE, VRE_ID, false);
+
+    TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID, "test");
+    when(getStorageManager().addDomainEntity(DEFAULT_TYPE, entity)).thenReturn(DEFAULT_ID);
+    whenJsonProviderReadFromThenReturn(entity);
+
+    ClientResponse response = domainResource("testdomainentities").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
+        .post(ClientResponse.class, entity);
+    assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+  }
+
+  //Request handled by the framework.
+  @Test
   public void testPostNonExistingCollection() throws PersistenceException, JMSException {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
@@ -304,13 +364,14 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = domainResource("unknown", "all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
   public void testPostWrongType() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setUpVREManager(VRE_ID, true);
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID, "test");
     whenJsonProviderReadFromThenReturn(entity);
@@ -318,8 +379,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = domainResource("otherdomainentities").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
@@ -329,17 +390,20 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = domainResource("otherentitys", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
   public void testDelete() throws IOException, PersistenceException, JMSException {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
+    setUpVREManager(VRE_ID, true);
+    setUpScopeForEntity(DEFAULT_TYPE, DEFAULT_ID, VRE_ID, true);
+
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
-    when(getStorageManager().getEntity(TestDomainEntity.class, DEFAULT_ID)).thenReturn(entity);
+    when(getStorageManager().getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
 
     ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
@@ -358,26 +422,30 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
   public void testDeleteDocumentDoesNotExist() throws PersistenceException, JMSException {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
+    setUpVREManager(VRE_ID, true);
+
     when(getStorageManager().getEntity(TestDomainEntity.class, DEFAULT_ID)).thenReturn(null);
 
     ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
   public void testDeleteTypeDoesNotExist() throws PersistenceException, JMSException {
     setUpUserWithRoles(USER_ID, null);
+
+    setUpVREManager(VRE_ID, true);
 
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
 
@@ -386,8 +454,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
@@ -395,8 +463,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = domainResource("testdomainentities").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   // Security tests
@@ -429,8 +497,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
@@ -442,8 +510,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
@@ -456,8 +524,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = domainResource("testdomainentities").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
@@ -469,8 +537,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = domainResource("testdomainentities").type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
@@ -479,8 +547,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+
   }
 
   @Test
@@ -490,8 +558,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
-    verifyNoMessageProducedBy(PERSISTENCE_PRODUCER);
-    verifyNoMessageProducedBy(INDEX_PRODUCER);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
   }
 
   // Variation tests
