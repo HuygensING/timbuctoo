@@ -7,6 +7,7 @@ package nl.knaw.huygens.timbuctoo.rest.util;
 public class CustomHeaders {
 
   public static final String VRE_ID_KEY = "VRE_ID";
+  public static final String VRE_KEY = "VRE";
 
   private CustomHeaders() {
     throw new AssertionError("Non-instantiable class");
