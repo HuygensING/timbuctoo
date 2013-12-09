@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 
 import java.io.IOException;
@@ -11,6 +12,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -33,6 +35,9 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.vre.Scope;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,12 +63,14 @@ public class DomainEntityResource extends ResourceBase {
   private final TypeRegistry typeRegistry;
   private final StorageManager storageManager;
   private final Broker broker;
+  private final VREManager vreManager;
 
   @Inject
-  public DomainEntityResource(TypeRegistry registry, StorageManager storageManager, Broker broker) {
+  public DomainEntityResource(TypeRegistry registry, StorageManager storageManager, Broker broker, VREManager vreManager) {
     this.typeRegistry = registry;
     this.storageManager = storageManager;
     this.broker = broker;
+    this.vreManager = vreManager;
   }
 
   // --- API -----------------------------------------------------------
@@ -88,11 +95,18 @@ public class DomainEntityResource extends ResourceBase {
   public <T extends DomainEntity> Response post( //
       @PathParam(ENTITY_PARAM) String entityName, //
       DomainEntity input, //
-      @Context UriInfo uriInfo //
+      @Context UriInfo uriInfo, //
+      @HeaderParam(VRE_ID_KEY) String vreId //
   ) throws IOException {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
+
     if (type != input.getClass()) {
       throw new WebApplicationException(Status.BAD_REQUEST);
+    }
+
+    Scope scope = getScope(vreId);
+    if (!scope.isTypeInScope(type)) {
+      throw new WebApplicationException(Status.FORBIDDEN);
     }
 
     String id = storageManager.addDomainEntity((Class<T>) type, (T) input);
@@ -101,6 +115,11 @@ public class DomainEntityResource extends ResourceBase {
     String baseUri = CharMatcher.is('/').trimTrailingFrom(uriInfo.getBaseUri().toString());
     String location = Joiner.on('/').join(baseUri, Paths.DOMAIN_PREFIX, entityName, id);
     return Response.status(Status.CREATED).header("Location", location).build();
+  }
+
+  private Scope getScope(String vreId) {
+    VRE vre = vreManager.getVREById(vreId);
+    return vre.getScope();
   }
 
   @GET
@@ -124,14 +143,23 @@ public class DomainEntityResource extends ResourceBase {
   public <T extends DomainEntity> void put( //
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id, //
-      DomainEntity input //
+      DomainEntity input, //
+      @HeaderParam(VRE_ID_KEY) String vreId//
   ) throws IOException {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
+
+    Scope scope = getScope(vreId);
+
     if (type != input.getClass()) {
       throw new WebApplicationException(Status.BAD_REQUEST);
     }
 
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
+
+    if (!scope.inScope(type, id)) {
+      throw new WebApplicationException(Status.FORBIDDEN);
+    }
+
     checkWritable(entity, Status.FORBIDDEN);
 
     try {
@@ -151,12 +179,17 @@ public class DomainEntityResource extends ResourceBase {
   @RolesAllowed(USER_ROLE)
   public Response delete( //
       @PathParam(ENTITY_PARAM) String entityName, //
-      @PathParam(ID_PARAM) String id //
-  ) throws IOException {
+      @PathParam(ID_PARAM) String id, //
+      @HeaderParam(VRE_ID_KEY) String vreId) throws IOException {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
     checkWritable(entity, Status.FORBIDDEN);
+
+    Scope scope = getScope(vreId);
+    if (!scope.inScope(type, id)) {
+      throw new WebApplicationException(Status.FORBIDDEN);
+    }
 
     storageManager.deleteDomainEntity(entity);
     notifyChange(ActionType.DEL, type, id);

@@ -41,9 +41,13 @@ public class VREManager {
     return this.getVREById(DEFAULT_VRE);
   }
 
-  public Set<String> getAvailableVREs() {
+  public Set<String> getAvailableVREIds() {
     return vreMap.keySet();
 
+  }
+
+  public boolean doesVREExist(String vreId) {
+    return vreMap.keySet().contains(vreId);
   }
 
 }

@@ -221,7 +221,7 @@ public class SearchResource {
   @Path("/vres")
   @Produces({ MediaType.APPLICATION_JSON })
   public Set<String> getAvailableVREs() {
-    return vreManager.getAvailableVREs();
+    return vreManager.getAvailableVREIds();
   }
 
 }

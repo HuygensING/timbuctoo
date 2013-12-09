@@ -6,7 +6,6 @@ import javax.ws.rs.core.Response.Status;
 import nl.knaw.huygens.security.client.filters.AbstractRolesAllowedResourceFilterFactory;
 import nl.knaw.huygens.security.client.filters.BypassFilter;
 import nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders;
-import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.slf4j.Logger;
@@ -39,8 +38,7 @@ public class VREAuthorizationFilterFactory extends AbstractRolesAllowedResourceF
   }
 
   /**
-   * This class filters the requests to see if a VRE id is attached to the request.
-   * If it is a valid id, the VRE is added as request header.
+   * This class filters the requests to see if a VRE id is attached to the request, and if the id is valid.
    */
   protected static class VREAuthorizationResourceFilter implements ResourceFilter, ContainerRequestFilter {
     private static final Logger LOG = LoggerFactory.getLogger(VREAuthorizationResourceFilter.class);
@@ -60,14 +58,10 @@ public class VREAuthorizationFilterFactory extends AbstractRolesAllowedResourceF
         throw new WebApplicationException(Status.UNAUTHORIZED);
       }
 
-      VRE vre = vreManager.getVREById(vreId);
-
-      if (vre == null) {
+      if (!vreManager.doesVREExist(vreId)) {
         LOG.error("VRE with id {} is not known.", vreId);
         throw new WebApplicationException(Status.FORBIDDEN);
       }
-
-      request.getFormParameters().add(CustomHeaders.VRE_KEY, vre);
 
       return request;
     }
