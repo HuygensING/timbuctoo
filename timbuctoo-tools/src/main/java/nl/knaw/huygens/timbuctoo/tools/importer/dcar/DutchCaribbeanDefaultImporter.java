@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.duca;
+package nl.knaw.huygens.timbuctoo.tools.importer.dcar;
 
 import java.io.IOException;
 
