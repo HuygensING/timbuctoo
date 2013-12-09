@@ -179,12 +179,17 @@ public class DomainEntityResource extends ResourceBase {
   @RolesAllowed(USER_ROLE)
   public Response delete( //
       @PathParam(ENTITY_PARAM) String entityName, //
-      @PathParam(ID_PARAM) String id //
-  ) throws IOException {
+      @PathParam(ID_PARAM) String id, //
+      @HeaderParam(VRE_ID_KEY) String vreId) throws IOException {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
     checkWritable(entity, Status.FORBIDDEN);
+
+    Scope scope = getScope(vreId);
+    if (!scope.inScope(type, id)) {
+      throw new WebApplicationException(Status.FORBIDDEN);
+    }
 
     storageManager.deleteDomainEntity(entity);
     notifyChange(ActionType.DEL, type, id);
