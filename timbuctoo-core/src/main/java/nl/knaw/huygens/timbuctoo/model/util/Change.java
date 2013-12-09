@@ -1,6 +1,17 @@
 package nl.knaw.huygens.timbuctoo.model.util;
 
+import java.util.Date;
+
 public class Change {
+
+  /**
+   * Returns a new {@code Change} instance with a generated time stamp.
+   */
+  public static Change newInstance() {
+    Change instance = new Change();
+    instance.setTimeStamp(new Date().getTime());
+    return instance;
+  }
 
   private long timeStamp;
   private String authorId;
