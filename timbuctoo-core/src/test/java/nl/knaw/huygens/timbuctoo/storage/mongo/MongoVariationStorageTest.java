@@ -5,12 +5,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,9 +27,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mongojack.DBQuery;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
@@ -105,63 +99,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   // -------------------------------------------------------------------
-
-  @Test
-  public void testUpdateItem() throws IOException {
-    BaseDomainEntity input = new BaseDomainEntity(DEFAULT_ID, "test");
-
-    when(anyCollection.findOne(any(DBObject.class))).thenReturn(createTestConcreteDocDBObject(DEFAULT_ID, "test"));
-
-    storage.updateDomainEntity(BaseDomainEntity.class, DEFAULT_ID, input);
-
-    // Update current version and the version collection
-    verify(anyCollection, times(2)).update(any(DBObject.class), any(DBObject.class));
-  }
-
-  @Test(expected = IOException.class)
-  public void testUpdateItemNonExistent() throws IOException {
-    BaseDomainEntity expected = new BaseDomainEntity(DEFAULT_ID, "test");
-    storage.updateDomainEntity(BaseDomainEntity.class, DEFAULT_ID, expected);
-  }
-
-  @Test(expected = IOException.class)
-  public void testUpdateItemMalformed() throws IOException {
-    BaseDomainEntity item = new BaseDomainEntity(DEFAULT_ID, "test");
-
-    when(anyCollection.findOne(any(DBObject.class))).thenReturn(new BasicDBObject("test", "test"));
-
-    storage.updateDomainEntity(BaseDomainEntity.class, DEFAULT_ID, item);
-  }
-
-  @Test
-  public void testDeletetem() throws IOException {
-    DBObject dbObject = createTestConcreteDocDBObject(DEFAULT_ID, "test");
-
-    JsonNode revisionNode = mock(JsonNode.class);
-    when(revisionNode.asInt()).thenReturn(1);
-
-    ObjectNode objectNode = mock(ObjectNode.class);
-    when(objectNode.isObject()).thenReturn(true);
-    when(objectNode.put(anyString(), anyBoolean())).thenReturn(objectNode);
-    when(objectNode.put(anyString(), anyInt())).thenReturn(objectNode);
-    when(objectNode.get("^rev")).thenReturn(revisionNode);
-
-    DBJsonNode dbJsonNode = mock(DBJsonNode.class);
-    when(dbJsonNode.getDelegate()).thenReturn(objectNode);
-
-    when(anyCollection.findOne(new BasicDBObject("_id", DEFAULT_ID))).thenReturn(dbObject);
-
-    storage.deleteDomainEntity(BaseDomainEntity.class, DEFAULT_ID, null);
-
-    // Update the current version
-    // Update the version number.
-    verify(anyCollection, times(2)).update(any(DBObject.class), any(DBObject.class));
-  }
-
-  @Test(expected = IOException.class)
-  public void testDeleteItemNonExistent() throws IOException {
-    storage.deleteDomainEntity(BaseDomainEntity.class, DEFAULT_ID, null);
-  }
 
   @Test
   public void testGetItem() throws IOException {

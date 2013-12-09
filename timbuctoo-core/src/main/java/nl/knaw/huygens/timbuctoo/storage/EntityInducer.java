@@ -92,6 +92,11 @@ public class EntityInducer {
     return tree;
   }
 
+  public JsonNode adminDomainEntity(DomainEntity entity, ObjectNode tree) {
+    Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(DomainEntity.class, DomainEntity.class, Entity.class);
+    return updateJsonTree(tree, entity, fieldMap);
+  }
+
   // -------------------------------------------------------------------
 
   /**
