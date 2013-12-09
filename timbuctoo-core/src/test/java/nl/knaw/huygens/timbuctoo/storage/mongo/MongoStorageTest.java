@@ -103,18 +103,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.findItem(TestSystemEntity.class, example);
   }
 
-  @Test(expected = IOException.class)
-  public void testUpdateItemNonExistent() throws IOException {
-    TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
-    entity.setTestValue1("test");
-
-    DBCursor cursor = createCursorWithoutValues();
-    DBObject query = queries.selectByIdAndRevision(DEFAULT_ID, 0);
-    when(anyCollection.find(query)).thenReturn(cursor);
-
-    storage.updateSystemEntity(TestSystemEntity.class, DEFAULT_ID, entity);
-  }
-
   @Test(expected = MongoException.class)
   public void testMongoException() throws IOException {
     TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID, "test");

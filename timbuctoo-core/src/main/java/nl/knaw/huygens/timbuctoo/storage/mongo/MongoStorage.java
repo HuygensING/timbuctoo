@@ -168,6 +168,18 @@ public class MongoStorage implements Storage {
 
   // --- generic storage layer -----------------------------------------
 
+  /**
+   * Safe insert of an item into the Mongo database.
+   * (Maybe a bit paranoia, but better safe than sorry).
+   */
+  private void doMongoInsert(DBCollection collection, String id, JsonNode jsonNode) throws IOException {
+    collection.insert(toDBObject(jsonNode));
+    if (collection.findOne(queries.selectById(id)) == null) {
+      LOG.error("Failed to insert ({}, {})", collection.getName(), id);
+      throw new IOException("Insert failed");
+    }
+  }
+
   private <T extends Entity> T getItem(Class<T> type, DBObject query) throws IOException {
     DBObject item = getDBCollection(type).findOne(query);
     return (item != null) ? reducer.reduceVariation(type, toJsonNode(item), null) : null;
@@ -203,26 +215,15 @@ public class MongoStorage implements Storage {
     return getItems(type, query);
   }
 
-  /**
-   * Insert an item into the Mongo database and verify that it succeeded.
-   * (Maybe a bit paranoia, but better safe than sorry).
-   */
-  private void doMongoInsert(DBCollection collection, String id, JsonNode jsonNode) throws IOException {
-    collection.insert(toDBObject(jsonNode));
-    if (collection.findOne(queries.selectById(id)) == null) {
-      LOG.error("Failed to insert ({}, {})", collection.getName(), id);
-      throw new IOException("Insert failed");
-    }
-  }
-
   @Override
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException {
+    Change change = Change.newInstance();
     String id = entityIds.getNextId(type);
 
     entity.setId(id);
     entity.setRev(1);
-    entity.setCreated(null);
-    entity.setModified(null);
+    entity.setCreated(change);
+    entity.setModified(change);
 
     JsonNode jsonNode = inducer.induceSystemEntity(type, entity);
     doMongoInsert(getDBCollection(type), id, jsonNode);
@@ -232,12 +233,13 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) throws IOException {
+    Change change = Change.newInstance();
     String id = entityIds.getNextId(type);
 
     entity.setId(id);
     entity.setRev(1);
-    entity.setCreated(null);
-    entity.setModified(null);
+    entity.setCreated(change);
+    entity.setModified(change);
 
     entity.setPid(null);
     entity.setDeleted(false);
@@ -266,17 +268,26 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, String id, T entity) throws IOException {
+    Change change = Change.newInstance();
     int revision = entity.getRev();
     DBObject query = queries.selectByIdAndRevision(id, revision);
-    DBObject existingNode = getDBCollection(type).findOne(query);
-    if (existingNode == null) {
-      throw new IOException("No entity with id " + id + " and revision " + revision);
+
+    T storedEntity = getItem(type, query);
+    if (storedEntity == null) {
+      LOG.error("No entity with id {} and revision {}", id, revision);
+      throw new IOException("Update failed");
     }
 
-    JsonNode updatedNode = inducer.induceSystemEntity(type, entity, (ObjectNode) toJsonNode(existingNode));
-    ((ObjectNode) updatedNode).put("^rev", revision + 1);
+    storedEntity.setRev(revision + 1);
+    storedEntity.setModified(change);
 
-    getDBCollection(type).update(query, toDBObject(updatedNode));
+    JsonNode tree = inducer.induceSystemEntity(type, storedEntity);
+    JsonNode updated = inducer.induceSystemEntity(type, entity, (ObjectNode) tree);
+    WriteResult writeResult = getDBCollection(type).update(query, toDBObject(updated));
+    if (writeResult.getN() == 0) {
+      LOG.error("Failed to update entity with id {} and revision {}", id, revision);
+      throw new IOException("Update failed");
+    }
   }
 
   @Override

@@ -86,4 +86,11 @@ public class CombinedMongoStorageTest {
     verify(anyCollection, times(2)).insert(any(DBObject.class));
   }
 
+  @Test(expected = IOException.class)
+  public void testUpdateSystemEntityNonExistent() throws IOException {
+    TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID, "test");
+
+    storage.updateSystemEntity(TestSystemEntity.class, DEFAULT_ID, entity);
+  }
+
 }
