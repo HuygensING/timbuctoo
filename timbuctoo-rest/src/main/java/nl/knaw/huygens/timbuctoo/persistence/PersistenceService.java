@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.persistence;
 
 import javax.jms.JMSException;
 
-import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
@@ -16,7 +15,9 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 
 public class PersistenceService extends ConsumerService implements Runnable {
+
   private static final Logger LOG = LoggerFactory.getLogger(PersistenceService.class);
+
   private final PersistenceWrapper persistenceWrapper;
   private final StorageManager storageManager;
 
@@ -48,7 +49,7 @@ public class PersistenceService extends ConsumerService implements Runnable {
         LOG.warn("Unexpected action {}", action);
         break;
       }
-    } catch (PersistenceException e) {
+    } catch (Exception e) {
       LOG.error("Persisting {} with id {} went wrong", action.getType(), action.getId());
       LOG.error("exception", e);
     }

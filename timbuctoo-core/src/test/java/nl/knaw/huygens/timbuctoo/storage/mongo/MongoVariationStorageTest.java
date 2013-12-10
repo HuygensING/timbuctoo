@@ -400,7 +400,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testSetPID() {
+  public void testSetPID() throws IOException {
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
     String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
     DBObject update = queries.setProperty(DomainEntity.PID, pid);
@@ -412,7 +412,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test(expected = RuntimeException.class)
-  public void testSetPIDMongoException() {
+  public void testSetPIDMongoException() throws IOException {
     DBObject query = new BasicDBObject("_id", DEFAULT_ID);
     String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
     DBObject update = queries.setProperty(DomainEntity.PID, pid);

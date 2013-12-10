@@ -89,7 +89,7 @@ public class StorageManager {
     storage.updateDomainEntity(type, entity.getId(), entity);
   }
 
-  public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) {
+  public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws IOException {
     storage.setPID(type, id, pid);
   }
 

@@ -38,7 +38,7 @@ public interface Storage {
 
   <T extends DomainEntity> void updateDomainEntity(Class<T> type, String id, T entity) throws IOException;
 
-  <T extends DomainEntity> void setPID(Class<T> type, String id, String pid);
+  <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws IOException;
 
   // --- delete entities -----------------------------------------------
 
