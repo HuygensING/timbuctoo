@@ -449,11 +449,10 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revisionId) throws IOException {
-    DBObject query = queries.selectById(id);
-    query.put("versions.^rev", revisionId);
-    DBObject item = getVersionCollection(type).findOne(query);
-    return (item != null) ? reducer.reduceRevision(type, toJsonNode(item)) : null;
+  public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revision) throws IOException {
+    DBObject query = queries.selectVersionByIdAndRevision(id, revision);
+    DBObject dbObject = getVersionCollection(type).findOne(query);
+    return (dbObject != null) ? reducer.reduceRevision(type, toJsonNode(dbObject)) : null;
   }
 
   @Override
