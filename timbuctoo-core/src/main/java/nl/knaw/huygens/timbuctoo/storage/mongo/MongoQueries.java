@@ -35,6 +35,13 @@ public class MongoQueries {
     return query;
   }
 
+  public DBObject selectVersionByIdAndRevision(String id, int revision) {
+    DBObject query = new BasicDBObject();
+    query.put("_id", id);
+    query.put("versions.^rev", revision);
+    return query;
+  }
+
   public DBObject selectByProperty(String key, Object value) {
     return new BasicDBObject(key, value);
   }
