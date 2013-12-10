@@ -9,7 +9,6 @@ import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
@@ -50,24 +49,6 @@ public class TypeRegistryTest {
     TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
     assertEquals(BaseDomainEntity.class, registry.getTypeForIName("basedomainentity"));
     assertEquals(VTestSystemEntity.class, registry.getTypeForIName("vtestsystementity"));
-  }
-
-  @Test
-  public void testGetRoleForIName() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertEquals(ProjectATestRole.class, registry.getRoleForIName("projectatestrole"));
-  }
-
-  @Test
-  public void testGetForINameRole() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertEquals(ProjectATestRole.class, registry.getForIName("projectatestrole"));
-  }
-
-  @Test
-  public void testGetForINameEntity() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
-    assertEquals(VTestSystemEntity.class, registry.getForIName("vtestsystementity"));
   }
 
   @Test
@@ -157,54 +138,6 @@ public class TypeRegistryTest {
     assertNull(registry.getTypeForIName("testdoc"));
   }
 
-  @Test
-  public void testGetClassVariation() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertEquals("projecta", registry.getClassVariation(ProjectADomainEntity.class));
-  }
-
-  @Test
-  public void testGetClassVariationForRole() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertEquals("projecta", registry.getClassVariation(ProjectATestRole.class));
-  }
-
-  @Test
-  public void testGetClassVariationForPrimitive() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
-    assertEquals(null, registry.getClassVariation(Person.class));
-  }
-
-  @Test
-  public void testGetClassVariationForDirectSubClassOfEntity() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
-    assertEquals(null, registry.getClassVariation(DomainEntity.class));
-  }
-
-  @Test
-  public void testGetVariationClassForDomainEntity() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertEquals(ProjectADomainEntity.class, registry.getVariationClass(BaseDomainEntity.class, "projecta"));
-  }
-
-  @Test
-  public void testGetVariationClassForRole() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertEquals(ProjectATestRole.class, registry.getVariationClass(TestRole.class, "projecta"));
-  }
-
-  @Test
-  public void testGetVariationClassNotFound() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertEquals(null, registry.getVariationClass(TestRole.class, "nonExistionVariation"));
-  }
-
-  @Test
-  public void testGetVariationClassVariationNull() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertEquals(null, registry.getVariationClass(TestRole.class, null));
-  }
-
   // --- tests of static utilities -------------------------------------
 
   @Test
@@ -240,15 +173,6 @@ public class TypeRegistryTest {
     assertTrue(TypeRegistry.isRole(TestRole.class));
     assertTrue(TypeRegistry.isRole(ProjectATestRole.class));
     assertFalse(TypeRegistry.isRole(AnEntity.class));
-  }
-
-  @Test
-  public void testIsRoleWithStrings() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertTrue(registry.isRole("testrole"));
-    assertTrue(registry.isRole("projectatestrole"));
-    assertFalse(registry.isRole("anentity"));
-    assertFalse(registry.isRole((String) null));
   }
 
   @Test(expected = ClassCastException.class)

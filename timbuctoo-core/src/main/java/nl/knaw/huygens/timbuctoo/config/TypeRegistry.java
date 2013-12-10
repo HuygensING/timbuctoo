@@ -13,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-import nl.knaw.huygens.timbuctoo.model.Variable;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -61,14 +60,11 @@ public class TypeRegistry {
   private final Map<Class<? extends Entity>, String> type2iname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> iname2type = Maps.newHashMap();
 
-  private final Map<String, Set<Class<? extends Variable>>> variationMap = Maps.newHashMap();
-
   private final Map<Class<? extends Entity>, String> type2xname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> xname2type = Maps.newHashMap();
 
   private final Map<String, String> iname2xname = Maps.newHashMap();
 
-  private final Map<String, Class<? extends Role>> iname2role = Maps.newHashMap();
   private final Map<Class<? extends Role>, String> role2iname = Maps.newHashMap();
 
   private final Map<Class<? extends Entity>, Set<Class<? extends Role>>> allowedRoles = Maps.newHashMap();
@@ -100,7 +96,6 @@ public class TypeRegistry {
         } else if (BusinessRules.isValidDomainEntity(type)) {
           Class<? extends DomainEntity> entityType = toDomainEntity(type);
           registerEntity(entityType);
-          registerVariationForClass(entityType);
           if (!Relation.class.isAssignableFrom(entityType)) {
             allowedRoles.put(entityType, roles);
           }
@@ -113,7 +108,6 @@ public class TypeRegistry {
         if (BusinessRules.isValidRole(type)) {
           Class<? extends Role> roleType = toRole(type);
           registerRole(roleType);
-          registerVariationForClass(roleType);
           roles.add(roleType);
         } else {
           LOG.error("Not a valid role: '{}'", type.getName());
@@ -149,25 +143,10 @@ public class TypeRegistry {
 
   private <T extends Role> void registerRole(Class<T> role) {
     String iname = TypeNames.getInternalName(role);
-    if (iname2role.containsKey(iname)) {
+    if (role2iname.containsValue(iname)) {
       throw new IllegalStateException("Duplicate internal type name " + iname);
     }
-    iname2role.put(iname, role);
     role2iname.put(role, iname);
-  }
-
-  private void registerVariationForClass(Class<? extends Variable> type) {
-    String variation = getClassVariation(type);
-
-    if (variation != null) {
-      if (variationMap.containsKey(variation)) {
-        variationMap.get(variation).add(type);
-      } else {
-        Set<Class<? extends Variable>> set = Sets.newHashSet();
-        set.add(type);
-        variationMap.put(variation, set);
-      }
-    }
   }
 
   // --- public api ----------------------------------------------------
@@ -219,29 +198,6 @@ public class TypeRegistry {
   }
 
   /**
-   * Returns the role type token for the specified internal name
-   * or {@code null} if there is no such token.
-   * @param iName the internal name that is requested.
-   * @return
-   */
-  public Class<? extends Role> getRoleForIName(String iName) {
-    return iname2role.get(iName);
-  }
-
-  /**
-   * Returns a {@code Role} class or a {@code Entity} class if one is found.
-   * @param iName the internal name to get the class from.
-   * @return the class if one is found.
-   */
-  public Class<?> getForIName(String iName) {
-    if (iname2role.containsKey(iName)) {
-      return iname2role.get(iName);
-    }
-
-    return iname2type.get(iName);
-  }
-
-  /**
    * Returns the external type name for the specified type token,
    * or {@code null} if there is no such name.
    */
@@ -276,42 +232,6 @@ public class TypeRegistry {
   }
 
   /**
-   * Gets a sub class of the primitive that correspondents with the {@code variation}.
-   * @param typeForVariation should be a class of the model package.
-   * @param variation should be a sub-package of the model package. 
-   * @return the class if one is found, if not it returns null.
-   */
-  public Class<? extends Variable> getVariationClass(Class<? extends Variable> typeForVariation, String variation) {
-    Class<? extends Variable> result = null;
-    if (variation != null && variationMap.containsKey(variation)) {
-      for (Class<? extends Variable> variable : variationMap.get(variation)) {
-        if (typeForVariation.isAssignableFrom(variable)) {
-          if (result != null) {
-            LOG.error("Multiple variables in '{}' for type '{}'", variation, typeForVariation.getSimpleName());
-            throw new IllegalStateException("cannot resolve variation class");
-          }
-          result = variable;
-        }
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Determines the variation of a class. This is based on the package the class is placed in.
-   * @param type the type the variation should be determined of.
-   * @return the variation. This will be null for each primitive (i.e. Person) and supporting classes (like DomainEntity).
-   */
-  public String getClassVariation(Class<? extends Variable> type) {
-    String packageName = type.getPackage().getName();
-    if (packageName.endsWith(".model")) {
-      return null;
-    }
-
-    return packageName.substring(packageName.lastIndexOf('.') + 1);
-  }
-
-  /**
    * Returns the types of the roles that may be assigned to an entity.
    */
   public Set<Class<? extends Role>> getAllowedRolesFor(Class<?> type) {
@@ -321,19 +241,6 @@ public class TypeRegistry {
     } else {
       return Collections.emptySet();
     }
-  }
-
-  public void displayAllowedRoles() {
-    for (Class<?> type : allowedRoles.keySet()) {
-      System.out.println("Allowed roles for " + type.getSimpleName());
-      for (Class<?> role : allowedRoles.get(type)) {
-        System.out.println(".. " + role.getSimpleName());
-      }
-    }
-  }
-
-  public boolean isRole(String typeName) {
-    return this.iname2role.containsKey(typeName);
   }
 
   // --- static utilities ----------------------------------------------
