@@ -331,6 +331,12 @@ public class MongoStorage implements Storage {
     addVersion(type, id, tree);
   }
 
+  public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws IOException {
+    DBObject query = queries.selectById(id);
+    DBObject update = queries.setProperty(DomainEntity.PID, pid);
+    getDBCollection(type).update(query, update);
+  }
+
   @Override
   public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws IOException {
     DBObject query = queries.selectById(id);
@@ -413,12 +419,6 @@ public class MongoStorage implements Storage {
   }
 
   // --- domain entities -----------------------------------------------
-
-  public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) {
-    DBObject query = queries.selectById(id);
-    DBObject update = queries.setProperty(DomainEntity.PID, pid);
-    getDBCollection(type).update(query, update);
-  }
 
   @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException, IOException {

@@ -130,7 +130,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testSetPID() {
+  public void testSetPID() throws IOException {
     manager.setPID(BaseDomainEntity.class, "id", "pid");
     verify(storage).setPID(BaseDomainEntity.class, "id", "pid");
   }
