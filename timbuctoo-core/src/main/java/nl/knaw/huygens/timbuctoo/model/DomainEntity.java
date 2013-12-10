@@ -5,6 +5,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
@@ -79,11 +81,14 @@ public abstract class DomainEntity extends Entity implements Variable {
     }
   }
 
-  @JsonIgnore
   public void addVariation(String variation) {
     if (!variations.contains(variation)) {
       variations.add(variation);
     }
+  }
+
+  public void addVariation(Class<?> type) {
+    addVariation(TypeNames.getInternalName(type));
   }
 
   @Override
