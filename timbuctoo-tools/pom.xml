@@ -114,7 +114,7 @@
           <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
           <programs>
             <program>
-              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.duca.DutchCaribbeanImporter</mainClass>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.dcar.DutchCaribbeanImporter</mainClass>
               <name>ducaImport</name>
             </program>
             <program>
