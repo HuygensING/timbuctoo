@@ -240,11 +240,12 @@ public class MongoStorage implements Storage {
     entity.setRev(1);
     entity.setCreated(change);
     entity.setModified(change);
+
     entity.setPid(null);
     entity.setDeleted(false);
     entity.setVariations(null); // make sure the list is empty
-    entity.addVariation(getInternalName(typeRegistry.getBaseClass(type)));
-    entity.addVariation(getInternalName(type));
+    entity.addVariation(typeRegistry.getBaseClass(type));
+    entity.addVariation(type);
 
     JsonNode jsonNode = inducer.induceDomainEntity(type, entity);
     doMongoInsert(getDBCollection(type), id, jsonNode);
@@ -316,7 +317,7 @@ public class MongoStorage implements Storage {
     domainEntity.setRev(revision + 1);
     domainEntity.setModified(change);
     domainEntity.setPid(null);
-    domainEntity.addVariation(getInternalName(type));
+    domainEntity.addVariation(type);
     tree = inducer.adminDomainEntity(domainEntity, (ObjectNode) tree);
 
     // update of "real" content

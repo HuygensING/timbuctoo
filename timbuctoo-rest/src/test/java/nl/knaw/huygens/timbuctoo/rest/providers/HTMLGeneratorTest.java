@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.rest.providers;
 
 import java.io.StringWriter;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -57,7 +56,7 @@ public class HTMLGeneratorTest {
 
   private void addVariations(DomainEntity entity, Class<?>... types) {
     for (Class<?> type : types) {
-      entity.addVariation(TypeNames.getInternalName(type));
+      entity.addVariation(type);
     }
   }
 
