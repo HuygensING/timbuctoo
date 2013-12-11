@@ -13,6 +13,13 @@ public class Change {
     return instance;
   }
 
+  public static Change newInternalInstance() {
+    Change instance = newInstance();
+    instance.setAuthorId("timbuctoo");
+    instance.setVreId("timbuctoo");
+    return instance;
+  }
+
   private long timeStamp;
   private String authorId;
   private String vreId;

@@ -7,7 +7,6 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -83,7 +82,7 @@ public class CombinedMongoStorageTest {
   @Test
   public void testAddSystemEntity() throws IOException {
     String generatedId = "X" + DEFAULT_ID;
-    TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID, "test");
+    TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
 
     when(entityIds.getNextId(TestSystemEntity.class)).thenReturn(generatedId);
 
@@ -96,44 +95,38 @@ public class CombinedMongoStorageTest {
   @Test
   public void testAddDomainEntity() throws IOException {
     String generatedId = "X" + DEFAULT_ID;
-    ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
+    ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
 
     when(entityIds.getNextId(ProjectADomainEntity.class)).thenReturn(generatedId);
 
     assertEquals(generatedId, storage.addDomainEntity(ProjectADomainEntity.class, entity));
     verify(entityIds).getNextId(ProjectADomainEntity.class);
-    verify(mongoDB, times(2)).insert(any(DBCollection.class), any(String.class), any(DBObject.class));
+    verify(mongoDB).insert(any(DBCollection.class), any(String.class), any(DBObject.class));
   }
 
   @Test(expected = IOException.class)
   public void testUpdateSystemEntityNonExistent() throws IOException {
-    TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID, "test");
+    TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
 
     storage.updateSystemEntity(TestSystemEntity.class, DEFAULT_ID, entity);
   }
 
   @Test
   public void testUpdateDomainEntity() throws IOException {
-    ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
+    ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
 
     JsonNode jsonNode = mapper.createObjectNode();
     DBObject dbObject = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
     when(anyCollection.findOne(any(DBObject.class))).thenReturn(dbObject);
 
-    // WriteResult writeResult = mock(WriteResult.class);
-    // when(writeResult.getN()).thenReturn(1);
-    // when(anyCollection.update(any(DBObject.class), any(DBObject.class))).thenReturn(writeResult);
-
     storage.updateDomainEntity(ProjectADomainEntity.class, DEFAULT_ID, entity);
 
-    verify(mongoDB, times(2)).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
+    verify(mongoDB).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
   }
 
   @Test(expected = IOException.class)
   public void testUpdateDomainEntityForMissingEntity() throws IOException {
-    ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
-
-    when(anyCollection.findOne(any(DBObject.class))).thenReturn(null);
+    ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
 
     storage.updateDomainEntity(ProjectADomainEntity.class, DEFAULT_ID, entity);
   }

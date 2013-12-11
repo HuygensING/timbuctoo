@@ -175,13 +175,13 @@ public class MongoStorage implements Storage {
 
   // --- generic storage layer -----------------------------------------
 
-  private DBObject findExisting(Class<? extends Entity> type, DBObject query) throws IOException {
+  private JsonNode getExisting(Class<? extends Entity> type, DBObject query) throws IOException {
     DBObject dbObject = getDBCollection(type).findOne(query);
     if (dbObject == null) {
       LOG.error("No match for query {}", query);
       throw new IOException("No match");
     }
-    return dbObject;
+    return toJsonNode(dbObject);
   }
 
   private <T extends Entity> T getItem(Class<T> type, DBObject query) throws IOException {
@@ -221,7 +221,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException {
-    Change change = Change.newInstance();
+    Change change = Change.newInternalInstance();
     String id = entityIds.getNextId(type);
 
     entity.setId(id);
@@ -254,38 +254,23 @@ public class MongoStorage implements Storage {
     JsonNode tree = inducer.induceDomainEntity(type, entity);
     mongoDB.insert(getDBCollection(type), id, toDBObject(tree));
 
-    addInitialVersion(type, id, tree);
-
     return id;
-  }
-
-  private <T extends Entity> void addInitialVersion(Class<T> type, String id, JsonNode actualVersion) throws IOException {
-    ArrayNode versionsNode = objectMapper.createArrayNode();
-    versionsNode.add(actualVersion);
-
-    ObjectNode itemNode = objectMapper.createObjectNode();
-    itemNode.put("_id", id);
-    itemNode.put("versions", versionsNode);
-
-    mongoDB.insert(getVersionCollection(type), id, toDBObject(itemNode));
   }
 
   @Override
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, String id, T entity) throws IOException {
-    Change change = Change.newInstance();
+    Change change = Change.newInternalInstance();
     int revision = entity.getRev();
     DBObject query = queries.selectByIdAndRevision(id, revision);
 
-    T storedEntity = getItem(type, query);
-    if (storedEntity == null) {
-      LOG.error("No entity with id {} and revision {}", id, revision);
-      throw new IOException("Update failed");
-    }
+    JsonNode tree = getExisting(type, query);
 
-    storedEntity.setRev(revision + 1);
-    storedEntity.setModified(change);
+    SystemEntity systemEntity = reducer.reduceExistingVariation(type, tree);
 
-    JsonNode tree = inducer.induceSystemEntity(type, storedEntity);
+    systemEntity.setRev(revision + 1);
+    systemEntity.setModified(change);
+
+    inducer.adminSystemEntity(systemEntity, (ObjectNode) tree);
     inducer.induceSystemEntity(type, entity, (ObjectNode) tree);
 
     mongoDB.update(getDBCollection(type), query, toDBObject(tree));
@@ -297,7 +282,7 @@ public class MongoStorage implements Storage {
     int revision = entity.getRev();
     DBObject query = queries.selectByIdAndRevision(id, revision);
 
-    JsonNode tree = toJsonNode(findExisting(type, query));
+    JsonNode tree = getExisting(type, query);
 
     DomainEntity domainEntity = reducer.reduceExistingVariation(toBaseDomainEntity(type), tree);
 
@@ -310,8 +295,27 @@ public class MongoStorage implements Storage {
     inducer.induceDomainEntity(type, entity, (ObjectNode) tree);
 
     mongoDB.update(getDBCollection(type), query, toDBObject(tree));
+  }
 
-    addVersion(type, id, tree);
+  @Override
+  public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws IOException {
+    DBObject query = queries.selectById(id);
+
+    JsonNode tree = getExisting(type, query);
+
+    DomainEntity entity = reducer.reduceExistingVariation(toBaseDomainEntity(type), tree);
+    int revision = entity.getRev();
+
+    entity.setRev(revision + 1);
+    entity.setModified(change);
+    entity.setPid(null);
+    entity.setDeleted(true);
+    entity.setVariations(null);
+
+    inducer.adminDomainEntity(entity, (ObjectNode) tree);
+    // TODO remove "real" data
+
+    mongoDB.update(getDBCollection(type), query, toDBObject(tree));
   }
 
   public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws IOException {
@@ -320,29 +324,18 @@ public class MongoStorage implements Storage {
     getDBCollection(type).update(query, update);
   }
 
-  @Override
-  public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws IOException {
-    DBObject query = queries.selectById(id);
+  protected <T extends Entity> void addInitialVersion(Class<T> type, String id, JsonNode actualVersion) throws IOException {
+    ArrayNode versionsNode = objectMapper.createArrayNode();
+    versionsNode.add(actualVersion);
 
-    JsonNode tree = toJsonNode(findExisting(type, query));
+    ObjectNode itemNode = objectMapper.createObjectNode();
+    itemNode.put("_id", id);
+    itemNode.put("versions", versionsNode);
 
-    DomainEntity domainEntity = reducer.reduceExistingVariation(toBaseDomainEntity(type), tree);
-    int revision = domainEntity.getRev();
-
-    domainEntity.setRev(revision + 1);
-    domainEntity.setModified(change);
-    domainEntity.setPid(null);
-    domainEntity.setDeleted(true);
-    domainEntity.setVariations(null); // make sure the list is empty
-
-    inducer.adminDomainEntity(domainEntity, (ObjectNode) tree);
-    // TODO remove "real" data
-
-    query = queries.selectByIdAndRevision(id, revision);
-    mongoDB.update(getDBCollection(type), query, toDBObject(tree));
+    mongoDB.insert(getVersionCollection(type), id, toDBObject(itemNode));
   }
 
-  private <T extends Entity> void addVersion(Class<T> type, String id, JsonNode actualVersion) throws IOException {
+  protected <T extends Entity> void addVersion(Class<T> type, String id, JsonNode actualVersion) throws IOException {
     ObjectNode versionNode = objectMapper.createObjectNode();
     versionNode.put("versions", actualVersion);
 
