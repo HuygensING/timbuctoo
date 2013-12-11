@@ -30,6 +30,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.rest.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.TestDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
@@ -251,7 +252,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
     whenJsonProviderReadFromThenReturn(entity);
 
-    doThrow(IOException.class).when(getStorageManager()).updateDomainEntity(Matchers.<Class<TestDomainEntity>> any(), any(type));
+    doThrow(IOException.class).when(getStorageManager()).updateDomainEntity(Matchers.<Class<TestDomainEntity>> any(), any(type), any(Change.class));
 
     ClientResponse response = domainResource("testdomainentities", id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
@@ -326,7 +327,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     setUpScopeForCollection(DEFAULT_TYPE, VRE_ID, true);
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID, "test");
-    when(getStorageManager().addDomainEntity(DEFAULT_TYPE, entity)).thenReturn(DEFAULT_ID);
+    when(getStorageManager().addDomainEntity(Matchers.<Class<TestDomainEntity>> any(), any(TestDomainEntity.class), any(Change.class))).thenReturn(DEFAULT_ID);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = domainResource("testdomainentities").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
@@ -345,7 +346,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     setUpScopeForCollection(DEFAULT_TYPE, VRE_ID, false);
 
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID, "test");
-    when(getStorageManager().addDomainEntity(DEFAULT_TYPE, entity)).thenReturn(DEFAULT_ID);
+    when(getStorageManager().addDomainEntity(Matchers.<Class<TestDomainEntity>> any(), any(TestDomainEntity.class), any(Change.class))).thenReturn(DEFAULT_ID);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = domainResource("testdomainentities").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)

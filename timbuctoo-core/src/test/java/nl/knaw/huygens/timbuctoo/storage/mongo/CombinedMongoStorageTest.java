@@ -99,7 +99,7 @@ public class CombinedMongoStorageTest {
 
     when(entityIds.getNextId(ProjectADomainEntity.class)).thenReturn(generatedId);
 
-    assertEquals(generatedId, storage.addDomainEntity(ProjectADomainEntity.class, entity));
+    assertEquals(generatedId, storage.addDomainEntity(ProjectADomainEntity.class, entity, new Change()));
     verify(entityIds).getNextId(ProjectADomainEntity.class);
     verify(mongoDB).insert(any(DBCollection.class), any(String.class), any(DBObject.class));
   }
@@ -119,7 +119,7 @@ public class CombinedMongoStorageTest {
     DBObject dbObject = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
     when(anyCollection.findOne(any(DBObject.class))).thenReturn(dbObject);
 
-    storage.updateDomainEntity(ProjectADomainEntity.class, DEFAULT_ID, entity);
+    storage.updateDomainEntity(ProjectADomainEntity.class, DEFAULT_ID, entity, new Change());
 
     verify(mongoDB).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
   }
@@ -128,7 +128,7 @@ public class CombinedMongoStorageTest {
   public void testUpdateDomainEntityForMissingEntity() throws IOException {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
 
-    storage.updateDomainEntity(ProjectADomainEntity.class, DEFAULT_ID, entity);
+    storage.updateDomainEntity(ProjectADomainEntity.class, DEFAULT_ID, entity, new Change());
   }
 
   @Test

@@ -83,21 +83,24 @@ public class StorageManagerTest {
   @Test(expected = IllegalArgumentException.class)
   public void testAddPrimitiveDomainEntity() throws IOException {
     BaseDomainEntity entity = new BaseDomainEntity();
-    manager.addDomainEntity(BaseDomainEntity.class, entity);
+    Change change = Change.newInstance();
+    manager.addDomainEntity(BaseDomainEntity.class, entity, change);
   }
 
   @Test
   public void testAddDerivedDomainEntity() throws IOException {
     ProjectADomainEntity entity = new ProjectADomainEntity();
-    manager.addDomainEntity(ProjectADomainEntity.class, entity);
-    verify(storage).addDomainEntity(ProjectADomainEntity.class, entity);
+    Change change = Change.newInstance();
+    manager.addDomainEntity(ProjectADomainEntity.class, entity, change);
+    verify(storage).addDomainEntity(ProjectADomainEntity.class, entity, change);
   }
 
   @Test
   public void testModifyEntity() throws IOException {
     BaseDomainEntity entity = new BaseDomainEntity("id");
-    manager.updateDomainEntity(BaseDomainEntity.class, entity);
-    verify(storage).updateDomainEntity(BaseDomainEntity.class, "id", entity);
+    Change change = Change.newInstance();
+    manager.updateDomainEntity(BaseDomainEntity.class, entity, change);
+    verify(storage).updateDomainEntity(BaseDomainEntity.class, "id", entity, change);
   }
 
   @Test

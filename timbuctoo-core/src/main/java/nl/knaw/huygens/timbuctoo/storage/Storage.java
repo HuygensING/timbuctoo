@@ -30,13 +30,13 @@ public interface Storage {
   /**
    * Adds the specified domain entity to the storage; returns its assigned id.
    */
-  <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) throws IOException;
+  <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws IOException;
 
   // --- update entities -----------------------------------------------
 
   <T extends SystemEntity> void updateSystemEntity(Class<T> type, String id, T entity) throws IOException;
 
-  <T extends DomainEntity> void updateDomainEntity(Class<T> type, String id, T entity) throws IOException;
+  <T extends DomainEntity> void updateDomainEntity(Class<T> type, String id, T entity, Change change) throws IOException;
 
   <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws IOException;
 

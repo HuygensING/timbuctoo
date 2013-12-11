@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 
@@ -32,6 +33,7 @@ import com.google.inject.Injector;
  *
  */
 public class TransformedDataImporter extends DefaultImporter {
+
   private static final Logger LOG = LoggerFactory.getLogger(TransformedDataImporter.class);
 
   public static void main(String[] args) throws ConfigurationException, ClassNotFoundException, IndexException, JsonParseException, JsonMappingException, IOException {
@@ -51,6 +53,10 @@ public class TransformedDataImporter extends DefaultImporter {
   }
 
   protected void importData(String dataPath) throws IOException, IndexException, JsonParseException, JsonMappingException {
+    Change change = Change.newInstance();
+    change.setAuthorId("timbuctoo");
+    change.setVreId("timbuctoo");
+
     File[] jsonFiles = getJsonFiles(dataPath);
 
     for (File jsonFile : jsonFiles) {
@@ -59,7 +65,7 @@ public class TransformedDataImporter extends DefaultImporter {
 
       if (TypeRegistry.isDomainEntity(type)) {
         super.removeNonPersistentEntities(TypeRegistry.toDomainEntity(type));
-        save(TypeRegistry.toDomainEntity(type), jsonFile);
+        save(TypeRegistry.toDomainEntity(type), jsonFile, change);
       } else {
         LOG.error("{} is not a DomainEntity.", className);
       }
@@ -81,11 +87,11 @@ public class TransformedDataImporter extends DefaultImporter {
     return jsonFiles;
   }
 
-  public <T extends DomainEntity> void save(Class<T> type, File jsonFile) throws JsonParseException, JsonMappingException, IOException, IndexException {
+  public <T extends DomainEntity> void save(Class<T> type, File jsonFile, Change change) throws JsonParseException, JsonMappingException, IOException, IndexException {
     LOG.info("Saving for type {}", type);
     List<T> entities = new ObjectMapper().readValue(jsonFile, new TypeReference<List<? extends DomainEntity>>() {});
     for (T entity : entities) {
-      String id = storageManager.addDomainEntity(type, entity);
+      String id = storageManager.addDomainEntity(type, entity, change);
       indexManager.addEntity(type, id);
     }
   }

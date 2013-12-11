@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPerson;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCScientist;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.GenericDataHandler;
 import nl.knaw.huygens.timbuctoo.tools.importer.GenericJsonFileWriter;
@@ -24,6 +25,10 @@ import com.google.inject.Injector;
 public class BulkDataTransformer {
 
   public static void main(String[] args) throws Exception {
+    Change change = Change.newInstance();
+    change.setAuthorId("timbuctoo");
+    change.setVreId("timbuctoo");
+
     Configuration config = new Configuration("config.xml");
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
@@ -31,11 +36,11 @@ public class BulkDataTransformer {
 
     long start = System.currentTimeMillis();
     String resourceDir = "src/main/resources/";
-    importer.importData(resourceDir + "DWCPlaceMapping.properties", DWCPlace.class, null);
+    importer.importData(resourceDir + "DWCPlaceMapping.properties", DWCPlace.class, null, change);
     List<Class<? extends Role>> allowedRoles = Lists.newArrayList();
     allowedRoles.add(DWCScientist.class);
 
-    importer.importData(resourceDir + "DWCScientistMapping.properties", DWCPerson.class, allowedRoles);
+    importer.importData(resourceDir + "DWCScientistMapping.properties", DWCPerson.class, allowedRoles, change);
     //importer.importData(resourceDir + "RAACivilServantMapping.properties", RAACivilServant.class, null);
 
     long time = (System.currentTimeMillis() - start) / 1000;

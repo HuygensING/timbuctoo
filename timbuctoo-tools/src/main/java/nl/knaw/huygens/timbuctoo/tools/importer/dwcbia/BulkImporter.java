@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPerson;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCScientist;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.importer.GenericImporter;
@@ -27,6 +28,10 @@ import com.google.inject.Injector;
 public class BulkImporter {
 
   public static void main(String[] args) throws Exception {
+    Change change = Change.newInstance();
+    change.setAuthorId("timbuctoo");
+    change.setVreId("timbuctoo");
+
     Configuration config = new Configuration("config.xml");
     Injector injector = Guice.createInjector(new BasicInjectionModule(config));
 
@@ -54,12 +59,12 @@ public class BulkImporter {
       System.out.println("---------------------------------");
 
       String resourceDir = "src/main/resources/";
-      importer.importData(resourceDir + "DWCPlaceMapping.properties", DWCPlace.class, null);
+      importer.importData(resourceDir + "DWCPlaceMapping.properties", DWCPlace.class, null, change);
 
       List<Class<? extends Role>> allowedRoles = Lists.newArrayList();
       allowedRoles.add(DWCScientist.class);
 
-      importer.importData(resourceDir + "DWCScientistMapping.properties", DWCPerson.class, allowedRoles);
+      importer.importData(resourceDir + "DWCScientistMapping.properties", DWCPerson.class, allowedRoles, change);
       //importer.importData(resourceDir + "RAACivilServantMapping.properties", RAACivilServant.class);
       //CKCCPersonImporter csvImporter = new CKCCPersonImporter(storageManager);
       //csvImporter.handleFile(resourceDir + "testdata/ckcc-persons.txt", 9, false);

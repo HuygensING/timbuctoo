@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +70,7 @@ public class RelationManager {
     return getRelationTypeById(reference.getId());
   }
 
-  public <T extends Relation> String storeRelation(Class<T> type, Reference sourceRef, Reference relTypeRef, Reference targetRef) {
+  public <T extends Relation> String storeRelation(Class<T> type, Reference sourceRef, Reference relTypeRef, Reference targetRef, Change change) {
     RelationBuilder<T> builder = getBuilder(type);
 
     RelationType relationType = getRelationType(relTypeRef);
@@ -89,7 +90,7 @@ public class RelationManager {
         if (storageManager.relationExists(relation)) {
           LOG.info("Ignored duplicate {}", relation.getDisplayName());
         } else {
-          return storageManager.addDomainEntity(type, relation);
+          return storageManager.addDomainEntity(type, relation, change);
         }
       } catch (IOException e) {
         LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
@@ -128,11 +129,6 @@ public class RelationManager {
 
     public RelationBuilder<T> target(Reference ref) {
       relation.setTargetRef(ref);
-      return this;
-    }
-
-    public RelationBuilder<T> accept(boolean accepted) {
-      relation.setAccepted(accepted);
       return this;
     }
 

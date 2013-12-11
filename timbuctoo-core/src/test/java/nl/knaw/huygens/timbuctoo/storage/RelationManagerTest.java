@@ -11,32 +11,27 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectARelation;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class RelationManagerTest {
-  private StorageManager storageManager;
-  private TypeRegistry typeRegistry;
 
+  private TypeRegistry typeRegistry;
+  private StorageManager storageManager;
   private RelationManager relationManager;
+  private Change change;
 
   @Before
   public void setUp() {
     typeRegistry = new TypeRegistry("timbuctoo.variation.model timbuctoo.model timbuctoo.variation.model.projecta");
     storageManager = mock(StorageManager.class);
     relationManager = new RelationManager(typeRegistry, storageManager);
-  }
-
-  @After
-  public void tearDown() {
-    typeRegistry = null;
-    storageManager = null;
-    relationManager = null;
+    change = Change.newInstance();
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -63,9 +58,9 @@ public class RelationManagerTest {
     ProjectARelation expectedRelation = new ProjectARelation(sourceRef, typeRef, targetRef);
     expectedRelation.setAccepted(true);
 
-    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef);
+    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef, change);
 
-    verify(storageManager).addDomainEntity(ProjectARelation.class, expectedRelation);
+    verify(storageManager).addDomainEntity(ProjectARelation.class, expectedRelation, change);
   }
 
   @Test
@@ -80,9 +75,9 @@ public class RelationManagerTest {
     ProjectARelation expectedRelation = new ProjectARelation(sourceRef, typeRef, targetRef);
     expectedRelation.setAccepted(true);
 
-    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef);
+    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef, change);
 
-    verify(storageManager).addDomainEntity(ProjectARelation.class, expectedRelation);
+    verify(storageManager).addDomainEntity(ProjectARelation.class, expectedRelation, change);
   }
 
   @Test
@@ -97,9 +92,9 @@ public class RelationManagerTest {
     ProjectARelation expectedRelation = new ProjectARelation(targetRef, typeRef, sourceRef);
     expectedRelation.setAccepted(true);
 
-    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef);
+    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef, change);
 
-    verify(storageManager).addDomainEntity(ProjectARelation.class, expectedRelation);
+    verify(storageManager).addDomainEntity(ProjectARelation.class, expectedRelation, change);
   }
 
   @Test(expected = NullPointerException.class)
@@ -111,7 +106,7 @@ public class RelationManagerTest {
     Reference sourceRef = null;
     Reference targetRef = new Reference(ProjectATestDocWithPersonName.class, "test23");
 
-    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef);
+    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef, change);
   }
 
   @Test(expected = NullPointerException.class)
@@ -126,7 +121,7 @@ public class RelationManagerTest {
     ProjectARelation expectedRelation = new ProjectARelation(sourceRef, typeRef, targetRef);
     expectedRelation.setAccepted(true);
 
-    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef);
+    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef, change);
   }
 
   @Test(expected = NullPointerException.class)
@@ -141,7 +136,7 @@ public class RelationManagerTest {
     ProjectARelation expectedRelation = new ProjectARelation(sourceRef, typeRef, targetRef);
     expectedRelation.setAccepted(true);
 
-    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef);
+    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef, change);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -156,7 +151,7 @@ public class RelationManagerTest {
     ProjectARelation expectedRelation = new ProjectARelation(sourceRef, typeRef, targetRef);
     expectedRelation.setAccepted(true);
 
-    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef);
+    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef, change);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -171,7 +166,7 @@ public class RelationManagerTest {
     ProjectARelation expectedRelation = new ProjectARelation(sourceRef, typeRef, targetRef);
     expectedRelation.setAccepted(true);
 
-    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef);
+    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef, change);
   }
 
   protected void setUpGetRelationType(Class<? extends DomainEntity> sourceClass, Class<? extends DomainEntity> targetClass, String relationTypeId, boolean symmetric) {

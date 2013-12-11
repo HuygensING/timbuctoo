@@ -236,8 +236,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) throws IOException {
-    Change change = Change.newInstance();
+  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws IOException {
     String id = entityIds.getNextId(type);
 
     entity.setId(id);
@@ -277,8 +276,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, String id, T entity) throws IOException {
-    Change change = Change.newInstance();
+  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, String id, T entity, Change change) throws IOException {
     int revision = entity.getRev();
     DBObject query = queries.selectByIdAndRevision(id, revision);
 

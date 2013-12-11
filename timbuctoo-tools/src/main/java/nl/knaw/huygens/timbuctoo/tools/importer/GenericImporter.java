@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 
@@ -19,11 +20,11 @@ public class GenericImporter extends GenericDataHandler {
   }
 
   @Override
-  protected <T extends DomainEntity> void save(Class<T> type, List<T> objects) throws IOException {
+  protected <T extends DomainEntity> void save(Class<T> type, List<T> objects, Change change) throws IOException {
     Progress progress = new Progress();
     for (T object : objects) {
       progress.step();
-      storageManager.addDomainEntity(type, object);
+      storageManager.addDomainEntity(type, object, change);
     }
     progress.done();
   }
