@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
+import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -298,8 +299,7 @@ public class MongoStorage implements Storage {
 
     JsonNode tree = toJsonNode(findExisting(type, query));
 
-    Class<? extends DomainEntity> baseType = TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type));
-    DomainEntity domainEntity = reducer.reduceExistingVariation(baseType, tree);
+    DomainEntity domainEntity = reducer.reduceExistingVariation(toBaseDomainEntity(type), tree);
 
     domainEntity.setRev(revision + 1);
     domainEntity.setModified(change);
@@ -323,31 +323,23 @@ public class MongoStorage implements Storage {
   @Override
   public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws IOException {
     DBObject query = queries.selectById(id);
-    DBObject existingNode = getDBCollection(type).findOne(query);
-    if (existingNode == null) {
-      throw new IOException("No entity was found for ID " + id);
-    }
-    ObjectNode node;
-    try {
-      DBJsonNode realNode = (DBJsonNode) existingNode;
-      JsonNode jsonNode = realNode.getDelegate();
-      if (!jsonNode.isObject()) {
-        throw new Exception();
-      }
-      node = (ObjectNode) jsonNode;
-    } catch (Exception ex) {
-      throw new IOException("Couldn't read properly from database.");
-    }
-    node.put(DomainEntity.DELETED, true);
-    node.put(DomainEntity.PID, (String) null);
-    JsonNode changeTree = objectMapper.valueToTree(change);
-    node.put("^lastChange", changeTree);
-    int rev = node.get("^rev").asInt();
-    node.put("^rev", rev + 1);
-    query.put("^rev", rev);
 
-    getDBCollection(type).update(query, toDBObject(node));
-    addVersion(type, id, node);
+    JsonNode tree = toJsonNode(findExisting(type, query));
+
+    DomainEntity domainEntity = reducer.reduceExistingVariation(toBaseDomainEntity(type), tree);
+    int revision = domainEntity.getRev();
+
+    domainEntity.setRev(revision + 1);
+    domainEntity.setModified(change);
+    domainEntity.setPid(null);
+    domainEntity.setDeleted(true);
+    domainEntity.setVariations(null); // make sure the list is empty
+
+    inducer.adminDomainEntity(domainEntity, (ObjectNode) tree);
+    // TODO remove "real" data
+
+    query = queries.selectByIdAndRevision(id, revision);
+    mongoDB.update(getDBCollection(type), query, toDBObject(tree));
   }
 
   private <T extends Entity> void addVersion(Class<T> type, String id, JsonNode actualVersion) throws IOException {

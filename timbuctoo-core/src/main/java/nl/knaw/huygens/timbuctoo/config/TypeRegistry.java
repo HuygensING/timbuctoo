@@ -297,6 +297,16 @@ public class TypeRegistry {
     throw new ClassCastException(cls.getName() + " is not a domain entity");
   }
 
+  /**
+   * Returns the primitive domain entity for the specified domain entity,
+   * assuming that the two-level hierarchy is satisfied.
+   */
+  public static Class<? extends DomainEntity> toBaseDomainEntity(Class<? extends DomainEntity> type) throws ClassCastException {
+    @SuppressWarnings("unchecked")
+    Class<? extends DomainEntity> superType = (Class<? extends DomainEntity>) type.getSuperclass();
+    return (superType == DomainEntity.class) ? type : superType;
+  }
+
   @SuppressWarnings("unchecked")
   public static <T extends Role> Class<T> toRole(Class<?> type) {
     if (isRole(type)) {

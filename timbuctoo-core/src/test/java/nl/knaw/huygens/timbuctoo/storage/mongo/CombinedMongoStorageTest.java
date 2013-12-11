@@ -16,6 +16,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
@@ -33,7 +34,6 @@ import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import com.mongodb.WriteResult;
 
 public class CombinedMongoStorageTest {
 
@@ -156,13 +156,9 @@ public class CombinedMongoStorageTest {
 
     when(anyCollection.findOne(new BasicDBObject("_id", DEFAULT_ID))).thenReturn(dbObject);
 
-    WriteResult writeResult = mock(WriteResult.class);
-    when(writeResult.getN()).thenReturn(1);
-    when(anyCollection.update(any(DBObject.class), any(DBObject.class))).thenReturn(writeResult);
+    storage.deleteDomainEntity(BaseDomainEntity.class, DEFAULT_ID, Change.newInstance());
 
-    storage.deleteDomainEntity(BaseDomainEntity.class, DEFAULT_ID, null);
-
-    verify(anyCollection).update(any(DBObject.class), any(DBObject.class));
+    verify(mongoDB).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
   }
 
   @Test(expected = IOException.class)

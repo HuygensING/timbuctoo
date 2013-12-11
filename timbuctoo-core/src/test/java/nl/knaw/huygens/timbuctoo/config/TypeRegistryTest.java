@@ -206,6 +206,12 @@ public class TypeRegistryTest {
   }
 
   @Test
+  public void testToBaseDomainEntity() {
+    assertEquals(BaseDomainEntity.class, TypeRegistry.toBaseDomainEntity(BaseDomainEntity.class));
+    assertEquals(BaseDomainEntity.class, TypeRegistry.toBaseDomainEntity(ProjectADomainEntity.class));
+  }
+
+  @Test
   public void testToRole() {
     assertTrue(TypeRegistry.isRole(TypeRegistry.toRole(TestRole.class)));
   }
