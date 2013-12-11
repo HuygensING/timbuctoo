@@ -6,6 +6,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,7 +27,7 @@ public class GenericJsonFileWriter extends GenericDataHandler {
   }
 
   @Override
-  protected <T extends DomainEntity> void save(Class<T> type, List<T> objects) throws IOException {
+  protected <T extends DomainEntity> void save(Class<T> type, List<T> objects, Change change) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     //Make sure the type is added to the json.
     mapper.enableDefaultTyping(DefaultTyping.JAVA_LANG_OBJECT, As.PROPERTY);

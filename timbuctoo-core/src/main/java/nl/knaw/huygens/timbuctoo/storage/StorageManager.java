@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.User;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.util.KV;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
@@ -74,9 +75,9 @@ public class StorageManager {
     return storage.addSystemEntity(type, entity);
   }
 
-  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) throws IOException {
+  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws IOException {
     checkArgument(BusinessRules.allowDomainEntityAdd(type), "Not allowed to add %s", type);
-    return storage.addDomainEntity(type, entity);
+    return storage.addDomainEntity(type, entity, change);
   }
 
   // --- update entities -----------------------------------------------
@@ -85,8 +86,8 @@ public class StorageManager {
     storage.updateSystemEntity(type, entity.getId(), entity);
   }
 
-  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity) throws IOException {
-    storage.updateDomainEntity(type, entity.getId(), entity);
+  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws IOException {
+    storage.updateDomainEntity(type, entity.getId(), entity, change);
   }
 
   public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws IOException {

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import nl.knaw.huygens.timbuctoo.model.Language;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 /**
@@ -24,10 +25,14 @@ import nl.knaw.huygens.timbuctoo.storage.StorageManager;
  */
 public class LanguageImporter extends CSVImporter {
 
+  private final Change change;
   private StorageManager storageManager;
 
   public LanguageImporter(StorageManager storageManager) {
     super(new PrintWriter(System.err), '|', '"', 0);
+    change = Change.newInstance();
+    change.setAuthorId("importer");
+    change.setVreId("timbuctoo");
     this.storageManager = storageManager;
     System.out.printf("%n=== Importing documents of type 'Language'%n");
   }
@@ -61,7 +66,7 @@ public class LanguageImporter extends CSVImporter {
     language.setName(items[3]);
 
     try {
-      storageManager.addDomainEntity(Language.class, language);
+      storageManager.addDomainEntity(Language.class, language, change);
     } catch (IOException e) {
       displayError(e.getMessage(), items);
     }

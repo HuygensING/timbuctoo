@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -23,11 +24,15 @@ public abstract class DutchCaribbeanDefaultImporter extends DefaultImporter {
   /** File with {@code RelationType} definitions; must be present on classpath. */
   private static final String RELATION_TYPE_DEFS = "relationtype-defs.txt";
 
+  protected final Change change;
   private String prevMessage;
   private int errors;
 
   public DutchCaribbeanDefaultImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager) {
     super(registry, storageManager, indexManager);
+    change = Change.newInstance();
+    change.setAuthorId("importer");
+    change.setVreId("dcar");
     prevMessage = "";
     errors = 0;
     setup(relationManager);
@@ -66,7 +71,7 @@ public abstract class DutchCaribbeanDefaultImporter extends DefaultImporter {
 
   protected <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) {
     try {
-      storageManager.addDomainEntity(type, entity);
+      storageManager.addDomainEntity(type, entity, change);
       return entity.getId();
     } catch (IOException e) {
       handleError("Failed to add %s; %s", entity.getDisplayName(), e.getMessage());
@@ -76,7 +81,7 @@ public abstract class DutchCaribbeanDefaultImporter extends DefaultImporter {
 
   protected <T extends DomainEntity> T updateDomainEntity(Class<T> type, T entity) {
     try {
-      storageManager.updateDomainEntity(type, entity);
+      storageManager.updateDomainEntity(type, entity, change);
       return entity;
     } catch (IOException e) {
       handleError("Failed to modify %s; %s", entity.getDisplayName(), e.getMessage());

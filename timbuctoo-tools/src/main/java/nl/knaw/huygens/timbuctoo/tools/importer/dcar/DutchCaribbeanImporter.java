@@ -251,7 +251,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
   private void addRegularRelations(Reference sourceRef, Reference relTypeRef, Map<String, Reference> map, String[] keys) {
     if (keys != null) {
       for (String key : keys) {
-        relationManager.storeRelation(DCARRelation.class, sourceRef, relTypeRef, map.get(key));
+        relationManager.storeRelation(DCARRelation.class, sourceRef, relTypeRef, map.get(key), change);
       }
     }
   }
@@ -259,7 +259,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
   private void addInverseRelations(Reference targetRef, Reference relTypeRef, Map<String, Reference> map, String[] keys) {
     if (keys != null) {
       for (String key : keys) {
-        relationManager.storeRelation(DCARRelation.class, map.get(key), relTypeRef, targetRef);
+        relationManager.storeRelation(DCARRelation.class, map.get(key), relTypeRef, targetRef, change);
       }
     }
   }

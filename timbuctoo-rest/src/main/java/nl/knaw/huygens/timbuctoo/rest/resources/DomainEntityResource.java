@@ -33,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
@@ -109,7 +110,9 @@ public class DomainEntityResource extends ResourceBase {
       throw new WebApplicationException(Status.FORBIDDEN);
     }
 
-    String id = storageManager.addDomainEntity((Class<T>) type, (T) input);
+    // TODO add user and vre
+    Change change = Change.newInstance();
+    String id = storageManager.addDomainEntity((Class<T>) type, (T) input, change);
     notifyChange(ActionType.ADD, type, id);
 
     String baseUri = CharMatcher.is('/').trimTrailingFrom(uriInfo.getBaseUri().toString());
@@ -162,8 +165,11 @@ public class DomainEntityResource extends ResourceBase {
 
     checkWritable(entity, Status.FORBIDDEN);
 
+    // TODO add user and vre
+    Change change = Change.newInstance();
+
     try {
-      storageManager.updateDomainEntity((Class<T>) type, (T) input);
+      storageManager.updateDomainEntity((Class<T>) type, (T) input, change);
     } catch (IOException e) {
       // TODO improve the logic, we already have checked existnce
       // storage manager should no throw an exception

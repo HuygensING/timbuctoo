@@ -7,6 +7,7 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.ckcc.CKCCPerson;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPerson;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
@@ -20,10 +21,14 @@ import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
  */
 public class CKCCPersonImporter extends CSVImporter {
 
+  private final Change change;
   private StorageManager storageManager;
 
   public CKCCPersonImporter(StorageManager storageManager) {
     super(new PrintWriter(System.err));
+    change = Change.newInstance();
+    change.setAuthorId("importer");
+    change.setVreId("ckcc");
     this.storageManager = storageManager;
     System.out.println("%n=== Importing documents of type 'CKCCPerson'");
   }
@@ -46,9 +51,9 @@ public class CKCCPersonImporter extends CSVImporter {
       if (exists) {
         person.setId(retrieved.getId());
         person.setPid(retrieved.getPid());
-        storageManager.updateDomainEntity(CKCCPerson.class, person);
+        storageManager.updateDomainEntity(CKCCPerson.class, person, change);
       } else {
-        storageManager.addDomainEntity(CKCCPerson.class, person);
+        storageManager.addDomainEntity(CKCCPerson.class, person, change);
       }
     } catch (IOException e) {
       displayError(e.getMessage(), items);

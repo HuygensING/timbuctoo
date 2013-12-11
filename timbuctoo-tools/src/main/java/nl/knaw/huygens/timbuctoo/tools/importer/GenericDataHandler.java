@@ -11,6 +11,7 @@ import java.util.Properties;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Role;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 public abstract class GenericDataHandler {
 
@@ -26,7 +27,7 @@ public abstract class GenericDataHandler {
 
   private Map<String, List<String>> objectMapping;
 
-  public <T extends DomainEntity> void importData(String configFile, Class<T> type, List<Class<? extends Role>> allowedRoles) throws Exception {
+  public <T extends DomainEntity> void importData(String configFile, Class<T> type, List<Class<? extends Role>> allowedRoles, Change change) throws Exception {
     System.out.printf("%n=== Import documents of type '%s'%n", type.getSimpleName());
 
     readMapping(configFile);
@@ -34,7 +35,7 @@ public abstract class GenericDataHandler {
     SQLImporter importer = new SQLImporter(connectionString, userName, password);
     List<T> objects = importer.executeQuery(query, converter);
 
-    save(type, objects);
+    save(type, objects, change);
   }
 
   protected void readMapping(String filePath) throws IOException {
@@ -67,6 +68,6 @@ public abstract class GenericDataHandler {
     return values;
   }
 
-  protected abstract <T extends DomainEntity> void save(Class<T> type, List<T> objects) throws IOException;
+  protected abstract <T extends DomainEntity> void save(Class<T> type, List<T> objects, Change change) throws IOException;
 
 }
