@@ -228,8 +228,8 @@ public class MongoStorage implements Storage {
     entity.setCreated(change);
     entity.setModified(change);
 
-    JsonNode jsonNode = inducer.induceSystemEntity(type, entity);
-    mongoDB.insert(getDBCollection(type), id, toDBObject(jsonNode));
+    JsonNode tree = inducer.induceSystemEntity(type, entity);
+    mongoDB.insert(getDBCollection(type), id, toDBObject(tree));
 
     return id;
   }
@@ -250,10 +250,10 @@ public class MongoStorage implements Storage {
     entity.addVariation(typeRegistry.getBaseClass(type));
     entity.addVariation(type);
 
-    JsonNode jsonNode = inducer.induceDomainEntity(type, entity);
-    mongoDB.insert(getDBCollection(type), id, toDBObject(jsonNode));
+    JsonNode tree = inducer.induceDomainEntity(type, entity);
+    mongoDB.insert(getDBCollection(type), id, toDBObject(tree));
 
-    addInitialVersion(type, id, jsonNode);
+    addInitialVersion(type, id, tree);
 
     return id;
   }
@@ -285,13 +285,9 @@ public class MongoStorage implements Storage {
     storedEntity.setModified(change);
 
     JsonNode tree = inducer.induceSystemEntity(type, storedEntity);
-    JsonNode updated = inducer.induceSystemEntity(type, entity, (ObjectNode) tree);
+    inducer.induceSystemEntity(type, entity, (ObjectNode) tree);
 
-    WriteResult writeResult = getDBCollection(type).update(query, toDBObject(updated));
-    if (writeResult.getN() == 0) {
-      LOG.error("Failed to update entity with id {} and revision {}", id, revision);
-      throw new IOException("Update failed");
-    }
+    mongoDB.update(getDBCollection(type), query, toDBObject(tree));
   }
 
   @Override
@@ -310,14 +306,10 @@ public class MongoStorage implements Storage {
     domainEntity.setPid(null);
     domainEntity.addVariation(type);
 
-    tree = inducer.adminDomainEntity(domainEntity, (ObjectNode) tree);
-    tree = inducer.induceDomainEntity(type, entity, (ObjectNode) tree);
+    inducer.adminDomainEntity(domainEntity, (ObjectNode) tree);
+    inducer.induceDomainEntity(type, entity, (ObjectNode) tree);
 
-    WriteResult writeResult = getDBCollection(type).update(query, toDBObject(tree));
-    if (writeResult.getN() == 0) {
-      LOG.error("Failed to update entity with id {} and revision {}", id, revision);
-      throw new IOException("Update failed");
-    }
+    mongoDB.update(getDBCollection(type), query, toDBObject(tree));
 
     addVersion(type, id, tree);
   }
@@ -365,11 +357,7 @@ public class MongoStorage implements Storage {
     ObjectNode update = objectMapper.createObjectNode();
     update.put("$push", versionNode);
 
-    WriteResult writeResult = getVersionCollection(type).update(new BasicDBObject("_id", id), toDBObject(update));
-    if (writeResult.getN() != 1) {
-      LOG.error("Failed to update version collection for {}", id);
-      throw new IOException("Failed to update version collection");
-    }
+    mongoDB.update(getVersionCollection(type), queries.selectById(id), toDBObject(update));
   }
 
   // --- system entities -----------------------------------------------
