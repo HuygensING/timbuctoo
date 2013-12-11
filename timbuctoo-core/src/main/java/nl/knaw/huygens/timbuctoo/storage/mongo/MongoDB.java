@@ -10,6 +10,7 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
+import com.mongodb.WriteResult;
 
 /**
  * Encapsulates the Mongo database.
@@ -48,6 +49,14 @@ public class MongoDB {
     if (collection.find(new BasicDBObject("_id", id)) == null) {
       LOG.error("Failed to insert ({}, {})", collection.getName(), id);
       throw new IOException("Insert failed");
+    }
+  }
+
+  public void update(DBCollection collection, DBObject query, DBObject document) throws IOException {
+    WriteResult writeResult = collection.update(query, document);
+    if (writeResult.getN() == 0) {
+      LOG.error("Failed to update {}", query);
+      throw new IOException("Update failed");
     }
   }
 

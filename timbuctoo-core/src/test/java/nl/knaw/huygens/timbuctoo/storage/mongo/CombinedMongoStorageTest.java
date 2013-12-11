@@ -45,7 +45,6 @@ public class CombinedMongoStorageTest {
   private DBCollection anyCollection;
   private EntityIds entityIds;
   private MongoStorage storage;
-  private MongoQueries queries;
   private ObjectMapper mapper;
 
   @BeforeClass
@@ -60,7 +59,6 @@ public class CombinedMongoStorageTest {
     entityIds = mock(EntityIds.class);
     storage = new MongoStorage(registry, mongoDB, entityIds);
 
-    queries = new MongoQueries();
     mapper = new ObjectMapper();
 
     when(mongoDB.getCollection(anyString())).thenReturn(anyCollection);
@@ -122,14 +120,13 @@ public class CombinedMongoStorageTest {
     DBObject dbObject = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
     when(anyCollection.findOne(any(DBObject.class))).thenReturn(dbObject);
 
-    WriteResult writeResult = mock(WriteResult.class);
-    when(writeResult.getN()).thenReturn(1);
-    when(anyCollection.update(any(DBObject.class), any(DBObject.class))).thenReturn(writeResult);
+    // WriteResult writeResult = mock(WriteResult.class);
+    // when(writeResult.getN()).thenReturn(1);
+    // when(anyCollection.update(any(DBObject.class), any(DBObject.class))).thenReturn(writeResult);
 
     storage.updateDomainEntity(ProjectADomainEntity.class, DEFAULT_ID, entity);
 
-    // Update current version and the version collection
-    verify(anyCollection, times(2)).update(any(DBObject.class), any(DBObject.class));
+    verify(mongoDB, times(2)).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
   }
 
   @Test(expected = IOException.class)
@@ -165,9 +162,7 @@ public class CombinedMongoStorageTest {
 
     storage.deleteDomainEntity(BaseDomainEntity.class, DEFAULT_ID, null);
 
-    // Update the current version
-    // Update the version number.
-    verify(anyCollection, times(2)).update(any(DBObject.class), any(DBObject.class));
+    verify(anyCollection).update(any(DBObject.class), any(DBObject.class));
   }
 
   @Test(expected = IOException.class)
