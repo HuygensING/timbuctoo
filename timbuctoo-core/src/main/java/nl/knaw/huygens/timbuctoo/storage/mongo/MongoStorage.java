@@ -55,8 +55,7 @@ public class MongoStorage implements Storage {
   private static final Logger LOG = LoggerFactory.getLogger(MongoStorage.class);
 
   private final TypeRegistry typeRegistry;
-  private final Mongo mongo;
-  private final DB db;
+  private final MongoDB mongoDB;
   private final EntityIds entityIds;
 
   private MongoQueries queries;
@@ -74,10 +73,10 @@ public class MongoStorage implements Storage {
 
     String host = config.getSetting("database.host", "localhost");
     int port = config.getIntSetting("database.port", 27017);
-    mongo = new Mongo(new ServerAddress(host, port), options);
+    Mongo mongo = new Mongo(new ServerAddress(host, port), options);
 
     String dbName = config.getSetting("database.name");
-    db = mongo.getDB(dbName);
+    DB db = mongo.getDB(dbName);
 
     String user = config.getSetting("database.user");
     if (!user.isEmpty()) {
@@ -85,6 +84,7 @@ public class MongoStorage implements Storage {
       db.authenticate(user, password.toCharArray());
     }
 
+    mongoDB = new MongoDB(mongo, db);
     entityIds = new EntityIds(db, typeRegistry);
 
     initialize();
@@ -94,8 +94,16 @@ public class MongoStorage implements Storage {
   @VisibleForTesting
   MongoStorage(TypeRegistry registry, Mongo mongo, DB db, EntityIds entityIds) {
     this.typeRegistry = registry;
-    this.mongo = mongo;
-    this.db = db;
+    this.mongoDB = new MongoDB(mongo, db);
+    this.entityIds = entityIds;
+
+    initialize();
+  }
+
+  @VisibleForTesting
+  MongoStorage(TypeRegistry registry, MongoDB mongoDB, EntityIds entityIds) {
+    this.typeRegistry = registry;
+    this.mongoDB = mongoDB;
     this.entityIds = entityIds;
 
     initialize();
@@ -111,7 +119,7 @@ public class MongoStorage implements Storage {
   }
 
   private void ensureIndexes() {
-    DBCollection collection = db.getCollection("relation");
+    DBCollection collection = getDBCollection(Relation.class);
     collection.ensureIndex(new BasicDBObject("^sourceId", 1));
     collection.ensureIndex(new BasicDBObject("^targetId", 1));
     collection.ensureIndex(new BasicDBObject("^sourceId", 1).append("^targetId", 1));
@@ -119,9 +127,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public void close() {
-    db.cleanCursors(true);
-    mongo.close();
-    LOG.info("Closed");
+    mongoDB.close();
   }
 
   // --- support -------------------------------------------------------
@@ -133,7 +139,7 @@ public class MongoStorage implements Storage {
     if (collection == null) {
       Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
       String collectionName = getInternalName(baseType);
-      collection = db.getCollection(collectionName);
+      collection = mongoDB.getCollection(collectionName);
       collection.setDBDecoderFactory(treeDecoderFactory);
       collection.setDBEncoderFactory(treeEncoderFactory);
       collectionCache.put(type, collection);
@@ -144,7 +150,7 @@ public class MongoStorage implements Storage {
   private <T extends Entity> DBCollection getVersionCollection(Class<T> type) {
     Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
     String collectionName = getInternalName(baseType) + "_versions";
-    DBCollection collection = db.getCollection(collectionName);
+    DBCollection collection = mongoDB.getCollection(collectionName);
     collection.setDBDecoderFactory(treeDecoderFactory);
     collection.setDBEncoderFactory(treeEncoderFactory);
     return collection;
@@ -168,16 +174,13 @@ public class MongoStorage implements Storage {
 
   // --- generic storage layer -----------------------------------------
 
-  /**
-   * Safe insert of an item into the Mongo database.
-   * (Maybe a bit paranoia, but better safe than sorry).
-   */
-  private void doMongoInsert(DBCollection collection, String id, JsonNode jsonNode) throws IOException {
-    collection.insert(toDBObject(jsonNode));
-    if (collection.findOne(queries.selectById(id)) == null) {
-      LOG.error("Failed to insert ({}, {})", collection.getName(), id);
-      throw new IOException("Insert failed");
+  private DBObject findExisting(Class<? extends Entity> type, DBObject query) throws IOException {
+    DBObject dbObject = getDBCollection(type).findOne(query);
+    if (dbObject == null) {
+      LOG.error("No match for query {}", query);
+      throw new IOException("No match");
     }
+    return dbObject;
   }
 
   private <T extends Entity> T getItem(Class<T> type, DBObject query) throws IOException {
@@ -226,7 +229,7 @@ public class MongoStorage implements Storage {
     entity.setModified(change);
 
     JsonNode jsonNode = inducer.induceSystemEntity(type, entity);
-    doMongoInsert(getDBCollection(type), id, jsonNode);
+    mongoDB.insert(getDBCollection(type), id, toDBObject(jsonNode));
 
     return id;
   }
@@ -248,7 +251,7 @@ public class MongoStorage implements Storage {
     entity.addVariation(type);
 
     JsonNode jsonNode = inducer.induceDomainEntity(type, entity);
-    doMongoInsert(getDBCollection(type), id, jsonNode);
+    mongoDB.insert(getDBCollection(type), id, toDBObject(jsonNode));
 
     addInitialVersion(type, id, jsonNode);
 
@@ -263,7 +266,7 @@ public class MongoStorage implements Storage {
     itemNode.put("_id", id);
     itemNode.put("versions", versionsNode);
 
-    doMongoInsert(getVersionCollection(type), id, itemNode);
+    mongoDB.insert(getVersionCollection(type), id, toDBObject(itemNode));
   }
 
   @Override
@@ -297,30 +300,17 @@ public class MongoStorage implements Storage {
     int revision = entity.getRev();
     DBObject query = queries.selectByIdAndRevision(id, revision);
 
-    // this is everything that is stored
-    DBObject dbObject = getDBCollection(type).findOne(query);
-    if (dbObject == null) {
-      LOG.error("No entity with id {} and revision {}", id, revision);
-      throw new IOException("Update failed");
-    }
-
-    JsonNode tree = toJsonNode(dbObject);
+    JsonNode tree = toJsonNode(findExisting(type, query));
 
     Class<? extends DomainEntity> baseType = TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type));
-    DomainEntity domainEntity = reducer.reduceVariation(baseType, tree);
-    if (domainEntity == null) {
-      LOG.error("Internal error : no primitive entity with id {} and revision {}", id, revision);
-      throw new IOException("Update failed");
-    }
+    DomainEntity domainEntity = reducer.reduceExistingVariation(baseType, tree);
 
-    // administrative update
     domainEntity.setRev(revision + 1);
     domainEntity.setModified(change);
     domainEntity.setPid(null);
     domainEntity.addVariation(type);
-    tree = inducer.adminDomainEntity(domainEntity, (ObjectNode) tree);
 
-    // update of "real" content
+    tree = inducer.adminDomainEntity(domainEntity, (ObjectNode) tree);
     tree = inducer.induceDomainEntity(type, entity, (ObjectNode) tree);
 
     WriteResult writeResult = getDBCollection(type).update(query, toDBObject(tree));
@@ -550,7 +540,7 @@ public class MongoStorage implements Storage {
       DBObject query = DBQuery.or(DBQuery.in("^sourceId", ids), DBQuery.in("^targetId", ids));
       DBObject columnsToShow = new BasicDBObject("_id", 1);
 
-      DBCursor cursor = db.getCollection("relation").find(query, columnsToShow);
+      DBCursor cursor = getDBCollection(Relation.class).find(query, columnsToShow);
       while (cursor.hasNext()) {
         relationIds.add((String) cursor.next().get("_id"));
       }

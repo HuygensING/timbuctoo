@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -45,11 +44,20 @@ public class EntityReducer {
     fieldMapper = new FieldMapper();
   }
 
-  public <T extends Entity> T reduceVariation(Class<T> type, JsonNode tree) throws StorageException, JsonProcessingException {
+  public <T extends Entity> T reduceExistingVariation(Class<T> type, JsonNode tree) throws IOException {
+    T entity = reduceVariation(type, tree);
+    if (entity == null) {
+      LOG.error("Missing variation for {}", type.getSimpleName());
+      throw new IOException("Missing variation");
+    }
+    return entity;
+  }
+
+  public <T extends Entity> T reduceVariation(Class<T> type, JsonNode tree) throws IOException {
     return reduceVariation(type, tree, null);
   }
 
-  public <T extends Entity> T reduceVariation(Class<T> type, JsonNode tree, String variation) throws StorageException, JsonProcessingException {
+  public <T extends Entity> T reduceVariation(Class<T> type, JsonNode tree, String variation) throws IOException {
     checkNotNull(tree);
 
     // For the time being I'm not quite sure whether variation should be used at all

@@ -31,10 +31,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import com.mongodb.Mongo;
 import com.mongodb.WriteResult;
 
 public class CombinedMongoStorageTest {
@@ -43,8 +41,7 @@ public class CombinedMongoStorageTest {
 
   private static TypeRegistry registry;
 
-  private Mongo mongo;
-  private DB db;
+  private MongoDB mongoDB;
   private DBCollection anyCollection;
   private EntityIds entityIds;
   private MongoStorage storage;
@@ -58,16 +55,15 @@ public class CombinedMongoStorageTest {
 
   @Before
   public void setup() throws Exception {
-    mongo = mock(Mongo.class);
-    db = mock(DB.class);
+    mongoDB = mock(MongoDB.class);
     anyCollection = mock(DBCollection.class);
     entityIds = mock(EntityIds.class);
-    storage = new MongoStorage(registry, mongo, db, entityIds);
+    storage = new MongoStorage(registry, mongoDB, entityIds);
 
     queries = new MongoQueries();
     mapper = new ObjectMapper();
 
-    when(db.getCollection(anyString())).thenReturn(anyCollection);
+    when(mongoDB.getCollection(anyString())).thenReturn(anyCollection);
   }
 
   private Map<String, Object> createDefaultMap(String id) {
@@ -92,12 +88,11 @@ public class CombinedMongoStorageTest {
     TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID, "test");
 
     when(entityIds.getNextId(TestSystemEntity.class)).thenReturn(generatedId);
-    DBObject query = queries.selectById(generatedId);
-    when(anyCollection.findOne(query)).thenReturn(new BasicDBObject());
 
     assertEquals(generatedId, storage.addSystemEntity(TestSystemEntity.class, entity));
+
     verify(entityIds).getNextId(TestSystemEntity.class);
-    verify(anyCollection).insert(any(DBObject.class));
+    verify(mongoDB).insert(any(DBCollection.class), any(String.class), any(DBObject.class));
   }
 
   @Test
@@ -106,13 +101,10 @@ public class CombinedMongoStorageTest {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
 
     when(entityIds.getNextId(ProjectADomainEntity.class)).thenReturn(generatedId);
-    DBObject query = queries.selectById(generatedId);
-    when(anyCollection.findOne(query)).thenReturn(new BasicDBObject());
 
     assertEquals(generatedId, storage.addDomainEntity(ProjectADomainEntity.class, entity));
     verify(entityIds).getNextId(ProjectADomainEntity.class);
-    // Two additions: in regular and in version collection.
-    verify(anyCollection, times(2)).insert(any(DBObject.class));
+    verify(mongoDB, times(2)).insert(any(DBCollection.class), any(String.class), any(DBObject.class));
   }
 
   @Test(expected = IOException.class)
