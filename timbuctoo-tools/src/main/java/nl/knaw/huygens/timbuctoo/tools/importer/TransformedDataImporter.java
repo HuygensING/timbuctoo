@@ -53,9 +53,7 @@ public class TransformedDataImporter extends DefaultImporter {
   }
 
   protected void importData(String dataPath) throws IOException, IndexException, JsonParseException, JsonMappingException {
-    Change change = Change.newInstance();
-    change.setAuthorId("timbuctoo");
-    change.setVreId("timbuctoo");
+    Change change = new Change("timbuctoo", "timbuctoo");
 
     File[] jsonFiles = getJsonFiles(dataPath);
 
@@ -69,7 +67,6 @@ public class TransformedDataImporter extends DefaultImporter {
       } else {
         LOG.error("{} is not a DomainEntity.", className);
       }
-
     }
 
     storageManager.close();

@@ -110,8 +110,9 @@ public class DomainEntityResource extends ResourceBase {
       throw new WebApplicationException(Status.FORBIDDEN);
     }
 
-    // TODO add user and vre
-    Change change = Change.newInstance();
+    // TODO add user
+    Change change = new Change(null, vreId);
+
     String id = storageManager.addDomainEntity((Class<T>) type, (T) input, change);
     notifyChange(ActionType.ADD, type, id);
 
@@ -165,8 +166,8 @@ public class DomainEntityResource extends ResourceBase {
 
     checkWritable(entity, Status.FORBIDDEN);
 
-    // TODO add user and vre
-    Change change = Change.newInstance();
+    // TODO add user
+    Change change = new Change(null, vreId);
 
     try {
       storageManager.updateDomainEntity((Class<T>) type, (T) input, change);

@@ -149,7 +149,8 @@ public class CombinedMongoStorageTest {
 
     when(anyCollection.findOne(new BasicDBObject("_id", DEFAULT_ID))).thenReturn(dbObject);
 
-    storage.deleteDomainEntity(BaseDomainEntity.class, DEFAULT_ID, Change.newInstance());
+    Change change = new Change("test", "test");
+    storage.deleteDomainEntity(BaseDomainEntity.class, DEFAULT_ID, change);
 
     verify(mongoDB).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
   }
