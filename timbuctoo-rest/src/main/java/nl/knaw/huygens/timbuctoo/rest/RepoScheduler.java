@@ -4,6 +4,7 @@ import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
+import java.io.IOException;
 import java.util.Date;
 
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -76,11 +77,16 @@ public class RepoScheduler {
     private static final Logger LOG = LoggerFactory.getLogger(SearchResultCleanupJob.class);
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
-      long ttl = context.getMergedJobDataMap().getLongValue("ttl");
-      Date date = new Date(System.currentTimeMillis() - ttl);
-      StorageManager manager = RepoScheduler.injector.getInstance(StorageManager.class);
-      int n = manager.deleteSearchResultsBefore(date);
-      LOG.info("Removed {} search results", n);
+      try {
+        long ttl = context.getMergedJobDataMap().getLongValue("ttl");
+        Date date = new Date(System.currentTimeMillis() - ttl);
+        StorageManager manager = RepoScheduler.injector.getInstance(StorageManager.class);
+        int n = manager.deleteSearchResultsBefore(date);
+        LOG.info("Removed {} search results", n);
+      } catch (IOException e) {
+        LOG.error("Failed to remove search results");
+        throw new JobExecutionException("Failed to remove search results", e);
+      }
     }
   }
 

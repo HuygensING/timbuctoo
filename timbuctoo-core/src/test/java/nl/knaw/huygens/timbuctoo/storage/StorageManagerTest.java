@@ -120,13 +120,13 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testDeleteAllSearchResults() {
+  public void testDeleteAllSearchResults() throws IOException {
     manager.deleteAllSearchResults();
     verify(storage).deleteAll(SearchResult.class);
   }
 
   @Test
-  public void testDeleteSearchResultsBefore() {
+  public void testDeleteSearchResultsBefore() throws IOException {
     Date date = new Date();
     manager.deleteSearchResultsBefore(date);
     verify(storage).deleteByDate(SearchResult.class, "date", date);
