@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
@@ -76,9 +77,11 @@ public class EntityInducer {
 
   /**
    * Converts a domain entity to a Json tree and combines it with an existing Json tree.
+   * Note that this method only handles the variant that correspondeds with the specified type,
+   * either a primitive domain entity or a project domain entity.
    */
   public <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity, ObjectNode tree) {
-    Class<?> stopType = (type.getSuperclass() == DomainEntity.class) ? type : type.getSuperclass();
+    Class<?> stopType = TypeRegistry.toBaseDomainEntity(type);
     Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, stopType);
     tree = updateJsonTree(tree, entity, fieldMap);
 
