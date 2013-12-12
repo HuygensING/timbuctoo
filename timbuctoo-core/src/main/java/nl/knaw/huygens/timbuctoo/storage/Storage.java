@@ -34,9 +34,17 @@ public interface Storage {
 
   // --- update entities -----------------------------------------------
 
-  <T extends SystemEntity> void updateSystemEntity(Class<T> type, String id, T entity) throws IOException;
+  /**
+   * Updates the specified system entity in the storage.
+   * The id and the revision of the entity must match with the stored entity.
+   */
+  <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws IOException;
 
-  <T extends DomainEntity> void updateDomainEntity(Class<T> type, String id, T entity, Change change) throws IOException;
+  /**
+   * Updates the specified doamin entity in the storage.
+   * The id and the revision of the entity must match with the stored entity.
+   */
+  <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws IOException;
 
   <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws IOException;
 

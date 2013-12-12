@@ -108,7 +108,7 @@ public class CombinedMongoStorageTest {
   public void testUpdateSystemEntityNonExistent() throws IOException {
     TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
 
-    storage.updateSystemEntity(TestSystemEntity.class, DEFAULT_ID, entity);
+    storage.updateSystemEntity(TestSystemEntity.class, entity);
   }
 
   @Test
@@ -119,7 +119,7 @@ public class CombinedMongoStorageTest {
     DBObject dbObject = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
     when(anyCollection.findOne(any(DBObject.class))).thenReturn(dbObject);
 
-    storage.updateDomainEntity(ProjectADomainEntity.class, DEFAULT_ID, entity, new Change());
+    storage.updateDomainEntity(ProjectADomainEntity.class, entity, new Change());
 
     verify(mongoDB).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
   }
@@ -128,7 +128,7 @@ public class CombinedMongoStorageTest {
   public void testUpdateDomainEntityForMissingEntity() throws IOException {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
 
-    storage.updateDomainEntity(ProjectADomainEntity.class, DEFAULT_ID, entity, new Change());
+    storage.updateDomainEntity(ProjectADomainEntity.class, entity, new Change());
   }
 
   @Test
