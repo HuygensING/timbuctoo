@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 
 import java.io.IOException;
@@ -40,6 +41,7 @@ import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +62,7 @@ public class DomainEntityResource extends ResourceBase {
 
   private static final String ID_PARAM = "id";
   private static final String ID_PATH = "/{id: " + Paths.ID_REGEX + "}";
+  private static final String PID_PATH = "/pid";
 
   private final TypeRegistry typeRegistry;
   private final StorageManager storageManager;
@@ -105,10 +108,7 @@ public class DomainEntityResource extends ResourceBase {
       throw new WebApplicationException(Status.BAD_REQUEST);
     }
 
-    Scope scope = getScope(vreId);
-    if (!scope.isTypeInScope(type)) {
-      throw new WebApplicationException(Status.FORBIDDEN);
-    }
+    checkCollectionInScope(type, vreId);
 
     // TODO add user
     Change change = new Change(null, vreId);
@@ -119,11 +119,6 @@ public class DomainEntityResource extends ResourceBase {
     String baseUri = CharMatcher.is('/').trimTrailingFrom(uriInfo.getBaseUri().toString());
     String location = Joiner.on('/').join(baseUri, Paths.DOMAIN_PREFIX, entityName, id);
     return Response.status(Status.CREATED).header("Location", location).build();
-  }
-
-  private Scope getScope(String vreId) {
-    VRE vre = vreManager.getVREById(vreId);
-    return vre.getScope();
   }
 
   @GET
@@ -152,17 +147,13 @@ public class DomainEntityResource extends ResourceBase {
   ) throws IOException {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
-    Scope scope = getScope(vreId);
-
     if (type != input.getClass()) {
       throw new WebApplicationException(Status.BAD_REQUEST);
     }
 
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
 
-    if (!scope.inScope(type, id)) {
-      throw new WebApplicationException(Status.FORBIDDEN);
-    }
+    checkItemInScope(type, id, vreId);
 
     checkWritable(entity, Status.FORBIDDEN);
 
@@ -180,6 +171,37 @@ public class DomainEntityResource extends ResourceBase {
     notifyChange(ActionType.MOD, type, id);
   }
 
+  @PUT
+  @Path(PID_PATH)
+  @RolesAllowed(ADMIN_ROLE)
+  @Consumes(MediaType.APPLICATION_JSON)
+  @JsonView(JsonViews.WebView.class)
+  public <T extends DomainEntity> void putPIDs(//
+      @PathParam(ENTITY_PARAM) String entityName,//
+      @HeaderParam(VRE_ID_KEY) String vreId) throws IOException {
+    @SuppressWarnings("unchecked")
+    Class<T> type = (Class<T>) getEntityType(entityName, Status.NOT_FOUND);
+
+    if (DomainEntity.class.equals(type.getSuperclass())) {
+      throw new WebApplicationException(Status.BAD_REQUEST);
+    }
+
+    // if you want to be able to put a pid on items without pid you have to have access to the base class.
+    checkCollectionInScope(TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type)), vreId);
+
+    List<String> entityIds = storageManager.getAllIdsWithoutPIDOfType(type);
+
+    // TODO: make more efficient, create a method in StorageManager to retrieve multiple items at one call and iterate over the items.
+    for (String id : entityIds) {
+      T entity = storageManager.getEntity(type, id);
+
+      if (StringUtils.isBlank(entity.getPid())) {
+        sendPersistMessage(ActionType.MOD, type, id);
+      }
+    }
+
+  }
+
   @DELETE
   @Path(ID_PATH)
   @JsonView(JsonViews.WebView.class)
@@ -193,10 +215,7 @@ public class DomainEntityResource extends ResourceBase {
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
     checkWritable(entity, Status.FORBIDDEN);
 
-    Scope scope = getScope(vreId);
-    if (!scope.inScope(type, id)) {
-      throw new WebApplicationException(Status.FORBIDDEN);
-    }
+    checkItemInScope(type, id, vreId);
 
     storageManager.deleteDomainEntity(entity);
     notifyChange(ActionType.DEL, type, id);
@@ -282,6 +301,39 @@ public class DomainEntityResource extends ResourceBase {
       LOG.info("Entity with id {} is not writeable", entity.getId());
       throw new WebApplicationException(status);
     }
+  }
+
+  /**
+   * Helper method to check if the type is in the scope of the VRE.
+   * It throws a Forbidden exception if the {@code type} does not belong to the scope.
+   * @param type the type to check.
+   * @param vreId the id of the VRE.
+   */
+  private <T extends DomainEntity> void checkCollectionInScope(Class<T> type, String vreId) {
+    Scope scope = getScope(vreId);
+
+    if (!scope.isTypeInScope(type)) {
+      throw new WebApplicationException(Status.FORBIDDEN);
+    }
+  }
+
+  /**
+   * Helper method to check if the item is in the scope of the VRE. 
+   * It throws a Forbidden exception if the item does not belong to the scope.
+   * @param type the type of the item to check.
+   * @param id the id of the item to check.
+   * @param vreId the id of the VRE.
+   */
+  private <T extends DomainEntity> void checkItemInScope(Class<T> type, String id, String vreId) {
+    Scope scope = getScope(vreId);
+    if (!scope.inScope(type, id)) {
+      throw new WebApplicationException(Status.FORBIDDEN);
+    }
+  }
+
+  private Scope getScope(String vreId) {
+    VRE vre = vreManager.getVREById(vreId);
+    return vre.getScope();
   }
 
 }

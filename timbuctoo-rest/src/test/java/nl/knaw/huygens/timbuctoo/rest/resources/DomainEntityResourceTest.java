@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -30,20 +31,24 @@ import javax.ws.rs.core.MultivaluedMap;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.rest.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.TestDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
+import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.client.GenericType;
 
 public class DomainEntityResourceTest extends WebServiceTestSetup {
@@ -509,7 +514,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     setUserNotLoggedIn();
 
-    ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, entity);
+    ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).header(VRE_ID_KEY, VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
 
@@ -522,8 +527,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID, "test");
     whenJsonProviderReadFromThenReturn(entity);
 
-    ClientResponse response = domainResource("testdomainentities").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
-        .post(ClientResponse.class, entity);
+    ClientResponse response = domainResource("testdomainentities").header(VRE_ID_KEY, VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
+        .header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
 
@@ -536,7 +541,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     setUserNotLoggedIn();
 
-    ClientResponse response = domainResource("testdomainentities").type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, entity);
+    ClientResponse response = domainResource("testdomainentities").header(VRE_ID_KEY, VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
 
@@ -546,7 +551,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testDeleteNotLoggedIn() throws Exception {
     setUserNotLoggedIn();
 
-    ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).delete(ClientResponse.class);
+    ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
 
@@ -556,8 +561,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testDeleteUserNotInRole() throws PersistenceException, JMSException {
     setUpUserWithRoles(USER_ID, null);
 
-    ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
-        .delete(ClientResponse.class);
+    ClientResponse response = domainResource("testdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header(VRE_ID_KEY, VRE_ID).header("Authorization", "bearer 12333322abef")
+        .header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
   }
@@ -568,9 +573,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testGetDocOfVariation() {
     TestDomainEntity expectedDoc = new TestDomainEntity(DEFAULT_ID);
     String variation = "projecta";
-    when(getStorageManager().getVariation(TestDomainEntity.class, DEFAULT_ID, variation)).thenReturn(expectedDoc);
+    when(getStorageManager().getVariation(DEFAULT_TYPE, DEFAULT_ID, variation)).thenReturn(expectedDoc);
 
-    TestDomainEntity actualDoc = domainResource("testdomainentities", DEFAULT_ID).path(variation).header("Authorization", "bearer 12333322abef").get(TestDomainEntity.class);
+    TestDomainEntity actualDoc = domainResource("testdomainentities", DEFAULT_ID).path(variation).get(TestDomainEntity.class);
     assertNotNull(actualDoc);
     assertEquals(expectedDoc.getId(), actualDoc.getId());
   }
@@ -578,10 +583,150 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetDocOfVariationDocDoesNotExist() {
     String variation = "projecta";
-    when(getStorageManager().getVariation(TestDomainEntity.class, "TEST000000000002", variation)).thenReturn(null);
+    when(getStorageManager().getVariation(DEFAULT_TYPE, "TEST000000000002", variation)).thenReturn(null);
 
-    ClientResponse response = domainResource("testdomainentities", "TEST000000000002").path(variation).header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
+    ClientResponse response = domainResource("testdomainentities", "TEST000000000002").path(variation).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
+  }
+
+  // Test put PID.
+
+  @Test
+  public void testPutPID() throws JMSException, IOException {
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+
+    setUpVREManager(VRE_ID, true);
+    setUpScopeForCollection(BaseDomainEntity.class, VRE_ID, true);
+
+    String id1 = "ID1";
+    String id2 = "ID2";
+    String id3 = "ID3";
+    List<String> entityIds = Lists.newArrayList(id1, id2, id3);
+    Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
+
+    when(getStorageManager().getAllIdsWithoutPIDOfType(type)).thenReturn(entityIds);
+    when(getStorageManager().getEntity(type, id1)).thenReturn(createProjectADomainEntity(id1, false));
+    when(getStorageManager().getEntity(type, id2)).thenReturn(createProjectADomainEntity(id2, false));
+    when(getStorageManager().getEntity(type, id3)).thenReturn(createProjectADomainEntity(id3, false));
+
+    ClientResponse response = doPutPIDRequest("projectadomainentities");
+
+    assertEquals(Status.NO_CONTENT, response.getClientResponseStatus());
+
+    verify(getStorageManager()).getAllIdsWithoutPIDOfType(type);
+    verify(getStorageManager()).getEntity(type, id1);
+    verify(getStorageManager()).getEntity(type, id2);
+    verify(getStorageManager()).getEntity(type, id3);
+
+    verify(getProducer(PERSISTENCE_PRODUCER)).send(ActionType.MOD, type, id1);
+    verify(getProducer(PERSISTENCE_PRODUCER)).send(ActionType.MOD, type, id2);
+    verify(getProducer(PERSISTENCE_PRODUCER)).send(ActionType.MOD, type, id3);
+
+    verifyZeroInteractions(getProducer(INDEX_PRODUCER));
+  }
+
+  @Test
+  public void testPutPIDOnBaseEntity() throws IOException, JMSException {
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+
+    setUpVREManager(VRE_ID, true);
+    setUpScopeForCollection(BaseDomainEntity.class, VRE_ID, true);
+
+    ClientResponse response = doPutPIDRequest("basedomainentities");
+
+    assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
+
+    verifyZeroInteractions(getProducer(INDEX_PRODUCER), getProducer(PERSISTENCE_PRODUCER));
+    verify(getStorageManager(), never()).getAllIdsWithoutPIDOfType(Mockito.<Class<? extends DomainEntity>> any());
+  }
+
+  @Test
+  public void testPutPIDBaseClassNotInScope() throws IOException {
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpVREManager(VRE_ID, true);
+    setUpScopeForCollection(BaseDomainEntity.class, VRE_ID, false);
+
+    ClientResponse response = doPutPIDRequest("projectadomainentities");
+
+    assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
+
+    verifyZeroInteractions(getProducer(INDEX_PRODUCER), getProducer(PERSISTENCE_PRODUCER));
+    verify(getStorageManager(), never()).getAllIdsWithoutPIDOfType(Mockito.<Class<? extends DomainEntity>> any());
+  }
+
+  @Test
+  public void testPutPIDSomeItemsAlreadyHaveAPID() throws IOException, JMSException {
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+
+    setUpVREManager(VRE_ID, true);
+    setUpScopeForCollection(BaseDomainEntity.class, VRE_ID, true);
+    String id1 = "ID1";
+    String id2 = "ID2";
+    String id3 = "ID3";
+    List<String> entityIds = Lists.newArrayList(id1, id2, id3);
+    Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
+
+    when(getStorageManager().getAllIdsWithoutPIDOfType(type)).thenReturn(entityIds);
+    when(getStorageManager().getEntity(type, id1)).thenReturn(createProjectADomainEntity(id1, false));
+    when(getStorageManager().getEntity(type, id2)).thenReturn(createProjectADomainEntity(id2, true));
+    when(getStorageManager().getEntity(type, id3)).thenReturn(createProjectADomainEntity(id3, false));
+
+    ClientResponse response = doPutPIDRequest("projectadomainentities");
+
+    assertEquals(Status.NO_CONTENT, response.getClientResponseStatus());
+
+    verify(getStorageManager()).getAllIdsWithoutPIDOfType(type);
+    verify(getStorageManager()).getEntity(type, id1);
+    verify(getStorageManager()).getEntity(type, id2);
+    verify(getStorageManager()).getEntity(type, id3);
+
+    verify(getProducer(PERSISTENCE_PRODUCER)).send(ActionType.MOD, type, id1);
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(ActionType.MOD, type, id2);
+    verify(getProducer(PERSISTENCE_PRODUCER)).send(ActionType.MOD, type, id3);
+
+    verifyZeroInteractions(getProducer(INDEX_PRODUCER));
+  }
+
+  private ProjectADomainEntity createProjectADomainEntity(String id, boolean hasPid) {
+    ProjectADomainEntity entity = new ProjectADomainEntity(id);
+    if (hasPid) {
+      entity.setPid("testPID");
+    }
+    return entity;
+  }
+
+  @Test
+  public void testPutPIDTypeDoesNotExist() throws IOException {
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+
+    setUpVREManager(VRE_ID, true);
+
+    ClientResponse response = doPutPIDRequest("unknowntypes");
+
+    assertEquals(Status.NOT_FOUND, response.getClientResponseStatus());
+
+    verifyZeroInteractions(getProducer(INDEX_PRODUCER), getProducer(PERSISTENCE_PRODUCER));
+    verify(getStorageManager(), never()).getAllIdsWithoutPIDOfType(Mockito.<Class<? extends DomainEntity>> any());
+
+  }
+
+  @Test
+  public void testPutPIDUserNotAllowed() throws IOException {
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+
+    setUpVREManager(VRE_ID, true);
+
+    ClientResponse response = doPutPIDRequest("unknowntypes");
+
+    assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
+
+    verifyZeroInteractions(getProducer(INDEX_PRODUCER), getProducer(PERSISTENCE_PRODUCER));
+    verify(getStorageManager(), never()).getAllIdsWithoutPIDOfType(Mockito.<Class<? extends DomainEntity>> any());
+
+  }
+
+  private ClientResponse doPutPIDRequest(String collectionName) {
+    return domainResource(collectionName, "pid").header(VRE_ID_KEY, VRE_ID).header("Authorization", "bearer 12333322abef").put(ClientResponse.class);
   }
 
 }
