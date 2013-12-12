@@ -100,7 +100,7 @@ public class StorageManagerTest {
     BaseDomainEntity entity = new BaseDomainEntity("id");
     Change change = new Change("test", "test");
     manager.updateDomainEntity(BaseDomainEntity.class, entity, change);
-    verify(storage).updateDomainEntity(BaseDomainEntity.class, "id", entity, change);
+    verify(storage).updateDomainEntity(BaseDomainEntity.class, entity, change);
   }
 
   @Test

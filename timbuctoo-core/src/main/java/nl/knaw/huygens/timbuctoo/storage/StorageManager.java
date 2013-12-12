@@ -83,11 +83,11 @@ public class StorageManager {
   // --- update entities -----------------------------------------------
 
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws IOException {
-    storage.updateSystemEntity(type, entity.getId(), entity);
+    storage.updateSystemEntity(type, entity);
   }
 
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws IOException {
-    storage.updateDomainEntity(type, entity.getId(), entity, change);
+    storage.updateDomainEntity(type, entity, change);
   }
 
   public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws IOException {
