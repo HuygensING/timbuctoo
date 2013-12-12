@@ -194,15 +194,13 @@ public class DomainEntityResource extends ResourceBase {
 
     List<String> entityIds = storageManager.getAllIdsWithoutPIDOfType(type);
 
-    // TODO: make more efficient, create a method in StorageManager to retrieve multiple items at one call and iterate over the items.
-    for (String id : entityIds) {
-      T entity = storageManager.getEntity(type, id);
-
+    List<T> entities = storageManager.getAllByIds(type, entityIds);
+    for (T entity : entities) {
       if (StringUtils.isBlank(entity.getPid())) {
-        sendPersistMessage(ActionType.MOD, type, id);
+        sendPersistMessage(ActionType.MOD, type, entity.getId());
       } else {
         // Should never hapen.
-        LOG.error("Entity of type {} with id {} already has a pid.", type.getSimpleName(), id);
+        LOG.error("Entity of type {} with id {} already has a pid.", type.getSimpleName(), entity.getId());
       }
     }
 

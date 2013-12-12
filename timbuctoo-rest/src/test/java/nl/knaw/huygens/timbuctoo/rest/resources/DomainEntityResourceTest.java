@@ -602,18 +602,16 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
 
     when(getStorageManager().getAllIdsWithoutPIDOfType(type)).thenReturn(entityIds);
-    when(getStorageManager().getEntity(type, id1)).thenReturn(createProjectADomainEntity(id1, false));
-    when(getStorageManager().getEntity(type, id2)).thenReturn(createProjectADomainEntity(id2, false));
-    when(getStorageManager().getEntity(type, id3)).thenReturn(createProjectADomainEntity(id3, false));
+
+    List<ProjectADomainEntity> entities = Lists.newArrayList(createProjectADomainEntity(id1, false), createProjectADomainEntity(id2, false), createProjectADomainEntity(id3, false));
+    when(getStorageManager().getAllByIds(type, entityIds)).thenReturn(entities);
 
     ClientResponse response = doPutPIDRequest("projectadomainentities");
 
     assertEquals(Status.NO_CONTENT, response.getClientResponseStatus());
 
     verify(getStorageManager()).getAllIdsWithoutPIDOfType(type);
-    verify(getStorageManager()).getEntity(type, id1);
-    verify(getStorageManager()).getEntity(type, id2);
-    verify(getStorageManager()).getEntity(type, id3);
+    verify(getStorageManager()).getAllByIds(type, entityIds);
 
     verify(getProducer(PERSISTENCE_PRODUCER)).send(ActionType.MOD, type, id1);
     verify(getProducer(PERSISTENCE_PRODUCER)).send(ActionType.MOD, type, id2);
@@ -664,18 +662,15 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
 
     when(getStorageManager().getAllIdsWithoutPIDOfType(type)).thenReturn(entityIds);
-    when(getStorageManager().getEntity(type, id1)).thenReturn(createProjectADomainEntity(id1, false));
-    when(getStorageManager().getEntity(type, id2)).thenReturn(createProjectADomainEntity(id2, true));
-    when(getStorageManager().getEntity(type, id3)).thenReturn(createProjectADomainEntity(id3, false));
+    List<ProjectADomainEntity> entities = Lists.newArrayList(createProjectADomainEntity(id1, false), createProjectADomainEntity(id2, true), createProjectADomainEntity(id3, false));
+    when(getStorageManager().getAllByIds(type, entityIds)).thenReturn(entities);
 
     ClientResponse response = doPutPIDRequest("projectadomainentities");
 
     assertEquals(Status.NO_CONTENT, response.getClientResponseStatus());
 
     verify(getStorageManager()).getAllIdsWithoutPIDOfType(type);
-    verify(getStorageManager()).getEntity(type, id1);
-    verify(getStorageManager()).getEntity(type, id2);
-    verify(getStorageManager()).getEntity(type, id3);
+    verify(getStorageManager()).getAllByIds(type, entityIds);
 
     verify(getProducer(PERSISTENCE_PRODUCER)).send(ActionType.MOD, type, id1);
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(ActionType.MOD, type, id2);
