@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -320,29 +319,36 @@ public class MongoStorage implements Storage {
 
   public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws IOException {
     DBObject query = queries.selectById(id);
-    DBObject update = queries.setProperty(DomainEntity.PID, pid);
-    getDBCollection(type).update(query, update);
+
+    JsonNode tree = getExisting(type, query);
+
+    DomainEntity domainEntity = reducer.reduceExistingVariation(toBaseDomainEntity(type), tree);
+
+    domainEntity.setPid(pid);
+
+    inducer.adminDomainEntity(domainEntity, (ObjectNode) tree);
+
+    mongoDB.update(getDBCollection(type), query, toDBObject(tree));
+
+    addVersion(type, id, tree);
   }
 
-  protected <T extends Entity> void addInitialVersion(Class<T> type, String id, JsonNode actualVersion) throws IOException {
-    ArrayNode versionsNode = objectMapper.createArrayNode();
-    versionsNode.add(actualVersion);
+  private <T extends Entity> void addVersion(Class<T> type, String id, JsonNode tree) throws IOException {
+    DBCollection collection = getVersionCollection(type);
+    DBObject query = queries.selectById(id);
 
-    ObjectNode itemNode = objectMapper.createObjectNode();
-    itemNode.put("_id", id);
-    itemNode.put("versions", versionsNode);
+    if (collection.findOne(query) == null) {
+      ObjectNode node = objectMapper.createObjectNode();
+      node.put("_id", id);
+      node.put("versions", objectMapper.createArrayNode());
+      mongoDB.insert(collection, id, toDBObject(node));
+    }
 
-    mongoDB.insert(getVersionCollection(type), id, toDBObject(itemNode));
-  }
-
-  protected <T extends Entity> void addVersion(Class<T> type, String id, JsonNode actualVersion) throws IOException {
     ObjectNode versionNode = objectMapper.createObjectNode();
-    versionNode.put("versions", actualVersion);
-
+    versionNode.put("versions", tree);
     ObjectNode update = objectMapper.createObjectNode();
     update.put("$push", versionNode);
-
-    mongoDB.update(getVersionCollection(type), queries.selectById(id), toDBObject(update));
+    mongoDB.update(collection, query, toDBObject(update));
   }
 
   // --- system entities -----------------------------------------------

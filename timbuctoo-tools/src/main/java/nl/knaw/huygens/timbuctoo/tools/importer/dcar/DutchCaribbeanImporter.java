@@ -286,12 +286,14 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
 
           ATLGKeyword newKeyword = new ATLGKeyword();
           newKeyword.setId(keyword.getId());
-          newKeyword.setRev(keyword.getRev());
+          newKeyword.setRev(2);
           newKeyword.setVariations(keyword.getVariations());
           newKeyword.setType(keyword.getType());
           newKeyword.setValue(keyword.getValue());
           newKeyword.setLabel("ATLG-" + keyword.getLabel());
           updateDomainEntity(ATLGKeyword.class, newKeyword);
+
+          storageManager.setPID(DCARKeyword.class, keyword.getId(), "3c08c345-c80d-44e2-a377-029259b662b9");
         }
       }
     }

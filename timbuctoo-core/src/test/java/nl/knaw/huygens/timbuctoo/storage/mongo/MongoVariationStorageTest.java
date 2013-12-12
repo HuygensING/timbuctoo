@@ -399,31 +399,4 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     storage.deleteNonPersistent(BaseDomainEntity.class, ids);
   }
 
-  @Test
-  public void testSetPID() throws IOException {
-    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
-    String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
-    DBObject update = queries.setProperty(DomainEntity.PID, pid);
-
-    storage.setPID(ProjectADomainEntity.class, DEFAULT_ID, pid);
-
-    verify(anyCollection).update(query, update);
-    verify(db).getCollection(TypeNames.getInternalName(BaseDomainEntity.class));
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testSetPIDMongoException() throws IOException {
-    DBObject query = new BasicDBObject("_id", DEFAULT_ID);
-    String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
-    DBObject update = queries.setProperty(DomainEntity.PID, pid);
-
-    doThrow(MongoException.class).when(anyCollection).update(query, update);
-
-    try {
-      storage.setPID(ProjectADomainEntity.class, DEFAULT_ID, pid);
-    } finally {
-      verify(db).getCollection(TypeNames.getInternalName(BaseDomainEntity.class));
-    }
-  }
-
 }

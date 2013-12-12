@@ -7,6 +7,7 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -158,6 +159,19 @@ public class CombinedMongoStorageTest {
   @Test(expected = IOException.class)
   public void testDeleteItemNonExistent() throws IOException {
     storage.deleteDomainEntity(BaseDomainEntity.class, DEFAULT_ID, null);
+  }
+
+  @Test
+  public void testSetPID() throws IOException {
+    String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
+
+    JsonNode jsonNode = mapper.createObjectNode();
+    DBObject dbObject = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
+    when(anyCollection.findOne(any(DBObject.class))).thenReturn(dbObject);
+
+    storage.setPID(ProjectADomainEntity.class, DEFAULT_ID, pid);
+
+    verify(mongoDB, times(2)).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
   }
 
 }
