@@ -143,6 +143,11 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     return resource;
   }
 
+  /**
+   * A method to get past the {@code VREAuthorizationFilter}.
+   * @param vreId the id to match the VRE.
+   * @param vreExists {@code true} when the VRE has to exists {@code false} if not.
+   */
   protected void setUpVREManager(String vreId, boolean vreExists) {
     VREManager vreManager = injector.getInstance(VREManager.class);
     when(vreManager.doesVREExist(vreId)).thenReturn(vreExists);
