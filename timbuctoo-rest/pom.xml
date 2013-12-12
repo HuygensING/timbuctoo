@@ -44,7 +44,7 @@
         </exclusion>
       </exclusions>
     </dependency>
-    
+
     <!-- Huygens security -->
     <dependency>
       <groupId>nl.knaw.huygens</groupId>
@@ -69,15 +69,6 @@
       <version>${javax.validation.version}</version>
     </dependency>
 
-
-    <!-- Apache Commons Codec: encoders and decoders -->
-    <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-      <!-- Version used by Apis; Solr uses 1.7 -->
-      <version>1.4</version>
-    </dependency>
-
     <!-- Commons Configuration, assists with reading configuration files. -->
     <dependency>
       <groupId>commons-configuration</groupId>
@@ -89,6 +80,12 @@
           <groupId>commons-logging</groupId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons.lang.version}</version>
     </dependency>
 
     <!-- Jackson for JSON -->
@@ -142,8 +139,6 @@
       <artifactId>jersey-guice</artifactId>
       <version>${jersey.version}</version>
     </dependency>
-
-
 
     <!-- Guice -->
     <dependency>
