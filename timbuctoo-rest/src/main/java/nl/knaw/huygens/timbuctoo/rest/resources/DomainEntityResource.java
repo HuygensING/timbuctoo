@@ -197,6 +197,9 @@ public class DomainEntityResource extends ResourceBase {
 
       if (StringUtils.isBlank(entity.getPid())) {
         sendPersistMessage(ActionType.MOD, type, id);
+      } else {
+        // Should never hapen.
+        LOG.error("Entity of type {} with id {} already has a pid.", type.getSimpleName(), id);
       }
     }
 
