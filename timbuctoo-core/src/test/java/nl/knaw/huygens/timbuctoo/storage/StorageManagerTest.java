@@ -195,4 +195,19 @@ public class StorageManagerTest {
     assertTrue(list.isEmpty());
   }
 
+  @Test
+  public void getAllByIds() {
+    List<BaseDomainEntity> limitedList = Lists.newArrayList(mock(BaseDomainEntity.class), mock(BaseDomainEntity.class), mock(BaseDomainEntity.class));
+
+    @SuppressWarnings("unchecked")
+    StorageIterator<BaseDomainEntity> iterator = mock(StorageIterator.class);
+    when(iterator.getSome(anyInt())).thenReturn(limitedList);
+
+    ArrayList<String> ids = Lists.newArrayList("id1", "id2", "id3");
+    when(storage.getAllByIds(BaseDomainEntity.class, ids)).thenReturn(iterator);
+
+    List<BaseDomainEntity> actualList = manager.getAllByIds(BaseDomainEntity.class, ids);
+    verify(iterator).getSome(3);
+    assertEquals(3, actualList.size());
+  }
 }

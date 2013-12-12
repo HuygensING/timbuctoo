@@ -192,6 +192,12 @@ public class MongoStorage implements Storage {
     return (cursor != null) ? new MongoStorageIterator<T>(type, cursor, reducer) : new EmptyStorageIterator<T>();
   }
 
+  // Should be the replacement of getItems
+  private <T extends Entity> StorageIterator<T> findItems(Class<T> type, DBObject query) {
+    DBCursor cursor = mongoDB.findByQuery(getDBCollection(type), query);
+    return (cursor != null) ? new MongoStorageIterator<T>(type, cursor, reducer) : new EmptyStorageIterator<T>();
+  }
+
   public <T extends Entity> long count(Class<T> type) {
     Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
     return getDBCollection(baseType).count();
@@ -209,6 +215,11 @@ public class MongoStorage implements Storage {
   public <T extends Entity> StorageIterator<T> getAllByType(Class<T> type) {
     DBObject query = queries.selectAll();
     return getItems(type, query);
+  }
+
+  @Override
+  public <T extends Entity> StorageIterator<T> getAllByIds(Class<T> type, List<String> ids) {
+    return findItems(type, DBQuery.in(Entity.ID, ids));
   }
 
   @Override

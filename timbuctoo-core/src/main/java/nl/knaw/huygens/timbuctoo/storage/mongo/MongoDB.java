@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.WriteResult;
@@ -71,4 +72,7 @@ public class MongoDB {
     return (result != null) ? result.getN() : 0;
   }
 
+  public DBCursor findByQuery(DBCollection collection, DBObject query) {
+    throw new UnsupportedOperationException("Yet to be implemented.");
+  }
 }
