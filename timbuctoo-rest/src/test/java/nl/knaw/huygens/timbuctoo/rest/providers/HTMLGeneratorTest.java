@@ -131,7 +131,7 @@ public class HTMLGeneratorTest {
     assertContains(html, "Modified", "none");
     assertContains(html, "Pid", "pid");
 
-    assertContains(html, "href=|basedomainentitys/GTD0000000001|");
+    assertContains(html, "href=|basedomainentities/GTD0000000001|");
     assertContains(html, "href=|projectadomainentities/GTD0000000001|");
 
     assertContains(html, "Deleted", "no");
