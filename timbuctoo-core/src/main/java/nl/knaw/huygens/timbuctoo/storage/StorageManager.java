@@ -9,6 +9,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -86,7 +87,13 @@ public class StorageManager {
     storage.updateSystemEntity(type, entity);
   }
 
-  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws IOException {
+  public <T extends DomainEntity> void updatePrimitiveDomainEntity(Class<T> type, T entity, Change change) throws IOException {
+    checkArgument(TypeRegistry.isPrimitiveDomainEntity(type), "%s must be a primitive domain entity", type.getSimpleName());
+    storage.updateDomainEntity(type, entity, change);
+  }
+
+  public <T extends DomainEntity> void updateProjectDomainEntity(Class<T> type, T entity, Change change) throws IOException {
+    checkArgument(!TypeRegistry.isPrimitiveDomainEntity(type), "%s must be a project domain entity", type.getSimpleName());
     storage.updateDomainEntity(type, entity, change);
   }
 

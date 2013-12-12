@@ -27,14 +27,16 @@ import com.google.common.collect.Lists;
 public class StorageManagerTest {
 
   private Configuration config;
-  private Storage storage;
   private StorageManager manager;
+  private Storage storage;
+  private Change change;
 
   @Before
   public void setup() {
     config = mock(Configuration.class);
     storage = mock(Storage.class);
     manager = new StorageManager(config, storage);
+    change = new Change("userId", "vreId");
   }
 
   @Test
@@ -83,24 +85,40 @@ public class StorageManagerTest {
   @Test(expected = IllegalArgumentException.class)
   public void testAddPrimitiveDomainEntity() throws IOException {
     BaseDomainEntity entity = new BaseDomainEntity();
-    Change change = new Change("test", "test");
     manager.addDomainEntity(BaseDomainEntity.class, entity, change);
   }
 
   @Test
   public void testAddDerivedDomainEntity() throws IOException {
     ProjectADomainEntity entity = new ProjectADomainEntity();
-    Change change = new Change("test", "test");
     manager.addDomainEntity(ProjectADomainEntity.class, entity, change);
     verify(storage).addDomainEntity(ProjectADomainEntity.class, entity, change);
   }
 
   @Test
-  public void testModifyEntity() throws IOException {
+  public void testUpdatePrimitiveDomainEntity() throws IOException {
     BaseDomainEntity entity = new BaseDomainEntity("id");
-    Change change = new Change("test", "test");
-    manager.updateDomainEntity(BaseDomainEntity.class, entity, change);
+    manager.updatePrimitiveDomainEntity(BaseDomainEntity.class, entity, change);
     verify(storage).updateDomainEntity(BaseDomainEntity.class, entity, change);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testUpdatePrimitiveDomainEntityWithWrongType() throws IOException {
+    ProjectADomainEntity entity = new ProjectADomainEntity("id");
+    manager.updatePrimitiveDomainEntity(ProjectADomainEntity.class, entity, change);
+  }
+
+  @Test
+  public void testUpdateProjectDomainEntity() throws IOException {
+    ProjectADomainEntity entity = new ProjectADomainEntity("id");
+    manager.updateProjectDomainEntity(ProjectADomainEntity.class, entity, change);
+    verify(storage).updateDomainEntity(ProjectADomainEntity.class, entity, change);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testUpdateProjectDomainEntityWithWrongType() throws IOException {
+    BaseDomainEntity entity = new BaseDomainEntity("id");
+    manager.updateProjectDomainEntity(BaseDomainEntity.class, entity, change);
   }
 
   @Test
@@ -113,7 +131,6 @@ public class StorageManagerTest {
   @Test
   public void testDeleteDomainEntity() throws IOException {
     BaseDomainEntity entity = new BaseDomainEntity("id");
-    Change change = new Change("test", "test");
     entity.setModified(change);
     manager.deleteDomainEntity(entity);
     verify(storage).deleteDomainEntity(BaseDomainEntity.class, "id", change);
