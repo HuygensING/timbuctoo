@@ -79,7 +79,7 @@ public abstract class DutchCaribbeanDefaultImporter extends DefaultImporter {
 
   protected <T extends DomainEntity> T updateDomainEntity(Class<T> type, T entity) {
     try {
-      storageManager.updateDomainEntity(type, entity, change);
+      storageManager.updateProjectDomainEntity(type, entity, change);
       return entity;
     } catch (IOException e) {
       handleError("Failed to modify %s; %s", entity.getDisplayName(), e.getMessage());

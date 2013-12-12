@@ -6,7 +6,6 @@ import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -256,8 +255,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     TestDomainEntity entity = new TestDomainEntity(id);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
     whenJsonProviderReadFromThenReturn(entity);
-
-    doThrow(IOException.class).when(getStorageManager()).updateDomainEntity(Matchers.<Class<TestDomainEntity>> any(), any(type), any(Change.class));
 
     ClientResponse response = domainResource("testdomainentities", id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);

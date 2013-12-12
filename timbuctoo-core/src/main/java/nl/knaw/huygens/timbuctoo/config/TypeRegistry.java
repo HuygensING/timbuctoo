@@ -257,6 +257,10 @@ public class TypeRegistry {
     return cls == null ? false : DomainEntity.class.isAssignableFrom(cls);
   }
 
+  public static boolean isPrimitiveDomainEntity(Class<?> cls) {
+    return cls != null && cls.getSuperclass() == DomainEntity.class;
+  }
+
   public static boolean isRole(Class<?> cls) {
     return cls == null ? false : Role.class.isAssignableFrom(cls);
   }

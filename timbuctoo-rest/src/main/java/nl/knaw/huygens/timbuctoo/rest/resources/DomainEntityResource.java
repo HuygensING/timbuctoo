@@ -108,7 +108,7 @@ public class DomainEntityResource extends ResourceBase {
       throw new WebApplicationException(Status.BAD_REQUEST);
     }
 
-    checkCollectionInScope(type, vreId);
+    checkCollectionInScope(type, vreId, Status.FORBIDDEN);
 
     // TODO add user
     Change change = new Change(null, vreId);
@@ -153,7 +153,7 @@ public class DomainEntityResource extends ResourceBase {
 
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
 
-    checkItemInScope(type, id, vreId);
+    checkItemInScope(type, id, vreId, Status.FORBIDDEN);
 
     checkWritable(entity, Status.FORBIDDEN);
 
@@ -161,10 +161,13 @@ public class DomainEntityResource extends ResourceBase {
     Change change = new Change(null, vreId);
 
     try {
-      storageManager.updateDomainEntity((Class<T>) type, (T) input, change);
+      if (TypeRegistry.isPrimitiveDomainEntity(type)) {
+        storageManager.updatePrimitiveDomainEntity((Class<T>) type, (T) input, change);
+      } else {
+        storageManager.updateProjectDomainEntity((Class<T>) type, (T) input, change);
+      }
     } catch (IOException e) {
-      // TODO improve the logic, we already have checked existnce
-      // storage manager should no throw an exception
+      // TODO Handle two cases: 1)entity was already updated, 2) internal server error
       throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
     }
 
@@ -187,7 +190,7 @@ public class DomainEntityResource extends ResourceBase {
     }
 
     // if you want to be able to put a pid on items without pid you have to have access to the base class.
-    checkCollectionInScope(TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type)), vreId);
+    checkCollectionInScope(TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type)), vreId, Status.FORBIDDEN);
 
     List<String> entityIds = storageManager.getAllIdsWithoutPIDOfType(type);
 
@@ -218,7 +221,7 @@ public class DomainEntityResource extends ResourceBase {
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
     checkWritable(entity, Status.FORBIDDEN);
 
-    checkItemInScope(type, id, vreId);
+    checkItemInScope(type, id, vreId, Status.FORBIDDEN);
 
     storageManager.deleteDomainEntity(entity);
     notifyChange(ActionType.DEL, type, id);
@@ -308,29 +311,26 @@ public class DomainEntityResource extends ResourceBase {
 
   /**
    * Helper method to check if the type is in the scope of the VRE.
-   * It throws a Forbidden exception if the {@code type} does not belong to the scope.
    * @param type the type to check.
    * @param vreId the id of the VRE.
    */
-  private <T extends DomainEntity> void checkCollectionInScope(Class<T> type, String vreId) {
+  private <T extends DomainEntity> void checkCollectionInScope(Class<T> type, String vreId, Status status) {
     Scope scope = getScope(vreId);
-
     if (!scope.isTypeInScope(type)) {
-      throw new WebApplicationException(Status.FORBIDDEN);
+      throw new WebApplicationException(status);
     }
   }
 
   /**
    * Helper method to check if the item is in the scope of the VRE. 
-   * It throws a Forbidden exception if the item does not belong to the scope.
    * @param type the type of the item to check.
    * @param id the id of the item to check.
    * @param vreId the id of the VRE.
    */
-  private <T extends DomainEntity> void checkItemInScope(Class<T> type, String id, String vreId) {
+  private <T extends DomainEntity> void checkItemInScope(Class<T> type, String id, String vreId, Status status) {
     Scope scope = getScope(vreId);
     if (!scope.inScope(type, id)) {
-      throw new WebApplicationException(Status.FORBIDDEN);
+      throw new WebApplicationException(status);
     }
   }
 
