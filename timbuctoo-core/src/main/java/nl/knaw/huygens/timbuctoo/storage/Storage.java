@@ -59,14 +59,14 @@ public interface Storage {
    * Deletes all system entities with the specified type.
    * @return The number of entities removed.
    */
-  <T extends SystemEntity> int deleteAll(Class<T> type);
+  <T extends SystemEntity> int deleteAll(Class<T> type) throws IOException;
 
   /**
    * Deletes system entities that have a value of the specified date field
    * that is older than the specified date.
    * @return The number of entities removed.
    */
-  <T extends SystemEntity> int deleteByDate(Class<T> type, String dateField, Date dateValue);
+  <T extends SystemEntity> int deleteByDate(Class<T> type, String dateField, Date dateValue) throws IOException;
 
   <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws IOException;
 

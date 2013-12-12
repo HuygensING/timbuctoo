@@ -52,12 +52,23 @@ public class MongoDB {
     }
   }
 
+  /**
+   * Updates a document in the database.
+   */
   public void update(DBCollection collection, DBObject query, DBObject document) throws IOException {
     WriteResult writeResult = collection.update(query, document);
     if (writeResult.getN() == 0) {
       LOG.error("Failed to update {}", query);
       throw new IOException("Update failed");
     }
+  }
+
+  /**
+   * Removes documents from the database.
+   */
+  public int remove(DBCollection collection, DBObject query) throws IOException {
+    WriteResult result = collection.remove(query);
+    return (result != null) ? result.getN() : 0;
   }
 
 }

@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.tools.other;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.IOException;
 import java.util.Date;
 
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
@@ -87,6 +88,8 @@ public class SearchResultTool {
         System.out.printf("Search results removed   : %5d%n", n);
         displayStatus(false);
       }
+    } catch (IOException e) {
+      System.out.printf("Error: %s%n", e.getMessage());
     } finally {
       storageManager.close();
     }

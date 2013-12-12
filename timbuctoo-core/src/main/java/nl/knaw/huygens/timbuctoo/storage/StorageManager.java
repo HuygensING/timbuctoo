@@ -118,11 +118,11 @@ public class StorageManager {
     storage.deleteNonPersistent(type, ids);
   }
 
-  public int deleteAllSearchResults() {
+  public int deleteAllSearchResults() throws IOException {
     return storage.deleteAll(SearchResult.class);
   }
 
-  public int deleteSearchResultsBefore(Date date) {
+  public int deleteSearchResultsBefore(Date date) throws IOException {
     return storage.deleteByDate(SearchResult.class, SearchResult.DATE_FIELD, date);
   }
 

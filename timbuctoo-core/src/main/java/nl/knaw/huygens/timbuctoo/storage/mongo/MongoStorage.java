@@ -48,7 +48,6 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
-import com.mongodb.WriteResult;
 
 public class MongoStorage implements Storage {
 
@@ -191,12 +190,6 @@ public class MongoStorage implements Storage {
   private <T extends Entity> StorageIterator<T> getItems(Class<T> type, DBObject query) {
     DBCursor cursor = getDBCollection(type).find(query);
     return (cursor != null) ? new MongoStorageIterator<T>(type, cursor, reducer) : new EmptyStorageIterator<T>();
-  }
-
-  private <T extends Entity> int removeItem(Class<T> type, DBObject query) {
-    // LOG.debug("Query: {}", objectMapper.valueToTree(query));
-    WriteResult result = getDBCollection(type).remove(query);
-    return (result != null) ? result.getN() : 0;
   }
 
   public <T extends Entity> long count(Class<T> type) {
@@ -366,21 +359,18 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) {
-    DBObject query = queries.selectById(id);
-    return removeItem(type, query);
+  public <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws IOException {
+    return mongoDB.remove(getDBCollection(type), queries.selectById(id));
   }
 
   @Override
-  public <T extends SystemEntity> int deleteAll(Class<T> type) {
-    DBObject query = queries.selectAll();
-    return removeItem(type, query);
+  public <T extends SystemEntity> int deleteAll(Class<T> type) throws IOException {
+    return mongoDB.remove(getDBCollection(type), queries.selectAll());
   }
 
   @Override
-  public <T extends SystemEntity> int deleteByDate(Class<T> type, String dateField, Date dateValue) {
-    DBObject query = queries.selectByDate(type, dateField, dateValue);
-    return removeItem(type, query);
+  public <T extends SystemEntity> int deleteByDate(Class<T> type, String dateField, Date dateValue) throws IOException {
+    return mongoDB.remove(getDBCollection(type), queries.selectByDate(type, dateField, dateValue));
   }
 
   private RelationType getRelationType(String id) throws IOException {
