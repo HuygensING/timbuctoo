@@ -12,7 +12,7 @@ import com.google.common.base.Joiner;
  */
 public class EntityRef {
 
-  private String itype;
+  private String type;
   private String id;
   private String path;
   private String displayName;
@@ -20,19 +20,19 @@ public class EntityRef {
   // For deserialization...
   public EntityRef() {}
 
-  public EntityRef(String itype, String xtype, String id, String displayName) {
-    this.itype = itype;
+  public EntityRef(String type, String xtype, String id, String displayName) {
+    this.type = type;
     this.id = id;
     this.path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
     this.displayName = displayName;
   }
 
-  public String getIType() {
-    return itype;
+  public String getType() {
+    return type;
   }
 
-  public void setIType(String itype) {
-    this.itype = itype;
+  public void setType(String type) {
+    this.type = type;
   }
 
   public String getId() {
@@ -63,7 +63,7 @@ public class EntityRef {
   public boolean equals(Object object) {
     if (object instanceof EntityRef) {
       EntityRef that = (EntityRef) object;
-      return (this.itype == null ? that.itype == null : this.itype.equals(that.itype)) //
+      return (this.type == null ? that.type == null : this.type.equals(that.type)) //
           && (this.id == null ? that.id == null : this.id.equals(that.id));
     }
     return false;
@@ -72,14 +72,14 @@ public class EntityRef {
   @Override
   public int hashCode() {
     int result = 17;
-    result = 31 * result + (itype == null ? 0 : itype.hashCode());
+    result = 31 * result + (type == null ? 0 : type.hashCode());
     result = 31 * result + (id == null ? 0 : id.hashCode());
     return result;
   }
 
   @Override
   public String toString() {
-    return String.format("{%s,%s}", itype, id);
+    return String.format("{%s,%s}", type, id);
   }
 
 }
