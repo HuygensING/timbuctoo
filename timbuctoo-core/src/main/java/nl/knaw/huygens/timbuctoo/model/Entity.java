@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 // @see: http://wiki.fasterxml.com/JacksonPolymorphicDeserialization
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public abstract class Entity {
+  public static final String ID = "_id";
 
   @NotNull
   @Pattern(regexp = Paths.ID_REGEX)
@@ -34,13 +35,13 @@ public abstract class Entity {
   @IndexAnnotation(fieldName = "desc")
   public abstract String getDisplayName();
 
-  @JsonProperty("_id")
+  @JsonProperty(ID)
   @IndexAnnotation(fieldName = "id")
   public String getId() {
     return id;
   }
 
-  @JsonProperty("_id")
+  @JsonProperty(ID)
   public void setId(String id) {
     this.id = id;
   }

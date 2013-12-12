@@ -201,6 +201,10 @@ public class StorageManager {
     return storage.getAllByType(type);
   }
 
+  public <T extends Entity> List<T> getAllByIds(Class<T> type, List<String> ids) {
+    return resolveIterator(storage.getAllByIds(type, ids), 0, ids.size());
+  }
+
   public <T extends DomainEntity> RevisionChanges<T> getVersions(Class<T> type, String id) {
     try {
       return storage.getAllRevisions(type, id);

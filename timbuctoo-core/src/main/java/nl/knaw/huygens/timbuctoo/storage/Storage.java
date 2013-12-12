@@ -81,6 +81,8 @@ public interface Storage {
 
   <T extends Entity> StorageIterator<T> getAllByType(Class<T> type);
 
+  <T extends Entity> StorageIterator<T> getAllByIds(Class<T> type, List<String> ids);
+
   /**
    * Returns the number of items in the collection corresponding with the specified type.
    */
