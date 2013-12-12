@@ -30,9 +30,7 @@ public class LanguageImporter extends CSVImporter {
 
   public LanguageImporter(StorageManager storageManager) {
     super(new PrintWriter(System.err), '|', '"', 0);
-    change = Change.newInstance();
-    change.setAuthorId("importer");
-    change.setVreId("timbuctoo");
+    change = new Change("importer", "timbuctoo");
     this.storageManager = storageManager;
     System.out.printf("%n=== Importing documents of type 'Language'%n");
   }

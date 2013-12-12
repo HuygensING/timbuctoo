@@ -31,7 +31,7 @@ public class RelationManagerTest {
     typeRegistry = new TypeRegistry("timbuctoo.variation.model timbuctoo.model timbuctoo.variation.model.projecta");
     storageManager = mock(StorageManager.class);
     relationManager = new RelationManager(typeRegistry, storageManager);
-    change = Change.newInstance();
+    change = new Change("test", "test");
   }
 
   @Test(expected = IllegalArgumentException.class)

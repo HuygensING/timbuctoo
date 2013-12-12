@@ -26,9 +26,7 @@ public class CKCCPersonImporter extends CSVImporter {
 
   public CKCCPersonImporter(StorageManager storageManager) {
     super(new PrintWriter(System.err));
-    change = Change.newInstance();
-    change.setAuthorId("importer");
-    change.setVreId("ckcc");
+    change = new Change("importer", "ckcc");
     this.storageManager = storageManager;
     System.out.println("%n=== Importing documents of type 'CKCCPerson'");
   }

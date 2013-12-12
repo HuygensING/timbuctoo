@@ -30,9 +30,7 @@ public abstract class DutchCaribbeanDefaultImporter extends DefaultImporter {
 
   public DutchCaribbeanDefaultImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager) {
     super(registry, storageManager, indexManager);
-    change = Change.newInstance();
-    change.setAuthorId("importer");
-    change.setVreId("dcar");
+    change = new Change("importer", "dcar");
     prevMessage = "";
     errors = 0;
     setup(relationManager);

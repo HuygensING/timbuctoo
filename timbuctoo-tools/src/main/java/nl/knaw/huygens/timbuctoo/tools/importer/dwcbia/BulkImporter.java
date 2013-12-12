@@ -28,9 +28,7 @@ import com.google.inject.Injector;
 public class BulkImporter {
 
   public static void main(String[] args) throws Exception {
-    Change change = Change.newInstance();
-    change.setAuthorId("timbuctoo");
-    change.setVreId("timbuctoo");
+    Change change = new Change("timbuctoo", "timbuctoo");
 
     Configuration config = new Configuration("config.xml");
     Injector injector = Guice.createInjector(new BasicInjectionModule(config));

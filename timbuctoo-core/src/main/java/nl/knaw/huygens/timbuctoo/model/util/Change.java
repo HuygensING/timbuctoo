@@ -5,31 +5,35 @@ import java.util.Date;
 public class Change {
 
   /**
-   * Returns a new {@code Change} instance with a generated time stamp.
+   * Returns a new {@code Change} instance for internal use.
    */
-  public static Change newInstance() {
-    Change instance = new Change();
-    instance.setTimeStamp(new Date().getTime());
-    return instance;
+  public static Change newInternalInstance() {
+    return new Change("timbuctoo", "timbuctoo");
   }
 
-  public static Change newInternalInstance() {
-    Change instance = newInstance();
-    instance.setAuthorId("timbuctoo");
-    instance.setVreId("timbuctoo");
-    return instance;
+  /**
+   * Returns a new time stamp.
+   */
+  public static long newTimeStamp() {
+    return new Date().getTime();
   }
+
+  // -------------------------------------------------------------------
 
   private long timeStamp;
-  private String authorId;
+  private String userId;
   private String vreId;
 
   public Change() {}
 
-  public Change(long timeStamp, String authorId, String vreId) {
+  public Change(long timeStamp, String userId, String vreId) {
     this.timeStamp = timeStamp;
-    this.authorId = authorId;
+    this.userId = userId;
     this.vreId = vreId;
+  }
+
+  public Change(String userId, String vreId) {
+    this(newTimeStamp(), userId, vreId);
   }
 
   public long getTimeStamp() {
@@ -40,12 +44,12 @@ public class Change {
     this.timeStamp = timeStamp;
   }
 
-  public String getAuthorId() {
-    return authorId;
+  public String getUserId() {
+    return userId;
   }
 
-  public void setAuthorId(String authorId) {
-    this.authorId = authorId;
+  public void setUserId(String userId) {
+    this.userId = userId;
   }
 
   public String getVreId() {
