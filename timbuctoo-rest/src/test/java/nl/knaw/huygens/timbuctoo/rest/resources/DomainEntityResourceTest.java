@@ -649,36 +649,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     verify(getStorageManager(), never()).getAllIdsWithoutPIDOfType(Mockito.<Class<? extends DomainEntity>> any());
   }
 
-  @Test
-  public void testPutPIDSomeItemsAlreadyHaveAPID() throws IOException, JMSException {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
-
-    setUpVREManager(VRE_ID, true);
-    setUpScopeForCollection(BaseDomainEntity.class, VRE_ID, true);
-    String id1 = "ID1";
-    String id2 = "ID2";
-    String id3 = "ID3";
-    List<String> entityIds = Lists.newArrayList(id1, id2, id3);
-    Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
-
-    when(getStorageManager().getAllIdsWithoutPIDOfType(type)).thenReturn(entityIds);
-    List<ProjectADomainEntity> entities = Lists.newArrayList(createProjectADomainEntity(id1, false), createProjectADomainEntity(id2, true), createProjectADomainEntity(id3, false));
-    when(getStorageManager().getAllByIds(type, entityIds)).thenReturn(entities);
-
-    ClientResponse response = doPutPIDRequest("projectadomainentities");
-
-    assertEquals(Status.NO_CONTENT, response.getClientResponseStatus());
-
-    verify(getStorageManager()).getAllIdsWithoutPIDOfType(type);
-    verify(getStorageManager()).getAllByIds(type, entityIds);
-
-    verify(getProducer(PERSISTENCE_PRODUCER)).send(ActionType.MOD, type, id1);
-    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(ActionType.MOD, type, id2);
-    verify(getProducer(PERSISTENCE_PRODUCER)).send(ActionType.MOD, type, id3);
-
-    verifyZeroInteractions(getProducer(INDEX_PRODUCER));
-  }
-
   private ProjectADomainEntity createProjectADomainEntity(String id, boolean hasPid) {
     ProjectADomainEntity entity = new ProjectADomainEntity(id);
     if (hasPid) {

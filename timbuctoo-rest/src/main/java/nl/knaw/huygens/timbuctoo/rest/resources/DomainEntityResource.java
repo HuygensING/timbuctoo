@@ -41,7 +41,6 @@ import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -196,12 +195,7 @@ public class DomainEntityResource extends ResourceBase {
 
     List<T> entities = storageManager.getAllByIds(type, entityIds);
     for (T entity : entities) {
-      if (StringUtils.isBlank(entity.getPid())) {
-        sendPersistMessage(ActionType.MOD, type, entity.getId());
-      } else {
-        // Should never hapen.
-        LOG.error("Entity of type {} with id {} already has a pid.", type.getSimpleName(), entity.getId());
-      }
+      sendPersistMessage(ActionType.MOD, type, entity.getId());
     }
 
   }
