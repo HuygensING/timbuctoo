@@ -286,14 +286,20 @@ public class SearchResourceTest extends WebServiceTestSetup {
     List<Person> personList = Lists.newArrayList();
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
-    createSearchResult(idList, personList, storageManager);
+    int startIndex = 0;
+    int numberOfRows = 10;
+    int endIndex = startIndex + numberOfRows;
+    createSearchResultOf100Persons(idList, personList);
+    when(storageManager.getAllByIds(Person.class, idList.subList(startIndex, endIndex))).thenReturn(personList.subList(startIndex, endIndex));
+
     List<FacetCount> facets = createFacets();
     setUpSearchResult(idList, storageManager, facets);
 
     WebResource resource = super.resource();
 
     String nextUri = String.format("%ssearch/%s?start=10&rows=10", resource.getURI(), ID);
-    Map<String, Object> expected = createExpectedResult(idList, personList, facets, 0, 10, SORTABLE_FIELDS, 10, nextUri, null);
+    int returnedRows = 10;
+    Map<String, Object> expected = createExpectedResult(idList, personList, facets, startIndex, numberOfRows, SORTABLE_FIELDS, returnedRows, nextUri, null);
 
     Map<String, Object> actual = resource.path("search").path(ID).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<Map<String, Object>>() {});
 
@@ -306,7 +312,11 @@ public class SearchResourceTest extends WebServiceTestSetup {
     List<Person> personList = Lists.newArrayList();
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
-    createSearchResult(idList, personList, storageManager);
+    int startIndex = 20;
+    int numberOfRows = 20;
+    int endIndex = startIndex + numberOfRows;
+    createSearchResultOf100Persons(idList, personList);
+    when(storageManager.getAllByIds(Person.class, idList.subList(startIndex, endIndex))).thenReturn(personList.subList(startIndex, endIndex));
 
     List<FacetCount> facets = createFacets();
 
@@ -320,7 +330,8 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     String prevUri = String.format("%ssearch/%s?start=0&rows=20", resource.getURI(), ID);
     String nextUri = String.format("%ssearch/%s?start=40&rows=20", resource.getURI(), ID);
-    Map<String, Object> expected = createExpectedResult(idList, personList, facets, 20, 20, SORTABLE_FIELDS, 20, nextUri, prevUri);
+    int returnedRows = 20;
+    Map<String, Object> expected = createExpectedResult(idList, personList, facets, startIndex, numberOfRows, SORTABLE_FIELDS, returnedRows, nextUri, prevUri);
 
     Map<String, Object> actual = resource.path("search").path(ID).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE)
         .get(new GenericType<Map<String, Object>>() {});
@@ -334,7 +345,11 @@ public class SearchResourceTest extends WebServiceTestSetup {
     List<Person> personList = Lists.newArrayList();
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
-    createSearchResult(idList, personList, storageManager);
+    int startIndex = 10;
+    int numberOfRows = 100;
+    int endIndex = 100;
+    createSearchResultOf100Persons(idList, personList);
+    when(storageManager.getAllByIds(Person.class, idList.subList(startIndex, endIndex))).thenReturn(personList.subList(startIndex, endIndex));
 
     List<FacetCount> facets = createFacets();
 
@@ -347,7 +362,8 @@ public class SearchResourceTest extends WebServiceTestSetup {
     WebResource resource = super.resource();
 
     String prevUri = String.format("%ssearch/%s?start=0&rows=100", resource.getURI(), ID);
-    Map<String, Object> expected = createExpectedResult(idList, personList, facets, 10, 100, SORTABLE_FIELDS, 90, null, prevUri);
+    int returnedRows = 90;
+    Map<String, Object> expected = createExpectedResult(idList, personList, facets, startIndex, numberOfRows, SORTABLE_FIELDS, returnedRows, null, prevUri);
 
     Map<String, Object> actual = resource.path("search").path(ID).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE)
         .get(new GenericType<Map<String, Object>>() {});
@@ -455,7 +471,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     return facets;
   }
 
-  private void createSearchResult(final List<String> idList, final List<Person> personList, final StorageManager storageManager) {
+  private void createSearchResultOf100Persons(final List<String> idList, final List<Person> personList) {
     for (int i = 0; i < 100; i++) {
       String personId = "" + i;
       Person person = new Person();
@@ -464,7 +480,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
       personList.add(person);
 
       idList.add(personId);
-      when(storageManager.getEntity(Person.class, personId)).thenReturn(person);
     }
   }
 
