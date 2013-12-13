@@ -153,7 +153,8 @@ public class SearchResource {
     int hi = toRange(lo + rows, 0, idsSize);
 
     List<String> idsToGet = ids.subList(lo, hi);
-    List<DomainEntity> entities = retrieveEntities(type, idsToGet);
+    @SuppressWarnings("unchecked")
+    List<DomainEntity> entities = (List<DomainEntity>) storageManager.getAllByIds(type, idsToGet);
     List<EntityRef> entityRefs = createEntityRefs(entities);
     Set<String> sortableFields = searchManager.findSortableFields(type);
 
@@ -188,19 +189,6 @@ public class SearchResource {
 
   private int toRange(int value, int minValue, int maxValue) {
     return Math.min(Math.max(value, minValue), maxValue);
-  }
-
-  private <T extends DomainEntity> List<DomainEntity> retrieveEntities(Class<T> type, List<String> ids) {
-    List<DomainEntity> list = Lists.newArrayList();
-    for (String id : ids) {
-      T entity = storageManager.getEntity(type, id);
-      if (entity != null) {
-        list.add(entity);
-      } else {
-        LOG.warn("Solr index is out of synch. {} {} not in database.", type.getSimpleName(), id);
-      }
-    }
-    return list;
   }
 
   private List<EntityRef> createEntityRefs(List<DomainEntity> entities) {
