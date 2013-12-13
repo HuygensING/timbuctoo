@@ -25,20 +25,24 @@ public class PersistenceWrapper {
     this.typeRegistry = typeRegistry;
   }
 
-  public String persistUrl(String url) throws PersistenceException {
+  public String persistURL(String url) throws PersistenceException {
     return manager.persistURL(url);
   }
 
-  public String getPersistentUrl(String persistentId) throws PersistenceException {
+  public String getURLValue(String persistentId) throws PersistenceException {
+    return manager.getPersistedURL(persistentId);
+  }
+
+  public String getPersistentURL(String persistentId) {
     return manager.getPersistentURL(persistentId);
   }
 
   public String persistObject(Class<? extends Entity> type, String objectId) throws PersistenceException {
-    String url = createUrl(type, objectId);
+    String url = createURL(type, objectId);
     return manager.persistURL(url);
   }
 
-  private String createUrl(Class<? extends Entity> type, String id) {
+  private String createURL(Class<? extends Entity> type, String id) {
     String collection = typeRegistry.getXNameForType(type);
     return Joiner.on('/').join(baseUrl, Paths.DOMAIN_PREFIX, collection, id);
   }

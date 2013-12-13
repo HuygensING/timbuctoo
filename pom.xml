@@ -123,7 +123,7 @@
     <guice.version>3.0</guice.version>
     <hamcrest-library.version>1.3</hamcrest-library.version>
     <huygens.security.version>2.1.2</huygens.security.version>
-    <huygens.persistence.version>1.0.6</huygens.persistence.version>
+    <huygens.persistence.version>2.0.1</huygens.persistence.version>
     <jackson.version>2.1.1</jackson.version>
     <javax.validation.version>1.0.0.GA</javax.validation.version>
     <javax.security.annotations.version>1.0</javax.security.annotations.version>
