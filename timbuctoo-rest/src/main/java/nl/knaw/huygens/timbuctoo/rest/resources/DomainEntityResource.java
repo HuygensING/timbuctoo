@@ -94,7 +94,7 @@ public class DomainEntityResource extends ResourceBase {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @JsonView(JsonViews.WebView.class)
-  @RolesAllowed(USER_ROLE)
+  @RolesAllowed({ USER_ROLE, ADMIN_ROLE })
   public <T extends DomainEntity> Response post( //
       @PathParam(ENTITY_PARAM) String entityName, //
       DomainEntity input, //
@@ -137,7 +137,7 @@ public class DomainEntityResource extends ResourceBase {
   @Path(ID_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @JsonView(JsonViews.WebView.class)
-  @RolesAllowed(USER_ROLE)
+  @RolesAllowed({ USER_ROLE, ADMIN_ROLE })
   public <T extends DomainEntity> void put( //
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id, //
@@ -203,7 +203,7 @@ public class DomainEntityResource extends ResourceBase {
   @DELETE
   @Path(ID_PATH)
   @JsonView(JsonViews.WebView.class)
-  @RolesAllowed(USER_ROLE)
+  @RolesAllowed({ USER_ROLE, ADMIN_ROLE })
   public Response delete( //
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id, //

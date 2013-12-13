@@ -121,10 +121,19 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPut() throws Exception {
+  public void testPutAsUser() throws Exception {
+    testPut(USER_ROLE);
+  }
+
+  @Test
+  public void testPutAsAdmin() throws Exception {
+    testPut(ADMIN_ROLE);
+  }
+
+  private void testPut(String userRole) throws Exception, JMSException {
     Class<TestDomainEntity> type = TestDomainEntity.class;
 
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(userRole));
     setUpVREManager(VRE_ID, true);
     setUpScopeForEntity(type, DEFAULT_ID, VRE_ID, true);
 
@@ -322,8 +331,17 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPost() throws Exception {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+  public void testPostAsUser() throws Exception {
+    testPost(USER_ROLE);
+  }
+
+  @Test
+  public void testPostAsAdmin() throws Exception {
+    testPost(ADMIN_ROLE);
+  }
+
+  private void testPost(String userRole) throws IOException, Exception, JMSException {
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(userRole));
 
     setUpVREManager(VRE_ID, true);
     setUpScopeForCollection(DEFAULT_TYPE, VRE_ID, true);
@@ -398,8 +416,17 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testDelete() throws IOException, PersistenceException, JMSException {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+  public void testDeleteAsUser() throws IOException, PersistenceException, JMSException {
+    testDelete(USER_ROLE);
+  }
+
+  @Test
+  public void testDeleteAsAdmin() throws IOException, PersistenceException, JMSException {
+    testDelete(USER_ROLE);
+  }
+
+  private void testDelete(String userRole) throws JMSException {
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(userRole));
 
     setUpVREManager(VRE_ID, true);
     setUpScopeForEntity(DEFAULT_TYPE, DEFAULT_ID, VRE_ID, true);
