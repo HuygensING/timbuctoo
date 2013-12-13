@@ -72,7 +72,7 @@ public class MongoDB {
     return (result != null) ? result.getN() : 0;
   }
 
-  public DBCursor findByQuery(DBCollection collection, DBObject query) {
-    throw new UnsupportedOperationException("Yet to be implemented.");
+  public DBCursor find(DBCollection collection, DBObject query) {
+    return collection.find(query);
   }
 }

@@ -184,8 +184,7 @@ public class CombinedMongoStorageTest {
 
     DBObject query = new BasicDBObject(Entity.ID, new BasicDBObject("$in", ids));
 
-    verify(mongoDB).getCollection("basedomainentity");
-    verify(mongoDB).findByQuery(anyCollection, query);
+    verify(mongoDB).find(anyCollection, query);
   }
 
 }

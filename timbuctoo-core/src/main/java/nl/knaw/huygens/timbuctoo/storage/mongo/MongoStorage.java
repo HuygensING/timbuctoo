@@ -194,7 +194,7 @@ public class MongoStorage implements Storage {
 
   // Should be the replacement of getItems
   private <T extends Entity> StorageIterator<T> findItems(Class<T> type, DBObject query) {
-    DBCursor cursor = mongoDB.findByQuery(getDBCollection(type), query);
+    DBCursor cursor = mongoDB.find(getDBCollection(type), query);
     return (cursor != null) ? new MongoStorageIterator<T>(type, cursor, reducer) : new EmptyStorageIterator<T>();
   }
 
