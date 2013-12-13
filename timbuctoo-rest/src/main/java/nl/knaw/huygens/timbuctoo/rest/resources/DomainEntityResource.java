@@ -193,8 +193,7 @@ public class DomainEntityResource extends ResourceBase {
 
     List<String> entityIds = storageManager.getAllIdsWithoutPIDOfType(type);
 
-    List<T> entities = storageManager.getAllByIds(type, entityIds);
-    for (T entity : entities) {
+    for (T entity : storageManager.getAllByIds(type, entityIds)) {
       sendPersistMessage(ActionType.MOD, type, entity.getId());
     }
 
