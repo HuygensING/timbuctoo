@@ -26,6 +26,7 @@ import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
+import org.apache.commons.lang.StringUtils;
 import org.mongojack.DBQuery;
 import org.mongojack.internal.stream.JacksonDBObject;
 import org.slf4j.Logger;
@@ -327,6 +328,10 @@ public class MongoStorage implements Storage {
     JsonNode tree = getExisting(type, query);
 
     DomainEntity domainEntity = reducer.reduceExistingVariation(toBaseDomainEntity(type), tree);
+
+    if (!StringUtils.isBlank(domainEntity.getPid())) {
+      throw new IllegalStateException(String.format("%s with %s already has a pid: %s", type.getSimpleName(), id, pid));
+    }
 
     domainEntity.setPid(pid);
 
