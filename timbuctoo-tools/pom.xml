@@ -109,7 +109,7 @@
           </execution>
         </executions>
         <configuration>
-          <configurationSourceDirectory>${basedir}/../timbuctoo-tools-config/src/main/config/${environment}</configurationSourceDirectory>
+          <configurationSourceDirectory>${basedir}/../../timbuctoo-config/timbuctoo-tools-config/src/main/config/${environment}</configurationSourceDirectory>
           <copyConfigurationDirectory>true</copyConfigurationDirectory>
           <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
           <programs>

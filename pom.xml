@@ -21,10 +21,6 @@
     <module>timbuctoo-rest</module>
     <module>timbuctoo-search</module>
     <module>timbuctoo-tools</module>
-    <module>timbuctoo-tools-config</module>
-    <module>timbuctoo-war-config-dev</module>
-    <module>timbuctoo-war-config-test</module>
-    <module>timbuctoo-war-config-prod</module>
     <module>timbuctoo-solr</module>
     <module>timbuctoo-services</module>
   </modules>
