@@ -214,7 +214,7 @@
       </activation>
       <dependencies>
         <dependency>
-          <groupId>timbuctoo</groupId>
+          <groupId>nl.knaw.huygens</groupId>
           <artifactId>timbuctoo-war-config-dev</artifactId>
           <version>${project.version}</version>
           <type>war</type>
@@ -226,7 +226,7 @@
       <id>test</id>
       <dependencies>
         <dependency>
-          <groupId>timbuctoo</groupId>
+          <groupId>nl.knaw.huygens</groupId>
           <artifactId>timbuctoo-war-config-test</artifactId>
           <version>${project.version}</version>
           <type>war</type>
@@ -238,7 +238,7 @@
       <id>prod</id>
       <dependencies>
         <dependency>
-          <groupId>timbuctoo</groupId>
+          <groupId>nl.knaw.huygens</groupId>
           <artifactId>timbuctoo-war-config-prod</artifactId>
           <version>${project.version}</version>
           <type>war</type>
