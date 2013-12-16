@@ -7,6 +7,7 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -177,6 +178,20 @@ public class CombinedMongoStorageTest {
     verify(mongoDB, times(2)).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
   }
 
+  @Test(expected = IllegalStateException.class)
+  public void testSetPIDObjectAllreadyHasAPID() throws IOException {
+    String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
+
+    DBObject dbObject = createDomainEnityJsonNode(pid);
+    when(anyCollection.findOne(any(DBObject.class))).thenReturn(dbObject);
+
+    try {
+      storage.setPID(ProjectADomainEntity.class, DEFAULT_ID, pid);
+    } finally {
+      verify(mongoDB, never()).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
+    }
+  }
+
   @Test
   public void testGetAllByIds() {
     List<String> ids = Lists.newArrayList("TEST0000000001", "TEST0000000002", "TEST0000000003");
@@ -185,6 +200,22 @@ public class CombinedMongoStorageTest {
     DBObject query = new BasicDBObject(Entity.ID, new BasicDBObject("$in", ids));
 
     verify(mongoDB).find(anyCollection, query);
+  }
+
+  private DBJsonNode createDomainEnityJsonNode(String pid) {
+    Map<String, Object> map = Maps.newHashMap();
+    map.put("_id", DEFAULT_ID);
+    map.put("^pid", pid);
+
+    return createDBJsonNode(map);
+  }
+
+  /**
+   * Creates a JsonNode from a map. This is used is several tests.
+   */
+  private DBJsonNode createDBJsonNode(Map<String, Object> map) {
+    ObjectMapper mapper = new ObjectMapper();
+    return new DBJsonNode(mapper.valueToTree(map));
   }
 
 }

@@ -42,6 +42,10 @@ public class PersistenceWrapper {
     return manager.persistURL(url);
   }
 
+  public void deletePersistentId(String persistentId) throws PersistenceException {
+    manager.deletePersistentId(persistentId);
+  }
+
   private String createURL(Class<? extends Entity> type, String id) {
     String collection = typeRegistry.getXNameForType(type);
     return Joiner.on('/').join(baseUrl, Paths.DOMAIN_PREFIX, collection, id);
