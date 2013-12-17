@@ -12,6 +12,9 @@
         <dependent-module archiveName="timbuctoo-services-2.0.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/timbuctoo-services/timbuctoo-services">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="huygens-persistence-2.0.1.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/persistence/persistence">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <dependent-module deploy-path="/" handle="module:/overlay/var/M2_REPO/nl/knaw/huygens/timbuctoo-war-config-dev/2.0.0-SNAPSHOT/timbuctoo-war-config-dev-2.0.0-SNAPSHOT.war?unpackFolder=target/m2e-wtp/overlays&amp;includes=**/**&amp;excludes=META-INF/MANIFEST.MF">
             <dependency-type>consumes</dependency-type>
         </dependent-module>

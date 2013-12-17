@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.persistence;
 
-import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -18,7 +18,6 @@ import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class PersistenceServiceTest {
@@ -51,10 +50,14 @@ public class PersistenceServiceTest {
 
   }
 
-  @Ignore
   @Test
-  public void testExecuteActionADDAlreadyHasAPID() {
-    fail("Yet to be implemented");
+  public void testExecuteActionADDAlreadyHasAPID() throws JMSException, IOException, PersistenceException {
+    doThrow(IllegalStateException.class).when(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID);
+    testExecute(ActionType.ADD);
+
+    verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID);
+    verify(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID);
+    verify(persistenceWrapper).deletePersistentId(DEFAULT_PID);
   }
 
   @Test
@@ -71,10 +74,14 @@ public class PersistenceServiceTest {
     instance.executeAction(action);
   }
 
-  @Ignore
   @Test
-  public void testExecuteActionMODAlreadyHasAPID() {
-    fail("Yet to be implemented");
+  public void testExecuteActionMODAlreadyHasAPID() throws IOException, JMSException, PersistenceException {
+    doThrow(IllegalStateException.class).when(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID);
+    testExecute(ActionType.MOD);
+
+    verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID);
+    verify(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID);
+    verify(persistenceWrapper).deletePersistentId(DEFAULT_PID);
   }
 
   @Test
