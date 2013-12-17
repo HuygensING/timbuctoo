@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.USER_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
@@ -65,7 +66,7 @@ public class UserResource extends ResourceBase {
   @Path("/me")
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed({ ADMIN_ROLE, USER_ROLE, UNVERIFIED_USER_ROLE })
-  public User getMyUserData(@QueryParam("id") String id, @QueryParam("VRE_ID") String vreId) {
+  public User getMyUserData(@QueryParam(USER_ID_KEY) String id, @QueryParam("VRE_ID") String vreId) {
     User user = storageManager.getEntity(User.class, id);
     VREAuthorization example = new VREAuthorization();
     example.setUserId(id);
