@@ -51,6 +51,7 @@ public class PersistenceService extends ConsumerService implements Runnable {
 
   private void setPID(Action action) {
     Class<? extends Entity> type = action.getType();
+    String id = action.getId();
     String pid = null;
 
     if (!TypeRegistry.isDomainEntity(type)) {
@@ -58,12 +59,12 @@ public class PersistenceService extends ConsumerService implements Runnable {
       return;
     }
 
-    String id = action.getId();
     try {
       pid = persistenceWrapper.persistObject(type, id);
     } catch (PersistenceException ex) {
       LOG.error("Creating a PID for {} with id {} went wrong.", type, id);
       LOG.debug("Exception", ex);
+      return;
     }
 
     try {
@@ -72,6 +73,7 @@ public class PersistenceService extends ConsumerService implements Runnable {
       deletePID(pid);
       LOG.error("{} with id {} already has a PID", type, id);
     } catch (IOException ex) {
+      deletePID(pid);
       LOG.error("Persisting {} with id {} went wrong", type, id);
       LOG.debug("Exception", ex);
     }
