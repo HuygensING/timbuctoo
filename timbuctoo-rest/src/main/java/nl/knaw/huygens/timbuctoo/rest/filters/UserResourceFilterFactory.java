@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rest.filters;
 
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.USER_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
@@ -50,7 +51,6 @@ public class UserResourceFilterFactory implements ResourceFilterFactory {
 
   private static class UserResourceFilter implements ResourceFilter, ContainerRequestFilter {
     private static final Logger LOG = LoggerFactory.getLogger(UserResourceFilter.class);
-    private static final String USER_ID_KEY = "id";
     private final StorageManager storageManager;
     private final MailSender mailSender;
 

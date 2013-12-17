@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.USER_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
@@ -99,7 +100,8 @@ public class DomainEntityResource extends ResourceBase {
       @PathParam(ENTITY_PARAM) String entityName, //
       DomainEntity input, //
       @Context UriInfo uriInfo, //
-      @HeaderParam(VRE_ID_KEY) String vreId //
+      @HeaderParam(VRE_ID_KEY) String vreId, //
+      @QueryParam(USER_ID_KEY) String userId//
   ) throws IOException {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
@@ -109,8 +111,7 @@ public class DomainEntityResource extends ResourceBase {
 
     checkCollectionInScope(type, vreId, Status.FORBIDDEN);
 
-    // TODO add user
-    Change change = new Change(null, vreId);
+    Change change = new Change(userId, vreId);
 
     String id = storageManager.addDomainEntity((Class<T>) type, (T) input, change);
     notifyChange(ActionType.ADD, type, id);
@@ -142,7 +143,8 @@ public class DomainEntityResource extends ResourceBase {
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id, //
       DomainEntity input, //
-      @HeaderParam(VRE_ID_KEY) String vreId//
+      @HeaderParam(VRE_ID_KEY) String vreId,//
+      @QueryParam(USER_ID_KEY) String userId//
   ) throws IOException {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
@@ -156,8 +158,7 @@ public class DomainEntityResource extends ResourceBase {
 
     checkWritable(entity, Status.FORBIDDEN);
 
-    // TODO add user
-    Change change = new Change(null, vreId);
+    Change change = new Change(userId, vreId);
 
     try {
       if (TypeRegistry.isPrimitiveDomainEntity(type)) {
