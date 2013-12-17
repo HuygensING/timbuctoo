@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.persistence;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -45,9 +46,8 @@ public class PersistenceServiceTest {
   public void testExecuteActionADD() throws JMSException, PersistenceException, IOException {
     testExecute(ActionType.ADD);
 
-    verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID);
-    verify(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID);
-
+    verify(persistenceWrapper, only()).persistObject(DEFAULT_TYPE, DEFAULT_ID);
+    verify(storageManager, only()).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID);
   }
 
   @Test
@@ -56,7 +56,27 @@ public class PersistenceServiceTest {
     testExecute(ActionType.ADD);
 
     verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID);
-    verify(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID);
+    verify(storageManager, only()).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID);
+    verify(persistenceWrapper).deletePersistentId(DEFAULT_PID);
+  }
+
+  @Test
+  public void testExecuteActionADDCreationOfThePIDWentWrong() throws PersistenceException, JMSException {
+    doThrow(PersistenceException.class).when(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID);
+
+    testExecute(ActionType.ADD);
+
+    verifyZeroInteractions(storageManager);
+    verify(persistenceWrapper, only()).persistObject(DEFAULT_TYPE, DEFAULT_ID);
+  }
+
+  @Test
+  public void testExecuteActionADDSettingPIDWentWrong() throws IOException, JMSException, PersistenceException {
+    doThrow(IOException.class).when(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID);
+    testExecute(ActionType.ADD);
+
+    verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID);
+    verify(storageManager, only()).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID);
     verify(persistenceWrapper).deletePersistentId(DEFAULT_PID);
   }
 
@@ -64,14 +84,8 @@ public class PersistenceServiceTest {
   public void testExecuteActionMOD() throws JMSException, PersistenceException, IOException {
     testExecute(ActionType.MOD);
 
-    verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID);
-    verify(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID);
-  }
-
-  private void testExecute(ActionType actionType) throws JMSException {
-    Action action = new Action(actionType, DEFAULT_TYPE, DEFAULT_ID);
-
-    instance.executeAction(action);
+    verify(persistenceWrapper, only()).persistObject(DEFAULT_TYPE, DEFAULT_ID);
+    verify(storageManager, only()).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID);
   }
 
   @Test
@@ -80,7 +94,27 @@ public class PersistenceServiceTest {
     testExecute(ActionType.MOD);
 
     verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID);
-    verify(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID);
+    verify(storageManager, only()).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID);
+    verify(persistenceWrapper).deletePersistentId(DEFAULT_PID);
+  }
+
+  @Test
+  public void testExecuteActionMODCreationOfThePIDWentWrong() throws JMSException, PersistenceException {
+    doThrow(PersistenceException.class).when(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID);
+
+    testExecute(ActionType.MOD);
+
+    verifyZeroInteractions(storageManager);
+    verify(persistenceWrapper, only()).persistObject(DEFAULT_TYPE, DEFAULT_ID);
+  }
+
+  @Test
+  public void testExecuteActionMODSettingPIDWentWrong() throws IOException, JMSException, PersistenceException {
+    doThrow(IOException.class).when(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID);
+    testExecute(ActionType.MOD);
+
+    verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID);
+    verify(storageManager, only()).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID);
     verify(persistenceWrapper).deletePersistentId(DEFAULT_PID);
   }
 
@@ -96,5 +130,11 @@ public class PersistenceServiceTest {
     testExecute(ActionType.END);
 
     verifyZeroInteractions(storageManager, persistenceWrapper);
+  }
+
+  private void testExecute(ActionType actionType) throws JMSException {
+    Action action = new Action(actionType, DEFAULT_TYPE, DEFAULT_ID);
+
+    instance.executeAction(action);
   }
 }
