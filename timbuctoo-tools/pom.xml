@@ -30,6 +30,12 @@
 
     <!-- Commons Configuration, assists with reading configuration files. -->
     <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>timbuctoo-tools-config</artifactId>
+      <version>2.0.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
       <version>${commons.configuration.version}</version>
@@ -94,8 +100,25 @@
     </profile>
   </profiles>
 
-  <!--<build>
+  <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-remote-resources-plugin</artifactId>
+        <version>1.5</version>
+        <configuration>
+          <resourceBundles>
+            <resourceBundle>nl.knaw.huygens:timbuctoo-tools-config-${environment}:2.0.0-SNAPSHOT</resourceBundle>
+          </resourceBundles>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>process</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>appassembler-maven-plugin</artifactId>
@@ -109,9 +132,6 @@
           </execution>
         </executions>
         <configuration>
-          <configurationSourceDirectory>${basedir}/../timbuctoo-config/timbuctoo-tools-config/src/main/config/${environment}</configurationSourceDirectory>
-          <copyConfigurationDirectory>true</copyConfigurationDirectory>
-          <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
           <programs>
             <program>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.dcar.DutchCaribbeanImporter</mainClass>
@@ -125,6 +145,6 @@
         </configuration>
       </plugin>
     </plugins>
-  </build>-->
+  </build>
 
 </project>
