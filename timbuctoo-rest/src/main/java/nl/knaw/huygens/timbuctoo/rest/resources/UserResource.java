@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
-import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.USER_ID_KEY;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;

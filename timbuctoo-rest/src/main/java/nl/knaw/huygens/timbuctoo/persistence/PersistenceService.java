@@ -59,8 +59,10 @@ public class PersistenceService extends ConsumerService implements Runnable {
       return;
     }
 
+    int revision = getRevision(type, id);
+
     try {
-      pid = persistenceWrapper.persistObject(type, id);
+      pid = persistenceWrapper.persistObject(type, id, revision);
     } catch (PersistenceException ex) {
       LOG.error("Creating a PID for {} with id {} went wrong.", type, id);
       LOG.debug("Exception", ex);
@@ -86,6 +88,12 @@ public class PersistenceService extends ConsumerService implements Runnable {
       LOG.error("Deleting PID {} went wrong.", pid);
       LOG.debug("Exception", pe);
     }
+  }
+
+  private <T extends Entity> int getRevision(Class<T> type, String id) {
+    T instance = storageManager.getEntity(type, id);
+
+    return instance.getRev();
   }
 
   @Override

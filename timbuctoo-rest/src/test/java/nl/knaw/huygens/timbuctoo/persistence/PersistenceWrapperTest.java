@@ -39,6 +39,14 @@ public class PersistenceWrapperTest {
   }
 
   @Test
+  public void testPersistObjectWithRevision() throws PersistenceException {
+    PersistenceWrapper persistenceWrapper = createInstance("http://test.nl");
+    persistenceWrapper.persistObject(DEFAULT_TYPE, "1234", 12);
+    verify(typeRegistry).getXNameForType(DEFAULT_TYPE);
+    verify(persistenceManager).persistURL("http://test.nl/" + Paths.DOMAIN_PREFIX + "/testconcretedocs/1234?rev=12");
+  }
+
+  @Test
   public void testPersistObjectSuccesUrlEndOnSlash() throws PersistenceException {
     PersistenceWrapper persistenceWrapper = createInstance("http://test.nl/");
     persistenceWrapper.persistObject(DEFAULT_TYPE, "1234");
