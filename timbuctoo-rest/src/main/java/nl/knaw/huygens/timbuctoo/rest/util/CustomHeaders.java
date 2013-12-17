@@ -6,7 +6,6 @@ package nl.knaw.huygens.timbuctoo.rest.util;
  */
 public class CustomHeaders {
 
-  public static final String USER_ID_KEY = "USER_ID";
   public static final String VRE_ID_KEY = "VRE_ID";
   public static final String VRE_KEY = "VRE";
 
