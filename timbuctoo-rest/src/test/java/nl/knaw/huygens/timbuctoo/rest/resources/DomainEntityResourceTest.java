@@ -591,28 +591,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
   }
 
-  // Variation tests
-
-  @Test
-  public void testGetDocOfVariation() {
-    TestDomainEntity expectedDoc = new TestDomainEntity(DEFAULT_ID);
-    String variation = "projecta";
-    when(getStorageManager().getVariation(DEFAULT_TYPE, DEFAULT_ID, variation)).thenReturn(expectedDoc);
-
-    TestDomainEntity actualDoc = domainResource("testdomainentities", DEFAULT_ID).path(variation).get(TestDomainEntity.class);
-    assertNotNull(actualDoc);
-    assertEquals(expectedDoc.getId(), actualDoc.getId());
-  }
-
-  @Test
-  public void testGetDocOfVariationDocDoesNotExist() {
-    String variation = "projecta";
-    when(getStorageManager().getVariation(DEFAULT_TYPE, "TEST000000000002", variation)).thenReturn(null);
-
-    ClientResponse response = domainResource("testdomainentities", "TEST000000000002").path(variation).get(ClientResponse.class);
-    assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
-  }
-
   // Test put PID.
 
   @Test
