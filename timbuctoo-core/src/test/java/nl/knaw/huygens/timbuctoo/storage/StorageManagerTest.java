@@ -12,12 +12,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
+import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -26,16 +26,15 @@ import com.google.common.collect.Lists;
 
 public class StorageManagerTest {
 
-  private Configuration config;
   private StorageManager manager;
   private Storage storage;
   private Change change;
 
   @Before
   public void setup() {
-    config = mock(Configuration.class);
+    VREManager vreManager = mock(VREManager.class);
     storage = mock(Storage.class);
-    manager = new StorageManager(config, storage);
+    manager = new StorageManager(storage, vreManager);
     change = new Change("userId", "vreId");
   }
 

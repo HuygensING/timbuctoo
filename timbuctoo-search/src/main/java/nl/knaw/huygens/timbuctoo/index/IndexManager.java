@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
+import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -43,11 +44,11 @@ public class IndexManager {
   private final StorageManager storageManager;
 
   @Inject
-  public IndexManager(Configuration config, TypeRegistry registry, LocalSolrServer server, StorageManager storageManager) {
+  public IndexManager(Configuration config, TypeRegistry registry, LocalSolrServer server, StorageManager storageManager, VREManager vreManager) {
     this.registry = registry;
     this.server = server;
     this.storageManager = storageManager;
-    scopes = config.getScopes();
+    scopes = vreManager.getAllScopes();
     registerCores();
   }
 
