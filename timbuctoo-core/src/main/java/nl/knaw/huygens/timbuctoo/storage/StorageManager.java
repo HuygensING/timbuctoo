@@ -157,6 +157,19 @@ public class StorageManager {
     return entity;
   }
 
+  public <T extends DomainEntity> T getRevisionWithRelations(Class<T> type, String id, int revision) {
+    T entity = null;
+    try {
+      entity = storage.getRevision(type, id, revision);
+      if (entity != null) {
+        storage.addRelationsTo(type, id, entity);
+      }
+    } catch (IOException e) {
+      LOG.error("Error while handling {} {}", type.getName(), id);
+    }
+    return entity;
+  }
+
   public <T extends SystemEntity> T findEntity(Class<T> type, String key, String value) {
     try {
       return storage.findItemByKey(type, key, value);
