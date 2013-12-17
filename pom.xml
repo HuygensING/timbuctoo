@@ -14,7 +14,7 @@
     <name>Huygens ING</name>
     <url>http://www.huygens.knaw.nl/</url>
   </organization>
-  <inceptionYear>2013</inceptionYear>
+  <inceptionYear>2012</inceptionYear>
 
   <modules>
     <module>timbuctoo-core</module>
@@ -67,8 +67,12 @@
     </repository>
   </repositories>
 
-  <!-- TODO: fill in the details. -->
   <licenses>
+    <license>
+      <name>GNU General Public License</name>
+      <url>http://www.gnu.org/licenses/gpl.txt</url>
+      <distribution>repo</distribution>
+    </license>
   </licenses>
 
   <!-- TODO: fill in the details -->
@@ -219,6 +223,15 @@
         <configuration>
           <source>${jdk.version}</source>
           <target>${jdk.version}</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>1.5</version>
+        <configuration>
+          <licenseName>gpl_v3</licenseName>
+          <sectionDelimiter>=======</sectionDelimiter>
         </configuration>
       </plugin>
     </plugins>
