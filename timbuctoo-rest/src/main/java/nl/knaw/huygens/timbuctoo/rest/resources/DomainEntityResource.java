@@ -221,19 +221,6 @@ public class DomainEntityResource extends ResourceBase {
     return Response.status(Status.NO_CONTENT).build();
   }
 
-  @GET
-  @Path(ID_PATH + "/{variation: \\w+}")
-  @JsonView(JsonViews.WebView.class)
-  @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
-  public DomainEntity getDocOfVariation( //
-      @PathParam(ENTITY_PARAM) String entityName, //
-      @PathParam(ID_PARAM) String id, //
-      @PathParam("variation") String variation //
-  ) {
-    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
-    return checkNotNull(storageManager.getVariation(type, id, variation), Status.NOT_FOUND);
-  }
-
   // --- Message handling ----------------------------------------------
 
   public static final String INDEX_MSG_PRODUCER = "ResourceIndexProducer";
