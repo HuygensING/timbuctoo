@@ -1,7 +1,10 @@
 package nl.knaw.huygens.timbuctoo.persistence;
 
+import java.io.IOException;
+
 import javax.jms.JMSException;
 
+import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
@@ -30,28 +33,56 @@ public class PersistenceService extends ConsumerService implements Runnable {
 
   @Override
   protected void executeAction(Action action) {
+
+    switch (action.getActionType()) {
+    case ADD:
+    case MOD:
+      setPID(action);
+      break;
+    case DEL:
+      LOG.debug("Ignoring action {}", action);
+      break;
+    default:
+      LOG.warn("Unexpected action {}", action);
+      break;
+    }
+
+  }
+
+  private void setPID(Action action) {
+    Class<? extends Entity> type = action.getType();
+    String pid = null;
+
+    if (!TypeRegistry.isDomainEntity(type)) {
+      LOG.error("Not a domain entitiy: {}", type.getSimpleName());
+      return;
+    }
+
+    String id = action.getId();
     try {
-      switch (action.getActionType()) {
-      case ADD:
-      case MOD:
-        Class<? extends Entity> type = action.getType();
-        if (TypeRegistry.isDomainEntity(type)) {
-          String pid = persistenceWrapper.persistObject(type, action.getId());
-          storageManager.setPID(TypeRegistry.toDomainEntity(type), action.getId(), pid);
-        } else {
-          LOG.error("Not a domain entitiy: {}", type.getSimpleName());
-        }
-        break;
-      case DEL:
-        LOG.debug("Ignoring action {}", action);
-        break;
-      default:
-        LOG.warn("Unexpected action {}", action);
-        break;
-      }
-    } catch (Exception e) {
-      LOG.error("Persisting {} with id {} went wrong", action.getType(), action.getId());
-      LOG.error("exception", e);
+      pid = persistenceWrapper.persistObject(type, id);
+    } catch (PersistenceException ex) {
+      LOG.error("Creating a PID for {} with id {} went wrong.", type, id);
+      LOG.debug("Exception", ex);
+    }
+
+    try {
+      storageManager.setPID(TypeRegistry.toDomainEntity(type), id, pid);
+    } catch (IllegalStateException ex) {
+      deletePID(pid);
+      LOG.error("{} with id {} already has a PID", type, id);
+    } catch (IOException ex) {
+      LOG.error("Persisting {} with id {} went wrong", type, id);
+      LOG.debug("Exception", ex);
+    }
+  }
+
+  private void deletePID(String pid) {
+    try {
+      persistenceWrapper.deletePersistentId(pid);
+    } catch (PersistenceException pe) {
+      LOG.error("Deleting PID {} went wrong.", pid);
+      LOG.debug("Exception", pe);
     }
   }
 
