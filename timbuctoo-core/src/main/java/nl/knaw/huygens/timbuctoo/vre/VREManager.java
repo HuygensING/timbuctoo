@@ -1,11 +1,13 @@
 package nl.knaw.huygens.timbuctoo.vre;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Singleton;
 
@@ -16,7 +18,7 @@ public class VREManager {
 
   public VREManager() throws IOException {
     vreMap = Maps.newHashMap();
-    List<VRE> vreList = ImmutableList.<VRE> of(new BaseVRE(), new DutchCaribbeanVRE(), new TestVRE());
+    List<VRE> vreList = ImmutableList.<VRE> of(new BaseVRE(), new DutchCaribbeanVRE(), new TestVRE(), new DWCVRE());
 
     for (VRE vre : vreList) {
       vreMap.put(vre.getName(), vre);
@@ -43,11 +45,21 @@ public class VREManager {
 
   public Set<String> getAvailableVREIds() {
     return vreMap.keySet();
-
   }
 
   public boolean doesVREExist(String vreId) {
     return vreMap.keySet().contains(vreId);
   }
 
+  public Collection<VRE> getAllVREs() {
+    return vreMap.values();
+  }
+
+  public List<Scope> getAllScopes() {
+    List<Scope> scopes = Lists.newLinkedList();
+    for (VRE vre : getAllVREs()) {
+      scopes.add(vre.getScope());
+    }
+    return scopes;
+  }
 }

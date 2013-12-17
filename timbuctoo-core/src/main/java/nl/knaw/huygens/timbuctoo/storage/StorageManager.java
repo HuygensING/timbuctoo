@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
-import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -20,6 +19,7 @@ import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.util.KV;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
+import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,13 +32,13 @@ public class StorageManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(StorageManager.class);
 
-  private final Configuration config;
   private final Storage storage;
+  private final VREManager vreManager;
 
   @Inject
-  public StorageManager(Configuration config, Storage storage) {
-    this.config = config;
+  public StorageManager(Storage storage, VREManager vreManager) {
     this.storage = storage;
+    this.vreManager = vreManager;
   }
 
   /**
@@ -53,7 +53,7 @@ public class StorageManager {
   public StorageStatus getStatus() {
     StorageStatus status = new StorageStatus();
 
-    Scope scope = config.getScopes().get(0);
+    Scope scope = vreManager.getAllScopes().get(0);
     for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
       status.addDomainEntityCount(getCount(type));
     }

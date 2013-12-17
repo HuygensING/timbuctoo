@@ -156,6 +156,7 @@ class LocalSolrServer {
   private SolrServer serverFor(String core) throws SolrServerException {
     SolrServer server = solrServers.get(core);
     if (server == null) {
+      LOG.error("Core {} does not exist.", core);
       throw new SolrServerException("No such core: " + core);
     }
     return server;

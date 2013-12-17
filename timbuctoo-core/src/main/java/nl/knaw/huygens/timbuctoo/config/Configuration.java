@@ -115,14 +115,6 @@ public class Configuration {
     return rv;
   }
 
-  public List<Scope> getScopes() {
-    return scopes;
-  }
-
-  public Scope getScopeById(String id) {
-    return scopeMap.get(id);
-  }
-
   public String getSolrHomeDir() {
     String path = getSetting("solr.directory");
     return getBooleanSetting("solr.use_user_home") ? pathInUserHome(path) : path;
