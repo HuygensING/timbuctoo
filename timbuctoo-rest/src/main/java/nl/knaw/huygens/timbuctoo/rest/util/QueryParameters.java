@@ -6,7 +6,7 @@ package nl.knaw.huygens.timbuctoo.rest.util;
 public class QueryParameters {
 
   public static final String USER_ID_KEY = "userId";
-  public static final String REVISION = "rev";
+  public static final String REVISION_KEY = "rev";
 
   private QueryParameters() {
     throw new AssertionError("Non-instantiable class");

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 import static org.junit.Assert.assertEquals;
@@ -81,6 +82,18 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     TestDomainEntity actualDoc = domainResource("testdomainentities", DEFAULT_ID).get(TestDomainEntity.class);
     assertNotNull(actualDoc);
     assertEquals(entity.getId(), actualDoc.getId());
+  }
+
+  @Test
+  public void testGetDocWithRevision() {
+    TestDomainEntity entity = new TestDomainEntity(DEFAULT_ID);
+    int revision = 1;
+    when(getStorageManager().getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision)).thenReturn(entity);
+
+    TestDomainEntity actualDoc = domainResource("testdomainentities", DEFAULT_ID).queryParam(REVISION_KEY, "1").get(TestDomainEntity.class);
+    assertNotNull(actualDoc);
+    assertEquals(entity.getId(), actualDoc.getId());
+    verify(getStorageManager()).getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision);
   }
 
   @Test

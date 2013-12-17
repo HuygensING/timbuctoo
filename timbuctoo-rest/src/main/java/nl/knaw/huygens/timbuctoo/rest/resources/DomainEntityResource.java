@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
@@ -127,10 +128,16 @@ public class DomainEntityResource extends ResourceBase {
   @JsonView(JsonViews.WebView.class)
   public DomainEntity getDoc( //
       @PathParam(ENTITY_PARAM) String entityName, //
-      @PathParam(ID_PARAM) String id //
+      @PathParam(ID_PARAM) String id, //
+      @QueryParam(REVISION_KEY) int revision//
   ) {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
-    return checkNotNull(storageManager.getEntityWithRelations(type, id), Status.NOT_FOUND);
+
+    if (revision == 0) {
+      return checkNotNull(storageManager.getEntityWithRelations(type, id), Status.NOT_FOUND);
+    } else {
+      return checkNotNull(storageManager.getRevisionWithRelations(type, id, revision), Status.NOT_FOUND);
+    }
   }
 
   @SuppressWarnings("unchecked")
