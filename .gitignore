@@ -4,3 +4,5 @@ target/*
 **/target/*
 .classpath
 /bin
+**/bin
+**/.settings
