@@ -75,13 +75,6 @@
     </license>
   </licenses>
 
-  <!-- TODO: fill in the details -->
-  <scm>
-    <connection>?</connection>
-    <developerConnection>?</developerConnection>
-    <url>?</url>
-  </scm>
-
   <issueManagement>
     <system>Redmine</system>
     <url>http://suzanna.huygens.knaw.nl/projects/datarepositories</url>
@@ -136,6 +129,7 @@
     <slf4j.version>1.7.5</slf4j.version>
     <solr.version>4.3.1</solr.version>
     <solr.server.version>4.3.1</solr.server.version>
+    <timbuctoo.config.version>2.0.0</timbuctoo.config.version>
   </properties>
 
   <dependencies>

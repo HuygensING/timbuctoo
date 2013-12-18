@@ -29,12 +29,7 @@
     <!-- ## Main libraries ## -->
 
     <!-- Commons Configuration, assists with reading configuration files. -->
-    <dependency>
-      <groupId>nl.knaw.huygens</groupId>
-      <artifactId>timbuctoo-tools-config</artifactId>
-      <version>2.0.0-SNAPSHOT</version>
-    </dependency>
-
+    
     <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
@@ -108,7 +103,7 @@
         <version>1.5</version>
         <configuration>
           <resourceBundles>
-            <resourceBundle>nl.knaw.huygens:timbuctoo-tools-config-${environment}:2.0.0-SNAPSHOT</resourceBundle>
+            <resourceBundle>nl.knaw.huygens:timbuctoo-tools-config-${environment}:${timbuctoo.config.version}</resourceBundle>
           </resourceBundles>
         </configuration>
         <executions>

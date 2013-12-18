@@ -216,7 +216,7 @@
         <dependency>
           <groupId>nl.knaw.huygens</groupId>
           <artifactId>timbuctoo-war-config-dev</artifactId>
-          <version>${project.version}</version>
+          <version>${timbuctoo.config.version}</version>
           <type>war</type>
           <scope>runtime</scope>
         </dependency>
@@ -228,7 +228,7 @@
         <dependency>
           <groupId>nl.knaw.huygens</groupId>
           <artifactId>timbuctoo-war-config-test</artifactId>
-          <version>${project.version}</version>
+          <version>${timbuctoo.config.version}</version>
           <type>war</type>
           <scope>runtime</scope>
         </dependency>
@@ -240,7 +240,7 @@
         <dependency>
           <groupId>nl.knaw.huygens</groupId>
           <artifactId>timbuctoo-war-config-prod</artifactId>
-          <version>${project.version}</version>
+          <version>${timbuctoo.config.version}</version>
           <type>war</type>
           <scope>runtime</scope>
         </dependency>
