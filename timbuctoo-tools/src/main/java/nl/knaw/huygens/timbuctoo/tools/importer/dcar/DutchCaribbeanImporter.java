@@ -72,7 +72,7 @@ import com.google.inject.Injector;
  * Imports data of the "Dutch Caribbean" project.
  * 
  * Usage:
- *  java  -cp [specs]  nl.knaw.huygens.timbuctoo.importer.database.DutchCaribbeanImporter  importDirName  configFileName
+ *  java  -cp  [specs]  ${package-name}.DutchCaribbeanImporter  importDirName  configFileName
  * 
  * The commandline arguments are optional.
  * 
