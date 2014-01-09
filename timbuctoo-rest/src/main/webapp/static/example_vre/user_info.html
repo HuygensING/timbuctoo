@@ -88,7 +88,9 @@
 		function login(){	
 			var wl = window.location;
 		    var hsURL = wl.origin + wl.pathname;
-		    var loginURL = 'https://'+ window.config.securityUri+'/saml2/login';
+		    var loginURL = window.config.securityUri;
+		    
+		    console.log('securityUri: ', window.config.securityUri);
 		    
 		    var form = $('<form>');
 		    form.attr({
