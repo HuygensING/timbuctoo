@@ -23,6 +23,7 @@
     <module>timbuctoo-tools</module>
     <module>timbuctoo-solr</module>
     <module>timbuctoo-services</module>
+    <module>timbuctoo-war-config-example</module>
   </modules>
 
   <prerequisites>
