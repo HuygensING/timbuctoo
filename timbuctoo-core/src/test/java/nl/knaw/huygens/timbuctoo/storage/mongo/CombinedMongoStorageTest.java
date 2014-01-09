@@ -25,8 +25,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -54,7 +52,6 @@ import org.mongojack.internal.stream.JacksonDBObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
@@ -161,19 +158,6 @@ public class CombinedMongoStorageTest {
   @Test
   public void testDeleteDomainEntity() throws IOException {
     DBObject dbObject = createTestConcreteDocDBObject(DEFAULT_ID, "test");
-
-    JsonNode revisionNode = mock(JsonNode.class);
-    when(revisionNode.asInt()).thenReturn(1);
-
-    ObjectNode objectNode = mock(ObjectNode.class);
-    when(objectNode.isObject()).thenReturn(true);
-    when(objectNode.put(anyString(), anyBoolean())).thenReturn(objectNode);
-    when(objectNode.put(anyString(), anyInt())).thenReturn(objectNode);
-    when(objectNode.get("^rev")).thenReturn(revisionNode);
-
-    DBJsonNode dbJsonNode = mock(DBJsonNode.class);
-    when(dbJsonNode.getDelegate()).thenReturn(objectNode);
-
     when(anyCollection.findOne(new BasicDBObject("_id", DEFAULT_ID))).thenReturn(dbObject);
 
     Change change = new Change("test", "test");
