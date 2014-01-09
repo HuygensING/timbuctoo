@@ -172,20 +172,26 @@ public class RelationManager {
         LOG.error("Unknown relation type {}", relation.getTypeRef().getId());
         return null;
       }
+      Class<? extends Entity> sourceType = convertToType(relationType.getSourceTypeName());
       String iname = relation.getSourceType();
       Class<? extends Entity> actualType = registry.getTypeForIName(iname);
-      if (!relationType.getSourceDocType().isAssignableFrom(actualType)) {
-        LOG.error("Incompatible source type {}", iname);
+      if (sourceType == null || !sourceType.isAssignableFrom(actualType)) {
+        LOG.error("Source type {} is incompatible with {}", iname, relationType.getSourceTypeName());
         throw new IllegalArgumentException();
       }
+      Class<? extends Entity> targetType = convertToType(relationType.getTargetTypeName());
       iname = relation.getTargetRef().getType();
       actualType = registry.getTypeForIName(iname);
-      if (!relationType.getTargetDocType().isAssignableFrom(actualType)) {
-        LOG.error("Incompatible target type {}", iname);
+      if (targetType == null || !targetType.isAssignableFrom(actualType)) {
+        LOG.error("Target type {} is incompatible with {}", iname, relationType.getTargetTypeName());
         throw new IllegalArgumentException();
       }
       return relation;
     }
+  }
+
+  private Class<? extends Entity> convertToType(String iname) {
+    return "domainentity".equals(iname) ? DomainEntity.class : registry.getTypeForIName(iname);
   }
 
 }

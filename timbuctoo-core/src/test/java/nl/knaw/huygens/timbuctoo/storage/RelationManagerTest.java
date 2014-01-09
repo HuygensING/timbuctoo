@@ -30,6 +30,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
@@ -194,11 +195,12 @@ public class RelationManagerTest {
 
   protected void setUpGetRelationType(Class<? extends DomainEntity> sourceClass, Class<? extends DomainEntity> targetClass, String relationTypeId, boolean symmetric) {
     RelationType relationType = new RelationType();
-    relationType.setSourceDocType(sourceClass);
-    relationType.setTargetDocType(targetClass);
+    relationType.setSourceTypeName(TypeNames.getInternalName(sourceClass));
+    relationType.setTargetDocType(TypeNames.getInternalName(targetClass));
     relationType.setSymmetric(symmetric);
 
     when(storageManager.getEntity(RelationType.class, relationTypeId)).thenReturn(relationType);
   }
 
 }
+
