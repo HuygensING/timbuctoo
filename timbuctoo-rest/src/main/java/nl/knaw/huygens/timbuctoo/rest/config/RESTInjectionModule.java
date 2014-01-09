@@ -36,7 +36,11 @@ import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.mail.MailSenderFactory;
 import nl.knaw.huygens.timbuctoo.messages.ActiveMQBroker;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
+import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
+import nl.knaw.huygens.timbuctoo.security.ExampleAuthorizationHandler;
+import nl.knaw.huygens.timbuctoo.security.ExampleVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
+import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -52,8 +56,8 @@ public class RESTInjectionModule extends BasicInjectionModule {
   protected void configure() {
 
     bind(SecurityContextCreator.class).to(UserSecurityContextCreator.class);
-    //bind(AuthorizationHandler.class).to(MockAuthorizationHandler.class);
-    bind(Broker.class).to(ActiveMQBroker.class);
+    bind(Broker.class).to(ActiveMQBroker.class); 
+    bind(VREAuthorizationHandler.class).to(VREAuthorizationHandler.class);
     super.configure();
   }
 

@@ -35,7 +35,9 @@ import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
+import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
+import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -191,8 +193,15 @@ class ResourceTestModule extends JerseyServletModule {
     return this.persistenceProducer;
   }
 
+  @Singleton
   @Provides
   public VREManager provideVreManager() {
     return this.vreManager;
+  }
+  
+  @Singleton
+  @Provides
+  public VREAuthorizationHandler provideVreAuthorizationHandler(){
+    return new DefaultVREAuthorizationHandler(this.mailSender, this.storageManager);
   }
 }
