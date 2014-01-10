@@ -63,6 +63,7 @@
       <cipher>{cipher to use when the private key is encrypted}</cipher>
       <naming_authority>0.NA</naming_authority>
       <prefix>{prefix}</prefix>
+      <!-- this path should be in the class path -->
       <private_key_file>{path to the private key}</private_key_file>
     </handle>
     <paths>

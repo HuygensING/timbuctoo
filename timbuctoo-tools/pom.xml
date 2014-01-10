@@ -79,18 +79,28 @@
       </activation>
       <properties>
         <environment>dev</environment>
+        <config.version>${timbuctoo.config.version}</config.version>
       </properties>
     </profile>
     <profile>
       <id>test</id>
       <properties>
         <environment>test</environment>
+        <config.version>${timbuctoo.config.version}</config.version>
       </properties>
     </profile>
     <profile>
       <id>prod</id>
       <properties>
         <environment>prod</environment>
+        <config.version>${timbuctoo.config.version}</config.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>example</id>
+      <properties>
+        <environment>example</environment>
+        <config.version>${project.version}</config.version>
       </properties>
     </profile>
   </profiles>
@@ -103,7 +113,7 @@
         <version>1.5</version>
         <configuration>
           <resourceBundles>
-            <resourceBundle>nl.knaw.huygens:timbuctoo-tools-config-${environment}:${timbuctoo.config.version}</resourceBundle>
+            <resourceBundle>nl.knaw.huygens:timbuctoo-tools-config-${environment}:${config.version}</resourceBundle>
           </resourceBundles>
         </configuration>
         <executions>
