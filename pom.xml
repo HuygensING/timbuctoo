@@ -228,6 +228,8 @@
         <configuration>
           <licenseName>gpl_v3</licenseName>
           <sectionDelimiter>=======</sectionDelimiter>
+          <canUpdateCopyright>true</canUpdateCopyright>
+          <canUpdateDescription>true</canUpdateDescription>
         </configuration>
       </plugin>
     </plugins>
