@@ -248,14 +248,11 @@
     </profile>
     <profile>
       <id>example</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <dependencies>
         <dependency>
           <groupId>nl.knaw.huygens</groupId>
           <artifactId>timbuctoo-war-config-example</artifactId>
-          <version>${timbuctoo.config.version}</version>
+          <version>${project.version}</version>
           <type>war</type>
           <scope>runtime</scope>
         </dependency>
