@@ -7,5 +7,5 @@ var config = {
 	/*
 	 * securtityUri should point to url where the user can login. 
 	 */
-	securityUri : "{url to security server used for user identification}"
+	securityUri : "http://localhost:8080/timbuctoo/static/example_vre/example_login.html"
 };
