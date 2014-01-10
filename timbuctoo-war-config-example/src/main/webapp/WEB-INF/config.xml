@@ -53,6 +53,8 @@
       <!-- Used by the security client library, when it is false, no user 
         can execute write actions -->
       <enabled>true</enabled>
+      <!-- The example security is purely for testing purposes only and requires no further configuration -->
+      <type>example</type>
       <!-- Security implementation details should be added here. -->
     </security>
     <handle>
@@ -70,6 +72,7 @@
       <json>data/json</json>
       <web>../web</web>
     </paths>
+    <!-- Used to determine which packages contain the domain model classes. -->
     <model-packages>
       timbuctoo.model
       timbuctoo.model.atlg
