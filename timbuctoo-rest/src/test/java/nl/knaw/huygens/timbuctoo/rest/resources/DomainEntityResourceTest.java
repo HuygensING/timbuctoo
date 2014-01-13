@@ -124,7 +124,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     int revision = 0;
     when(getStorageManager().getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision)).thenReturn(entity);
 
-    TestDomainEntity actualDoc = domainResource("testdomainentities", DEFAULT_ID).queryParam(REVISION_KEY, "1").get(TestDomainEntity.class);
+    TestDomainEntity actualDoc = domainResource("testdomainentities", DEFAULT_ID).queryParam(REVISION_KEY, "0").get(TestDomainEntity.class);
     assertNotNull(actualDoc);
     assertEquals(entity.getId(), actualDoc.getId());
     verify(getStorageManager()).getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision);
