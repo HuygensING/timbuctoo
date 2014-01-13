@@ -4,7 +4,7 @@ package nl.knaw.huygens.timbuctoo.model;
  * #%L
  * Timbuctoo core
  * =======
- * Copyright (C) 2012 - 2013 Huygens ING
+ * Copyright (C) 2012 - 2014 Huygens ING
  * =======
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.model;
  */
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 
 /**
  * The type of a relation between domain entities.
@@ -37,29 +38,29 @@ public class RelationType extends SystemEntity {
   private String regularName;
   /** The name of this relation type when source and target are interchanged. */
   private String inverseName;
-  /** The type token of the 'active' participant of the relation. */
-  private Class<? extends DomainEntity> sourceDocType;
-  /** The type token of the 'passive' participant of the relation. */
-  private Class<? extends DomainEntity> targetDocType;
-  /** If source and target doc types are the same, is relation(A,A) allowed? */
+  /** The internal type name of the 'active' participant of the relation. */
+  private String sourceTypeName;
+  /** The internal type name of the 'passive' participant of the relation. */
+  private String targetTypeName;
+  /** If source and target types are the same, is relation(A,A) allowed? */
   private boolean reflexive;
-  /** If source and target doc types are the same, does relation(A,B) imply relation(B,A)? */
+  /** If source and target types are the same, does relation(A,B) imply relation(B,A)? */
   private boolean symmetric;
 
   // For deserialization...
   public RelationType() {}
 
-  public RelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceDocType, Class<? extends DomainEntity> targetDocType) {
+  public RelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) {
     this.regularName = regularName;
     this.inverseName = inverseName;
-    this.sourceDocType = sourceDocType;
-    this.targetDocType = targetDocType;
-    this.reflexive = sourceDocType.equals(targetDocType);
+    this.sourceTypeName = TypeNames.getInternalName(sourceType);
+    this.targetTypeName = TypeNames.getInternalName(targetType);
+    this.reflexive = sourceType.equals(targetType);
     this.symmetric = false;
   }
 
-  public RelationType(String name, Class<? extends DomainEntity> docType) {
-    this(name, name, docType, docType);
+  public RelationType(String name, Class<? extends DomainEntity> type) {
+    this(name, name, type, type);
   }
 
   @Override
@@ -79,24 +80,24 @@ public class RelationType extends SystemEntity {
     return inverseName;
   }
 
-  public void setInverseName(String inverseName) {
-    this.inverseName = inverseName;
+  public void setInverseName(String name) {
+    inverseName = name;
   }
 
-  public Class<? extends DomainEntity> getSourceDocType() {
-    return sourceDocType;
+  public String getSourceTypeName() {
+    return sourceTypeName;
   }
 
-  public void setSourceDocType(Class<? extends DomainEntity> sourceDocType) {
-    this.sourceDocType = sourceDocType;
+  public void setSourceTypeName(String name) {
+    sourceTypeName = name;
   }
 
-  public Class<? extends DomainEntity> getTargetDocType() {
-    return targetDocType;
+  public String getTargetTypeName() {
+    return targetTypeName;
   }
 
-  public void setTargetDocType(Class<? extends DomainEntity> targetDocType) {
-    this.targetDocType = targetDocType;
+  public void setTargetDocType(String name) {
+    targetTypeName = name;
   }
 
   public boolean isReflexive() {

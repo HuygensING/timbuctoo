@@ -3,9 +3,9 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>timbuctoo</groupId>
+    <groupId>nl.knaw.huygens</groupId>
     <artifactId>timbuctoo</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
   </parent>
   <artifactId>timbuctoo-rest</artifactId>
   <packaging>war</packaging>
@@ -15,17 +15,17 @@
   <dependencies>
     <!-- ## Project dependencies ## -->
     <dependency>
-      <groupId>timbuctoo</groupId>
+      <groupId>nl.knaw.huygens</groupId>
       <artifactId>timbuctoo-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>timbuctoo</groupId>
+      <groupId>nl.knaw.huygens</groupId>
       <artifactId>timbuctoo-search</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>timbuctoo</groupId>
+      <groupId>nl.knaw.huygens</groupId>
       <artifactId>timbuctoo-services</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -241,6 +241,18 @@
           <groupId>nl.knaw.huygens</groupId>
           <artifactId>timbuctoo-war-config-prod</artifactId>
           <version>${timbuctoo.config.version}</version>
+          <type>war</type>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>example</id>
+      <dependencies>
+        <dependency>
+          <groupId>nl.knaw.huygens</groupId>
+          <artifactId>timbuctoo-war-config-example</artifactId>
+          <version>${project.version}</version>
           <type>war</type>
           <scope>runtime</scope>
         </dependency>
