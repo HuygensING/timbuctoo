@@ -4,7 +4,7 @@ package nl.knaw.huygens.timbuctoo.rest.config;
  * #%L
  * Timbuctoo REST api
  * =======
- * Copyright (C) 2012 - 2013 Huygens ING
+ * Copyright (C) 2012 - 2014 Huygens ING
  * =======
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,32 +36,47 @@ import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.mail.MailSenderFactory;
 import nl.knaw.huygens.timbuctoo.messages.ActiveMQBroker;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
+import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
+import nl.knaw.huygens.timbuctoo.security.ExampleAuthorizationHandler;
+import nl.knaw.huygens.timbuctoo.security.ExampleVREAuthorizationHandler;
+import nl.knaw.huygens.timbuctoo.security.SecurityType;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
+import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.sun.jersey.api.client.Client;
 
 public class RESTInjectionModule extends BasicInjectionModule {
+  private final SecurityType securityType;
 
   public RESTInjectionModule(Configuration config) {
     super(config);
+    securityType = SecurityType.getFromString(config.getSetting("security.type"));
   }
 
   @Override
   protected void configure() {
 
     bind(SecurityContextCreator.class).to(UserSecurityContextCreator.class);
-    //bind(AuthorizationHandler.class).to(MockAuthorizationHandler.class);
     bind(Broker.class).to(ActiveMQBroker.class);
+    if (SecurityType.DEFAULT.equals(securityType)) {
+      bind(VREAuthorizationHandler.class).to(DefaultVREAuthorizationHandler.class);
+    } else {
+      bind(VREAuthorizationHandler.class).to(ExampleVREAuthorizationHandler.class);
+    }
     super.configure();
   }
 
   @Provides
   @Singleton
   AuthorizationHandler provideAuthorizationHandler() {
-    Client client = new Client();
-    return new HuygensAuthorizationHandler(client, config.getSetting("security.hss.url"), config.getSetting("security.hss.credentials"));
+    if (SecurityType.DEFAULT.equals(securityType)) {
+      Client client = new Client();
+      return new HuygensAuthorizationHandler(client, config.getSetting("security.hss.url"), config.getSetting("security.hss.credentials"));
+    }
+
+    return new ExampleAuthorizationHandler();
   }
 
   @Provides

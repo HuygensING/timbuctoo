@@ -4,7 +4,7 @@ package nl.knaw.huygens.timbuctoo.rest.providers;
  * #%L
  * Timbuctoo REST api
  * =======
- * Copyright (C) 2012 - 2013 Huygens ING
+ * Copyright (C) 2012 - 2014 Huygens ING
  * =======
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,8 +29,8 @@ import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
@@ -39,8 +39,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.jaxrs.json.annotation.EndpointConfig;
-import com.fasterxml.jackson.jaxrs.json.util.AnnotationBundleKey;
+import com.fasterxml.jackson.jaxrs.cfg.AnnotationBundleKey;
+import com.fasterxml.jackson.jaxrs.json.JsonEndpointConfig;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -113,18 +113,25 @@ public class HTMLProviderHelper {
 
   /**
    * Returns an object writer for a class with the specified annotations.
-   * Note that the current implementation is not thread safe.
+   * <ul>
+   * <li>The current implementation is not thread safe.</li>
+   * <li>Apparently uses undocumented features of Jackson. In version 2.1 it used
+   * <code>com.fasterxml.jackson.jaxrs.json.util.AnnotationBundleKey</code> and
+   * <code>com.fasterxml.jackson.jaxrs.json.annotation.EndpointConfig</code>.
+   * In Jackson 2.2 the first of these classes was moved to a different package,
+   * and the second was replaced by <code>JsonEndpointConfig</code>.</li>
+   * </ul>
    */
   public ObjectWriter getObjectWriter(Annotation[] annotations) {
-    AnnotationBundleKey key = new AnnotationBundleKey(annotations);
+    AnnotationBundleKey key = new AnnotationBundleKey(annotations, AnnotationBundleKey.class);
     ObjectWriter writer = writers.get(key);
     if (writer == null) {
-      //A quick hack to add custom serialization of the Reference type.
+      // A quick hack to add custom serialization of the Reference type.
       SimpleModule module = new SimpleModule();
       module.addSerializer(new ReferenceSerializer(registry));
       ObjectMapper mapper = new ObjectMapper();
       mapper.registerModule(module);
-      EndpointConfig endpointConfig = EndpointConfig.forWriting(mapper, annotations, null);
+      JsonEndpointConfig endpointConfig = JsonEndpointConfig.forWriting(mapper, annotations, null);
       writer = endpointConfig.getWriter();
       writers.put(key, writer);
     }

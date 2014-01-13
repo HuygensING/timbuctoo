@@ -4,7 +4,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #%L
  * Timbuctoo REST api
  * =======
- * Copyright (C) 2012 - 2013 Huygens ING
+ * Copyright (C) 2012 - 2014 Huygens ING
  * =======
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -35,7 +35,9 @@ import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
+import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
+import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -191,8 +193,15 @@ class ResourceTestModule extends JerseyServletModule {
     return this.persistenceProducer;
   }
 
+  @Singleton
   @Provides
   public VREManager provideVreManager() {
     return this.vreManager;
+  }
+  
+  @Singleton
+  @Provides
+  public VREAuthorizationHandler provideVreAuthorizationHandler(){
+    return new DefaultVREAuthorizationHandler(this.mailSender, this.storageManager);
   }
 }

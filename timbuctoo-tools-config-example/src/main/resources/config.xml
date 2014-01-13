@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  #%L
+  Timbuctoo tools example configuration
+  =======
+  Copyright (C) 2012 - 2014 Huygens ING
+  =======
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as
+  published by the Free Software Foundation, either version 3 of the 
+  License, or (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public 
+  License along with this program.  If not, see
+  <http://www.gnu.org/licenses/gpl-3.0.html>.
+  #L%
+  -->
+
+<config version="0.1">
+  <settings>
+    <project>
+      <name>Repository webservice</name>
+      <desc>Repository project.</desc>
+      <owner>Huygens ING</owner>
+      <internalname>repository</internalname>
+    </project>
+    <database>
+      <!-- Mongo database -->
+      <host>{server}</host>
+      <name>{db name}</name> <!-- Could be any name if none is created -->
+      <port>{port}</port> <!-- default mongo port is 27017 -->
+      <user>{user name}</user>
+      <password>{password}</password>
+    </database>
+    <solr>
+      <use_user_home>true</use_user_home> <!-- does solr use the user home dir -->
+      <directory>{dir}</directory> <!-- folder to find solr cores in. -->
+      <!-- Maximum time before a commit in ms -->
+      <commit_within>10000</commit_within>
+    </solr>
+    <!-- Search results are saved in the database, to prevent search results 
+      to use to much disk space, the results will be removed periodically -->
+    <search_results_cleanup>
+      <enabled>true</enabled>
+      <!-- interval between cleanups (hh:mm:ss) -->
+      <interval>00:00:30</interval>
+      <!-- time to live of search results (hh:mm:ss) -->
+      <ttl>00:05:00</ttl>
+    </search_results_cleanup>
+    <messages>
+      <!-- ActiveMQ is used for setting PID's and indexing. -->
+      <!-- ActiveMQ message broker -->
+      <enabled>true</enabled>
+      <persistent>false</persistent>
+      <system_usage>
+        <memory_mb>10</memory_mb>
+        <store_mb>100</store_mb>
+        <temp_mb>20</temp_mb>
+      </system_usage>
+    </messages>
+    <mail>
+      <!-- for sending emails to admins when a new user has logged on and 
+        sending messages users when their accounts is upgraded. -->
+      <enabled>false</enabled>
+      <from_address>{from address}</from_address>
+      <host>{mail server}</host>
+      <port>{server port}</port>
+    </mail>
+    <security>
+      <!-- Used by the security client library, when it is false, no user 
+        can execute write actions -->
+      <enabled>true</enabled>
+      <!-- The example security is purely for testing purposes only and requires no further configuration -->
+      <type>example</type>
+      <!-- Security implementation details should be added here. -->
+    </security>
+    <handle>
+      <!-- persistency server -->
+      <enabled>false</enabled>
+      <cipher>{cipher to use when the private key is encrypted}</cipher>
+      <naming_authority>0.NA</naming_authority>
+      <prefix>{prefix}</prefix>
+      <!-- this path should be in the class path -->
+      <private_key_file>{path to the private key}</private_key_file>
+    </handle>
+    <paths>
+      <source>data/source</source>
+      <json>data/json</json>
+      <web>../web</web>
+    </paths>
+    <!-- Used to determine which packages contain the domain model classes. -->
+    <model-packages>
+      timbuctoo.model
+      timbuctoo.model.atlg
+      timbuctoo.model.dwcbia
+      timbuctoo.model.ckcc
+      timbuctoo.model.dcar
+      timbuctoo.model.raa
+    </model-packages>
+    <!-- The base url the application can be reached. When a proxy is used this should be the address of the proxy. -->
+    <public_url>http://localhost:8080/timbuctoo</public_url>
+    <html>
+      <defaultstylesheet>/static/css/static-html.css</defaultstylesheet>
+    </html>
+  </settings>
+</config>

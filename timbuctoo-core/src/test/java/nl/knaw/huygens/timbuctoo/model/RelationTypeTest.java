@@ -4,7 +4,7 @@ package nl.knaw.huygens.timbuctoo.model;
  * #%L
  * Timbuctoo core
  * =======
- * Copyright (C) 2012 - 2013 Huygens ING
+ * Copyright (C) 2012 - 2014 Huygens ING
  * =======
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -34,8 +33,8 @@ public class RelationTypeTest {
     RelationType relationType = new RelationType("name", DomainEntity.class);
     assertEquals("name", relationType.getRegularName());
     assertEquals("name", relationType.getInverseName());
-    assertEquals(DomainEntity.class, relationType.getSourceDocType());
-    assertEquals(DomainEntity.class, relationType.getTargetDocType());
+    assertEquals("domainentity", relationType.getSourceTypeName());
+    assertEquals("domainentity", relationType.getTargetTypeName());
   }
 
 }

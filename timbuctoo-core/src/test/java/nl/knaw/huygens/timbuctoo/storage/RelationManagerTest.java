@@ -4,7 +4,7 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #%L
  * Timbuctoo core
  * =======
- * Copyright (C) 2012 - 2013 Huygens ING
+ * Copyright (C) 2012 - 2014 Huygens ING
  * =======
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,6 +30,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
@@ -194,11 +195,12 @@ public class RelationManagerTest {
 
   protected void setUpGetRelationType(Class<? extends DomainEntity> sourceClass, Class<? extends DomainEntity> targetClass, String relationTypeId, boolean symmetric) {
     RelationType relationType = new RelationType();
-    relationType.setSourceDocType(sourceClass);
-    relationType.setTargetDocType(targetClass);
+    relationType.setSourceTypeName(TypeNames.getInternalName(sourceClass));
+    relationType.setTargetDocType(TypeNames.getInternalName(targetClass));
     relationType.setSymmetric(symmetric);
 
     when(storageManager.getEntity(RelationType.class, relationTypeId)).thenReturn(relationType);
   }
 
 }
+
