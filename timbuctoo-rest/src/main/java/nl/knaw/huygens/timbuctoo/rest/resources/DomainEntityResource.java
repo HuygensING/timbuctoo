@@ -151,11 +151,11 @@ public class DomainEntityResource extends ResourceBase {
   public DomainEntity getDoc( //
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id, //
-      @QueryParam(REVISION_KEY) int revision//
+      @QueryParam(REVISION_KEY) Integer revision//
   ) {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
-    if (revision == 0) {
+    if (revision == null) {
       return checkNotNull(storageManager.getEntityWithRelations(type, id), Status.NOT_FOUND);
     } else {
       return checkNotNull(storageManager.getRevisionWithRelations(type, id, revision), Status.NOT_FOUND);
