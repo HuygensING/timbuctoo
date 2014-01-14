@@ -84,8 +84,23 @@
 
   <ciManagement>
     <system>cruisecontrolrb</system>
-    <url>http://cruisecontrol.huygens.knaw.nl/projects/timbuctoo</url>
+    <url>http://ci.huygens.knaw.nl/job/timbuctoo_develop</url>
   </ciManagement>
+
+  <distributionManagement>
+    <repository>
+      <id>maven.huygens</id>
+      <name>Huygens Maven Repository</name>
+      <url>${huygens-repo}</url>
+    </repository>
+    <!-- use the following if you ARE using a snapshot version. -->
+    <snapshotRepository>
+      <id>maven.huygens</id>
+      <name>Huygens Maven Repository</name>
+      <url>${huygens-repo}</url>
+      <uniqueVersion>false</uniqueVersion>
+    </snapshotRepository>
+  </distributionManagement>
 
   <developers>
     <developer>
@@ -132,6 +147,12 @@
     <solr.version>4.3.1</solr.version>
     <solr.server.version>4.3.1</solr.server.version>
     <timbuctoo.config.version>2.0.0</timbuctoo.config.version>
+    <!-- Plugin versions -->
+    <license-plugin.version>1.5</license-plugin.version>
+    <maven-compiler.version>3.1</maven-compiler.version>
+    <maven-javadoc.version>2.9</maven-javadoc.version>
+    <maven-source.version>2.2.1</maven-source.version>
+    <wagon-ssh.version>2.2</wagon-ssh.version>
   </properties>
 
   <dependencies>
@@ -212,6 +233,13 @@
   <!-- ## End of test dependencies ## -->
 
   <build>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-ssh</artifactId>
+        <version>${wagon-ssh.version}</version>
+      </extension>
+    </extensions>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -221,16 +249,44 @@
           <target>${jdk.version}</target>
         </configuration>
       </plugin>
+      <!-- license plugins -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>license-maven-plugin</artifactId>
-        <version>1.5</version>
+        <version>${license-plugin.version}</version>
         <configuration>
           <licenseName>gpl_v3</licenseName>
           <sectionDelimiter>=======</sectionDelimiter>
           <canUpdateCopyright>true</canUpdateCopyright>
           <canUpdateDescription>true</canUpdateDescription>
         </configuration>
+      </plugin>
+      <!-- Maven deploy plugins -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>${maven-source.version}</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${maven-javadoc.version}</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
