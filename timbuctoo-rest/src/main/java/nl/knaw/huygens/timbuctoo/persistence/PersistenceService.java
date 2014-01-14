@@ -92,7 +92,8 @@ public class PersistenceService extends ConsumerService implements Runnable {
     }
 
     try {
-      storageManager.setPID(TypeRegistry.toDomainEntity(type), id, pid);
+      // The only way to show the PIDs as a URI is to save them as a URI.
+      storageManager.setPID(TypeRegistry.toDomainEntity(type), id, persistenceWrapper.getPersistentURL(pid));
     } catch (IllegalStateException ex) {
       deletePID(pid);
       LOG.error("{} with id {} already has a PID", type, id);

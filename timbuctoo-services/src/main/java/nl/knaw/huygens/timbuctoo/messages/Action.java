@@ -50,7 +50,7 @@ public class Action {
 
   @Override
   public String toString() {
-    return "actionType: " + actionType + "\ntypeString: " + type + "\nid: " + id;
+    return "{\nactionType: " + actionType + "\ntypeString: " + type + "\nid: " + id + "\n}";
   }
 
 }
