@@ -35,7 +35,8 @@ public class BasicInjectionModule extends AbstractModule {
 
   public BasicInjectionModule(Configuration config) {
     this.config = config;
-    registry = new TypeRegistry(config.getSetting("model-packages"));
+    registry = new TypeRegistry();
+    registry.init(config.getSetting("model-packages"));
     new ConfigValidator(config, registry).validate();
   }
 

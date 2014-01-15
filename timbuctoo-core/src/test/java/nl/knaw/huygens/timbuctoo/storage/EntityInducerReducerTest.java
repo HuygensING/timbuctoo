@@ -34,6 +34,7 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -61,7 +62,13 @@ public class EntityInducerReducerTest {
 
   @BeforeClass
   public static void setupRegistry() {
-    registry = new TypeRegistry("test.model test.model.projecta test.model.projectb");
+    registry = new TypeRegistry();
+    registry.init("test.model test.model.projecta test.model.projectb");
+  }
+
+  @AfterClass
+  public static void clearRegistry() {
+    registry = null;
   }
 
   @Before

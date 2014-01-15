@@ -35,6 +35,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntityPrimitive;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntityPrimitiveCollections;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -65,7 +66,13 @@ public class EntityReducerTest {
 
   @BeforeClass
   public static void setupRegistry() {
-    registry = new TypeRegistry("test.model test.model.projecta test.model.projectb");
+    registry = new TypeRegistry();
+    registry.init("test.model test.model.projecta test.model.projectb");
+  }
+
+  @AfterClass
+  public static void clearRegistry() {
+    registry = null;
   }
 
   @Before
