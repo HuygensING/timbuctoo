@@ -220,22 +220,6 @@ public class TypeRegistry {
   }
 
   /**
-   * Convenience method that returns {@code getINameForType} or {@code getINameForRole}
-   * or null depending on the parameter. 
-   * @param type the type to get the internal name from. 
-   * @return
-   */
-  @SuppressWarnings("unchecked")
-  public String getIName(Class<?> type) {
-    if (isEntity(type)) {
-      return getINameForType((Class<? extends Entity>) type);
-    } else if (isRole(type)) {
-      return getINameForRole(toRole(type));
-    }
-    return null;
-  }
-
-  /**
    * Returns the type token for the specified internal type name,
    * or {@code null} if there is no such token.
    */

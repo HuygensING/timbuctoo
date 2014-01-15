@@ -100,24 +100,6 @@ public class TypeRegistryTest {
   }
 
   @Test
-  public void testGetINameEntity() {
-    registry.init(MODEL_PACKAGE);
-    assertEquals("basedomainentity", registry.getIName(BaseDomainEntity.class));
-  }
-
-  @Test
-  public void testGetINameRole() {
-    registry.init(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertEquals("projectatestrole", registry.getIName(ProjectATestRole.class));
-  }
-
-  @Test
-  public void testGetINameNonDomainClass() {
-    registry.init(MODEL_PACKAGE);
-    assertEquals(null, registry.getIName(String.class));
-  }
-
-  @Test
   public void testGetXNameForType() {
     registry.init(MODEL_PACKAGE);
     assertEquals("basedomainentitys", registry.getXNameForType(BaseDomainEntity.class));
