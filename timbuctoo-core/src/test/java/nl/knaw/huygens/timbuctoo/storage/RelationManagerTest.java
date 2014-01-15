@@ -40,21 +40,34 @@ import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectARelation;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
 
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class RelationManagerTest {
 
-  private TypeRegistry typeRegistry;
+  private static TypeRegistry registry;
+
   private StorageManager storageManager;
   private RelationManager relationManager;
   private Change change;
 
+  @BeforeClass
+  public static void setupRegistry() {
+    registry = new TypeRegistry();
+    registry.init("timbuctoo.variation.model timbuctoo.model timbuctoo.variation.model.projecta");
+  }
+
+  @AfterClass
+  public static void clearRegistry() {
+    registry = null;
+  }
+
   @Before
   public void setUp() {
-    typeRegistry = new TypeRegistry("timbuctoo.variation.model timbuctoo.model timbuctoo.variation.model.projecta");
     storageManager = mock(StorageManager.class);
-    relationManager = new RelationManager(typeRegistry, storageManager);
+    relationManager = new RelationManager(registry, storageManager);
     change = new Change("test", "test");
   }
 

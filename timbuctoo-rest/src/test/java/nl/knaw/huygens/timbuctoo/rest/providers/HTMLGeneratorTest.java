@@ -33,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.rest.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
 
 import org.hamcrest.Matchers;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -57,7 +58,13 @@ public class HTMLGeneratorTest {
 
   @BeforeClass
   public static void setupRegistry() {
-    registry = new TypeRegistry("timbuctoo.rest.model timbuctoo.rest.model.projecta timbuctoo.rest.model.projectb");
+    registry = new TypeRegistry();
+    registry.init("timbuctoo.rest.model timbuctoo.rest.model.projecta timbuctoo.rest.model.projectb");
+  }
+
+  @AfterClass
+  public static void clearRegistry() {
+    registry = null;
   }
 
   @Before

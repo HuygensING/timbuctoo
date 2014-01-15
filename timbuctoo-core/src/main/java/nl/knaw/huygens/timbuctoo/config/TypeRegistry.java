@@ -91,13 +91,30 @@ public class TypeRegistry {
 
   private final Map<Class<? extends Entity>, Set<Class<? extends Role>>> allowedRoles = Maps.newHashMap();
 
-  public TypeRegistry(String packageNames) {
+  public TypeRegistry() {
+  }
+
+  public void init(String packageNames) {
     checkArgument(packageNames != null, "'packageNames' must not be null");
 
+    clear();
     ClassPath classPath = getClassPath();
     for (String packageName : StringUtils.split(packageNames)) {
       registerPackage(classPath, packageName.replaceFirst("^timbuctoo", "nl.knaw.huygens.timbuctoo"));
     }
+  }
+
+  /**
+   * Clears all entries.
+   */
+  private void clear() {
+    type2iname.clear();
+    iname2type.clear();
+    type2xname.clear();
+    xname2type.clear();
+    iname2xname.clear();
+    role2iname.clear();
+    allowedRoles.clear();
   }
 
   private ClassPath getClassPath() {
