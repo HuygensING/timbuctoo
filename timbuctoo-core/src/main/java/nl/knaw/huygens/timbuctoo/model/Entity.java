@@ -26,17 +26,21 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.config.TimbuctooTypeIdResolver;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 
-// Annotation determines to which subclass the entity has to be resolved.
-// @see: http://wiki.fasterxml.com/JacksonPolymorphicDeserialization
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+// Annotations determine to which subclass the entity has to be resolved.
+// @see http://wiki.fasterxml.com/JacksonPolymorphicDeserialization
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
+@JsonTypeIdResolver(value = TimbuctooTypeIdResolver.class)
 public abstract class Entity {
+
   public static final String ID = "_id";
 
   @NotNull

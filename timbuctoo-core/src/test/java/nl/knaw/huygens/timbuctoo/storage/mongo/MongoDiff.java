@@ -55,7 +55,7 @@ public class MongoDiff {
     BsonObjectGenerator generator = new BsonObjectGenerator();
     dbWriter.writeValue(generator, doc);
     DBObject dbObject = generator.getDBObject();
-    dbObject.removeField("@class");
+    dbObject.removeField("@type");
 
     return generator.getDBObject();
   }

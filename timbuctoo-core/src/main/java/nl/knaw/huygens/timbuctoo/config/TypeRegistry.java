@@ -45,7 +45,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
-import com.google.inject.Singleton;
 
 /**
  * The type registry contains properties of entity classes.
@@ -74,13 +73,18 @@ import com.google.inject.Singleton;
  * internal name (constructed by appending an 's' to the internal
  * name) or a name supplied in a class annotation.</p>
  */
-@Singleton
 public class TypeRegistry {
 
   private static final Logger LOG = LoggerFactory.getLogger(TypeRegistry.class);
-  
-  public static TypeRegistry getInstance() {
-    return new TypeRegistry();
+
+  /** The unique instance of this class. */
+  private static TypeRegistry instance;
+
+  public static synchronized TypeRegistry getInstance() {
+    if (instance == null) {
+      instance = new TypeRegistry();
+    }
+    return instance;
   }
 
   // ---------------------------------------------------------------------------
@@ -94,11 +98,11 @@ public class TypeRegistry {
   private final Map<String, String> iname2xname = Maps.newHashMap();
 
   private final Map<Class<? extends Role>, String> role2iname = Maps.newHashMap();
+  private final Map<String, Class<? extends Role>> iname2role = Maps.newHashMap();
 
   private final Map<Class<? extends Entity>, Set<Class<? extends Role>>> allowedRoles = Maps.newHashMap();
 
-  private TypeRegistry() {
-  }
+  private TypeRegistry() {}
 
   public void init(String packageNames) {
     checkArgument(packageNames != null, "'packageNames' must not be null");
@@ -120,6 +124,7 @@ public class TypeRegistry {
     xname2type.clear();
     iname2xname.clear();
     role2iname.clear();
+    iname2role.clear();
     allowedRoles.clear();
   }
 
@@ -192,6 +197,7 @@ public class TypeRegistry {
       throw new IllegalStateException("Duplicate internal type name " + iname);
     }
     role2iname.put(role, iname);
+    iname2role.put(iname, role);
   }
 
   // --- public api ------------------------------------------------------------
@@ -223,8 +229,16 @@ public class TypeRegistry {
    * Returns the type token for the specified internal type name,
    * or {@code null} if there is no such token.
    */
-  public Class<? extends Entity> getTypeForIName(String iName) {
-    return iname2type.get(iName);
+  public Class<? extends Entity> getTypeForIName(String iname) {
+    return iname2type.get(iname);
+  }
+
+  /**
+   * Returns the type token for the specified internal role name,
+   * or {@code null} if there is no such token.
+   */
+  public Class<? extends Role> getRoleForIName(String iname) {
+    return iname2role.get(iname);
   }
 
   /**
