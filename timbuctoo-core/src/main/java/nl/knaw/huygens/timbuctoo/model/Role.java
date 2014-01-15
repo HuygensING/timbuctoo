@@ -24,17 +24,21 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.TimbuctooTypeIdResolver;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 
 /**
- * An abstract super class to define "functions" of {@code Entities}. For example a {@code Person}
- * could have have the {@code Role} {@code Scientist}
- * @author martijnm
+ * An abstract super class to define "functions" of entities.
+ * E.g., a {@code Person} could have the role {@code Scientist}.
  */
-//@see: http://wiki.fasterxml.com/JacksonPolymorphicDeserialization
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+// Annotations determine to which subclass the entity has to be resolved.
+// @see http://wiki.fasterxml.com/JacksonPolymorphicDeserialization
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
+@JsonTypeIdResolver(value = TimbuctooTypeIdResolver.class)
 public abstract class Role implements Variable {
 
   private List<Reference> variationRefs;
