@@ -77,7 +77,13 @@ import com.google.inject.Singleton;
 @Singleton
 public class TypeRegistry {
 
-  private final Logger LOG = LoggerFactory.getLogger(TypeRegistry.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TypeRegistry.class);
+  
+  public static TypeRegistry getInstance() {
+    return new TypeRegistry();
+  }
+
+  // ---------------------------------------------------------------------------
 
   private final Map<Class<? extends Entity>, String> type2iname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> iname2type = Maps.newHashMap();
@@ -91,7 +97,7 @@ public class TypeRegistry {
 
   private final Map<Class<? extends Entity>, Set<Class<? extends Role>>> allowedRoles = Maps.newHashMap();
 
-  public TypeRegistry() {
+  private TypeRegistry() {
   }
 
   public void init(String packageNames) {
@@ -160,7 +166,7 @@ public class TypeRegistry {
     return Modifier.isAbstract(type.getModifiers());
   }
 
-  // -------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
 
   private <T extends Entity> void registerEntity(Class<T> type) {
     String iname = TypeNames.getInternalName(type);
@@ -188,7 +194,7 @@ public class TypeRegistry {
     role2iname.put(role, iname);
   }
 
-  // --- public api ----------------------------------------------------
+  // --- public api ------------------------------------------------------------
 
   /**
    * Returns the internal type names.
@@ -214,7 +220,8 @@ public class TypeRegistry {
   }
 
   /**
-   * Convenience method that returns {@code getINameForType} or {@code getINameForRole} or null depending on the parameter. 
+   * Convenience method that returns {@code getINameForType} or {@code getINameForRole}
+   * or null depending on the parameter. 
    * @param type the type to get the internal name from. 
    * @return
    */
@@ -282,7 +289,7 @@ public class TypeRegistry {
     }
   }
 
-  // --- static utilities ----------------------------------------------
+  // --- static utilities ------------------------------------------------------
 
   public static boolean isEntity(Class<?> cls) {
     return cls == null ? false : Entity.class.isAssignableFrom(cls);

@@ -65,7 +65,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @BeforeClass
   public static void setupRegistry() {
-    registry = new TypeRegistry();
+    registry = TypeRegistry.getInstance();
     registry.init(TestSystemEntity.class.getPackage().getName());
   }
 
