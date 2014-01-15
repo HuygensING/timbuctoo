@@ -49,8 +49,6 @@ import org.junit.Test;
  * Tests for the TypeRegistry. Watch-out the register is highly
  * dependent on the getCollectionName method. When that
  * implementation changes, a lot of tests will fail.
- * 
- * TODO: remove the dependency of the model-package, in these tests.
  */
 public class TypeRegistryTest {
 
@@ -61,7 +59,7 @@ public class TypeRegistryTest {
 
   @Before
   public void setup() {
-    registry = new TypeRegistry();
+    registry = TypeRegistry.getInstance();
   }
 
   @Test(expected = IllegalArgumentException.class)

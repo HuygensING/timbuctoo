@@ -66,7 +66,7 @@ public class EntityReducerTest {
 
   @BeforeClass
   public static void setupRegistry() {
-    registry = new TypeRegistry();
+    registry = TypeRegistry.getInstance();
     registry.init("test.model test.model.projecta test.model.projectb");
   }
 
