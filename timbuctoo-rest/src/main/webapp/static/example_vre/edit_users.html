@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Edit users</title>
+</head>
+<body>
+
+	Users:
+	<select id="users">
+	</select>
+
+	<script src="http://code.jquery.com/jquery-1.9.1.js"
+		type="text/javascript"></script>
+	<script src="../config.js" type="text/javascript"></script>
+	<script src="../login.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		$(document).ready(
+				function() {
+					setCookie('sessionId', getParameterByName('hsid'));
+					if (getCookie('sessionId') === null
+							|| getCookie('sessionId') === '') {
+						login();
+					}
+
+					getUsers();
+				});
+
+		function getUsers() {
+			console.log('getUsers', window.config.serverUri + '/system/users');
+			$.ajax({
+				url : 'http://' + window.config.serverUri + '/system/users',
+				type : 'GET',
+				headers : {
+					Authorization : getCookie('sessionId'),
+					VRE_ID : "DutchCaribbean"
+				},
+				success : function(data, status) {
+					$.each(data, function(count, item) {
+						$('#users').append(
+								$('<option value="'+item["_id"] + '">'
+										+ item.commonName + '</option>'));
+					});
+				}
+			});
+		}
+	</script>
+</body>
+</html>
