@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>CRUD Test</title>
+<style type="text/css">
+body {
+	font-family: courier;
+	font-size: 12px;
+}
+</style>
+</head>
+</head>
+<body>
+	<button onclick="javascript:test()">Execute CRUD</button>
+	<div id="actions"></div>
+
+	<script src="http://code.jquery.com/jquery-1.9.1.js"
+		type="text/javascript"></script>
+	<script src="config.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		var actions = $('#actions');
+		function test() {
+			actions.empty();
+
+			actions.append('<p>posting data...</p>');
+			var location = createPerson();
+
+			actions.append("<hr>");
+			actions.append('<p>getting data from url: <b>' + location
+					+ '</b></p>');
+			var data = getLocation(location, true);
+
+			actions.append("<hr>");
+			actions.append('<p>putting data on url: <b>' + location
+					+ '</b></p>');
+			updatePerson(location, data);
+
+			actions.append("<hr>");
+			actions.append('<p>getting data from url: <b>' + location
+					+ '</b></p>');
+			getLocation(location, true);
+
+			actions.append("<hr>");
+			actions.append('<p>deleting data of url: <b>' + location
+					+ '</b></p>');
+			deletePerson(location, data);
+
+			actions.append("<hr>");
+			actions.append('<p>getting data from url: <b>' + location
+					+ '</b></p>');
+			getLocation(location, false);
+		}
+
+		function createPerson() {
+			var url = 'http://' + window.config.serverUri
+					+ '/domain/dcarpersons/';
+			var location;
+			actions.append('<p>posting data...</p>');
+			$.ajax({
+				url : url,
+				type : 'POST',
+				headers : {
+					Authorization : getCookie('sessionId'),
+					VRE_ID : "DutchCaribbean"
+				},
+				contentType : 'application/json; charset=utf-8',
+				async : false,
+				data : JSON.stringify({
+					"@type" : "dcarperson",
+					"name" : {
+						"components" : [ {
+							"type" : "FORENAME",
+							"value" : "CRUD Test"
+						}, {
+							"type" : "SURNAME",
+							"value" : "Dummy"
+						} ]
+					},
+					"birthDate" : "20140116",
+					"deathDate" : "20140116",
+					"label" : "Dummy CRUD Test",
+				}),
+				success : function(data, status, request) {
+					location = request.getResponseHeader('Location');
+					actions.append('<p>status: ' + status + '</p>');
+					actions.append(data.responseText);
+				},
+				error : function(data, status, error) {
+					actions.append('<p>status: ' + status + '</p>');
+					actions.append('<p>error: ' + error + '</p>');
+
+					if (error === 'Unauthorized') {
+						login();
+					}
+				}
+
+			});
+
+			return location;
+		}
+
+		function getLocation(location, needsPID) {
+			var returnValue;
+			actions.append('<p> waiting until person gets a pid...</p>');
+
+			$.ajax({
+				url : location,
+				async : false,
+				complete : function(data, status) {
+					returnValue = JSON.parse(data.responseText);
+					if (returnValue['^pid'] == null && needsPID) {
+						setTimeout(getLocation(location, needsPID), 5000);
+					}
+					else{
+						actions.append('<p>status: ' + status + '</p>');
+						actions.append('data: ' + JSON.stringify(returnValue));
+					}
+				}
+			});
+			return returnValue;
+		}
+
+		function updatePerson(location, data) {
+			data.birthDate = '20130116';
+			data.deathDate = '20160116';
+
+			delete data["@variationRefs"];
+
+			$.ajax({
+				url : location,
+				type : 'PUT',
+				headers : {
+					Authorization : getCookie('sessionId'),
+					VRE_ID : "DutchCaribbean"
+				},
+				contentType : 'application/json; charset=utf-8',
+				async : false,
+				data : JSON.stringify(data),
+				complete : function(data, status) {
+					actions.append('<p>status: ' + status + '</p>');
+				}
+			});
+		}
+
+		function deletePerson(location) {
+			$.ajax({
+				url : location,
+				async : false,
+				type : 'DELETE',
+				headers : {
+					Authorization : getCookie('sessionId'),
+					VRE_ID : "DutchCaribbean"
+				},
+				success : function(data, status) {
+					actions.append('<p>status: ' + status + '</p>');
+				},
+				error : function(data, status, error) {
+					actions.append('<p>status: ' + status + '</p>');
+					actions.append('<p>status: ' + error + '</p>');
+				}
+			});
+		}
+	</script>
+
+	<script type="text/javascript">
+		$(document).ready(function() {
+			setCookie('sessionId', getParameterByName('hsid'));
+			if (getCookie('sessionId') === null) {
+				login();
+			}
+		});
+
+		function login() {
+			var wl = window.location;
+			var hsURL = wl.origin + wl.pathname;
+			var loginURL = window.config.securityUri;
+
+			console.log('securityUri: ', window.config.securityUri);
+
+			var form = $('<form>');
+			form.attr({
+				method : 'POST',
+				action : loginURL
+			});
+
+			hsUrlEl = $('<input>').attr({
+				name : 'hsurl',
+				value : hsURL,
+				type : 'hidden'
+			});
+			form.append(hsUrlEl);
+			$('body').append(form);
+			form.submit();
+		}
+
+		function getParameterByName(name) {
+			name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+			var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"), results = regex
+					.exec(location.search);
+			return results == null ? "" : decodeURIComponent(results[1]
+					.replace(/\+/g, " "));
+		}
+
+		function setCookie(key, value) {
+			var expires = new Date();
+			expires.setTime(expires.getTime() + (1 * 24 * 60 * 60 * 1000));
+			document.cookie = key + '=' + value + ';expires='
+					+ expires.toUTCString();
+		}
+
+		function getCookie(key) {
+			var keyValue = document.cookie.match('(^|;) ?' + key
+					+ '=([^;]*)(;|$)');
+			return keyValue ? keyValue[2] : null;
+		}
+	</script>
+
+</body>
+</html>
