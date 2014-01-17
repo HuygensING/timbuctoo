@@ -54,6 +54,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
+import nl.knaw.huygens.timbuctoo.security.UserRoles;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import org.apache.commons.lang.StringUtils;
@@ -250,4 +251,15 @@ public class UserResource extends ResourceBase {
 
     return checkNotNull(storageManager.findEntity(VREAuthorization.class, example), Status.NOT_FOUND);
   }
+
+  //Roles method
+
+  @GET
+  @Path("roles")
+  @Produces(MediaType.APPLICATION_JSON)
+  @RolesAllowed(UserRoles.ADMIN_ROLE)
+  public List<String> getRoles() {
+    return UserRoles.getAll();
+  }
+
 }
