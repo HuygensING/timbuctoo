@@ -57,11 +57,14 @@ import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
 @Path(Paths.SYSTEM_PREFIX + "/" + Paths.USER_PATH)
 public class UserResource extends ResourceBase {
+  private static final Logger LOG = LoggerFactory.getLogger(UserResource.class);
 
   private static final String ID_REGEX = "/{id:" + User.ID_PREFIX + "\\d+}";
   private static final String VRE_AUTHORIZATION_COLLECTION_PATH = ID_REGEX + "/vreauthorizations";
@@ -164,9 +167,7 @@ public class UserResource extends ResourceBase {
       @HeaderParam(VRE_ID_KEY) String userVREId//
   ) {
 
-    if (!isVREAuthorizationInScope(vreId, userVREId)) {
-      throw new WebApplicationException(Status.FORBIDDEN);
-    }
+    checkIfInScope(vreId, userVREId);
 
     return findVREAuthorization(userId, vreId);
   }
@@ -180,11 +181,10 @@ public class UserResource extends ResourceBase {
       @HeaderParam(VRE_ID_KEY) String userVREId,//
       VREAuthorization vreAuthorization//
   ) throws URISyntaxException, IOException {
+
     checkNotNull(vreAuthorization, Status.BAD_REQUEST);
 
-    if (!isVREAuthorizationInScope(vreAuthorization.getVreId(), userVREId)) {
-      throw new WebApplicationException(Status.FORBIDDEN);
-    }
+    checkIfInScope(vreAuthorization.getVreId(), userVREId);
 
     String vreId = vreAuthorization.getVreId();
     storageManager.addSystemEntity(VREAuthorization.class, vreAuthorization);
@@ -206,9 +206,7 @@ public class UserResource extends ResourceBase {
 
     checkNotNull(vreAuthorization, Status.BAD_REQUEST);
 
-    if (!isVREAuthorizationInScope(vreId, userVREId)) {
-      throw new WebApplicationException(Status.FORBIDDEN);
-    }
+    checkIfInScope(vreId, userVREId);
 
     findVREAuthorization(userId, vreId);
 
@@ -224,9 +222,7 @@ public class UserResource extends ResourceBase {
       @HeaderParam(VRE_ID_KEY) String userVREId//
   ) throws IOException {
 
-    if (!isVREAuthorizationInScope(vreId, userVREId)) {
-      throw new WebApplicationException(Status.FORBIDDEN);
-    }
+    checkIfInScope(vreId, userVREId);
 
     VREAuthorization vreAuthorization = findVREAuthorization(userId, vreId);
 
@@ -238,10 +234,13 @@ public class UserResource extends ResourceBase {
    * is allowed to access the {@code VREAuthorization} of the VRE of {@code vreId}.
    * @param vreId the id of the VRE the user want to access {@code VREAuthorization} of.
    * @param userVREId the id of the VRE the user is currently logged in to.
-   * @return {@code true} if the user is to allowed to access {@code false} otherwise.
+   * @throws a {@link WebApplicationException} with a {@code FORBIDDEN} status.
    */
-  private boolean isVREAuthorizationInScope(String vreId, String userVREId) {
-    return StringUtils.equals(vreId, userVREId);
+  private void checkIfInScope(String vreId, String userVREId) {
+    if (!StringUtils.equals(vreId, userVREId)) {
+      LOG.info("VRE {} has no permission to edit VREAuthorizations of VRE {}.", userVREId, vreId);
+      throw new WebApplicationException(Status.FORBIDDEN);
+    }
   }
 
   private VREAuthorization findVREAuthorization(String userId, String vreId) {
