@@ -48,7 +48,9 @@ table,td {
 				</select></td>
 			</tr>
 		</table>
-		<button onclick="javascript:update()">Update</button>
+		<button id="update" onclick="javascript:update()">Update</button>
+		<button id="delete" onclick="javascript:removeVREAuthorization()">Delete</button>
+		<button id="create" onclick="javascript:create()">Create</button>
 	</div>
 
 	<script src="http://code.jquery.com/jquery-1.9.1.js"
@@ -108,6 +110,7 @@ table,td {
 
 		function update() {
 			var userId = $('#users').val();
+			
 			var json = new Object();
 			json.userId = userId;
 			json.vreId = $('#vreId').text();
@@ -128,7 +131,53 @@ table,td {
 						VRE_ID : "DutchCaribbean"
 					},
 					data : JSON.stringify(json),
-
+					success : function(data, status) {
+						$('#users').change();
+					}
+				});
+			}
+		}
+		
+		function removeVREAuthorization(){
+			var userId = $('#users').val();
+			if (userId != null) {
+				var url = baseUrl + userId
+						+ '/vreauthorizations/DutchCaribbean';
+				$.ajax({
+					url : url,
+					type : 'DELETE',
+					headers : {
+						Authorization : getCookie('sessionId'),
+						VRE_ID : "DutchCaribbean"
+					},
+					success : function(data, status) {
+						$('#users').change();
+					}
+				});
+			}
+		}
+		
+		function create(){
+			var userId = $('#users').val();
+			
+			var json = new Object();
+			json.userId = userId;
+			json.vreId = $('#vreId').text();
+			json.roles = $('#roles').val();
+			json['@type'] = "vreauthorization";
+			
+			if (userId != null) {
+				var url = baseUrl + userId
+						+ '/vreauthorizations/';
+				$.ajax({
+					url : url,
+					type : 'POST',
+					contentType : 'application/json; charset=utf-8',
+					headers : {
+						Authorization : getCookie('sessionId'),
+						VRE_ID : "DutchCaribbean"
+					},
+					data : JSON.stringify(json),
 					success : function(data, status) {
 						$('#users').change();
 					}
@@ -155,7 +204,20 @@ table,td {
 								$('#roles').val(data.roles);
 								$('#id').text(data['_id']);
 								$('#rev').text(data['^rev']);
+								$('#create').hide();
+								$('#update').show();
+								$('#delete').show();
+							},
+							error: function(){
+								$('#vreId').text('DutchCaribbean');
+								$('#roles').val('');
+								$('#id').text('');
+								$('#rev').text('');
+								$('#update').hide();
+								$('#delete').hide();
+								$('#create').show();
 							}
+							
 						});
 						$('#authorization').show();
 					}
