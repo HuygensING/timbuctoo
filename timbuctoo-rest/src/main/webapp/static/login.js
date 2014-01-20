@@ -3,8 +3,6 @@ function login() {
 	var hsURL = wl.origin + wl.pathname;
 	var loginURL = window.config.securityUri;
 
-	console.log('securityUri: ', window.config.securityUri);
-
 	var form = $('<form>');
 	form.attr({
 		method : 'POST',
