@@ -45,7 +45,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
-import com.google.inject.Singleton;
 
 /**
  * The type registry contains properties of entity classes.
@@ -74,10 +73,21 @@ import com.google.inject.Singleton;
  * internal name (constructed by appending an 's' to the internal
  * name) or a name supplied in a class annotation.</p>
  */
-@Singleton
 public class TypeRegistry {
 
-  private final Logger LOG = LoggerFactory.getLogger(TypeRegistry.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TypeRegistry.class);
+
+  /** The unique instance of this class. */
+  private static TypeRegistry instance;
+
+  public static synchronized TypeRegistry getInstance() {
+    if (instance == null) {
+      instance = new TypeRegistry();
+    }
+    return instance;
+  }
+
+  // ---------------------------------------------------------------------------
 
   private final Map<Class<? extends Entity>, String> type2iname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> iname2type = Maps.newHashMap();
@@ -88,16 +98,34 @@ public class TypeRegistry {
   private final Map<String, String> iname2xname = Maps.newHashMap();
 
   private final Map<Class<? extends Role>, String> role2iname = Maps.newHashMap();
+  private final Map<String, Class<? extends Role>> iname2role = Maps.newHashMap();
 
   private final Map<Class<? extends Entity>, Set<Class<? extends Role>>> allowedRoles = Maps.newHashMap();
 
-  public TypeRegistry(String packageNames) {
+  private TypeRegistry() {}
+
+  public void init(String packageNames) {
     checkArgument(packageNames != null, "'packageNames' must not be null");
 
+    clear();
     ClassPath classPath = getClassPath();
     for (String packageName : StringUtils.split(packageNames)) {
       registerPackage(classPath, packageName.replaceFirst("^timbuctoo", "nl.knaw.huygens.timbuctoo"));
     }
+  }
+
+  /**
+   * Clears all entries.
+   */
+  private void clear() {
+    type2iname.clear();
+    iname2type.clear();
+    type2xname.clear();
+    xname2type.clear();
+    iname2xname.clear();
+    role2iname.clear();
+    iname2role.clear();
+    allowedRoles.clear();
   }
 
   private ClassPath getClassPath() {
@@ -143,7 +171,7 @@ public class TypeRegistry {
     return Modifier.isAbstract(type.getModifiers());
   }
 
-  // -------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
 
   private <T extends Entity> void registerEntity(Class<T> type) {
     String iname = TypeNames.getInternalName(type);
@@ -169,9 +197,10 @@ public class TypeRegistry {
       throw new IllegalStateException("Duplicate internal type name " + iname);
     }
     role2iname.put(role, iname);
+    iname2role.put(iname, role);
   }
 
-  // --- public api ----------------------------------------------------
+  // --- public api ------------------------------------------------------------
 
   /**
    * Returns the internal type names.
@@ -197,26 +226,19 @@ public class TypeRegistry {
   }
 
   /**
-   * Convenience method that returns {@code getINameForType} or {@code getINameForRole} or null depending on the parameter. 
-   * @param type the type to get the internal name from. 
-   * @return
-   */
-  @SuppressWarnings("unchecked")
-  public String getIName(Class<?> type) {
-    if (isEntity(type)) {
-      return getINameForType((Class<? extends Entity>) type);
-    } else if (isRole(type)) {
-      return getINameForRole(toRole(type));
-    }
-    return null;
-  }
-
-  /**
    * Returns the type token for the specified internal type name,
    * or {@code null} if there is no such token.
    */
-  public Class<? extends Entity> getTypeForIName(String iName) {
-    return iname2type.get(iName);
+  public Class<? extends Entity> getTypeForIName(String iname) {
+    return iname2type.get(iname);
+  }
+
+  /**
+   * Returns the type token for the specified internal role name,
+   * or {@code null} if there is no such token.
+   */
+  public Class<? extends Role> getRoleForIName(String iname) {
+    return iname2role.get(iname);
   }
 
   /**
@@ -265,7 +287,7 @@ public class TypeRegistry {
     }
   }
 
-  // --- static utilities ----------------------------------------------
+  // --- static utilities ------------------------------------------------------
 
   public static boolean isEntity(Class<?> cls) {
     return cls == null ? false : Entity.class.isAssignableFrom(cls);

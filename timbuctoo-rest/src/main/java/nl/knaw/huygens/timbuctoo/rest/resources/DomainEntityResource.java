@@ -29,6 +29,8 @@ import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
@@ -69,8 +71,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 
 /**
@@ -125,7 +125,7 @@ public class DomainEntityResource extends ResourceBase {
       @Context UriInfo uriInfo, //
       @HeaderParam(VRE_ID_KEY) String vreId, //
       @QueryParam(USER_ID_KEY) String userId//
-  ) throws IOException {
+  ) throws IOException, URISyntaxException {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
     if (type != input.getClass()) {
@@ -139,9 +139,7 @@ public class DomainEntityResource extends ResourceBase {
     String id = storageManager.addDomainEntity((Class<T>) type, (T) input, change);
     notifyChange(ActionType.ADD, type, id);
 
-    String baseUri = CharMatcher.is('/').trimTrailingFrom(uriInfo.getBaseUri().toString());
-    String location = Joiner.on('/').join(baseUri, Paths.DOMAIN_PREFIX, entityName, id);
-    return Response.status(Status.CREATED).header("Location", location).build();
+    return Response.created(new URI(id)).build();
   }
 
   @GET

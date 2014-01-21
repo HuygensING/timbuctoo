@@ -22,18 +22,24 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -48,16 +54,22 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
+import nl.knaw.huygens.timbuctoo.security.UserRoles;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
 @Path(Paths.SYSTEM_PREFIX + "/" + Paths.USER_PATH)
 public class UserResource extends ResourceBase {
+  private static final Logger LOG = LoggerFactory.getLogger(UserResource.class);
 
   private static final String ID_REGEX = "/{id:" + User.ID_PREFIX + "\\d+}";
+  private static final String VRE_AUTHORIZATION_COLLECTION_PATH = ID_REGEX + "/vreauthorizations";
+  private static final String VRE_AUTHORIZATION_PATH = VRE_AUTHORIZATION_COLLECTION_PATH + "/{vre: \\w+}";
   private static final String ID_PARAM = "id";
 
   private final StorageManager storageManager;
@@ -142,6 +154,112 @@ public class UserResource extends ResourceBase {
     storageManager.deleteSystemEntity(user);
 
     return Response.status(Status.NO_CONTENT).build();
+  }
+
+  //VREAuthorization resources
+
+  @GET
+  @Path(VRE_AUTHORIZATION_PATH)
+  @Produces(MediaType.APPLICATION_JSON)
+  @RolesAllowed(ADMIN_ROLE)
+  public VREAuthorization getVreAuthorization(//
+      @PathParam(ID_PARAM) String userId, //
+      @PathParam("vre") String vreId,//
+      @HeaderParam(VRE_ID_KEY) String userVREId//
+  ) {
+
+    checkIfInScope(vreId, userVREId);
+
+    return findVREAuthorization(userId, vreId);
+  }
+
+  @POST
+  @Path(VRE_AUTHORIZATION_COLLECTION_PATH)
+  @Consumes(MediaType.APPLICATION_JSON)
+  @RolesAllowed(ADMIN_ROLE)
+  public Response postVREAuthorization(//
+      @PathParam("id") String userId,//
+      @HeaderParam(VRE_ID_KEY) String userVREId,//
+      VREAuthorization vreAuthorization//
+  ) throws URISyntaxException, IOException {
+
+    checkNotNull(vreAuthorization, Status.BAD_REQUEST);
+
+    checkIfInScope(vreAuthorization.getVreId(), userVREId);
+
+    String vreId = vreAuthorization.getVreId();
+    storageManager.addSystemEntity(VREAuthorization.class, vreAuthorization);
+
+    return Response.created(new URI(vreId)).build();
+  }
+
+  @PUT
+  @Path(VRE_AUTHORIZATION_PATH)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  @RolesAllowed(ADMIN_ROLE)
+  public void putVREAUthorization(//
+      @PathParam("id") String userId,//
+      @PathParam("vre") String vreId,//
+      @HeaderParam(VRE_ID_KEY) String userVREId,//
+      VREAuthorization vreAuthorization//
+  ) throws IOException {
+
+    checkNotNull(vreAuthorization, Status.BAD_REQUEST);
+
+    checkIfInScope(vreId, userVREId);
+
+    findVREAuthorization(userId, vreId);
+
+    storageManager.updateSystemEntity(VREAuthorization.class, vreAuthorization);
+  }
+
+  @DELETE
+  @Path(VRE_AUTHORIZATION_PATH)
+  @RolesAllowed(ADMIN_ROLE)
+  public void deleteVREAuthorization(//
+      @PathParam(ID_PARAM) String userId,// 
+      @PathParam("vre") String vreId,//
+      @HeaderParam(VRE_ID_KEY) String userVREId//
+  ) throws IOException {
+
+    checkIfInScope(vreId, userVREId);
+
+    VREAuthorization vreAuthorization = findVREAuthorization(userId, vreId);
+
+    storageManager.deleteSystemEntity(vreAuthorization);
+  }
+
+  /**
+   * Checks if the user that is logged in in the VRE of {@code userVREID}, 
+   * is allowed to access the {@code VREAuthorization} of the VRE of {@code vreId}.
+   * @param vreId the id of the VRE the user want to access {@code VREAuthorization} of.
+   * @param userVREId the id of the VRE the user is currently logged in to.
+   * @throws a {@link WebApplicationException} with a {@code FORBIDDEN} status.
+   */
+  private void checkIfInScope(String vreId, String userVREId) {
+    if (!StringUtils.equals(vreId, userVREId)) {
+      LOG.info("VRE {} has no permission to edit VREAuthorizations of VRE {}.", userVREId, vreId);
+      throw new WebApplicationException(Status.FORBIDDEN);
+    }
+  }
+
+  private VREAuthorization findVREAuthorization(String userId, String vreId) {
+    VREAuthorization example = new VREAuthorization();
+    example.setUserId(userId);
+    example.setVreId(vreId);
+
+    return checkNotNull(storageManager.findEntity(VREAuthorization.class, example), Status.NOT_FOUND);
+  }
+
+  //Roles method
+
+  @GET
+  @Path("roles")
+  @Produces(MediaType.APPLICATION_JSON)
+  @RolesAllowed(UserRoles.ADMIN_ROLE)
+  public List<String> getRoles() {
+    return UserRoles.getAll();
   }
 
 }

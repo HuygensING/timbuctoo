@@ -39,6 +39,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mongojack.internal.stream.JacksonDBObject;
@@ -63,8 +64,14 @@ public class MongoStorageTest extends MongoStorageTestBase {
   private MongoStorage storage;
 
   @BeforeClass
-  public static void setupTypeRegistry() {
-    registry = new TypeRegistry(TestSystemEntity.class.getPackage().getName());
+  public static void setupRegistry() {
+    registry = TypeRegistry.getInstance();
+    registry.init(TestSystemEntity.class.getPackage().getName());
+  }
+
+  @AfterClass
+  public static void clearRegistry() {
+    registry = null;
   }
 
   @Override

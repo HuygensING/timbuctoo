@@ -76,7 +76,8 @@ public class SearchManagerTest {
     scope = mock(Scope.class);
     when(scope.getId()).thenReturn("scope");
     indexManager = mock(IndexManager.class);
-    typeRegistry = new TypeRegistry(Person.class.getPackage().getName() + " " + ATLGPerson.class.getPackage().getName() + " " + ClassWithMupltipleFullTestSearchFields.class.getPackage().getName());
+    typeRegistry = TypeRegistry.getInstance();
+    typeRegistry.init(Person.class.getPackage().getName() + " " + ATLGPerson.class.getPackage().getName() + " " + ClassWithMupltipleFullTestSearchFields.class.getPackage().getName());
     instance = new SearchManager(typeRegistry, indexManager);
   }
 

@@ -45,6 +45,7 @@ import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mongojack.DBQuery;
@@ -67,8 +68,14 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   private DBObject returnIdField;
 
   @BeforeClass
-  public static void setupTypeRegistry() {
-    registry = new TypeRegistry("timbuctoo.model timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
+  public static void setupRegistry() {
+    registry = TypeRegistry.getInstance();
+    registry.init("timbuctoo.model timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
+  }
+
+  @AfterClass
+  public static void clearRegistry() {
+    registry = null;
   }
 
   @Override
