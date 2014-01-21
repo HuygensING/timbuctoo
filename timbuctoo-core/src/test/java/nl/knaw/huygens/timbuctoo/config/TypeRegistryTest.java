@@ -42,40 +42,46 @@ import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectANewTestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestRole;
 
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * Tests for the TypeRegistry. Watch-out the register is highly
  * dependent on the getCollectionName method. When that
  * implementation changes, a lot of tests will fail.
- * 
- * TODO: remove the dependency of the model-package, in these tests.
  */
 public class TypeRegistryTest {
 
   private static final String PROJECT_A_MODEL = "timbuctoo.variation.model.projecta";
   private static final String MODEL_PACKAGE = "timbuctoo.variation.model";
 
+  private TypeRegistry registry;
+
+  @Before
+  public void setup() {
+    registry = TypeRegistry.getInstance();
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testPackageNamesMustnotBeNull() {
-    new TypeRegistry(null);
+    registry.init(null);
   }
 
   @Test(expected = IllegalStateException.class)
   public void testEntityTypeNamesMustBeDifferent() {
-    new TypeRegistry(MODEL_PACKAGE + " " + MODEL_PACKAGE);
+    registry.init(MODEL_PACKAGE + " " + MODEL_PACKAGE);
   }
 
   @Test
   public void testGetTypeForIName() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
+    registry.init(MODEL_PACKAGE);
     assertEquals(BaseDomainEntity.class, registry.getTypeForIName("basedomainentity"));
     assertEquals(VTestSystemEntity.class, registry.getTypeForIName("vtestsystementity"));
   }
 
   @Test
   public void testGetTypeForXName() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
+    registry.init(MODEL_PACKAGE);
     assertEquals(BaseDomainEntity.class, registry.getTypeForXName("basedomainentitys"));
     // Has @EntityTypeName annotation:
     assertEquals(VTestSystemEntity.class, registry.getTypeForXName("mysystementity"));
@@ -83,80 +89,62 @@ public class TypeRegistryTest {
 
   @Test
   public void testGetINameForType() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
+    registry.init(MODEL_PACKAGE);
     assertEquals("basedomainentity", registry.getINameForType(BaseDomainEntity.class));
   }
 
   @Test
   public void testGetINameForRole() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+    registry.init(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
     assertEquals("projectatestrole", registry.getINameForRole(ProjectATestRole.class));
   }
 
   @Test
-  public void testGetINameEntity() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
-    assertEquals("basedomainentity", registry.getIName(BaseDomainEntity.class));
-  }
-
-  @Test
-  public void testGetINameRole() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertEquals("projectatestrole", registry.getIName(ProjectATestRole.class));
-  }
-
-  @Test
-  public void testGetINameNonDomainClass() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
-    assertEquals(null, registry.getIName(String.class));
-  }
-
-  @Test
   public void testGetXNameForType() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
+    registry.init(MODEL_PACKAGE);
     assertEquals("basedomainentitys", registry.getXNameForType(BaseDomainEntity.class));
   }
 
   @Test
   public void testGetBaseClassFromCollectionClass() {
-    TypeRegistry registry = new TypeRegistry("");
+    registry.init("");
     assertEquals(BaseDomainEntity.class, registry.getBaseClass(BaseDomainEntity.class));
   }
 
   @Test
   public void testGetBaseClassForProjectSpecificClass() {
-    TypeRegistry registry = new TypeRegistry("");
+    registry.init("");
     assertEquals(BaseDomainEntity.class, registry.getBaseClass(ProjectADomainEntity.class));
   }
 
   @Test
   public void testGetBaseClassOfNull() {
-    TypeRegistry registry = new TypeRegistry("");
+    registry.init("");
     assertEquals(null, registry.getBaseClass(null));
   }
 
   @Test
   public void testGetCollectionIdForARegisteredClass() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
+    registry.init(MODEL_PACKAGE);
     Class<? extends Entity> baseType = registry.getBaseClass(BaseDomainEntity.class);
     assertEquals("basedomainentity", registry.getINameForType(baseType));
   }
 
   @Test
   public void testRegisterPackageDontRegisterClass() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
+    registry.init(MODEL_PACKAGE);
     assertNull(registry.getTypeForIName("donotregistertests"));
   }
 
   @Test
   public void testRegisterPackageNonDocument() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
+    registry.init(MODEL_PACKAGE);
     assertNull(registry.getTypeForIName("nonDoc"));
   }
 
   @Test
   public void testRegisterPackageSubPackage() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE);
+    registry.init(MODEL_PACKAGE);
     assertNull(registry.getTypeForIName("testdoc"));
   }
 
@@ -245,7 +233,7 @@ public class TypeRegistryTest {
 
   @Test
   public void testGetAllowedRolesForModelPackage() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+    registry.init(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
     assertEquals(0, registry.getAllowedRolesFor(TestSystemEntity.class).size());
     Set<Class<? extends Role>> roles = registry.getAllowedRolesFor(BaseDomainEntity.class);
     assertEquals(2, roles.size());
@@ -255,7 +243,7 @@ public class TypeRegistryTest {
 
   @Test
   public void testGetAllowedRolesForProjectPackage() {
-    TypeRegistry registry = new TypeRegistry(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
+    registry.init(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
     Set<Class<? extends Role>> roles = registry.getAllowedRolesFor(ProjectADomainEntity.class);
     assertEquals(2, roles.size());
     assertTrue(roles.contains(ProjectATestRole.class));

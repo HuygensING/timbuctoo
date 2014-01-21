@@ -54,7 +54,7 @@ public class GenericJsonFileWriter extends GenericDataHandler {
     //Make sure the type is added to the json.
     mapper.enableDefaultTyping(DefaultTyping.JAVA_LANG_OBJECT, As.PROPERTY);
 
-    File file = new File(testDataDir + typeRegistry.getIName(type) + ".json");
+    File file = new File(testDataDir + typeRegistry.getINameForType(type) + ".json");
     System.out.println("file: " + file.getAbsolutePath());
 
     mapper.writeValue(file, objects);

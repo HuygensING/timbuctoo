@@ -1,5 +1,9 @@
 package nl.knaw.huygens.timbuctoo.security;
 
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
 /*
  * #%L
  * Timbuctoo REST api
@@ -32,6 +36,10 @@ public class UserRoles {
 
   private UserRoles() {
     throw new AssertionError("Non-instantiable class");
+  }
+
+  public static List<String> getAll() {
+    return Lists.newArrayList(ADMIN_ROLE, USER_ROLE, UNVERIFIED_USER_ROLE);
   }
 
 }

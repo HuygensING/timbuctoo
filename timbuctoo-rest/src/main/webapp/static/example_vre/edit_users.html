@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Edit users</title>
+<style type="text/css">
+body {
+	font-family: Verdana, sans-serif;
+	font-size: 12px;
+}
+
+#authorization {
+	display: none;
+	padding-top: 11px;
+}
+
+table,td {
+	border: 1px solid #000000;
+	border-spacing: 1px;
+	text-align: left;
+}
+</style>
+</head>
+<body>
+
+	Users:
+	<select id="users">
+		<option></option>
+	</select>
+
+	<div id="authorization">
+		<table>
+			<tr>
+				<td>Id</td>
+				<td id="id"></td>
+			</tr>
+			<tr>
+				<td>Revision</td>
+				<td id="rev"></td>
+			</tr>
+			<tr>
+				<td>VRE</td>
+				<td id="vreId"></td>
+			</tr>
+			<tr>
+				<td>Roles</td>
+				<td><select multiple id="roles">
+				</select></td>
+			</tr>
+		</table>
+		<button id="update" onclick="javascript:update()">Update</button>
+		<button id="delete" onclick="javascript:removeVREAuthorization()">Delete</button>
+		<button id="create" onclick="javascript:create()">Create</button>
+	</div>
+
+	<script src="http://code.jquery.com/jquery-1.9.1.js"
+		type="text/javascript"></script>
+	<script src="../config.js" type="text/javascript"></script>
+	<script src="../login.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		var baseUrl = 'http://' + window.config.serverUri + '/system/users/';
+		$(document).ready(
+				function() {
+					setCookie('sessionId', getParameterByName('hsid'));
+					if (getCookie('sessionId') === null
+							|| getCookie('sessionId') === '') {
+						login();
+					}
+
+					getUsers();
+					getRoles();
+				});
+
+		function getUsers() {
+			$.ajax({
+				url : baseUrl,
+				type : 'GET',
+				headers : {
+					Authorization : getCookie('sessionId'),
+					VRE_ID : "DutchCaribbean"
+				},
+				success : function(data, status) {
+					$.each(data, function(count, item) {
+						appendOption('#users', item["_id"], item.commonName)
+					});
+				}
+			});
+		}
+
+		function getRoles() {
+			$.ajax({
+				url : baseUrl + "roles",
+				type : 'GET',
+				headers : {
+					Authorization : getCookie('sessionId'),
+					VRE_ID : "DutchCaribbean"
+				},
+				success : function(data, status) {
+					$.each(data, function(count, item) {
+						appendOption('#roles', item, item)
+					});
+				}
+			});
+		}
+
+		function appendOption(selector, value, name) {
+			$(selector).append(
+					$('<option value="'+ value + '">' + name + '</option>'));
+		}
+
+		function update() {
+			var userId = $('#users').val();
+			
+			var json = new Object();
+			json.userId = userId;
+			json.vreId = $('#vreId').text();
+			json.roles = $('#roles').val();
+			json['@type'] = "vreauthorization";
+			json['_id'] = $('#id').text();
+			json['^rev'] = $('#rev').text();
+
+			if (userId != null) {
+				var url = baseUrl + userId
+						+ '/vreauthorizations/DutchCaribbean';
+				$.ajax({
+					url : url,
+					type : 'PUT',
+					contentType : 'application/json; charset=utf-8',
+					headers : {
+						Authorization : getCookie('sessionId'),
+						VRE_ID : "DutchCaribbean"
+					},
+					data : JSON.stringify(json),
+					success : function(data, status) {
+						$('#users').change();
+					}
+				});
+			}
+		}
+		
+		function removeVREAuthorization(){
+			var userId = $('#users').val();
+			if (userId != null) {
+				var url = baseUrl + userId
+						+ '/vreauthorizations/DutchCaribbean';
+				$.ajax({
+					url : url,
+					type : 'DELETE',
+					headers : {
+						Authorization : getCookie('sessionId'),
+						VRE_ID : "DutchCaribbean"
+					},
+					success : function(data, status) {
+						$('#users').change();
+					}
+				});
+			}
+		}
+		
+		function create(){
+			var userId = $('#users').val();
+			
+			var json = new Object();
+			json.userId = userId;
+			json.vreId = $('#vreId').text();
+			json.roles = $('#roles').val();
+			json['@type'] = "vreauthorization";
+			
+			if (userId != null) {
+				var url = baseUrl + userId
+						+ '/vreauthorizations/';
+				$.ajax({
+					url : url,
+					type : 'POST',
+					contentType : 'application/json; charset=utf-8',
+					headers : {
+						Authorization : getCookie('sessionId'),
+						VRE_ID : "DutchCaribbean"
+					},
+					data : JSON.stringify(json),
+					success : function(data, status) {
+						$('#users').change();
+					}
+				});
+			}
+		}
+
+		$('#users').change(
+				function() {
+					$('#authorization').hide();
+					var userId = $(this).val();
+					if (userId != '') {
+						var url = baseUrl + userId
+								+ '/vreauthorizations/DutchCaribbean';
+						$.ajax({
+							url : url,
+							type : 'GET',
+							headers : {
+								Authorization : getCookie('sessionId'),
+								VRE_ID : "DutchCaribbean"
+							},
+							success : function(data, status) {
+								$('#vreId').text(data.vreId);
+								$('#roles').val(data.roles);
+								$('#id').text(data['_id']);
+								$('#rev').text(data['^rev']);
+								$('#create').hide();
+								$('#update').show();
+								$('#delete').show();
+							},
+							error: function(){
+								$('#vreId').text('DutchCaribbean');
+								$('#roles').val('');
+								$('#id').text('');
+								$('#rev').text('');
+								$('#update').hide();
+								$('#delete').hide();
+								$('#create').show();
+							}
+							
+						});
+						$('#authorization').show();
+					}
+				});
+	</script>
+</body>
+</html>

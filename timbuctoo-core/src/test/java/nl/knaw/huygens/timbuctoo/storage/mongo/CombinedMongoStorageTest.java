@@ -45,6 +45,7 @@ import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -72,7 +73,13 @@ public class CombinedMongoStorageTest {
 
   @BeforeClass
   public static void setupTypeRegistry() {
-    registry = new TypeRegistry("timbuctoo.model timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
+    registry = TypeRegistry.getInstance();
+    registry.init("timbuctoo.model timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
+  }
+
+  @AfterClass
+  public static void clearRegistry() {
+    registry = null;
   }
 
   @Before

@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.rest.providers;
 
 import java.io.StringWriter;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -33,6 +34,7 @@ import nl.knaw.huygens.timbuctoo.rest.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
 
 import org.hamcrest.Matchers;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -57,7 +59,13 @@ public class HTMLGeneratorTest {
 
   @BeforeClass
   public static void setupRegistry() {
-    registry = new TypeRegistry("timbuctoo.rest.model timbuctoo.rest.model.projecta timbuctoo.rest.model.projectb");
+    registry = TypeRegistry.getInstance();
+    registry.init("timbuctoo.rest.model timbuctoo.rest.model.projecta timbuctoo.rest.model.projectb");
+  }
+
+  @AfterClass
+  public static void clearRegistry() {
+    registry = null;
   }
 
   @Before
@@ -100,7 +108,7 @@ public class HTMLGeneratorTest {
 
     String html = generateHtml(entity);
 
-    assertContains(html, "Class", TestSystemEntity.class.getName());
+    assertContains(html, "Type", TypeNames.getInternalName(TestSystemEntity.class));
     assertContains(html, "Name", "none");
     assertContains(html, "Test Value", "none");
     assertContains(html, "Id", id);
@@ -120,7 +128,7 @@ public class HTMLGeneratorTest {
 
     String html = generateHtml(entity);
 
-    assertContains(html, "Class", TestDomainEntity.class.getName());
+    assertContains(html, "Type", TypeNames.getInternalName(TestDomainEntity.class));
     assertContains(html, "Name", "test");
     assertContains(html, "Id", id);
     assertContains(html, "Rev", "0");
@@ -144,7 +152,7 @@ public class HTMLGeneratorTest {
 
     String html = generateHtml(entity);
 
-    assertContains(html, "Class", ProjectADomainEntity.class.getName());
+    assertContains(html, "Type", TypeNames.getInternalName(ProjectADomainEntity.class));
     assertContains(html, "Name", "test");
     assertContains(html, "General Test Doc Value", "generalTestDocValue");
     assertContains(html, "Id", id);

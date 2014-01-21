@@ -25,14 +25,20 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -41,6 +47,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
+import nl.knaw.huygens.timbuctoo.security.UserRoles;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import org.junit.Before;
@@ -50,13 +57,18 @@ import org.mockito.stubbing.Answer;
 
 import com.google.common.collect.Lists;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 
 public class UserResourceTest extends WebServiceTestSetup {
 
+  private static final String OTHER_VRE_ID = "OtherVREId";
+  private static final String DEFAULT_AUTHORIZATION = "bearer 12333322abef";
+  private static final String AUTHORIZATION_KEY = "Authorization";
+  private static final String VREAUTHORIZATIONS_PATH = "vreauthorizations";
   private static final String USERS_RESOURCE = "/" + Paths.SYSTEM_PREFIX + "/users";
-  private static final String OTHER_USER_ID = "otherUserId";
+  private static final String OTHER_USER_ID = "USER000000002";
 
   private WebResource resource;
 
@@ -67,7 +79,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetAllUsers() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
 
     setUpVREManager(VRE_ID, true);
 
@@ -76,13 +88,13 @@ public class UserResourceTest extends WebServiceTestSetup {
     when(storageManager.getAllLimited(User.class, 0, 200)).thenReturn(expectedList);
 
     GenericType<List<User>> genericType = new GenericType<List<User>>() {};
-    List<User> actualList = resource.header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(genericType);
+    List<User> actualList = resource.header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(genericType);
     assertEquals(expectedList.size(), actualList.size());
   }
 
   @Test
   public void testGetAllUsersNonFound() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     List<User> expectedList = Lists.newArrayList();
@@ -90,17 +102,17 @@ public class UserResourceTest extends WebServiceTestSetup {
     when(storageManager.getAllLimited(User.class, 0, 200)).thenReturn(expectedList);
 
     GenericType<List<User>> genericType = new GenericType<List<User>>() {};
-    List<User> actualList = resource.header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(genericType);
+    List<User> actualList = resource.header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(genericType);
     assertEquals(expectedList.size(), actualList.size());
   }
 
   @Test
   public void testGetAllUsersNotInRole() {
-    setUpUserWithRoles(USER_ID, null);
+    setUpUserWithRoles(USER_ID, null, VRE_ID);
     setUpVREManager(VRE_ID, true);
 
-    ClientResponse response = resource.header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
-    assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
+    ClientResponse response = resource.header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
+    assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
   }
 
   @Test
@@ -108,19 +120,19 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUserNotLoggedIn();
 
     ClientResponse response = resource.get(ClientResponse.class);
-    assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
+    assertEquals(Status.UNAUTHORIZED, response.getClientResponseStatus());
   }
 
   @Test
   public void testGetUserAsAdmin() {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
-    User actual = resource.path(USER_ID).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(User.class);
+    User actual = resource.path(USER_ID).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(User.class);
     assertEquals(expected.getId(), actual.getId());
     assertEquals(expected.getFirstName(), actual.getFirstName());
     assertEquals(expected.getLastName(), actual.getLastName());
@@ -128,26 +140,26 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetUserNotFound() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(null);
 
-    ClientResponse response = resource.path(USER_ID).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
-    assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
+    ClientResponse response = resource.path(USER_ID).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
+    assertEquals(Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
   @Test
   public void testGetMyUserDataAsAdmin() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
-    User actual = resource.path("me").header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(User.class);
+    User actual = resource.path("me").header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(User.class);
     assertEquals(expected.getId(), actual.getId());
     assertEquals(expected.getFirstName(), actual.getFirstName());
     assertEquals(expected.getLastName(), actual.getLastName());
@@ -155,14 +167,14 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetMyUserDataAsUser() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
-    User actual = resource.path("me").header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(User.class);
+    User actual = resource.path("me").header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(User.class);
     assertEquals(expected.getId(), actual.getId());
     assertEquals(expected.getFirstName(), actual.getFirstName());
     assertEquals(expected.getLastName(), actual.getLastName());
@@ -197,7 +209,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
     when(storageManager.getEntity(User.class, adminId)).thenReturn(admin);
 
-    User actual = resource.path("me").header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(User.class);
+    User actual = resource.path("me").header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(User.class);
 
     assertEquals(expected.getId(), actual.getId());
     assertEquals(expected.getFirstName(), actual.getFirstName());
@@ -208,10 +220,10 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetUserAsUser() {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE));
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
 
-    ClientResponse response = resource.path(USER_ID).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
-    assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
+    ClientResponse response = resource.path(USER_ID).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
+    assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
   }
 
   @Test
@@ -219,12 +231,12 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUserNotLoggedIn();
 
     ClientResponse response = resource.path(USER_ID).get(ClientResponse.class);
-    assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
+    assertEquals(Status.UNAUTHORIZED, response.getClientResponseStatus());
   }
 
   @Test
   public void testPutUser() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     MailSender sender = injector.getInstance(MailSender.class);
 
@@ -237,15 +249,15 @@ public class UserResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(original);
 
-    ClientResponse response = resource.path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, user);
-    assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
+    ClientResponse response = resource.path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, user);
+    assertEquals(Status.NO_CONTENT, response.getClientResponseStatus());
     verify(sender).sendMail(anyString(), anyString(), anyString());
   }
 
   @SuppressWarnings("unchecked")
   @Test
   public void testPutUserUserNotFound() throws IOException {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     User user = createUser(USER_ID, "firstName", "lastName");
@@ -259,21 +271,21 @@ public class UserResourceTest extends WebServiceTestSetup {
       }
     }).when(storageManager).updateSystemEntity(any(Class.class), any(User.class));
 
-    ClientResponse response = resource.path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, user);
-    assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
+    ClientResponse response = resource.path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, user);
+    assertEquals(Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
   @Test
   public void testPutUserNotInRole() {
-    setUpUserWithRoles(USER_ID, null);
+    setUpUserWithRoles(USER_ID, null, VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     User user = createUser(USER_ID, "firstName", "lastName");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(null);
 
-    ClientResponse response = resource.path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, user);
-    assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
+    ClientResponse response = resource.path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, user);
+    assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
   }
 
   @Test
@@ -286,45 +298,45 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUserNotLoggedIn();
 
     ClientResponse response = resource.path(USER_ID).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, user);
-    assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
+    assertEquals(Status.UNAUTHORIZED, response.getClientResponseStatus());
   }
 
   @Test
   public void testDeleteUser() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
-    ClientResponse response = resource.path(USER_ID).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
-    assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
+    ClientResponse response = resource.path(USER_ID).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
+    assertEquals(Status.NO_CONTENT, response.getClientResponseStatus());
   }
 
   @Test
   public void testDeleteUserUserNotFound() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE));
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(null);
 
-    ClientResponse response = resource.path(USER_ID).header("Authorization", "bearer 12333322abef").header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
-    assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
+    ClientResponse response = resource.path(USER_ID).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
+    assertEquals(Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
   @Test
   public void testDeleteUserNotInRole() {
-    setUpUserWithRoles(USER_ID, null);
+    setUpUserWithRoles(USER_ID, null, VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     User expected = createUser(USER_ID, "test", "test");
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(User.class, USER_ID)).thenReturn(expected);
 
-    ClientResponse response = resource.path(USER_ID).header(VRE_ID_KEY, VRE_ID).header("Authorization", "bearer 12333322abef").delete(ClientResponse.class);
-    assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
+    ClientResponse response = resource.path(USER_ID).header(VRE_ID_KEY, VRE_ID).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).delete(ClientResponse.class);
+    assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
   }
 
   @Test
@@ -335,7 +347,354 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUserNotLoggedIn();
 
     ClientResponse response = resource.path(USER_ID).delete(ClientResponse.class);
-    assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
+    assertEquals(Status.UNAUTHORIZED, response.getClientResponseStatus());
+  }
+
+  @Test
+  public void testGetVREAuthorizationAsAdmin() {
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setUpVREManager(VRE_ID, true);
+    VREAuthorization expected = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
+    VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
+    StorageManager storageManager = getStorageManager();
+    when(storageManager.findEntity(VREAuthorization.class, example)).thenReturn(expected);
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).path(VRE_ID).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
+
+    assertEquals(Status.OK, response.getClientResponseStatus());
+    verify(storageManager, times(1)).findEntity(VREAuthorization.class, expected);
+    assertEquals(expected, response.getEntity(VREAuthorization.class));
+  }
+
+  @Test
+  public void testGetVREAuthorizationAsUser() {
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
+    StorageManager storageManager = getStorageManager();
+    VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).path(VRE_ID).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
+
+    assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
+    verify(storageManager, never()).findEntity(VREAuthorization.class, example);
+  }
+
+  @Test
+  public void testGetVREAuthorizationNotLoggedIn() {
+    setUserNotLoggedIn();
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).path(VRE_ID).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
+
+    VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
+
+    verify(getStorageManager(), never()).findEntity(VREAuthorization.class, example);
+    assertEquals(Status.UNAUTHORIZED, response.getClientResponseStatus());
+  }
+
+  @Test
+  public void testGetVREAuthorizationNotFound() {
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setUpVREManager(VRE_ID, true);
+
+    VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
+
+    StorageManager storageManager = getStorageManager();
+    when(storageManager.findEntity(VREAuthorization.class, example)).thenReturn(null);
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).path(VRE_ID).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
+
+    assertEquals(Status.NOT_FOUND, response.getClientResponseStatus());
+    verify(storageManager, times(1)).findEntity(VREAuthorization.class, example);
+  }
+
+  @Test
+  public void testGetVREAuthorizationNotInScope() {
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), OTHER_VRE_ID);
+    setUpVREManager(OTHER_VRE_ID, true);
+
+    VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).path(VRE_ID).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, OTHER_VRE_ID)
+        .get(ClientResponse.class);
+
+    assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
+    verify(getStorageManager(), never()).findEntity(VREAuthorization.class, example);
+  }
+
+  @Test
+  public void testPostVREAuthorizationAsAdmin() throws IOException {
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setUpVREManager(VRE_ID, true);
+    VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
+    StorageManager storageManager = getStorageManager();
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+        .post(ClientResponse.class, vreAuthorization);
+
+    assertEquals(Status.CREATED, response.getClientResponseStatus());
+    String location = response.getHeaders().getFirst("Location");
+    assertThat(location, containsString(USERS_RESOURCE + "/" + USER_ID + "/" + VREAUTHORIZATIONS_PATH + "/" + VRE_ID));
+    verify(storageManager).addSystemEntity(VREAuthorization.class, vreAuthorization);
+  }
+
+  @Test
+  public void testPostVREAuthorizationAsUser() throws IOException {
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
+
+    VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class);
+
+    assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
+    verify(getStorageManager(), never()).addSystemEntity(VREAuthorization.class, vreAuthorization);
+
+  }
+
+  @Test
+  public void testPostVREAuthorizationNotLoggedIn() throws IOException {
+    setUserNotLoggedIn();
+    VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class);
+
+    assertEquals(Status.UNAUTHORIZED, response.getClientResponseStatus());
+    verify(getStorageManager(), never()).addSystemEntity(VREAuthorization.class, vreAuthorization);
+  }
+
+  @Test
+  public void testPostVREAuthorizationVREAuthorizationIsNull() throws IOException {
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setUpVREManager(VRE_ID, true);
+    VREAuthorization vreAuthorization = null;
+    StorageManager storageManager = getStorageManager();
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+        .post(ClientResponse.class, vreAuthorization);
+
+    assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
+    verify(storageManager, never()).addSystemEntity(VREAuthorization.class, vreAuthorization);
+  }
+
+  @Test
+  public void testPostVREAuthorizationNotInScope() throws IOException {
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), OTHER_VRE_ID);
+    setUpVREManager(OTHER_VRE_ID, true);
+    VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
+    StorageManager storageManager = getStorageManager();
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION)
+        .header(VRE_ID_KEY, OTHER_VRE_ID).post(ClientResponse.class, vreAuthorization);
+
+    assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
+    verify(storageManager, never()).addSystemEntity(VREAuthorization.class, vreAuthorization);
+  }
+
+  @Test
+  public void testPutVREAuthorizationAsAdmin() throws IOException {
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setUpVREManager(VRE_ID, true);
+    VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
+    VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
+    StorageManager storageManager = getStorageManager();
+    when(storageManager.findEntity(VREAuthorization.class, example)).thenReturn(vreAuthorization);
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).path(VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION)
+        .header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, vreAuthorization);
+
+    assertEquals(Status.NO_CONTENT, response.getClientResponseStatus());
+    verify(storageManager).findEntity(VREAuthorization.class, example);
+    verify(storageManager).updateSystemEntity(VREAuthorization.class, vreAuthorization);
+  }
+
+  @Test
+  public void testPutVREAuthorizationAsUser() throws IOException {
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
+    setUpVREManager(VRE_ID, true);
+    VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
+    VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).path(VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION)
+        .header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, vreAuthorization);
+
+    assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
+    StorageManager storageManager = getStorageManager();
+    verify(storageManager, never()).findEntity(VREAuthorization.class, example);
+    verify(storageManager, never()).updateSystemEntity(VREAuthorization.class, vreAuthorization);
+  }
+
+  @Test
+  public void testPutVREAuthorizationNotLoggedIn() throws IOException {
+    setUserNotLoggedIn();
+    setUpVREManager(VRE_ID, true);
+    VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
+    VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).path(VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION)
+        .header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, vreAuthorization);
+
+    assertEquals(Status.UNAUTHORIZED, response.getClientResponseStatus());
+    StorageManager storageManager = getStorageManager();
+    verify(storageManager, never()).findEntity(VREAuthorization.class, example);
+    verify(storageManager, never()).updateSystemEntity(VREAuthorization.class, vreAuthorization);
+
+  }
+
+  @Test
+  public void testPutVREAuthorizationVREAuthorizationIsNull() throws IOException {
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setUpVREManager(VRE_ID, true);
+    VREAuthorization vreAuthorization = null;
+    VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).path(VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION)
+        .header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, vreAuthorization);
+
+    assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
+    StorageManager storageManager = getStorageManager();
+    verify(storageManager, never()).findEntity(VREAuthorization.class, example);
+    verify(storageManager, never()).updateSystemEntity(VREAuthorization.class, vreAuthorization);
+  }
+
+  @Test
+  public void testPutVREAuthorizationNotFound() throws IOException {
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setUpVREManager(VRE_ID, true);
+    VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
+    VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).path(VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION)
+        .header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, vreAuthorization);
+
+    assertEquals(Status.NOT_FOUND, response.getClientResponseStatus());
+    StorageManager storageManager = getStorageManager();
+    verify(storageManager).findEntity(VREAuthorization.class, example);
+    verify(storageManager, never()).updateSystemEntity(VREAuthorization.class, vreAuthorization);
+  }
+
+  @Test
+  public void testPutVREAuthorizationNotInScope() throws IOException {
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), OTHER_VRE_ID);
+    setUpVREManager(OTHER_VRE_ID, true);
+    VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
+    VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
+    StorageManager storageManager = getStorageManager();
+    when(storageManager.findEntity(VREAuthorization.class, example)).thenReturn(vreAuthorization);
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).path(VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION)
+        .header(VRE_ID_KEY, OTHER_VRE_ID).put(ClientResponse.class, vreAuthorization);
+
+    assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
+    verify(storageManager, never()).findEntity(VREAuthorization.class, example);
+    verify(storageManager, never()).updateSystemEntity(VREAuthorization.class, vreAuthorization);
+  }
+
+  @Test
+  public void testDeleteVREAuthorizationAsAdmin() throws IOException {
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setUpVREManager(VRE_ID, true);
+    VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
+    VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
+    StorageManager storageManager = getStorageManager();
+    when(storageManager.findEntity(VREAuthorization.class, example)).thenReturn(vreAuthorization);
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).path(VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION)
+        .header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
+
+    assertEquals(Status.NO_CONTENT, response.getClientResponseStatus());
+    verify(storageManager).findEntity(VREAuthorization.class, example);
+    verify(storageManager).deleteSystemEntity(vreAuthorization);
+  }
+
+  @Test
+  public void testDeleteAuthorizationAsUser() throws IOException {
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
+    setUpVREManager(VRE_ID, true);
+    VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).path(VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION)
+        .header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
+
+    assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
+    StorageManager storageManager = getStorageManager();
+    verify(storageManager, never()).findEntity(VREAuthorization.class, example);
+    verify(storageManager, never()).deleteSystemEntity(any(VREAuthorization.class));
+  }
+
+  @Test
+  public void testDeleteVREAuthorizationNotLoggedIn() throws IOException {
+    setUserNotLoggedIn();
+    setUpVREManager(VRE_ID, true);
+    VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).path(VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION)
+        .header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
+
+    assertEquals(Status.UNAUTHORIZED, response.getClientResponseStatus());
+    StorageManager storageManager = getStorageManager();
+    verify(storageManager, never()).findEntity(VREAuthorization.class, example);
+    verify(storageManager, never()).deleteSystemEntity(any(VREAuthorization.class));
+  }
+
+  @Test
+  public void testDeleteAuthorizationNotFound() throws IOException {
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setUpVREManager(VRE_ID, true);
+    VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
+    StorageManager storageManager = getStorageManager();
+    when(storageManager.findEntity(VREAuthorization.class, example)).thenReturn(null);
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).path(VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION)
+        .header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
+
+    assertEquals(Status.NOT_FOUND, response.getClientResponseStatus());
+    verify(storageManager).findEntity(VREAuthorization.class, example);
+    verify(storageManager, never()).deleteSystemEntity(any(VREAuthorization.class));
+  }
+
+  @Test
+  public void testDeleteVREAuthorizationNotInScope() throws IOException {
+    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), OTHER_VRE_ID);
+    setUpVREManager(OTHER_VRE_ID, true);
+    VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
+
+    ClientResponse response = resource.path(USER_ID).path(VREAUTHORIZATIONS_PATH).path(VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION)
+        .header(VRE_ID_KEY, OTHER_VRE_ID).delete(ClientResponse.class);
+
+    assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
+    StorageManager storageManager = getStorageManager();
+    verify(storageManager, never()).findEntity(VREAuthorization.class, example);
+    verify(storageManager, never()).deleteSystemEntity(any(VREAuthorization.class));
+  }
+
+  @Test
+  public void testGetRolesAsAdmin() {
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setUpVREManager(VRE_ID, true);
+
+    ClientResponse response = resource.path("roles").header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
+
+    assertEquals(Status.OK, response.getClientResponseStatus());
+    List<String> actual = response.getEntity(new GenericType<List<String>>() {});
+    assertThat(actual, containsInAnyOrder(UserRoles.getAll().toArray()));
+  }
+
+  @Test
+  public void testGetRolesAsUser() {
+    setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
+    setUpVREManager(VRE_ID, true);
+
+    ClientResponse response = resource.path("roles").header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
+
+    assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
+  }
+
+  @Test
+  public void testGetRolesNotLoggedIn() {
+    setUserNotLoggedIn();
+    setUpVREManager(VRE_ID, true);
+
+    ClientResponse response = resource.path("roles").header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
+
+    assertEquals(Status.UNAUTHORIZED, response.getClientResponseStatus());
+
   }
 
   private User createUser(String firstName, String lastName) {
@@ -351,6 +710,25 @@ public class UserResourceTest extends WebServiceTestSetup {
     user.setFirstName(firstName);
     user.setLastName(lastName);
     return user;
+  }
+
+  private VREAuthorization createVREAuthorization(String userId, String vreId, ArrayList<String> userRoles) {
+    VREAuthorization expected = createVREAuthorization(userId, vreId);
+    expected.setRoles(userRoles);
+    return expected;
+  }
+
+  /**
+   * Create a VREAuthorization without roles
+   * @param userId
+   * @param vreId
+   * @return
+   */
+  private VREAuthorization createVREAuthorization(String userId, String vreId) {
+    VREAuthorization example = new VREAuthorization();
+    example.setUserId(userId);
+    example.setVreId(vreId);
+    return example;
   }
 
 }

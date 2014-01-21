@@ -521,7 +521,7 @@ public class MongoStorage implements Storage {
     List<String> list = Lists.newArrayList();
 
     try {
-      String variationName = typeRegistry.getIName(type);
+      String variationName = typeRegistry.getINameForType(type);
       DBObject query = queries.selectVariation(variationName);
       query.put(DomainEntity.PID, new BasicDBObject("$exists", false));
       DBObject columnsToShow = new BasicDBObject("_id", 1);
