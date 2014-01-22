@@ -29,10 +29,10 @@ import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import com.google.common.collect.Maps;
 
 /**
- * Denotes a language, catering for ISO 639-2 and 639-1 codes.
+ * Denotes a language, catering for ISO 639 codes.
  */
 @IDPrefix("LANG")
-public class Language extends DomainEntity {
+public class Language extends SystemEntity {
 
   /** Codes, e.g. "iso_639_2". */
   private Map<String, String> codes;
