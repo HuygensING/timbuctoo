@@ -26,33 +26,34 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import nl.knaw.huygens.timbuctoo.model.Language;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 /**
  * Imports languages from a CSV file.
  * 
- * The import file is obtained directly from the internet at
- * {@code http://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt}
+ * The file is located at {@code http://www-01.sil.org/iso639-3/iso-639-3.tab}.
  *
- * Each line contains 5 fields, separated by a '|' character:
- * - bibliographic code, 3 letters, always present
- * - terminology code, 3 letters, optional
- * - alpha-2 code, 2 letters, optional
+ * Each line contains 8 fields, separated by a tab:<pre>
+ * - iso639-3 code, 3 letters, always present
+ * - iso639-2b bibliographic code, 3 letters (deprecated)
+ * - iso639-2t terminology code, 3 letters
+ * - iso639-1 code, 2 letters
+ * - scope, 1 letter
+ * - language type, 1 letter
  * - English name
- * - French name
- * 
- * N.B. Removed line
- * qaa-qtz|||Reserved for local use|réservée à l'usage local
+ * - comment
+ * </pre>
  */
 public class LanguageImporter extends CSVImporter {
 
-  private final Change change;
-  private StorageManager storageManager;
+  private static final char SEPERATOR_CHAR = '|';
+  private static final char QUOTE_CHAR = '"';
+  private static final int LINES_TO_SKIP = 4;
+
+  private final StorageManager storageManager;
 
   public LanguageImporter(StorageManager storageManager) {
-    super(new PrintWriter(System.err), '|', '"', 0);
-    change = new Change("importer", "timbuctoo");
+    super(new PrintWriter(System.err), SEPERATOR_CHAR, QUOTE_CHAR, LINES_TO_SKIP);
     this.storageManager = storageManager;
     System.out.printf("%n=== Importing documents of type 'Language'%n");
   }
@@ -61,32 +62,27 @@ public class LanguageImporter extends CSVImporter {
   protected void handleLine(String[] items) {
     Language language = new Language();
 
-    if (items[0].length() != 3) {
-      displayError("first item must be 3-letter code", items);
+    if (items.length < 7) {
+      displayError("Expecting at least 7 items", items);
       return;
     }
-    language.addCode("iso_639_2", items[0]);
 
-    if (items[1].length() != 0) {
-      if (items[1].length() != 3) {
-        displayError("second item must be 3-letter code", items);
-        return;
-      }
-      language.addCode("iso_639_2t", items[1]);
+    String iso_639_3 = items[0];
+    if (iso_639_3.length() != 3) {
+      displayError("First item must be a 3-letter code", items);
+      return;
+    }
+    language.addCode("iso_639_3", iso_639_3);
+
+    String iso_639_1 = items[3];
+    if (iso_639_1 != null && iso_639_1.length() == 2) {
+      language.addCode("iso_639_1", iso_639_1);
     }
 
-    if (items[2].length() != 0) {
-      if (items[2].length() != 2) {
-        displayError("third item must be 2-letter code", items);
-        return;
-      }
-      language.addCode("iso_639_1", items[2]);
-    }
-
-    language.setName(items[3]);
+    language.setName(items[6]);
 
     try {
-      storageManager.addDomainEntity(Language.class, language, change);
+      storageManager.addSystemEntity(Language.class, language);
     } catch (IOException e) {
       displayError(e.getMessage(), items);
     }
