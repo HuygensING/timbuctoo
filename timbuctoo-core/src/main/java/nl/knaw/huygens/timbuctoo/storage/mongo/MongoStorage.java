@@ -36,6 +36,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.EntityRef;
+import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -145,6 +146,9 @@ public class MongoStorage implements Storage {
     collection.ensureIndex(new BasicDBObject("^sourceId", 1));
     collection.ensureIndex(new BasicDBObject("^targetId", 1));
     collection.ensureIndex(new BasicDBObject("^sourceId", 1).append("^targetId", 1));
+
+    collection = getDBCollection(Language.class);
+    collection.ensureIndex(new BasicDBObject("language:code", 1), new BasicDBObject("unique", true));
   }
 
   @Override
@@ -221,6 +225,7 @@ public class MongoStorage implements Storage {
     return (cursor != null) ? new MongoStorageIterator<T>(type, cursor, reducer) : new EmptyStorageIterator<T>();
   }
 
+  @Override
   public <T extends Entity> long count(Class<T> type) {
     Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
     return getDBCollection(baseType).count();
@@ -344,6 +349,7 @@ public class MongoStorage implements Storage {
     mongoDB.update(getDBCollection(type), query, toDBObject(tree));
   }
 
+  @Override
   public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws IOException {
     DBObject query = queries.selectById(id);
 

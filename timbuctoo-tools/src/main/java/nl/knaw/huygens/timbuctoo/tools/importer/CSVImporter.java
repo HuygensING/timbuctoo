@@ -125,6 +125,7 @@ public abstract class CSVImporter {
   protected void displayError(String message, String[] line) {
     out.printf("%n## %s%n", message);
     out.printf("   [%s]%n", StringUtils.join(line, "] ["));
+    out.flush();
   }
 
 }

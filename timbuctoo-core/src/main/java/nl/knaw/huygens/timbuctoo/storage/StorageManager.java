@@ -125,6 +125,10 @@ public class StorageManager {
 
   // --- delete entities -----------------------------------------------
 
+  public <T extends SystemEntity> int deleteSystemEntities(Class<T> type) throws IOException {
+    return storage.deleteAll(type);
+  }
+
   public <T extends SystemEntity> void deleteSystemEntity(T entity) throws IOException {
     storage.deleteSystemEntity(entity.getClass(), entity.getId());
   }
