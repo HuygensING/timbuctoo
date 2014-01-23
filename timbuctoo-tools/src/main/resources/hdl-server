@@ -1,0 +1,130 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          skeleton
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Example initscript
+# Description:       This file should be used to construct scripts to be
+#                    placed in /etc/init.d.
+### END INIT INFO
+
+# Author: Sebastian Peters <sebastian.peters@tib.uni-hannover.de>
+#
+# Please remove the "Author" lines above and replace them
+# with your own name if you copy and modify this script.
+
+# Do NOT "set -e"
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="Handle Server"
+NAME=`basename $0`
+PIDFILE=/var/run/$NAME.pid
+#PIDFILE=/home/martijn/$NAME.pid
+SCRIPTNAME=/etc/init.d/$NAME
+
+# RedHat source functions
+. /etc/rc.d/init.d/functions
+
+# Load the VERBOSE setting and other rcS variables
+#. /lib/init/vars.sh
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
+. /lib/lsb/init-functions
+
+# Read configuration variable file if it is present or exit
+if [ ! -r /etc/default/$NAME ]; then
+	echo "cannot find configuration"
+	return 2
+fi
+. /etc/default/$NAME
+
+DAEMON=$HSJ_DIR/bin/hdl-server
+DAEMON_ARGS=$SERVER_DIR
+LOCKFILE=$SERVER_DIR/delete_this_to_stop_server
+
+#
+# Function that starts the daemon/service
+#
+do_start()
+{
+	# Exit if the package is not installed
+	if [ ! -x "$DAEMON" ]; then
+		echo "cannot execute $DAEMON"
+		return 2
+	fi
+
+	if [ -f "$DAEMON_ARGS/delete_this_to_stop_server" ]; then
+		echo "Service already started"
+		return 1;
+	fi
+
+	# Load all of the .jar files in the lib directory into the classpath
+	CP=""
+	for jarfile in $HSJ_DIR/lib/*.jar ; do
+	  CP=${CP}:${jarfile}
+	done
+	for jarfile in $HSJ_DIR/lib/*/*.jar ; do
+	  CP=${CP}:${jarfile}
+	done
+	for jarfile in $HSJ_DIR/{lib/amazons3/*.jar ; do
+	  CP=${CP}:${jarfile}
+	done
+	# the last line of this script is added by the build process
+	# To developers:  make sure there is at least one blank line after
+	# this line
+	logfile=/var/log/$NAME.log
+	echo java -server -Xmx200M -cp "${CP}" net.handle.server.Main "$DAEMON_ARGS"
+	java -server -Xmx200M -cp "${CP}" net.handle.server.Main "$DAEMON_ARGS" >>  $logfile 2>&1 &
+	
+	echo 
+	
+	return 0 
+}
+
+#
+# Function that stops the daemon/service
+#
+do_stop(){
+#	killproc -p $PIDFILE -d
+	rm -f $LOCKFILE
+	RETVAL="$?"
+	echo
+}
+
+case "$1" in
+  start)
+	echo "Starting $DESC" "$NAME"
+	do_start
+	case "$?" in
+		0) log_success_msg  ;;
+		*) log_failure_msg  ;;
+	esac
+	;;
+  stop)
+	echo "Stopping $DESC" "$NAME"
+	do_stop
+	;;
+  status)
+       #status -p $PIDFILE "$DAEMON" "$NAME" && exit 0 || exit $?
+	status -p $PIDFILE "$NAME" && exit 0 || exit $?
+       ;;
+  restart|force-reload)
+	#
+	# If the "reload" option is implemented then remove the
+	# 'force-reload' alias
+	#
+	echo  "Restarting $DESC" "$NAME"
+	do_stop	
+	do_start
+	;;
+  *)
+	echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+	exit 3
+	;;
+esac
+
+:
