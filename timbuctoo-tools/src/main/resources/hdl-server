@@ -44,24 +44,26 @@ fi
 
 DAEMON=$HSJ_DIR/bin/hdl-server
 DAEMON_ARGS=$SERVER_DIR
-LOCKFILE=$SERVER_DIR/delete_this_to_stop_server
+LOCKFILE="$SERVER_DIR/delete_this_to_stop_server"
 
 #
 # Function that starts the daemon/service
 #
 do_start()
 {
+	echo "Starting $DESC" "$NAME"
 	# Exit if the package is not installed
 	if [ ! -x "$DAEMON" ]; then
 		echo "cannot execute $DAEMON"
 		return 2
 	fi
 
-	if [ -f "$DAEMON_ARGS/delete_this_to_stop_server" ]; then
+	if [ -f "$LOCKFILE" ]; then
 		echo "Service already started"
 		return 1;
 	fi
 
+	# code copied from hdl-server that is supplied by handle
 	# Load all of the .jar files in the lib directory into the classpath
 	CP=""
 	for jarfile in $HSJ_DIR/lib/*.jar ; do
@@ -73,31 +75,36 @@ do_start()
 	for jarfile in $HSJ_DIR/{lib/amazons3/*.jar ; do
 	  CP=${CP}:${jarfile}
 	done
-	# the last line of this script is added by the build process
-	# To developers:  make sure there is at least one blank line after
-	# this line
+	
 	logfile=/var/log/$NAME.log
-	echo java -server -Xmx200M -cp "${CP}" net.handle.server.Main "$DAEMON_ARGS"
+
 	java -server -Xmx200M -cp "${CP}" net.handle.server.Main "$DAEMON_ARGS" >>  $logfile 2>&1 &
 	
-	echo 
-	
-	return 0 
+	return 0	
 }
 
 #
 # Function that stops the daemon/service
 #
 do_stop(){
-#	killproc -p $PIDFILE -d
+	echo "Stopping $DESC" "$NAME"
+	if [ !  -f "$LOCKFILE" ]; then
+		echo "Service not running"
+		return 1;
+	fi
+
 	rm -f $LOCKFILE
-	RETVAL="$?"
-	echo
+
+	if [ -f "$LOCKFILE" ]; then
+		echo "Service could not be stopped"
+		return 1;
+	fi
+
+	return 0
 }
 
 case "$1" in
   start)
-	echo "Starting $DESC" "$NAME"
 	do_start
 	case "$?" in
 		0) log_success_msg  ;;
@@ -105,24 +112,37 @@ case "$1" in
 	esac
 	;;
   stop)
-	echo "Stopping $DESC" "$NAME"
 	do_stop
+
+	case "$?" in
+		0) log_success_msg  ;;
+		*) log_failure_msg  ;;
+	esac
 	;;
   status)
-       #status -p $PIDFILE "$DAEMON" "$NAME" && exit 0 || exit $?
-	status -p $PIDFILE "$NAME" && exit 0 || exit $?
+	if [ -f "$LOCKFILE" ]; then
+		echo "Service is running"
+		exit 0;
+	else
+		echo "Service is stopped"
+		exit 0;
+	fi
        ;;
-  restart|force-reload)
-	#
-	# If the "reload" option is implemented then remove the
-	# 'force-reload' alias
-	#
+  restart)
 	echo  "Restarting $DESC" "$NAME"
-	do_stop	
+	do_stop
+	case "$?" in
+                0) log_success_msg  ;;
+                *) log_failure_msg  ;;
+        esac	
 	do_start
+	case "$?" in
+                0) log_success_msg  ;;
+                *) log_failure_msg  ;;
+        esac
 	;;
   *)
-	echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+	echo "Usage: $SCRIPTNAME {start|stop|status|restart}" >&2
 	exit 3
 	;;
 esac
