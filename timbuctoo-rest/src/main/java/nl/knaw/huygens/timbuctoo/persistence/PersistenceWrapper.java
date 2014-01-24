@@ -28,19 +28,27 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 public class PersistenceWrapper {
 
   private final PersistenceManager manager;
   private final String baseUrl;
   private final TypeRegistry typeRegistry;
+  private static final Logger LOG = LoggerFactory.getLogger(PersistenceWrapper.class);
 
   @Inject
-  public PersistenceWrapper(String baseUrl, PersistenceManager persistenceManager, TypeRegistry typeRegistry) {
+  public PersistenceWrapper(@Named("public_url") String baseUrl, PersistenceManager persistenceManager, TypeRegistry typeRegistry) {
+    LOG.info("base url: {}", baseUrl);
+    Preconditions.checkArgument(!StringUtils.isEmpty(baseUrl), "baseUrl cannot be empty");
     this.baseUrl = CharMatcher.is('/').trimTrailingFrom(baseUrl);
     this.manager = persistenceManager;
     Preconditions.checkNotNull(this.manager);
