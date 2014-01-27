@@ -52,7 +52,7 @@ body {
 			actions.append('<p>posting data...</p>');
 			
 			var url = 'http://' + window.config.serverUri
-					+ '/domain/dcarpersons/';
+					+ '/domain/testpersons/';
 			var location;
 			actions.append('<p>posting data...</p>');
 			$.ajax({
@@ -60,12 +60,12 @@ body {
 				type : 'POST',
 				headers : {
 					Authorization : getCookie('sessionId'),
-					VRE_ID : "DutchCaribbean"
+					VRE_ID : "TestVRE"
 				},
 				contentType : 'application/json; charset=utf-8',
 				async : false,
 				data : JSON.stringify({
-					"@type" : "dcarperson",
+					"@type" : "testperson",
 					"name" : {
 						"components" : [ {
 							"type" : "FORENAME",
@@ -105,7 +105,9 @@ body {
 			
 			var returnValue;
 			var statusCode;
-			actions.append('<p> waiting until person gets a pid...</p>');
+			if(needsPID){
+				actions.append('<p> waiting until person gets a pid...</p>');
+			}
 
 			var intervalId = setInterval(function() {
 				$.ajax({
@@ -144,7 +146,7 @@ body {
 				type : 'PUT',
 				headers : {
 					Authorization : getCookie('sessionId'),
-					VRE_ID : "DutchCaribbean"
+					VRE_ID : "TestVRE"
 				},
 				contentType : 'application/json; charset=utf-8',
 				async : false,
@@ -166,7 +168,7 @@ body {
 				type : 'DELETE',
 				headers : {
 					Authorization : getCookie('sessionId'),
-					VRE_ID : "DutchCaribbean"
+					VRE_ID : "TestVRE"
 				},
 				success : function(data, status) {
 					actions.append('<p>status: ' + status + '</p>');

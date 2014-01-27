@@ -101,6 +101,7 @@
       timbuctoo.model.ckcc
       timbuctoo.model.dcar
       timbuctoo.model.raa
+      timbuctoo.model.test
     </model-packages>
     <!-- The base url the application can be reached. When a proxy is used this should be the address of the proxy. -->
     <public_url>http://localhost:8080/timbuctoo</public_url>

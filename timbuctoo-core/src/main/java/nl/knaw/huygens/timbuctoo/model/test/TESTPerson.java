@@ -1,6 +1,6 @@
-package nl.knaw.huygens.timbuctoo.vre;
+package nl.knaw.huygens.timbuctoo.model.test;
 
-import java.io.IOException;
+import nl.knaw.huygens.timbuctoo.model.Person;
 
 /*
 * #%L
@@ -23,19 +23,16 @@ import java.io.IOException;
 * #L%
 */
 
-public class TestScope extends AbstractScope {
+// Used for the crud test.
+public class TESTPerson extends Person {
+  private String label;
 
-  public TestScope() throws IOException {
-    super("timbuctoo.model.test");
+  public String getLabel() {
+    return label;
   }
 
-  @Override
-  public String getId() {
-    return "test";
+  public void setLabel(String label) {
+    this.label = label;
   }
 
-  @Override
-  public String getName() {
-    return "Test Scope";
-  }
 }
