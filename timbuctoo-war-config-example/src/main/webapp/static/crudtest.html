@@ -1,24 +1,3 @@
-<!--
-  #%L
-  Timbuctoo configuration war example
-  =======
-  Copyright (C) 2012 - 2014 Huygens ING
-  =======
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as
-  published by the Free Software Foundation, either version 3 of the 
-  License, or (at your option) any later version.
-  
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-  
-  You should have received a copy of the GNU General Public 
-  License along with this program.  If not, see
-  <http://www.gnu.org/licenses/gpl-3.0.html>.
-  #L%
-  -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -44,37 +23,34 @@ body {
 		var actions = $('#actions');
 		function test() {
 			actions.empty();
-
-			actions.append('<p>posting data...</p>');
+			
 			var location = createPerson();
+			
+			var deferredDELETE = $.Deferred();
+			
+			deferredDELETE.done(function(location, data) {
+				deletePerson(location, data);
+				getLocation(location, false);
+			});
 
-			actions.append("<hr>");
+			var deferredPUT = $.Deferred();
+			deferredPUT.done(function(location, data) {
+				updatePerson(location, data);
+				getLocation(location, true, deferredDELETE);
+			});
+
+			
+
+			actions.append('<hr>');
 			actions.append('<p>getting data from url: <b>' + location
 					+ '</b></p>');
-			var data = getLocation(location, true);
+			getLocation(location, true, deferredPUT);
 
-			actions.append("<hr>");
-			actions.append('<p>putting data on url: <b>' + location
-					+ '</b></p>');
-			updatePerson(location, data);
-
-			actions.append("<hr>");
-			actions.append('<p>getting data from url: <b>' + location
-					+ '</b></p>');
-			getLocation(location, true);
-
-			actions.append("<hr>");
-			actions.append('<p>deleting data of url: <b>' + location
-					+ '</b></p>');
-			deletePerson(location, data);
-
-			actions.append("<hr>");
-			actions.append('<p>getting data from url: <b>' + location
-					+ '</b></p>');
-			getLocation(location, false);
 		}
 
 		function createPerson() {
+			actions.append('<p>posting data...</p>');
+			
 			var url = 'http://' + window.config.serverUri
 					+ '/domain/dcarpersons/';
 			var location;
@@ -122,28 +98,42 @@ body {
 			return location;
 		}
 
-		function getLocation(location, needsPID) {
+		function getLocation(location, needsPID, deferred) {
+			actions.append('<hr>');
+			actions.append('<p>getting data from url: <b>' + location
+					+ '</b></p>');
+			
 			var returnValue;
+			var statusCode;
 			actions.append('<p> waiting until person gets a pid...</p>');
 
-			$.ajax({
-				url : location,
-				async : false,
-				complete : function(data, status) {
-					returnValue = JSON.parse(data.responseText);
-					if (returnValue['^pid'] == null && needsPID) {
-						setTimeout(getLocation(location, needsPID), 5000);
+			var intervalId = setInterval(function() {
+				$.ajax({
+					url : location,
+					async : false,
+					complete : function(data, status) {
+						returnValue = JSON.parse(data.responseText);
+						statusCode = status;
+
+						if (returnValue['^pid'] != null || !needsPID) {
+							clearInterval(intervalId);
+							actions.append('<p>status: ' + statusCode + '</p>');
+							actions.append('data: ' + JSON.stringify(returnValue));
+							
+							if(deferred){
+								deferred.resolve(location, returnValue);
+							}
+						}
 					}
-					else{
-						actions.append('<p>status: ' + status + '</p>');
-						actions.append('data: ' + JSON.stringify(returnValue));
-					}
-				}
-			});
-			return returnValue;
+				});
+			}, 5000);
 		}
 
 		function updatePerson(location, data) {
+			actions.append('<hr>');
+			actions.append('<p>putting data on url: <b>' + location
+					+ '</b></p>');
+			
 			data.birthDate = '20130116';
 			data.deathDate = '20160116';
 
@@ -166,6 +156,10 @@ body {
 		}
 
 		function deletePerson(location) {
+			actions.append('<hr>');
+			actions.append('<p>deleting data of url: <b>' + location
+					+ '</b></p>');
+			
 			$.ajax({
 				url : location,
 				async : false,
