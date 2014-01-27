@@ -26,6 +26,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 
 import nl.knaw.huygens.persistence.PersistenceManager;
+import nl.knaw.huygens.persistence.PersistenceManagerCreationException;
 import nl.knaw.huygens.persistence.PersistenceManagerFactory;
 import nl.knaw.huygens.security.client.AuthorizationHandler;
 import nl.knaw.huygens.security.client.HuygensAuthorizationHandler;
@@ -93,7 +94,7 @@ public class RESTInjectionModule extends BasicInjectionModule {
 
   @Provides
   @Singleton
-  PersistenceManager providePersistenceManager() {
+  PersistenceManager providePersistenceManager() throws PersistenceManagerCreationException {
     PersistenceManager persistenceManager = PersistenceManagerFactory.newPersistenceManager(config.getBooleanSetting("handle.enabled", true), config.getSetting("handle.cipher"),
         config.getSetting("handle.naming_authority"), config.getSetting("handle.prefix"), config.pathInUserHome(config.getSetting("handle.private_key_file")));
     return persistenceManager;

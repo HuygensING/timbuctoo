@@ -74,6 +74,7 @@ public class PersistenceWrapper {
 
   public String persistObject(Class<? extends Entity> type, String objectId, int revision) throws PersistenceException {
     String url = createURL(type, objectId, revision);
+
     return manager.persistURL(url);
   }
 
