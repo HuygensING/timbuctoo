@@ -52,10 +52,11 @@ public class BulkDataTransformer {
     Configuration config = new Configuration("config.xml");
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
-    GenericDataHandler importer = new GenericJsonFileWriter("src/main/resources/testdata/", injector.getInstance(TypeRegistry.class));
+    String resourceDir = args[0] + "/";
+
+    GenericDataHandler importer = new GenericJsonFileWriter(resourceDir + "testdata/", injector.getInstance(TypeRegistry.class));
 
     long start = System.currentTimeMillis();
-    String resourceDir = "src/main/resources/";
     importer.importData(resourceDir + "DWCPlaceMapping.properties", DWCPlace.class, null, change);
     List<Class<? extends Role>> allowedRoles = Lists.newArrayList();
     allowedRoles.add(DWCScientist.class);

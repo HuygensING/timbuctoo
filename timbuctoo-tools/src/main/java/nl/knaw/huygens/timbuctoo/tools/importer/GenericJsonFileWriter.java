@@ -57,7 +57,8 @@ public class GenericJsonFileWriter extends GenericDataHandler {
     File file = new File(testDataDir + typeRegistry.getINameForType(type) + ".json");
     System.out.println("file: " + file.getAbsolutePath());
 
-    mapper.writeValue(file, objects);
-  }
+    // toArray is needed to make use of the TimbuctooTypeIdResolver
+    mapper.writeValue(file, objects.toArray(new DomainEntity[0]));
 
+  }
 }
