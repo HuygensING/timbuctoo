@@ -4,7 +4,7 @@
   <parent>
     <groupId>nl.knaw.huygens</groupId>
     <artifactId>timbuctoo</artifactId>
-    <version>2.0.4</version>
+    <version>2.1.0</version>
   </parent>
   <artifactId>timbuctoo-tools-config-example</artifactId>
   <name>Timbuctoo tools example configuration</name>
