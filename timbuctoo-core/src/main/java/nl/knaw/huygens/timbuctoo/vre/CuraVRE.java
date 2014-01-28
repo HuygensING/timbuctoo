@@ -1,9 +1,7 @@
 package nl.knaw.huygens.timbuctoo.vre;
 
-import java.io.IOException;
-
 /*
-* #%L
+ * #%L
  * Timbuctoo core
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
@@ -22,21 +20,25 @@ import java.io.IOException;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
-*/
+ */
 
-public class TestScope extends AbstractScope {
+import java.io.IOException;
 
-  public TestScope() throws IOException {
-    super("timbuctoo.model.test");
-  }
+public class CuraVRE implements VRE {
 
-  @Override
-  public String getId() {
-    return "test";
+  private final Scope scope;
+
+  public CuraVRE() throws IOException {
+    scope = new CuraScope();
   }
 
   @Override
   public String getName() {
-    return "Test Scope";
+    return "CuraVRE";
+  }
+
+  @Override
+  public Scope getScope() {
+    return scope;
   }
 }

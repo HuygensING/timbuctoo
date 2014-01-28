@@ -98,7 +98,7 @@ table,td {
 				type : 'GET',
 				headers : {
 					Authorization : getCookie('sessionId'),
-					VRE_ID : "DutchCaribbean"
+					VRE_ID : "TestVRE"
 				},
 				success : function(data, status) {
 					$.each(data, function(count, item) {
@@ -114,7 +114,7 @@ table,td {
 				type : 'GET',
 				headers : {
 					Authorization : getCookie('sessionId'),
-					VRE_ID : "DutchCaribbean"
+					VRE_ID : "TestVRE"
 				},
 				success : function(data, status) {
 					$.each(data, function(count, item) {
@@ -142,14 +142,14 @@ table,td {
 
 			if (userId != null) {
 				var url = baseUrl + userId
-						+ '/vreauthorizations/DutchCaribbean';
+						+ '/vreauthorizations/TestVRE';
 				$.ajax({
 					url : url,
 					type : 'PUT',
 					contentType : 'application/json; charset=utf-8',
 					headers : {
 						Authorization : getCookie('sessionId'),
-						VRE_ID : "DutchCaribbean"
+						VRE_ID : "TestVRE"
 					},
 					data : JSON.stringify(json),
 					success : function(data, status) {
@@ -163,13 +163,13 @@ table,td {
 			var userId = $('#users').val();
 			if (userId != null) {
 				var url = baseUrl + userId
-						+ '/vreauthorizations/DutchCaribbean';
+						+ '/vreauthorizations/TestVRE';
 				$.ajax({
 					url : url,
 					type : 'DELETE',
 					headers : {
 						Authorization : getCookie('sessionId'),
-						VRE_ID : "DutchCaribbean"
+						VRE_ID : "TestVRE"
 					},
 					success : function(data, status) {
 						$('#users').change();
@@ -196,7 +196,7 @@ table,td {
 					contentType : 'application/json; charset=utf-8',
 					headers : {
 						Authorization : getCookie('sessionId'),
-						VRE_ID : "DutchCaribbean"
+						VRE_ID : "TestVRE"
 					},
 					data : JSON.stringify(json),
 					success : function(data, status) {
@@ -212,13 +212,13 @@ table,td {
 					var userId = $(this).val();
 					if (userId != '') {
 						var url = baseUrl + userId
-								+ '/vreauthorizations/DutchCaribbean';
+								+ '/vreauthorizations/TestVRE';
 						$.ajax({
 							url : url,
 							type : 'GET',
 							headers : {
 								Authorization : getCookie('sessionId'),
-								VRE_ID : "DutchCaribbean"
+								VRE_ID : "TestVRE"
 							},
 							success : function(data, status) {
 								$('#vreId').text(data.vreId);
@@ -230,7 +230,7 @@ table,td {
 								$('#delete').show();
 							},
 							error: function(){
-								$('#vreId').text('DutchCaribbean');
+								$('#vreId').text('TestVRE');
 								$('#roles').val('');
 								$('#id').text('');
 								$('#rev').text('');

@@ -31,7 +31,7 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.vre.BaseScope;
 import nl.knaw.huygens.timbuctoo.vre.DutchCaribbeanScope;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
-import nl.knaw.huygens.timbuctoo.vre.TestScope;
+import nl.knaw.huygens.timbuctoo.vre.CuraScope;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -68,7 +68,7 @@ public class Configuration {
     }
     try {
       // TODO determine dynamically
-      scopes = ImmutableList.<Scope> of(new BaseScope(), new DutchCaribbeanScope(), new TestScope());
+      scopes = ImmutableList.<Scope> of(new BaseScope(), new DutchCaribbeanScope(), new CuraScope());
       scopeMap = Maps.newHashMap();
       for (Scope scope : scopes) {
         scopeMap.put(scope.getId(), scope);

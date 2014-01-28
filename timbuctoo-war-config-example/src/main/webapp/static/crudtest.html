@@ -44,39 +44,36 @@ body {
 		var actions = $('#actions');
 		function test() {
 			actions.empty();
-
-			actions.append('<p>posting data...</p>');
+			
 			var location = createPerson();
+			
+			var deferredDELETE = $.Deferred();
+			
+			deferredDELETE.done(function(location, data) {
+				deletePerson(location, data);
+				getLocation(location, false);
+			});
 
-			actions.append("<hr>");
+			var deferredPUT = $.Deferred();
+			deferredPUT.done(function(location, data) {
+				updatePerson(location, data);
+				getLocation(location, true, deferredDELETE);
+			});
+
+			
+
+			actions.append('<hr>');
 			actions.append('<p>getting data from url: <b>' + location
 					+ '</b></p>');
-			var data = getLocation(location, true);
+			getLocation(location, true, deferredPUT);
 
-			actions.append("<hr>");
-			actions.append('<p>putting data on url: <b>' + location
-					+ '</b></p>');
-			updatePerson(location, data);
-
-			actions.append("<hr>");
-			actions.append('<p>getting data from url: <b>' + location
-					+ '</b></p>');
-			getLocation(location, true);
-
-			actions.append("<hr>");
-			actions.append('<p>deleting data of url: <b>' + location
-					+ '</b></p>');
-			deletePerson(location, data);
-
-			actions.append("<hr>");
-			actions.append('<p>getting data from url: <b>' + location
-					+ '</b></p>');
-			getLocation(location, false);
 		}
 
 		function createPerson() {
+			actions.append('<p>posting data...</p>');
+			
 			var url = 'http://' + window.config.serverUri
-					+ '/domain/dcarpersons/';
+					+ '/domain/testpersons/';
 			var location;
 			actions.append('<p>posting data...</p>');
 			$.ajax({
@@ -84,12 +81,12 @@ body {
 				type : 'POST',
 				headers : {
 					Authorization : getCookie('sessionId'),
-					VRE_ID : "DutchCaribbean"
+					VRE_ID : "TestVRE"
 				},
 				contentType : 'application/json; charset=utf-8',
 				async : false,
 				data : JSON.stringify({
-					"@type" : "dcarperson",
+					"@type" : "testperson",
 					"name" : {
 						"components" : [ {
 							"type" : "FORENAME",
@@ -122,28 +119,44 @@ body {
 			return location;
 		}
 
-		function getLocation(location, needsPID) {
+		function getLocation(location, needsPID, deferred) {
+			actions.append('<hr>');
+			actions.append('<p>getting data from url: <b>' + location
+					+ '</b></p>');
+			
 			var returnValue;
-			actions.append('<p> waiting until person gets a pid...</p>');
+			var statusCode;
+			if(needsPID){
+				actions.append('<p> waiting until person gets a pid...</p>');
+			}
 
-			$.ajax({
-				url : location,
-				async : false,
-				complete : function(data, status) {
-					returnValue = JSON.parse(data.responseText);
-					if (returnValue['^pid'] == null && needsPID) {
-						setTimeout(getLocation(location, needsPID), 5000);
+			var intervalId = setInterval(function() {
+				$.ajax({
+					url : location,
+					async : false,
+					complete : function(data, status) {
+						returnValue = JSON.parse(data.responseText);
+						statusCode = status;
+
+						if (returnValue['^pid'] != null || !needsPID) {
+							clearInterval(intervalId);
+							actions.append('<p>status: ' + statusCode + '</p>');
+							actions.append('data: ' + JSON.stringify(returnValue));
+							
+							if(deferred){
+								deferred.resolve(location, returnValue);
+							}
+						}
 					}
-					else{
-						actions.append('<p>status: ' + status + '</p>');
-						actions.append('data: ' + JSON.stringify(returnValue));
-					}
-				}
-			});
-			return returnValue;
+				});
+			}, 5000);
 		}
 
 		function updatePerson(location, data) {
+			actions.append('<hr>');
+			actions.append('<p>putting data on url: <b>' + location
+					+ '</b></p>');
+			
 			data.birthDate = '20130116';
 			data.deathDate = '20160116';
 
@@ -154,7 +167,7 @@ body {
 				type : 'PUT',
 				headers : {
 					Authorization : getCookie('sessionId'),
-					VRE_ID : "DutchCaribbean"
+					VRE_ID : "TestVRE"
 				},
 				contentType : 'application/json; charset=utf-8',
 				async : false,
@@ -166,13 +179,17 @@ body {
 		}
 
 		function deletePerson(location) {
+			actions.append('<hr>');
+			actions.append('<p>deleting data of url: <b>' + location
+					+ '</b></p>');
+			
 			$.ajax({
 				url : location,
 				async : false,
 				type : 'DELETE',
 				headers : {
 					Authorization : getCookie('sessionId'),
-					VRE_ID : "DutchCaribbean"
+					VRE_ID : "TestVRE"
 				},
 				success : function(data, status) {
 					actions.append('<p>status: ' + status + '</p>');

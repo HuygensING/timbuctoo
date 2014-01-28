@@ -25,68 +25,115 @@ package nl.knaw.huygens.timbuctoo.tools.importer;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.Language;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.mongodb.MongoException;
 
 /**
- * Imports languages from a CSV file.
- * 
- * The import file is obtained directly from the internet at
- * {@code http://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt}
+ * Imports languages from a file with ISO-639-3 language codes.
+ * Location: {@code http://www-01.sil.org/iso639-3/iso-639-3.tab}.
  *
- * Each line contains 5 fields, separated by a '|' character:
- * - bibliographic code, 3 letters, always present
- * - terminology code, 3 letters, optional
- * - alpha-2 code, 2 letters, optional
+ * Each line contains 8 fields, separated by tabs:<pre>
+ * - iso639-3 code, 3 letters, always present
+ * - iso639-2b bibliographic code, 3 letters (deprecated)
+ * - iso639-2t terminology code, 3 letters
+ * - iso639-1 code, 2 letters
+ * - scope, 1 letter
+ * - language type, 1 letter
  * - English name
- * - French name
- * 
- * N.B. Removed line
- * qaa-qtz|||Reserved for local use|réservée à l'usage local
+ * - comment
+ * </pre>
  */
 public class LanguageImporter extends CSVImporter {
 
-  private final Change change;
-  private StorageManager storageManager;
+  public static void main(String[] args) throws Exception {
+    String fileName = (args.length > 0) ? args[0] : "../../timbuctoo-testdata/src/main/resources/general/iso-639-3.tab";
+
+    Configuration config = new Configuration("config.xml");
+    Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
+    StorageManager storageManager = null;
+
+    try {
+      storageManager = injector.getInstance(StorageManager.class);
+      int count = storageManager.deleteSystemEntities(Language.class);
+      System.out.printf("%n-- Removed %d languages from store%n", count);
+
+      LanguageImporter importer = new LanguageImporter(storageManager);
+      importer.handleFile(fileName, 0, false);
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      if (storageManager != null) {
+        storageManager.close();
+      }
+      System.exit(0);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+
+  private static final char SEPERATOR_CHAR = '\t';
+  private static final char QUOTE_CHAR = '"';
+  private static final int LINES_TO_SKIP = 1;
+
+  private final StorageManager storageManager;
+
+  private int totalCount;
+  private int coreCount;
 
   public LanguageImporter(StorageManager storageManager) {
-    super(new PrintWriter(System.err), '|', '"', 0);
-    change = new Change("importer", "timbuctoo");
+    super(new PrintWriter(System.err), SEPERATOR_CHAR, QUOTE_CHAR, LINES_TO_SKIP);
     this.storageManager = storageManager;
-    System.out.printf("%n=== Importing documents of type 'Language'%n");
   }
+
+  @Override
+  protected void initialize() {
+    totalCount = 0;
+    coreCount = 0;
+  }
+
+  @Override
+  protected void handleEndOfFile() {
+    System.out.printf("%n-- Total number of languages : %5s%n", totalCount);
+    System.out.printf("-- Number of core languages  : %5s%n", coreCount);
+  };
 
   @Override
   protected void handleLine(String[] items) {
     Language language = new Language();
 
-    if (items[0].length() != 3) {
-      displayError("first item must be 3-letter code", items);
+    if (items.length < 7) {
+      displayError("Expecting at least 7 items", items);
       return;
     }
-    language.addCode("iso_639_2", items[0]);
+    totalCount++;
 
-    if (items[1].length() != 0) {
-      if (items[1].length() != 3) {
-        displayError("second item must be 3-letter code", items);
-        return;
-      }
-      language.addCode("iso_639_2t", items[1]);
+    String iso_639_3 = items[0];
+    if (iso_639_3.length() != 3) {
+      displayError("First item must be a 3-letter code", items);
+      return;
+    }
+    language.setCode(iso_639_3);
+    language.addCode("iso_639_3", iso_639_3);
+
+    String iso_639_1 = items[3];
+    if (iso_639_1 != null && iso_639_1.length() == 2) {
+      coreCount++;
+      System.out.printf("%s [%s] - %s%n", iso_639_3, iso_639_1, items[6]);
+      language.addCode("iso_639_1", iso_639_1);
     }
 
-    if (items[2].length() != 0) {
-      if (items[2].length() != 2) {
-        displayError("third item must be 2-letter code", items);
-        return;
-      }
-      language.addCode("iso_639_1", items[2]);
-    }
-
-    language.setName(items[3]);
+    language.setName(items[6]);
 
     try {
-      storageManager.addDomainEntity(Language.class, language, change);
+      storageManager.addSystemEntity(Language.class, language);
+    } catch (MongoException.DuplicateKey e) {
+      displayError("Duplicate key", items);
     } catch (IOException e) {
       displayError(e.getMessage(), items);
     }

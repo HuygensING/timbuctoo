@@ -83,4 +83,9 @@ public class PersistenceWrapperTest {
     persistenceWrapper.persistObject(DEFAULT_TYPE, "1234");
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testPersistentWrapperBaseUrlIsEmpty() throws PersistenceException {
+    new PersistenceWrapper("", persistenceManager, typeRegistry);
+  }
+
 }

@@ -29,15 +29,17 @@ import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import com.google.common.collect.Maps;
 
 /**
- * Denotes a language, catering for ISO 639-2 and 639-1 codes.
+ * Denotes a language.
  */
 @IDPrefix("LANG")
-public class Language extends DomainEntity {
+public class Language extends SystemEntity {
 
-  /** Codes, e.g. "iso_639_2". */
-  private Map<String, String> codes;
   /** English name. */
   private String name;
+  /** Unique code, we use ISO-639-3 */
+  private String code;
+  /** All codes, including unique code. */
+  private Map<String, String> codes;
 
   public Language() {
     codes = Maps.newHashMapWithExpectedSize(2);
@@ -46,6 +48,22 @@ public class Language extends DomainEntity {
   @Override
   public String getDisplayName() {
     return getName();
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String getCode() {
+    return code;
+  }
+
+  public void setCode(String code) {
+    this.code = code;
   }
 
   public Map<String, String> getCodes() {
@@ -58,14 +76,6 @@ public class Language extends DomainEntity {
 
   public void addCode(String key, String value) {
     codes.put(key, value);
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
 }

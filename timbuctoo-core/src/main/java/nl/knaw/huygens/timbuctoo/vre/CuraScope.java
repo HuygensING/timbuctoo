@@ -1,9 +1,7 @@
 package nl.knaw.huygens.timbuctoo.vre;
 
-import java.io.IOException;
-
 /*
-* #%L
+ * #%L
  * Timbuctoo core
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
@@ -22,21 +20,43 @@ import java.io.IOException;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
-*/
+ */
 
-public class TestScope extends AbstractScope {
+import java.io.IOException;
 
-  public TestScope() throws IOException {
-    super("timbuctoo.model.test");
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.dcar.DCARArchive;
+
+public class CuraScope extends AbstractScope {
+
+  public CuraScope() throws IOException {
+    addClass(DCARArchive.class);
+    buildTypes();
   }
 
   @Override
   public String getId() {
-    return "test";
+    return "cura";
   }
 
   @Override
   public String getName() {
-    return "Test Scope";
+    return "Cura Scope";
   }
+
+  @Override
+  public <T extends DomainEntity> boolean inScope(Class<T> type, String id) {
+    return super.inScope(type, id);
+  }
+
+  @Override
+  public <T extends DomainEntity> boolean inScope(T entity) {
+    Class<? extends DomainEntity> entityType = entity.getClass();
+    if (entityType == DCARArchive.class) {
+      String text = ((DCARArchive) entity).getTitleEng();
+      return (text != null) && text.contains("Cura");
+    }
+    return false;
+  }
+
 }
