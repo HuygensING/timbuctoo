@@ -36,4 +36,8 @@ public class ProjectADomainEntity extends BaseDomainEntity {
     super(id);
   }
 
+  public ProjectADomainEntity(String id, String projectAGeneralTestDocValue) {
+    super(id);
+    this.projectAGeneralTestDocValue = projectAGeneralTestDocValue;
+  }
 }
