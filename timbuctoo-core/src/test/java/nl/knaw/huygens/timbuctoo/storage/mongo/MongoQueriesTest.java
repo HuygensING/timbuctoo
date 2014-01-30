@@ -22,6 +22,8 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
@@ -83,4 +85,19 @@ public class MongoQueriesTest {
     assertEquals(expected, query.toMap());
   }
 
+  @Test
+  public void testSelectVersionByIdAndRevision() {
+    int revision = 2;
+    String expected = String.format("{ \"versions\" : { \"$elemMatch\" : { \"^rev\" : %d}}}", revision);
+
+    DBObject query = queries.getRevisionProjection(revision);
+
+    String actual = query.toString();
+
+    /* 
+     * Ignore all the whitespaces. IsEqualIgnoringWhiteSpace cannot be used, because it ignores only the 
+     * one before and after the string and converts multiple whitespaces to a single space.
+     */
+    assertThat(actual.replaceAll(" ", ""), equalTo(expected.replaceAll(" ", "")));
+  }
 }
