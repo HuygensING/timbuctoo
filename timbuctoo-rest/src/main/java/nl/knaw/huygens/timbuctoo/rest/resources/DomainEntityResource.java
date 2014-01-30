@@ -213,8 +213,8 @@ public class DomainEntityResource extends ResourceBase {
     @SuppressWarnings("unchecked")
     Class<T> type = (Class<T>) getEntityType(entityName, Status.NOT_FOUND);
 
-    if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
-      throw new WebApplicationException(Status.BAD_REQUEST);
+    if (TypeRegistry.isPrimitiveDomainEntity(type)) {
+      throw new WebApplicationException(Responses.METHOD_NOT_ALLOWED);
     }
 
     // if you want to be able to put a pid on items without pid you have to have access to the base class.

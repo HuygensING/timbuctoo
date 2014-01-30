@@ -713,7 +713,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = doPutPIDRequest("basedomainentities");
 
-    assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
+    assertEquals(Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
 
     verifyZeroInteractions(getProducer(INDEX_PRODUCER), getProducer(PERSISTENCE_PRODUCER));
     verify(getStorageManager(), never()).getAllIdsWithoutPIDOfType(Mockito.<Class<? extends DomainEntity>> any());
