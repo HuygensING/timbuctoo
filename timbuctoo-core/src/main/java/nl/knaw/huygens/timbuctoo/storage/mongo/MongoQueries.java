@@ -50,6 +50,12 @@ public class MongoQueries {
     return new BasicDBObject("_id", id);
   }
 
+  /**
+   * Create a query to find an {@code Entity} in a regular collection.
+   * @param id the id of the {@code Entity}.
+   * @param revision the revision the {@code Entity} should have.
+   * @return the query.
+   */
   public DBObject selectByIdAndRevision(String id, int revision) {
     DBObject query = new BasicDBObject();
     query.put("_id", id);
@@ -57,10 +63,13 @@ public class MongoQueries {
     return query;
   }
 
-  public DBObject selectVersionByIdAndRevision(String id, int revision) {
-    DBObject query = new BasicDBObject();
-    query.put("_id", id);
-    query.put("versions.^rev", revision);
+  /**
+   * Create a projection to find the needed revision.
+   * @param revision the revision of the {@code Entity}.
+   * @return the projection.
+   */
+  public DBObject getRevisionProjection(int revision) {
+    DBObject query = new BasicDBObject("versions", new BasicDBObject("$elemMatch", new BasicDBObject("^rev", revision)));
     return query;
   }
 
@@ -101,5 +110,4 @@ public class MongoQueries {
   public DBObject setProperty(String key, Object value) {
     return new BasicDBObject("$set", new BasicDBObject(key, value));
   }
-
 }

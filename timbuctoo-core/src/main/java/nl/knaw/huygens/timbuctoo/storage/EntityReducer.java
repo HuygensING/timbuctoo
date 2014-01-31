@@ -117,15 +117,6 @@ public class EntityReducer {
     return entities;
   }
 
-  public <T extends Entity> T reduceRevision(Class<T> type, JsonNode tree) throws IOException {
-    checkNotNull(tree);
-
-    ArrayNode versionsNode = (ArrayNode) tree.get("versions");
-    JsonNode node = versionsNode.get(0);
-
-    return reduceVariation(type, node);
-  }
-
   public <T extends Entity> MongoChanges<T> reduceAllRevisions(Class<T> type, JsonNode tree) throws IOException {
     checkNotNull(tree);
 

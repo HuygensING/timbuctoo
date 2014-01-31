@@ -72,6 +72,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.inject.Inject;
+import com.sun.jersey.api.Responses;
 
 /**
  * A REST resource for adressing collections of domain entities.
@@ -212,8 +213,8 @@ public class DomainEntityResource extends ResourceBase {
     @SuppressWarnings("unchecked")
     Class<T> type = (Class<T>) getEntityType(entityName, Status.NOT_FOUND);
 
-    if (DomainEntity.class.equals(type.getSuperclass())) {
-      throw new WebApplicationException(Status.BAD_REQUEST);
+    if (TypeRegistry.isPrimitiveDomainEntity(type)) {
+      throw new WebApplicationException(Responses.METHOD_NOT_ALLOWED);
     }
 
     // if you want to be able to put a pid on items without pid you have to have access to the base class.
@@ -236,6 +237,11 @@ public class DomainEntityResource extends ResourceBase {
       @PathParam(ID_PARAM) String id, //
       @HeaderParam(VRE_ID_KEY) String vreId) throws IOException {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
+
+    if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
+
+      throw new WebApplicationException(Responses.METHOD_NOT_ALLOWED);
+    }
 
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
     checkWritable(entity, Status.FORBIDDEN);
