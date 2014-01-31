@@ -23,7 +23,6 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  */
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -215,16 +214,7 @@ public class SearchResource {
   }
 
   private URI createHATEOASURI(final int start, final int rows, UriInfo uriInfo, String queryId) {
-    UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
-    try {
-      uriBuilder.uri(new URI(config.getSetting("public_url")));
-    } catch (IllegalArgumentException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (URISyntaxException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+    UriBuilder uriBuilder = UriBuilder.fromUri(config.getSetting("public_url"));
     uriBuilder.path("search");
     uriBuilder.path(queryId);
 
