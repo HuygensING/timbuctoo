@@ -42,6 +42,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
 import nl.knaw.huygens.solr.SearchParameters;
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -80,6 +81,10 @@ public class SearchResourceTest extends WebServiceTestSetup {
   public void setUpSortableFields() {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
     when(searchManager.findSortableFields(Matchers.<Class<? extends DomainEntity>> any())).thenReturn(SORTABLE_FIELDS);
+  }
+
+  public void setUpPublicUrl(String url) {
+    when(injector.getInstance(Configuration.class).getSetting("public_url")).thenReturn(url);
   }
 
   public void setUpVREManager(boolean isTypeInScope, boolean isVREKnown) {
@@ -319,6 +324,8 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     WebResource resource = super.resource();
 
+    setUpPublicUrl(resource.getURI().toString());
+
     String nextUri = String.format("%ssearch/%s?start=10&rows=10", resource.getURI(), ID);
     int returnedRows = 10;
     Map<String, Object> expected = createExpectedResult(idList, personList, facets, startIndex, numberOfRows, SORTABLE_FIELDS, returnedRows, nextUri, null);
@@ -349,6 +356,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     queryParameters.add("rows", "20");
 
     WebResource resource = super.resource();
+    setUpPublicUrl(resource.getURI().toString());
 
     String prevUri = String.format("%ssearch/%s?start=0&rows=20", resource.getURI(), ID);
     String nextUri = String.format("%ssearch/%s?start=40&rows=20", resource.getURI(), ID);
@@ -382,6 +390,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     queryParameters.add("rows", "100");
 
     WebResource resource = super.resource();
+    setUpPublicUrl(resource.getURI().toString());
 
     String prevUri = String.format("%ssearch/%s?start=0&rows=100", resource.getURI(), ID);
     int returnedRows = 90;

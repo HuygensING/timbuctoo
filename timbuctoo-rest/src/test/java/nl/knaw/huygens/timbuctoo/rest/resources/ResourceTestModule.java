@@ -199,10 +199,10 @@ class ResourceTestModule extends JerseyServletModule {
   public VREManager provideVreManager() {
     return this.vreManager;
   }
-  
+
   @Singleton
   @Provides
-  public VREAuthorizationHandler provideVreAuthorizationHandler(){
+  public VREAuthorizationHandler provideVreAuthorizationHandler() {
     return new DefaultVREAuthorizationHandler(this.mailSender, this.storageManager);
   }
 }

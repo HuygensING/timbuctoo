@@ -206,7 +206,7 @@ public class SearchResource {
     }
 
     if (hi < idsSize) {
-      URI next = createHATEOASURI(start, rows, uriInfo, queryId);
+      URI next = createHATEOASURI(start + rows, rows, uriInfo, queryId);
 
       returnValue.put("_next", next);
     }
@@ -228,7 +228,7 @@ public class SearchResource {
     uriBuilder.path("search");
     uriBuilder.path(queryId);
 
-    uriBuilder.queryParam("start", start + rows).queryParam("rows", rows);
+    uriBuilder.queryParam("start", start).queryParam("rows", rows);
 
     return uriBuilder.build();
   }
