@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  */
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +46,7 @@ import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -80,6 +82,8 @@ public class SearchResource {
   private SearchManager searchManager;
   @Inject
   VREManager vreManager;
+  @Inject
+  private Configuration config;
 
   @POST
   @APIDesc("Searches the Solr index")
@@ -148,7 +152,8 @@ public class SearchResource {
       @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") final int start, //
       @QueryParam("rows") @DefaultValue("10") final int rows, //
-      @Context UriInfo uriInfo) {
+      @Context UriInfo uriInfo//
+  ) {
 
     // Retrieve result
     SearchResult result = storageManager.getEntity(SearchResult.class, queryId);
@@ -194,19 +199,38 @@ public class SearchResource {
     LOG.debug("path: {}", uriInfo.getAbsolutePath());
 
     if (start > 0) {
-      UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
       int prevStart = Math.max(start - rows, 0);
-      uriBuilder.queryParam("start", prevStart).queryParam("rows", rows);
-      returnValue.put("_prev", uriBuilder.build());
+      URI prev = createHATEOASURI(prevStart, rows, uriInfo, queryId);
+
+      returnValue.put("_prev", prev);
     }
 
     if (hi < idsSize) {
-      UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
-      uriBuilder.queryParam("start", start + rows).queryParam("rows", rows);
-      returnValue.put("_next", uriBuilder.build());
+      URI next = createHATEOASURI(start, rows, uriInfo, queryId);
+
+      returnValue.put("_next", next);
     }
 
     return Response.ok(returnValue).build();
+  }
+
+  private URI createHATEOASURI(final int start, final int rows, UriInfo uriInfo, String queryId) {
+    UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
+    try {
+      uriBuilder.uri(new URI(config.getSetting("public_url")));
+    } catch (IllegalArgumentException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (URISyntaxException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    uriBuilder.path("search");
+    uriBuilder.path(queryId);
+
+    uriBuilder.queryParam("start", start + rows).queryParam("rows", rows);
+
+    return uriBuilder.build();
   }
 
   private int toRange(int value, int minValue, int maxValue) {
