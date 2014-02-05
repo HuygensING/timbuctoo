@@ -42,12 +42,11 @@ public class VREManager {
 
   public VREManager() throws IOException {
     vreMap = Maps.newHashMap();
-    List<VRE> vreList = ImmutableList.<VRE> of(new PrimitivesVRE(), new DutchCaribbeanVRE(), new DWCVRE(), new TestVRE());
+    List<VRE> vreList = ImmutableList.<VRE> of(new PrimitivesVRE(), new BaseVRE(), new DutchCaribbeanVRE(), new DWCVRE(), new TestVRE());
 
     for (VRE vre : vreList) {
       vreMap.put(vre.getName(), vre);
     }
-
   }
 
   /**
@@ -86,4 +85,5 @@ public class VREManager {
     }
     return scopes;
   }
+
 }
