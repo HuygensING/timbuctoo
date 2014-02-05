@@ -33,8 +33,7 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 /**
- * A class that contains the default functionality needed in each importer.
- * @author martijnm
+ * Contains functionality needed in each importer.
  */
 public abstract class DefaultImporter {
 
@@ -43,7 +42,6 @@ public abstract class DefaultImporter {
   protected final IndexManager indexManager;
 
   public DefaultImporter(TypeRegistry typeRegistry, StorageManager storageManager, IndexManager indexManager) {
-    super();
     this.typeRegistry = typeRegistry;
     this.storageManager = storageManager;
     this.indexManager = indexManager;
@@ -51,16 +49,14 @@ public abstract class DefaultImporter {
 
   /**
    * Deletes the non persisted entity's of {@code type} and it's relations from the storage and the index.
-   * Use with project specific entities. If you use generic entities all (including the entities of other projects) non persisted entities will be removed.
    */
   protected void removeNonPersistentEntities(Class<? extends DomainEntity> type) throws IOException, IndexException {
-    List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
-
     Class<? extends DomainEntity> baseType = TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type));
 
+    List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
     storageManager.deleteNonPersistent(type, ids);
     indexManager.deleteEntities(baseType, ids);
-    // Remove relations
+
     List<String> relationIds = storageManager.getRelationIds(ids);
     storageManager.deleteNonPersistent(Relation.class, relationIds);
     indexManager.deleteEntities(Relation.class, ids);

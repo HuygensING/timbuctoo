@@ -22,27 +22,26 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import java.util.Map;
-
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 
-import com.google.common.collect.Maps;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Denotes a language.
  */
 @IDPrefix("LANG")
-public class Language extends SystemEntity {
+public class Language extends DomainEntity {
 
+  /** Unique code (ISO-639-3). */
+  private String code;
   /** English name. */
   private String name;
-  /** Unique code, we use ISO-639-3 */
-  private String code;
-  /** All codes, including unique code. */
-  private Map<String, String> codes;
+  /** Is this a core language? */
+  private boolean core;
 
   public Language() {
-    codes = Maps.newHashMapWithExpectedSize(2);
+    core = false;
   }
 
   @Override
@@ -50,6 +49,17 @@ public class Language extends SystemEntity {
     return getName();
   }
 
+  @JsonProperty("^code")
+  public String getCode() {
+    return code;
+  }
+
+  @JsonProperty("^code")
+  public void setCode(String code) {
+    this.code = code;
+  }
+
+  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
   public String getName() {
     return name;
   }
@@ -58,24 +68,12 @@ public class Language extends SystemEntity {
     this.name = name;
   }
 
-  public String getCode() {
-    return code;
+  public boolean isCore() {
+    return core;
   }
 
-  public void setCode(String code) {
-    this.code = code;
-  }
-
-  public Map<String, String> getCodes() {
-    return codes;
-  }
-
-  public void setCodes(Map<String, String> codes) {
-    this.codes = codes;
-  }
-
-  public void addCode(String key, String value) {
-    codes.put(key, value);
+  public void setCore(boolean core) {
+    this.core = core;
   }
 
 }

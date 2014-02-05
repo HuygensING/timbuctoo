@@ -148,7 +148,7 @@ public class MongoStorage implements Storage {
     collection.ensureIndex(new BasicDBObject("^sourceId", 1).append("^targetId", 1));
 
     collection = getDBCollection(Language.class);
-    collection.ensureIndex(new BasicDBObject("language:code", 1), new BasicDBObject("unique", true));
+    collection.ensureIndex(new BasicDBObject("^code", 1), new BasicDBObject("unique", true));
   }
 
   @Override

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer;
+package nl.knaw.huygens.timbuctoo.tools.importer.base;
 
 /*
  * #%L
@@ -24,14 +24,14 @@ package nl.knaw.huygens.timbuctoo.tools.importer;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Set;
 
-import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.model.Language;
+import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+import com.google.common.collect.Sets;
 import com.mongodb.MongoException;
 
 /**
@@ -51,44 +51,23 @@ import com.mongodb.MongoException;
  */
 public class LanguageImporter extends CSVImporter {
 
-  public static void main(String[] args) throws Exception {
-    String fileName = (args.length > 0) ? args[0] : "../../timbuctoo-testdata/src/main/resources/general/iso-639-3.tab";
-
-    Configuration config = new Configuration("config.xml");
-    Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
-    StorageManager storageManager = null;
-
-    try {
-      storageManager = injector.getInstance(StorageManager.class);
-      int count = storageManager.deleteSystemEntities(Language.class);
-      System.out.printf("%n-- Removed %d languages from store%n", count);
-
-      LanguageImporter importer = new LanguageImporter(storageManager);
-      importer.handleFile(fileName, 0, false);
-    } catch (Exception e) {
-      e.printStackTrace();
-    } finally {
-      if (storageManager != null) {
-        storageManager.close();
-      }
-      System.exit(0);
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-
   private static final char SEPERATOR_CHAR = '\t';
   private static final char QUOTE_CHAR = '"';
   private static final int LINES_TO_SKIP = 1;
 
   private final StorageManager storageManager;
+  private final Change change;
+
+  /** Core languages: 10 West-European, Latin, classic Greek. */
+  private final Set<String> core = Sets.newHashSet("dan", "deu", "eng", "fra", "grc", "ita", "lat", "nld", "nor", "por", "spa", "swe");
 
   private int totalCount;
   private int coreCount;
 
-  public LanguageImporter(StorageManager storageManager) {
+  public LanguageImporter(StorageManager storageManager, String userId, String vreId) {
     super(new PrintWriter(System.err), SEPERATOR_CHAR, QUOTE_CHAR, LINES_TO_SKIP);
     this.storageManager = storageManager;
+    change = new Change(userId, vreId);
   }
 
   @Override
@@ -105,7 +84,7 @@ public class LanguageImporter extends CSVImporter {
 
   @Override
   protected void handleLine(String[] items) {
-    Language language = new Language();
+    BaseLanguage language = new BaseLanguage();
 
     if (items.length < 7) {
       displayError("Expecting at least 7 items", items);
@@ -119,19 +98,17 @@ public class LanguageImporter extends CSVImporter {
       return;
     }
     language.setCode(iso_639_3);
-    language.addCode("iso_639_3", iso_639_3);
 
-    String iso_639_1 = items[3];
-    if (iso_639_1 != null && iso_639_1.length() == 2) {
+    if (core.contains(iso_639_3)) {
       coreCount++;
-      System.out.printf("%s [%s] - %s%n", iso_639_3, iso_639_1, items[6]);
-      language.addCode("iso_639_1", iso_639_1);
+      language.setCore(true);
+      System.out.printf("%s - %s%n", iso_639_3, items[6]);
     }
 
     language.setName(items[6]);
 
     try {
-      storageManager.addSystemEntity(Language.class, language);
+      storageManager.addDomainEntity(BaseLanguage.class, language, change);
     } catch (MongoException.DuplicateKey e) {
       displayError("Duplicate key", items);
     } catch (IOException e) {
