@@ -35,13 +35,13 @@ import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class BaseScopeTest {
+public class PrimitivesScopeTest {
 
   private static Scope scope;
 
   @BeforeClass
   public static void setupScope() throws IOException {
-    scope = new BaseScope();
+    scope = new PrimitivesScope();
   }
 
   @Test

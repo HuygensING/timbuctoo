@@ -35,12 +35,14 @@ import com.google.inject.Singleton;
 
 @Singleton
 public class VREManager {
-  private static final String DEFAULT_VRE = "BaseVRE";
-  private Map<String, VRE> vreMap;
+
+  private static final String DEFAULT_VRE = PrimitivesVRE.NAME;
+
+  private final Map<String, VRE> vreMap;
 
   public VREManager() throws IOException {
     vreMap = Maps.newHashMap();
-    List<VRE> vreList = ImmutableList.<VRE> of(new BaseVRE(), new DutchCaribbeanVRE(), new CuraVRE(), new DWCVRE(), new TestVRE());
+    List<VRE> vreList = ImmutableList.<VRE> of(new PrimitivesVRE(), new DutchCaribbeanVRE(), new DWCVRE(), new TestVRE());
 
     for (VRE vre : vreList) {
       vreMap.put(vre.getName(), vre);

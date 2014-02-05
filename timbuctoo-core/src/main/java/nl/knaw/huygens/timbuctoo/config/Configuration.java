@@ -28,10 +28,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.vre.BaseScope;
 import nl.knaw.huygens.timbuctoo.vre.DutchCaribbeanScope;
+import nl.knaw.huygens.timbuctoo.vre.PrimitivesScope;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
-import nl.knaw.huygens.timbuctoo.vre.CuraScope;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -68,7 +67,7 @@ public class Configuration {
     }
     try {
       // TODO determine dynamically
-      scopes = ImmutableList.<Scope> of(new BaseScope(), new DutchCaribbeanScope(), new CuraScope());
+      scopes = ImmutableList.<Scope> of(new PrimitivesScope(), new DutchCaribbeanScope());
       scopeMap = Maps.newHashMap();
       for (Scope scope : scopes) {
         scopeMap.put(scope.getId(), scope);

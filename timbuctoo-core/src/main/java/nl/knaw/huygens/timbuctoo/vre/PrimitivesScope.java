@@ -27,20 +27,20 @@ import java.io.IOException;
 /**
  * A {@code Scope} with all primitive domain entities.
  */
-public class BaseScope extends AbstractScope {
+public class PrimitivesScope extends AbstractScope {
 
-  public BaseScope() throws IOException {
+  public PrimitivesScope() throws IOException {
     super("timbuctoo.model");
   }
 
   @Override
   public String getId() {
-    return "base";
+    return "prim";
   }
 
   @Override
   public String getName() {
-    return "Base Scope";
+    return "Primitives Scope";
   }
 
 }

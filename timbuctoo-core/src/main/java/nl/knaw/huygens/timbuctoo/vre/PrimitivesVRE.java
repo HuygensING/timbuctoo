@@ -24,39 +24,27 @@ package nl.knaw.huygens.timbuctoo.vre;
 
 import java.io.IOException;
 
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.dcar.DCARArchive;
+/**
+ * Scope containing all primitive domain entities.
+ */
+public class PrimitivesVRE implements VRE {
 
-public class CuraScope extends AbstractScope {
+  public static final String NAME = "Primitives";
 
-  public CuraScope() throws IOException {
-    addClass(DCARArchive.class);
-    buildTypes();
-  }
+  private final Scope scope;
 
-  @Override
-  public String getId() {
-    return "cura";
+  public PrimitivesVRE() throws IOException {
+    scope = new PrimitivesScope();
   }
 
   @Override
   public String getName() {
-    return "Cura Scope";
+    return NAME;
   }
 
   @Override
-  public <T extends DomainEntity> boolean inScope(Class<T> type, String id) {
-    return super.inScope(type, id);
-  }
-
-  @Override
-  public <T extends DomainEntity> boolean inScope(T entity) {
-    Class<? extends DomainEntity> entityType = entity.getClass();
-    if (entityType == DCARArchive.class) {
-      String text = ((DCARArchive) entity).getTitleEng();
-      return (text != null) && text.contains("Cura");
-    }
-    return false;
+  public Scope getScope() {
+    return scope;
   }
 
 }
