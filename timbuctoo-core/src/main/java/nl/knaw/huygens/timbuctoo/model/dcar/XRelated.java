@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.model.atlg;
+package nl.knaw.huygens.timbuctoo.model.dcar;
 
 /*
  * #%L

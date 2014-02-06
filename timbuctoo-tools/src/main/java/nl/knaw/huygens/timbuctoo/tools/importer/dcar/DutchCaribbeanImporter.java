@@ -41,14 +41,13 @@ import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.model.atlg.ATLGKeyword;
-import nl.knaw.huygens.timbuctoo.model.atlg.XRelated;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARArchive;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARArchiver;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARKeyword;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARLegislation;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARRelation;
+import nl.knaw.huygens.timbuctoo.model.dcar.XRelated;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
@@ -79,8 +78,6 @@ import com.google.inject.Injector;
  * Future versions of this importer must use a more subtle approach.
  */
 public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
-
-  public static boolean UPDATE_TEST = false;
 
   private static final Logger LOG = LoggerFactory.getLogger(DutchCaribbeanImporter.class);
 
@@ -289,27 +286,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
         DCARKeyword keyword = convert(xkeyword);
         String storedId = addDomainEntity(DCARKeyword.class, keyword);
         referenceMap.put(jsonId, new Reference(DCARKeyword.class, storedId));
-
-        if (UPDATE_TEST) {
-          updateDomainEntity(DCARKeyword.class, keyword);
-          keyword.setValue(keyword.getValue() + "-mod");
-
-          ATLGKeyword newKeyword = new ATLGKeyword();
-          newKeyword.setId(keyword.getId());
-          newKeyword.setRev(2);
-          newKeyword.setVariations(keyword.getVariations());
-          newKeyword.setType(keyword.getType());
-          newKeyword.setValue(keyword.getValue());
-          newKeyword.setLabel("ATLG-" + keyword.getLabel());
-          updateDomainEntity(ATLGKeyword.class, newKeyword);
-
-          storageManager.setPID(DCARKeyword.class, keyword.getId(), "3c08c345-c80d-44e2-a377-029259b662b9");
-        }
       }
-    }
-
-    if (UPDATE_TEST) {
-      System.exit(0);
     }
   }
 
