@@ -24,7 +24,6 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 
 import java.util.List;
 
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -36,6 +35,7 @@ import javax.ws.rs.core.Response.Status;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
+import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import com.fasterxml.jackson.annotation.JsonView;
@@ -48,29 +48,26 @@ public class RelationTypeResource extends ResourceBase {
   private static final String ID_PATH = "/{id: " + RelationType.ID_PREFIX + "\\d+}";
 
   private final StorageManager storageManager;
+  private final RelationManager relationManager;
 
   @Inject
-  public RelationTypeResource(StorageManager storageManager) {
+  public RelationTypeResource(StorageManager storageManager, RelationManager relationManager) {
     this.storageManager = storageManager;
+    this.relationManager = relationManager;
   }
 
   @GET
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
-  public List<RelationType> getAllDocs( //
-      @QueryParam("rows") @DefaultValue("200") int rows, //
-      @QueryParam("start") int start //
-  ) {
-    return storageManager.getAllLimited(RelationType.class, start, rows);
+  public List<RelationType> getRelationTypes(@QueryParam("iname") String name) {
+    return relationManager.getRelationTypesForEntity(name);
   }
 
   @GET
   @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
-  public RelationType getDoc( //
-      @PathParam(ID_PARAM) String id //
-  ) {
+  public RelationType getRelationType(@PathParam(ID_PARAM) String id) {
     return checkNotNull(storageManager.getEntity(RelationType.class, id), Status.NOT_FOUND);
   }
 
