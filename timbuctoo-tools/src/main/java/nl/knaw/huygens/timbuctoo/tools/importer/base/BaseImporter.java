@@ -1,16 +1,5 @@
 package nl.knaw.huygens.timbuctoo.tools.importer.base;
 
-import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.index.IndexManager;
-import nl.knaw.huygens.timbuctoo.model.Language;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
-import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
-
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-
 /*
  * #%L
  * Timbuctoo tools
@@ -32,6 +21,17 @@ import com.google.inject.Injector;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
+import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
+import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
+
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 /**
  * Importer for base domain entities, such as language.
@@ -57,11 +57,17 @@ public class BaseImporter extends DefaultImporter {
       indexManager = injector.getInstance(IndexManager.class);
 
       // Get rid of existing stuff
-      BaseImporter i = new BaseImporter(registry, storageManager, indexManager);
-      i.removeNonPersistentEntities(Language.class);
+      BaseImporter baseImporter = new BaseImporter(registry, storageManager, indexManager);
+      baseImporter.removeNonPersistentEntities(BaseLanguage.class);
+
+      baseImporter.printBoxedText("Import languages");
 
       LanguageImporter importer = new LanguageImporter(storageManager, USER_ID, VRE_ID);
       importer.handleFile(fileName, 0, false);
+
+      baseImporter.printBoxedText("Indexing");
+
+      baseImporter.indexEntities(BaseLanguage.class);
 
     } catch (Exception e) {
       // for debugging

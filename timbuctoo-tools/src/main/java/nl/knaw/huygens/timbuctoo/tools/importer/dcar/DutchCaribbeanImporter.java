@@ -63,7 +63,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -234,17 +233,6 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
     removeNonPersistentEntities(DCARArchive.class);
     removeNonPersistentEntities(DCARArchiver.class);
     removeNonPersistentEntities(DCARLegislation.class);
-  }
-
-  private void printBoxedText(String text) {
-    String line = Strings.repeat("-", text.length() + 8);
-    System.out.println();
-    System.out.println(line);
-    System.out.print("--  ");
-    System.out.print(text);
-    System.out.println("  --");
-    System.out.println(line);
-    System.out.println();
   }
 
   // --- relations -----------------------------------------------------

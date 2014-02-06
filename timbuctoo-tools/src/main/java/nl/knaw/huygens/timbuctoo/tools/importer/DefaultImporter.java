@@ -33,6 +33,8 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
+import com.google.common.base.Strings;
+
 /**
  * Contains functionality needed in each importer.
  */
@@ -80,6 +82,20 @@ public abstract class DefaultImporter {
         iterator.close();
       }
     }
+  }
+
+  /**
+   * Displays a text in a formatted box.
+   */
+  protected void printBoxedText(String text) {
+    String line = Strings.repeat("-", text.length() + 8);
+    System.out.println();
+    System.out.println(line);
+    System.out.print("--  ");
+    System.out.print(text);
+    System.out.println("  --");
+    System.out.println(line);
+    System.out.println();
   }
 
 }
