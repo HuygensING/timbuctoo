@@ -139,12 +139,16 @@
         <configuration>
           <programs>
             <program>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.base.BaseImporter</mainClass>
+              <name>baseImport</name>
+            </program>
+            <program>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.dcar.DutchCaribbeanImporter</mainClass>
               <name>ducaImport</name>
             </program>
             <program>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.TransformedDataImporter</mainClass>
-              <name>basicImport</name>
+              <name>transformedDataImport</name>
             </program>
           </programs>
         </configuration>
