@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 /**
@@ -60,6 +61,25 @@ public abstract class DefaultImporter {
     List<String> relationIds = storageManager.getRelationIds(ids);
     storageManager.deleteNonPersistent(Relation.class, relationIds);
     indexManager.deleteEntities(Relation.class, ids);
+  }
+
+  /**
+   * Indexes all domain entities with the specified type.
+   */
+  protected <T extends DomainEntity> void indexEntities(Class<T> type) throws IndexException {
+    System.out.println(".. " + type.getSimpleName());
+    StorageIterator<T> iterator = null;
+    try {
+      iterator = storageManager.getAll(type);
+      while (iterator.hasNext()) {
+        T entity = iterator.next();
+        indexManager.addEntity(type, entity.getId());
+      }
+    } finally {
+      if (iterator != null) {
+        iterator.close();
+      }
+    }
   }
 
 }

@@ -31,7 +31,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 import nl.knaw.huygens.timbuctoo.tools.importer.RelationTypeImporter;
@@ -106,24 +105,6 @@ public abstract class DutchCaribbeanDefaultImporter extends DefaultImporter {
     } catch (IOException e) {
       handleError("Failed to modify %s; %s", entity.getDisplayName(), e.getMessage());
       return null;
-    }
-  }
-
-  // --- indexing ------------------------------------------------------
-
-  protected <T extends DomainEntity> void indexEntities(Class<T> type) throws IndexException {
-    System.out.println(".. " + type.getSimpleName());
-    StorageIterator<T> iterator = null;
-    try {
-      iterator = storageManager.getAll(type);
-      while (iterator.hasNext()) {
-        T entity = iterator.next();
-        indexManager.addEntity(type, entity.getId());
-      }
-    } finally {
-      if (iterator != null) {
-        iterator.close();
-      }
     }
   }
 
