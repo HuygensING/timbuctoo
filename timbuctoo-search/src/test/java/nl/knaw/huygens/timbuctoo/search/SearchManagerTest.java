@@ -41,7 +41,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.model.atlg.ATLGPerson;
+import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
 import nl.knaw.huygens.timbuctoo.search.model.ClassWithMupltipleFullTestSearchFields;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
@@ -77,7 +77,7 @@ public class SearchManagerTest {
     when(scope.getId()).thenReturn("scope");
     indexManager = mock(IndexManager.class);
     typeRegistry = TypeRegistry.getInstance();
-    typeRegistry.init(Person.class.getPackage().getName() + " " + ATLGPerson.class.getPackage().getName() + " " + ClassWithMupltipleFullTestSearchFields.class.getPackage().getName());
+    typeRegistry.init(Person.class.getPackage().getName() + " " + DCARPerson.class.getPackage().getName() + " " + ClassWithMupltipleFullTestSearchFields.class.getPackage().getName());
     instance = new SearchManager(typeRegistry, indexManager);
   }
 
@@ -95,7 +95,7 @@ public class SearchManagerTest {
     List<String> ids = Lists.newArrayList("id1");
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
 
-    testSearch(ATLGPerson.class, ids, SEARCH_TERM, "atlgperson", facetFieldNames, FULL_TEXT_SEARCH_NAMES, 1, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
+    testSearch(DCARPerson.class, ids, SEARCH_TERM, "dcarperson", facetFieldNames, FULL_TEXT_SEARCH_NAMES, 1, Lists.<FacetParameter> newArrayList(), EXPECTED_TERM);
   }
 
   @Test
