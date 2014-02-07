@@ -46,7 +46,7 @@
     <!-- Used to determine which packages contain the domain model classes. -->
     <model-packages>
       timbuctoo.model
-      timbuctoo.model.atlg
+      timbuctoo.model.base
       timbuctoo.model.dwcbia
       timbuctoo.model.ckcc
       timbuctoo.model.dcar
