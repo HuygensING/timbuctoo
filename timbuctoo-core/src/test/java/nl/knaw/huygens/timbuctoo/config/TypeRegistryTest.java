@@ -73,6 +73,15 @@ public class TypeRegistryTest {
   }
 
   @Test
+  public void testRecursivePackageSpecification() {
+    String iname = TypeNames.getInternalName(ProjectADomainEntity.class);
+    registry.init(MODEL_PACKAGE);
+    assertNull(registry.getTypeForIName(iname));
+    registry.init(MODEL_PACKAGE + ".*");
+    assertEquals(ProjectADomainEntity.class, registry.getTypeForIName(iname));
+  }
+
+  @Test
   public void testGetTypeForIName() {
     registry.init(MODEL_PACKAGE);
     assertEquals(BaseDomainEntity.class, registry.getTypeForIName("basedomainentity"));

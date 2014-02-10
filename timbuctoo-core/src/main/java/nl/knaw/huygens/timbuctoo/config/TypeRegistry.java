@@ -138,7 +138,7 @@ public class TypeRegistry {
 
   private void registerPackage(ClassPath classPath, String packageName) {
     Set<Class<? extends Role>> roles = Sets.newHashSet();
-    for (ClassInfo info : classPath.getTopLevelClasses(packageName)) {
+    for (ClassInfo info : getClassInfoSet(classPath, packageName)) {
       Class<?> type = info.load();
       if (isEntity(type) && !shouldNotRegister(type)) {
         if (BusinessRules.isValidSystemEntity(type)) {
@@ -164,6 +164,14 @@ public class TypeRegistry {
           throw new IllegalStateException("Invalid role");
         }
       }
+    }
+  }
+
+  private Set<ClassInfo> getClassInfoSet(ClassPath classPath, String packageName) {
+    if (packageName.endsWith(".*")) {
+      return classPath.getTopLevelClassesRecursive(StringUtils.chomp(packageName, ".*"));
+    } else {
+      return classPath.getTopLevelClasses(packageName);
     }
   }
 

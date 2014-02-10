@@ -56,7 +56,7 @@ public class RelationManagerTest {
   @BeforeClass
   public static void setupRegistry() {
     registry = TypeRegistry.getInstance();
-    registry.init("timbuctoo.variation.model timbuctoo.model timbuctoo.variation.model.projecta");
+    registry.init("timbuctoo.model timbuctoo.variation.model.*");
   }
 
   @AfterClass
