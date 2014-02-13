@@ -85,6 +85,18 @@ public abstract class DefaultImporter {
   }
 
   /**
+   * Displays the status of the Mongo database and the Solr indexes.
+   */
+  protected void displayStatus() throws IndexException {
+    // Make sure the Solr indexes are up-to-date
+    indexManager.commitAll();
+
+    System.out.println();
+    System.out.println(storageManager.getStatus());
+    System.out.println(indexManager.getStatus());
+  }
+
+  /**
    * Displays a text in a formatted box.
    */
   protected void printBoxedText(String text) {

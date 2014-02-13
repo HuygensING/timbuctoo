@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.dcar;
+package nl.knaw.huygens.timbuctoo.tools.importer.neww;
 
 /*
  * #%L
@@ -39,7 +39,7 @@ import nl.knaw.huygens.timbuctoo.tools.importer.RelationTypeImporter;
  * as the now removed {@code AtlantischeGidsImporter}.
  * Those importers use(d) the data from the AtlantischeGids project.
  */
-public abstract class DutchCaribbeanDefaultImporter extends DefaultImporter {
+public abstract class WomenWritersDefaultImporter extends DefaultImporter {
 
   /** File with {@code RelationType} definitions; must be present on classpath. */
   private static final String RELATION_TYPE_DEFS = "relationtype-defs.txt";
@@ -48,7 +48,7 @@ public abstract class DutchCaribbeanDefaultImporter extends DefaultImporter {
   private String prevMessage;
   private int errors;
 
-  public DutchCaribbeanDefaultImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager) {
+  public WomenWritersDefaultImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager) {
     super(registry, storageManager, indexManager);
     change = new Change("importer", "dcar");
     prevMessage = "";
