@@ -39,7 +39,6 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -54,9 +53,8 @@ public class StorageManagerTest {
 
   @Before
   public void setup() {
-    VREManager vreManager = mock(VREManager.class);
     storage = mock(Storage.class);
-    manager = new StorageManager(storage, vreManager);
+    manager = new StorageManager(storage);
     change = new Change("userId", "vreId");
   }
 

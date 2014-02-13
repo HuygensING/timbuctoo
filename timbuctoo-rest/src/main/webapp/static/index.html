@@ -34,7 +34,10 @@
 <h1>Huygens ING Data Repository</h1>
 
 <table class="outer">
-<tr id="status"></tr>
+<tr id="mongostatus"></tr>
+</table>
+<table class="outer">
+<tr id="indexstatus"></tr>
 </table>
 
 <h3><a href="#" onclick="doGet()">Refresh</a>.</h3>
@@ -42,7 +45,7 @@
 <h3><a href="static/search.html">Search</a> the repository.</h3>
 
 <hr/>
-<p><em>Powered by Timbuctoo 2</em></p>
+<p><em>Powered by Timbuctoo 2.2.0</em></p>
 
 
 <script>
@@ -71,7 +74,9 @@
           html += '<tr><td class="name">' + item.key + '</td><td class="number">' + item.value + '</td></tr>';
         });
         html += '</table></td>';
+        $('#mongostatus').html(html);
 
+        html = '';
         $.each(data.indexStatus.counts, function (scope, items) {
           html += '<td class="column"><h3>Indexed scope \'' + scope + '\'</h3>';
         	html += '<table><tr><th>Type</th><th>Count</th></tr>';
@@ -80,7 +85,7 @@
         	});
         	html += '</table></td>';
         });
-        $('#status').html(html);
+        $('#indexstatus').html(html);
       }
     });
   }
