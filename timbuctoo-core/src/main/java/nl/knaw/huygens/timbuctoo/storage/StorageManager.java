@@ -196,7 +196,7 @@ public class StorageManager {
     return entity;
   }
 
-  public <T extends SystemEntity> T findEntity(Class<T> type, String key, String value) {
+  public <T extends Entity> T findEntity(Class<T> type, String key, String value) {
     try {
       return storage.findItemByKey(type, key, value);
     } catch (IOException e) {
