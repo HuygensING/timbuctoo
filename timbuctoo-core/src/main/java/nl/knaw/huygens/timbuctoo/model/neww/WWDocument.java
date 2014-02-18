@@ -22,41 +22,70 @@ package nl.knaw.huygens.timbuctoo.model.neww;
  * #L%
  */
 
-import java.util.Map;
+import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.Document;
+import nl.knaw.huygens.timbuctoo.model.util.Link;
+
+import com.google.common.collect.Lists;
 
 public class WWDocument extends Document {
 
-  public String notes;
-  public String reference;
-  public String origin;
-  public String[] libraries;
-  
+  private String notes;
+  private String reference;
+  private String origin;
+  private Link url;
+  private List<Print> prints;
+
   public String tempCreator;
   public String tempLanguage;
-  
-  public static class XDocument {
-    public Map<String, XPrint> prints;
-    public XSource source;
-    public String[][] subject;
-    public String[][] topoi;
-    // public XUrl url;
-    public String url_title;
+
+  public WWDocument() {
+    prints = Lists.newArrayList();
   }
 
-  public static class XPrint {
-    public String edition;
-    public String publisher;
-    public String location;
-    public String year;
+  public String getNotes() {
+    return notes;
   }
 
-  public static class XSource {
-    public String notes;
-    public String type;
-    public String full_name;
-    public String short_name;
+  public void setNotes(String notes) {
+    this.notes = notes;
+  }
+
+  public String getReference() {
+    return reference;
+  }
+
+  public void setReference(String reference) {
+    this.reference = reference;
+  }
+
+  public String getOrigin() {
+    return origin;
+  }
+
+  public void setOrigin(String origin) {
+    this.origin = origin;
+  }
+
+  public Link getUrl() {
+    return url;
+  }
+
+  public void setUrl(Link url) {
+    this.url = url;
+  }
+
+  public List<Print> getPrints() {
+    return prints;
+  }
+
+  public void setPrints(List<Print> prints) {
+    this.prints = prints;
+  }
+
+  public void addPrint(Print print) {
+    prints.add(print);
   }
 
 }

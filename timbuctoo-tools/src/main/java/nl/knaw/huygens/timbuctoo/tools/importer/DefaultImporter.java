@@ -33,6 +33,8 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.google.common.base.Strings;
 
 /**
@@ -108,6 +110,22 @@ public abstract class DefaultImporter {
     System.out.println("  --");
     System.out.println(line);
     System.out.println();
+  }
+
+  /**
+   * Filters a text field by collapsing whitespace and removing leading and trailing whitespace.
+   * Returns {@code null} if the remaining text is empty.
+   */
+  protected String filterTextField(String text) {
+    if (text == null) {
+      return null;
+    }
+    if (text.contains("\\")) {
+      text = text.replaceAll("\\\\r", " ");
+      text = text.replaceAll("\\\\n", " ");
+    }
+    text = text.replaceAll("[\\s\\u00A0]+", " ");
+    return StringUtils.stripToNull(text);
   }
 
 }

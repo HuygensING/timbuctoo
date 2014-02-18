@@ -27,11 +27,11 @@ import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.IS_LANGUAGE_OF;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Contains the identified core fields.
@@ -41,8 +41,8 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 @IDPrefix("DOCU")
 public class Document extends DomainEntity {
 
-  // 'Anthology', 'Article', 'Award', 'Catalogue', 'Compilation', 'Diary', 'Letter',
-  // 'List', 'Periodical', 'Publicity', 'Sheetmusic', 'Theater Script', 'Work' (ROLE?)
+  // 'Anthology', 'Article', 'Award', 'Catalogue', 'Compilation', 'Diary', 'Letter', 'List',
+  // 'Periodical', 'Picture', 'Publicity', 'Sheetmusic', 'TBD', 'Theater Script', 'Work'
   private String type;
   private String title;
   private String description;

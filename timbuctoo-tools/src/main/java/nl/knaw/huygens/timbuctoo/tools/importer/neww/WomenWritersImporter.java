@@ -34,8 +34,12 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARRelation;
-import nl.knaw.huygens.timbuctoo.model.neww.WWLanguage;
+import nl.knaw.huygens.timbuctoo.model.neww.Print;
 import nl.knaw.huygens.timbuctoo.model.neww.WWCollective;
+import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
+import nl.knaw.huygens.timbuctoo.model.neww.WWLanguage;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
@@ -153,8 +157,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     printBoxedText("2. Basic properties");
 
-    boolean importCollectives = true;
-    boolean importDocuments = false;
+    boolean importCollectives = false;
+    boolean importDocuments = true;
     boolean importKeywords = false;
     boolean importLanguages = false;
     boolean importLocations = false;
@@ -253,13 +257,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     return FileUtils.lineIterator(file, "UTF-8");
   }
 
-  private String preprocess(String line) {
+  private String preprocessJson(String line) {
     line = StringUtils.stripToEmpty(line);
     line = line.replaceAll("\"_id\"", "\"tempid\"");
     line = line.replaceAll("ObjectId\\(\\s*(\\S+)\\s*\\)", "$1");
-    line = line.replaceAll(", \"original_table\"\\s*:\\s*\"[^\"]*\"", "");
-    line = line.replaceAll(", \"old_id\"\\s*:\\s*\\d+", "");
-    // System.out.println(line);
     return line;
   }
 
@@ -283,7 +284,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     LineIterator iterator = getLineIterator("collectives.json");
     try {
       while (iterator.hasNext()) {
-        String line = preprocess(iterator.nextLine());
+        String line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
           handleCollective(line, references);
         }
@@ -293,32 +294,32 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
   }
 
-  private void handleCollective(String line, Map<String, Reference> references) throws Exception {
-    XCollective object = objectMapper.readValue(line, XCollective.class);
+  private void handleCollective(String json, Map<String, Reference> references) throws Exception {
+    XCollective object = objectMapper.readValue(json, XCollective.class);
     String jsonId = object.tempid;
     if (references.containsKey(jsonId)) {
-    	  handleError("Duplicate id %s", jsonId);
+      handleError("Duplicate id %s", jsonId);
     } else {
-      WWCollective collective = convert(line, object);
+      WWCollective collective = convert(json, object);
       String storedId = addDomainEntity(WWCollective.class, collective);
       references.put(jsonId, new Reference(WWCollective.class, storedId));
     }
   }
 
   private WWCollective convert(String line, XCollective object) {
-    WWCollective collective = new WWCollective();
-    collective.setType(StringUtils.stripToNull(object.type));
-    verifyNonEmptyField(line, "type", collective.getType());
-    collective.setName(StringUtils.stripToNull(object.name));
-    verifyNonEmptyField(line, "name", collective.getName());
-    collective.setShortName(StringUtils.stripToNull(object.short_name));
-    collective.setTelephone(StringUtils.stripToNull(object.telephone));
-    collective.setEmail(StringUtils.stripToNull(object.email));
-    collective.setUrl(StringUtils.stripToNull(object.url));
-    collective.setNotes(StringUtils.stripToNull(object.notes));
-    collective.tempLocationPlacename = StringUtils.stripToNull(object.location_placename);
-    collective.tempOrigin = StringUtils.stripToNull(object.origin);
-    return collective;
+    WWCollective converted = new WWCollective();
+    converted.setType(filterTextField(object.type));
+    verifyNonEmptyField(line, "type", converted.getType());
+    converted.setName(filterTextField(object.name));
+    verifyNonEmptyField(line, "name", converted.getName());
+    converted.setShortName(filterTextField(object.short_name));
+    converted.setTelephone(filterTextField(object.telephone));
+    converted.setEmail(filterTextField(object.email));
+    converted.setUrl(filterTextField(object.url));
+    converted.setNotes(filterTextField(object.notes));
+    converted.tempLocationPlacename = filterTextField(object.location_placename);
+    converted.tempOrigin = filterTextField(object.origin);
+    return converted;
   }
 
   public static class XCollective {
@@ -328,8 +329,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     public String location_placename; // store temporarily
     public String name; // 4 entries without a anme, but they occur in relations
     public String notes; // used. how do we handle whitespace?
+    public int old_id; // ignore
     public String origin; // seems to be country. isn't this implied by location?
     public String original_field; // ignore
+    public String original_table; // ignore
     public String short_name;
     public String telephone;
     public String type; // 'library', 'membership'
@@ -338,58 +341,169 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Documents -------------------------------------------------------------
 
-  protected void importDocuments(Map<String, Reference> referenceMap) throws Exception {
+  private Map<String, String> documentTypeMap;
+
+  private Map<String, String> createDocumentTypeMap() {
+    Map<String, String> map = Maps.newHashMap();
+    map.put("Article", "Article");
+    map.put("Catalogue", "Catalogue");
+    map.put("List", "List");
+    map.put("Picture", "Picture");
+    map.put("Publicity", "Publicity");
+    map.put("TBD", "TBD");
+    map.put("To Be Done", "TBD");
+    map.put("To be done", "TBD");
+    map.put("Work", "Work");
+    map.put("work", "Work");
+    return map;
+  }
+
+  private final Set<String> values = Sets.newTreeSet();
+
+  private void importDocuments(Map<String, Reference> references) throws Exception {
+    documentTypeMap = createDocumentTypeMap();
     LineIterator iterator = getLineIterator("documents.json");
-    String line = "'";
     try {
       while (iterator.hasNext()) {
-        line = preprocess(iterator.nextLine());
+        String line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
-          line = line.replaceAll("\"prints\" : \"\"", "\"prints\" : null");
-          line = line.replaceAll("\"source\" : \"\"", "\"source\" : null");
-          line = line.replaceAll("\"subject\" : \"\"", "\"subject\" : null");
-          line = line.replaceAll("\"topoi\" : \"\"", "\"topoi\" : null");
-          line = line.replaceAll("\"url\" : \"([^\"])\", \"url_title\" : \"([^\"])\"", "\"url\" : {\"url\" : \"$1\", \"label\": \"$2\"}");
-          XDocument object = objectMapper.readValue(line, XDocument.class);
-          referenceMap.put(object.tempid, null);
-          // System.out.printf("\"%s\"%n", object.name);
+          handleDocument(preprocessDocument(line), references);
         }
       }
-    } catch (JsonMappingException e) {
-      System.err.println(line);
-      throw e;
     } finally {
       LineIterator.closeQuietly(iterator);
     }
+
+    for (String value : values) {
+      System.out.println(value);
+    }
+  }
+
+  private String preprocessDocument(String text) {
+    text = text.replaceAll("\"prints\" : \"\"", "\"prints\" : null");
+    text = text.replaceAll("\"source\" : \"\"", "\"source\" : null");
+    text = text.replaceAll("\"subject\" : \"\"", "\"subject\" : null");
+    text = text.replaceAll("\"subject\" : \\[\\]", "\"subject\" : null");
+    text = text.replaceAll("\"topoi\" : \"\"", "\"topoi\" : null");
+    text = text.replaceAll("\"url\" : \\{ \"url\" : null, \"label\" : null \\}", "\"url\": null");
+    return text;
+  }
+
+  private void handleDocument(String json, Map<String, Reference> references) throws Exception {
+    XDocument object = objectMapper.readValue(json, XDocument.class);
+    String jsonId = object.tempid;
+    if (references.containsKey(jsonId)) {
+      handleError("Duplicate id %s", jsonId);
+    } else {
+      WWDocument collective = convert(json, object);
+      String storedId = addDomainEntity(WWDocument.class, collective);
+      references.put(jsonId, new Reference(WWDocument.class, storedId));
+    }
+  }
+
+  //  ~reader(s) female (member of Damesleesmuseum, The Hague)
+  //  ~~Nutsbibliotheken Nederland
+  //  ~~anonymous Dutch
+  //  ~~anonymous English 
+  //  ~~anonymous French
+  //  ~~anonymous German
+  //  ~~anonymous Italian
+  //  ~~anonymous Russian woman
+  //  ~~anonymous Spanish
+  //  ~~author female (name unknown)
+  //  ~~author male (name below)
+  //  ~~censorship (in one form or another)
+  //  ~~editor (name unknown)
+  //  ~~foreign editor
+  //  ~~historian of literature  (male, name below)
+  //  ~~illustrator (name below)
+  //  ~~journalist (name below)
+  //  ~~journalist (name unknown)
+  //  ~~librarian (name below)
+  //  ~~reader(s) (gender unknown)
+  //  ~~reader(s) female (name below)
+  //  ~~reader(s) male (name below)
+  //  ~~translator (name unknown)
+  //  ~~translator male (name below)
+
+  private WWDocument convert(String line, XDocument object) {
+    WWDocument converted = new WWDocument();
+
+    String type = filterTextField(object.type);
+    if (type != null) {
+      type = documentTypeMap.get(type);
+    }
+    verifyNonEmptyField(line, "type", type);
+    converted.setType(type);
+
+    converted.setTitle(filterTextField(object.title));
+    verifyNonEmptyField(line, "title", converted.getTitle());
+
+    converted.setDescription(filterTextField(object.description));
+
+    String date = filterTextField(object.date);
+    if (date != null) {
+      try {
+        converted.setDate(new Datable(date));
+      } catch (RuntimeException e) {
+        handleError("Illegal 'date' in %s", line);
+      }
+    }
+
+    converted.setNotes(filterTextField(object.notes));
+    converted.setOrigin(filterTextField(object.origin));
+    converted.setReference(filterTextField(object.reference));
+
+    if (object.source != null) {
+      System.out.println(object.source);
+    }
+
+    if (object.prints != null) {
+      // order by key
+      Map<String, Print> temp = Maps.newTreeMap();
+      temp.putAll(object.prints);
+      for (Map.Entry<String, Print> entry : temp.entrySet()) {
+        Print filteredPrint = new Print();
+        filteredPrint.setEdition(filterTextField(entry.getValue().getEdition()));
+        filteredPrint.setPublisher(filterTextField(entry.getValue().getPublisher()));
+        filteredPrint.setLocation(filterTextField(entry.getValue().getLocation()));
+        filteredPrint.setYear(filterTextField(entry.getValue().getYear()));
+        converted.addPrint(filteredPrint);
+      }
+    }
+
+    String url = filterTextField(object.url);
+    if (url != null) {
+      converted.setUrl(new Link(url, filterTextField(object.url_title)));
+    }
+
+    converted.tempCreator = filterTextField(object.creator);
+    converted.tempLanguage = filterTextField(object.language);
+    return converted;
   }
 
   public static class XDocument {
     public String tempid;
-    public String creator;
-    public String creator_id;
-    public String date;
-    public String description;
-    public String language;
-    public String language_id;
-    public String[] libraries;
-    public String notes;
-    public String origin;
-    public Map<String, XPrint> prints;
-    public String reference;
+    public String creator; // ignore
+    public String creator_id; // object id of creator - must occur in relations
+    public String date; // convert to datable
+    public String description; // text
+    public String language; // ignore
+    public String language_id; // object id of language - must occur in relations
+    public String[] libraries; // list of library id's - must occur in relations
+    public String notes; // text
+    public int old_id; // ignore
+    public String origin; // item of a list of countries. BUT origin of what?
+    public String original_table; // ignore
+    public Map<String, Print> prints; // printed editions
+    public String reference; // text, sparse, unstructured
     public XSource source;
-    public String[][] subject;
-    public String title;
-    public String[][] topoi;
-    public String type;
-    // public XUrl url;
-    public String url_title;
-  }
-
-  public static class XPrint {
-    public String edition;
-    public String publisher;
-    public String location;
-    public String year;
+    public String[][] subject; // a list of subject keywords (text, id) - must occur in relations
+    public String title; // text
+    public String[][] topoi; // a list of topoi keywords (text, id) - must occur in relations
+    public String type; // 'Article', 'Catalogue', 'List', 'Picture', 'Publicity', 'TBD', 'Work'
+    public String url; // convert to Link
+    public String url_title; // convert to Link
   }
 
   public static class XSource {
@@ -397,17 +511,12 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     public String type;
     public String full_name;
     public String short_name;
-  }
 
-  //  public static class XUrl {
-  //    public String label;
-  //    public String url;
-  //
-  //    @Override
-  //    public String toString() {
-  //      return "label: " + label + " url: " + url;
-  //    }
-  //  }
+    @Override
+    public String toString() {
+      return String.format("%s | %s | %s | %s%n", notes, type, full_name, short_name);
+    }
+  }
 
   // --- Keywords --------------------------------------------------------------
 
@@ -421,7 +530,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     LineIterator iterator = getLineIterator("keywords.json");
     try {
       while (iterator.hasNext()) {
-        String line = preprocess(iterator.nextLine());
+        String line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
           XKeyword object = objectMapper.readValue(line, XKeyword.class);
           referenceMap.put(object.tempid, null);
@@ -533,7 +642,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     try {
       System.out.printf("\"language\",\"ISO-code\",\"ISO-name\"%n");
       while (iterator.hasNext()) {
-        String line = preprocess(iterator.nextLine());
+        String line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
           XLanguage object = objectMapper.readValue(line, XLanguage.class);
           String name = object.name;
@@ -582,7 +691,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     LineIterator iterator = getLineIterator("locations.json");
     try {
       while (iterator.hasNext()) {
-        String line = preprocess(iterator.nextLine());
+        String line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
           XLocation object = objectMapper.readValue(line, XLocation.class);
           referenceMap.put(object.tempid, null);
@@ -637,7 +746,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     String line = "'";
     try {
       while (iterator.hasNext()) {
-        line = preprocess(iterator.nextLine());
+        line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
           XPerson object = objectMapper.readValue(line, XPerson.class);
           referenceMap.put(object.tempid, null);
