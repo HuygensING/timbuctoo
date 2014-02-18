@@ -35,6 +35,7 @@ import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARRelation;
 import nl.knaw.huygens.timbuctoo.model.neww.WWLanguage;
+import nl.knaw.huygens.timbuctoo.model.neww.WWCollective;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
@@ -152,10 +153,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     printBoxedText("2. Basic properties");
 
-    boolean importCollectives = false;
+    boolean importCollectives = true;
     boolean importDocuments = false;
     boolean importKeywords = false;
-    boolean importLanguages = true;
+    boolean importLanguages = false;
     boolean importLocations = false;
     boolean importPersons = false;
 
@@ -264,22 +265,27 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   private void verifyEmptyField(String line, String key, String value) {
     if (!Strings.isNullOrEmpty(value)) {
-      System.err.printf("## Unexpected value for %s in:%n", key);
-      System.err.printf("## %s", line);
+      System.err.printf("## Unexpected value for '%s'%n", key);
+      System.err.printf("## %s%n", line);
+    }
+  }
+
+  private void verifyNonEmptyField(String line, String key, String value) {
+    if (Strings.isNullOrEmpty(value)) {
+      System.err.printf("## Missing value for '%s'%n", key);
+      System.err.printf("## %s%n", line);
     }
   }
 
   // --- Collectives -----------------------------------------------------------
 
-  protected void importCollectives(Map<String, Reference> referenceMap) throws Exception {
+  private void importCollectives(Map<String, Reference> references) throws Exception {
     LineIterator iterator = getLineIterator("collectives.json");
     try {
       while (iterator.hasNext()) {
         String line = preprocess(iterator.nextLine());
         if (!line.isEmpty()) {
-          XCollective object = objectMapper.readValue(line, XCollective.class);
-          referenceMap.put(object.tempid, null);
-          // System.out.printf("\"%s\"%n", object.name);
+          handleCollective(line, references);
         }
       }
     } finally {
@@ -287,18 +293,46 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
   }
 
+  private void handleCollective(String line, Map<String, Reference> references) throws Exception {
+    XCollective object = objectMapper.readValue(line, XCollective.class);
+    String jsonId = object.tempid;
+    if (references.containsKey(jsonId)) {
+    	  handleError("Duplicate id %s", jsonId);
+    } else {
+      WWCollective collective = convert(line, object);
+      String storedId = addDomainEntity(WWCollective.class, collective);
+      references.put(jsonId, new Reference(WWCollective.class, storedId));
+    }
+  }
+
+  private WWCollective convert(String line, XCollective object) {
+    WWCollective collective = new WWCollective();
+    collective.setType(StringUtils.stripToNull(object.type));
+    verifyNonEmptyField(line, "type", collective.getType());
+    collective.setName(StringUtils.stripToNull(object.name));
+    verifyNonEmptyField(line, "name", collective.getName());
+    collective.setShortName(StringUtils.stripToNull(object.short_name));
+    collective.setTelephone(StringUtils.stripToNull(object.telephone));
+    collective.setEmail(StringUtils.stripToNull(object.email));
+    collective.setUrl(StringUtils.stripToNull(object.url));
+    collective.setNotes(StringUtils.stripToNull(object.notes));
+    collective.tempLocationPlacename = StringUtils.stripToNull(object.location_placename);
+    collective.tempOrigin = StringUtils.stripToNull(object.origin);
+    return collective;
+  }
+
   public static class XCollective {
     public String tempid;
     public String email;
-    public String location_id;
-    public String location_placename;
-    public String name;
-    public String notes;
-    public String origin;
-    public String original_field;
+    public String location_id; // needed for relation, don't store
+    public String location_placename; // store temporarily
+    public String name; // 4 entries without a anme, but they occur in relations
+    public String notes; // used. how do we handle whitespace?
+    public String origin; // seems to be country. isn't this implied by location?
+    public String original_field; // ignore
     public String short_name;
     public String telephone;
-    public String type;
+    public String type; // 'library', 'membership'
     public String url;
   }
 
