@@ -38,6 +38,7 @@ import nl.knaw.huygens.timbuctoo.model.neww.Print;
 import nl.knaw.huygens.timbuctoo.model.neww.WWCollective;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
 import nl.knaw.huygens.timbuctoo.model.neww.WWLanguage;
+import nl.knaw.huygens.timbuctoo.model.neww.WWLocation;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
@@ -158,10 +159,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     printBoxedText("2. Basic properties");
 
     boolean importCollectives = false;
-    boolean importDocuments = true;
+    boolean importDocuments = false;
     boolean importKeywords = false;
     boolean importLanguages = false;
-    boolean importLocations = false;
+    boolean importLocations = true;
     boolean importPersons = false;
 
     if (importCollectives) {
@@ -682,39 +683,66 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Locations -------------------------------------------------------------
 
-  // normalize whitespace (collapse, trim)
-  // error: latitude is used instead of settlement
-  // we could probably map countries --> standard list required
-  // we should check for fully empty records
-
-  protected void importLocations(Map<String, Reference> referenceMap) throws Exception {
+  private void importLocations(Map<String, Reference> references) throws Exception {
     LineIterator iterator = getLineIterator("locations.json");
     try {
       while (iterator.hasNext()) {
         String line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
-          XLocation object = objectMapper.readValue(line, XLocation.class);
-          referenceMap.put(object.tempid, null);
-          verifyEmptyField(line, "bloc", object.bloc);
-          verifyEmptyField(line, "district", object.district);
-          verifyEmptyField(line, "houseNumber", object.houseNumber);
-          verifyEmptyField(line, "latitude", object.latitude);
-          verifyEmptyField(line, "longitude", object.longitude);
-          verifyEmptyField(line, "notes", object.notes);
-          verifyEmptyField(line, "period", object.period);
-          verifyEmptyField(line, "region", object.region);
-          verifyEmptyField(line, "settlement", object.settlement);
-          object.address = StringUtils.stripToEmpty(object.address).replaceAll("\\s+", " ");
-          object.settlement = StringUtils.stripToEmpty(object.geogName).replaceAll("\\s+", " ");
-          object.geogName = null;
-          object.country = StringUtils.stripToEmpty(object.country).replaceAll("\\s+", " ");
-          object.zipcode = StringUtils.stripToEmpty(object.zipcode).replaceAll("\\s+", " ");
-          // System.out.printf("[%s][%s][%s][%s]%n", object.address, object.settlement, object.country, object.zipcode);
+          handleLocation(preprocessLocation(line), references);
         }
       }
     } finally {
       LineIterator.closeQuietly(iterator);
     }
+
+    for (String value : values) {
+      System.out.println(value);
+    }
+  }
+
+  private String preprocessLocation(String text) {
+    return text;
+  }
+
+  private void handleLocation(String json, Map<String, Reference> references) throws Exception {
+    XLocation object = objectMapper.readValue(json, XLocation.class);
+    String jsonId = object.tempid;
+    if (references.containsKey(jsonId)) {
+      handleError("Duplicate id %s", jsonId);
+    } else {
+      WWLocation collective = convert(json, object);
+      if (collective == null) {
+        handleError("Ignoring empty Location");
+      } else {
+        String storedId = addDomainEntity(WWLocation.class, collective);
+        references.put(jsonId, new Reference(WWLocation.class, storedId));
+      }
+    }
+  }
+
+  // error: latitude is used instead of settlement
+  // we could probably map countries --> standard list required
+
+  private WWLocation convert(String line, XLocation object) {
+    WWLocation converted = new WWLocation();
+
+    verifyEmptyField(line, "bloc", object.bloc);
+    verifyEmptyField(line, "district", object.district);
+    verifyEmptyField(line, "houseNumber", object.houseNumber);
+    verifyEmptyField(line, "latitude", object.latitude);
+    verifyEmptyField(line, "longitude", object.longitude);
+    verifyEmptyField(line, "notes", object.notes);
+    verifyEmptyField(line, "period", object.period);
+    verifyEmptyField(line, "region", object.region);
+    verifyEmptyField(line, "settlement", object.settlement);
+
+    converted.setAddress(filterTextField(object.address));
+    converted.setSettlement(filterTextField(object.geogName));
+    converted.setCountry(filterTextField(object.country));
+    converted.setZipcode(filterTextField(object.zipcode));
+
+    return converted.isEmpty() ? null : converted;
   }
 
   public static class XLocation {
