@@ -23,13 +23,16 @@ package nl.knaw.huygens.timbuctoo.model.neww;
  */
 
 import nl.knaw.huygens.timbuctoo.model.Collective;
+import nl.knaw.huygens.timbuctoo.model.util.Link;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class WWCollective extends Collective {
 
   private String shortName;
   private String telephone;
   private String email;
-  private String url;
+  private Link link;
   private String notes;
 
   // For establishing relation with location
@@ -61,20 +64,25 @@ public class WWCollective extends Collective {
     this.email = email;
   }
 
-  public String getUrl() {
-    return url;
+  public Link getLink() {
+    return link;
   }
 
-  public void setUrl(String url) {
-    this.url = url;
+  public void setLink(Link link) {
+    this.link = link;
   }
 
   public String getNotes() {
-   return notes;
+    return notes;
   }
 
   public void setNotes(String notes) {
     this.notes = notes;
+  }
+
+  @JsonIgnore
+  public boolean isValid() {
+    return getType() != null && getName() != null;
   }
 
 }

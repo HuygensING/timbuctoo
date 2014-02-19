@@ -34,8 +34,9 @@ public class WWDocument extends Document {
   private String notes;
   private String reference;
   private String origin;
-  private Link url;
+  private Link link;
   private List<Print> prints;
+  private Source source;
 
   public String tempCreator;
   public String tempLanguage;
@@ -68,12 +69,12 @@ public class WWDocument extends Document {
     this.origin = origin;
   }
 
-  public Link getUrl() {
-    return url;
+  public Link getLink() {
+    return link;
   }
 
-  public void setUrl(Link url) {
-    this.url = url;
+  public void setLink(Link link) {
+    this.link = link;
   }
 
   public List<Print> getPrints() {
@@ -86,6 +87,14 @@ public class WWDocument extends Document {
 
   public void addPrint(Print print) {
     prints.add(print);
+  }
+
+  public Source getSource() {
+    return source;
+  }
+
+  public void setSource(Source source) {
+    this.source = source;
   }
 
 }

@@ -70,8 +70,8 @@ public class WWLocation extends Location {
   }
 
   @JsonIgnore
-  public boolean isEmpty() {
-    return address == null && settlement == null && country == null && zipcode == null;
+  public boolean isValid() {
+    return address != null || settlement != null || country != null || zipcode != null;
   }
 
 }

@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARRelation;
@@ -159,10 +160,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     printBoxedText("2. Basic properties");
 
     boolean importCollectives = false;
-    boolean importDocuments = false;
+    boolean importDocuments = true;
     boolean importKeywords = false;
     boolean importLanguages = false;
-    boolean importLocations = true;
+    boolean importLocations = false;
     boolean importPersons = false;
 
     if (importCollectives) {
@@ -267,15 +268,15 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   private void verifyEmptyField(String line, String key, String value) {
     if (!Strings.isNullOrEmpty(value)) {
-      System.err.printf("## Unexpected value for '%s'%n", key);
-      System.err.printf("## %s%n", line);
+      System.out.println("Unexpected value for: " + key);
+      System.out.println(line);
     }
   }
 
   private void verifyNonEmptyField(String line, String key, String value) {
     if (Strings.isNullOrEmpty(value)) {
-      System.err.printf("## Missing value for '%s'%n", key);
-      System.err.printf("## %s%n", line);
+      System.out.println("Missing value for: " + key);
+      System.out.println(line);
     }
   }
 
@@ -301,9 +302,13 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     if (references.containsKey(jsonId)) {
       handleError("Duplicate id %s", jsonId);
     } else {
-      WWCollective collective = convert(json, object);
-      String storedId = addDomainEntity(WWCollective.class, collective);
-      references.put(jsonId, new Reference(WWCollective.class, storedId));
+      WWCollective converted = convert(json, object);
+      if (converted == null) {
+        handleError("Ignoring invalid record %s", jsonId);
+      } else {
+        String storedId = addDomainEntity(WWCollective.class, converted);
+        references.put(jsonId, new Reference(WWCollective.class, storedId));
+      }
     }
   }
 
@@ -316,11 +321,15 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.setShortName(filterTextField(object.short_name));
     converted.setTelephone(filterTextField(object.telephone));
     converted.setEmail(filterTextField(object.email));
-    converted.setUrl(filterTextField(object.url));
+    String url = filterTextField(object.url);
+    if (url != null) {
+      converted.setLink(new Link(url, null));
+    }
     converted.setNotes(filterTextField(object.notes));
     converted.tempLocationPlacename = filterTextField(object.location_placename);
     converted.tempOrigin = filterTextField(object.origin);
-    return converted;
+
+    return converted.isValid() ? converted : null;
   }
 
   public static class XCollective {
@@ -328,7 +337,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     public String email;
     public String location_id; // needed for relation, don't store
     public String location_placename; // store temporarily
-    public String name; // 4 entries without a anme, but they occur in relations
+    public String name; // 4 entries without a name, but they occur in relations
     public String notes; // used. how do we handle whitespace?
     public int old_id; // ignore
     public String origin; // seems to be country. isn't this implied by location?
@@ -475,7 +484,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     String url = filterTextField(object.url);
     if (url != null) {
-      converted.setUrl(new Link(url, filterTextField(object.url_title)));
+      converted.setLink(new Link(url, filterTextField(object.url_title)));
     }
 
     converted.tempCreator = filterTextField(object.creator);
@@ -652,18 +661,18 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
           } else {
             name = name.trim();
             String code = mapName(map, name);
-            WWLanguage language = storageManager.findEntity(WWLanguage.class, "^code", code);
+            Language language = storageManager.findEntity(Language.class, "^code", code);
             if (language == null) {
               System.out.printf("\"%s\",\"?\",\"?\" *%n", name);
             } else if (name.equals(language.getName())) {
               System.out.printf("\"%s\",\"%s\",\"%s\"%n", name, language.getCode(), language.getName());
               language.setCore(true);
-              updateDomainEntity(WWLanguage.class, language);
+              // updateDomainEntity(WWLanguage.class, language);
               referenceMap.put(object.tempid, new Reference(WWLanguage.class, language.getId()));
             } else {
               System.out.printf("\"%s\",\"%s\",\"%s\" *%n", name, language.getCode(), language.getName());
               language.setCore(true);
-              updateDomainEntity(WWLanguage.class, language);
+              // updateDomainEntity(WWLanguage.class, language);
               referenceMap.put(object.tempid, new Reference(WWLanguage.class, language.getId()));
             }
           }
@@ -679,6 +688,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     public String ISO639_1Code;
     public String ISO639_2Code;
     public String name;
+    public int old_id; // ignore
+    public String original_table; // ignore
   }
 
   // --- Locations -------------------------------------------------------------
@@ -711,11 +722,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     if (references.containsKey(jsonId)) {
       handleError("Duplicate id %s", jsonId);
     } else {
-      WWLocation collective = convert(json, object);
-      if (collective == null) {
-        handleError("Ignoring empty Location");
+      WWLocation converted = convert(json, object);
+      if (converted == null) {
+        handleError("Ignoring invalid record %s", jsonId);
       } else {
-        String storedId = addDomainEntity(WWLocation.class, collective);
+        String storedId = addDomainEntity(WWLocation.class, converted);
         references.put(jsonId, new Reference(WWLocation.class, storedId));
       }
     }
@@ -742,7 +753,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.setCountry(filterTextField(object.country));
     converted.setZipcode(filterTextField(object.zipcode));
 
-    return converted.isEmpty() ? null : converted;
+    return converted.isValid() ? converted : null;
   }
 
   public static class XLocation {
