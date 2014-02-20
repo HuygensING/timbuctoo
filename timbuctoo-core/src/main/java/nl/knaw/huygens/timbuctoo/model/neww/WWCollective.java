@@ -43,6 +43,8 @@ public class WWCollective extends Collective {
   // Candidate for removal
   public String tempTelephone;
 
+  // -- accessors --------------------------------------------------------------
+
   public String getShortName() {
     return shortName;
   }

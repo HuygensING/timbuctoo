@@ -35,10 +35,10 @@ import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARRelation;
-import nl.knaw.huygens.timbuctoo.model.neww.Print;
-import nl.knaw.huygens.timbuctoo.model.neww.Source;
 import nl.knaw.huygens.timbuctoo.model.neww.WWCollective;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
+import nl.knaw.huygens.timbuctoo.model.neww.WWDocument.Print;
+import nl.knaw.huygens.timbuctoo.model.neww.WWDocument.Source;
 import nl.knaw.huygens.timbuctoo.model.neww.WWKeyword;
 import nl.knaw.huygens.timbuctoo.model.neww.WWLanguage;
 import nl.knaw.huygens.timbuctoo.model.neww.WWLocation;
@@ -164,11 +164,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     printBoxedText("2. Basic properties");
 
     boolean importCollectives = false;
-    boolean importDocuments = false;
+    boolean importDocuments = true;
     boolean importKeywords = false;
     boolean importLanguages = false;
     boolean importLocations = false;
-    boolean importPersons = true;
+    boolean importPersons = false;
 
     if (importCollectives) {
       System.out.println(".. Collectives");

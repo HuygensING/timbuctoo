@@ -79,6 +79,8 @@ public class WWPerson extends Person {
     public String label;
   }
 
+  // -- accessors --------------------------------------------------------------
+
   public String getBibliography() {
     return bibliography;
   }

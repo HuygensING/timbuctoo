@@ -103,4 +103,99 @@ public class WWDocument extends Document {
     return getType() != null && getTitle() != null;
   }
 
+  // ---------------------------------------------------------------------------
+
+  public static class Print {
+
+    private String edition;
+    private String publisher;
+    private String location;
+    private String year;
+
+    public Print() {}
+
+    public Print(String edition, String publisher, String location, String year) {
+      setEdition(edition);
+      setPublisher(publisher);
+      setLocation(location);
+      setYear(year);
+    }
+
+    public String getEdition() {
+      return edition;
+    }
+
+    public void setEdition(String edition) {
+      this.edition = edition;
+    }
+
+    public String getPublisher() {
+      return publisher;
+    }
+
+    public void setPublisher(String publisher) {
+      this.publisher = publisher;
+    }
+
+    public String getLocation() {
+      return location;
+    }
+
+    public void setLocation(String location) {
+      this.location = location;
+    }
+
+    public String getYear() {
+      return year;
+    }
+
+    public void setYear(String year) {
+      this.year = year;
+    }
+
+  }
+
+  // ---------------------------------------------------------------------------
+
+  public static class Source {
+
+    private String type;
+    private String fullName;
+    private String shortName;
+    private String notes;
+
+    public String getType() {
+      return type;
+    }
+
+    public void setType(String type) {
+      this.type = type;
+    }
+
+    public String getFullName() {
+      return fullName;
+    }
+
+    public void setFullName(String fullName) {
+      this.fullName = fullName;
+    }
+
+    public String getShortName() {
+      return shortName;
+    }
+
+    public void setShortName(String shortName) {
+      this.shortName = shortName;
+    }
+
+    public String getNotes() {
+      return notes;
+    }
+
+    public void setNotes(String notes) {
+      this.notes = notes;
+    }
+
+  }
+
 }
