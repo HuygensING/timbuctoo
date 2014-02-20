@@ -30,8 +30,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class WWCollective extends Collective {
 
   private String shortName;
-  private String telephone;
-  private String email;
   private Link link;
   private String notes;
 
@@ -40,28 +38,17 @@ public class WWCollective extends Collective {
   // For establishing relation with location
   public String tempOrigin;
 
+  // Candidate for removal
+  public String tempEmail;
+  // Candidate for removal
+  public String tempTelephone;
+
   public String getShortName() {
     return shortName;
   }
 
   public void setShortName(String shortName) {
     this.shortName = shortName;
-  }
-
-  public String getTelephone() {
-    return telephone;
-  }
-
-  public void setTelephone(String telephone) {
-    this.telephone = telephone;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
   }
 
   public Link getLink() {

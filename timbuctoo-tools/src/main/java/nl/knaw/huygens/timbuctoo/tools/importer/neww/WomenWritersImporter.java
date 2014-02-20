@@ -44,6 +44,7 @@ import nl.knaw.huygens.timbuctoo.model.neww.WWLanguage;
 import nl.knaw.huygens.timbuctoo.model.neww.WWLocation;
 import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.Gender;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -321,20 +322,21 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   private WWCollective convert(String line, XCollective object) {
     WWCollective converted = new WWCollective();
-    converted.setType(filterTextField(object.type));
-    verifyNonEmptyField(line, "type", converted.getType());
+    converted.tempEmail = filterTextField(object.email);
+    converted.tempLocationPlacename = filterTextField(object.location_placename);
     converted.setName(filterTextField(object.name));
-    verifyNonEmptyField(line, "name", converted.getName());
+    converted.setNotes(filterTextField(object.notes));
+    converted.tempOrigin = filterTextField(object.origin);
     converted.setShortName(filterTextField(object.short_name));
-    converted.setTelephone(filterTextField(object.telephone));
-    converted.setEmail(filterTextField(object.email));
+    converted.setType(filterTextField(object.type));
+    converted.tempTelephone = filterTextField(object.telephone);
     String url = filterTextField(object.url);
     if (url != null) {
       converted.setLink(new Link(url, null));
     }
-    converted.setNotes(filterTextField(object.notes));
-    converted.tempLocationPlacename = filterTextField(object.location_placename);
-    converted.tempOrigin = filterTextField(object.origin);
+
+    verifyNonEmptyField(line, "type", converted.getType());
+    verifyNonEmptyField(line, "name", converted.getName());
 
     return converted.isValid() ? converted : null;
   }
@@ -342,7 +344,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   public static class XCollective {
     public String tempid;
     public String email;
-    public String location_id; // needed for relation, don't store
+    public String location_id; // needed for relation, ignore
     public String location_placename; // store temporarily
     public String name; // 4 entries without a name, but they occur in relations
     public String notes; // used. how do we handle whitespace?
@@ -519,9 +521,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   // First impression:
   // unique: 43 genre, 279 topos, 0 others
   // some keywords need work: "Irrelevant", "TBD"
-  
-  private Set<String> genre = Sets.newTreeSet();
-  private Set<String> topos = Sets.newTreeSet();
+
+  private final Set<String> genre = Sets.newTreeSet();
+  private final Set<String> topos = Sets.newTreeSet();
 
   private void importKeywords(Map<String, Reference> references) throws Exception {
     LineIterator iterator = getLineIterator("keywords.json");
@@ -837,6 +839,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   }
 
   private String preprocessPerson(String text) {
+    text = text.replaceAll("\"financials\" : \\[\\]", "\"health\" : null");
     text = text.replaceAll("\"health\" : \\[\\]", "\"health\" : null");
     text = text.replaceAll("\"languages\" : \"\"", "\"languages\" : null");
     text = text.replaceAll("\"url\" : \"\"", "\"url\" : null");
@@ -860,9 +863,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   }
 
   int kkk = 0;
+
   private WWPerson convert(String line, XPerson object) {
     String text;
-    String[] texts;
     WWPerson converted = new WWPerson();
 
     converted.setBibliography(filterTextField(object.bibliography));
@@ -875,7 +878,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.setNumberOfChildren(filterTextField(object.children));
 
     if (object.collaborations != null) {
-      for (String item: object.collaborations) {
+      for (String item : object.collaborations) {
         String collaboration = filterTextField(item);
         if (collaboration != null && !"Not yet checked".equals(collaboration) && !"unknown".equals(collaboration)) {
           converted.addCollaboration(collaboration);
@@ -895,10 +898,76 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     converted.tempDeath = filterTextField(object.death);
 
-    text = filterTextField(object.financialSituation);
-    if (text != null ) {
-      System.out.printf("%3d: %s%n", ++kkk, text);
+    if (object.education != null) {
+      for (String item : object.education) {
+        converted.addEducation(filterTextField(item));
+      }
     }
+
+    converted.tempFinancialSituation = filterTextField(object.financial_situation);
+
+    verifyEmptyField(line, "financialSituation", object.financialSituation);
+
+    if (object.financials != null) {
+      for (String item : object.financials) {
+        converted.addFinancial(filterTextField(item));
+      }
+    }
+
+    if (object.fs_pseudonyms != null) {
+      for (String item : object.fs_pseudonyms) {
+        converted.addFsPseudonym(filterTextField(item));
+      }
+    }
+
+    text = filterTextField(object.gender);
+    if ("U".equals(text)) {
+      converted.setGender(Gender.UNKNOWN);
+    } else if ("M".equals(text)) {
+      converted.setGender(Gender.MALE);
+    } else if ("F".equals(text)) {
+      converted.setGender(Gender.FEMALE);
+    } else if (text != null) {
+      handleError("Unknown gender: %s", text);
+    }
+
+    converted.setHealth(filterTextField(object.health));
+
+    if (object.languages != null) {
+      for (String item : object.languages) {
+        converted.addLanguage(filterTextField(item));
+      }
+    }
+
+    converted.setLivedIn(filterTextField(object.lived_in));
+
+    converted.setMaritalStatus(filterTextField(object.marital_status));
+
+    if (object.memberships != null) {
+      for (String item : object.memberships) {
+        converted.addMembership(filterTextField(item));
+      }
+    }
+
+    converted.setMotherTongue(filterTextField(object.mother_tongue));
+
+    converted.tempName = filterTextField(object.name);
+
+    converted.setNationality(filterTextField(object.nationality));
+
+    converted.setNotes(filterTextField(object.notes));
+
+    converted.setPersonalSituation(filterTextField(object.personal_situation));
+
+    verifyEmptyField(line, "personalSituation", object.personalSituation);
+
+    if (object.placeOfBirth != null) {
+      for (String item : object.placeOfBirth) {
+        converted.tempPlaceOfBirth.add(filterTextField(item));
+      }
+    }
+
+    // System.out.printf("%d: %s%n", ++kkk, filterTextField(item));
 
     return converted;
   }
@@ -912,27 +981,27 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     public String dateOfBirth; // birth year
     public String dateOfDeath; // death year
     public String death; // unstructured
-    public String[] education;
+    public String[] education; // unstructured
     public String financial_situation; // INCORRECT
     public String financialSituation; // EMPTY
-    public String[] financials;
-    public String[] fs_pseudonyms;
-    public String gender;
-    public String health;
-    public String[] languages;
-    public String lived_in;
-    public String marital_status;
-    public String[] memberships;
-    public String mother_tongue;
-    public String name;
-    public String nationality;
-    public String notes;
-    public int old_id;
-    public String original_field;
-    public String original_table;
-    public String personal_situation;
-    public String personalSituation;
-    public String[] placeOfBirth;
+    public String[] financials; // sparse, unstructured
+    public String[] fs_pseudonyms; // sparse, unstructured
+    public String gender; // U, M, F
+    public String health; // sparse, unstructured
+    public String[] languages; //clarfy: spoken, published, ...
+    public String lived_in; // sparse, unstructured
+    public String marital_status; // sparse, unstructured
+    public String[] memberships; // sparse, unstructured
+    public String mother_tongue; // unstructured, how does this relate to languages?
+    public String name; // unstructured
+    public String nationality; // sparse, how does this relate to pace of birth?
+    public String notes; // text
+    public int old_id; // ignore
+    public String original_field; // ignore
+    public String original_table; // ignore
+    public String personal_situation; // unstructured
+    public String personalSituation; // EMPTY
+    public String[] placeOfBirth; // how can this be an array?
     public String placeOfDeath;
     public String[] professions;
     public String[] ps_children;

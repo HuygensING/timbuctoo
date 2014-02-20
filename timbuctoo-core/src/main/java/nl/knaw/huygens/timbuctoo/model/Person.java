@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.model;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.Gender;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -33,6 +34,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class Person extends DomainEntity {
 
   private PersonName name;
+  /** Gender at birth. */
+  private Gender gender;
   private Datable birthDate;
   private Datable deathDate;
 
@@ -57,6 +60,14 @@ public class Person extends DomainEntity {
 
   public void setName(PersonName name) {
     this.name = name;
+  }
+
+  public Gender getGender() {
+    return gender;
+  }
+
+  public void setGender(Gender gender) {
+    this.gender = gender;
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_birthDate", isFaceted = true, canBeEmpty = true)
