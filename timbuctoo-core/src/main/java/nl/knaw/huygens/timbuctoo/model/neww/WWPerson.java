@@ -22,18 +22,27 @@ package nl.knaw.huygens.timbuctoo.model.neww;
  * #L%
  */
 
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
 import nl.knaw.huygens.timbuctoo.model.Person;
 
 public class WWPerson extends Person {
 
-  public String bibliography;
-  public String born_in;
-  public String children;
-  public String[] collaborations;
-  public String death;
+  private String bibliography;
+  private String numberOfChildren;
+  private List<String> collaborations;
+
+  public String tempBirthPlace;
+  public String tempDeath;
+
+  public WWPerson() {
+    collaborations = Lists.newArrayList();
+  }
+
   public String[] education;
   public String financial_situation;
-  public String financialSituation;
   public String[] financials;
   public String[] fs_pseudonyms;
   public String health;
@@ -64,5 +73,33 @@ public class WWPerson extends Person {
     public String url;
     public String label;
   }
+
+  public String getBibliography() {
+    return bibliography;
+  }
+
+  public void setBibliography(String bibliography) {
+    this.bibliography = bibliography;
+  }
+
+public String getNumberOfChildren() {
+	return numberOfChildren;
+}
+
+public void setNumberOfChildren(String numberOfChildren) {
+	this.numberOfChildren = numberOfChildren;
+}
+
+public List<String> getCollaborations() {
+	return collaborations;
+}
+
+public void setCollaborations(List<String> collaborations) {
+	this.collaborations = collaborations;
+}
+
+public void addCollaboration(String collaboration) {
+	collaborations.add(collaboration);
+}
 
 }

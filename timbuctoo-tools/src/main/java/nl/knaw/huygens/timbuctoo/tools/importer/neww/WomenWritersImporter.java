@@ -36,10 +36,13 @@ import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARRelation;
 import nl.knaw.huygens.timbuctoo.model.neww.Print;
+import nl.knaw.huygens.timbuctoo.model.neww.Source;
 import nl.knaw.huygens.timbuctoo.model.neww.WWCollective;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
+import nl.knaw.huygens.timbuctoo.model.neww.WWKeyword;
 import nl.knaw.huygens.timbuctoo.model.neww.WWLanguage;
 import nl.knaw.huygens.timbuctoo.model.neww.WWLocation;
+import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
@@ -151,7 +154,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     // displayStatus();
 
-    // removeNonPersistentEnties(storageManager, indexManager);
+    removeNonPersistentEnties(storageManager, indexManager);
 
     // displayStatus();
 
@@ -160,11 +163,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     printBoxedText("2. Basic properties");
 
     boolean importCollectives = false;
-    boolean importDocuments = true;
+    boolean importDocuments = false;
     boolean importKeywords = false;
     boolean importLanguages = false;
     boolean importLocations = false;
-    boolean importPersons = false;
+    boolean importPersons = true;
 
     if (importCollectives) {
       System.out.println(".. Collectives");
@@ -222,7 +225,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   protected void removeNonPersistentEnties(StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
     // like this:
-    // removeNonPersistentEntities(DCARKeyword.class);
+    removeNonPersistentEntities(WWCollective.class);
+    removeNonPersistentEntities(WWDocument.class);
+    removeNonPersistentEntities(WWKeyword.class);
+    removeNonPersistentEntities(WWLocation.class);
+    removeNonPersistentEntities(WWPerson.class);
   }
 
   // --- relations -----------------------------------------------------
@@ -351,6 +358,21 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Documents -------------------------------------------------------------
 
+  private void importDocuments(Map<String, Reference> references) throws Exception {
+    documentTypeMap = createDocumentTypeMap();
+    LineIterator iterator = getLineIterator("documents.json");
+    try {
+      while (iterator.hasNext()) {
+        String line = preprocessJson(iterator.nextLine());
+        if (!line.isEmpty()) {
+          handleDocument(preprocessDocumentJson(line), references);
+        }
+      }
+    } finally {
+      LineIterator.closeQuietly(iterator);
+    }
+  }
+
   private Map<String, String> documentTypeMap;
 
   private Map<String, String> createDocumentTypeMap() {
@@ -368,28 +390,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     return map;
   }
 
-  private final Set<String> values = Sets.newTreeSet();
-
-  private void importDocuments(Map<String, Reference> references) throws Exception {
-    documentTypeMap = createDocumentTypeMap();
-    LineIterator iterator = getLineIterator("documents.json");
-    try {
-      while (iterator.hasNext()) {
-        String line = preprocessJson(iterator.nextLine());
-        if (!line.isEmpty()) {
-          handleDocument(preprocessDocument(line), references);
-        }
-      }
-    } finally {
-      LineIterator.closeQuietly(iterator);
-    }
-
-    for (String value : values) {
-      System.out.println(value);
-    }
-  }
-
-  private String preprocessDocument(String text) {
+  private String preprocessDocumentJson(String text) {
     text = text.replaceAll("\"prints\" : \"\"", "\"prints\" : null");
     text = text.replaceAll("\"source\" : \"\"", "\"source\" : null");
     text = text.replaceAll("\"subject\" : \"\"", "\"subject\" : null");
@@ -405,36 +406,15 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     if (references.containsKey(jsonId)) {
       handleError("Duplicate id %s", jsonId);
     } else {
-      WWDocument collective = convert(json, object);
-      String storedId = addDomainEntity(WWDocument.class, collective);
-      references.put(jsonId, new Reference(WWDocument.class, storedId));
+      WWDocument converted = convert(json, object);
+      if (converted == null) {
+        handleError("Ignoring invalid record %s", jsonId);
+      } else {
+        String storedId = addDomainEntity(WWDocument.class, converted);
+        references.put(jsonId, new Reference(WWDocument.class, storedId));
+      }
     }
   }
-
-  //  ~reader(s) female (member of Damesleesmuseum, The Hague)
-  //  ~~Nutsbibliotheken Nederland
-  //  ~~anonymous Dutch
-  //  ~~anonymous English 
-  //  ~~anonymous French
-  //  ~~anonymous German
-  //  ~~anonymous Italian
-  //  ~~anonymous Russian woman
-  //  ~~anonymous Spanish
-  //  ~~author female (name unknown)
-  //  ~~author male (name below)
-  //  ~~censorship (in one form or another)
-  //  ~~editor (name unknown)
-  //  ~~foreign editor
-  //  ~~historian of literature  (male, name below)
-  //  ~~illustrator (name below)
-  //  ~~journalist (name below)
-  //  ~~journalist (name unknown)
-  //  ~~librarian (name below)
-  //  ~~reader(s) (gender unknown)
-  //  ~~reader(s) female (name below)
-  //  ~~reader(s) male (name below)
-  //  ~~translator (name unknown)
-  //  ~~translator male (name below)
 
   private WWDocument convert(String line, XDocument object) {
     WWDocument converted = new WWDocument();
@@ -464,10 +444,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.setOrigin(filterTextField(object.origin));
     converted.setReference(filterTextField(object.reference));
 
-    if (object.source != null) {
-      System.out.println(object.source);
-    }
-
     if (object.prints != null) {
       // order by key
       Map<String, Print> temp = Maps.newTreeMap();
@@ -482,6 +458,15 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       }
     }
 
+    if (object.source != null) {
+      Source source = new Source();
+      source.setType(filterTextField(object.source.type));
+      source.setFullName(filterTextField(object.source.full_name));
+      source.setShortName(filterTextField(object.source.short_name));
+      source.setNotes(filterTextField(object.source.notes));
+      converted.setSource(source);
+    }
+
     String url = filterTextField(object.url);
     if (url != null) {
       converted.setLink(new Link(url, filterTextField(object.url_title)));
@@ -489,7 +474,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     converted.tempCreator = filterTextField(object.creator);
     converted.tempLanguage = filterTextField(object.language);
-    return converted;
+
+    return converted.isValid() ? converted : null;
   }
 
   public static class XDocument {
@@ -533,33 +519,23 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   // First impression:
   // unique: 43 genre, 279 topos, 0 others
   // some keywords need work: "Irrelevant", "TBD"
+  
+  private Set<String> genre = Sets.newTreeSet();
+  private Set<String> topos = Sets.newTreeSet();
 
-  protected void importKeywords(Map<String, Reference> referenceMap) throws Exception {
-    Set<String> genre = Sets.newTreeSet();
-    Set<String> topos = Sets.newTreeSet();
+  private void importKeywords(Map<String, Reference> references) throws Exception {
     LineIterator iterator = getLineIterator("keywords.json");
     try {
       while (iterator.hasNext()) {
         String line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
-          XKeyword object = objectMapper.readValue(line, XKeyword.class);
-          referenceMap.put(object.tempid, null);
-          if (Strings.isNullOrEmpty(object.type)) {
-            handleError("%s: Missing type", object.tempid);
-          } else if (Strings.isNullOrEmpty(object.keyword)) {
-            handleError("%s: Missing keyword", object.tempid);
-          } else if ("genre".equals(object.type)) {
-            genre.add(object.keyword);
-          } else if ("topos".equals(object.type)) {
-            topos.add(object.keyword);
-          } else {
-            handleError("%s: Unexpected type", object.tempid);
-          }
+          handleKeyword(preprocessKeywordJson(line), references);
         }
       }
     } finally {
       LineIterator.closeQuietly(iterator);
     }
+
     System.out.printf("genre: %4d%n", genre.size());
     for (String keyword : genre) {
       System.out.println(keyword);
@@ -570,9 +546,55 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
   }
 
+  private String preprocessKeywordJson(String text) {
+    return text;
+  }
+
+  private void handleKeyword(String json, Map<String, Reference> references) throws Exception {
+    XKeyword object = objectMapper.readValue(json, XKeyword.class);
+    String jsonId = object.tempid;
+    if (references.containsKey(jsonId)) {
+      handleError("Duplicate id %s", jsonId);
+    } else {
+      WWKeyword converted = convert(json, object);
+      if (converted == null) {
+        handleError("Ignoring invalid record: %s", json);
+      } else {
+        String storedId = addDomainEntity(WWKeyword.class, converted);
+        references.put(jsonId, new Reference(WWKeyword.class, storedId));
+      }
+    }
+  }
+
+  private WWKeyword convert(String line, XKeyword object) {
+    WWKeyword converted = new WWKeyword();
+
+    converted.setType(filterTextField(object.type));
+    verifyNonEmptyField(line, "type", converted.getType());
+
+    converted.setValue(filterTextField(object.keyword));
+    verifyNonEmptyField(line, "keyword", converted.getValue());
+
+    if ("genre".equals(converted.getType())) {
+      genre.add(converted.getValue());
+    } else if ("topos".equals(converted.getType())) {
+      topos.add(converted.getValue());
+    } else {
+      handleError("Unexpected type", object.tempid);
+    }
+
+    if ("TBD".equals(converted.getValue()) || "Irrelevant".equals(converted.getValue())) {
+      converted.setValue(null);
+    }
+
+    return converted.isValid() ? converted : null;
+  }
+
   public static class XKeyword {
     public String tempid;
     public String keyword;
+    public int old_id; // ignore
+    public String original_table; // ignore
     public String type;
   }
 
@@ -706,10 +728,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     } finally {
       LineIterator.closeQuietly(iterator);
     }
-
-    for (String value : values) {
-      System.out.println(value);
-    }
   }
 
   private String preprocessLocation(String text) {
@@ -724,7 +742,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     } else {
       WWLocation converted = convert(json, object);
       if (converted == null) {
-        handleError("Ignoring invalid record %s", jsonId);
+        handleError("Ignoring invalid record: %s", json);
       } else {
         String storedId = addDomainEntity(WWLocation.class, converted);
         references.put(jsonId, new Reference(WWLocation.class, storedId));
@@ -756,64 +774,147 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     return converted.isValid() ? converted : null;
   }
 
-  public static class XLocation {
+  private static class XLocation {
     public String tempid;
     public String address;
-    public String bloc; // no data
+    public String bloc; // EMPTY
     public String country;
-    public String district; // no data
+    public String district; // EMPTY
     public String geogName; // contains settlement
-    public String houseNumber; // no data
-    public String latitude; // no data
-    public String longitude; // no data
-    public String notes; // no data
-    public String period; // no data
-    public String region; // no data
-    public String settlement; // no data
+    public String houseNumber; // EMPTY
+    public String latitude; // EMPTY
+    public String longitude; // EMPTY
+    public String notes; // EMPTY
+    public String period; // EMPTY
+    public String region; // EMPTY
+    public String settlement; // EMPTY
     public String zipcode; // 54 values
   }
 
   // --- Persons ---------------------------------------------------------------
 
-  // Error: an empty "url" filed has been mapped to a single string
-  // Fix: "url" : "" --> "url" : null
-  // Fix: "languages" : "" --> "languages" : null
-  // Fix: "health" : [] --> "health" : null (1x)
+  //  ~reader(s) female (member of Damesleesmuseum, The Hague)
+  //  ~~Nutsbibliotheken Nederland
+  //  ~~anonymous Dutch
+  //  ~~anonymous English 
+  //  ~~anonymous French
+  //  ~~anonymous German
+  //  ~~anonymous Italian
+  //  ~~anonymous Russian woman
+  //  ~~anonymous Spanish
+  //  ~~author female (name unknown)
+  //  ~~author male (name below)
+  //  ~~censorship (in one form or another)
+  //  ~~editor (name unknown)
+  //  ~~foreign editor
+  //  ~~historian of literature  (male, name below)
+  //  ~~illustrator (name below)
+  //  ~~journalist (name below)
+  //  ~~journalist (name unknown)
+  //  ~~librarian (name below)
+  //  ~~reader(s) (gender unknown)
+  //  ~~reader(s) female (name below)
+  //  ~~reader(s) male (name below)
+  //  ~~translator (name unknown)
+  //  ~~translator male (name below)
 
-  protected void importPersons(Map<String, Reference> referenceMap) throws Exception {
+  private void importPersons(Map<String, Reference> references) throws Exception {
     LineIterator iterator = getLineIterator("persons.json");
-    String line = "'";
+    String line = "";
     try {
       while (iterator.hasNext()) {
         line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
-          XPerson object = objectMapper.readValue(line, XPerson.class);
-          referenceMap.put(object.tempid, null);
-          // if (object.placeOfBirth != null && object.placeOfBirth.length > 1) {
-          //   System.err.println("-- curious: " + StringUtils.join(object.placeOfBirth, ","));
-          // }
+          handlePerson(preprocessPerson(line), references);
         }
       }
     } catch (JsonMappingException e) {
-      System.err.println(line);
+      System.out.println(line);
       throw e;
     } finally {
       LineIterator.closeQuietly(iterator);
     }
   }
 
-  public static class XPerson {
+  private String preprocessPerson(String text) {
+    text = text.replaceAll("\"health\" : \\[\\]", "\"health\" : null");
+    text = text.replaceAll("\"languages\" : \"\"", "\"languages\" : null");
+    text = text.replaceAll("\"url\" : \"\"", "\"url\" : null");
+    return text;
+  }
+
+  private void handlePerson(String json, Map<String, Reference> references) throws Exception {
+    XPerson object = objectMapper.readValue(json, XPerson.class);
+    String jsonId = object.tempid;
+    if (references.containsKey(jsonId)) {
+      handleError("Duplicate id %s", jsonId);
+    } else {
+      WWPerson converted = convert(json, object);
+      if (converted == null) {
+        handleError("Ignoring invalid record: %s", json);
+      } else {
+        String storedId = addDomainEntity(WWPerson.class, converted);
+        references.put(jsonId, new Reference(WWPerson.class, storedId));
+      }
+    }
+  }
+
+  int kkk = 0;
+  private WWPerson convert(String line, XPerson object) {
+    String text;
+    String[] texts;
+    WWPerson converted = new WWPerson();
+
+    converted.setBibliography(filterTextField(object.bibliography));
+
+    text = filterTextField(object.born_in);
+    if (text != null && !"TBD".equalsIgnoreCase(text) && !"unknown".equalsIgnoreCase(text)) {
+      converted.tempBirthPlace = text;
+    }
+
+    converted.setNumberOfChildren(filterTextField(object.children));
+
+    if (object.collaborations != null) {
+      for (String item: object.collaborations) {
+        String collaboration = filterTextField(item);
+        if (collaboration != null && !"Not yet checked".equals(collaboration) && !"unknown".equals(collaboration)) {
+          converted.addCollaboration(collaboration);
+        }
+      }
+    }
+
+    text = filterTextField(object.dateOfBirth);
+    if (text != null) {
+      converted.setBirthDate(new Datable(text));
+    }
+
+    text = filterTextField(object.dateOfDeath);
+    if (text != null) {
+      converted.setDeathDate(new Datable(text));
+    }
+
+    converted.tempDeath = filterTextField(object.death);
+
+    text = filterTextField(object.financialSituation);
+    if (text != null ) {
+      System.out.printf("%3d: %s%n", ++kkk, text);
+    }
+
+    return converted;
+  }
+
+  protected static class XPerson {
     public String tempid;
-    public String bibliography;
-    public String born_in;
-    public String children;
-    public String[] collaborations;
-    public String dateOfBirth;
-    public String dateOfDeath;
-    public String death;
+    public String bibliography; // text
+    public String born_in; // must be mapped to birthPlace
+    public String children; // number of children
+    public String[] collaborations; // seem to be references to persons
+    public String dateOfBirth; // birth year
+    public String dateOfDeath; // death year
+    public String death; // unstructured
     public String[] education;
-    public String financial_situation;
-    public String financialSituation;
+    public String financial_situation; // INCORRECT
+    public String financialSituation; // EMPTY
     public String[] financials;
     public String[] fs_pseudonyms;
     public String gender;
@@ -826,7 +927,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     public String name;
     public String nationality;
     public String notes;
+    public int old_id;
     public String original_field;
+    public String original_table;
     public String personal_situation;
     public String personalSituation;
     public String[] placeOfBirth;

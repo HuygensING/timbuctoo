@@ -27,6 +27,7 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
 public class WWDocument extends Document {
@@ -95,6 +96,11 @@ public class WWDocument extends Document {
 
   public void setSource(Source source) {
     this.source = source;
+  }
+
+  @JsonIgnore
+  public boolean isValid() {
+    return getType() != null && getTitle() != null;
   }
 
 }

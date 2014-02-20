@@ -50,7 +50,7 @@ public abstract class WomenWritersDefaultImporter extends DefaultImporter {
 
   public WomenWritersDefaultImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager) {
     super(registry, storageManager, indexManager);
-    change = new Change("importer", "dcar");
+    change = new Change("importer", "neww");
     prevMessage = "";
     errors = 0;
     setup(relationManager);
