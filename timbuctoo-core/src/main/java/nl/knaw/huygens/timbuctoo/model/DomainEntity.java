@@ -72,10 +72,10 @@ public abstract class DomainEntity extends Entity implements Variable {
     return relations;
   }
 
-  @JsonProperty("@relations")
-  public void setRelations(Map<String, List<EntityRef>> relations) {
-    this.relations = checkNotNull(relations);
-  }
+  // @JsonProperty("@relations")
+  // public void setRelations(Map<String, List<EntityRef>> relations) {
+  //   this.relations = checkNotNull(relations);
+  // }
 
   public void addRelation(String name, EntityRef ref) {
     List<EntityRef> refs = relations.get(name);
