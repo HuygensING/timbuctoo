@@ -26,6 +26,8 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.Person;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.google.common.collect.Lists;
 
 public class WWPerson extends Person {
@@ -60,6 +62,12 @@ public class WWPerson extends Person {
     fsPseudonyms = Lists.newArrayList();
     languages = Lists.newArrayList();
     memberships = Lists.newArrayList();
+  }
+
+  @Override
+  public String getDisplayName() {
+    String name = getName().getShortName();
+    return StringUtils.stripToEmpty(name).isEmpty() ? "[TEMP] " + tempName : name;
   }
 
   public String placeOfDeath;

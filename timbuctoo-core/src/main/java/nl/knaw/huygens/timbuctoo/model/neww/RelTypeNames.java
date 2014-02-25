@@ -24,8 +24,9 @@ package nl.knaw.huygens.timbuctoo.model.neww;
 
 public enum RelTypeNames {
 
-  IS_CREATOR_OF("is_creator_of", "is_created_by"),
-  IS_LANGUAGE_OF("is_language_of", "has_language");
+  CREATOR_OF("creator_of", "created_by"), //
+  KEYWORD_OF("keyword_of", "has_keyword"), //
+  LANGUAGE_OF("language_of", "has_language");
 
   public final String regular;
   public final String inverse;

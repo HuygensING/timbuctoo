@@ -22,6 +22,10 @@ package nl.knaw.huygens.timbuctoo.tools.importer.neww;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.CREATOR_OF;
+import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.KEYWORD_OF;
+import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.LANGUAGE_OF;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -29,13 +33,11 @@ import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Document.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.model.dcar.DCARRelation;
 import nl.knaw.huygens.timbuctoo.model.neww.WWCollective;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument.Print;
@@ -126,7 +128,21 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   private final RelationManager relationManager;
   private final File inputDir;
 
-  protected final Map<String, Reference> tempRefMap = Maps.newHashMap();
+  private final Map<String, Reference> collectiveRefMap = Maps.newHashMap();
+  private final Map<String, Reference> documentRefMap = Maps.newHashMap();
+  private final Map<String, Reference> keywordRefMap = Maps.newHashMap();
+  private final Map<String, Reference> languageRefMap = Maps.newHashMap();
+  private final Map<String, Reference> locationRefMap = Maps.newHashMap();
+  private final Map<String, Reference> personRefMap = Maps.newHashMap();
+  private final Map<String, Reference> relationRefMap = Maps.newHashMap();
+
+  private Reference refCreatorOf;
+  private Reference refKeywordOf;
+  private Reference refLanguageOf;
+
+  private int nAuthoredBy = 0;
+  private int nKeyword = 0;
+  private int nLanguage = 0;
 
   public WomenWritersImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager, String inputDirName) {
     super(registry, storageManager, relationManager, indexManager);
@@ -157,98 +173,79 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     // displayStatus();
 
-    removeNonPersistentEnties(storageManager, indexManager);
-
-    // displayStatus();
-
-    setup(relationManager);
-
-    printBoxedText("2. Basic properties");
-
-    boolean importCollectives = false;
-    boolean importDocuments = false;
-    boolean importKeywords = false;
-    boolean importLanguages = false;
-    boolean importLocations = false;
-    boolean importPersons = false;
-    boolean importRelations = true;
-
-    if (importCollectives) {
-      System.out.println(".. Collectives");
-      tempRefMap.clear();
-      importCollectives(tempRefMap);
-      System.out.printf("Number of entries = %d%n", tempRefMap.size());
-    }
-
-    if (importDocuments) {
-      System.out.println(".. Documents");
-      tempRefMap.clear();
-      importDocuments(tempRefMap);
-      System.out.printf("Number of entries = %d%n", tempRefMap.size());
-    }
-
-    if (importKeywords) {
-      System.out.println(".. Keywords");
-      tempRefMap.clear();
-      importKeywords(tempRefMap);
-      System.out.printf("Number of entries = %d%n", tempRefMap.size());
-    }
-
-    if (importLanguages) {
-      System.out.println(".. Languages");
-      tempRefMap.clear();
-      importLanguages(tempRefMap);
-      System.out.printf("Number of entries = %d%n", tempRefMap.size());
-    }
-
-    if (importLocations) {
-      System.out.println(".. Locations");
-      tempRefMap.clear();
-      importLocations(tempRefMap);
-      System.out.printf("Number of entries = %d%n", tempRefMap.size());
-    }
-
-    if (importPersons) {
-      System.out.println(".. Persons");
-      tempRefMap.clear();
-      importPersons(tempRefMap);
-      System.out.printf("Number of entries = %d%n", tempRefMap.size());
-    }
-
-    // printBoxedText("3. Relations");
-
-    if (importRelations) {
-      System.out.println(".. Relations");
-      tempRefMap.clear();
-      importRelations(tempRefMap);
-      System.out.printf("Number of entries = %d%n", tempRefMap.size());
-    }
-
-    // printBoxedText("4. Indexing");
-
-    // Like this:
-    // indexEntities(DCARKeyword.class);
-
-    // displayStatus();
-
-    displayErrorSummary();
-  }
-
-  protected void removeNonPersistentEnties(StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
-    // like this:
     removeNonPersistentEntities(WWCollective.class);
     removeNonPersistentEntities(WWDocument.class);
     removeNonPersistentEntities(WWKeyword.class);
     removeNonPersistentEntities(WWLocation.class);
     removeNonPersistentEntities(WWPerson.class);
+
+    setup(relationManager);
+    setupRelationTypes();
+
+    printBoxedText("2. Basic properties");
+
+    boolean importCollectives = false;
+    boolean importLocations = false;
+
+    if (importCollectives) {
+      System.out.println(".. Collectives");
+      importCollectives(collectiveRefMap);
+      System.out.printf("Number of entries = %d%n", collectiveRefMap.size());
+    }
+
+    System.out.println(".. Documents");
+    importDocuments(documentRefMap);
+    System.out.printf("Number of entries = %d%n", documentRefMap.size());
+
+    System.out.println(".. Keywords");
+    importKeywords(keywordRefMap);
+    System.out.printf("Number of entries = %d%n", keywordRefMap.size());
+
+    System.out.println(".. Languages");
+    importLanguages(languageRefMap);
+    System.out.printf("Number of entries = %d%n", languageRefMap.size());
+
+    if (importLocations) {
+      System.out.println(".. Locations");
+      importLocations(locationRefMap);
+      System.out.printf("Number of entries = %d%n", locationRefMap.size());
+    }
+
+    System.out.println(".. Persons");
+    importPersons(personRefMap);
+    System.out.printf("Number of entries = %d%n", personRefMap.size());
+
+    printBoxedText("3. Relations");
+
+    importRelations(relationRefMap);
+    System.out.printf("authored_by       : %5d%n", nAuthoredBy);
+    System.out.printf("keyword           : %5d%n", nKeyword);
+    System.out.printf("language          : %5d%n", nLanguage);
+
+    printBoxedText("4. Indexing");
+
+    indexEntities(WWDocument.class);
+    indexEntities(WWKeyword.class);
+    indexEntities(WWLanguage.class);
+    indexEntities(WWPerson.class);
+
+    displayStatus();
+
+    displayErrorSummary();
   }
 
-  // --- relations -----------------------------------------------------
+  // --- Support ---------------------------------------------------------------
 
-  protected Reference retrieveRelationType(String name) {
+  private void setupRelationTypes() {
+    refCreatorOf = retrieveRelationType(CREATOR_OF.regular);
+    refKeywordOf = retrieveRelationType(KEYWORD_OF.regular);
+    refLanguageOf = retrieveRelationType(LANGUAGE_OF.regular);
+  }
+
+  private Reference retrieveRelationType(String name) {
     RelationType type = relationManager.getRelationTypeByName(name);
     if (type != null) {
-      LOG.debug("Retrieved {}", type.getDisplayName());
+      LOG.info("Retrieved {}", type.getDisplayName());
       return new Reference(RelationType.class, type.getId());
     } else {
       LOG.error("Failed to retrieve relation type {}", name);
@@ -259,7 +256,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   protected void addRegularRelations(Reference sourceRef, Reference relTypeRef, Map<String, Reference> map, String[] keys) {
     if (keys != null) {
       for (String key : keys) {
-        relationManager.storeRelation(DCARRelation.class, sourceRef, relTypeRef, map.get(key), change);
+        relationManager.storeRelation(WWRelation.class, sourceRef, relTypeRef, map.get(key), change);
       }
     }
   }
@@ -267,7 +264,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   protected void addInverseRelations(Reference targetRef, Reference relTypeRef, Map<String, Reference> map, String[] keys) {
     if (keys != null) {
       for (String key : keys) {
-        relationManager.storeRelation(DCARRelation.class, map.get(key), relTypeRef, targetRef, change);
+        relationManager.storeRelation(WWRelation.class, map.get(key), relTypeRef, targetRef, change);
       }
     }
   }
@@ -291,11 +288,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
   }
 
-  private void verifyNonEmptyField(String line, String key, String value) {
+  private String verifyNonEmptyField(String line, String key, String value) {
     if (Strings.isNullOrEmpty(value)) {
-      System.out.println("Missing value for: " + key);
-      System.out.println(line);
+      handleError("Missing '%s' in: %s", key, line);
     }
+    return value;
   }
 
   // --- Collectives -----------------------------------------------------------
@@ -537,10 +534,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // First impression:
   // unique: 43 genre, 279 topos, 0 others
-  // some keywords need work: "Irrelevant", "TBD"
 
-  private final Set<String> genre = Sets.newTreeSet();
-  private final Set<String> topos = Sets.newTreeSet();
+  // Used for handling multiple occurrences of key values
+  private final Map<String, String> keywordValueIdMap = Maps.newHashMap();
+  private final Set<String> toposIds = Sets.newHashSet();
 
   private void importKeywords(Map<String, Reference> references) throws Exception {
     LineIterator iterator = getLineIterator("keywords.json");
@@ -553,15 +550,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       }
     } finally {
       LineIterator.closeQuietly(iterator);
-    }
-
-    System.out.printf("genre: %4d%n", genre.size());
-    for (String keyword : genre) {
-      System.out.println(keyword);
-    }
-    System.out.printf("topos: %4d%n", topos.size());
-    for (String keyword : topos) {
-      System.out.println(keyword);
     }
   }
 
@@ -576,10 +564,13 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       handleError("Duplicate id %s", jsonId);
     } else {
       WWKeyword converted = convert(json, object);
-      if (converted == null) {
-        handleError("Ignoring invalid record: %s", json);
-      } else {
-        String storedId = addDomainEntity(WWKeyword.class, converted);
+      if (converted != null) {
+        String value = converted.getValue();
+        String storedId = keywordValueIdMap.get(value);
+        if (storedId == null) {
+          storedId = addDomainEntity(WWKeyword.class, converted);
+          keywordValueIdMap.put(value, storedId);
+        }
         references.put(jsonId, new Reference(WWKeyword.class, storedId));
       }
     }
@@ -594,15 +585,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.setValue(filterTextField(object.keyword));
     verifyNonEmptyField(line, "keyword", converted.getValue());
 
-    if ("genre".equals(converted.getType())) {
-      genre.add(converted.getValue());
-    } else if ("topos".equals(converted.getType())) {
-      topos.add(converted.getValue());
-    } else {
-      handleError("Unexpected type", object.tempid);
-    }
-
-    if ("TBD".equals(converted.getValue()) || "Irrelevant".equals(converted.getValue())) {
+    if ("topos".equals(converted.getType())) {
+      toposIds.add(object.tempid);
+      return null;
+    } else if (!"genre".equals(converted.getType())) {
+      handleError("Unexpected type", converted.getType());
       converted.setValue(null);
     }
 
@@ -630,7 +617,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     map.put("Albanian", "sqi");
     map.put("Arabic", "ara");
     map.put("Armenian", "hye");
-    map.put("Atticism", "?");
+    map.put("Atticism", "ell");
     map.put("Basque", "eus");
     map.put("Breton", "bre");
     map.put("Bulgarian", "bul");
@@ -648,11 +635,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     map.put("Frisian", "fry");
     map.put("Galician", "glg");
     map.put("German", "deu");
-    map.put("Greek", "?");
-    map.put("Hebrew", "?");
+    map.put("Greek", "ell");
+    map.put("Hebrew", "hbo");
     map.put("Hungarian", "hun");
     map.put("Icelandic", "isl");
-    map.put("Irish Gaelic", "?");
+    map.put("Irish Gaelic", "gle");
     map.put("Italian", "ita");
     map.put("Japanese", "jpn");
     map.put("Latin", "lat");
@@ -666,10 +653,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     map.put("Romanian", "ron");
     map.put("Russian", "rus");
     map.put("Serbian", "srp");
-    map.put("Slavo-Serbian", "?");
+    map.put("Slavo-Serbian", "srp");
     map.put("Slovakian", "slk");
     map.put("Slovenian", "slv");
-    map.put("Sorbian language", "?");
+    map.put("Sorbian language", "srp");
     map.put("Spanish", "spa");
     map.put("Swedish", "swe");
     map.put("Turkish", "tur");
@@ -705,16 +692,18 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
             Language language = storageManager.findEntity(Language.class, "^code", code);
             if (language == null) {
               System.out.printf("\"%s\",\"?\",\"?\" *%n", name);
-            } else if (name.equals(language.getName())) {
-              System.out.printf("\"%s\",\"%s\",\"%s\"%n", name, language.getCode(), language.getName());
-              language.setCore(true);
-              // updateDomainEntity(WWLanguage.class, language);
-              referenceMap.put(object.tempid, new Reference(WWLanguage.class, language.getId()));
             } else {
-              System.out.printf("\"%s\",\"%s\",\"%s\" *%n", name, language.getCode(), language.getName());
-              language.setCore(true);
-              // updateDomainEntity(WWLanguage.class, language);
-              referenceMap.put(object.tempid, new Reference(WWLanguage.class, language.getId()));
+              String flag = name.equals(language.getName()) ? "" : "  *";
+              System.out.printf("%-30s%-8s%-30s%s%n", name, language.getCode(), language.getName(), flag);
+              WWLanguage wwLanguage = new WWLanguage();
+              wwLanguage.setId(language.getId());
+              wwLanguage.setRev(language.getRev());
+              wwLanguage.setCode(language.getCode());
+              wwLanguage.setName(language.getName());
+              wwLanguage.setCore(true);
+              // TODO prevent multiple updates for same language
+              updateDomainEntity(WWLanguage.class, wwLanguage);
+              referenceMap.put(object.tempid, new Reference(WWLanguage.class, wwLanguage.getId()));
             }
           }
         }
@@ -1044,7 +1033,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       while (iterator.hasNext()) {
         line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
-        	handleRelation(preprocessRelation(line), references);
+          handleRelation(preprocessRelation(line), references);
         }
       }
     } catch (JsonMappingException e) {
@@ -1066,49 +1055,98 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       handleError("Duplicate id %s", jsonId);
     } else {
       WWRelation converted = convert(json, object);
-      if (converted == null) {
-        handleError("Ignoring invalid record: %s", json);
-      } else {
-        // String storedId = addDomainEntity(WWRelation.class, converted);
-        // references.put(jsonId, new Reference(WWRelation.class, storedId));
+      if (converted != null) {
+        String storedId = addDomainEntity(WWRelation.class, converted);
+        references.put(jsonId, new Reference(WWRelation.class, storedId));
       }
     }
   }
 
   private WWRelation convert(String line, XRelation object) {
+    String leftId = verifyNonEmptyField(line, "leftId", filterTextField(object.leftId));
+    String rightId = verifyNonEmptyField(line, "rightId", filterTextField(object.rightId));
+    if (leftId == null || rightId == null) {
+      return null;
+    }
+
     WWRelation converted = new WWRelation();
 
-    verifyEmptyField( line, "canonizing",  filterTextField(object.canonizing));
-    verifyEmptyField( line, "certainty",  filterTextField(object.certainty));
+    verifyEmptyField(line, "canonizing", filterTextField(object.canonizing));
+    verifyEmptyField(line, "certainty", filterTextField(object.certainty));
     //verifyEmptyField( line, "child_female",  filterTextField(object.child_female));
     //verifyEmptyField( line, "child_male",  filterTextField(object.child_male));
-    verifyEmptyField( line, "notes",  filterTextField(object.notes));
+    verifyEmptyField(line, "notes", filterTextField(object.notes));
     //verifyEmptyField( line, "parent_female",  filterTextField(object.parent_female));
     //verifyEmptyField( line, "parent_male",  filterTextField(object.parent_male));
-    verifyEmptyField( line, "qualification",  filterTextField(object.qualification));
+    verifyEmptyField(line, "qualification", filterTextField(object.qualification));
 
     String text = filterTextField(object.relation_type);
     if (text != null) {
       if ("authored_by".equals(text)) {
+        nAuthoredBy++;
         if ("Document".equals(object.leftObject) && "Person".equals(object.rightObject)) {
-        	  // handle
+          boolean valid = true;
+          Reference sourceRef = personRefMap.get(rightId);
+          if (sourceRef == null) {
+            valid = false;
+            System.out.printf("Cannot find rightId %s%n", rightId);
+          }
+          Reference targetRef = documentRefMap.get(leftId);
+          if (targetRef == null) {
+            valid = false;
+            System.out.printf("Cannot find leftId %s%n", leftId);
+          }
+          if (valid) {
+            relationManager.storeRelation(WWRelation.class, sourceRef, refCreatorOf, targetRef, change);
+          }
         } else {
           System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
         }
       } else if ("collaboration".equals(text)) {
         if ("Person".equals(object.leftObject) && "Person".equals(object.rightObject)) {
-        	  // handle
-        } else {
-          System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("keyword".equals(text)) {
-        if ("Keyword".equals(object.leftObject) && "Document".equals(object.rightObject)) {
           // handle
         } else {
           System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
         }
+      } else if ("keyword".equals(text)) {
+        nKeyword++;
+        if ("Keyword".equals(object.leftObject) && "Document".equals(object.rightObject)) {
+          boolean valid = true;
+          if (!toposIds.contains(leftId)) {
+            Reference sourceRef = keywordRefMap.get(leftId);
+            if (sourceRef == null) {
+              valid = false;
+              System.out.printf("Cannot find leftId %s - %s%n", rightId, line);
+            }
+            Reference targetRef = documentRefMap.get(rightId);
+            if (targetRef == null) {
+              valid = false;
+              System.out.printf("Cannot find rightId %s - %s%n", leftId, line);
+            }
+            if (valid) {
+              relationManager.storeRelation(WWRelation.class, sourceRef, refKeywordOf, targetRef, change);
+            }
+          }
+        } else {
+          System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
+        }
       } else if ("language".equals(text)) {
+        nLanguage++;
         if ("Document".equals(object.leftObject) && "Language".equals(object.rightObject)) {
+          boolean valid = true;
+          Reference sourceRef = languageRefMap.get(rightId);
+          if (sourceRef == null) {
+            valid = false;
+            System.out.printf("Cannot find rightId %s - %s%n", rightId, line);
+          }
+          Reference targetRef = documentRefMap.get(leftId);
+          if (targetRef == null) {
+            valid = false;
+            System.out.printf("Cannot find leftId %s - %s%n", leftId, line);
+          }
+          if (valid) {
+            relationManager.storeRelation(WWRelation.class, sourceRef, refLanguageOf, targetRef, change);
+          }
           // handle
         } else if ("Person".equals(object.leftObject) && "Language".equals(object.rightObject)) {
           // handle
@@ -1134,7 +1172,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
           System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
         }
       } else if ("place_of_birth".equals(text)) {
-         if ("Person".equals(object.leftObject) && "Location".equals(object.rightObject)) {
+        if ("Person".equals(object.leftObject) && "Location".equals(object.rightObject)) {
           // handle
         } else {
           System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
@@ -1152,11 +1190,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
           System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
         }
       } else if ("relation".equals(text)) {
-          if ("Person".equals(object.leftObject) && "Person".equals(object.rightObject)) {
-            // handle
-          } else {
-            System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
-          }
+        if ("Person".equals(object.leftObject) && "Person".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
+        }
       } else if ("spouse".equals(text)) {
         if ("Person".equals(object.leftObject) && "Person".equals(object.rightObject)) {
           // handle

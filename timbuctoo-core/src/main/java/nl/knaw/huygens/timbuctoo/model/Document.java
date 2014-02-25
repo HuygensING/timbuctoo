@@ -22,8 +22,8 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.IS_CREATOR_OF;
-import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.IS_LANGUAGE_OF;
+import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.CREATOR_OF;
+import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.LANGUAGE_OF;
 
 import java.util.List;
 
@@ -63,7 +63,7 @@ public class Document extends DomainEntity {
   }
 
   public static enum ResourceType {
-	  UNKNOWN, IMAGE, SOUND, TEXT
+    UNKNOWN, IMAGE, SOUND, TEXT
   }
 
   private String title;
@@ -168,7 +168,7 @@ public class Document extends DomainEntity {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getCreators() {
-    return getRelations().get(IS_CREATOR_OF.inverse);
+    return getRelations().get(CREATOR_OF.inverse);
   }
 
   // TODO decide which relation; how to filter keyword type
@@ -181,7 +181,7 @@ public class Document extends DomainEntity {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getLanguages() {
-    return getRelations().get(IS_LANGUAGE_OF.inverse);
+    return getRelations().get(LANGUAGE_OF.inverse);
   }
 
 }
