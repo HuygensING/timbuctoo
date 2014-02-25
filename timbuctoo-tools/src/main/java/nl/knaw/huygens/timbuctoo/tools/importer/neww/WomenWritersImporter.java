@@ -44,6 +44,7 @@ import nl.knaw.huygens.timbuctoo.model.neww.WWKeyword;
 import nl.knaw.huygens.timbuctoo.model.neww.WWLanguage;
 import nl.knaw.huygens.timbuctoo.model.neww.WWLocation;
 import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
+import nl.knaw.huygens.timbuctoo.model.neww.WWRelation;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Gender;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
@@ -165,11 +166,12 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     printBoxedText("2. Basic properties");
 
     boolean importCollectives = false;
-    boolean importDocuments = true;
+    boolean importDocuments = false;
     boolean importKeywords = false;
     boolean importLanguages = false;
     boolean importLocations = false;
     boolean importPersons = false;
+    boolean importRelations = true;
 
     if (importCollectives) {
       System.out.println(".. Collectives");
@@ -214,6 +216,13 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
 
     // printBoxedText("3. Relations");
+
+    if (importRelations) {
+      System.out.println(".. Relations");
+      tempRefMap.clear();
+      importRelations(tempRefMap);
+      System.out.printf("Number of entries = %d%n", tempRefMap.size());
+    }
 
     // printBoxedText("4. Indexing");
 
@@ -975,8 +984,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       }
     }
 
-    // System.out.printf("%d: %s%n", ++kkk, filterTextField(item));
-
     return converted;
   }
 
@@ -1026,6 +1033,173 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   public static class XURL {
     public String url;
     public String label;
+  }
+
+  // --- Relations -------------------------------------------------------------
+
+  private void importRelations(Map<String, Reference> references) throws Exception {
+    LineIterator iterator = getLineIterator("relations.json");
+    String line = "";
+    try {
+      while (iterator.hasNext()) {
+        line = preprocessJson(iterator.nextLine());
+        if (!line.isEmpty()) {
+        	handleRelation(preprocessRelation(line), references);
+        }
+      }
+    } catch (JsonMappingException e) {
+      System.out.println(line);
+      throw e;
+    } finally {
+      LineIterator.closeQuietly(iterator);
+    }
+  }
+
+  private String preprocessRelation(String text) {
+    return text;
+  }
+
+  private void handleRelation(String json, Map<String, Reference> references) throws Exception {
+    XRelation object = objectMapper.readValue(json, XRelation.class);
+    String jsonId = object.tempid;
+    if (references.containsKey(jsonId)) {
+      handleError("Duplicate id %s", jsonId);
+    } else {
+      WWRelation converted = convert(json, object);
+      if (converted == null) {
+        handleError("Ignoring invalid record: %s", json);
+      } else {
+        // String storedId = addDomainEntity(WWRelation.class, converted);
+        // references.put(jsonId, new Reference(WWRelation.class, storedId));
+      }
+    }
+  }
+
+  private WWRelation convert(String line, XRelation object) {
+    WWRelation converted = new WWRelation();
+
+    verifyEmptyField( line, "canonizing",  filterTextField(object.canonizing));
+    verifyEmptyField( line, "certainty",  filterTextField(object.certainty));
+    //verifyEmptyField( line, "child_female",  filterTextField(object.child_female));
+    //verifyEmptyField( line, "child_male",  filterTextField(object.child_male));
+    verifyEmptyField( line, "notes",  filterTextField(object.notes));
+    //verifyEmptyField( line, "parent_female",  filterTextField(object.parent_female));
+    //verifyEmptyField( line, "parent_male",  filterTextField(object.parent_male));
+    verifyEmptyField( line, "qualification",  filterTextField(object.qualification));
+
+    String text = filterTextField(object.relation_type);
+    if (text != null) {
+      if ("authored_by".equals(text)) {
+        if ("Document".equals(object.leftObject) && "Person".equals(object.rightObject)) {
+        	  // handle
+        } else {
+          System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
+        }
+      } else if ("collaboration".equals(text)) {
+        if ("Person".equals(object.leftObject) && "Person".equals(object.rightObject)) {
+        	  // handle
+        } else {
+          System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
+        }
+      } else if ("keyword".equals(text)) {
+        if ("Keyword".equals(object.leftObject) && "Document".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
+        }
+      } else if ("language".equals(text)) {
+        if ("Document".equals(object.leftObject) && "Language".equals(object.rightObject)) {
+          // handle
+        } else if ("Person".equals(object.leftObject) && "Language".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
+        }
+      } else if ("location".equals(text)) {
+        if ("Person".equals(object.leftObject) && "Location".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
+        }
+      } else if ("membership".equals(text)) {
+        if ("Collective".equals(object.leftObject) && "Person".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
+        }
+      } else if ("origin".equals(text)) {
+        if ("Person".equals(object.leftObject) && "Location".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
+        }
+      } else if ("place_of_birth".equals(text)) {
+         if ("Person".equals(object.leftObject) && "Location".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
+        }
+      } else if ("publishing_pseudonym".equals(text)) {
+        if ("Person".equals(object.leftObject) && "Person".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
+        }
+      } else if ("reception".equals(text)) {
+        if ("Person".equals(object.leftObject) && "Document".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
+        }
+      } else if ("relation".equals(text)) {
+          if ("Person".equals(object.leftObject) && "Person".equals(object.rightObject)) {
+            // handle
+          } else {
+            System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
+          }
+      } else if ("spouse".equals(text)) {
+        if ("Person".equals(object.leftObject) && "Person".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
+        }
+      } else if ("stored_at".equals(text)) {
+        if ("Document".equals(object.leftObject) && "Collective".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("%s - %s%n", object.leftObject, object.rightObject);
+        }
+      } else {
+        System.out.printf("%s: %s - %s%n", text, object.leftObject, object.rightObject);
+      }
+    }
+
+    converted.setReception(object.isReception);
+
+    return converted;
+  }
+
+  protected static class XRelation {
+    public String tempid;
+    public String canonizing; // EMPTY
+    public String certainty; // EMPTY
+    public String child_female;
+    public String child_male;
+    public boolean isReception;
+    public String leftId;
+    public String leftName;
+    public String leftObject;
+    public String notes; // EMPTY
+    public int old_id; // ignored
+    public String original_table; // ignored
+    public String parent_female;
+    public String parent_male;
+    public String qualification; // EMPTY
+    public String reception_relation_type; // very sparse
+    public String relation_type; // text
+    public String rightId;
+    public String rightName;
+    public String rightObject;
   }
 
 }
