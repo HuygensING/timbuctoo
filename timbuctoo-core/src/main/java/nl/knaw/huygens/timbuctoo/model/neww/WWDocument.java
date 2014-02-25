@@ -24,8 +24,9 @@ package nl.knaw.huygens.timbuctoo.model.neww;
 
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Document;
-import nl.knaw.huygens.timbuctoo.model.util.Link;
+import nl.knaw.huygens.timbuctoo.model.EntityRef;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
@@ -33,9 +34,8 @@ import com.google.common.collect.Lists;
 public class WWDocument extends Document {
 
   private String notes;
-  private String reference;
   private String origin;
-  private Link link;
+  private List<String> topoi;
   private List<Print> prints;
   private Source source;
 
@@ -43,6 +43,7 @@ public class WWDocument extends Document {
   public String tempLanguage;
 
   public WWDocument() {
+    topoi = Lists.newArrayList();
     prints = Lists.newArrayList();
   }
 
@@ -54,14 +55,6 @@ public class WWDocument extends Document {
     this.notes = notes;
   }
 
-  public String getReference() {
-    return reference;
-  }
-
-  public void setReference(String reference) {
-    this.reference = reference;
-  }
-
   public String getOrigin() {
     return origin;
   }
@@ -70,12 +63,18 @@ public class WWDocument extends Document {
     this.origin = origin;
   }
 
-  public Link getLink() {
-    return link;
+  public List<String> getTopoi() {
+   return topoi;
   }
 
-  public void setLink(Link link) {
-    this.link = link;
+  public void setTopoi(List<String> topoi) {
+    this.topoi = topoi;
+  }
+
+  public void addTopos(String topos) {
+    if (topos != null) {
+      topoi.add(topos);
+    }
   }
 
   public List<Print> getPrints() {
@@ -100,7 +99,13 @@ public class WWDocument extends Document {
 
   @JsonIgnore
   public boolean isValid() {
-    return getType() != null && getTitle() != null;
+    return getTitle() != null;
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_library", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
+  public List<EntityRef> getLanguages() {
+    return getRelations().get("library");
   }
 
   // ---------------------------------------------------------------------------

@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.model.Document.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -375,20 +376,20 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
   }
 
-  private Map<String, String> documentTypeMap;
+  private Map<String, DocumentType> documentTypeMap;
 
-  private Map<String, String> createDocumentTypeMap() {
-    Map<String, String> map = Maps.newHashMap();
-    map.put("Article", "Article");
-    map.put("Catalogue", "Catalogue");
-    map.put("List", "List");
-    map.put("Picture", "Picture");
-    map.put("Publicity", "Publicity");
-    map.put("TBD", "TBD");
-    map.put("To Be Done", "TBD");
-    map.put("To be done", "TBD");
-    map.put("Work", "Work");
-    map.put("work", "Work");
+  private Map<String, DocumentType> createDocumentTypeMap() {
+    Map<String, DocumentType> map = Maps.newHashMap();
+    map.put("Article", DocumentType.ARTICLE);
+    map.put("Catalogue", DocumentType.CATALOGUE);
+    map.put("List", DocumentType.UNKNOWN);
+    map.put("Picture", DocumentType.PICTURE);
+    map.put("Publicity", DocumentType.PUBLICITY);
+    map.put("TBD", DocumentType.UNKNOWN);
+    map.put("To Be Done", DocumentType.UNKNOWN);
+    map.put("To be done", DocumentType.UNKNOWN);
+    map.put("Work", DocumentType.WORK);
+    map.put("work", DocumentType.WORK);
     return map;
   }
 
@@ -422,11 +423,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     WWDocument converted = new WWDocument();
 
     String type = filterTextField(object.type);
-    if (type != null) {
-      type = documentTypeMap.get(type);
-    }
     verifyNonEmptyField(line, "type", type);
-    converted.setType(type);
+    DocumentType documentType = (type == null) ? null : documentTypeMap.get(type);
+    converted.setDocumentType(documentType);
 
     converted.setTitle(filterTextField(object.title));
     verifyNonEmptyField(line, "title", converted.getTitle());
@@ -445,6 +444,15 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.setNotes(filterTextField(object.notes));
     converted.setOrigin(filterTextField(object.origin));
     converted.setReference(filterTextField(object.reference));
+
+    // the keywords are not normalized: identical topoi occur as different items
+    if (object.topoi != null && object.topoi.length != 0) {
+      for (String[] topos : object.topoi) {
+        if (topos[0] != null) {
+          converted.addTopos(topos[0]);
+        }
+      }
+    }
 
     if (object.prints != null) {
       // order by key
@@ -471,7 +479,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     String url = filterTextField(object.url);
     if (url != null) {
-      converted.setLink(new Link(url, filterTextField(object.url_title)));
+      converted.addLink(new Link(url, filterTextField(object.url_title)));
     }
 
     converted.tempCreator = filterTextField(object.creator);

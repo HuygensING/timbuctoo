@@ -30,35 +30,61 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.Link;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Lists;
 
 /**
- * Contains the identified core fields.
- * However, creators and languages are implemented as relation.
- * Relations must be modelled better. E.g. where to put definitions, which restrictions apply?
+ * <h1>Relation to Dublin Core Metadata</h1>
+ * The Dublin Core metadata element set consists of 15 elements.
+ * <table>
+ * <tr><td>Title</td><td>the <code>title</code> property</td></tr>
+ * <tr><td>Creator</td><td>implemented as relation to <code>Person</code>; see <code>getCreators()</code></td></tr>
+ * <tr><td>Subject</td><td>implemented as relation to <code>Keyword</code>; see <code>getSubjects()</code></td></tr>
+ * <tr><td>Description</td><td>the <code>description</code> property</td></tr>
+ * <tr><td>Publisher</td><td>not (yet) implemented</td></tr>
+ * <tr><td>Contributor</td><td>not (yet) implemented</td></tr>
+ * <tr><td>Date</td><td>the <code>date</code> property</td></tr>
+ * <tr><td>Type</td><td>the <code>resourceType</code> property</td></tr>
+ * <tr><td>Format</td><td>the <code>resourceFormat</code> property</td></tr>
+ * <tr><td>Identifier</td><td>the <code>pid</code> domain entity property</td></tr>
+ * <tr><td>Language</td><td>implemented as relation to <code>Language</code>; see <code>getLanguages()</code></td></tr>
+ * <tr><td>Relation</td><td>not (yet) implemented</td></tr>
+ * <tr><td>Coverage</td><td>not (yet) implemented</td></tr>
+ * <tr><td>Rights</td><td>the <code>rights</code> property</td></tr>
+ * </table>
  */
 @IDPrefix("DOCU")
 public class Document extends DomainEntity {
 
-  // 'Anthology', 'Article', 'Award', 'Catalogue', 'Compilation', 'Diary', 'Letter', 'List',
-  // 'Periodical', 'Picture', 'Publicity', 'Sheetmusic', 'TBD', 'Theater Script', 'Work'
-  private String type;
+  public static enum DocumentType {
+    UNKNOWN, ANTHOLOGY, ARTICLE, AWARD, CATALOGUE, COMPILATION, DIARY, LETTER, PERIODICAL, PICTURE, PUBLICITY, WORK
+  }
+
+  public static enum ResourceType {
+	  UNKNOWN, IMAGE, SOUND, TEXT
+  }
+
   private String title;
   private String description;
   private Datable date;
+  private DocumentType documentType;
+  private ResourceType resourceType;
+  private String resourceFormat;
+  private List<Link> links;
+  private String reference;
+  private String rights;
+
+  public Document() {
+    setDocumentType(null);
+    setResourceType(null);
+    links = Lists.newArrayList();
+  }
 
   @Override
   public String getDisplayName() {
     return getTitle();
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
   }
 
   public String getTitle() {
@@ -85,10 +111,71 @@ public class Document extends DomainEntity {
     this.date = date;
   }
 
+  public DocumentType getDocumentType() {
+    return documentType;
+  }
+
+  public void setDocumentType(DocumentType documentType) {
+    this.documentType = (documentType == null) ? DocumentType.UNKNOWN : documentType;
+  }
+
+  public ResourceType getResourceType() {
+    return resourceType;
+  }
+
+  public void setResourceType(ResourceType resourceType) {
+    this.resourceType = (resourceType == null) ? ResourceType.UNKNOWN : resourceType;
+  }
+
+  public String getResourceFormat() {
+    return resourceFormat;
+  }
+
+  public void setResourceFormat(String resourceFormat) {
+    this.resourceFormat = resourceFormat;
+  }
+
+  public List<Link> getLinks() {
+    return links;
+  }
+
+  public void setLinks(List<Link> links) {
+    this.links = links;
+  }
+
+  public void addLink(Link link) {
+    if (link != null) {
+      links.add(link);
+    }
+  }
+
+  public String getReference() {
+    return reference;
+  }
+
+  public void setReference(String reference) {
+    this.reference = reference;
+  }
+
+  public String getRights() {
+    return rights;
+  }
+
+  public void setRights(String rights) {
+    this.rights = rights;
+  }
+
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getCreators() {
     return getRelations().get(IS_CREATOR_OF.inverse);
+  }
+
+  // TODO decide which relation; how to filter keyword type
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
+  public List<EntityRef> getSubjects() {
+    return getRelations().get("subject");
   }
 
   @JsonIgnore
