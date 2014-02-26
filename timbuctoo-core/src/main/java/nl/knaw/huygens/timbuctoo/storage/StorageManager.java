@@ -33,11 +33,14 @@ import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Archive;
 import nl.knaw.huygens.timbuctoo.model.Archiver;
+import nl.knaw.huygens.timbuctoo.model.Collective;
+import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Keyword;
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Legislation;
+import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Place;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -88,9 +91,12 @@ public class StorageManager {
     // TODO determine list dynamically
     status.addDomainEntityCount(getCount(Archive.class));
     status.addDomainEntityCount(getCount(Archiver.class));
+    status.addDomainEntityCount(getCount(Collective.class));
+    status.addDomainEntityCount(getCount(Document.class));
     status.addDomainEntityCount(getCount(Keyword.class));
     status.addDomainEntityCount(getCount(Language.class));
     status.addDomainEntityCount(getCount(Legislation.class));
+    status.addDomainEntityCount(getCount(Location.class));
     status.addDomainEntityCount(getCount(Person.class));
     status.addDomainEntityCount(getCount(Place.class));
     status.addDomainEntityCount(getCount(Relation.class));

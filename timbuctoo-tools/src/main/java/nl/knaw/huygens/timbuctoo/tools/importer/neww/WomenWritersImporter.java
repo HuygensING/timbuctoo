@@ -1040,7 +1040,90 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Relations -------------------------------------------------------------
 
+  public static class RelationDef {
+    public String name;
+    public String leftObject;
+    public String rightObject;
+
+    public RelationDef() {};
+
+    public RelationDef(String name, String leftObject, String rightObject) {
+      this.name = name;
+      this.leftObject = leftObject;
+      this.rightObject = rightObject;
+    }
+  }
+
+  private final Map<String, RelationDef> relationDefs = Maps.newHashMap();
+
+  private void addRelationDef(String name, String leftObject, String rightObject) {
+    String key = name + leftObject + rightObject;
+    if (relationDefs.containsKey(key)) {
+      System.out.printf("Duplicate key %s%n", key);
+    } else {
+      relationDefs.put(key, new RelationDef(name, leftObject, rightObject));
+    }
+  }
+
+  private void setupRelationDefs() {
+    addRelationDef("TBD", "Document", "Document");
+    addRelationDef("TBD", "Person", "Document");
+    addRelationDef("adaptation of", "Document", "Document");
+    addRelationDef("adaptation of", "Person", "Document");
+    addRelationDef("annotated in", "Document", "Document");
+    addRelationDef("annotated in", "Person", "Document");
+    addRelationDef("authored_by", "Document", "Person");
+    addRelationDef("biography of", "Document", "Document");
+    addRelationDef("biography of", "Person", "Document");
+    addRelationDef("censored by", "Document", "Document");
+    addRelationDef("collaborated_with", "Person", "Person");
+    addRelationDef("comments on", "Document", "Document");
+    addRelationDef("comments on", "Person", "Document");
+    addRelationDef("contains", "Document", "Document");
+    addRelationDef("contains", "Person", "Document");
+    addRelationDef("copied of", "Document", "Document");
+    addRelationDef("copied of", "Person", "Document");
+    addRelationDef("dedicated to", "Document", "Document");
+    addRelationDef("dedicated to", "Person", "Document");
+    addRelationDef("edition of", "Document", "Document");
+    addRelationDef("granted to", "Document", "Document");
+    addRelationDef("granted to", "Person", "Document");
+    addRelationDef("has preface", "Document", "Document");
+    addRelationDef("has preface", "Person", "Document");
+    addRelationDef("intertextual", "Document", "Document");
+    addRelationDef("intertextual", "Person", "Document");
+    addRelationDef("listed on", "Document", "Document");
+    addRelationDef("listed on", "Person", "Document");
+    addRelationDef("located_at", "Collective", "Location");
+    addRelationDef("located_at", "Document", "Location");
+    addRelationDef("membership", "Collective", "Person");
+    addRelationDef("mentioned in", "Document", "Document");
+    addRelationDef("mentioned in", "Person", "Document");
+    addRelationDef("mentioned_in", "Document", "Document");
+    addRelationDef("obituary of", "Document", "Document");
+    addRelationDef("obituary of", "Person", "Document");
+    addRelationDef("origin", "Document", "Location");
+    addRelationDef("parody of", "Document", "Document");
+    addRelationDef("parody of", "Person", "Document");
+    addRelationDef("place_of_birth", "Person", "Location");
+    addRelationDef("plagiarism of", "Document", "Document");
+    addRelationDef("publishing_pseudonym", "Person", "Person");
+    addRelationDef("quoted in", "Document", "Document");
+    addRelationDef("quoted in", "Person", "Document");
+    addRelationDef("referenced in", "Document", "Document");
+    addRelationDef("referenced in", "Person", "Document");
+    addRelationDef("relation", "Person", "Person");
+    addRelationDef("sequeled by", "Document", "Document");
+    addRelationDef("spouse_of", "Person", "Person");
+    addRelationDef("stored_at", "Document", "Collective");
+    addRelationDef("stored_at", "Document", "Location");
+    addRelationDef("translation of", "Document", "Document");
+    addRelationDef("translation of", "Person", "Document");
+    addRelationDef("translation", "Document", "Document");
+  }
+
   private void importRelations(Map<String, Reference> references) throws Exception {
+    setupRelationDefs();
     LineIterator iterator = getLineIterator("relations.json");
     String line = "";
     try {
@@ -1116,18 +1199,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         } else {
           System.out.printf("authored_by: %s - %s%n", object.leftObject, object.rightObject);
         }
-      } else if ("collaborated_with".equals(text)) {
-        if ("Person".equals(object.leftObject) && "Person".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("collaborated_with: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("comments on".equals(text)) {
-        if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("comments on: %s - %s%n", object.leftObject, object.rightObject);
-        }
       } else if ("keyword".equals(text)) {
         nKeyword++;
         if ("Keyword".equals(object.leftObject) && "Document".equals(object.rightObject)) {
@@ -1172,108 +1243,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         } else {
           System.out.printf("language: %s - %s%n", object.leftObject, object.rightObject);
         }
-      } else if ("listed on".equals(text)) {
-        if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("listed on: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("located_at".equals(text)) {
-        if ("Collective".equals(object.leftObject) && "Location".equals(object.rightObject)) {
-          // handle
-        } else if ("Document".equals(object.leftObject) && "Location".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("located_at: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("membership".equals(text)) {
-        if ("Collective".equals(object.leftObject) && "Person".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("membership: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("origin".equals(text)) {
-        if ("Document".equals(object.leftObject) && "Location".equals(object.rightObject)) {
-          // handle
-        } else if ("Person".equals(object.leftObject) && "Location".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("origin: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("place_of_birth".equals(text)) {
-        if ("Person".equals(object.leftObject) && "Location".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("place_of_birth: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("publishing_pseudonym".equals(text)) {
-        if ("Person".equals(object.leftObject) && "Person".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("publishing_pseudonym: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("reception".equals(text)) {
-        if ("Person".equals(object.leftObject) && "Document".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("reception: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("relation".equals(text)) {
-        if ("Person".equals(object.leftObject) && "Person".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("relation: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("spouse_of".equals(text)) {
-        if ("Person".equals(object.leftObject) && "Person".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("spouse_of: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("stored_at".equals(text)) {
-        if ("Document".equals(object.leftObject) && "Collective".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("stored_at: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("translation of".equals(text)) {
-        if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("translation of: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("mentioned in".equals(text)) {
-        if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("mentioned in: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("adaptation of".equals(text)) {
-        if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("adaptation of: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("censored by".equals(text)) {
-        if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("censored by: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("plagiarism of".equals(text)) {
-        if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("plagiarism of: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("intertextual".equals(text)) {
-        if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("intertextual: %s - %s%n", object.leftObject, object.rightObject);
-        }
       } else {
-        System.out.printf("%s: %s - %s%n", text, object.leftObject, object.rightObject);
+        String key = text + object.leftObject + object.rightObject;
+        if (!relationDefs.containsKey(key)) {
+          System.out.printf("Missing relation [%s: %s --> %s]%n", text, object.leftObject, object.rightObject);
+        }
       }
     }
 
