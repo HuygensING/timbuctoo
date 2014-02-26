@@ -38,11 +38,6 @@ public class WWCollective extends Collective {
   // For establishing relation with location
   public String tempOrigin;
 
-  // Candidate for removal
-  public String tempEmail;
-  // Candidate for removal
-  public String tempTelephone;
-
   // -- accessors --------------------------------------------------------------
 
   public String getShortName() {

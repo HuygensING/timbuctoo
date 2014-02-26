@@ -22,12 +22,17 @@ package nl.knaw.huygens.timbuctoo.model.neww;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.LANGUAGE_OF;
+
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.model.Person;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
 public class WWPerson extends Person {
@@ -39,19 +44,19 @@ public class WWPerson extends Person {
   private List<String> financials;
   private List<String> fsPseudonyms;
   private String health;
-  // TODO convert to relations
-  private List<String> languages;
   private String livedIn;
   private String maritalStatus;
   private List<String> memberships;
-  private String motherTongue;
   private String nationality;
   private String notes;
   private String personalSituation;
 
+  // Fields scheduled for removal
   public String tempBirthPlace;
   public String tempDeath;
   public String tempFinancialSituation;
+  public List<String> tempLanguages = Lists.newArrayList();
+  public String tempMotherTongue;
   public String tempName;
   public List<String> tempPlaceOfBirth = Lists.newArrayList();
 
@@ -60,7 +65,6 @@ public class WWPerson extends Person {
     educations = Lists.newArrayList();
     financials = Lists.newArrayList();
     fsPseudonyms = Lists.newArrayList();
-    languages = Lists.newArrayList();
     memberships = Lists.newArrayList();
   }
 
@@ -169,17 +173,9 @@ public class WWPerson extends Person {
     this.health = health;
   }
 
-  public List<String> getLanguages() {
-    return languages;
-  }
-
-  public void setLanguages(List<String> languages) {
-    this.languages = languages;
-  }
-
-  public void addLanguage(String value) {
+  public void addTempLanguage(String value) {
     if (value != null) {
-      languages.add(value);
+      tempLanguages.add(value);
     }
   }
 
@@ -211,14 +207,6 @@ public class WWPerson extends Person {
     memberships.add(value);
   }
 
-  public String getMotherTongue() {
-    return motherTongue;
-  }
-
-  public void setMotherTongue(String motherTongue) {
-    this.motherTongue = motherTongue;
-  }
-
   public String getNationality() {
     return nationality;
   }
@@ -241,6 +229,12 @@ public class WWPerson extends Person {
 
   public void setPersonalSituation(String personalSituation) {
     this.personalSituation = personalSituation;
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
+  public List<EntityRef> getPrimaryLanguages() {
+    return getRelations().get(LANGUAGE_OF.inverse);
   }
 
 }

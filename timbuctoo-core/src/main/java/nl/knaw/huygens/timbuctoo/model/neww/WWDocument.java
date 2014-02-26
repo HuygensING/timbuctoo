@@ -28,6 +28,8 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.EntityRef;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
@@ -36,15 +38,15 @@ public class WWDocument extends Document {
   private String notes;
   private String origin;
   private List<String> topoi;
-  private List<Print> prints;
   private Source source;
 
   public String tempCreator;
   public String tempLanguage;
+  public List<Print> tempPrints;
 
   public WWDocument() {
     topoi = Lists.newArrayList();
-    prints = Lists.newArrayList();
+    tempPrints = Lists.newArrayList();
   }
 
   public String getNotes() {
@@ -64,7 +66,7 @@ public class WWDocument extends Document {
   }
 
   public List<String> getTopoi() {
-   return topoi;
+    return topoi;
   }
 
   public void setTopoi(List<String> topoi) {
@@ -77,16 +79,8 @@ public class WWDocument extends Document {
     }
   }
 
-  public List<Print> getPrints() {
-    return prints;
-  }
-
-  public void setPrints(List<Print> prints) {
-    this.prints = prints;
-  }
-
-  public void addPrint(Print print) {
-    prints.add(print);
+  public void addTempPrint(Print print) {
+    tempPrints.add(print);
   }
 
   public Source getSource() {
@@ -104,7 +98,7 @@ public class WWDocument extends Document {
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_library", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
-  public List<EntityRef> getLanguages() {
+  public List<EntityRef> getLibraries() {
     return getRelations().get("library");
   }
 
@@ -131,7 +125,7 @@ public class WWDocument extends Document {
     }
 
     public void setEdition(String edition) {
-      this.edition = edition;
+      this.edition = StringUtils.stripToEmpty(edition);
     }
 
     public String getPublisher() {
@@ -139,7 +133,7 @@ public class WWDocument extends Document {
     }
 
     public void setPublisher(String publisher) {
-      this.publisher = publisher;
+      this.publisher = StringUtils.stripToEmpty(publisher);
     }
 
     public String getLocation() {
@@ -147,7 +141,7 @@ public class WWDocument extends Document {
     }
 
     public void setLocation(String location) {
-      this.location = location;
+      this.location = StringUtils.stripToEmpty(location);
     }
 
     public String getYear() {
@@ -155,7 +149,12 @@ public class WWDocument extends Document {
     }
 
     public void setYear(String year) {
-      this.year = year;
+      this.year = StringUtils.stripToEmpty(year);
+    }
+
+    @Override
+    public String toString() {
+      return String.format("[%s] [%s] [%s] [%s]", edition, publisher, location, year);
     }
 
   }

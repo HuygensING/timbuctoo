@@ -43,7 +43,7 @@ import com.google.common.collect.Lists;
  * <tr><td>Creator</td><td>implemented as relation to <code>Person</code>; see <code>getCreators()</code></td></tr>
  * <tr><td>Subject</td><td>implemented as relation to <code>Keyword</code>; see <code>getSubjects()</code></td></tr>
  * <tr><td>Description</td><td>the <code>description</code> property</td></tr>
- * <tr><td>Publisher</td><td>not (yet) implemented</td></tr>
+ * <tr><td>Publisher</td><td>the <code>publisher</code> property</td></tr>
  * <tr><td>Contributor</td><td>not (yet) implemented</td></tr>
  * <tr><td>Date</td><td>the <code>date</code> property</td></tr>
  * <tr><td>Type</td><td>the <code>resourceType</code> property</td></tr>
@@ -73,6 +73,7 @@ public class Document extends DomainEntity {
   private ResourceType resourceType;
   private String resourceFormat;
   private List<Link> links;
+  private String publisher;
   private String reference;
   private String rights;
 
@@ -147,6 +148,14 @@ public class Document extends DomainEntity {
     if (link != null) {
       links.add(link);
     }
+  }
+
+  public String getPublisher() {
+    return publisher;
+  }
+
+  public void setPublisher(String publisher) {
+    this.publisher = publisher;
   }
 
   public String getReference() {

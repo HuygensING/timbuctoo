@@ -27,6 +27,7 @@ import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.KEYWORD_OF;
 import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.LANGUAGE_OF;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -59,6 +60,7 @@ import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
 import nl.knaw.huygens.timbuctoo.util.Files;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -255,9 +257,14 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   private String preprocessJson(String line) {
     line = StringUtils.stripToEmpty(line);
-    line = line.replaceAll("\"_id\"", "\"tempid\"");
-    line = line.replaceAll("ObjectId\\(\\s*(\\S+)\\s*\\)", "$1");
-    return line;
+    if (line.startsWith("{")) {
+      line = line.replaceAll("\"_id\"", "\"tempid\"");
+      line = line.replaceAll("ObjectId\\(\\s*(\\S+)\\s*\\)", "$1");
+      return line;
+    } else {
+      System.out.println("## Skipping line: " + line);
+      return "";
+    }
   }
 
   private void verifyEmptyField(String line, String key, String value) {
@@ -297,9 +304,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       handleError("Duplicate id %s", jsonId);
     } else {
       WWCollective converted = convert(json, object);
-      if (converted == null) {
-        handleError("Ignoring invalid record %s", jsonId);
-      } else {
+      if (converted != null) {
         String storedId = addDomainEntity(WWCollective.class, converted);
         references.put(jsonId, new Reference(WWCollective.class, storedId));
       }
@@ -308,14 +313,12 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   private WWCollective convert(String line, XCollective object) {
     WWCollective converted = new WWCollective();
-    converted.tempEmail = filterTextField(object.email);
     converted.tempLocationPlacename = filterTextField(object.location_placename);
     converted.setName(filterTextField(object.name));
     converted.setNotes(filterTextField(object.notes));
     converted.tempOrigin = filterTextField(object.origin);
     converted.setShortName(filterTextField(object.short_name));
     converted.setType(filterTextField(object.type));
-    converted.tempTelephone = filterTextField(object.telephone);
     String url = filterTextField(object.url);
     if (url != null) {
       converted.setLink(new Link(url, null));
@@ -346,6 +349,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Documents -------------------------------------------------------------
 
+  private final Map<Integer, String> records = Maps.newTreeMap();
+
   private void importDocuments(Map<String, Reference> references) throws Exception {
     documentTypeMap = createDocumentTypeMap();
     LineIterator iterator = getLineIterator("documents.json");
@@ -358,11 +363,17 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         }
       }
     } catch (JsonMappingException e) {
-        System.out.println(line);
-        throw e;
-      } finally {
+      System.out.println(line);
+      throw e;
+    } finally {
       LineIterator.closeQuietly(iterator);
     }
+
+    FileOutputStream stream = new FileOutputStream(new File("neww-prints.txt"), false);
+    for (Map.Entry<Integer, String> record : records.entrySet()) {
+      IOUtils.write(record.getValue(), stream, "UTF-8");
+    }
+    stream.close();
   }
 
   private Map<String, DocumentType> documentTypeMap;
@@ -421,6 +432,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.setDocumentType(documentType);
 
     String title = filterTextField(object.title);
+    verifyNonEmptyField(line, "title", title);
     converted.setTitle(title != null ? title : "TBD");
 
     converted.setDescription(filterTextField(object.description));
@@ -447,7 +459,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       }
     }
 
-    if (object.prints != null) {
+    if (object.prints != null && object.prints.size() != 0) {
+      StringBuilder builder = new StringBuilder();
+      builder.append(String.format("%n** Prints of record %d [%s]%n", object.old_id, converted.getTitle()));
       // order by key
       Map<String, Print> temp = Maps.newTreeMap();
       temp.putAll(object.prints);
@@ -457,8 +471,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         filteredPrint.setPublisher(filterTextField(entry.getValue().getPublisher()));
         filteredPrint.setLocation(filterTextField(entry.getValue().getLocation()));
         filteredPrint.setYear(filterTextField(entry.getValue().getYear()));
-        converted.addPrint(filteredPrint);
+        converted.addTempPrint(filteredPrint);
+        builder.append(String.format("%s%n", filteredPrint));
       }
+      // records.put(new Integer(object.old_id), builder.toString());
     }
 
     if (object.source != null) {
@@ -683,7 +699,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
             String code = mapName(map, name);
             Language language = storageManager.findEntity(Language.class, "^code", code);
             if (language == null) {
-              System.out.printf("\"%s\",\"?\",\"?\" *%n", name);
+              verifyNonEmptyField(line, "name", null);
             } else {
               String flag = name.equals(language.getName()) ? "" : "  *";
               System.out.printf("%-30s%-8s%-30s%s%n", name, language.getCode(), language.getName(), flag);
@@ -701,9 +717,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         }
       }
     } catch (JsonMappingException e) {
-        System.out.println(line);
-        throw e;
-      } finally {
+      System.out.println(line);
+      throw e;
+    } finally {
       LineIterator.closeQuietly(iterator);
     }
   }
@@ -936,7 +952,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     if (object.languages != null) {
       for (String item : object.languages) {
-        converted.addLanguage(filterTextField(item));
+        converted.addTempLanguage(filterTextField(item));
       }
     }
 
@@ -950,7 +966,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       }
     }
 
-    converted.setMotherTongue(filterTextField(object.mother_tongue));
+    converted.tempMotherTongue = filterTextField(object.mother_tongue);
 
     converted.tempName = filterTextField(object.name);
 
@@ -969,10 +985,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
 
     if (object.url != null) {
-      for (Map.Entry<String,String> entry : object.url.entrySet()) {
+      for (Map.Entry<String, String> entry : object.url.entrySet()) {
         String label = filterTextField(entry.getKey());
         String url = filterTextField(entry.getValue());
-        converted.addLink(new Link(url,label));
+        converted.addLink(new Link(url, label));
       }
     }
 
@@ -1101,11 +1117,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
           System.out.printf("authored_by: %s - %s%n", object.leftObject, object.rightObject);
         }
       } else if ("collaborated_with".equals(text)) {
-          if ("Person".equals(object.leftObject) && "Person".equals(object.rightObject)) {
-            // handle
-          } else {
-            System.out.printf("collaborated_with: %s - %s%n", object.leftObject, object.rightObject);
-          }
+        if ("Person".equals(object.leftObject) && "Person".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("collaborated_with: %s - %s%n", object.leftObject, object.rightObject);
+        }
       } else if ("comments on".equals(text)) {
         if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
           // handle
@@ -1221,41 +1237,41 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
           System.out.printf("stored_at: %s - %s%n", object.leftObject, object.rightObject);
         }
       } else if ("translation of".equals(text)) {
-          if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
-            // handle
-          } else {
-            System.out.printf("translation of: %s - %s%n", object.leftObject, object.rightObject);
-          }
+        if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("translation of: %s - %s%n", object.leftObject, object.rightObject);
+        }
       } else if ("mentioned in".equals(text)) {
-          if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
-            // handle
-          } else {
-            System.out.printf("mentioned in: %s - %s%n", object.leftObject, object.rightObject);
-          }
+        if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("mentioned in: %s - %s%n", object.leftObject, object.rightObject);
+        }
       } else if ("adaptation of".equals(text)) {
-          if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
-            // handle
-          } else {
-            System.out.printf("adaptation of: %s - %s%n", object.leftObject, object.rightObject);
-          }
+        if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("adaptation of: %s - %s%n", object.leftObject, object.rightObject);
+        }
       } else if ("censored by".equals(text)) {
-          if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
-            // handle
-          } else {
-            System.out.printf("censored by: %s - %s%n", object.leftObject, object.rightObject);
-          }
+        if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("censored by: %s - %s%n", object.leftObject, object.rightObject);
+        }
       } else if ("plagiarism of".equals(text)) {
-          if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
-            // handle
-          } else {
-            System.out.printf("plagiarism of: %s - %s%n", object.leftObject, object.rightObject);
-          }
+        if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("plagiarism of: %s - %s%n", object.leftObject, object.rightObject);
+        }
       } else if ("intertextual".equals(text)) {
-          if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
-            // handle
-          } else {
-            System.out.printf("intertextual: %s - %s%n", object.leftObject, object.rightObject);
-          }
+        if ("Document".equals(object.leftObject) && "Document".equals(object.rightObject)) {
+          // handle
+        } else {
+          System.out.printf("intertextual: %s - %s%n", object.leftObject, object.rightObject);
+        }
       } else {
         System.out.printf("%s: %s - %s%n", text, object.leftObject, object.rightObject);
       }
@@ -1268,7 +1284,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   private <T extends Relation> void storeRelation(Class<T> type, Reference sourceRef, Reference relTypeRef, Reference targetRef, Change change, String line) {
     try {
-	  relationManager.storeRelation(type, sourceRef, relTypeRef, targetRef, change);
+      relationManager.storeRelation(type, sourceRef, relTypeRef, targetRef, change);
     } catch (IllegalArgumentException e) {
       System.out.println(line);
       throw e;
