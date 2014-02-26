@@ -22,13 +22,17 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
+import java.util.List;
+
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Gender;
+import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Lists;
 
 @IDPrefix("PERS")
 public class Person extends DomainEntity {
@@ -38,9 +42,11 @@ public class Person extends DomainEntity {
   private Gender gender;
   private Datable birthDate;
   private Datable deathDate;
+  private List<Link> links;
 
   public Person() {
     name = new PersonName();
+    links = Lists.newArrayList();
   }
 
   @Override
@@ -86,6 +92,20 @@ public class Person extends DomainEntity {
 
   public void setDeathDate(Datable deathDate) {
     this.deathDate = deathDate;
+  }
+
+  public List<Link> getLinks() {
+    return links;
+  }
+
+  public void setLinks(List<Link> links) {
+    this.links = links;
+  }
+
+  public void addLink(Link link) {
+    if (link != null) {
+      links.add(link);
+    }
   }
 
 }
