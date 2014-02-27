@@ -72,7 +72,7 @@ public class RelationTypeImporter extends CSVImporter {
     boolean reflexive = Boolean.parseBoolean(items[4]);
     boolean symmetric = Boolean.parseBoolean(items[5]);
     if (this.relationManager.getRelationTypeByName(regularName) != null) {
-      LOG.info("Relation type '{}' already exists", regularName);
+      LOG.debug("Relation type '{}' already exists", regularName);
     } else {
       this.relationManager.addRelationType(regularName, inverseName, sourceType, targetType, reflexive, symmetric);
     }

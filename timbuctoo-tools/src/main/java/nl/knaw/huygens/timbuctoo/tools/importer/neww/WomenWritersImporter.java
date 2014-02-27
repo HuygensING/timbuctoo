@@ -22,12 +22,7 @@ package nl.knaw.huygens.timbuctoo.tools.importer.neww;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.CREATOR_OF;
-import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.KEYWORD_OF;
-import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.LANGUAGE_OF;
-
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -54,13 +49,13 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Gender;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
 import nl.knaw.huygens.timbuctoo.util.Files;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -82,7 +77,7 @@ import com.google.inject.Injector;
  */
 public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
-  private static final Logger LOG = LoggerFactory.getLogger(WomenWritersImporter.class);
+  static final Logger LOG = LoggerFactory.getLogger(WomenWritersImporter.class);
 
   public static void main(String[] args) throws Exception {
 
@@ -128,25 +123,14 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // -------------------------------------------------------------------
 
+  /** References of stored primitive entities */
+  private final Map<String, Reference> references = Maps.newHashMap();
+  /** Keys of invalid primitive entities */
+  private final Set<String> invalids = Sets.newHashSet();
+  /** For deserializing JSON */
   private final ObjectMapper objectMapper;
   private final RelationManager relationManager;
   private final File inputDir;
-
-  private final Map<String, Reference> collectiveRefMap = Maps.newHashMap();
-  private final Map<String, Reference> documentRefMap = Maps.newHashMap();
-  private final Map<String, Reference> keywordRefMap = Maps.newHashMap();
-  private final Map<String, Reference> languageRefMap = Maps.newHashMap();
-  private final Map<String, Reference> locationRefMap = Maps.newHashMap();
-  private final Map<String, Reference> personRefMap = Maps.newHashMap();
-  private final Map<String, Reference> relationRefMap = Maps.newHashMap();
-
-  private Reference refCreatorOf;
-  private Reference refKeywordOf;
-  private Reference refLanguageOf;
-
-  private int nAuthoredBy = 0;
-  private int nKeyword = 0;
-  private int nLanguage = 0;
 
   public WomenWritersImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager, String inputDirName) {
     super(registry, storageManager, relationManager, indexManager);
@@ -158,6 +142,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     } else {
       System.out.printf("%n.. Not a directory: %s%n", inputDir.getAbsolutePath());
     }
+  }
+
+  /** Returns map for a reference map. */
+  private String newKey(String name, String id) {
+    return name + ":" + id;
   }
 
   protected <T> T readJsonValue(File file, Class<T> valueType) throws Exception {
@@ -182,49 +171,41 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     removeNonPersistentEntities(WWKeyword.class);
     removeNonPersistentEntities(WWLocation.class);
     removeNonPersistentEntities(WWPerson.class);
+    removeNonPersistentEntities(WWRelation.class);
 
     setup(relationManager);
-    setupRelationTypes();
 
-    printBoxedText("Basic properties");
+    printBoxedText("Import");
 
     System.out.println(".. Collectives");
-    importCollectives(collectiveRefMap);
-    System.out.printf("Number of entries = %d%n", collectiveRefMap.size());
+    System.out.printf("Number = %6d%n%n", importCollectives());
 
     System.out.println(".. Documents");
-    importDocuments(documentRefMap);
-    System.out.printf("Number of entries = %d%n", documentRefMap.size());
+    System.out.printf("Number = %6d%n%n", importDocuments());
 
     System.out.println(".. Keywords");
-    importKeywords(keywordRefMap);
-    System.out.printf("Number of entries = %d%n", keywordRefMap.size());
+    System.out.printf("Number = %6d%n%n", importKeywords());
 
     System.out.println(".. Languages");
-    importLanguages(languageRefMap);
-    System.out.printf("Number of entries = %d%n", languageRefMap.size());
+    System.out.printf("Number = %6d%n%n", importLanguages());
 
     System.out.println(".. Locations");
-    importLocations(locationRefMap);
-    System.out.printf("Number of entries = %d%n", locationRefMap.size());
+    System.out.printf("Number = %6d%n%n", importLocations());
 
     System.out.println(".. Persons");
-    importPersons(personRefMap);
-    System.out.printf("Number of entries = %d%n", personRefMap.size());
+    System.out.printf("Number = %6d%n%n", importPersons());
 
-    printBoxedText("Relations");
-
-    importRelations(relationRefMap);
-    System.out.printf("authored_by       : %5d%n", nAuthoredBy);
-    System.out.printf("keyword           : %5d%n", nKeyword);
-    System.out.printf("language          : %5d%n", nLanguage);
+    System.out.println(".. Relations");
+    importRelations();
+    System.out.printf("Number of missing relation types = %6d%n%n", missingRelationTypes);
+    System.out.printf("Number of unstored relations     = %6d%n%n", unstoredRelations);
 
     printBoxedText("Indexing");
 
-    indexEntities(WWDocument.class);
-    indexEntities(WWKeyword.class);
-    indexEntities(WWLanguage.class);
-    indexEntities(WWPerson.class);
+//    indexEntities(WWDocument.class);
+//    indexEntities(WWKeyword.class);
+//    indexEntities(WWLanguage.class);
+//    indexEntities(WWPerson.class);
 
     displayStatus();
 
@@ -232,23 +213,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   }
 
   // --- Support ---------------------------------------------------------------
-
-  private void setupRelationTypes() {
-    refCreatorOf = retrieveRelationType(CREATOR_OF.regular);
-    refKeywordOf = retrieveRelationType(KEYWORD_OF.regular);
-    refLanguageOf = retrieveRelationType(LANGUAGE_OF.regular);
-  }
-
-  private Reference retrieveRelationType(String name) {
-    RelationType type = relationManager.getRelationTypeByName(name);
-    if (type != null) {
-      LOG.info("Retrieved {}", type.getDisplayName());
-      return new Reference(RelationType.class, type.getId());
-    } else {
-      LOG.error("Failed to retrieve relation type {}", name);
-      throw new IllegalStateException("Initialization error");
-    }
-  }
 
   private LineIterator getLineIterator(String filename) throws IOException {
     File file = new File(inputDir, filename);
@@ -283,30 +247,34 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Collectives -----------------------------------------------------------
 
-  private void importCollectives(Map<String, Reference> references) throws Exception {
+  private int importCollectives() throws Exception {
+    int initialSize = references.size();
     LineIterator iterator = getLineIterator("collectives.json");
     try {
       while (iterator.hasNext()) {
         String line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
-          handleCollective(line, references);
+          handleCollective(line);
         }
       }
     } finally {
       LineIterator.closeQuietly(iterator);
     }
+    return references.size() - initialSize;
   }
 
-  private void handleCollective(String json, Map<String, Reference> references) throws Exception {
+  private void handleCollective(String json) throws Exception {
     XCollective object = objectMapper.readValue(json, XCollective.class);
-    String jsonId = object.tempid;
-    if (references.containsKey(jsonId)) {
-      handleError("Duplicate id %s", jsonId);
+    String key = newKey("Collective", object.tempid);
+    if (references.containsKey(key)) {
+      handleError("Duplicate id %s", key);
     } else {
       WWCollective converted = convert(json, object);
-      if (converted != null) {
+      if (converted == null) {
+        invalids.add(key);
+      } else {
         String storedId = addDomainEntity(WWCollective.class, converted);
-        references.put(jsonId, new Reference(WWCollective.class, storedId));
+        references.put(key, new Reference(WWCollective.class, storedId));
       }
     }
   }
@@ -349,9 +317,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Documents -------------------------------------------------------------
 
-  private final Map<Integer, String> records = Maps.newTreeMap();
-
-  private void importDocuments(Map<String, Reference> references) throws Exception {
+  private int importDocuments() throws Exception {
+    int initialSize = references.size();
     documentTypeMap = createDocumentTypeMap();
     LineIterator iterator = getLineIterator("documents.json");
     String line = "";
@@ -359,7 +326,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       while (iterator.hasNext()) {
         line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
-          handleDocument(preprocessDocumentJson(line), references);
+          handleDocument(preprocessDocumentJson(line));
         }
       }
     } catch (JsonMappingException e) {
@@ -368,12 +335,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     } finally {
       LineIterator.closeQuietly(iterator);
     }
-
-    FileOutputStream stream = new FileOutputStream(new File("neww-prints.txt"), false);
-    for (Map.Entry<Integer, String> record : records.entrySet()) {
-      IOUtils.write(record.getValue(), stream, "UTF-8");
-    }
-    stream.close();
+    return references.size() - initialSize;
   }
 
   private Map<String, DocumentType> documentTypeMap;
@@ -407,18 +369,16 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     return text;
   }
 
-  private void handleDocument(String json, Map<String, Reference> references) throws Exception {
+  private void handleDocument(String json) throws Exception {
     XDocument object = objectMapper.readValue(json, XDocument.class);
-    String jsonId = object.tempid;
-    if (references.containsKey(jsonId)) {
-      handleError("Duplicate id %s", jsonId);
+    String key = newKey("Document", object.tempid);
+    if (references.containsKey(key)) {
+      handleError("Duplicate key %s", key);
     } else {
       WWDocument converted = convert(json, object);
-      if (converted == null) {
-        handleError("Ignoring invalid record %s", jsonId);
-      } else {
+      if (converted != null) {
         String storedId = addDomainEntity(WWDocument.class, converted);
-        references.put(jsonId, new Reference(WWDocument.class, storedId));
+        references.put(key, new Reference(WWDocument.class, storedId));
       }
     }
   }
@@ -546,29 +506,27 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   private final Map<String, String> keywordValueIdMap = Maps.newHashMap();
   private final Set<String> toposIds = Sets.newHashSet();
 
-  private void importKeywords(Map<String, Reference> references) throws Exception {
+  private int importKeywords() throws Exception {
+    int initialSize = references.size();
     LineIterator iterator = getLineIterator("keywords.json");
     try {
       while (iterator.hasNext()) {
         String line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
-          handleKeyword(preprocessKeywordJson(line), references);
+          handleKeyword(line);
         }
       }
     } finally {
       LineIterator.closeQuietly(iterator);
     }
+    return references.size() - initialSize;
   }
 
-  private String preprocessKeywordJson(String text) {
-    return text;
-  }
-
-  private void handleKeyword(String json, Map<String, Reference> references) throws Exception {
+  private void handleKeyword(String json) throws Exception {
     XKeyword object = objectMapper.readValue(json, XKeyword.class);
-    String jsonId = object.tempid;
-    if (references.containsKey(jsonId)) {
-      handleError("Duplicate id %s", jsonId);
+    String key = newKey("Keyword", object.tempid);
+    if (references.containsKey(key)) {
+      handleError("Duplicate key %s", key);
     } else {
       WWKeyword converted = convert(json, object);
       if (converted != null) {
@@ -578,7 +536,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
           storedId = addDomainEntity(WWKeyword.class, converted);
           keywordValueIdMap.put(value, storedId);
         }
-        references.put(jsonId, new Reference(WWKeyword.class, storedId));
+        references.put(key, new Reference(WWKeyword.class, storedId));
       }
     }
   }
@@ -593,6 +551,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     verifyNonEmptyField(line, "keyword", converted.getValue());
 
     if ("topos".equals(converted.getType())) {
+      invalids.add(newKey("Keyword", object.tempid));
       toposIds.add(object.tempid);
       return null;
     } else if (!"genre".equals(converted.getType())) {
@@ -681,7 +640,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
   }
 
-  private void importLanguages(Map<String, Reference> referenceMap) throws Exception {
+  private int importLanguages() throws Exception {
+    int initialSize = references.size();
     Map<String, String> map = createNameCodeMap();
     LineIterator iterator = getLineIterator("languages.json");
     String line = "";
@@ -691,11 +651,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
           XLanguage object = objectMapper.readValue(line, XLanguage.class);
-          String name = object.name;
-          if (Strings.isNullOrEmpty(name)) {
-            handleError("%s: Missing name", object.tempid);
-          } else {
-            name = name.trim();
+          String name = filterTextField(object.name);
+          verifyNonEmptyField(line, "name", name);
+          if (name != null) {
             String code = mapName(map, name);
             Language language = storageManager.findEntity(Language.class, "^code", code);
             if (language == null) {
@@ -711,7 +669,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
               wwLanguage.setCore(true);
               // TODO prevent multiple updates for same language
               updateDomainEntity(WWLanguage.class, wwLanguage);
-              referenceMap.put(object.tempid, new Reference(WWLanguage.class, wwLanguage.getId()));
+              String key = newKey("Language", object.tempid);
+              references.put(key, new Reference(WWLanguage.class, wwLanguage.getId()));
+              // System.out.printf("%s, %s --> %s%n", key, object.name, wwLanguage.getId());
             }
           }
         }
@@ -722,6 +682,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     } finally {
       LineIterator.closeQuietly(iterator);
     }
+    return references.size() - initialSize;
   }
 
   public static class XLanguage {
@@ -736,41 +697,41 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Locations -------------------------------------------------------------
 
-  private void importLocations(Map<String, Reference> references) throws Exception {
+  private int importLocations() throws Exception {
+   int initialSize = references.size();
     LineIterator iterator = getLineIterator("locations.json");
     try {
       while (iterator.hasNext()) {
         String line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
-          handleLocation(preprocessLocation(line), references);
+          handleLocation(preprocessLocation(line));
         }
       }
     } finally {
       LineIterator.closeQuietly(iterator);
     }
+    return references.size() - initialSize;
   }
 
   private String preprocessLocation(String text) {
     return text;
   }
 
-  private void handleLocation(String json, Map<String, Reference> references) throws Exception {
+  private void handleLocation(String json) throws Exception {
     XLocation object = objectMapper.readValue(json, XLocation.class);
-    String jsonId = object.tempid;
-    if (references.containsKey(jsonId)) {
-      handleError("Duplicate id %s", jsonId);
+    String key = newKey("Location", object.tempid);
+    if (references.containsKey(key)) {
+      handleError("Duplicate key %s", key);
     } else {
       WWLocation converted = convert(json, object);
       if (converted == null) {
-        handleError("Ignoring invalid record: %s", json);
+        invalids.add(key);
       } else {
         String storedId = addDomainEntity(WWLocation.class, converted);
-        references.put(jsonId, new Reference(WWLocation.class, storedId));
+        references.put(key, new Reference(WWLocation.class, storedId));
       }
     }
   }
-
-  // we could probably map countries --> standard list required
 
   private WWLocation convert(String line, XLocation object) {
     WWLocation converted = new WWLocation();
@@ -837,14 +798,15 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   //  ~~translator (name unknown)
   //  ~~translator male (name below)
 
-  private void importPersons(Map<String, Reference> references) throws Exception {
+  private int importPersons() throws Exception {
+    int initialSize = references.size();
     LineIterator iterator = getLineIterator("persons.json");
     String line = "";
     try {
       while (iterator.hasNext()) {
         line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
-          handlePerson(preprocessPerson(line), references);
+          handlePerson(preprocessPerson(line));
         }
       }
     } catch (JsonMappingException e) {
@@ -853,6 +815,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     } finally {
       LineIterator.closeQuietly(iterator);
     }
+    return references.size() - initialSize;
   }
 
   private String preprocessPerson(String text) {
@@ -863,23 +826,21 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     return text;
   }
 
-  private void handlePerson(String json, Map<String, Reference> references) throws Exception {
+  private void handlePerson(String json) throws Exception {
     XPerson object = objectMapper.readValue(json, XPerson.class);
-    String jsonId = object.tempid;
-    if (references.containsKey(jsonId)) {
-      handleError("Duplicate id %s", jsonId);
+    String key = newKey("Person", object.tempid);
+    if (references.containsKey(key)) {
+      handleError("Duplicate key %s", key);
     } else {
       WWPerson converted = convert(json, object);
       if (converted == null) {
         handleError("Ignoring invalid record: %s", json);
       } else {
         String storedId = addDomainEntity(WWPerson.class, converted);
-        references.put(jsonId, new Reference(WWPerson.class, storedId));
+        references.put(key, new Reference(WWPerson.class, storedId));
       }
     }
   }
-
-  int kkk = 0;
 
   private WWPerson convert(String line, XPerson object) {
     String text;
@@ -1040,89 +1001,29 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Relations -------------------------------------------------------------
 
-  public static class RelationDef {
-    public String name;
-    public String leftObject;
-    public String rightObject;
+  private int missingRelationTypes = 0;
+  private int unstoredRelations = 0;
 
-    public RelationDef() {};
-
-    public RelationDef(String name, String leftObject, String rightObject) {
-      this.name = name;
-      this.leftObject = leftObject;
-      this.rightObject = rightObject;
-    }
-  }
-
-  private final Map<String, RelationDef> relationDefs = Maps.newHashMap();
-
-  private void addRelationDef(String name, String leftObject, String rightObject) {
-    String key = name + leftObject + rightObject;
-    if (relationDefs.containsKey(key)) {
-      System.out.printf("Duplicate key %s%n", key);
-    } else {
-      relationDefs.put(key, new RelationDef(name, leftObject, rightObject));
-    }
-  }
+  private Map<String, Reference> relationTypes = Maps.newHashMap();
 
   private void setupRelationDefs() {
-    addRelationDef("TBD", "Document", "Document");
-    addRelationDef("TBD", "Person", "Document");
-    addRelationDef("adaptation of", "Document", "Document");
-    addRelationDef("adaptation of", "Person", "Document");
-    addRelationDef("annotated in", "Document", "Document");
-    addRelationDef("annotated in", "Person", "Document");
-    addRelationDef("authored_by", "Document", "Person");
-    addRelationDef("biography of", "Document", "Document");
-    addRelationDef("biography of", "Person", "Document");
-    addRelationDef("censored by", "Document", "Document");
-    addRelationDef("collaborated_with", "Person", "Person");
-    addRelationDef("comments on", "Document", "Document");
-    addRelationDef("comments on", "Person", "Document");
-    addRelationDef("contains", "Document", "Document");
-    addRelationDef("contains", "Person", "Document");
-    addRelationDef("copied of", "Document", "Document");
-    addRelationDef("copied of", "Person", "Document");
-    addRelationDef("dedicated to", "Document", "Document");
-    addRelationDef("dedicated to", "Person", "Document");
-    addRelationDef("edition of", "Document", "Document");
-    addRelationDef("granted to", "Document", "Document");
-    addRelationDef("granted to", "Person", "Document");
-    addRelationDef("has preface", "Document", "Document");
-    addRelationDef("has preface", "Person", "Document");
-    addRelationDef("intertextual", "Document", "Document");
-    addRelationDef("intertextual", "Person", "Document");
-    addRelationDef("listed on", "Document", "Document");
-    addRelationDef("listed on", "Person", "Document");
-    addRelationDef("located_at", "Collective", "Location");
-    addRelationDef("located_at", "Document", "Location");
-    addRelationDef("membership", "Collective", "Person");
-    addRelationDef("mentioned in", "Document", "Document");
-    addRelationDef("mentioned in", "Person", "Document");
-    addRelationDef("mentioned_in", "Document", "Document");
-    addRelationDef("obituary of", "Document", "Document");
-    addRelationDef("obituary of", "Person", "Document");
-    addRelationDef("origin", "Document", "Location");
-    addRelationDef("parody of", "Document", "Document");
-    addRelationDef("parody of", "Person", "Document");
-    addRelationDef("place_of_birth", "Person", "Location");
-    addRelationDef("plagiarism of", "Document", "Document");
-    addRelationDef("publishing_pseudonym", "Person", "Person");
-    addRelationDef("quoted in", "Document", "Document");
-    addRelationDef("quoted in", "Person", "Document");
-    addRelationDef("referenced in", "Document", "Document");
-    addRelationDef("referenced in", "Person", "Document");
-    addRelationDef("relation", "Person", "Person");
-    addRelationDef("sequeled by", "Document", "Document");
-    addRelationDef("spouse_of", "Person", "Person");
-    addRelationDef("stored_at", "Document", "Collective");
-    addRelationDef("stored_at", "Document", "Location");
-    addRelationDef("translation of", "Document", "Document");
-    addRelationDef("translation of", "Person", "Document");
-    addRelationDef("translation", "Document", "Document");
+    StorageIterator<RelationType> iterator = storageManager.getAll(RelationType.class);
+    while (iterator.hasNext()) {
+      RelationType type = iterator.next();
+      relationTypes.put(type.getRegularName(), new Reference(RelationType.class, type.getId()));
+    }
   }
 
-  private void importRelations(Map<String, Reference> references) throws Exception {
+  private Reference getReference(String type, String id) {
+    if (type == null || type.isEmpty()) {
+      return null;
+    } else {
+      String key = newKey(type, id);
+      return references.get(key);
+    }
+  }
+
+  private void importRelations() throws Exception {
     setupRelationDefs();
     LineIterator iterator = getLineIterator("relations.json");
     String line = "";
@@ -1130,7 +1031,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       while (iterator.hasNext()) {
         line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
-          handleRelation(preprocessRelation(line), references);
+          handleRelation(line);
         }
       }
     } catch (Exception e) {
@@ -1141,32 +1042,45 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
   }
 
-  private String preprocessRelation(String text) {
-    return text;
-  }
+  private void handleRelation(String line) throws Exception {
+    XRelation object = objectMapper.readValue(line, XRelation.class);
 
-  private void handleRelation(String json, Map<String, Reference> references) throws Exception {
-    XRelation object = objectMapper.readValue(json, XRelation.class);
-    String jsonId = object.tempid;
-    if (references.containsKey(jsonId)) {
-      handleError("Duplicate id %s", jsonId);
-    } else {
-      WWRelation converted = convert(json, object);
-      if (converted != null) {
-        String storedId = addDomainEntity(WWRelation.class, converted);
-        references.put(jsonId, new Reference(WWRelation.class, storedId));
+    String type = filterTextField(object.relation_type);
+    if (type == null) {
+      if (++missingRelationTypes <= 10) {
+        verifyNonEmptyField(line, "relation_type", type);
       }
+      return;
     }
-  }
+    Reference relationRef = (type != null) ? relationTypes.get(type) : null;
+    if (relationRef == null) {
+      handleError("No relation type for '%s'", type);
+      return;
+    }
 
-  private WWRelation convert(String line, XRelation object) {
     String leftId = verifyNonEmptyField(line, "leftId", filterTextField(object.leftId));
-    String rightId = verifyNonEmptyField(line, "rightId", filterTextField(object.rightId));
-    if (leftId == null || rightId == null) {
-      return null;
+    if (leftId == null) {
+      return;
+    }
+    Reference sourceRef = getReference(object.leftObject, leftId);
+    if (sourceRef == null) {
+      if (!invalids.contains(newKey(object.leftObject, leftId))) {
+        handleError("No source reference for '%s-%s'", object.leftObject, leftId);
+      }
+      return;
     }
 
-    WWRelation converted = new WWRelation();
+    String rightId = verifyNonEmptyField(line, "rightId", filterTextField(object.rightId));
+    if (rightId == null) {
+      return;
+    }
+    Reference targetRef = getReference(object.rightObject, rightId);
+    if (targetRef == null) {
+      if (!invalids.contains(newKey(object.rightObject, rightId))) {
+        handleError("No target reference for '%s-%s'", object.rightObject, rightId);
+      }
+      return;
+    }
 
     verifyEmptyField(line, "canonizing", filterTextField(object.canonizing));
     verifyEmptyField(line, "certainty", filterTextField(object.certainty));
@@ -1177,88 +1091,27 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     //verifyEmptyField( line, "parent_male",  filterTextField(object.parent_male));
     verifyEmptyField(line, "qualification", filterTextField(object.qualification));
 
-    String text = filterTextField(object.relation_type);
-    if (text != null) {
-      if ("authored_by".equals(text)) {
-        nAuthoredBy++;
-        if ("Document".equals(object.leftObject) && "Person".equals(object.rightObject)) {
-          boolean valid = true;
-          Reference sourceRef = personRefMap.get(rightId);
-          if (sourceRef == null) {
-            valid = false;
-            System.out.printf("Cannot find rightId %s%n", rightId);
-          }
-          Reference targetRef = documentRefMap.get(leftId);
-          if (targetRef == null) {
-            valid = false;
-            System.out.printf("Cannot find leftId %s%n", leftId);
-          }
-          if (valid) {
-            storeRelation(WWRelation.class, sourceRef, refCreatorOf, targetRef, change, line);
-          }
-        } else {
-          System.out.printf("authored_by: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("keyword".equals(text)) {
-        nKeyword++;
-        if ("Keyword".equals(object.leftObject) && "Document".equals(object.rightObject)) {
-          boolean valid = true;
-          if (!toposIds.contains(leftId)) {
-            Reference sourceRef = keywordRefMap.get(leftId);
-            if (sourceRef == null) {
-              valid = false;
-              System.out.printf("Cannot find leftId %s - %s%n", rightId, line);
-            }
-            Reference targetRef = documentRefMap.get(rightId);
-            if (targetRef == null) {
-              valid = false;
-              System.out.printf("Cannot find rightId %s - %s%n", leftId, line);
-            }
-            if (valid) {
-              storeRelation(WWRelation.class, sourceRef, refKeywordOf, targetRef, change, line);
-            }
-          }
-        } else {
-          System.out.printf("keyword: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else if ("language".equals(text)) {
-        nLanguage++;
-        if ("Document".equals(object.leftObject) && "Language".equals(object.rightObject)) {
-          boolean valid = true;
-          Reference sourceRef = languageRefMap.get(rightId);
-          if (sourceRef == null) {
-            valid = false;
-            System.out.printf("Cannot find rightId %s - %s%n", rightId, line);
-          }
-          Reference targetRef = documentRefMap.get(leftId);
-          if (targetRef == null) {
-            valid = false;
-            System.out.printf("Cannot find leftId %s - %s%n", leftId, line);
-          }
-          if (valid) {
-            storeRelation(WWRelation.class, sourceRef, refLanguageOf, targetRef, change, line);
-          }
-        } else if ("Person".equals(object.leftObject) && "Language".equals(object.rightObject)) {
-          // handle
-        } else {
-          System.out.printf("language: %s - %s%n", object.leftObject, object.rightObject);
-        }
-      } else {
-        String key = text + object.leftObject + object.rightObject;
-        if (!relationDefs.containsKey(key)) {
-          System.out.printf("Missing relation [%s: %s --> %s]%n", text, object.leftObject, object.rightObject);
-        }
+    String storedId = storeRelation(WWRelation.class, sourceRef, relationRef, targetRef, change, line);
+    if (storedId == null) {
+      if (++unstoredRelations <= 10) {
+        handleError("Not stored.. %s", line);
       }
+      return;
     }
 
-    converted.setReception(object.isReception);
+    WWRelation relation = storageManager.getEntity(WWRelation.class, storedId);
 
-    return converted;
+    relation.setReception(object.isReception);
+    updateDomainEntity(WWRelation.class, relation);
   }
 
-  private <T extends Relation> void storeRelation(Class<T> type, Reference sourceRef, Reference relTypeRef, Reference targetRef, Change change, String line) {
+  private <T extends Relation> String storeRelation(Class<T> type, Reference sourceRef, Reference relTypeRef, Reference targetRef, Change change, String line) {
+    if (sourceRef == null || relTypeRef == null || targetRef == null) {
+      System.out.println(line);
+      throw new IllegalArgumentException("Missing references");
+    }
     try {
-      relationManager.storeRelation(type, sourceRef, relTypeRef, targetRef, change);
+      return relationManager.storeRelation(type, sourceRef, relTypeRef, targetRef, change);
     } catch (IllegalArgumentException e) {
       System.out.println(line);
       throw e;

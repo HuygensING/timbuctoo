@@ -132,7 +132,7 @@ public class RelationManager {
     if (relation != null) {
       try {
         if (storageManager.relationExists(relation)) {
-          LOG.info("Ignored duplicate {}", relation.getDisplayName());
+          LOG.debug("Ignored duplicate {}", relation.getDisplayName());
         } else {
           return storageManager.addDomainEntity(type, relation, change);
         }
