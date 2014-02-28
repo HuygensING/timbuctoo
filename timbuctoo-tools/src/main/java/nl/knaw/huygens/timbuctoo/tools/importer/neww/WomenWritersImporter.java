@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Document.DocumentType;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -51,6 +52,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.mongo.EntityIds;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
 import nl.knaw.huygens.timbuctoo.util.Files;
@@ -208,8 +210,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 //    indexEntities(WWPerson.class);
 
     displayStatus();
-
     displayErrorSummary();
+
+    printBoxedText("Export");
+    export();
+
   }
 
   // --- Support ---------------------------------------------------------------
@@ -1139,6 +1144,32 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     public String rightId;
     public String rightName;
     public String rightObject;
+  }
+
+  // ---------------------------------------------------------------------------
+  
+  public void export() {
+    File exportDir = new File("export");
+    exportDir.mkdirs();
+    for (long counter = 1000; counter<= 10000; counter += 1000) {
+      exportEntity(exportDir, WWDocument.class, counter);
+    }
+    for (long counter = 1000; counter<= 10000; counter += 1000) {
+      exportEntity(exportDir, WWPerson.class, counter);
+    }
+  }
+
+  private <T extends DomainEntity> void exportEntity(File exportDir, Class<T> type, long counter) {
+    String id = EntityIds.formatEntityId(type, counter);
+    T entity = storageManager.getEntityWithRelations(type, id);
+    if (entity != null) {
+      try {
+        File jsonFile = new File(exportDir, id + ".json");
+        objectMapper.writeValue(jsonFile, entity);
+     } catch (Exception e) {
+       System.err.printf("Failed to write %s%n", id);
+    	  }
+    }
   }
 
 }
