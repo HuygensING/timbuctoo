@@ -27,8 +27,12 @@ import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 @IDPrefix("COLL")
 public class Collective extends DomainEntity {
 
-  /** 'Library', 'Shop', 'Association/Club', 'Academy', 'Publishing House' */
-  private String type;
+  // membership is not a collective, but can be a relation with a collective
+  public static enum Type {
+   UNKNOWN, ACADEMY, ASSOCIATION, LIBRARY, PUBLISHER, SHOP
+  }
+
+  private Type type;
   private String name;
 
   @Override
@@ -36,11 +40,11 @@ public class Collective extends DomainEntity {
     return getName();
   }
 
-  public String getType() {
+  public Type getType() {
     return type;
   }
 
-  public void setType(String type) {
+  public void setType(Type type) {
     this.type = type;
   }
 

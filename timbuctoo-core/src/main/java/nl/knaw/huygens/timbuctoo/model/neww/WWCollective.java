@@ -33,6 +33,8 @@ public class WWCollective extends Collective {
   private Link link;
   private String notes;
 
+  // For establishing the type of the collective
+  public String tempType;
   // For establishing relation with location
   public String tempLocationPlacename;
   // For establishing relation with location

@@ -30,6 +30,7 @@ import java.util.Set;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Language;
@@ -286,21 +287,35 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   private WWCollective convert(String line, XCollective object) {
     WWCollective converted = new WWCollective();
+
+    String type = filterTextField(object.type);
+    verifyNonEmptyField(line, "type", type);
+    try {
+      Collective.Type ct = Collective.Type.valueOf(type.toUpperCase());
+      converted.setType(ct);
+    } catch (Exception e) {
+      handleError("Unknown type [%s] in: %s", type, line);
+      converted.setType(Collective.Type.UNKNOWN);
+      converted.tempType = type;
+    }
+
+    String name = filterTextField(object.name);
+    if (name == null) {
+      handleError("Rejecting name [%s] in: %s", name, line);
+      return null;
+    }
+    converted.setName(name);
+
     converted.tempLocationPlacename = filterTextField(object.location_placename);
-    converted.setName(filterTextField(object.name));
     converted.setNotes(filterTextField(object.notes));
     converted.tempOrigin = filterTextField(object.origin);
     converted.setShortName(filterTextField(object.short_name));
-    converted.setType(filterTextField(object.type));
     String url = filterTextField(object.url);
     if (url != null) {
       converted.setLink(new Link(url, null));
     }
 
-    verifyNonEmptyField(line, "type", converted.getType());
-    verifyNonEmptyField(line, "name", converted.getName());
-
-    return converted.isValid() ? converted : null;
+    return converted;
   }
 
   public static class XCollective {
