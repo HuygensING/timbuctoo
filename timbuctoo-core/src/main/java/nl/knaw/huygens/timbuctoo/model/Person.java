@@ -108,4 +108,10 @@ public class Person extends DomainEntity {
     }
   }
 
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_collective", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
+  public List<EntityRef> getCollectives() {
+    return getRelations().get("is_member_of");
+  }
+
 }

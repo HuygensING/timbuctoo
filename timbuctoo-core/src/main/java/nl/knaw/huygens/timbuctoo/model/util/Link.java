@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.model.util;
 
+import org.apache.commons.lang.StringUtils;
+
 /*
  * #%L
  * =======
@@ -28,6 +30,11 @@ public class Link {
 
   public Link() {}
 
+  public Link(String url) {
+    setUrl(url);
+    setLabel("");
+  }
+
   public Link(String url, String label) {
     setUrl(url);
     setLabel(label);
@@ -38,7 +45,7 @@ public class Link {
   }
 
   public void setUrl(String url) {
-    this.url = url;
+    this.url = StringUtils.stripToEmpty(url);
   }
 
   public String getLabel() {
@@ -46,7 +53,7 @@ public class Link {
   }
 
   public void setLabel(String label) {
-    this.label = label;
+    this.label = StringUtils.stripToEmpty(label);
   }
 
 }

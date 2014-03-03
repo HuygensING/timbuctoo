@@ -22,18 +22,32 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Lists;
+
+import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.model.util.Link;
+
+/**
+ * Any named collection of people regarded as a single unit.
+ */
 @IDPrefix("COLL")
 public class Collective extends DomainEntity {
 
-  // membership is not a collective, but can be a relation with a collective
   public static enum Type {
-   UNKNOWN, ACADEMY, ASSOCIATION, LIBRARY, PUBLISHER, SHOP
+    UNKNOWN, ACADEMY, ASSOCIATION, LIBRARY, PUBLISHER, SHOP
   }
 
   private Type type;
   private String name;
+  private List<Link> links;
+
+  public Collective() {
+    links = Lists.newArrayList();
+  }
 
   @Override
   public String getDisplayName() {
@@ -54,6 +68,26 @@ public class Collective extends DomainEntity {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public List<Link> getLinks() {
+    return links;
+  }
+
+  public void setLinks(List<Link> links) {
+    this.links = links;
+  }
+
+  public void addLink(Link link) {
+    if (link != null) {
+      links.add(link);
+    }
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_member", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
+  public List<EntityRef> getMembers() {
+    return getRelations().get("has_member");
   }
 
 }

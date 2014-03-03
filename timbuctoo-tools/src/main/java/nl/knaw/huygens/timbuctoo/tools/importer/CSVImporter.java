@@ -108,14 +108,14 @@ public abstract class CSVImporter {
   protected void handleEndOfFile() {};
 
   private void validateLine(String[] line, int itemsPerLine, boolean verbose) {
-    boolean error = (itemsPerLine != 0 && itemsPerLine != line.length);
+    boolean error = (line.length < itemsPerLine);
     if (error || verbose) {
       out.println();
       for (String word : line) {
         out.println("[" + word + "]");
       }
       if (error) {
-        out.println("## Number of items must be " + itemsPerLine);
+        out.println("## Number of items < " + itemsPerLine);
         out.flush();
         throw new RuntimeException("Error on line '" + line[0] + "...'");
       }

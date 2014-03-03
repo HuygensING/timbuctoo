@@ -290,6 +290,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     String type = filterTextField(object.type);
     verifyNonEmptyField(line, "type", type);
+    if (type == null || type.equals("membership")) {
+      type = "UNKNOWN";
+    }
     try {
       Collective.Type ct = Collective.Type.valueOf(type.toUpperCase());
       converted.setType(ct);
@@ -312,7 +315,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.setShortName(filterTextField(object.short_name));
     String url = filterTextField(object.url);
     if (url != null) {
-      converted.setLink(new Link(url, null));
+      converted.addLink(new Link(url, url));
     }
 
     return converted;
@@ -1021,6 +1024,35 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Relations -------------------------------------------------------------
 
+  private static boolean SAME_ORDER = false;
+  private static boolean REVERSED_ORDER = true;
+
+  private static class RelationMapping {
+    public RelationMapping(String oldName, String newName, boolean reverse) {
+      this.oldName=oldName;
+      this.newName=newName;
+      this.reverse=reverse;
+    }
+    public String oldName;
+    public String newName;
+    public boolean reverse;
+  }
+
+  private Map<String,RelationMapping> relationMappings = Maps.newHashMap();
+  
+  private void addRelationMapping(String oldName, String newName, boolean reverse) {
+    relationMappings.put(oldName, new RelationMapping(oldName, newName, reverse));
+  }
+  
+  private RelationMapping getRelationMapping(String name) {
+    RelationMapping mapping = relationMappings.get(name);
+    return (mapping != null) ? mapping : new RelationMapping(name, name, SAME_ORDER);
+  }
+
+  private void setupRelationMappings() {
+    addRelationMapping("membership", "is_member_of", REVERSED_ORDER);
+  }
+
   private int missingRelationTypes = 0;
   private int unstoredRelations = 0;
 
@@ -1044,6 +1076,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   }
 
   private void importRelations() throws Exception {
+    setupRelationMappings();
     setupRelationDefs();
     LineIterator iterator = getLineIterator("relations.json");
     String line = "";
@@ -1072,32 +1105,50 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       }
       return;
     }
-    Reference relationRef = (type != null) ? relationTypes.get(type) : null;
+    RelationMapping mapping = getRelationMapping(type);
+    Reference relationRef = relationTypes.get(mapping.newName);
     if (relationRef == null) {
-      handleError("No relation type for '%s'", type);
+      handleError("No relation type for '%s' --> '%s'", mapping.oldName, mapping.newName);
       return;
     }
 
+    String leftObject = verifyNonEmptyField(line, "leftObject", filterTextField(object.leftObject));
+    if (leftObject == null) {
+      return;
+    }
     String leftId = verifyNonEmptyField(line, "leftId", filterTextField(object.leftId));
     if (leftId == null) {
       return;
     }
-    Reference sourceRef = getReference(object.leftObject, leftId);
-    if (sourceRef == null) {
-      if (!invalids.contains(newKey(object.leftObject, leftId))) {
-        handleError("No source reference for '%s-%s'", object.leftObject, leftId);
-      }
+    String rightObject = verifyNonEmptyField(line, "rightObject", filterTextField(object.rightObject));
+    if (rightObject == null) {
       return;
     }
-
     String rightId = verifyNonEmptyField(line, "rightId", filterTextField(object.rightId));
     if (rightId == null) {
       return;
     }
-    Reference targetRef = getReference(object.rightObject, rightId);
+    if (mapping.reverse) {
+        String tempObject = leftObject;
+        leftObject = rightObject;
+        rightObject = tempObject;
+        String tempId = leftId;
+        leftId = rightId;
+        rightId = tempId;
+    }
+
+    Reference sourceRef = getReference(leftObject, leftId);
+    if (sourceRef == null) {
+      if (!invalids.contains(newKey(leftObject, leftId))) {
+        handleError("No source reference for '%s-%s'", leftObject, leftId);
+      }
+      return;
+    }
+
+    Reference targetRef = getReference(rightObject, rightId);
     if (targetRef == null) {
-      if (!invalids.contains(newKey(object.rightObject, rightId))) {
-        handleError("No target reference for '%s-%s'", object.rightObject, rightId);
+      if (!invalids.contains(newKey(rightObject, rightId))) {
+        handleError("No target reference for '%s-%s'", rightObject, rightId);
       }
       return;
     }

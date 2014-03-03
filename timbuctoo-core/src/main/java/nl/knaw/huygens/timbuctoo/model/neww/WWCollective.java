@@ -23,14 +23,10 @@ package nl.knaw.huygens.timbuctoo.model.neww;
  */
 
 import nl.knaw.huygens.timbuctoo.model.Collective;
-import nl.knaw.huygens.timbuctoo.model.util.Link;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class WWCollective extends Collective {
 
   private String shortName;
-  private Link link;
   private String notes;
 
   // For establishing the type of the collective
@@ -40,8 +36,6 @@ public class WWCollective extends Collective {
   // For establishing relation with location
   public String tempOrigin;
 
-  // -- accessors --------------------------------------------------------------
-
   public String getShortName() {
     return shortName;
   }
@@ -50,25 +44,12 @@ public class WWCollective extends Collective {
     this.shortName = shortName;
   }
 
-  public Link getLink() {
-    return link;
-  }
-
-  public void setLink(Link link) {
-    this.link = link;
-  }
-
   public String getNotes() {
     return notes;
   }
 
   public void setNotes(String notes) {
     this.notes = notes;
-  }
-
-  @JsonIgnore
-  public boolean isValid() {
-    return getType() != null && getName() != null;
   }
 
 }
