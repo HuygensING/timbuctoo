@@ -232,7 +232,7 @@ public class WWPerson extends Person {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPrimaryLanguages() {
     return getRelations().get(LANGUAGE_OF.inverse);
   }

@@ -205,10 +205,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     printBoxedText("Indexing");
 
-//    indexEntities(WWDocument.class);
-//    indexEntities(WWKeyword.class);
-//    indexEntities(WWLanguage.class);
-//    indexEntities(WWPerson.class);
+    indexEntities(WWDocument.class);
+    indexEntities(WWKeyword.class);
+    indexEntities(WWLanguage.class);
+    indexEntities(WWPerson.class);
 
     displayStatus();
     displayErrorSummary();
@@ -721,7 +721,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   // --- Locations -------------------------------------------------------------
 
   private int importLocations() throws Exception {
-   int initialSize = references.size();
+    int initialSize = references.size();
     LineIterator iterator = getLineIterator("locations.json");
     try {
       while (iterator.hasNext()) {
@@ -1029,21 +1029,22 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   private static class RelationMapping {
     public RelationMapping(String oldName, String newName, boolean reverse) {
-      this.oldName=oldName;
-      this.newName=newName;
-      this.reverse=reverse;
+      this.oldName = oldName;
+      this.newName = newName;
+      this.reverse = reverse;
     }
+
     public String oldName;
     public String newName;
     public boolean reverse;
   }
 
-  private Map<String,RelationMapping> relationMappings = Maps.newHashMap();
-  
+  private final Map<String, RelationMapping> relationMappings = Maps.newHashMap();
+
   private void addRelationMapping(String oldName, String newName, boolean reverse) {
     relationMappings.put(oldName, new RelationMapping(oldName, newName, reverse));
   }
-  
+
   private RelationMapping getRelationMapping(String name) {
     RelationMapping mapping = relationMappings.get(name);
     return (mapping != null) ? mapping : new RelationMapping(name, name, SAME_ORDER);
@@ -1056,7 +1057,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   private int missingRelationTypes = 0;
   private int unstoredRelations = 0;
 
-  private Map<String, Reference> relationTypes = Maps.newHashMap();
+  private final Map<String, Reference> relationTypes = Maps.newHashMap();
 
   private void setupRelationDefs() {
     StorageIterator<RelationType> iterator = storageManager.getAll(RelationType.class);
@@ -1129,12 +1130,12 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       return;
     }
     if (mapping.reverse) {
-        String tempObject = leftObject;
-        leftObject = rightObject;
-        rightObject = tempObject;
-        String tempId = leftId;
-        leftId = rightId;
-        rightId = tempId;
+      String tempObject = leftObject;
+      leftObject = rightObject;
+      rightObject = tempObject;
+      String tempId = leftId;
+      leftId = rightId;
+      rightId = tempId;
     }
 
     Reference sourceRef = getReference(leftObject, leftId);
@@ -1213,14 +1214,14 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   }
 
   // ---------------------------------------------------------------------------
-  
+
   public void export() {
     File exportDir = new File("export");
     exportDir.mkdirs();
-    for (long counter = 1000; counter<= 10000; counter += 1000) {
+    for (long counter = 1000; counter <= 10000; counter += 1000) {
       exportEntity(exportDir, WWDocument.class, counter);
     }
-    for (long counter = 1000; counter<= 10000; counter += 1000) {
+    for (long counter = 1000; counter <= 10000; counter += 1000) {
       exportEntity(exportDir, WWPerson.class, counter);
     }
   }
@@ -1232,9 +1233,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       try {
         File jsonFile = new File(exportDir, id + ".json");
         objectMapper.writeValue(jsonFile, entity);
-     } catch (Exception e) {
-       System.err.printf("Failed to write %s%n", id);
-    	  }
+      } catch (Exception e) {
+        System.err.printf("Failed to write %s%n", id);
+      }
     }
   }
 
