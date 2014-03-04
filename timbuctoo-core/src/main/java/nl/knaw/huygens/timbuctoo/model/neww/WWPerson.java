@@ -38,7 +38,7 @@ import com.google.common.collect.Lists;
 public class WWPerson extends Person {
 
   private String bibliography;
-  private String numberOfChildren;
+  private int numberOfChildren;
   private List<String> collaborations;
   private List<String> educations;
   private List<String> financials;
@@ -59,6 +59,8 @@ public class WWPerson extends Person {
   public String tempMotherTongue;
   public String tempName;
   public List<String> tempPlaceOfBirth = Lists.newArrayList();
+  public List<String> tempPseudonyms = Lists.newArrayList();
+  public String tempSpouse;
 
   public WWPerson() {
     collaborations = Lists.newArrayList();
@@ -77,13 +79,9 @@ public class WWPerson extends Person {
   public String placeOfDeath;
   public String[] professions;
   public String[] ps_children;
-  public String[] pseudonyms;
   public String[] publishing_languages;
   public String[] religion;
   public String[] social_class;
-  public String spouse;
-  public String spouse_id;
-  public String type;
   public XURL url;
 
   public static class XURL {
@@ -101,11 +99,11 @@ public class WWPerson extends Person {
     this.bibliography = bibliography;
   }
 
-  public String getNumberOfChildren() {
+  public int getNumberOfChildren() {
     return numberOfChildren;
   }
 
-  public void setNumberOfChildren(String numberOfChildren) {
+  public void setNumberOfChildren(int numberOfChildren) {
     this.numberOfChildren = numberOfChildren;
   }
 
@@ -235,6 +233,12 @@ public class WWPerson extends Person {
   @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPrimaryLanguages() {
     return getRelations().get(LANGUAGE_OF.inverse);
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_collective", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  public List<EntityRef> getCollectives() {
+    return getRelations().get("is_member_of");
   }
 
 }

@@ -34,6 +34,7 @@ import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Language;
+import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -48,7 +49,6 @@ import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 import nl.knaw.huygens.timbuctoo.model.neww.WWRelation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.model.util.Gender;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -198,6 +198,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     System.out.println(".. Persons");
     System.out.printf("Number = %6d%n%n", importPersons());
 
+    System.exit(0);
+
     System.out.println(".. Relations");
     importRelations();
     System.out.printf("Number of missing relation types = %6d%n%n", missingRelationTypes);
@@ -213,8 +215,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     displayStatus();
     displayErrorSummary();
 
-    printBoxedText("Export");
-    export();
+    // printBoxedText("Export");
+    // export();
 
   }
 
@@ -838,6 +840,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     } finally {
       LineIterator.closeQuietly(iterator);
     }
+    for (String type : types) {
+      System.out.printf("type %s%n", type);
+    }
     return references.size() - initialSize;
   }
 
@@ -876,7 +881,16 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       converted.tempBirthPlace = text;
     }
 
-    converted.setNumberOfChildren(filterTextField(object.children));
+    int numberOfChildren = 0;
+    text = filterTextField(object.children);
+    if (text != null) {
+      try {
+        numberOfChildren = Integer.parseInt(text);
+      } catch (NumberFormatException e) {
+        handleError("Field 'children' is not an integer: %s", text);
+      }
+    }
+    converted.setNumberOfChildren(numberOfChildren);
 
     if (object.collaborations != null) {
       for (String item : object.collaborations) {
@@ -923,11 +937,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     text = filterTextField(object.gender);
     if ("U".equals(text)) {
-      converted.setGender(Gender.UNKNOWN);
+      converted.setGender(Person.Gender.UNKNOWN);
     } else if ("M".equals(text)) {
-      converted.setGender(Gender.MALE);
+      converted.setGender(Person.Gender.MALE);
     } else if ("F".equals(text)) {
-      converted.setGender(Gender.FEMALE);
+      converted.setGender(Person.Gender.FEMALE);
     } else if (text != null) {
       handleError("Unknown gender: %s", text);
     }
@@ -968,6 +982,33 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       }
     }
 
+    if (object.pseudonyms != null) {
+      for (String pseudonym : object.pseudonyms) {
+        text = filterTextField(pseudonym);
+        if (text != null && converted.tempPseudonyms.contains(text)) {
+          converted.tempPseudonyms.add(text);
+          // System.out.printf(".. [%s] has pseudonym [%s]%n", object.old_id, object.name, text);
+        }
+      }
+    }
+
+    converted.tempSpouse = filterTextField(object.spouse);
+
+    String type = filterTextField(object.type);
+    if (type == null) {
+      converted.addType(Person.Type.UNKNOWN);
+    } else if (type.equalsIgnoreCase("author")) {
+      converted.addType(Person.Type.AUTHOR);
+    } else if (type.equalsIgnoreCase("editor")) {
+      converted.addType(Person.Type.EDITOR);
+    } else if (type.equalsIgnoreCase("pseudonym")) {
+      converted.addType(Person.Type.PSEUDONYM);
+    } else if (type.equalsIgnoreCase("unknown")) {
+      converted.addType(Person.Type.UNKNOWN);
+    } else {
+      this.handleError("Illegal type '%s'%n", type);
+    }
+
     if (object.url != null) {
       for (Map.Entry<String, String> entry : object.url.entrySet()) {
         String label = filterTextField(entry.getKey());
@@ -978,6 +1019,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     return converted;
   }
+
+  private final Set<String> types = Sets.newTreeSet();
 
   protected static class XPerson {
     public String tempid;
@@ -1016,9 +1059,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     public String[] publishing_languages;
     public String[] religion;
     public String[] social_class;
-    public String spouse;
-    public String spouse_id;
-    public String type;
+    public String spouse; // as relation
+    public String spouse_id; // ignore
+    public String type; // 'author', 'pseudonym', 'unknown'
     public Map<String, String> url;
   }
 

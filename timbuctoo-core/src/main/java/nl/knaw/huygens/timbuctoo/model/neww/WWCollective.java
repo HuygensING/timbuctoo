@@ -22,7 +22,13 @@ package nl.knaw.huygens.timbuctoo.model.neww;
  * #L%
  */
 
+import java.util.List;
+
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Collective;
+import nl.knaw.huygens.timbuctoo.model.EntityRef;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class WWCollective extends Collective {
 
@@ -50,6 +56,12 @@ public class WWCollective extends Collective {
 
   public void setNotes(String notes) {
     this.notes = notes;
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_location", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
+  public List<EntityRef> getLocations() {
+    return getRelations().get("located_at");
   }
 
 }

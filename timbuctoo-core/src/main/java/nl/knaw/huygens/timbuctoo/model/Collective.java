@@ -24,12 +24,12 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Lists;
-
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Lists;
 
 /**
  * Any named collection of people regarded as a single unit.
@@ -62,6 +62,7 @@ public class Collective extends DomainEntity {
     this.type = type;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
   public String getName() {
     return name;
   }

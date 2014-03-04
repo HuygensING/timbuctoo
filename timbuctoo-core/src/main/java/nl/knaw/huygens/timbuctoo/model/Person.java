@@ -27,7 +27,6 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.model.util.Gender;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 
@@ -37,6 +36,16 @@ import com.google.common.collect.Lists;
 @IDPrefix("PERS")
 public class Person extends DomainEntity {
 
+  public static enum Gender {
+    UNKNOWN, MALE, FEMALE, NOT_APPLICABLE;
+  }
+
+  // start for modeling of roles
+  public static enum Type {
+    UNKNOWN, AUTHOR, EDITOR, PSEUDONYM
+  }
+
+  private List<Type> types;
   private PersonName name;
   /** Gender at birth. */
   private Gender gender;
@@ -47,6 +56,7 @@ public class Person extends DomainEntity {
   public Person() {
     name = new PersonName();
     links = Lists.newArrayList();
+    types = Lists.newArrayList();
   }
 
   @Override
@@ -60,6 +70,20 @@ public class Person extends DomainEntity {
     return name.getFullName();
   }
 
+  public List<Type> getTypes() {
+    return types;
+  }
+
+  public void setTypes(List<Type> types) {
+    this.types = types;
+  }
+
+  public void addType(Type type) {
+    if (type != null && !types.contains(type)) {
+      types.add(type);
+    }
+  }
+
   public PersonName getName() {
     return name;
   }
@@ -68,6 +92,7 @@ public class Person extends DomainEntity {
     this.name = name;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_s_gender", isFaceted = true, canBeEmpty = true)
   public Gender getGender() {
     return gender;
   }
@@ -106,12 +131,6 @@ public class Person extends DomainEntity {
     if (link != null) {
       links.add(link);
     }
-  }
-
-  @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_collective", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getCollectives() {
-    return getRelations().get("is_member_of");
   }
 
 }
