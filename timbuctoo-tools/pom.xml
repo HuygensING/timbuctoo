@@ -144,7 +144,11 @@
             </program>
             <program>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.dcar.DutchCaribbeanImporter</mainClass>
-              <name>ducaImport</name>
+              <name>dcarImport</name>
+            </program>
+            <program>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.neww.WomenWritersImporter</mainClass>
+              <name>newwImport</name>
             </program>
             <program>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.TransformedDataImporter</mainClass>
