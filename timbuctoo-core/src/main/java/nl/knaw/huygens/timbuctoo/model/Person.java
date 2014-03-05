@@ -42,7 +42,7 @@ public class Person extends DomainEntity {
 
   // start for modeling of roles
   public static enum Type {
-    UNKNOWN, AUTHOR, EDITOR, PSEUDONYM
+    UNKNOWN, ARCHETYPE, AUTHOR, PSEUDONYM
   }
 
   private List<Type> types;

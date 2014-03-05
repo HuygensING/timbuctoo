@@ -198,6 +198,13 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     System.out.println(".. Persons");
     System.out.printf("Number = %6d%n%n", importPersons());
 
+    System.out.printf("nUnknown    %5d%n", nUnknown);
+    System.out.printf("nArchetype  %5d%n", nArchetype);
+    System.out.printf("nAuthor     %5d%n", nAuthor);
+    System.out.printf("nPseudonym  %5d%n", nPseudonym);
+
+    // System.exit(0);
+
     System.out.println(".. Relations");
     importRelations();
     System.out.printf("Number of missing relation types = %6d%n%n", missingRelationTypes);
@@ -796,30 +803,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Persons ---------------------------------------------------------------
 
-  //  ~reader(s) female (member of Damesleesmuseum, The Hague)
-  //  ~~Nutsbibliotheken Nederland
-  //  ~~anonymous Dutch
-  //  ~~anonymous English 
-  //  ~~anonymous French
-  //  ~~anonymous German
-  //  ~~anonymous Italian
-  //  ~~anonymous Russian woman
-  //  ~~anonymous Spanish
-  //  ~~author female (name unknown)
-  //  ~~author male (name below)
-  //  ~~censorship (in one form or another)
-  //  ~~editor (name unknown)
-  //  ~~foreign editor
-  //  ~~historian of literature  (male, name below)
-  //  ~~illustrator (name below)
-  //  ~~journalist (name below)
-  //  ~~journalist (name unknown)
-  //  ~~librarian (name below)
-  //  ~~reader(s) (gender unknown)
-  //  ~~reader(s) female (name below)
-  //  ~~reader(s) male (name below)
-  //  ~~translator (name unknown)
-  //  ~~translator male (name below)
+  private int nUnknown = 0;
+  private int nArchetype = 0;
+  private int nAuthor = 0;
+  private int nPseudonym = 0;
 
   private int importPersons() throws Exception {
     int initialSize = references.size();
@@ -1024,16 +1011,21 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.tempSpouse = filterTextField(object.spouse);
 
     String type = filterTextField(object.type);
-    if (type == null) {
+    if (converted.tempName != null && converted.tempName.startsWith("~")) {
+      converted.addType(Person.Type.ARCHETYPE);
+      nArchetype++;
+    } else if (type == null) {
       converted.addType(Person.Type.UNKNOWN);
+      nUnknown++;
     } else if (type.equalsIgnoreCase("author")) {
       converted.addType(Person.Type.AUTHOR);
-    } else if (type.equalsIgnoreCase("editor")) {
-      converted.addType(Person.Type.EDITOR);
+      nAuthor++;
     } else if (type.equalsIgnoreCase("pseudonym")) {
       converted.addType(Person.Type.PSEUDONYM);
+      nPseudonym++;
     } else if (type.equalsIgnoreCase("unknown")) {
       converted.addType(Person.Type.UNKNOWN);
+      nUnknown++;
     } else {
       this.handleError("Illegal type '%s'%n", type);
     }
