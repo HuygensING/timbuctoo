@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
@@ -51,6 +52,41 @@ public abstract class DefaultImporter {
     this.storageManager = storageManager;
     this.indexManager = indexManager;
   }
+
+  // --- Error handling --------------------------------------------------------
+
+  private int errors = 0;
+  private String prevMessage = "";
+
+  protected void handleError(String format, Object... args) {
+    errors++;
+    String message = String.format(format, args);
+    if (!message.equals(prevMessage)) {
+      System.out.print("## ");
+      System.out.printf(message);
+      System.out.println();
+      prevMessage = message;
+    }
+  }
+
+  protected void displayErrorSummary() {
+    if (errors > 0) {
+      System.out.printf("%n## Error count = %d%n", errors);
+    }
+  }
+
+  // --- Relations -------------------------------------------------------------
+
+  /** File with {@code RelationType} definitions; must be present on classpath. */
+  private static final String RELATION_TYPE_DEFS = "relationtype-defs.txt";
+
+  protected void setup(RelationManager relationManager) {
+    if (relationManager != null) {
+      new RelationTypeImporter(relationManager, this.typeRegistry).importRelationTypes(RELATION_TYPE_DEFS);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
 
   /**
    * Deletes the non persisted entity's of {@code type} and it's relations from the storage and the index.

@@ -145,7 +145,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
   private Reference hasSiblingArchiver;
 
   public DutchCaribbeanImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager, String inputDirName) {
-    super(registry, storageManager, relationManager, indexManager);
+    super(registry, storageManager, indexManager);
     objectMapper = new ObjectMapper();
     this.relationManager = relationManager;
     inputDir = new File(inputDirName);

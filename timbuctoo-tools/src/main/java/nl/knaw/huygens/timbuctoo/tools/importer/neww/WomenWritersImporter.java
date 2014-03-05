@@ -136,7 +136,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   private final File inputDir;
 
   public WomenWritersImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager, String inputDirName) {
-    super(registry, storageManager, relationManager, indexManager);
+    super(registry, storageManager, indexManager);
     objectMapper = new ObjectMapper();
     this.relationManager = relationManager;
     inputDir = new File(inputDirName);
@@ -197,8 +197,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     System.out.println(".. Persons");
     System.out.printf("Number = %6d%n%n", importPersons());
-
-    System.exit(0);
 
     System.out.println(".. Relations");
     importRelations();
@@ -877,7 +875,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.setBibliography(filterTextField(object.bibliography));
 
     text = filterTextField(object.born_in);
-    if (text != null && !"TBD".equalsIgnoreCase(text) && !"unknown".equalsIgnoreCase(text)) {
+    if (text != null) {
       converted.tempBirthPlace = text;
     }
 
@@ -982,12 +980,43 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       }
     }
 
+    converted.tempDeathPlace = filterTextField(object.placeOfDeath);
+
+    if (object.professions != null) {
+      for (String item : object.professions) {
+        converted.tempPlaceOfBirth.add(filterTextField(item));
+      }
+    }
+
     if (object.pseudonyms != null) {
-      for (String pseudonym : object.pseudonyms) {
-        text = filterTextField(pseudonym);
-        if (text != null && converted.tempPseudonyms.contains(text)) {
-          converted.tempPseudonyms.add(text);
-          // System.out.printf(".. [%s] has pseudonym [%s]%n", object.old_id, object.name, text);
+      for (String item : object.pseudonyms) {
+        converted.tempPseudonyms.add(filterTextField(item));
+      }
+    }
+
+    if (object.ps_children != null) {
+      for (String item : object.ps_children) {
+        converted.addPsChild(filterTextField(item));
+      }
+    }
+
+    if (object.religion != null) {
+      for (String item : object.religion) {
+        converted.addReligion(filterTextField(item));
+      }
+    }
+
+    if (object.social_class != null) {
+      for (String item : object.social_class) {
+        converted.addSocialClass(filterTextField(item));
+      }
+    }
+
+    if (object.publishing_languages != null) {
+      for (String item : object.publishing_languages) {
+        text = filterTextField(item);
+        if (text != null) {
+          converted.tempPublishingLanguages.add(text);
         }
       }
     }
@@ -1052,7 +1081,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     public String personal_situation; // unstructured
     public String personalSituation; // EMPTY
     public String[] placeOfBirth; // how can this be an array?
-    public String placeOfDeath;
+    public String placeOfDeath; // unstructured
     public String[] professions;
     public String[] ps_children;
     public String[] pseudonyms;
@@ -1095,6 +1124,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   private void setupRelationMappings() {
     addRelationMapping("membership", "is_member_of", REVERSED_ORDER);
+    addRelationMapping("place_of_birth", "has_birth_place", SAME_ORDER);
   }
 
   private int missingRelationTypes = 0;

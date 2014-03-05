@@ -50,9 +50,14 @@ public class WWPerson extends Person {
   private String nationality;
   private String notes;
   private String personalSituation;
+  private List<String> professions;
+  private List<String> psChildren;
+  private List<String> religions;
+  private List<String> socialClasses;
 
   // Fields scheduled for removal
   public String tempBirthPlace;
+  public String tempDeathPlace;
   public String tempDeath;
   public String tempFinancialSituation;
   public List<String> tempLanguages = Lists.newArrayList();
@@ -60,6 +65,7 @@ public class WWPerson extends Person {
   public String tempName;
   public List<String> tempPlaceOfBirth = Lists.newArrayList();
   public List<String> tempPseudonyms = Lists.newArrayList();
+  public List<String> tempPublishingLanguages = Lists.newArrayList();
   public String tempSpouse;
 
   public WWPerson() {
@@ -68,6 +74,10 @@ public class WWPerson extends Person {
     financials = Lists.newArrayList();
     fsPseudonyms = Lists.newArrayList();
     memberships = Lists.newArrayList();
+    professions = Lists.newArrayList();
+    psChildren = Lists.newArrayList();
+    religions = Lists.newArrayList();
+    socialClasses = Lists.newArrayList();
   }
 
   @Override
@@ -75,21 +85,6 @@ public class WWPerson extends Person {
     String name = getName().getShortName();
     return StringUtils.stripToEmpty(name).isEmpty() ? "[TEMP] " + tempName : name;
   }
-
-  public String placeOfDeath;
-  public String[] professions;
-  public String[] ps_children;
-  public String[] publishing_languages;
-  public String[] religion;
-  public String[] social_class;
-  public XURL url;
-
-  public static class XURL {
-    public String url;
-    public String label;
-  }
-
-  // -- accessors --------------------------------------------------------------
 
   public String getBibliography() {
     return bibliography;
@@ -229,6 +224,65 @@ public class WWPerson extends Person {
     this.personalSituation = personalSituation;
   }
 
+  public List<String> getProfessions() {
+    return professions;
+  }
+
+  public void setProfessions(List<String> professions) {
+    this.professions = professions;
+  }
+
+  public void addProfession(String value) {
+    if (value != null) {
+      professions.add(value);
+    }
+  }
+
+  public List<String> getPsChildren() {
+    return psChildren;
+  }
+
+  public void setPsChildren(List<String> psChildren) {
+    this.psChildren = psChildren;
+  }
+
+  public void addPsChild(String value) {
+    if (value != null) {
+      psChildren.add(value);
+    }
+  }
+
+  public List<String> getReligions() {
+    return religions;
+  }
+
+  public void setReligions(List<String> religions) {
+    this.religions = religions;
+  }
+
+  public void addReligion(String value) {
+    if (value != null) {
+      religions.add(value);
+    }
+  }
+
+  public List<String> getSocialClasses() {
+    return socialClasses;
+  }
+
+  public void setSocialClasses(List<String> socialClasses) {
+    this.socialClasses = socialClasses;
+  }
+
+  public void addSocialClass(String value) {
+    if (value != null) {
+      socialClasses.add(value);
+    }
+  }
+
+  // NOTE. Some relations are generic, but a project need not be interested
+  // So it seems to make sense to define relations here and not in Person
+
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPrimaryLanguages() {
@@ -239,6 +293,18 @@ public class WWPerson extends Person {
   @IndexAnnotation(fieldName = "dynamic_s_collective", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getCollectives() {
     return getRelations().get("is_member_of");
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_birthplace", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  public List<EntityRef> getBirthPlace() {
+    return getRelations().get("has_birth_place");
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_deathplace", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  public List<EntityRef> getDeathPlace() {
+    return getRelations().get("has_death_place");
   }
 
 }

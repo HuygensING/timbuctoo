@@ -29,10 +29,8 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
-import nl.knaw.huygens.timbuctoo.tools.importer.RelationTypeImporter;
 
 /**
  * A class that contains the base functionality used in both the {@code DutchCaribbeanImporter} 
@@ -41,44 +39,11 @@ import nl.knaw.huygens.timbuctoo.tools.importer.RelationTypeImporter;
  */
 public abstract class WomenWritersDefaultImporter extends DefaultImporter {
 
-  /** File with {@code RelationType} definitions; must be present on classpath. */
-  private static final String RELATION_TYPE_DEFS = "relationtype-defs.txt";
-
   protected final Change change;
-  private String prevMessage;
-  private int errors;
 
-  public WomenWritersDefaultImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager) {
+  public WomenWritersDefaultImporter(TypeRegistry registry, StorageManager storageManager, IndexManager indexManager) {
     super(registry, storageManager, indexManager);
     change = new Change("importer", "neww");
-    prevMessage = "";
-    errors = 0;
-    setup(relationManager);
-  }
-
-  protected void setup(RelationManager relationManager) {
-    if (relationManager != null) {
-      new RelationTypeImporter(relationManager, this.typeRegistry).importRelationTypes(RELATION_TYPE_DEFS);
-    }
-  }
-
-  // --- error handling ------------------------------------------------
-
-  protected void handleError(String format, Object... args) {
-    errors++;
-    String message = String.format(format, args);
-    if (!message.equals(prevMessage)) {
-      System.out.print("## ");
-      System.out.printf(message);
-      System.out.println();
-      prevMessage = message;
-    }
-  }
-
-  protected void displayErrorSummary() {
-    if (errors > 0) {
-      System.out.printf("%n## Error count = %d%n", errors);
-    }
   }
 
   // --- storage -------------------------------------------------------

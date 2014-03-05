@@ -20,7 +20,7 @@ public class MetaDataGenerator {
   }
 
   public Map<String, String> generate(Class<?> type) {
-    Map<String, String> metadataMap = Maps.newHashMap();
+    Map<String, String> metadataMap = Maps.newTreeMap();
 
     if (!isAbstract(type)) {
       for (Field field : getFields(type)) {
