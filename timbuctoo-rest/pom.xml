@@ -61,7 +61,21 @@
         </exclusion>
       </exclusions>
     </dependency>
-
+    
+    <!-- Huygens faceted search tools -->
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>facetedsearch-tools-lib</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+    </dependency>
+    
+    <!-- Huygens Solr wrapper -->
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>solrwrapper</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+    </dependency>
+    
     <!-- Apache validation -->
     <dependency>
       <groupId>javax.validation</groupId>
