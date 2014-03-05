@@ -33,6 +33,8 @@ import nl.knaw.huygens.security.client.HuygensAuthorizationHandler;
 import nl.knaw.huygens.security.client.SecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.index.OldIndexManager;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.mail.MailSenderFactory;
 import nl.knaw.huygens.timbuctoo.messages.ActiveMQBroker;
@@ -64,6 +66,7 @@ public class RESTInjectionModule extends BasicInjectionModule {
     bind(SecurityContextCreator.class).to(UserSecurityContextCreator.class);
     bind(Broker.class).to(ActiveMQBroker.class);
     bind(SearchManager.class).to(OldSearchManager.class);
+    bind(IndexManager.class).to(OldIndexManager.class);
 
     if (SecurityType.DEFAULT.equals(securityType)) {
       bind(VREAuthorizationHandler.class).to(DefaultVREAuthorizationHandler.class);

@@ -24,6 +24,8 @@ package nl.knaw.huygens.timbuctoo.tools.config;
 
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.index.OldIndexManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,13 @@ public class ToolsInjectionModule extends BasicInjectionModule {
   public ToolsInjectionModule(Configuration config) {
     super(config);
     LOG.info("In constructor");
+  }
+
+  @Override
+  protected void configure() {
+    super.configure();
+
+    bind(IndexManager.class).to(OldIndexManager.class);
   }
 
 }
