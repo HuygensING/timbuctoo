@@ -40,6 +40,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -372,8 +373,9 @@ public class TypeRegistry {
   }
 
   public boolean isFromSameProject(Class<? extends DomainEntity> class1, Class<? extends DomainEntity> class2) {
-    // TODO Auto-generated method stub
-    return false;
+    String package1 = class1.getPackage().getName();
+    String package2 = class2.getPackage().getName();
+    return Objects.equal(package1, package2);
   }
 
 }

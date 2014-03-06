@@ -45,6 +45,12 @@ import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestRole;
 import org.junit.Before;
 import org.junit.Test;
 
+import test.model.OtherPrimitiveDomainEntity;
+import test.model.PrimitiveDomainEntity;
+import test.model.projecta.OtherADomainEntity;
+import test.model.projecta.SubADomainEntity;
+import test.model.projectb.SubBDomainEntity;
+
 /**
  * Tests for the TypeRegistry. Watch-out the register is highly
  * dependent on the getCollectionName method. When that
@@ -257,6 +263,26 @@ public class TypeRegistryTest {
     assertEquals(2, roles.size());
     assertTrue(roles.contains(ProjectATestRole.class));
     assertTrue(roles.contains(ProjectANewTestRole.class));
+  }
+
+  @Test
+  public void testIsFromSameProject() {
+    assertTrue(registry.isFromSameProject(SubADomainEntity.class, OtherADomainEntity.class));
+  }
+
+  @Test
+  public void testIsFromSameProjectPrimitives() {
+    assertTrue(registry.isFromSameProject(OtherPrimitiveDomainEntity.class, PrimitiveDomainEntity.class));
+  }
+
+  @Test
+  public void testIsFromSameProjectDifferentProjects() {
+    assertFalse(registry.isFromSameProject(SubADomainEntity.class, SubBDomainEntity.class));
+  }
+
+  @Test
+  public void testIsFromSameProjectAndPrimitve() {
+    assertFalse(registry.isFromSameProject(SubADomainEntity.class, PrimitiveDomainEntity.class));
   }
 
   // -------------------------------------------------------------------
