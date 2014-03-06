@@ -25,6 +25,9 @@ package nl.knaw.huygens.timbuctoo.model;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+
 /**
  * The type of a relation between domain entities.
  *
@@ -114,6 +117,11 @@ public class RelationType extends SystemEntity {
 
   public void setSymmetric(boolean symmetric) {
     this.symmetric = symmetric;
+  }
+
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE, false);
   }
 
 }

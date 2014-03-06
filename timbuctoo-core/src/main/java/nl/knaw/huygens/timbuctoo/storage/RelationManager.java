@@ -93,16 +93,50 @@ public class RelationManager {
    * If {@code iname} is {@code null} or empty all relation types are returned.
    */
   public List<RelationType> getRelationTypesForEntity(String iname) {
-    boolean all = StringUtils.isEmpty(iname);
+    boolean shouldFilter = !StringUtils.isEmpty(iname);
     List<RelationType> types = Lists.newArrayList();
     Iterator<RelationType> iterator = storageManager.getAll(RelationType.class);
     while (iterator.hasNext()) {
       RelationType type = iterator.next();
-      if (all || isAssignableIName(type.getSourceTypeName(), iname) || isAssignableIName(type.getTargetTypeName(), iname)) {
+      if (!shouldFilter || isApplicable(iname, type)) {
         types.add(type);
       }
     }
     return types;
+  }
+
+  protected boolean isApplicable(String iname, RelationType type) {
+    // iname is assignable from source or target of relation
+    // source and target cannot be from another subproject than the type of iname,
+    // if the iname is from a type that is not a primitive.
+
+    // source or target should be assignable
+    // Source and target should be compatible
+
+    Class<? extends DomainEntity> requestType = TypeRegistry.toDomainEntity(registry.getTypeForIName(iname));
+    Class<? extends DomainEntity> sourceType = TypeRegistry.toDomainEntity(registry.getTypeForIName(type.getSourceTypeName()));
+    Class<? extends DomainEntity> targetType = TypeRegistry.toDomainEntity(registry.getTypeForIName(type.getTargetTypeName()));
+
+    boolean isAssignable = isAssignable(sourceType, requestType) || isAssignable(targetType, requestType);
+
+    boolean isSourceCompatible = isCompatible(requestType, sourceType);
+    boolean isTargetCompatible = isCompatible(requestType, targetType);
+
+    boolean isRequestTypePrimitive = TypeRegistry.isPrimitiveDomainEntity(requestType);
+
+    boolean isPrimitiveCompatible = isRequestTypePrimitive && isAssignable && (isSourceCompatible || isTargetCompatible);
+    boolean isCompatibleForProjectType = isAssignable && isSourceCompatible && isTargetCompatible;
+
+    return isPrimitiveCompatible || isCompatibleForProjectType;
+  }
+
+  private boolean isCompatible(Class<? extends DomainEntity> requestType, Class<? extends DomainEntity> typeFromRelation) {
+
+    return registry.isFromSameProject(requestType, typeFromRelation) || //
+        TypeRegistry.isPrimitiveDomainEntity(requestType) || // 
+        TypeRegistry.isPrimitiveDomainEntity(typeFromRelation) || //
+        DomainEntity.class.equals(requestType) || //
+        DomainEntity.class.equals(typeFromRelation);
   }
 
   /**
@@ -220,9 +254,7 @@ public class RelationManager {
    * Convenience method for deciding assignability of an entity to another entity,
    * given the internal names of the target entity type and the source entity type.
    */
-  private boolean isAssignableIName(String target, String source) {
-    Class<? extends Entity> targetType = convertToType(target);
-    Class<? extends Entity> sourceType = convertToType(source);
+  private boolean isAssignable(Class<? extends DomainEntity> targetType, Class<? extends DomainEntity> sourceType) {
     return targetType != null && sourceType != null && targetType.isAssignableFrom(sourceType);
   }
 

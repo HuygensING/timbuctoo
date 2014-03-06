@@ -371,4 +371,9 @@ public class TypeRegistry {
     throw new ClassCastException(type.getName() + " is not a role");
   }
 
+  public boolean isFromSameProject(Class<? extends DomainEntity> class1, Class<? extends DomainEntity> class2) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
 }
