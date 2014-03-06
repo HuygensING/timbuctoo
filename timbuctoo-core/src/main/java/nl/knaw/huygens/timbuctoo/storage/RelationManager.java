@@ -106,17 +106,11 @@ public class RelationManager {
   }
 
   protected boolean isApplicable(String iname, RelationType type) {
+    Class<? extends DomainEntity> requestType = TypeRegistry.toDomainEntity(convertToType(iname));
+    Class<? extends DomainEntity> sourceType = TypeRegistry.toDomainEntity(convertToType(type.getSourceTypeName()));
+    Class<? extends DomainEntity> targetType = TypeRegistry.toDomainEntity(convertToType(type.getTargetTypeName()));
+
     // iname is assignable from source or target of relation
-    // source and target cannot be from another subproject than the type of iname,
-    // if the iname is from a type that is not a primitive.
-
-    // source or target should be assignable
-    // Source and target should be compatible
-
-    Class<? extends DomainEntity> requestType = TypeRegistry.toDomainEntity(registry.getTypeForIName(iname));
-    Class<? extends DomainEntity> sourceType = TypeRegistry.toDomainEntity(registry.getTypeForIName(type.getSourceTypeName()));
-    Class<? extends DomainEntity> targetType = TypeRegistry.toDomainEntity(registry.getTypeForIName(type.getTargetTypeName()));
-
     boolean isAssignable = isAssignable(sourceType, requestType) || isAssignable(targetType, requestType);
 
     boolean isSourceCompatible = isCompatible(requestType, sourceType);

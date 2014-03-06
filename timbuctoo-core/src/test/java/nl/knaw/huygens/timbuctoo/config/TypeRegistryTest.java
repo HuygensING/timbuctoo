@@ -179,8 +179,10 @@ public class TypeRegistryTest {
     assertFalse(TypeRegistry.isSystemEntity(null));
     assertFalse(TypeRegistry.isSystemEntity(NotAnEntity.class));
     assertFalse(TypeRegistry.isSystemEntity(AnEntity.class));
-    assertTrue(TypeRegistry.isSystemEntity(ASystemEntity.class));
     assertFalse(TypeRegistry.isSystemEntity(ADomainEntity.class));
+    assertTrue(TypeRegistry.isSystemEntity(ASystemEntity.class));
+    assertTrue(TypeRegistry.isSystemEntity(SystemEntity.class));
+
   }
 
   @Test
@@ -190,6 +192,7 @@ public class TypeRegistryTest {
     assertFalse(TypeRegistry.isDomainEntity(AnEntity.class));
     assertFalse(TypeRegistry.isDomainEntity(ASystemEntity.class));
     assertTrue(TypeRegistry.isDomainEntity(ADomainEntity.class));
+    assertTrue(TypeRegistry.isDomainEntity(DomainEntity.class));
   }
 
   @Test
