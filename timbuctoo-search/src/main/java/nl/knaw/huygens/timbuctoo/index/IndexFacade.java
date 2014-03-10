@@ -6,10 +6,12 @@ import java.util.Set;
 
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.solr.SearchParameters;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
+import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.apache.solr.client.solrj.SolrQuery;
@@ -19,19 +21,26 @@ import org.apache.solr.common.SolrInputDocument;
 
 public class IndexFacade implements SearchManager, IndexManager {
 
-  private AbstractSolrServer abstractSolrServer;
-  private SolrInputDocumentCreator solrInputDocCreator;
+  private final AbstractSolrServer abstractSolrServer;
+  private final SolrInputDocumentCreator solrInputDocCreator;
+  private final StorageManager storageManager;
+  private final TypeRegistry typeRegistry;
 
-  public IndexFacade(AbstractSolrServer abstractSolrServer, SolrInputDocumentCreator solrInputDocCreator) {
+  public IndexFacade(AbstractSolrServer abstractSolrServer, SolrInputDocumentCreator solrInputDocCreator, StorageManager storageManager, TypeRegistry typeRegistry) {
     this.abstractSolrServer = abstractSolrServer;
     this.solrInputDocCreator = solrInputDocCreator;
+    this.storageManager = storageManager;
+    this.typeRegistry = typeRegistry;
   }
 
   @Override
   public <T extends DomainEntity> void addEntity(Class<T> type, String id) throws IndexException {
-    SolrInputDocument solrInputDocument = solrInputDocCreator.create(type, id);
+    Class<? extends DomainEntity> baseClass = TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type));
+    List<? extends DomainEntity> allVariations = storageManager.getAllVariations(baseClass, id);
+    SolrInputDocument doc = solrInputDocCreator.create(allVariations, id);
+
     try {
-      abstractSolrServer.add(solrInputDocument);
+      abstractSolrServer.add(doc);
     } catch (SolrServerException e) {
       throw new IndexException(e);
     } catch (IOException e) {
