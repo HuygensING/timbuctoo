@@ -30,17 +30,20 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
 @IDPrefix("PERS")
 public class Person extends DomainEntity {
 
+  @JsonFormat(shape = JsonFormat.Shape.OBJECT)
   public static enum Gender {
     UNKNOWN, MALE, FEMALE, NOT_APPLICABLE;
   }
 
   // start for modeling of roles
+  @JsonFormat(shape = JsonFormat.Shape.OBJECT)
   public static enum Type {
     UNKNOWN, ARCHETYPE, AUTHOR, PSEUDONYM
   }
