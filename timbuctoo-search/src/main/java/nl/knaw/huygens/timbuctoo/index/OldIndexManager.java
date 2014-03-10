@@ -29,7 +29,6 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
@@ -93,12 +92,12 @@ public class OldIndexManager implements IndexManager {
   }
 
   @Override
-  public <T extends Entity> void addEntity(Class<T> type, String id) throws IndexException {
+  public <T extends DomainEntity> void addEntity(Class<T> type, String id) throws IndexException {
     addBaseEntity(toDomainEntity(registry.getBaseClass(type)), id);
   }
 
   @Override
-  public <T extends Entity> void updateEntity(Class<T> type, String id) throws IndexException {
+  public <T extends DomainEntity> void updateEntity(Class<T> type, String id) throws IndexException {
     // For Solr "add" and "update" are the same thing
     addBaseEntity(toDomainEntity(registry.getBaseClass(type)), id);
   }
@@ -118,7 +117,7 @@ public class OldIndexManager implements IndexManager {
   }
 
   @Override
-  public <T extends Entity> void deleteEntity(Class<T> type, String id) throws IndexException {
+  public <T extends DomainEntity> void deleteEntity(Class<T> type, String id) throws IndexException {
     deleteBaseEntity(toDomainEntity(registry.getBaseClass(type)), id);
   }
 
