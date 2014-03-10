@@ -28,7 +28,7 @@ import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.ConsumerService;
-import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,22 +59,22 @@ public class IndexService extends ConsumerService implements Runnable {
   @Override
   protected void executeAction(Action action) {
     ActionType actionType = action.getActionType();
-    Class<? extends Entity> type = action.getType();
+    Class<? extends DomainEntity> type = action.getType();
     String id = action.getId();
 
     try {
       switch (actionType) {
-      case ADD:
-        manager.addEntity(type, id);
-        break;
-      case MOD:
-        manager.updateEntity(type, id);
-        break;
-      case DEL:
-        manager.deleteEntity(type, id);
-        break;
-      case END:
-        this.stop(); //stop the Runnable
+        case ADD:
+          manager.addEntity(type, id);
+          break;
+        case MOD:
+          manager.updateEntity(type, id);
+          break;
+        case DEL:
+          manager.deleteEntity(type, id);
+          break;
+        case END:
+          this.stop(); //stop the Runnable
       }
     } catch (IndexException ex) {
       getLogger().error("Error indexing ({}) object of type {} with id {}", new Object[] { actionType, type, id });

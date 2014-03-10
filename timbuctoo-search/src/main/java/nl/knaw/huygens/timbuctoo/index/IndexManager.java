@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.index;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.apache.solr.client.solrj.SolrQuery;
@@ -11,11 +10,11 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 
 public interface IndexManager {
 
-  <T extends Entity> void addEntity(Class<T> type, String id) throws IndexException;
+  <T extends DomainEntity> void addEntity(Class<T> type, String id) throws IndexException;
 
-  <T extends Entity> void updateEntity(Class<T> type, String id) throws IndexException;
+  <T extends DomainEntity> void updateEntity(Class<T> type, String id) throws IndexException;
 
-  <T extends Entity> void deleteEntity(Class<T> type, String id) throws IndexException;
+  <T extends DomainEntity> void deleteEntity(Class<T> type, String id) throws IndexException;
 
   <T extends DomainEntity> void deleteBaseEntity(Class<T> type, String id) throws IndexException;
 
