@@ -8,7 +8,7 @@ import org.apache.solr.common.SolrInputDocument;
 
 public class SolrInputDocumentCreator {
 
-  public SolrInputDocument create(List<? extends DomainEntity> allVariations, String id) {
+  public SolrInputDocument create(List<? extends DomainEntity> allVariations) {
     return null;
     // TODO Auto-generated method stub
 
