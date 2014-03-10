@@ -244,13 +244,8 @@ public class StorageManager {
     }
   }
 
-  public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) {
-    try {
-      return storage.getAllVariations(type, id);
-    } catch (IOException e) {
-      LOG.error("Error while handling {} {}", type.getName(), id);
-      return null;
-    }
+  public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws IOException {
+    return storage.getAllVariations(type, id);
   }
 
   public <T extends Entity> StorageIterator<T> getAll(Class<T> type) {

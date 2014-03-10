@@ -36,8 +36,14 @@ public class IndexFacade implements SearchManager, IndexManager {
   @Override
   public <T extends DomainEntity> void addEntity(Class<T> type, String id) throws IndexException {
     Class<? extends DomainEntity> baseClass = TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type));
-    List<? extends DomainEntity> allVariations = storageManager.getAllVariations(baseClass, id);
-    SolrInputDocument doc = solrInputDocCreator.create(allVariations, id);
+    List<? extends DomainEntity> allVariations = null;
+
+    try {
+      allVariations = storageManager.getAllVariations(baseClass, id);
+    } catch (IOException e) {
+      throw new IndexException(e);
+    }
+    SolrInputDocument doc = solrInputDocCreator.create(allVariations);
 
     try {
       abstractSolrServer.add(doc);

@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.index;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -49,7 +50,7 @@ public class IndexFacadeTest {
     doReturn(ExplicitlyAnnotatedModel.class).when(typeRegistryMock).getBaseClass(SubModel.class);
     List<ExplicitlyAnnotatedModel> allVariations = Lists.newArrayList();
     when(storageManagerMock.getAllVariations(ExplicitlyAnnotatedModel.class, "id0000001")).thenReturn(allVariations);
-    when(solrInputDocCreatorMock.create(allVariations, "id0000001")).thenReturn(solrInputDocumentMock);
+    when(solrInputDocCreatorMock.create(allVariations)).thenReturn(solrInputDocumentMock);
 
     // action
     instance.addEntity(SubModel.class, "id0000001");
@@ -58,7 +59,7 @@ public class IndexFacadeTest {
     InOrder inOrder = Mockito.inOrder(typeRegistryMock, storageManagerMock, solrInputDocCreatorMock, abstractSolrServerMock);
     inOrder.verify(typeRegistryMock).getBaseClass(SubModel.class);
     inOrder.verify(storageManagerMock).getAllVariations(ExplicitlyAnnotatedModel.class, "id0000001");
-    inOrder.verify(solrInputDocCreatorMock).create(allVariations, "id0000001");
+    inOrder.verify(solrInputDocCreatorMock).create(allVariations);
     inOrder.verify(abstractSolrServerMock).add(solrInputDocumentMock);
   }
 
@@ -77,7 +78,7 @@ public class IndexFacadeTest {
     doReturn(ExplicitlyAnnotatedModel.class).when(typeRegistryMock).getBaseClass(SubModel.class);
     List<ExplicitlyAnnotatedModel> allVariations = Lists.newArrayList();
     when(storageManagerMock.getAllVariations(ExplicitlyAnnotatedModel.class, "id0000001")).thenReturn(allVariations);
-    when(solrInputDocCreatorMock.create(allVariations, "id0000001")).thenReturn(solrInputDocumentMock);
+    when(solrInputDocCreatorMock.create(allVariations)).thenReturn(solrInputDocumentMock);
     doThrow(exception).when(abstractSolrServerMock).add(solrInputDocumentMock);
 
     // action
@@ -88,8 +89,27 @@ public class IndexFacadeTest {
       InOrder inOrder = Mockito.inOrder(typeRegistryMock, storageManagerMock, solrInputDocCreatorMock, abstractSolrServerMock);
       inOrder.verify(typeRegistryMock).getBaseClass(SubModel.class);
       inOrder.verify(storageManagerMock).getAllVariations(ExplicitlyAnnotatedModel.class, "id0000001");
-      inOrder.verify(solrInputDocCreatorMock).create(allVariations, "id0000001");
+      inOrder.verify(solrInputDocCreatorMock).create(allVariations);
       inOrder.verify(abstractSolrServerMock).add(solrInputDocumentMock);
+    }
+  }
+
+  @Test(expected = IndexException.class)
+  public void testAddEntityWhenStorageManagerThrowsAnException() throws IndexException, SolrServerException, IOException {
+    //when
+    doReturn(ExplicitlyAnnotatedModel.class).when(typeRegistryMock).getBaseClass(SubModel.class);
+
+    doThrow(IOException.class).when(storageManagerMock).getAllVariations(ExplicitlyAnnotatedModel.class, "id0000001");
+
+    // action
+    try {
+      instance.addEntity(SubModel.class, "id0000001");
+    } finally {
+      // verify
+      InOrder inOrder = Mockito.inOrder(typeRegistryMock, storageManagerMock, solrInputDocCreatorMock, abstractSolrServerMock);
+      inOrder.verify(typeRegistryMock).getBaseClass(SubModel.class);
+      inOrder.verify(storageManagerMock).getAllVariations(ExplicitlyAnnotatedModel.class, "id0000001");
+      verifyZeroInteractions(solrInputDocCreatorMock, abstractSolrServerMock);
     }
   }
 }
