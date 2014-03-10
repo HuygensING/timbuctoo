@@ -27,51 +27,19 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class WWLocation extends Location {
 
-  private String address;
-  private String settlement;
-  private String country;
-  private String zipcode;
+  public String tempAddress;
+  public String tempSettlement;
+  public String tempCountry;
+  public String tempZipcode;
 
   @Override
   public String getDisplayName() {
-    return String.format("address [%s], settlement [%s], country [%s], zipcode [%s]", address, settlement, country, zipcode);
-  }
-
-  public String getAddress() {
-    return address;
-  }
-
-  public void setAddress(String address) {
-    this.address = address;
-  }
-
-  public String getSettlement() {
-    return settlement;
-  }
-
-  public void setSettlement(String settlement) {
-    this.settlement = settlement;
-  }
-
-  public String getCountry() {
-    return country;
-  }
-
-  public void setCountry(String country) {
-    this.country = country;
-  }
-
-  public String getZipcode() {
-    return zipcode;
-  }
-
-  public void setZipcode(String zipcode) {
-    this.zipcode = zipcode;
+    return String.format("address [%s], settlement [%s], country [%s], zipcode [%s]", tempAddress, tempSettlement, tempCountry, tempZipcode);
   }
 
   @JsonIgnore
   public boolean isValid() {
-    return address != null || settlement != null || country != null || zipcode != null;
+    return tempAddress != null || tempSettlement != null || tempCountry != null || tempZipcode != null;
   }
 
 }

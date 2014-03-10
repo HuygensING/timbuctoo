@@ -22,17 +22,62 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Maps;
+
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
 
 @IDPrefix("LOCA")
 public class Location extends DomainEntity {
 
+  /** URN for making concordances. */
+  private String urn;
+  /** Default place name language. */
+  private String defLang;
+  private Map<String, PlaceName> names = Maps.newHashMap();
   private String latitude;
   private String longitude;
 
   @Override
   public String getDisplayName() {
     return null;
+  }
+
+  @JsonProperty("^urn")
+  public String getUrn() {
+    return urn;
+  }
+
+  @JsonProperty("^urn")
+  public void setUrn(String urn) {
+    this.urn = urn;
+  }
+
+  @JsonProperty("^defLang")
+  public String getDefLang() {
+    return defLang;
+  }
+
+  @JsonProperty("^defLang")
+  public void setDefLang(String defLang) {
+    this.defLang = defLang;
+  }
+
+  @JsonProperty("^names")
+  public Map<String, PlaceName> getNames() {
+    return names;
+  }
+
+  @JsonProperty("^names")
+  public void setNames(Map<String, PlaceName> names) {
+    this.names = names;
+  }
+
+  public void addName(String lang, PlaceName name) {
+    names.put(lang, name);
   }
 
   public String getLatitude() {

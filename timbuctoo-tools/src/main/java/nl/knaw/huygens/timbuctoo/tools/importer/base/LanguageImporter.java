@@ -64,10 +64,10 @@ public class LanguageImporter extends CSVImporter {
   private int totalCount;
   private int coreCount;
 
-  public LanguageImporter(StorageManager storageManager, String userId, String vreId) {
+  public LanguageImporter(StorageManager storageManager, Change change) {
     super(new PrintWriter(System.err), SEPERATOR_CHAR, QUOTE_CHAR, LINES_TO_SKIP);
     this.storageManager = storageManager;
-    change = new Change(userId, vreId);
+    this.change = change;
   }
 
   @Override

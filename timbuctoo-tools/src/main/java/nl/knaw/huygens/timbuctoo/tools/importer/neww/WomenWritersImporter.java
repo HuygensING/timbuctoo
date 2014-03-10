@@ -34,6 +34,7 @@ import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Language;
+import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -167,8 +168,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     printBoxedText("Initialization");
 
-    // displayStatus();
-
     removeNonPersistentEntities(WWCollective.class);
     removeNonPersistentEntities(WWDocument.class);
     removeNonPersistentEntities(WWKeyword.class);
@@ -203,8 +202,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     System.out.printf("nAuthor     %5d%n", nAuthor);
     System.out.printf("nPseudonym  %5d%n", nPseudonym);
 
-    // System.exit(0);
-
     System.out.println(".. Relations");
     importRelations();
     System.out.printf("Number of missing relation types = %6d%n%n", missingRelationTypes);
@@ -212,9 +209,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     printBoxedText("Indexing");
 
+    indexEntities(WWCollective.class);
     indexEntities(WWDocument.class);
     indexEntities(WWKeyword.class);
     indexEntities(WWLanguage.class);
+    indexEntities(WWLocation.class);
     indexEntities(WWPerson.class);
 
     displayStatus();
@@ -222,7 +221,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     // printBoxedText("Export");
     // export();
-
   }
 
   // --- Support ---------------------------------------------------------------
@@ -727,7 +725,163 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Locations -------------------------------------------------------------
 
+  private Map<String, String> conc = Maps.newHashMap();
+
+  private void setupConc() {
+	  conc.put("alton, hampshire#england", "se:alton.eng");
+	  conc.put("amsterdam#netherlands", "se:amsterdam.nld");
+	  conc.put("amsterdam#null", "se:amsterdam.nld");
+	  conc.put("andros#greece", "re:andros.grc");
+	  conc.put("athens#greece", "se:athens.grc");
+	  conc.put("barcelona#spain", "se:barcelona.esp");
+	  conc.put("belgrade#null", "se:belgrade.srb");
+	  conc.put("belgrade#serbia", "se:belgrade.srb");
+	  conc.put("bergen#norway", "se:bergen.nor");
+	  conc.put("berlin#germany", "se:berlin.deu");
+	  conc.put("bialystok#poland", "se:bialystok.pol");
+	  conc.put("bologna#italy", "se:bologna.ita");
+	  conc.put("bruxelles#belgium/southern netherlands", "se:brussel.bel");
+	  conc.put("bucharest#romania", "se:bucharest.rou");
+	  conc.put("cambridge#england", "se:cambridge.eng");
+	  conc.put("cesena#italy", "se:cesena.ita");
+	  conc.put("copenhagen#denmark", "se:kobenhavn.dnk");
+	  conc.put("den haag#netherlands", "se:den-haag.nld");
+	  conc.put("deventer#netherlands", "se:deventer.nld");
+	  conc.put("dublin#ireland", "se:dublin.irl");
+	  conc.put("dublin#null", "se:dublin.irl");
+	  conc.put("firenze#italy", "se:firenze.ita");
+	  conc.put("gothenburg#sweden", "se:goteborg.swe");
+	  conc.put("groningen#null", "se:groningen.nld");
+	  conc.put("helsinki#finland", "se:helsinki.fin");
+	  conc.put("ioannina#greece", "se:ioannina.grc");
+	  conc.put("kampen#netherlands", "se:kampen.nld");
+	  conc.put("kopenhagen#denmark", "se:kobenhavn.dnk");
+	  conc.put("koper#slovenia", "se:koper.svn");
+	  conc.put("krakow#poland", "se:krakow.pol");
+	  conc.put("leeuwarden#netherlands", "se:leeuwarden.nld");
+	  conc.put("leiden#netherlands", "se:leiden.nld");
+	  conc.put("leiden#null", "se:leiden.nld");
+	  conc.put("leipzig and frankfurt am main#germany", "IGNORE");
+	  conc.put("lisboa#portugal", "se:lisbon.prt");
+	  conc.put("lisbon#portugal", "se:lisbon.prt");
+	  conc.put("ljubljana#slovenia", "se:ljubljana.svn");
+	  conc.put("londen#england", "se:london.eng");
+	  conc.put("london#england", "se:london.eng");
+	  conc.put("lublin#poland", "se:lublin.pol");
+	  conc.put("madrid#spain", "se:madrid.esp");
+	  conc.put("middelburg#netherlands", "se:middelburg.nld");
+	  conc.put("milan#italy", "se:milano.ita");
+	  conc.put("milano#italy", "se:milano.ita");
+	  conc.put("milano#italy", "se:milano.ita");
+	  conc.put("milano#null", "se:milano.ita");
+	  conc.put("mölndal#sweden", "se:molndal.swe");
+	  conc.put("moscow#russia", "se:moscow.rus");
+	  conc.put("münchen#germany", "se:munchen.deu");
+	  conc.put("napoli#italy", "se:napoli.ita");
+	  conc.put("nicosia#null", "se:nicosia.cyp");
+	  conc.put("nijmegen#netherlands", "se:nijmegen.nld");
+	  conc.put("northfield, minnesota#united states", "se:northfield.usa");
+	  conc.put("novi sad#serbia", "se:novi-sad.srb");
+	  conc.put("null#albania", "co:alb");
+	  conc.put("null#argentina", "co:arg");
+	  conc.put("null#australia", "co:aus");
+	  conc.put("null#austria", "co:aut");
+	  conc.put("null#austro-hungarian empire", "bl:emp-austro-hungarian");
+	  conc.put("null#bohemia", "re:bohemia.cze");
+	  conc.put("null#belgium/southern netherlands", "co:bel");
+	  conc.put("null#bosnia and herzegovina", "co:bih");
+	  conc.put("null#brasil", "co:bra");
+	  conc.put("null#bulgaria", "co:bgr");
+	  conc.put("null#byzantine empire", "bl:emp-byzantine");
+	  conc.put("null#canada", "co:can");
+	  conc.put("null#castilia", "re:castilia.esp");
+	  conc.put("null#china", "co:chn");
+	  conc.put("null#colombia", "co:col");
+	  conc.put("null#colonies of european countries", "IGNORE");
+	  conc.put("null#croatia", "co:hrv");
+	  conc.put("null#czech republic", "co:cze");
+	  conc.put("null#denmark", "co:dnk");
+	  conc.put("null#egypt", "co:egy");
+	  conc.put("null#england", "co:eng");
+	  conc.put("null#england", "co:eng");
+	  conc.put("null#estonia", "co:est");
+	  conc.put("null#finland", "co:fin");
+	  conc.put("null#france", "co:fra");
+	  conc.put("null#germany", "co:deu");
+	  conc.put("null#greece", "co:grc");
+	  conc.put("null#hungary", "co:hun");
+	  conc.put("null#iceland", "co:isl");
+	  conc.put("null#india", "co:ind");
+	  conc.put("null#ireland", "co:irl");
+	  conc.put("null#italy", "co:ita");
+	  conc.put("null#italy", "re:emilia-romagna.ita");
+	  conc.put("null#japan", "co:jpn");
+	  conc.put("null#kingdom of sardinia - piedmont", "IGNORE");
+	  conc.put("null#latvia", "co:lva");
+	  conc.put("null#lithuania", "co:ltu");
+	  conc.put("null#luxemburg", "co:lux");
+	  conc.put("null#mexico", "co:mex");
+	  conc.put("null#montenegro", "co:mne");
+	  conc.put("null#netherlands", "co:nld");
+	  conc.put("null#norway", "co:nor");
+	  conc.put("null#null", "IGNORE");
+	  conc.put("null#ottoman empire", "bl:emp-ottoman");
+	  conc.put("null#poland", "co:pol");
+	  conc.put("null#portugal", "co:prt");
+	  conc.put("null#romania", "co:rou");
+	  conc.put("null#russia", "co:rus");
+	  conc.put("null#scotland", "co:sco");
+	  conc.put("null#serbia", "co:srb");
+	  conc.put("null#slovakia", "co:svk");
+	  conc.put("null#slovenia", "co:svn");
+	  conc.put("null#south-america (to be specified)", "bl:south-america");
+	  conc.put("null#spain", "co:esp");
+	  conc.put("null#sweden", "co:swe");
+	  conc.put("null#switzerland", "co:che");
+	  conc.put("null#turkey", "co:tur");
+	  conc.put("null#ukraine", "co:ukr");
+	  conc.put("null#united states", "co:usa");
+	  conc.put("null#unknown / not relevant", "IGNORE");
+	  conc.put("null#uzbekistan", "co:uzb");
+	  conc.put("null#wales", "re:wales.gbr");
+	  conc.put("oslo#norway", "se:oslo.nor");
+	  conc.put("oviedo#spain", "se:oviedo.esp");
+	  conc.put("oxford#england", "se:oxford.eng");
+	  conc.put("parijs#france", "se:paris.fra");
+	  conc.put("parijs#null", "se:paris.fra");
+	  conc.put("paris#france", "se:paris.fra");
+	  conc.put("patra#greece", "se:patras.grc");
+	  conc.put("patras#greece", "se:patras.grc");
+	  conc.put("petersburg#russia", "se:saint-petersburg.rus");
+	  conc.put("porto#portugal", "se:porto.prt");
+	  conc.put("poznań, poznan#poland", "se:poznan.pol");
+	  conc.put("poznań#poland", "se:poznan.pol");
+	  conc.put("praha 1#czech republic", "se:prague.cze");
+	  conc.put("rethymno#greece", "se:rethymno.grc");
+	  conc.put("rotterdam#null", "se:rotterdam.nld");
+	  conc.put("san francisco#united states", "se:san-francisco.usa");
+	  conc.put("sofia#bulgaria", "se:sofia.bgr");
+	  conc.put("st. petersburg#russia", "se:saint-petersburg.rus");
+	  conc.put("st.petersburg#russia", "se:saint-petersburg.rus");
+	  conc.put("the hague#netherlands", "se:den-haag.nld");
+	  conc.put("thessaloniki#greece", "se:thessaloniki.grc");
+	  conc.put("tilburg#netherlands", "se:tilburg.nld");
+	  conc.put("toledo#spain", "se:toledo.esp");
+	  conc.put("torino#italy", "se:torino.ita");
+	  conc.put("turku#finland", "se:turku.fin");
+	  conc.put("university of helsinki#finland", "se:helsinki.fin");
+	  conc.put("utrecht#null", "se:utrecht.nld");
+	  conc.put("vatican city#italy", "co:vat");
+	  conc.put("volda#norway", "se:volda.nor");
+	  conc.put("warsaw#poland", "se:warszawa.pol");
+	  conc.put("warszawa#poland", "se:warszawa.pol");
+	  conc.put("washington, dc#united states", "se:washington.usa");
+	  conc.put("xxx#brasil", "co:bra");
+	  conc.put("warszawa#poland", "se:warszawa.pol");
+  }
+
   private int importLocations() throws Exception {
+    setupConc();
     int initialSize = references.size();
     LineIterator iterator = getLineIterator("locations.json");
     try {
@@ -738,6 +892,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         }
       }
     } finally {
+      conc.clear();
       LineIterator.closeQuietly(iterator);
     }
     return references.size() - initialSize;
@@ -752,15 +907,41 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     String key = newKey("Location", object.tempid);
     if (references.containsKey(key)) {
       handleError("Duplicate key %s", key);
-    } else {
-      WWLocation converted = convert(json, object);
-      if (converted == null) {
-        invalids.add(key);
-      } else {
-        String storedId = addDomainEntity(WWLocation.class, converted);
-        references.put(key, new Reference(WWLocation.class, storedId));
-      }
+      return;
+    } 
+    WWLocation converted = convert(json, object);
+    if (converted == null) {
+      invalids.add(key);
+      return;
     }
+    String code = String.format("%s#%s", converted.tempSettlement, converted.tempCountry);
+    String urn = conc.get(code.toLowerCase());
+    if (urn == null) {
+      System.out.println(".. Adding new location: " + code);
+      String storedId = addDomainEntity(WWLocation.class, converted);
+      references.put(key, new Reference(WWLocation.class, storedId));
+      return;
+    }
+    if (urn.equals("IGNORE")) {
+      System.out.println(".. Ignoring location: " + code);
+      invalids.add(key);
+      return;
+    }
+    Location location = storageManager.findEntity(Location.class, "^urn", urn);
+    if (location == null) {
+      handleError("URN not found: %s", urn);
+      return;
+    }
+    converted.setId(location.getId());
+    converted.setRev(location.getRev());
+    converted.setUrn(location.getUrn());
+    converted.setDefLang(location.getDefLang());
+    converted.setNames(location.getNames());
+    converted.setLatitude(location.getLatitude());
+    converted.setLongitude(location.getLongitude());
+    updateDomainEntity(WWLocation.class, converted);
+    references.put(key, new Reference(WWLocation.class, location.getId()));
+    // System.out.printf(".. Matched: '%s' -- '%s'", code, converted.getDisplayName());
   }
 
   private WWLocation convert(String line, XLocation object) {
@@ -776,12 +957,17 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     verifyEmptyField(line, "period", object.period);
     verifyEmptyField(line, "region", object.region);
 
-    converted.setAddress(filterTextField(object.address));
-    converted.setSettlement(filterTextField(object.settlement));
-    converted.setCountry(filterTextField(object.country));
-    converted.setZipcode(filterTextField(object.zipcode));
+    converted.tempAddress = filterTextField(object.address);
+    converted.tempSettlement = filterTextField(object.settlement);
+    converted.tempCountry = filterTextField(object.country);
+    converted.tempZipcode = filterTextField(object.zipcode);
 
-    return converted.isValid() ? converted : null;
+    if (converted.isValid()) {
+      return converted;
+    } else {
+      handleError("Empty location: ", line);
+      return null;
+    }
   }
 
   private static class XLocation {

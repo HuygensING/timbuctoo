@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -72,6 +73,18 @@ public abstract class DefaultImporter {
   protected void displayErrorSummary() {
     if (errors > 0) {
       System.out.printf("%n## Error count = %d%n", errors);
+    }
+  }
+
+  // --- Storage ---------------------------------------------------------------
+  
+  protected <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) {
+    try {
+      storageManager.addDomainEntity(type, entity, change);
+      return entity.getId();
+    } catch (IOException e) {
+      handleError("Failed to add %s; %s", entity.getDisplayName(), e.getMessage());
+      return null;
     }
   }
 
