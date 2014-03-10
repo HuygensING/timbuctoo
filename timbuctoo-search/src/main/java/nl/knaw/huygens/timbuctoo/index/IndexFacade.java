@@ -1,8 +1,10 @@
 package nl.knaw.huygens.timbuctoo.index;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
@@ -11,14 +13,30 @@ import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrInputDocument;
 
 public class IndexFacade implements SearchManager, IndexManager {
 
+  private AbstractSolrServer abstractSolrServer;
+  private SolrInputDocumentCreator solrInputDocCreator;
+
+  public IndexFacade(AbstractSolrServer abstractSolrServer, SolrInputDocumentCreator solrInputDocCreator) {
+    this.abstractSolrServer = abstractSolrServer;
+    this.solrInputDocCreator = solrInputDocCreator;
+  }
+
   @Override
   public <T extends DomainEntity> void addEntity(Class<T> type, String id) throws IndexException {
-    // TODO Auto-generated method stub
-
+    SolrInputDocument solrInputDocument = solrInputDocCreator.create(type, id);
+    try {
+      abstractSolrServer.add(solrInputDocument);
+    } catch (SolrServerException e) {
+      throw new IndexException(e);
+    } catch (IOException e) {
+      throw new IndexException(e);
+    }
   }
 
   @Override

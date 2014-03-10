@@ -1,43 +1,73 @@
 package nl.knaw.huygens.timbuctoo.index;
 
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 public class IndexFacadeTest {
-  @Test
-  public void testAddEntity() throws SolrServerException, IOException, IndexException {
-    // mock
-    AbstractSolrServer abstractSolrServerMock = mock(AbstractSolrServer.class);
-    StorageManager storageManagerMock = mock(StorageManager.class);
+  private AbstractSolrServer abstractSolrServerMock;
+  private SolrInputDocumentCreator solrInputDocCreatorMock;
+  private SolrInputDocument solrInputDocumentMock;
+  private IndexFacade instance;
 
-    IndexFacade instance = new IndexFacade();
-    String id = "id0000001";
-    Class<ExplicitlyAnnotatedModel> type = ExplicitlyAnnotatedModel.class;
+  @Before
+  public void setUp() {
+    abstractSolrServerMock = mock(AbstractSolrServer.class);
+    solrInputDocCreatorMock = mock(SolrInputDocumentCreator.class);
+    solrInputDocumentMock = mock(SolrInputDocument.class);
 
-    // action
-    instance.addEntity(type, id);
-
-    // verify
-    InOrder inOrder = Mockito.inOrder(storageManagerMock, abstractSolrServerMock);
-    inOrder.verify(storageManagerMock).getAllVariations(type, id);
-    inOrder.verify(abstractSolrServerMock).add(any(SolrInputDocument.class));
+    instance = new IndexFacade(abstractSolrServerMock, solrInputDocCreatorMock);
   }
 
   @Test
-  public void testAddEntityWhenSolrServerThrowsAnException() {
-    fail("Yet to be implemented");
+  public void testAddEntity() throws SolrServerException, IOException, IndexException {
+    //when
+    when(solrInputDocCreatorMock.create(ExplicitlyAnnotatedModel.class, "id0000001")).thenReturn(solrInputDocumentMock);
+
+    // action
+    instance.addEntity(ExplicitlyAnnotatedModel.class, "id0000001");
+
+    // verify
+    InOrder inOrder = Mockito.inOrder(solrInputDocCreatorMock, abstractSolrServerMock);
+    inOrder.verify(solrInputDocCreatorMock).create(ExplicitlyAnnotatedModel.class, "id0000001");
+    inOrder.verify(abstractSolrServerMock).add(solrInputDocumentMock);
+  }
+
+  @Test(expected = IndexException.class)
+  public void testAddEntityWhenSolrServerThrowsAnIOException() throws SolrServerException, IOException, IndexException {
+    testAddEntityWhenSolrServerThrowsAnException(IOException.class);
+  }
+
+  @Test(expected = IndexException.class)
+  public void testAddEntityWhenSolrServerThrowsASolrServerException() throws SolrServerException, IOException, IndexException {
+    testAddEntityWhenSolrServerThrowsAnException(SolrServerException.class);
+  }
+
+  private void testAddEntityWhenSolrServerThrowsAnException(Class<? extends Exception> exception) throws SolrServerException, IOException, IndexException {
+    //when
+    when(solrInputDocCreatorMock.create(ExplicitlyAnnotatedModel.class, "id0000001")).thenReturn(solrInputDocumentMock);
+    doThrow(exception).when(abstractSolrServerMock).add(solrInputDocumentMock);
+
+    // action
+    try {
+      instance.addEntity(ExplicitlyAnnotatedModel.class, "id0000001");
+    } finally {
+      // verify
+      InOrder inOrder = Mockito.inOrder(solrInputDocCreatorMock, abstractSolrServerMock);
+      inOrder.verify(solrInputDocCreatorMock).create(ExplicitlyAnnotatedModel.class, "id0000001");
+      inOrder.verify(abstractSolrServerMock).add(solrInputDocumentMock);
+    }
   }
 }
