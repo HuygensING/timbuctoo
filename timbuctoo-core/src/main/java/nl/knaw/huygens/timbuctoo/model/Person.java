@@ -30,20 +30,13 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
 @IDPrefix("PERS")
 public class Person extends DomainEntity {
 
-  // start for modeling of roles
-  @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-  public static enum Type {
-    UNKNOWN, ARCHETYPE, AUTHOR, PSEUDONYM
-  }
-
-  private List<Type> types;
+  private List<String> types;
   private PersonName name;
   /** Gender at birth. */
   private String gender;
@@ -69,17 +62,18 @@ public class Person extends DomainEntity {
     return name.getFullName();
   }
 
-  public List<Type> getTypes() {
+  public List<String> getTypes() {
     return types;
   }
 
-  public void setTypes(List<Type> types) {
+  public void setTypes(List<String> types) {
     this.types = types;
   }
 
-  public void addType(Type type) {
-    if (type != null && !types.contains(type)) {
-      types.add(type);
+  public void addType(String type) {
+    String normalized = Type.normalize(type);
+    if (normalized != null && !types.contains(normalized)) {
+      types.add(normalized);
     }
   }
 
@@ -134,7 +128,26 @@ public class Person extends DomainEntity {
 
   // ---------------------------------------------------------------------------
 
-  /** Not an enumerated type because of serialization problems. */
+  // Not an enumerated type because of serialization problems.
+  public static class Type {
+    public static final String ARCHETYPE = "ARCHETYPE";
+    public static final String AUTHOR = "AUTHOR";
+    public static final String PSEUDONYM = "PSEUDONYM";
+
+    public static String normalize(String text) {
+      if (ARCHETYPE.equalsIgnoreCase(text)) {
+        return ARCHETYPE;
+      } else if (AUTHOR.equalsIgnoreCase(text)) {
+        return AUTHOR;
+      } else if (PSEUDONYM.equalsIgnoreCase(text)) {
+        return PSEUDONYM;
+      } else {
+        return null;
+      }
+    }
+  }
+
+  // Not an enumerated type because of serialization problems.
   public static class Gender {
     public static final String UNKNOWN = "UNKNOWN";
     public static final String MALE = "MALE";
@@ -142,14 +155,14 @@ public class Person extends DomainEntity {
     public static final String NOT_APPLICABLE = "NOT_APPLICABLE";
 
     public static String normalize(String text) {
-      if (Gender.MALE.equalsIgnoreCase(text)) {
-        return Gender.MALE;
-      } else if (Gender.FEMALE.equalsIgnoreCase(text)) {
-        return Gender.FEMALE;
-      } else if (Gender.NOT_APPLICABLE.equalsIgnoreCase(text)) {
-        return Gender.NOT_APPLICABLE;
+      if (MALE.equalsIgnoreCase(text)) {
+        return MALE;
+      } else if (FEMALE.equalsIgnoreCase(text)) {
+        return FEMALE;
+      } else if (NOT_APPLICABLE.equalsIgnoreCase(text)) {
+        return NOT_APPLICABLE;
       } else {
-        return Gender.UNKNOWN;
+        return UNKNOWN;
       }
     }
   }

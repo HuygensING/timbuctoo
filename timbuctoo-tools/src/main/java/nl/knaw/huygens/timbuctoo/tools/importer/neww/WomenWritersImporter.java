@@ -1216,8 +1216,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     if (converted.tempName != null && converted.tempName.startsWith("~")) {
       converted.addType(Person.Type.ARCHETYPE);
       nArchetype++;
-    } else if (type == null) {
-      converted.addType(Person.Type.UNKNOWN);
+    } else if (type == null || type.equalsIgnoreCase("unknown")) {
       nUnknown++;
     } else if (type.equalsIgnoreCase("author")) {
       converted.addType(Person.Type.AUTHOR);
@@ -1225,9 +1224,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     } else if (type.equalsIgnoreCase("pseudonym")) {
       converted.addType(Person.Type.PSEUDONYM);
       nPseudonym++;
-    } else if (type.equalsIgnoreCase("unknown")) {
-      converted.addType(Person.Type.UNKNOWN);
-      nUnknown++;
     } else {
       this.handleError("Illegal type '%s'%n", type);
     }
