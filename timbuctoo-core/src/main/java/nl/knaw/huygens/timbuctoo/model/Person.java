@@ -37,11 +37,6 @@ import com.google.common.collect.Lists;
 @IDPrefix("PERS")
 public class Person extends DomainEntity {
 
-  @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-  public static enum Gender {
-    UNKNOWN, MALE, FEMALE, NOT_APPLICABLE;
-  }
-
   // start for modeling of roles
   @JsonFormat(shape = JsonFormat.Shape.OBJECT)
   public static enum Type {
@@ -51,7 +46,7 @@ public class Person extends DomainEntity {
   private List<Type> types;
   private PersonName name;
   /** Gender at birth. */
-  private Gender gender;
+  private String gender;
   private Datable birthDate;
   private Datable deathDate;
   private List<Link> links;
@@ -60,6 +55,7 @@ public class Person extends DomainEntity {
     name = new PersonName();
     links = Lists.newArrayList();
     types = Lists.newArrayList();
+    gender = Gender.UNKNOWN;
   }
 
   @Override
@@ -96,12 +92,12 @@ public class Person extends DomainEntity {
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_gender", isFaceted = true, canBeEmpty = true)
-  public Gender getGender() {
+  public String getGender() {
     return gender;
   }
 
-  public void setGender(Gender gender) {
-    this.gender = gender;
+  public void setGender(String gender) {
+    this.gender = Gender.normalize(gender);
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_birthDate", isFaceted = true, canBeEmpty = true)
@@ -133,6 +129,28 @@ public class Person extends DomainEntity {
   public void addLink(Link link) {
     if (link != null) {
       links.add(link);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+
+  /** Not an enumerated type because of serialization problems. */
+  public static class Gender {
+    public static final String UNKNOWN = "UNKNOWN";
+    public static final String MALE = "MALE";
+    public static final String FEMALE = "FEMALE";
+    public static final String NOT_APPLICABLE = "NOT_APPLICABLE";
+
+    public static String normalize(String text) {
+      if (Gender.MALE.equalsIgnoreCase(text)) {
+        return Gender.MALE;
+      } else if (Gender.FEMALE.equalsIgnoreCase(text)) {
+        return Gender.FEMALE;
+      } else if (Gender.NOT_APPLICABLE.equalsIgnoreCase(text)) {
+        return Gender.NOT_APPLICABLE;
+      } else {
+        return Gender.UNKNOWN;
+      }
     }
   }
 
