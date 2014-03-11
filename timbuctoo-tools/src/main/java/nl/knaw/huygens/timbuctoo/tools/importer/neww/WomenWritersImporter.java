@@ -294,26 +294,21 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   private WWCollective convert(String line, XCollective object) {
     WWCollective converted = new WWCollective();
 
-    String type = filterTextField(object.type);
-    verifyNonEmptyField(line, "type", type);
-    if (type == null || type.equals("membership")) {
-      type = "UNKNOWN";
-    }
-    try {
-      Collective.Type ct = Collective.Type.valueOf(type.toUpperCase());
-      converted.setType(ct);
-    } catch (Exception e) {
-      handleError("Unknown type [%s] in: %s", type, line);
-      converted.setType(Collective.Type.UNKNOWN);
-      converted.tempType = type;
-    }
-
     String name = filterTextField(object.name);
     if (name == null) {
       handleError("Rejecting name [%s] in: %s", name, line);
       return null;
     }
     converted.setName(name);
+
+    String type = filterTextField(object.type);
+    verifyNonEmptyField(line, "type", type);
+    converted.tempType = type;
+    if (type == null || type.equals("membership")) {
+      converted.setType(Collective.Type.UNKNOWN);
+    } else {
+      converted.setType(type);
+    }
 
     converted.tempLocationPlacename = filterTextField(object.location_placename);
     converted.setNotes(filterTextField(object.notes));

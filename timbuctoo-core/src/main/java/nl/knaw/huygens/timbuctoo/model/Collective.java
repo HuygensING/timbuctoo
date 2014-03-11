@@ -37,16 +37,13 @@ import com.google.common.collect.Lists;
 @IDPrefix("COLL")
 public class Collective extends DomainEntity {
 
-  public static enum Type {
-    UNKNOWN, ACADEMY, ASSOCIATION, LIBRARY, PUBLISHER, SHOP
-  }
-
-  private Type type;
+  private String type;
   private String name;
   private List<Link> links;
 
   public Collective() {
     links = Lists.newArrayList();
+    type = Type.UNKNOWN;
   }
 
   @Override
@@ -54,12 +51,12 @@ public class Collective extends DomainEntity {
     return getName();
   }
 
-  public Type getType() {
+  public String getType() {
     return type;
   }
 
-  public void setType(Type type) {
-    this.type = type;
+  public void setType(String type) {
+    this.type = Type.normalize(type);
   }
 
   @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
@@ -89,6 +86,33 @@ public class Collective extends DomainEntity {
   @IndexAnnotation(fieldName = "dynamic_s_member", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getMembers() {
     return getRelations().get("has_member");
+  }
+
+  // ---------------------------------------------------------------------------
+
+  public static class Type {
+    public static final String UNKNOWN = "UNKNOWN";
+    public static final String ACADEMY = "ACADEMY";
+    public static final String ASSOCIATION = "ASSOCIATION";
+    public static final String LIBRARY = "LIBRARY";
+    public static final String PUBLISHER = "PUBLISHER";
+    public static final String SHOP = "SHOP";
+
+    public static String normalize(String text) {
+      if (ACADEMY.equalsIgnoreCase(text)) {
+        return ACADEMY;
+      } else if (ASSOCIATION.equalsIgnoreCase(text)) {
+        return ASSOCIATION;
+      } else if (LIBRARY.equalsIgnoreCase(text)) {
+        return LIBRARY;
+      } else if (PUBLISHER.equalsIgnoreCase(text)) {
+        return PUBLISHER;
+      } else if (SHOP.equalsIgnoreCase(text)) {
+        return SHOP;
+      } else {
+        return UNKNOWN;
+      }
+    }
   }
 
 }
