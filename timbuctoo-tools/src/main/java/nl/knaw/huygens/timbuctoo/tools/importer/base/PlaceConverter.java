@@ -1,4 +1,3 @@
-  
 package nl.knaw.huygens.timbuctoo.tools.importer.base;
 
 import java.io.File;
@@ -6,6 +5,9 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Set;
+
+import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
+import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -16,9 +18,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
-import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
-import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
 
 public class PlaceConverter extends CSVImporter {
 
@@ -34,10 +33,10 @@ public class PlaceConverter extends CSVImporter {
     System.out.println("-- done --");
   }
 
-  private Set<String> urns = Sets.newTreeSet();
+  private final Set<String> urns = Sets.newTreeSet();
   private final ObjectMapper mapper;
   private final FileOutputStream stream;
-  
+
   public PlaceConverter() throws Exception {
     super(new PrintWriter(System.err), SEPERATOR_CHAR, QUOTE_CHAR, LINES_TO_SKIP);
     mapper = new ObjectMapper();
@@ -62,13 +61,13 @@ public class PlaceConverter extends CSVImporter {
     boolean forceRegion = false;
     String region = convert(items[index++]);
     if (region != null && region.startsWith("*")) {
-    	  region = region.substring(1);
-    	  forceRegion = true;
+      region = region.substring(1);
+      forceRegion = true;
     }
     name.setRegion(region);
 
     name.setCountry(convert(items[index++]));
-    if (name.getCountryCode() != null) {
+    if (name.getCountry() != null) {
       String code = urn.substring(3, 6).toUpperCase();
       name.setCountryCode(code);
     }
@@ -103,7 +102,7 @@ public class PlaceConverter extends CSVImporter {
       System.out.println("## Duplicate URN: " + urn);
     }
 
-    if (!"eng".equals(lang)){
+    if (!"eng".equals(lang)) {
       PlaceName engName = new PlaceName();
       engName.setDistrict(name.getDistrict());
       engName.setSettlement(name.getSettlement());
@@ -182,53 +181,69 @@ public class PlaceConverter extends CSVImporter {
     // URN for making concordances
     private String urn;
     private String notes;
+
     public Place() {
       names = Maps.newTreeMap();
     }
+
     public String getDefLang() {
       return defLang;
     }
+
     public void setDefLang(String lang) {
       defLang = lang;
     }
+
     @JsonIgnore
     public PlaceName getName() {
       return getName(defLang);
     }
+
     @JsonIgnore
     public PlaceName getName(String lang) {
       return names.get(lang);
     }
+
     public Map<String, PlaceName> getNames() {
       return names;
     }
+
     public void setNames(Map<String, PlaceName> names) {
       this.names = names;
     }
+
     public void addName(String lang, PlaceName name) {
       names.put(lang, name);
     }
+
     public String getLatitude() {
       return latitude;
     }
+
     public void setLatitude(String latitude) {
       this.latitude = latitude;
     }
+
     public String getLongitude() {
       return longitude;
     }
+
     public void setLongitude(String longitude) {
       this.longitude = longitude;
     }
+
     public String getUrn() {
       return urn;
     }
+
     public void setUrn(String urn) {
       this.urn = urn;
     }
+
     public String getNotes() {
       return notes;
     }
+
     public void setNotes(String notes) {
       this.notes = notes;
     }
