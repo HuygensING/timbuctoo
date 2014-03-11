@@ -40,13 +40,7 @@ public class ScopeManagerTest {
 
     scopes = Lists.newArrayList(mock(Scope.class), mock(Scope.class));
     indexNameCreatorMock = mock(IndexNameCreator.class);
-    instance = new ScopeManager(scopes, indexNameCreatorMock) {
-      protected Map<String, Index> createIndexes() {
-
-        return indexMapMock;
-      }
-    };
-
+    instance = new ScopeManager(scopes, indexMapMock, indexNameCreatorMock);
   }
 
   @Test

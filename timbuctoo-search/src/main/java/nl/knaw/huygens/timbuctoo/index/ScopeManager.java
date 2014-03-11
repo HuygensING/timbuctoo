@@ -9,13 +9,13 @@ import nl.knaw.huygens.timbuctoo.vre.Scope;
 public class ScopeManager {
 
   private final List<Scope> scopes;
-  private Map<String, Index> indexes;
+  private final Map<String, Index> indexes;
   private final IndexNameCreator indexNameCreator;
 
-  protected ScopeManager(List<Scope> scopes, IndexNameCreator indexNameCreator) {
+  public ScopeManager(List<Scope> scopes, Map<String, Index> indexes, IndexNameCreator indexNameCreator) {
     this.scopes = scopes;
     this.indexNameCreator = indexNameCreator;
-    indexes = createIndexes();
+    this.indexes = indexes;
   }
 
   public List<Scope> getAllScopes() {
@@ -31,10 +31,6 @@ public class ScopeManager {
     }
 
     return index;
-  }
-
-  protected Map<String, Index> createIndexes() {
-    return null;
   }
 
   protected static class NoOpIndex implements Index {
