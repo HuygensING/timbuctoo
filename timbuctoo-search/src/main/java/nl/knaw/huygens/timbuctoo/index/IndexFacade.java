@@ -1,11 +1,10 @@
 package nl.knaw.huygens.timbuctoo.index;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.solr.SearchParameters;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
@@ -13,32 +12,28 @@ import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.SolrInputDocument;
 
 public class IndexFacade implements SearchManager, IndexManager {
 
-  private final AbstractSolrServer abstractSolrServer;
-  private final SolrInputDocumentCreator solrInputDocCreator;
+  private final ScopeManager scopeManager;
+  private final TypeRegistry typeRegistry;
 
-  public IndexFacade(AbstractSolrServer abstractSolrServer, SolrInputDocumentCreator solrInputDocCreator) {
-    this.abstractSolrServer = abstractSolrServer;
-    this.solrInputDocCreator = solrInputDocCreator;
-
+  public IndexFacade(ScopeManager scopeManagerMock, TypeRegistry typeRegistry) {
+    this.scopeManager = scopeManagerMock;
+    this.typeRegistry = typeRegistry;
   }
 
   @Override
   public <T extends DomainEntity> void addEntity(Class<T> type, String id) throws IndexException {
-    SolrInputDocument doc = solrInputDocCreator.create(type, id);
+    Class<? extends DomainEntity> baseType = TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type));
 
-    try {
-      abstractSolrServer.add(doc);
-    } catch (SolrServerException e) {
-      throw new IndexException(e);
-    } catch (IOException e) {
-      throw new IndexException(e);
+    for (Scope scope : scopeManager.getAllScopes()) {
+      Index index = scopeManager.getIndexFor(scope, baseType);
+
+      index.add(baseType, id);
     }
+
   }
 
   @Override
