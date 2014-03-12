@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.index;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -9,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
+import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.apache.solr.client.solrj.SolrQuery;
@@ -18,20 +20,30 @@ public class IndexFacade implements SearchManager, IndexManager {
 
   private final ScopeManager scopeManager;
   private final TypeRegistry typeRegistry;
+  private final StorageManager storageManager;
 
-  public IndexFacade(ScopeManager scopeManagerMock, TypeRegistry typeRegistry) {
+  public IndexFacade(ScopeManager scopeManagerMock, TypeRegistry typeRegistry, StorageManager storageManager) {
     this.scopeManager = scopeManagerMock;
     this.typeRegistry = typeRegistry;
+    this.storageManager = storageManager;
   }
 
   @Override
   public <T extends DomainEntity> void addEntity(Class<T> type, String id) throws IndexException {
     Class<? extends DomainEntity> baseType = TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type));
+    List<? extends DomainEntity> variations = null;
+
+    try {
+      variations = storageManager.getAllVariations(baseType, id);
+    } catch (IOException e) {
+      throw new IndexException("Could not retrieve variations for type " + type + "with id " + id);
+    }
 
     for (Scope scope : scopeManager.getAllScopes()) {
       Index index = scopeManager.getIndexFor(scope, baseType);
+      List<? extends DomainEntity> filteredVariations = scope.filter(variations);
 
-      index.add(baseType, id);
+      index.add(filteredVariations);
     }
 
   }

@@ -51,6 +51,7 @@ import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.util.KV;
+import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -311,6 +312,12 @@ public class StorageManager {
       LOG.error("Error while retrieving relation");
       return false;
     }
+  }
+
+  public <T extends DomainEntity> List<T> getAllVariationsForScope(Class<T> type, String id, Scope scope) {
+    return null;
+    // TODO Auto-generated method stub
+
   }
 
 }

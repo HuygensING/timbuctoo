@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
+import java.util.List;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -69,5 +70,12 @@ public interface Scope {
    * @return {@code true} if the type is in scope {@code false} if not.
    */
   <T extends DomainEntity> boolean isTypeInScope(Class<T> type);
+
+  /**
+   * Filters a list of entities to return the a list of entities that are in scope. 
+   * @param entities the list to filter.
+   * @return the entities in scope.
+   */
+  <T extends DomainEntity> List<T> filter(final List<T> entities);
 
 }

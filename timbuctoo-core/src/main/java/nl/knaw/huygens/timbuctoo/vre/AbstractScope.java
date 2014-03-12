@@ -27,6 +27,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -47,6 +48,12 @@ public abstract class AbstractScope implements Scope {
   public AbstractScope() throws IOException {
     classPath = ClassPath.from(AbstractScope.class.getClassLoader());
     builder = newBuilder();
+  }
+
+  @Override
+  public <T extends DomainEntity> List<T> filter(final List<T> entities) {
+    // TODO Auto-generated method stub
+    return null;
   }
 
   /**
