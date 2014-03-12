@@ -34,6 +34,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import com.google.common.collect.ImmutableSortedSet.Builder;
+import com.google.common.collect.Lists;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
 
@@ -52,8 +53,15 @@ public abstract class AbstractScope implements Scope {
 
   @Override
   public <T extends DomainEntity> List<T> filter(final List<T> entities) {
-    // TODO Auto-generated method stub
-    return null;
+    List<T> filteredList = Lists.newArrayList();
+
+    for (T entity : entities) {
+      if (inScope(entity)) {
+        filteredList.add(entity);
+      }
+    }
+
+    return filteredList;
   }
 
   /**
