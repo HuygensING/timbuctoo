@@ -1179,8 +1179,19 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
 
     if (object.ps_children != null) {
+      StringBuilder builder = new StringBuilder();
       for (String item : object.ps_children) {
-        converted.addPsChild(filterTextField(item));
+        String filtered = filterTextField(item);
+        if (filtered != null) {
+          if (builder.length() != 0) {
+            builder.append("; ");
+          }
+          builder.append(filtered);
+        }
+      }
+      if (builder.length() != 0) {
+        converted.setPsChildren(builder.toString());
+        // System.out.printf("%4d:  [children] %d  [ps_children] %s%n", object.old_id, numberOfChildren, builder.toString());
       }
     }
 
