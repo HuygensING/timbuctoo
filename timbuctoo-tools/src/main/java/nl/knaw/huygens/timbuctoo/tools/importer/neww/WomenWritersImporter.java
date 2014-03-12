@@ -201,6 +201,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     System.out.printf("nArchetype  %5d%n", nArchetype);
     System.out.printf("nAuthor     %5d%n", nAuthor);
     System.out.printf("nPseudonym  %5d%n", nPseudonym);
+    System.out.printf("nDuplicates %5d%n", nDuplicates);
 
     System.out.println(".. Relations");
     importRelations();
@@ -293,26 +294,21 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   private WWCollective convert(String line, XCollective object) {
     WWCollective converted = new WWCollective();
 
-    String type = filterTextField(object.type);
-    verifyNonEmptyField(line, "type", type);
-    if (type == null || type.equals("membership")) {
-      type = "UNKNOWN";
-    }
-    try {
-      Collective.Type ct = Collective.Type.valueOf(type.toUpperCase());
-      converted.setType(ct);
-    } catch (Exception e) {
-      handleError("Unknown type [%s] in: %s", type, line);
-      converted.setType(Collective.Type.UNKNOWN);
-      converted.tempType = type;
-    }
-
     String name = filterTextField(object.name);
     if (name == null) {
       handleError("Rejecting name [%s] in: %s", name, line);
       return null;
     }
     converted.setName(name);
+
+    String type = filterTextField(object.type);
+    verifyNonEmptyField(line, "type", type);
+    converted.tempType = type;
+    if (type == null || type.equals("membership")) {
+      converted.setType(Collective.Type.UNKNOWN);
+    } else {
+      converted.setType(type);
+    }
 
     converted.tempLocationPlacename = filterTextField(object.location_placename);
     converted.setNotes(filterTextField(object.notes));
@@ -993,6 +989,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   private int nArchetype = 0;
   private int nAuthor = 0;
   private int nPseudonym = 0;
+  private int nDuplicates = 0;
+
+  // maps line without id to stored id
+  private final Map<String, String> lines = Maps.newHashMap();
 
   private int importPersons() throws Exception {
     int initialSize = references.size();
@@ -1014,6 +1014,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     for (String type : types) {
       System.out.printf("type %s%n", type);
     }
+    lines.clear();
     return references.size() - initialSize;
   }
 
@@ -1035,7 +1036,14 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       if (converted == null) {
         handleError("Ignoring invalid record: %s", json);
       } else {
-        String storedId = addDomainEntity(WWPerson.class, converted);
+        String line = json.replaceFirst("\"tempid\"\\s*:\\s*\"[^\"]*\",", "");
+        String storedId = lines.get(line);
+        if (storedId != null) {
+          nDuplicates++;
+        } else {
+          storedId = addDomainEntity(WWPerson.class, converted);
+          lines.put(line, storedId);
+        }
         references.put(key, new Reference(WWPerson.class, storedId));
       }
     }
@@ -1107,11 +1115,13 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
 
     text = filterTextField(object.gender);
-    if ("M".equals(text)) {
+    if (text == null) {
+      converted.setGender(Person.Gender.UNKNOWN);
+    } else if (text.equals("M")) {
       converted.setGender(Person.Gender.MALE);
-    } else if ("F".equals(text)) {
+    } else if (text.equals("F")) {
       converted.setGender(Person.Gender.FEMALE);
-    } else if ("U".equals(text)) {
+    } else if (text.equals("U")) {
       converted.setGender(Person.Gender.UNKNOWN);
     } else {
       handleError("Unknown gender: %s", text);
@@ -1201,8 +1211,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     if (converted.tempName != null && converted.tempName.startsWith("~")) {
       converted.addType(Person.Type.ARCHETYPE);
       nArchetype++;
-    } else if (type == null) {
-      converted.addType(Person.Type.UNKNOWN);
+    } else if (type == null || type.equalsIgnoreCase("unknown")) {
       nUnknown++;
     } else if (type.equalsIgnoreCase("author")) {
       converted.addType(Person.Type.AUTHOR);
@@ -1210,9 +1219,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     } else if (type.equalsIgnoreCase("pseudonym")) {
       converted.addType(Person.Type.PSEUDONYM);
       nPseudonym++;
-    } else if (type.equalsIgnoreCase("unknown")) {
-      converted.addType(Person.Type.UNKNOWN);
-      nUnknown++;
     } else {
       this.handleError("Illegal type '%s'%n", type);
     }
