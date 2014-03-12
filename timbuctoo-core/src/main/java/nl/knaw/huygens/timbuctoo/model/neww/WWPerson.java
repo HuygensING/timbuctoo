@@ -50,8 +50,8 @@ public class WWPerson extends Person {
   private String nationality;
   private String notes;
   private String personalSituation;
+  private String psChildren;
   private List<String> professions;
-  private List<String> psChildren;
   private List<String> religions;
   private List<String> socialClasses;
 
@@ -75,7 +75,6 @@ public class WWPerson extends Person {
     fsPseudonyms = Lists.newArrayList();
     memberships = Lists.newArrayList();
     professions = Lists.newArrayList();
-    psChildren = Lists.newArrayList();
     religions = Lists.newArrayList();
     socialClasses = Lists.newArrayList();
   }
@@ -238,18 +237,12 @@ public class WWPerson extends Person {
     }
   }
 
-  public List<String> getPsChildren() {
+  public String getPsChildren() {
     return psChildren;
   }
 
-  public void setPsChildren(List<String> psChildren) {
+  public void setPsChildren(String psChildren) {
     this.psChildren = psChildren;
-  }
-
-  public void addPsChild(String value) {
-    if (value != null) {
-      psChildren.add(value);
-    }
   }
 
   public List<String> getReligions() {
