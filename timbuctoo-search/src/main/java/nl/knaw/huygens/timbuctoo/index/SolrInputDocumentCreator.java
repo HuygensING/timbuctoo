@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.index;
 
+import java.util.List;
+
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import org.apache.solr.common.SolrInputDocument;
@@ -10,7 +12,7 @@ import org.apache.solr.common.SolrInputDocument;
  */
 public class SolrInputDocumentCreator {
 
-  public SolrInputDocument create(Class<? extends DomainEntity> type, String id) {
+  public SolrInputDocument create(List<? extends DomainEntity> variationsToAdd) {
     return null;
     // TODO Auto-generated method stub
 
