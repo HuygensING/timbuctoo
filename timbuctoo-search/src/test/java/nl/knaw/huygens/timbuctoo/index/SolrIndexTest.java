@@ -55,15 +55,15 @@ public class SolrIndexTest {
 
   @Test(expected = IndexException.class)
   public void testAddWhenSolrServerThrowsASolrServerException() throws SolrServerException, IOException, IndexException {
-    testWhenSolrServerThrowsAnException(SolrServerException.class);
+    testAddWhenSolrServerThrowsAnException(SolrServerException.class);
   }
 
   @Test(expected = IndexException.class)
   public void testAddWhenSolrServerThrowsAnIOException() throws SolrServerException, IOException, IndexException {
-    testWhenSolrServerThrowsAnException(IOException.class);
+    testAddWhenSolrServerThrowsAnException(IOException.class);
   }
 
-  private void testWhenSolrServerThrowsAnException(Class<? extends Exception> exceptionToThrow) throws SolrServerException, IOException, IndexException {
+  private void testAddWhenSolrServerThrowsAnException(Class<? extends Exception> exceptionToThrow) throws SolrServerException, IOException, IndexException {
     // when
     when(documentCreatorMock.create(variationsToAdd)).thenReturn(solrInputDocumentMock);
     doThrow(exceptionToThrow).when(solrServerMock).add(solrInputDocumentMock);
@@ -77,6 +77,20 @@ public class SolrIndexTest {
       inOrder.verify(documentCreatorMock).create(variationsToAdd);
       inOrder.verify(solrServerMock).add(solrInputDocumentMock);
     }
+  }
+
+  @Test
+  public void testUpdate() throws IndexException, SolrServerException, IOException {
+    // when
+    when(documentCreatorMock.create(variationsToAdd)).thenReturn(solrInputDocumentMock);
+
+    // action
+    instance.update(variationsToAdd);
+
+    // verify
+    InOrder inOrder = Mockito.inOrder(documentCreatorMock, solrServerMock);
+    inOrder.verify(documentCreatorMock).create(variationsToAdd);
+    inOrder.verify(solrServerMock).add(solrInputDocumentMock);
   }
 
 }

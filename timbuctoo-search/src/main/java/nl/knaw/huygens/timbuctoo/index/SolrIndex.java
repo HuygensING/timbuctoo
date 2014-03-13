@@ -20,8 +20,13 @@ public class SolrIndex implements Index {
   }
 
   @Override
-  public void add(List<? extends DomainEntity> variationsToAdd) throws IndexException {
-    SolrInputDocument document = solrDocumentCreator.create(variationsToAdd);
+  public void add(List<? extends DomainEntity> variations) throws IndexException {
+    updateIndex(variations);
+
+  }
+
+  private void updateIndex(List<? extends DomainEntity> variations) throws IndexException {
+    SolrInputDocument document = solrDocumentCreator.create(variations);
 
     try {
       solrServer.add(document);
@@ -30,6 +35,11 @@ public class SolrIndex implements Index {
     } catch (IOException e) {
       throw new IndexException(e);
     }
-
   }
+
+  @Override
+  public void update(List<? extends DomainEntity> variations) throws IndexException {
+    updateIndex(variations);
+  }
+
 }

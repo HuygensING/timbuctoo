@@ -13,6 +13,7 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.timbuctoo.index.model.SubModel;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
@@ -167,5 +168,39 @@ public class IndexFacadeTest {
       inOrder.verify(scopeMock).filter(variations);
       inOrder.verify(indexMock).add(filteredVariations);
     }
+  }
+
+  @Test
+  public void testUpdateEntity() throws IOException, IndexException {
+    // mock
+    Scope scopeMock = mock(Scope.class);
+    Index indexMock = mock(Index.class);
+
+    Class<? extends DomainEntity> type = SubModel.class;
+    Class<? extends DomainEntity> baseType = ExplicitlyAnnotatedModel.class;
+    String id = "id01234";
+    List<DomainEntity> variations = Lists.newArrayList();
+    SubModel model1 = mock(SubModel.class);
+    variations.add(model1);
+    List<DomainEntity> filteredVariations = Lists.newArrayList();
+    filteredVariations.add(model1);
+
+    // when
+    doReturn(baseType).when(typeRegistryMock).getBaseClass(type);
+    doReturn(variations).when(storageManagerMock).getAllVariations(baseType, id);
+    when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock));
+    when(scopeManagerMock.getIndexFor(scopeMock, baseType)).thenReturn(indexMock);
+    when(scopeMock.filter(variations)).thenReturn(filteredVariations);
+
+    // action
+    instance.updateEntity(type, id);
+
+    // verify
+    verify(typeRegistryMock).getBaseClass(type);
+    verify(storageManagerMock).getAllVariations(baseType, id);
+    verify(scopeManagerMock).getAllScopes();
+    verify(scopeManagerMock).getIndexFor(scopeMock, baseType);
+    verify(scopeMock).filter(variations);
+    verify(indexMock).update(filteredVariations);
   }
 }

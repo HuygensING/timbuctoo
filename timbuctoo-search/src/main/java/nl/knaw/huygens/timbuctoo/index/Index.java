@@ -7,9 +7,17 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 public interface Index {
 
   /**
-   * Adds the variations to an index.
-   * @param variationsToAdd
-   * @throws IndexException 
+   * Adds new items to the index.
+   * @param variations
+   * @throws IndexException when the action fails.
    */
-  public void add(List<? extends DomainEntity> variationsToAdd) throws IndexException;
+  public void add(List<? extends DomainEntity> variations) throws IndexException;
+
+  /**
+   * Updates existing items in the index.
+   * @param variations
+   * @throws IndexException when the action fails.
+   */
+  public void update(List<? extends DomainEntity> variations) throws IndexException;
+
 }

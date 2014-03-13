@@ -36,7 +36,13 @@ public class ScopeManager {
   protected static class NoOpIndex implements Index {
 
     @Override
-    public void add(List<? extends DomainEntity> variationsToAdd) {
+    public void add(List<? extends DomainEntity> variations) {
+      // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void update(List<? extends DomainEntity> variations) throws IndexException {
       // TODO Auto-generated method stub
 
     }

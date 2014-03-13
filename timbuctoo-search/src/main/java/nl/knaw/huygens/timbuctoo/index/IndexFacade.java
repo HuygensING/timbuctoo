@@ -22,14 +22,27 @@ public class IndexFacade implements SearchManager, IndexManager {
   private final TypeRegistry typeRegistry;
   private final StorageManager storageManager;
 
-  public IndexFacade(ScopeManager scopeManagerMock, TypeRegistry typeRegistry, StorageManager storageManager) {
-    this.scopeManager = scopeManagerMock;
+  public IndexFacade(ScopeManager scopeManager, TypeRegistry typeRegistry, StorageManager storageManager) {
+    this.scopeManager = scopeManager; // TODO place functionality of ScopeManager in VREManager
     this.typeRegistry = typeRegistry;
     this.storageManager = storageManager;
   }
 
   @Override
   public <T extends DomainEntity> void addEntity(Class<T> type, String id) throws IndexException {
+    IndexChanger indexAdder = new IndexChanger() {
+
+      @Override
+      public void executeIndexAction(Index index, List<? extends DomainEntity> variations) throws IndexException {
+        index.add(variations);
+
+      }
+    };
+    changeIndex(type, id, indexAdder);
+
+  }
+
+  private <T extends DomainEntity> void changeIndex(Class<T> type, String id, IndexChanger indexChanger) throws IndexException {
     Class<? extends DomainEntity> baseType = TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type));
     List<? extends DomainEntity> variations = null;
 
@@ -43,15 +56,20 @@ public class IndexFacade implements SearchManager, IndexManager {
       Index index = scopeManager.getIndexFor(scope, baseType);
       List<? extends DomainEntity> filteredVariations = scope.filter(variations);
 
-      index.add(filteredVariations);
+      indexChanger.executeIndexAction(index, filteredVariations);
     }
-
   }
 
   @Override
   public <T extends DomainEntity> void updateEntity(Class<T> type, String id) throws IndexException {
-    // TODO Auto-generated method stub
+    IndexChanger indexUpdater = new IndexChanger() {
 
+      @Override
+      public void executeIndexAction(Index index, List<? extends DomainEntity> variations) throws IndexException {
+        index.update(variations);
+      }
+    };
+    changeIndex(type, id, indexUpdater);
   }
 
   @Override
@@ -114,4 +132,7 @@ public class IndexFacade implements SearchManager, IndexManager {
     return null;
   }
 
+  private static interface IndexChanger {
+    void executeIndexAction(Index index, List<? extends DomainEntity> variations) throws IndexException;
+  }
 }
