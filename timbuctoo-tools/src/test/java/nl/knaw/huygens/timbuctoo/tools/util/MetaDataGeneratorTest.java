@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class MetaDataGeneratorTest {
@@ -23,8 +24,8 @@ public class MetaDataGeneratorTest {
   }
 
   @Test
-  public void testGenerateSimpleObject() {
-    Map<String, String> expectedMap = Maps.newHashMap();
+  public void testGenerateSimpleObject() throws IllegalArgumentException, IllegalAccessException {
+    Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("testInt", "int");
     expectedMap.put("testString", "String");
     expectedMap.put("testDouble", "double");
@@ -34,15 +35,15 @@ public class MetaDataGeneratorTest {
     testGenerate(expectedMap, TestModel.class);
   }
 
-  private void testGenerate(Map<String, String> expectedMap, Class<?> type) {
-    Map<String, String> actualMap = instance.generate(type);
+  private void testGenerate(Map<String, Object> expectedMap, Class<?> type) throws IllegalArgumentException, IllegalAccessException {
+    Map<String, Object> actualMap = instance.generate(type);
 
     assertThat(actualMap, is(expectedMap));
   }
 
   @Test
-  public void testGenerateOneInheritanceLayer() {
-    Map<String, String> expectedMap = Maps.newHashMap();
+  public void testGenerateOneInheritanceLayer() throws IllegalArgumentException, IllegalAccessException {
+    Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("testInt", "int");
     expectedMap.put("testString", "String");
     expectedMap.put("testDouble", "double");
@@ -55,8 +56,8 @@ public class MetaDataGeneratorTest {
   }
 
   @Test
-  public void testGenerateMultipleInheritanceLayers() {
-    Map<String, String> expectedMap = Maps.newHashMap();
+  public void testGenerateMultipleInheritanceLayers() throws IllegalArgumentException, IllegalAccessException {
+    Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("testInt", "int");
     expectedMap.put("testString", "String");
     expectedMap.put("testDouble", "double");
@@ -70,8 +71,8 @@ public class MetaDataGeneratorTest {
   }
 
   @Test
-  public void testGenerateInheritenceSubTypeWithoutDeclaredFields() {
-    Map<String, String> expectedMap = Maps.newHashMap();
+  public void testGenerateInheritenceSubTypeWithoutDeclaredFields() throws IllegalArgumentException, IllegalAccessException {
+    Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("testInt", "int");
     expectedMap.put("testString", "String");
     expectedMap.put("testDouble", "double");
@@ -82,23 +83,23 @@ public class MetaDataGeneratorTest {
   }
 
   @Test
-  public void testGenerateInterface() {
-    Map<String, String> expectedMap = Maps.newHashMap();
+  public void testGenerateInterface() throws IllegalArgumentException, IllegalAccessException {
+    Map<String, Object> expectedMap = Maps.newHashMap();
 
     testGenerate(expectedMap, TestInterface.class);
   }
 
   @Test
-  public void testGenerateClassWithStaticFields() {
-    Map<String, String> expectedMap = Maps.newHashMap();
+  public void testGenerateClassWithStaticFields() throws IllegalArgumentException, IllegalAccessException {
+    Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("test", "String");
 
     testGenerate(expectedMap, TypeWithStaticFields.class);
   }
 
   @Test
-  public void testGenerateClassWithGenericFields() {
-    Map<String, String> expectedMap = Maps.newHashMap();
+  public void testGenerateClassWithGenericFields() throws IllegalArgumentException, IllegalAccessException {
+    Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("testList", "List of (String)");
     expectedMap.put("testMap", "Map of (String, String)");
     expectedMap.put("testNestedGenerics", "List of (List of (String))");
@@ -107,27 +108,48 @@ public class MetaDataGeneratorTest {
   }
 
   @Test
-  public void testGenerateClassWithAnnotatedFields() {
-    Map<String, String> expectedMap = Maps.newHashMap();
+  public void testGenerateClassWithAnnotatedFields() throws IllegalArgumentException, IllegalAccessException {
+    Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("@annotated", "String");
 
     testGenerate(expectedMap, TypeWithAnnotatedField.class);
   }
 
   @Test
-  public void testGenerateClassWithFieldWithAnnotatedGetter() {
-    Map<String, String> expectedMap = Maps.newHashMap();
+  public void testGenerateClassWithFieldWithAnnotatedGetter() throws IllegalArgumentException, IllegalAccessException {
+    Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("@annotated", "String");
 
     testGenerate(expectedMap, TypeWithAnnotatedGetter.class);
   }
 
   @Test
-  public void testGenerateClassWithFieldWithAnnotatedSetter() {
-    Map<String, String> expectedMap = Maps.newHashMap();
+  public void testGenerateClassWithFieldWithAnnotatedSetter() throws IllegalArgumentException, IllegalAccessException {
+    Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("annotatedString", "String");
 
     testGenerate(expectedMap, TypeWithAnnotatedSetter.class);
+  }
+
+  @Test
+  public void testGenerateClassWithConstants() throws IllegalArgumentException, IllegalAccessException {
+
+    Map<String, Object> expectedMap = Maps.newHashMap();
+    expectedMap.put("TEST_STRING", "String <TEST>");
+    expectedMap.put("TEST_INT", "int <1234>");
+
+    testGenerate(expectedMap, ClassWithConstants.class);
+
+  }
+
+  @Test
+  public void testGenerateClassWithEnumValues() throws IllegalArgumentException, IllegalAccessException {
+
+    Map<String, Object> expectedMap = Maps.newHashMap();
+    expectedMap.put("value", Lists.newArrayList("TEST1", "TEST2"));
+
+    testGenerate(expectedMap, ClassWithEnumValues.class);
+
   }
 
   private static class TestModel {
@@ -190,5 +212,18 @@ public class MetaDataGeneratorTest {
     public void setAnnotatedString(String annotatedString) {
       this.annotatedString = annotatedString;
     }
+  }
+
+  private static class ClassWithConstants {
+    private static final String TEST_STRING = "TEST";
+    public static final int TEST_INT = 1234;
+  }
+
+  private static class ClassWithEnumValues {
+    private enum TestEnum {
+      TEST1, TEST2
+    };
+
+    private TestEnum value;
   }
 }

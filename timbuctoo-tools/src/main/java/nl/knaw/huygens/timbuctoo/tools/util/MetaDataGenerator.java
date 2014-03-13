@@ -19,13 +19,18 @@ public class MetaDataGenerator {
     this.fieldMapper = fieldMapper;
   }
 
-  public Map<String, String> generate(Class<?> type) {
-    Map<String, String> metadataMap = Maps.newTreeMap();
+  public Map<String, Object> generate(Class<?> type) throws IllegalArgumentException, IllegalAccessException {
+    Map<String, Object> metadataMap = Maps.newTreeMap();
 
-    if (!isAbstract(type)) {
+    if (!isAbstract(type) && !type.isEnum()) {
       for (Field field : getFields(type)) {
-        if (isStaticField(field)) {
-          metadataMap.put(getFieldName(type, field), getTypeName(field));
+        String fieldName = getFieldName(type, field);
+        if (field.getType().isEnum()) {
+          metadataMap.put(fieldName, getEnumValues(field.getType()));
+        } else if (isFinalField(field) && isStaticField(field)) {
+          addConstantToMap(metadataMap, field, fieldName);
+        } else if (!isStaticField(field)) {
+          metadataMap.put(fieldName, getTypeName(field));
         }
       }
     }
@@ -33,16 +38,38 @@ public class MetaDataGenerator {
     return metadataMap;
   }
 
+  private List<String> getEnumValues(Class<?> type) {
+    List<String> enumValues = Lists.newArrayList();
+
+    for (Object value : type.getEnumConstants()) {
+      enumValues.add(value.toString());
+    }
+
+    return enumValues;
+  }
+
+  private void addConstantToMap(Map<String, Object> metadataMap, Field field, String fieldName) throws IllegalArgumentException, IllegalAccessException {
+    // to get the values of private constants
+    field.setAccessible(true);
+    String value = String.format("%s <%s>", getTypeName(field), field.get(field.getType()));
+    metadataMap.put(fieldName, value);
+
+  }
+
   protected String getFieldName(Class<?> type, Field field) {
     return fieldMapper.getFieldName(type, field);
   }
 
   protected boolean isStaticField(Field field) {
-    return !Modifier.isStatic(field.getModifiers());
+    return Modifier.isStatic(field.getModifiers());
   }
 
   protected boolean isAbstract(Class<?> type) {
     return Modifier.isAbstract(type.getModifiers()) || type.isInterface();
+  }
+
+  protected boolean isFinalField(Field field) {
+    return Modifier.isFinal(field.getModifiers());
   }
 
   private List<Field> getFields(Class<?> type) {

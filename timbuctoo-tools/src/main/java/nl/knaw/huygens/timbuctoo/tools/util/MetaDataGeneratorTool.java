@@ -22,7 +22,7 @@ public class MetaDataGeneratorTool {
   private MetaDataGenerator generator;
   public String saveDir;
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IllegalArgumentException, IllegalAccessException {
     if (args == null || args.length == 0) {
       LOG.error("Give a directory as first argument.");
       return;
@@ -36,7 +36,7 @@ public class MetaDataGeneratorTool {
     generator = new MetaDataGenerator(new FieldMapper());
   }
 
-  public void execute() {
+  public void execute() throws IllegalArgumentException, IllegalAccessException {
     ClassPath classPath = null;
     try {
       classPath = ClassPath.from(this.getClass().getClassLoader());
@@ -63,11 +63,11 @@ public class MetaDataGeneratorTool {
     }
   }
 
-  private void createMetaData(Class<?> type) {
+  private void createMetaData(Class<?> type) throws IllegalArgumentException, IllegalAccessException {
     LOG.info("Generating metaData for type: {}", type.getSimpleName());
 
     try {
-      Map<String, String> metaDataMap = generator.generate(type);
+      Map<String, Object> metaDataMap = generator.generate(type);
       //LOG.info(new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValueAsString(metaDataMap));
       save(metaDataMap, type);
     } catch (JsonProcessingException e) {
@@ -77,7 +77,7 @@ public class MetaDataGeneratorTool {
     }
   }
 
-  private void save(Map<String, String> metaDataMap, Class<?> type) throws JsonGenerationException, JsonMappingException, IOException {
+  private void save(Map<String, Object> metaDataMap, Class<?> type) throws JsonGenerationException, JsonMappingException, IOException {
     File file = new File(this.saveDir, getNormalizedName(type) + ".json");
     System.out.println("file: " + file.getAbsolutePath());
 
