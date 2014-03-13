@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.util;
+package nl.knaw.huygens.timbuctoo.tools.util.metadata;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
+import nl.knaw.huygens.timbuctoo.tools.util.metadata.MetaDataGenerator;
 
 import org.junit.Before;
 import org.junit.Test;

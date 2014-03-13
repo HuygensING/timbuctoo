@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.util;
+package nl.knaw.huygens.timbuctoo.tools.util.metadata;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +24,7 @@ public class MetaDataGeneratorTool {
 
   public static void main(String[] args) throws IllegalArgumentException, IllegalAccessException {
     if (args == null || args.length == 0) {
-      LOG.error("Give a directory as first argument.");
+      LOG.error("Pass a directory as first argument.");
       return;
     }
 
@@ -64,16 +64,18 @@ public class MetaDataGeneratorTool {
   }
 
   private void createMetaData(Class<?> type) throws IllegalArgumentException, IllegalAccessException {
-    LOG.info("Generating metaData for type: {}", type.getSimpleName());
+    if (!type.isEnum()) {
+      LOG.info("Generating metaData for type: {}", type.getSimpleName());
 
-    try {
-      Map<String, Object> metaDataMap = generator.generate(type);
-      //LOG.info(new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValueAsString(metaDataMap));
-      save(metaDataMap, type);
-    } catch (JsonProcessingException e) {
-      LOG.error("Mapping object went wrong.", e);
-    } catch (IOException e) {
-      LOG.error("Saving the data went wrong.", e);
+      try {
+        Map<String, Object> metaDataMap = generator.generate(type);
+        //LOG.info(new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValueAsString(metaDataMap));
+        save(metaDataMap, type);
+      } catch (JsonProcessingException e) {
+        LOG.error("Mapping object went wrong.", e);
+      } catch (IOException e) {
+        LOG.error("Saving the data went wrong.", e);
+      }
     }
   }
 

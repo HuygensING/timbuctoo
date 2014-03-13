@@ -1,9 +1,7 @@
-package nl.knaw.huygens.timbuctoo.tools.util;
+package nl.knaw.huygens.timbuctoo.tools.util.metadata;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -14,15 +12,17 @@ import com.google.common.collect.Maps;
 
 public class MetaDataGenerator {
   private final FieldMapper fieldMapper;
+  private final TypeNameGenerator typeNameGenerator;
 
   public MetaDataGenerator(FieldMapper fieldMapper) {
     this.fieldMapper = fieldMapper;
+    this.typeNameGenerator = new TypeNameGenerator();
   }
 
   public Map<String, Object> generate(Class<?> type) throws IllegalArgumentException, IllegalAccessException {
     Map<String, Object> metadataMap = Maps.newTreeMap();
 
-    if (!isAbstract(type) && !type.isEnum()) {
+    if (!isAbstract(type)) {
       for (Field field : getFields(type)) {
         String fieldName = getFieldName(type, field);
         if (field.getType().isEnum()) {
@@ -30,7 +30,7 @@ public class MetaDataGenerator {
         } else if (isFinalField(field) && isStaticField(field)) {
           addConstantToMap(metadataMap, field, fieldName);
         } else if (!isStaticField(field)) {
-          metadataMap.put(fieldName, getTypeName(field));
+          metadataMap.put(fieldName, typeNameGenerator.getTypeName(field));
         }
       }
     }
@@ -51,7 +51,7 @@ public class MetaDataGenerator {
   private void addConstantToMap(Map<String, Object> metadataMap, Field field, String fieldName) throws IllegalArgumentException, IllegalAccessException {
     // to get the values of private constants
     field.setAccessible(true);
-    String value = String.format("%s <%s>", getTypeName(field), field.get(null));
+    String value = String.format("%s <%s>", typeNameGenerator.getTypeName(field), field.get(null));
     metadataMap.put(fieldName, value);
 
   }
@@ -83,45 +83,4 @@ public class MetaDataGenerator {
     return fields;
   }
 
-  private String getTypeName(Field field) {
-    StringBuilder fieldName = new StringBuilder(field.getType().getSimpleName());
-
-    if (hasTypeParameters(field)) {
-      addGenericData((ParameterizedType) field.getGenericType(), fieldName);
-    }
-
-    return fieldName.toString();
-  }
-
-  private void addGenericData(ParameterizedType type, StringBuilder fieldName) {
-
-    fieldName.append(" of (");
-
-    boolean isFirst = true;
-    for (Type paramType : type.getActualTypeArguments()) {
-      if (!isFirst) {
-        fieldName.append(", ");
-      }
-      isFirst = false;
-      appendParamType(fieldName, paramType);
-    }
-
-    fieldName.append(")");
-
-  }
-
-  private void appendParamType(StringBuilder fieldName, Type paramType) {
-
-    if (paramType instanceof ParameterizedType) {
-      ParameterizedType genericType = (ParameterizedType) paramType;
-      appendParamType(fieldName, genericType.getRawType());
-      addGenericData(genericType, fieldName);
-    } else if (paramType instanceof Class<?>) {
-      fieldName.append(((Class<?>) paramType).getSimpleName());
-    }
-  }
-
-  private boolean hasTypeParameters(Field field) {
-    return field.getType().getTypeParameters() != null && field.getType().getTypeParameters().length > 0;
-  }
 }
