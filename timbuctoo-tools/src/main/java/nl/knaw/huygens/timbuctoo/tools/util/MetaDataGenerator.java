@@ -51,24 +51,24 @@ public class MetaDataGenerator {
   private void addConstantToMap(Map<String, Object> metadataMap, Field field, String fieldName) throws IllegalArgumentException, IllegalAccessException {
     // to get the values of private constants
     field.setAccessible(true);
-    String value = String.format("%s <%s>", getTypeName(field), field.get(field.getType()));
+    String value = String.format("%s <%s>", getTypeName(field), field.get(null));
     metadataMap.put(fieldName, value);
 
   }
 
-  protected String getFieldName(Class<?> type, Field field) {
+  private String getFieldName(Class<?> type, Field field) {
     return fieldMapper.getFieldName(type, field);
   }
 
-  protected boolean isStaticField(Field field) {
+  private boolean isStaticField(Field field) {
     return Modifier.isStatic(field.getModifiers());
   }
 
-  protected boolean isAbstract(Class<?> type) {
+  private boolean isAbstract(Class<?> type) {
     return Modifier.isAbstract(type.getModifiers()) || type.isInterface();
   }
 
-  protected boolean isFinalField(Field field) {
+  private boolean isFinalField(Field field) {
     return Modifier.isFinal(field.getModifiers());
   }
 
@@ -93,7 +93,7 @@ public class MetaDataGenerator {
     return fieldName.toString();
   }
 
-  protected void addGenericData(ParameterizedType type, StringBuilder fieldName) {
+  private void addGenericData(ParameterizedType type, StringBuilder fieldName) {
 
     fieldName.append(" of (");
 
@@ -110,7 +110,7 @@ public class MetaDataGenerator {
 
   }
 
-  protected void appendParamType(StringBuilder fieldName, Type paramType) {
+  private void appendParamType(StringBuilder fieldName, Type paramType) {
 
     if (paramType instanceof ParameterizedType) {
       ParameterizedType genericType = (ParameterizedType) paramType;
@@ -121,7 +121,7 @@ public class MetaDataGenerator {
     }
   }
 
-  protected boolean hasTypeParameters(Field field) {
+  private boolean hasTypeParameters(Field field) {
     return field.getType().getTypeParameters() != null && field.getType().getTypeParameters().length > 0;
   }
 }
