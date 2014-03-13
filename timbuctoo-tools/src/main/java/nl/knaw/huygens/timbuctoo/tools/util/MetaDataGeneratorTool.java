@@ -48,23 +48,32 @@ public class MetaDataGeneratorTool {
     for (ClassInfo info : classPath.getTopLevelClassesRecursive("nl.knaw.huygens.timbuctoo.model")) {
       String name = info.getName();
       try {
-        LOG.info("Generating metaData for type: {}", name);
-
         Class<?> type = Class.forName(name);
 
-        try {
-          Map<String, String> metaDataMap = generator.generate(type);
-          LOG.info(new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValueAsString(metaDataMap));
-          save(metaDataMap, type);
-        } catch (JsonProcessingException e) {
-          LOG.error("Mapping object went wrong.", e);
-        } catch (IOException e) {
-          LOG.error("Saving the data went wrong.", e);
+        createMetaData(type);
+
+        // create metadata for the inner classes aswell.
+        for (Class<?> declaredType : type.getDeclaredClasses()) {
+          createMetaData(declaredType);
         }
 
       } catch (ClassNotFoundException e) {
         LOG.info("Could not find class {}", name);
       }
+    }
+  }
+
+  private void createMetaData(Class<?> type) {
+    LOG.info("Generating metaData for type: {}", type.getSimpleName());
+
+    try {
+      Map<String, String> metaDataMap = generator.generate(type);
+      //LOG.info(new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValueAsString(metaDataMap));
+      save(metaDataMap, type);
+    } catch (JsonProcessingException e) {
+      LOG.error("Mapping object went wrong.", e);
+    } catch (IOException e) {
+      LOG.error("Saving the data went wrong.", e);
     }
   }
 
