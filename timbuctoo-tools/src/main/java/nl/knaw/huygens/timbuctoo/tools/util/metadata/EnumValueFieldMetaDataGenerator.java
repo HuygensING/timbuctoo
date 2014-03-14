@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.tools.util.metadata;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -16,18 +18,39 @@ public class EnumValueFieldMetaDataGenerator extends FieldMetaDataGenerator {
   }
 
   @Override
-  protected Object constructValue(Field field) {
+  protected Map<String, Object> constructValue(Field field) {
     Map<String, Object> metadataMap = Maps.newHashMap();
     metadataMap.put(TYPE_FIELD, typeNameGenerator.getTypeName(field));
 
+    addValueToValueMap(field, metadataMap);
+
+    return metadataMap;
+  }
+
+  protected void addValueToValueMap(Field field, Map<String, Object> metadataMap) {
     List<String> enumValues = Lists.newArrayList();
-    Class<?> type = field.getType();
+    Class<?> type = getEnumType(field);
 
     for (Object value : type.getEnumConstants()) {
       enumValues.add(value.toString());
     }
     metadataMap.put(VALUE_FIELD, enumValues);
+  }
 
-    return metadataMap;
+  private Class<?> getEnumType(Field field) {
+    if (field.getType().isEnum()) {
+      return field.getType();
+    }
+
+    for (Type paramType : ((ParameterizedType) field.getGenericType()).getActualTypeArguments()) {
+
+      if (paramType instanceof Class<?>) {
+        Class<?> paramClass = (Class<?>) paramType;
+        if (paramClass.isEnum()) {
+          return paramClass;
+        }
+      }
+    }
+    return null;
   }
 }

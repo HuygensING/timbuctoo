@@ -14,7 +14,7 @@ public class ConstantFieldMetadataGenerator extends FieldMetaDataGenerator {
   }
 
   @Override
-  protected Object constructValue(Field field) {
+  protected Map<String, Object> constructValue(Field field) {
     Map<String, Object> metaDataMap = Maps.newHashMap();
     metaDataMap.put(TYPE_FIELD, typeNameGenerator.getTypeName(field));
     // to get the values of private constants

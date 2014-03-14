@@ -163,10 +163,18 @@ public class MetaDataGeneratorTest {
   public void testGenerateClassWithEnumValues() throws IllegalArgumentException, IllegalAccessException {
 
     Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.put("value", createEnumValueMap("TestEnum", Lists.newArrayList("TEST1", "TEST2")));
+    expectedMap.put("test", createEnumValueMap("TestEnum", Lists.newArrayList("TEST1", "TEST2")));
 
     testGenerate(expectedMap, ClassWithEnumValues.class);
+  }
 
+  @Test
+  public void testGenerateClassWithListOfEnumValues() throws IllegalArgumentException, IllegalAccessException {
+
+    Map<String, Object> expectedMap = Maps.newHashMap();
+    expectedMap.put("test", createEnumValueMap("List of (TestEnum)", Lists.newArrayList("TEST1", "TEST2")));
+
+    testGenerate(expectedMap, ClassWithListOfEnumValues.class);
   }
 
   private Map<String, Object> createEnumValueMap(String typeName, ArrayList<String> values) {
@@ -175,6 +183,22 @@ public class MetaDataGeneratorTest {
     map.put("value", values);
 
     return map;
+  }
+
+  @Test
+  public void testGenerateClassWithPoorMansEnumValues() throws IllegalArgumentException, IllegalAccessException {
+    Map<String, Object> expectedMap = Maps.newHashMap();
+    expectedMap.put("poorMansEnum", createEnumValueMap("String", Lists.newArrayList("TEST1", "TEST2")));
+
+    testGenerate(expectedMap, ClassWithPoorMansEnum.class);
+  }
+
+  @Test
+  public void testGenerateClassWithListWithPoorMansEnumValues() throws IllegalArgumentException, IllegalAccessException {
+    Map<String, Object> expectedMap = Maps.newHashMap();
+    expectedMap.put("poorMansEnum", createEnumValueMap("List of (String)", Lists.newArrayList("TEST1", "TEST2")));
+
+    testGenerate(expectedMap, ClassWithPoorMansEnumList.class);
   }
 
   private static class TestModel {
@@ -249,6 +273,32 @@ public class MetaDataGeneratorTest {
       TEST1, TEST2
     };
 
-    private TestEnum value;
+    private TestEnum test;
+  }
+
+  private static class ClassWithListOfEnumValues {
+    private enum TestEnum {
+      TEST1, TEST2
+    };
+
+    private List<TestEnum> test;
+  }
+
+  private static class ClassWithPoorMansEnum {
+    private static class PoorMansEnum {
+      public static final String VALUE1 = "TEST1";
+      public static final String VALUE2 = "TEST2";
+    }
+
+    private String poorMansEnum;
+  }
+
+  private static class ClassWithPoorMansEnumList {
+    private static class PoorMansEnum {
+      public static final String VALUE1 = "TEST1";
+      public static final String VALUE2 = "TEST2";
+    }
+
+    private List<String> poorMansEnum;
   }
 }

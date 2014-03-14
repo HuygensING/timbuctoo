@@ -14,7 +14,7 @@ public class DefaultFieldMetadataGenerator extends FieldMetaDataGenerator {
   }
 
   @Override
-  protected Object constructValue(Field field) {
+  protected Map<String, Object> constructValue(Field field) {
     Map<String, Object> valueMap = Maps.newHashMap();
     valueMap.put(TYPE_FIELD, typeNameGenerator.getTypeName(field));
 

@@ -26,12 +26,12 @@ public abstract class FieldMetaDataGenerator {
    */
   public void addMetaDataToMap(Map<String, Object> mapToAddTo, Field field, Class<?> containingType) {
 
-    Object value = constructValue(field);
+    Map<String, Object> value = constructValue(field);
 
     mapToAddTo.put(getFieldName(containingType, field), value);
   }
 
-  protected abstract Object constructValue(Field field);
+  protected abstract Map<String, Object> constructValue(Field field);
 
   private String getFieldName(Class<?> type, Field field) {
     return fieldMapper.getFieldName(type, field);

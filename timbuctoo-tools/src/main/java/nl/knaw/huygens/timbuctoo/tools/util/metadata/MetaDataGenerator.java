@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.tools.util.metadata;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +15,7 @@ import com.google.common.collect.Maps;
 public class MetaDataGenerator {
   private final FieldMapper fieldMapper;
   private final TypeNameGenerator typeNameGenerator;
+  private List<Class<?>> innerClasses;
 
   public MetaDataGenerator(FieldMapper fieldMapper) {
     this.fieldMapper = fieldMapper;
@@ -23,6 +26,7 @@ public class MetaDataGenerator {
     Map<String, Object> metadataMap = Maps.newTreeMap();
 
     if (!isAbstract(type)) {
+      innerClasses = getInnerClasses(type);
       for (Field field : getFields(type)) {
         FieldMetaDataGenerator fieldMetaDataGenerator = getFieldMetaDataGenerator(field);
 
@@ -32,6 +36,27 @@ public class MetaDataGenerator {
     }
 
     return metadataMap;
+  }
+
+  private List<Class<?>> getInnerClasses(Class<?> type) {
+    List<Class<?>> classes = Lists.newArrayList(type.getDeclaredClasses());
+
+    if (!Object.class.equals(type.getSuperclass())) {
+      classes.addAll(getInnerClasses(type.getSuperclass()));
+    }
+
+    return classes;
+  }
+
+  private List<Field> getFields(Class<?> type) {
+
+    List<Field> fields = Lists.newArrayList(type.getDeclaredFields());
+
+    if (!Object.class.equals(type.getSuperclass())) {
+      fields.addAll(getFields(type.getSuperclass()));
+    }
+
+    return fields;
   }
 
   private boolean isConstantField(Field field) {
@@ -50,26 +75,61 @@ public class MetaDataGenerator {
     return Modifier.isFinal(field.getModifiers());
   }
 
-  private List<Field> getFields(Class<?> type) {
-
-    List<Field> fields = Lists.newArrayList(type.getDeclaredFields());
-
-    if (!Object.class.equals(type.getSuperclass())) {
-      fields.addAll(getFields(type.getSuperclass()));
+  private boolean isEnumValueField(Class<?> type, Field field) {
+    if (!hasTypeParameters(type)) {
+      return type.isEnum();
     }
 
-    return fields;
+    boolean isEnum = false;
+    for (Type paramType : ((ParameterizedType) field.getGenericType()).getActualTypeArguments()) {
+
+      if (paramType instanceof Class<?>) {
+        isEnum |= isEnumValueField((Class<?>) paramType, field);
+      }
+    }
+    return isEnum;
+
+  }
+
+  private boolean hasTypeParameters(Class<?> type) {
+    return type.getTypeParameters() != null && type.getTypeParameters().length > 0;
   }
 
   private FieldMetaDataGenerator getFieldMetaDataGenerator(Field field) {
-    if (field.getType().isEnum()) {
+    if (isEnumValueField(field.getType(), field)) {
       return new EnumValueFieldMetaDataGenerator(typeNameGenerator, fieldMapper);
     } else if (isConstantField(field)) {
       return new ConstantFieldMetadataGenerator(typeNameGenerator, fieldMapper);
+    } else if (isPoorMansEnumField(field)) {
+      return new PoorMansEnumFieldMetadataGenerator(typeNameGenerator, fieldMapper, getPoorMansEnumType(field));
     } else if (!isStaticField(field)) {
       return new DefaultFieldMetadataGenerator(typeNameGenerator, fieldMapper);
     } else {
       return new NoOpFieldMetaDataGenerator(typeNameGenerator, fieldMapper);
     }
+  }
+
+  private Class<?> getPoorMansEnumType(Field field) {
+    String fieldName = field.getName();
+    for (Class<?> innerClass : innerClasses) {
+      if (isMatchingName(fieldName, innerClass)) {
+        return innerClass;
+      }
+    }
+    return null;
+  }
+
+  private boolean isPoorMansEnumField(Field field) {
+    String fieldName = field.getName();
+    for (Class<?> innerClass : innerClasses) {
+      if (isMatchingName(fieldName, innerClass)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean isMatchingName(String fieldName, Class<?> innerClass) {
+    return fieldName.equalsIgnoreCase(innerClass.getSimpleName()) || fieldName.equalsIgnoreCase(innerClass.getSimpleName() + "s");
   }
 }

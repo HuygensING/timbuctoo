@@ -9,7 +9,6 @@ public class NoOpFieldMetaDataGenerator extends FieldMetaDataGenerator {
 
   public NoOpFieldMetaDataGenerator(TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
     super(typeNameGenerator, fieldMapper);
-    // TODO Auto-generated constructor stub
   }
 
   @Override
@@ -18,7 +17,7 @@ public class NoOpFieldMetaDataGenerator extends FieldMetaDataGenerator {
   }
 
   @Override
-  protected Object constructValue(Field field) {
+  protected Map<String, Object> constructValue(Field field) {
     // TODO Auto-generated method stub
     return null;
   }
