@@ -31,6 +31,7 @@ import java.io.PrintWriter;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,8 +54,9 @@ public class RelationTypeImporter extends CSVImporter {
   /**
    * Reads {@code RelationType} definitions from the specified file which must be present on the classpath.
    * Convenience method for importing a file, that uses {@code handleLine}.
+   * @throws ValidationException 
    */
-  public void importRelationTypes(String fileName) {
+  public void importRelationTypes(String fileName) throws ValidationException {
     try {
       InputStream stream = RelationManager.class.getClassLoader().getResourceAsStream(fileName);
       this.handleFile(stream, 6, false);

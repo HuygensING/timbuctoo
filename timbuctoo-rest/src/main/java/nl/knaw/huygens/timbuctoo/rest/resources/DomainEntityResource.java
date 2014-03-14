@@ -63,6 +63,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
@@ -137,7 +138,12 @@ public class DomainEntityResource extends ResourceBase {
 
     Change change = new Change(userId, vreId);
 
-    String id = storageManager.addDomainEntity((Class<T>) type, (T) input, change);
+    String id = null;
+    try {
+      id = storageManager.addDomainEntity((Class<T>) type, (T) input, change);
+    } catch (ValidationException e) {
+      throw new WebApplicationException();
+    }
     notifyChange(ActionType.ADD, type, id);
 
     return Response.created(new URI(id)).build();
@@ -264,17 +270,17 @@ public class DomainEntityResource extends ResourceBase {
    */
   private void notifyChange(ActionType actionType, Class<? extends DomainEntity> type, String id) {
     switch (actionType) {
-    case ADD:
-    case MOD:
-      sendPersistMessage(actionType, type, id);
-      sendIndexMessage(actionType, type, id);
-      break;
-    case DEL:
-      sendIndexMessage(actionType, type, id);
-      break;
-    default:
-      LOG.error("Unexpected action {}", actionType);
-      break;
+      case ADD:
+      case MOD:
+        sendPersistMessage(actionType, type, id);
+        sendIndexMessage(actionType, type, id);
+        break;
+      case DEL:
+        sendIndexMessage(actionType, type, id);
+        break;
+      default:
+        LOG.error("Unexpected action {}", actionType);
+        break;
     }
   }
 

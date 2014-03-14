@@ -25,8 +25,10 @@ package nl.knaw.huygens.timbuctoo.storage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -47,14 +49,16 @@ import com.google.common.collect.Lists;
 
 public class StorageManagerTest {
 
+  private ValidatorManager validatorManager;
   private StorageManager manager;
   private Storage storage;
   private Change change;
 
   @Before
   public void setup() {
+    validatorManager = mock(ValidatorManager.class);
     storage = mock(Storage.class);
-    manager = new StorageManager(storage);
+    manager = new StorageManager(storage, validatorManager);
     change = new Change("userId", "vreId");
   }
 
@@ -102,16 +106,50 @@ public class StorageManagerTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testAddPrimitiveDomainEntity() throws IOException {
+  public void testAddPrimitiveDomainEntity() throws IOException, ValidationException {
     BaseDomainEntity entity = new BaseDomainEntity();
     manager.addDomainEntity(BaseDomainEntity.class, entity, change);
   }
 
   @Test
-  public void testAddDerivedDomainEntity() throws IOException {
+  public void testAddDerivedDomainEntity() throws IOException, ValidationException {
+    // mock
+    Validator validator = mock(Validator.class);
+
     ProjectADomainEntity entity = new ProjectADomainEntity();
+
+    // when
+    when(validatorManager.getValidatorFor(ProjectADomainEntity.class)).thenReturn(validator);
+
+    // action
     manager.addDomainEntity(ProjectADomainEntity.class, entity, change);
+
+    // verify
+    verify(validatorManager).getValidatorFor(ProjectADomainEntity.class);
+    verify(validator).validate(entity);
     verify(storage).addDomainEntity(ProjectADomainEntity.class, entity, change);
+  }
+
+  @Test(expected = ValidationException.class)
+  public void testAddInvalidDerivedDomainEntity() throws IOException, ValidationException {
+    // mock
+    Validator validator = mock(Validator.class);
+
+    ProjectADomainEntity entity = new ProjectADomainEntity();
+
+    // when
+    when(validatorManager.getValidatorFor(ProjectADomainEntity.class)).thenReturn(validator);
+    doThrow(ValidationException.class).when(validator).validate(entity);
+
+    // action
+    try {
+      manager.addDomainEntity(ProjectADomainEntity.class, entity, change);
+    } finally {
+      // verify
+      verify(validatorManager).getValidatorFor(ProjectADomainEntity.class);
+      verify(validator).validate(entity);
+      verifyZeroInteractions(storage);
+    }
   }
 
   @Test

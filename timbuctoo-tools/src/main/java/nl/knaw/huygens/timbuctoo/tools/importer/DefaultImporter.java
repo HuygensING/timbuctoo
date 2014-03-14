@@ -34,6 +34,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -77,12 +78,12 @@ public abstract class DefaultImporter {
   }
 
   // --- Storage ---------------------------------------------------------------
-  
+
   protected <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) {
     try {
       storageManager.addDomainEntity(type, entity, change);
       return entity.getId();
-    } catch (IOException e) {
+    } catch (Exception e) {
       handleError("Failed to add %s; %s", entity.getDisplayName(), e.getMessage());
       return null;
     }
@@ -93,7 +94,7 @@ public abstract class DefaultImporter {
   /** File with {@code RelationType} definitions; must be present on classpath. */
   private static final String RELATION_TYPE_DEFS = "relationtype-defs.txt";
 
-  protected void setup(RelationManager relationManager) {
+  protected void setup(RelationManager relationManager) throws ValidationException {
     if (relationManager != null) {
       new RelationTypeImporter(relationManager, this.typeRegistry).importRelationTypes(RELATION_TYPE_DEFS);
     }

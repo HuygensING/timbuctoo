@@ -29,6 +29,7 @@ import java.util.Set;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
 
 import com.google.common.collect.Sets;
@@ -83,7 +84,7 @@ public class LanguageImporter extends CSVImporter {
   };
 
   @Override
-  protected void handleLine(String[] items) {
+  protected void handleLine(String[] items) throws ValidationException {
     BaseLanguage language = new BaseLanguage();
 
     if (items.length < 7) {

@@ -166,6 +166,8 @@ public class RelationManager {
         }
       } catch (IOException e) {
         LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
+      } catch (ValidationException e) {
+        LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
       }
     }
     return null;
