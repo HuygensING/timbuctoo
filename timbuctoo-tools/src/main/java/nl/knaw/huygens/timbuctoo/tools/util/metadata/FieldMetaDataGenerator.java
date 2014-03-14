@@ -7,6 +7,8 @@ import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 
 public abstract class FieldMetaDataGenerator {
 
+  protected static final String TYPE_FIELD = "type";
+  protected static final String VALUE_FIELD = "value";
   protected final TypeNameGenerator typeNameGenerator;
   private final FieldMapper fieldMapper;
 

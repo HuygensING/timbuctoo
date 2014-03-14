@@ -1,8 +1,10 @@
 package nl.knaw.huygens.timbuctoo.tools.util.metadata;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.isIn;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,11 +28,11 @@ public class MetaDataGeneratorTest {
   @Test
   public void testGenerateSimpleObject() throws IllegalArgumentException, IllegalAccessException {
     Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.put("testInt", "int");
-    expectedMap.put("testString", "String");
-    expectedMap.put("testDouble", "double");
-    expectedMap.put("testLong", "Long");
-    expectedMap.put("nestedObject", "TestModel");
+    expectedMap.put("testInt", createMapForSimpleField("int"));
+    expectedMap.put("testString", createMapForSimpleField("String"));
+    expectedMap.put("testDouble", createMapForSimpleField("double"));
+    expectedMap.put("testLong", createMapForSimpleField("Long"));
+    expectedMap.put("nestedObject", createMapForSimpleField("TestModel"));
 
     testGenerate(expectedMap, TestModel.class);
   }
@@ -38,18 +40,19 @@ public class MetaDataGeneratorTest {
   private void testGenerate(Map<String, Object> expectedMap, Class<?> type) throws IllegalArgumentException, IllegalAccessException {
     Map<String, Object> actualMap = instance.generate(type);
 
-    assertThat(actualMap, is(expectedMap));
+    assertThat(actualMap.entrySet(), everyItem(isIn(expectedMap.entrySet())));
+    assertThat(expectedMap.entrySet(), everyItem(isIn(actualMap.entrySet())));
   }
 
   @Test
   public void testGenerateOneInheritanceLayer() throws IllegalArgumentException, IllegalAccessException {
     Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.put("testInt", "int");
-    expectedMap.put("testString", "String");
-    expectedMap.put("testDouble", "double");
-    expectedMap.put("testLong", "Long");
-    expectedMap.put("nestedObject", "TestModel");
-    expectedMap.put("test", "String");
+    expectedMap.put("testInt", createMapForSimpleField("int"));
+    expectedMap.put("testString", createMapForSimpleField("String"));
+    expectedMap.put("testDouble", createMapForSimpleField("double"));
+    expectedMap.put("testLong", createMapForSimpleField("Long"));
+    expectedMap.put("nestedObject", createMapForSimpleField("TestModel"));
+    expectedMap.put("test", createMapForSimpleField("String"));
 
     testGenerate(expectedMap, OtherModel.class);
 
@@ -58,26 +61,32 @@ public class MetaDataGeneratorTest {
   @Test
   public void testGenerateMultipleInheritanceLayers() throws IllegalArgumentException, IllegalAccessException {
     Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.put("testInt", "int");
-    expectedMap.put("testString", "String");
-    expectedMap.put("testDouble", "double");
-    expectedMap.put("testLong", "Long");
-    expectedMap.put("nestedObject", "TestModel");
-    expectedMap.put("test", "String");
-    expectedMap.put("subOtherInt", "Integer");
-    expectedMap.put("subSubOtherInt", "int");
+    expectedMap.put("testInt", createMapForSimpleField("int"));
+    expectedMap.put("testString", createMapForSimpleField("String"));
+    expectedMap.put("testDouble", createMapForSimpleField("double"));
+    expectedMap.put("testLong", createMapForSimpleField("Long"));
+    expectedMap.put("nestedObject", createMapForSimpleField("TestModel"));
+    expectedMap.put("test", createMapForSimpleField("String"));
+    expectedMap.put("subOtherInt", createMapForSimpleField("Integer"));
+    expectedMap.put("subSubOtherInt", createMapForSimpleField("int"));
 
     testGenerate(expectedMap, SubSubOtherModel.class);
+  }
+
+  private Map<String, Object> createMapForSimpleField(String typeName) {
+    Map<String, Object> map = Maps.newHashMap();
+    map.put("type", typeName);
+    return map;
   }
 
   @Test
   public void testGenerateInheritenceSubTypeWithoutDeclaredFields() throws IllegalArgumentException, IllegalAccessException {
     Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.put("testInt", "int");
-    expectedMap.put("testString", "String");
-    expectedMap.put("testDouble", "double");
-    expectedMap.put("testLong", "Long");
-    expectedMap.put("nestedObject", "TestModel");
+    expectedMap.put("testInt", createMapForSimpleField("int"));
+    expectedMap.put("testString", createMapForSimpleField("String"));
+    expectedMap.put("testDouble", createMapForSimpleField("double"));
+    expectedMap.put("testLong", createMapForSimpleField("Long"));
+    expectedMap.put("nestedObject", createMapForSimpleField("TestModel"));
 
     testGenerate(expectedMap, SubTypeWithoutDeclaredFields.class);
   }
@@ -92,7 +101,7 @@ public class MetaDataGeneratorTest {
   @Test
   public void testGenerateClassWithStaticFields() throws IllegalArgumentException, IllegalAccessException {
     Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.put("test", "String");
+    expectedMap.put("test", createMapForSimpleField("String"));
 
     testGenerate(expectedMap, TypeWithStaticFields.class);
   }
@@ -100,9 +109,9 @@ public class MetaDataGeneratorTest {
   @Test
   public void testGenerateClassWithGenericFields() throws IllegalArgumentException, IllegalAccessException {
     Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.put("testList", "List of (String)");
-    expectedMap.put("testMap", "Map of (String, String)");
-    expectedMap.put("testNestedGenerics", "List of (List of (String))");
+    expectedMap.put("testList", createMapForSimpleField("List of (String)"));
+    expectedMap.put("testMap", createMapForSimpleField("Map of (String, String)"));
+    expectedMap.put("testNestedGenerics", createMapForSimpleField("List of (List of (String))"));
 
     testGenerate(expectedMap, TypeWithGenericFields.class);
   }
@@ -110,7 +119,7 @@ public class MetaDataGeneratorTest {
   @Test
   public void testGenerateClassWithAnnotatedFields() throws IllegalArgumentException, IllegalAccessException {
     Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.put("@annotated", "String");
+    expectedMap.put("@annotated", createMapForSimpleField("String"));
 
     testGenerate(expectedMap, TypeWithAnnotatedField.class);
   }
@@ -118,7 +127,7 @@ public class MetaDataGeneratorTest {
   @Test
   public void testGenerateClassWithFieldWithAnnotatedGetter() throws IllegalArgumentException, IllegalAccessException {
     Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.put("@annotated", "String");
+    expectedMap.put("@annotated", createMapForSimpleField("String"));
 
     testGenerate(expectedMap, TypeWithAnnotatedGetter.class);
   }
@@ -126,7 +135,7 @@ public class MetaDataGeneratorTest {
   @Test
   public void testGenerateClassWithFieldWithAnnotatedSetter() throws IllegalArgumentException, IllegalAccessException {
     Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.put("annotatedString", "String");
+    expectedMap.put("annotatedString", createMapForSimpleField("String"));
 
     testGenerate(expectedMap, TypeWithAnnotatedSetter.class);
   }
@@ -135,21 +144,37 @@ public class MetaDataGeneratorTest {
   public void testGenerateClassWithConstants() throws IllegalArgumentException, IllegalAccessException {
 
     Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.put("TEST_STRING", "String <TEST>");
-    expectedMap.put("TEST_INT", "int <1234>");
+    expectedMap.put("TEST_STRING", createConstantFieldMap("String", "TEST"));
+    expectedMap.put("TEST_INT", createConstantFieldMap("int", 1234));
 
     testGenerate(expectedMap, ClassWithConstants.class);
 
+  }
+
+  private Map<String, Object> createConstantFieldMap(String type, Object value) {
+    Map<String, Object> map = Maps.newHashMap();
+    map.put("type", type);
+    map.put("value", value);
+
+    return map;
   }
 
   @Test
   public void testGenerateClassWithEnumValues() throws IllegalArgumentException, IllegalAccessException {
 
     Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.put("value", Lists.newArrayList("TEST1", "TEST2"));
+    expectedMap.put("value", createEnumValueMap("TestEnum", Lists.newArrayList("TEST1", "TEST2")));
 
     testGenerate(expectedMap, ClassWithEnumValues.class);
 
+  }
+
+  private Map<String, Object> createEnumValueMap(String typeName, ArrayList<String> values) {
+    Map<String, Object> map = Maps.newHashMap();
+    map.put("type", typeName);
+    map.put("value", values);
+
+    return map;
   }
 
   private static class TestModel {

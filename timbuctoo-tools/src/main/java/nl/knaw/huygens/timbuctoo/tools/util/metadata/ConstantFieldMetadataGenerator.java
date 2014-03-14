@@ -1,8 +1,11 @@
 package nl.knaw.huygens.timbuctoo.tools.util.metadata;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
+
+import com.google.common.collect.Maps;
 
 public class ConstantFieldMetadataGenerator extends FieldMetaDataGenerator {
 
@@ -11,13 +14,14 @@ public class ConstantFieldMetadataGenerator extends FieldMetaDataGenerator {
   }
 
   @Override
-  protected String constructValue(Field field) {
+  protected Object constructValue(Field field) {
+    Map<String, Object> metaDataMap = Maps.newHashMap();
+    metaDataMap.put(TYPE_FIELD, typeNameGenerator.getTypeName(field));
     // to get the values of private constants
     field.setAccessible(true);
 
-    String value = null;
     try {
-      return String.format("%s <%s>", typeNameGenerator.getTypeName(field), field.get(null));
+      metaDataMap.put(VALUE_FIELD, field.get(null));
     } catch (IllegalArgumentException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -25,6 +29,6 @@ public class ConstantFieldMetadataGenerator extends FieldMetaDataGenerator {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-    return value;
+    return metaDataMap;
   }
 }
