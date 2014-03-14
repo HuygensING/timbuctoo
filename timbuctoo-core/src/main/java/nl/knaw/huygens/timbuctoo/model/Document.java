@@ -22,9 +22,6 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.CREATOR_OF;
-import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.LANGUAGE_OF;
-
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
@@ -177,7 +174,7 @@ public class Document extends DomainEntity {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getCreators() {
-    return getRelations().get(CREATOR_OF.inverse);
+    return getRelations().get("created_by");
   }
 
   // TODO decide which relation; how to filter keyword type
@@ -190,7 +187,7 @@ public class Document extends DomainEntity {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getLanguages() {
-    return getRelations().get(LANGUAGE_OF.inverse);
+    return getRelations().get("has_language");
   }
 
 }

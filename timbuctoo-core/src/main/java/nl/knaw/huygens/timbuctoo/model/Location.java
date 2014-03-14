@@ -33,17 +33,23 @@ import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
 @IDPrefix("LOCA")
 public class Location extends DomainEntity {
 
+  // Container class, for entity reducer
+  private static class Names {
+    public String defLang;
+    public Map<String, PlaceName> map;
+    public Names() {
+      map = Maps.newHashMap();
+    }
+  }
+
   /** URN for making concordances. */
   private String urn;
-  /** Default place name language. */
-  private String defLang;
-  private Map<String, PlaceName> names = Maps.newHashMap();
+  private Names names;
   private String latitude;
   private String longitude;
-
-  @Override
-  public String getDisplayName() {
-    return null;
+ 
+  public Location() {
+    names = new Names();
   }
 
   @JsonProperty("^urn")
@@ -56,28 +62,39 @@ public class Location extends DomainEntity {
     this.urn = urn;
   }
 
-  @JsonProperty("^defLang")
-  public String getDefLang() {
-    return defLang;
+  @Override
+  public String getDisplayName() {
+    if (names.defLang != null) {
+      PlaceName placeName = names.map.get(names.defLang);
+      if (placeName != null) {
+        return placeName.getLongName();
+      }
+    }
+    return "undefined";
   }
 
   @JsonProperty("^defLang")
-  public void setDefLang(String defLang) {
-    this.defLang = defLang;
+  public String getDefLang() {
+    return names.defLang;
+  }
+
+  @JsonProperty("^defLang")
+  public void setDefLang(String value) {
+    names.defLang = value;
   }
 
   @JsonProperty("^names")
   public Map<String, PlaceName> getNames() {
-    return names;
+    return names.map;
   }
 
   @JsonProperty("^names")
-  public void setNames(Map<String, PlaceName> names) {
-    this.names = names;
+  public void setNames(Map<String, PlaceName> value) {
+    names.map = value;
   }
 
   public void addName(String lang, PlaceName name) {
-    names.put(lang, name);
+    names.map.put(lang, name);
   }
 
   public String getLatitude() {

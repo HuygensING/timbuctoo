@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -51,6 +53,7 @@ import nl.knaw.huygens.timbuctoo.model.neww.WWRelation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
+import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -214,8 +217,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     indexEntities(WWDocument.class);
     indexEntities(WWKeyword.class);
     indexEntities(WWLanguage.class);
-    indexEntities(WWLocation.class);
     indexEntities(WWPerson.class);
+    indexEntities(WWLocation.class);
 
     displayStatus();
     displayErrorSummary();
@@ -985,14 +988,17 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Persons ---------------------------------------------------------------
 
+  private Pattern simpleNamePattern = Pattern.compile("^([A-Z]\\w+), ([A-Z]\\w+)$");
+  private Set<String> excludedNames = Sets.newHashSet("Comtesse", "Madame", "Mevrouw", "Mrs", "Queen", "Vrou");
+
+  // maps line without id to stored id
+  private final Map<String, String> lines = Maps.newHashMap();
+
   private int nUnknown = 0;
   private int nArchetype = 0;
   private int nAuthor = 0;
   private int nPseudonym = 0;
   private int nDuplicates = 0;
-
-  // maps line without id to stored id
-  private final Map<String, String> lines = Maps.newHashMap();
 
   private int importPersons() throws Exception {
     int initialSize = references.size();
@@ -1060,16 +1066,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       converted.tempBirthPlace = text;
     }
 
-    int numberOfChildren = 0;
-    text = filterTextField(object.children);
-    if (text != null) {
-      try {
-        numberOfChildren = Integer.parseInt(text);
-      } catch (NumberFormatException e) {
-        handleError("Field 'children' is not an integer: %s", text);
-      }
-    }
-    converted.setNumberOfChildren(numberOfChildren);
+    converted.tempChildren = filterTextField(object.children);
 
     if (object.collaborations != null) {
       for (String item : object.collaborations) {
@@ -1148,7 +1145,17 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     converted.tempMotherTongue = filterTextField(object.mother_tongue);
 
-    converted.tempName = filterTextField(object.name);
+    String name = converted.tempName = filterTextField(object.name);
+    if (name != null) {
+      Matcher matcher = simpleNamePattern.matcher(name);
+      if (matcher.matches()) {
+        String surname = matcher.group(1);
+        String forename = matcher.group(2);
+        if (!excludedNames.contains(forename)) {
+          converted.addName(PersonName.newInstance(forename, surname));
+        }
+      }
+    }
 
     converted.setNationality(filterTextField(object.nationality));
 
@@ -1181,18 +1188,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     if (object.ps_children != null) {
       StringBuilder builder = new StringBuilder();
       for (String item : object.ps_children) {
-        String filtered = filterTextField(item);
-        if (filtered != null) {
-          if (builder.length() != 0) {
-            builder.append("; ");
-          }
-          builder.append(filtered);
-        }
+        appendTo(builder, filterTextField(item), "; ");
       }
-      if (builder.length() != 0) {
-        converted.setPsChildren(builder.toString());
-        // System.out.printf("%4d:  [children] %d  [ps_children] %s%n", object.old_id, numberOfChildren, builder.toString());
-      }
+      converted.tempPsChildren = filterTextField(builder.toString());
     }
 
     if (object.religion != null) {

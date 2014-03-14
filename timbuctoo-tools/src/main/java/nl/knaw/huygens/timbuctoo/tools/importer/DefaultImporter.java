@@ -177,4 +177,16 @@ public abstract class DefaultImporter {
     return StringUtils.stripToNull(text);
   }
 
+  /**
+   * Conditionally appends a text to a string builder.
+   */
+  protected void appendTo(StringBuilder builder, String text, String separator) {
+    if (text != null && text.length() != 0) {
+      if (builder.length() != 0) {
+        builder.append(separator);
+      }
+      builder.append(text);
+    }
+  }
+
 }

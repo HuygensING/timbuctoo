@@ -33,7 +33,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
-import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -53,13 +52,6 @@ import com.fasterxml.jackson.databind.JsonNode;
  * the original entity.
  */
 public class EntityInducerReducerTest {
-
-  public static PersonName newPersonName(String forename, String surname) {
-    PersonName name = new PersonName();
-    name.addNameComponent(PersonNameComponent.Type.FORENAME, forename);
-    name.addNameComponent(PersonNameComponent.Type.SURNAME, forename);
-    return name;
-  }
 
   private final static String ID = "TEST042";
 
@@ -142,7 +134,7 @@ public class EntityInducerReducerTest {
     DomainEntityWithMiscTypes initial = new DomainEntityWithMiscTypes(ID);
     initial.setDate(new Date());
     initial.setType(String.class);
-    initial.setPersonName(newPersonName("Christiaan", "Huygens"));
+    initial.setPersonName(PersonName.newInstance("Christiaan", "Huygens"));
 
     JsonNode tree = inducer.induceDomainEntity(DomainEntityWithMiscTypes.class, initial);
     DomainEntityWithMiscTypes reduced = reducer.reduceVariation(DomainEntityWithMiscTypes.class, tree);
@@ -155,7 +147,7 @@ public class EntityInducerReducerTest {
 
   @Test
   public void testDomainEntityWithPersonNames() throws Exception {
-    PersonName name = newPersonName("Christiaan", "Huygens");
+    PersonName name = PersonName.newInstance("Christiaan", "Huygens");
     DomainEntityWithMiscTypes initial = new DomainEntityWithMiscTypes(ID);
     initial.addPersonName(name);
 

@@ -350,7 +350,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
     if (xperson.toevoeging != null) {
       name.addNameComponent(Type.ADD_NAME, xperson.toevoeging);
     }
-    person.setName(name);
+    person.addName(name);
 
     if (xperson.label != null) {
       String value = StringUtils.join(xperson.label, "; ");
