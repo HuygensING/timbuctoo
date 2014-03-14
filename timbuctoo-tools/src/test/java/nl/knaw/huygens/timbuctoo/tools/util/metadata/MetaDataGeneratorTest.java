@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
-import nl.knaw.huygens.timbuctoo.tools.util.metadata.MetaDataGenerator;
 
 import org.junit.Before;
 import org.junit.Test;

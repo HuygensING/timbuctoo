@@ -24,40 +24,18 @@ public class MetaDataGenerator {
 
     if (!isAbstract(type)) {
       for (Field field : getFields(type)) {
-        String fieldName = getFieldName(type, field);
-        if (field.getType().isEnum()) {
-          metadataMap.put(fieldName, getEnumValues(field.getType()));
-        } else if (isFinalField(field) && isStaticField(field)) {
-          addConstantToMap(metadataMap, field, fieldName);
-        } else if (!isStaticField(field)) {
-          metadataMap.put(fieldName, typeNameGenerator.getTypeName(field));
-        }
+        FieldMetaDataGenerator fieldMetaDataGenerator = getFieldMetaDataGenerator(field);
+
+        fieldMetaDataGenerator.addMetaDataToMap(metadataMap, field, type);
+
       }
     }
 
     return metadataMap;
   }
 
-  private List<String> getEnumValues(Class<?> type) {
-    List<String> enumValues = Lists.newArrayList();
-
-    for (Object value : type.getEnumConstants()) {
-      enumValues.add(value.toString());
-    }
-
-    return enumValues;
-  }
-
-  private void addConstantToMap(Map<String, Object> metadataMap, Field field, String fieldName) throws IllegalArgumentException, IllegalAccessException {
-    // to get the values of private constants
-    field.setAccessible(true);
-    String value = String.format("%s <%s>", typeNameGenerator.getTypeName(field), field.get(null));
-    metadataMap.put(fieldName, value);
-
-  }
-
-  private String getFieldName(Class<?> type, Field field) {
-    return fieldMapper.getFieldName(type, field);
+  private boolean isConstantField(Field field) {
+    return isFinalField(field) && isStaticField(field);
   }
 
   private boolean isStaticField(Field field) {
@@ -83,4 +61,15 @@ public class MetaDataGenerator {
     return fields;
   }
 
+  private FieldMetaDataGenerator getFieldMetaDataGenerator(Field field) {
+    if (field.getType().isEnum()) {
+      return new EnumValueFieldMetaDataGenerator(typeNameGenerator, fieldMapper);
+    } else if (isConstantField(field)) {
+      return new ConstantFieldMetadataGenerator(typeNameGenerator, fieldMapper);
+    } else if (!isStaticField(field)) {
+      return new DefaultFieldMetadataGenerator(typeNameGenerator, fieldMapper);
+    } else {
+      return new NoOpFieldMetaDataGenerator(typeNameGenerator, fieldMapper);
+    }
+  }
 }
