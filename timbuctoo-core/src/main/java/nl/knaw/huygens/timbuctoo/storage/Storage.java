@@ -116,9 +116,9 @@ public interface Storage {
   <T extends Entity> T findItemByKey(Class<T> type, String key, String value) throws IOException;
 
   /**
-   * Find a system entity which has the non-null properties of the example object.
+   * Find an entity which has the non-null properties of the example object.
    */
-  <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException;
+  <T extends Entity> T findItem(Class<T> type, T example) throws IOException;
 
   /**
    * Get the given variation of an entity.

@@ -133,7 +133,8 @@ public class StorageManagerTest {
   @Test(expected = ValidationException.class)
   public void testAddInvalidDerivedDomainEntity() throws IOException, ValidationException {
     // mock
-    Validator validator = mock(Validator.class);
+    @SuppressWarnings("unchecked")
+    Validator<ProjectADomainEntity> validator = mock(Validator.class);
 
     ProjectADomainEntity entity = new ProjectADomainEntity();
 

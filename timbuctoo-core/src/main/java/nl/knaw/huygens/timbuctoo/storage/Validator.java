@@ -1,12 +1,15 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
+import java.io.IOException;
+
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
-public interface Validator {
+public interface Validator<T extends DomainEntity> {
 
   /**
    * Validates {@code entityToValidate}.
    * @param entityToValidate
+   * @throws IOException 
    */
-  public <T extends DomainEntity> void validate(T entityToValidate) throws ValidationException;
+  public void validate(T entityToValidate) throws ValidationException, IOException;
 }

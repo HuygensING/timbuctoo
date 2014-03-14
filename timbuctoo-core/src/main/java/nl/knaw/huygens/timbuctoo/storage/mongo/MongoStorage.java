@@ -397,7 +397,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException {
+  public <T extends Entity> T findItem(Class<T> type, T example) throws IOException {
     DBObject query = queries.selectByProperties(type, example);
     return getItem(type, query);
   }
