@@ -43,7 +43,7 @@ public class Person extends DomainEntity {
       list = Lists.newArrayList();
     }
     public PersonName defaultName() {
-    	  return (list != null && !list.isEmpty()) ? list.get(0): new PersonName();
+    	  return (list != null && !list.isEmpty()) ? list.get(0) : new PersonName();
     }
   }
 

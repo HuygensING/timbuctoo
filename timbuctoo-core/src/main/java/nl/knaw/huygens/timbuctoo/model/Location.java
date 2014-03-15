@@ -24,10 +24,12 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
 
 @IDPrefix("LOCA")
@@ -52,16 +54,6 @@ public class Location extends DomainEntity {
     names = new Names();
   }
 
-  @JsonProperty("^urn")
-  public String getUrn() {
-    return urn;
-  }
-
-  @JsonProperty("^urn")
-  public void setUrn(String urn) {
-    this.urn = urn;
-  }
-
   @Override
   public String getDisplayName() {
     if (names.defLang != null) {
@@ -71,6 +63,26 @@ public class Location extends DomainEntity {
       }
     }
     return "undefined";
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
+  public String getIndexedName() {
+    StringBuilder builder = new StringBuilder();
+    for (PlaceName name : names.map.values()) {
+      builder.append(' ').append(name.getLongName());
+    }
+    return builder.toString();
+  }
+
+  @JsonProperty("^urn")
+  public String getUrn() {
+    return urn;
+  }
+
+  @JsonProperty("^urn")
+  public void setUrn(String urn) {
+    this.urn = urn;
   }
 
   @JsonProperty("^defLang")
