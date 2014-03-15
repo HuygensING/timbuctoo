@@ -165,7 +165,7 @@ public abstract class DefaultImporter {
    * Filters a text field by collapsing whitespace and removing leading and trailing whitespace.
    * Returns {@code null} if the remaining text is empty.
    */
-  protected String filterTextField(String text) {
+  protected String filterField(String text) {
     if (text == null) {
       return null;
     }

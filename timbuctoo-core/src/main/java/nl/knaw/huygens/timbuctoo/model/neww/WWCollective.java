@@ -32,7 +32,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class WWCollective extends Collective {
 
-  private String shortName;
   private String notes;
 
   // For establishing the type of the collective
@@ -41,14 +40,8 @@ public class WWCollective extends Collective {
   public String tempLocationPlacename;
   // For establishing relation with location
   public String tempOrigin;
-
-  public String getShortName() {
-    return shortName;
-  }
-
-  public void setShortName(String shortName) {
-    this.shortName = shortName;
-  }
+  // Redundant
+  public String tempShortName;
 
   public String getNotes() {
     return notes;

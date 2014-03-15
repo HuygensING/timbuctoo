@@ -29,6 +29,16 @@ public class Period {
 
   public Period() {}
 
+  public Period(Datable startDate, Datable endDate) {
+    setStartDate(startDate);
+    setEndDate(endDate);
+  }
+
+  public Period(String startDate, String endDate) {
+    setStartDate(new Datable(startDate));
+    setEndDate(new Datable(endDate));
+  }
+
   public Datable getStartDate() {
     return startDate;
   }
