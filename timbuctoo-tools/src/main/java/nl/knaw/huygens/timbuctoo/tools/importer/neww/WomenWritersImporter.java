@@ -43,7 +43,6 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.neww.WWCollective;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument.Print;
-import nl.knaw.huygens.timbuctoo.model.neww.WWDocument.Source;
 import nl.knaw.huygens.timbuctoo.model.neww.WWKeyword;
 import nl.knaw.huygens.timbuctoo.model.neww.WWLanguage;
 import nl.knaw.huygens.timbuctoo.model.neww.WWLocation;
@@ -462,16 +461,17 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         converted.addTempPrint(filteredPrint);
         builder.append(String.format("%s%n", filteredPrint));
       }
-      // records.put(new Integer(object.old_id), builder.toString());
     }
 
     if (object.source != null) {
-      Source source = new Source();
-      source.setType(filterField(object.source.type));
-      source.setFullName(filterField(object.source.full_name));
-      source.setShortName(filterField(object.source.short_name));
-      source.setNotes(filterField(object.source.notes));
-      converted.setSource(source);
+      StringBuilder builder = new StringBuilder();
+      appendTo(builder, converted.getNotes(), "");
+      appendTo(builder, "* Source", "<lb/>");
+      appendTo(builder, filterField(object.source.type), "<lb/>Type: ");
+      appendTo(builder, filterField(object.source.full_name), "<lb/>Full Name: ");
+      appendTo(builder, filterField(object.source.short_name), "<lb/>Short Name: ");
+      appendTo(builder, filterField(object.source.notes), "<lb/>Notes: ");
+      converted.setNotes(builder.toString());
     }
 
     if (object.urls != null) {
