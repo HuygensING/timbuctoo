@@ -39,11 +39,13 @@ public class Person extends DomainEntity {
   // Container class, for entity reducer
   private static class Names {
     public List<PersonName> list;
+
     public Names() {
       list = Lists.newArrayList();
     }
+
     public PersonName defaultName() {
-    	  return (list != null && !list.isEmpty()) ? list.get(0) : new PersonName();
+      return (list != null && !list.isEmpty()) ? list.get(0) : new PersonName();
     }
   }
 
@@ -72,7 +74,7 @@ public class Person extends DomainEntity {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false, isSortable = true)
   public String getIndexedName() {
     return defaultName().getFullName();
   }
@@ -115,7 +117,7 @@ public class Person extends DomainEntity {
     this.gender = Gender.normalize(gender);
   }
 
-  @IndexAnnotation(fieldName = "dynamic_s_birthDate", isFaceted = true, canBeEmpty = true)
+  @IndexAnnotation(fieldName = "dynamic_s_birthDate", isFaceted = true, canBeEmpty = true, isSortable = true)
   public Datable getBirthDate() {
     return birthDate;
   }
@@ -124,7 +126,7 @@ public class Person extends DomainEntity {
     this.birthDate = birthDate;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_s_deathDate", isFaceted = true, canBeEmpty = true)
+  @IndexAnnotation(fieldName = "dynamic_s_deathDate", isFaceted = true, canBeEmpty = true, isSortable = true)
   public Datable getDeathDate() {
     return deathDate;
   }
