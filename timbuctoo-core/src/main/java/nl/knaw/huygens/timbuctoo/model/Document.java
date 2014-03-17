@@ -85,6 +85,7 @@ public class Document extends DomainEntity {
     return getTitle();
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_title", canBeEmpty = true)
   public String getTitle() {
     return title;
   }
@@ -101,6 +102,7 @@ public class Document extends DomainEntity {
     this.description = description;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_s_date", canBeEmpty = true, isFaceted = true)
   public Datable getDate() {
     return date;
   }
@@ -109,6 +111,7 @@ public class Document extends DomainEntity {
     this.date = date;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_s_document_type", canBeEmpty = true, isFaceted = true)
   public DocumentType getDocumentType() {
     return documentType;
   }

@@ -56,6 +56,7 @@ public class WWDocument extends Document {
     this.notes = notes;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_s_origin", canBeEmpty = true, isFaceted = true)
   public String getOrigin() {
     return origin;
   }
