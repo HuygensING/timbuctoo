@@ -50,11 +50,11 @@ public class MetaDataGeneratorTool {
       try {
         Class<?> type = Class.forName(name);
 
-        createMetaData(type);
+        createMetaData(type, null);
 
         // create metadata for the inner classes aswell.
         for (Class<?> declaredType : type.getDeclaredClasses()) {
-          createMetaData(declaredType);
+          createMetaData(declaredType, type);
         }
 
       } catch (ClassNotFoundException e) {
@@ -63,14 +63,14 @@ public class MetaDataGeneratorTool {
     }
   }
 
-  private void createMetaData(Class<?> type) throws IllegalArgumentException, IllegalAccessException {
+  private void createMetaData(Class<?> type, Class<?> containingType) throws IllegalArgumentException, IllegalAccessException {
     if (!type.isEnum()) {
       LOG.info("Generating metaData for type: {}", type.getSimpleName());
 
       try {
         Map<String, Object> metaDataMap = generator.generate(type);
         //LOG.info(new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValueAsString(metaDataMap));
-        save(metaDataMap, type);
+        save(metaDataMap, type, containingType);
       } catch (JsonProcessingException e) {
         LOG.error("Mapping object went wrong.", e);
       } catch (IOException e) {
@@ -79,16 +79,24 @@ public class MetaDataGeneratorTool {
     }
   }
 
-  private void save(Map<String, Object> metaDataMap, Class<?> type) throws JsonGenerationException, JsonMappingException, IOException {
-    File file = new File(this.saveDir, getNormalizedName(type) + ".json");
+  private void save(Map<String, Object> metaDataMap, Class<?> type, Class<?> containingType) throws JsonGenerationException, JsonMappingException, IOException {
+    File file = new File(this.saveDir, getNormalizedName(type, containingType) + ".json");
     System.out.println("file: " + file.getAbsolutePath());
 
     // toArray is needed to make use of the TimbuctooTypeIdResolver
     new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValue(file, metaDataMap);
   }
 
-  protected String getNormalizedName(Class<?> type) {
-    return type.getSimpleName().toLowerCase();
+  protected String getNormalizedName(Class<?> type, Class<?> containingType) {
+    StringBuilder sb = new StringBuilder();
+    if (containingType != null) {
+      sb.append(containingType.getSimpleName().toLowerCase());
+      sb.append(".");
+    }
+
+    sb.append(type.getSimpleName().toLowerCase());
+
+    return sb.toString();
   }
 
 }
