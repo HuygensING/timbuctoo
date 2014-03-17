@@ -36,11 +36,11 @@ import com.google.common.collect.Lists;
 public class WWDocument extends Document {
 
   private String notes;
-  private String origin;
   private List<String> topoi;
 
   public String tempCreator;
   public String tempLanguage;
+  public String tempOrigin;
   public List<Print> tempPrints;
 
   public WWDocument() {
@@ -54,15 +54,6 @@ public class WWDocument extends Document {
 
   public void setNotes(String notes) {
     this.notes = notes;
-  }
-
-  @IndexAnnotation(fieldName = "dynamic_s_origin", canBeEmpty = true, isFaceted = true)
-  public String getOrigin() {
-    return origin;
-  }
-
-  public void setOrigin(String origin) {
-    this.origin = origin;
   }
 
   public List<String> getTopoi() {
@@ -92,6 +83,12 @@ public class WWDocument extends Document {
   @IndexAnnotation(fieldName = "dynamic_s_library", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getLibraries() {
     return getRelations().get("library");
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_origin", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  public List<EntityRef> getOrigins() {
+    return getRelations().get("origin");
   }
 
   // ---------------------------------------------------------------------------
