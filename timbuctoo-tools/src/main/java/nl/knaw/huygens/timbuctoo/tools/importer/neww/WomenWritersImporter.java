@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.tools.importer.neww;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -55,6 +56,7 @@ import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
 import nl.knaw.huygens.timbuctoo.util.Files;
@@ -175,6 +177,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     removeNonPersistentEntities(WWRelation.class);
 
     setup(relationManager);
+    setupRelationMappings();
+    setupRelationDefs();
 
     printBoxedText("Import");
 
@@ -344,9 +348,14 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Documents -------------------------------------------------------------
 
+  private PublisherNormalizer publisherNormalizer;
+
   private int importDocuments() throws Exception {
     int initialSize = references.size();
     documentTypeMap = createDocumentTypeMap();
+    File file = new File(inputDir, "publishers.txt");
+    publisherNormalizer = new PublisherNormalizer(file);
+
     LineIterator iterator = getLineIterator("documents.json");
     String line = "";
     try {
@@ -361,6 +370,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       throw e;
     } finally {
       LineIterator.closeQuietly(iterator);
+      publisherNormalizer = null;
     }
     return references.size() - initialSize;
   }
@@ -405,7 +415,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       WWDocument converted = convert(json, object);
       if (converted != null) {
         String storedId = addDomainEntity(WWDocument.class, converted);
-        references.put(key, new Reference(WWDocument.class, storedId));
+        Reference reference = new Reference(WWDocument.class, storedId);
+        references.put(key, reference);
+        handlePublisher(converted, reference);
       }
     }
   }
@@ -447,8 +459,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
 
     if (object.prints != null && object.prints.size() != 0) {
-      StringBuilder builder = new StringBuilder();
-      builder.append(String.format("%n** Prints of record %d [%s]%n", object.old_id, converted.getTitle()));
       // order by key
       Map<String, Print> temp = Maps.newTreeMap();
       temp.putAll(object.prints);
@@ -459,8 +469,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         filteredPrint.setLocation(filterField(entry.getValue().getLocation()));
         filteredPrint.setYear(filterField(entry.getValue().getYear()));
         converted.addTempPrint(filteredPrint);
-        builder.append(String.format("%s%n", filteredPrint));
       }
+      // if (selectFirstEdition(converted.tempPrints, date) != null) {
+      //   converted.setEdition("1");
+      // }
     }
 
     if (object.source != null) {
@@ -486,6 +498,71 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.tempLanguage = filterField(object.language);
 
     return converted.isValid() ? converted : null;
+  }
+
+  private static final String IS_PUBLISHED_BY = "isPublishedBy";
+
+  private void handlePublisher(WWDocument document, Reference documentRef) throws ValidationException {
+    Datable datable = document.getDate();
+    String date = (datable != null) ? datable.toString() : null;
+    Print  first = selectFirstEdition(document.tempPrints, date);
+    if (first != null) {
+      String name = first.getPublisher();
+      if (name != null && !name.isEmpty()) {
+        name = publisherNormalizer.normalize(name);
+        if (name != null && !name.isEmpty()) {
+          String key = newKey("Publisher", name);
+          Reference publisherRef = references.get(key);
+          if (publisherRef == null) {
+            WWCollective collective = new WWCollective();
+            collective.setType(Collective.Type.PUBLISHER);
+            collective.setName(name);
+            collective.tempLocationPlacename = first.getLocation();
+            String storedId = addDomainEntity(WWCollective.class, collective);
+            publisherRef = new Reference(WWCollective.class, storedId);
+            references.put(key, publisherRef);
+            System.out.printf("Publisher: %s%n", name);
+          }
+          Reference relationRef = relationTypes.get(IS_PUBLISHED_BY);
+          storeRelation(WWRelation.class, documentRef, relationRef, publisherRef, change, "");
+        }
+      }
+    }
+  }
+
+  private Print selectFirstEdition(List<Print> prints, String year) {
+    Print selected = null;
+    if (prints != null && !prints.isEmpty() && year != null) {
+      int best = 0;
+      for (Print print : prints) {
+        int score = (edition(print) == 1) ? 1 : 0;
+        if (year.equals(print.getYear())) {
+          score++;
+        }
+        if (score == best) {
+          // not unique
+          selected = null;
+        } else if (score > best) {
+          selected = print;
+          best = score;
+        }
+      }
+    }
+    return selected;
+  }
+
+  private int edition(Print print) {
+    int n = 0;
+    String text = print.getEdition();
+    if (text != null) {
+      for (char ch : text.toCharArray()) {
+        if (Character.isDigit(ch)) {
+          n = 10 * n + (ch - '0');
+        }
+        else break;
+      }
+    }
+    return n;
   }
 
   public static class XDocument {
@@ -1345,8 +1422,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   }
 
   private void importRelations() throws Exception {
-    setupRelationMappings();
-    setupRelationDefs();
     LineIterator iterator = getLineIterator("relations.json");
     String line = "";
     try {
