@@ -99,11 +99,11 @@ public class MetaDataGenerator {
     if (isEnumValueField(field.getType(), field)) {
       return new EnumValueFieldMetaDataGenerator(typeNameGenerator, fieldMapper);
     } else if (isConstantField(field)) {
-      return new ConstantFieldMetadataGenerator(typeNameGenerator, fieldMapper);
+      return new ConstantFieldMetaDataGenerator(typeNameGenerator, fieldMapper);
     } else if (isPoorMansEnumField(field)) {
-      return new PoorMansEnumFieldMetadataGenerator(typeNameGenerator, fieldMapper, getPoorMansEnumType(field));
+      return new PoorMansEnumFieldMetaDataGenerator(typeNameGenerator, fieldMapper, getPoorMansEnumType(field));
     } else if (!isStaticField(field)) {
-      return new DefaultFieldMetadataGenerator(typeNameGenerator, fieldMapper);
+      return new DefaultFieldMetaDataGenerator(typeNameGenerator, fieldMapper);
     } else {
       return new NoOpFieldMetaDataGenerator(typeNameGenerator, fieldMapper);
     }

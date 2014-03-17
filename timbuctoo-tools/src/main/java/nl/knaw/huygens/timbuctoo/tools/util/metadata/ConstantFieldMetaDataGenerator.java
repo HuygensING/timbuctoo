@@ -7,9 +7,9 @@ import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 
 import com.google.common.collect.Maps;
 
-public class ConstantFieldMetadataGenerator extends FieldMetaDataGenerator {
+public class ConstantFieldMetaDataGenerator extends FieldMetaDataGenerator {
 
-  public ConstantFieldMetadataGenerator(TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
+  public ConstantFieldMetaDataGenerator(TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
     super(typeNameGenerator, fieldMapper);
   }
 

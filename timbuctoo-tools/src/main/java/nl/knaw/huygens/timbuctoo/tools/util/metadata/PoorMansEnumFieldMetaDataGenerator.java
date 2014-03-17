@@ -9,11 +9,11 @@ import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 
 import com.google.common.collect.Lists;
 
-public class PoorMansEnumFieldMetadataGenerator extends EnumValueFieldMetaDataGenerator {
+public class PoorMansEnumFieldMetaDataGenerator extends EnumValueFieldMetaDataGenerator {
 
   private final Class<?> enumType;
 
-  public PoorMansEnumFieldMetadataGenerator(TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper, Class<?> enumType) {
+  public PoorMansEnumFieldMetaDataGenerator(TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper, Class<?> enumType) {
     super(typeNameGenerator, fieldMapper);
     this.enumType = enumType;
   }
