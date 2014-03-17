@@ -27,6 +27,7 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
+import nl.knaw.huygens.timbuctoo.model.util.Period;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
@@ -39,6 +40,8 @@ public class Collective extends DomainEntity {
 
   private String type;
   private String name;
+  private String acronym;
+  private Period period;
   private List<Link> links;
 
   public Collective() {
@@ -66,6 +69,22 @@ public class Collective extends DomainEntity {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public String getAcronym() {
+    return acronym;
+  }
+
+  public void setAcronym(String acronym) {
+    this.acronym = acronym;
+  }
+
+  public Period getPeriod() {
+    return period;
+  }
+
+  public void setPeriod(Period period) {
+    this.period = period;
   }
 
   public List<Link> getLinks() {

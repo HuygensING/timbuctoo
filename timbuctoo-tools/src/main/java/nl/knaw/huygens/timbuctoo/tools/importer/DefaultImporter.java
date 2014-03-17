@@ -166,7 +166,7 @@ public abstract class DefaultImporter {
    * Filters a text field by collapsing whitespace and removing leading and trailing whitespace.
    * Returns {@code null} if the remaining text is empty.
    */
-  protected String filterTextField(String text) {
+  protected String filterField(String text) {
     if (text == null) {
       return null;
     }
@@ -176,6 +176,18 @@ public abstract class DefaultImporter {
     }
     text = text.replaceAll("[\\s\\u00A0]+", " ");
     return StringUtils.stripToNull(text);
+  }
+
+  /**
+   * Conditionally appends a text to a string builder.
+   */
+  protected void appendTo(StringBuilder builder, String text, String separator) {
+    if (text != null && text.length() != 0) {
+      if (builder.length() != 0) {
+        builder.append(separator);
+      }
+      builder.append(text);
+    }
   }
 
 }

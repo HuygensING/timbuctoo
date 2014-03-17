@@ -38,6 +38,13 @@ import com.google.common.collect.Lists;
  */
 public class PersonName {
 
+  public static PersonName newInstance(String forename, String surname) {
+    PersonName name = new PersonName();
+    name.addNameComponent(PersonNameComponent.Type.FORENAME, forename);
+    name.addNameComponent(PersonNameComponent.Type.SURNAME, surname);
+    return name;
+  }
+
   private static final Set<Type> ALL = EnumSet.allOf(Type.class);
   private static final Set<Type> SHORT = EnumSet.of(Type.FORENAME, Type.SURNAME, Type.NAME_LINK);
 

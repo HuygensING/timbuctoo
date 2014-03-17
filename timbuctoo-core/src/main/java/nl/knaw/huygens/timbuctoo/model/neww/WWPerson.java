@@ -22,8 +22,6 @@ package nl.knaw.huygens.timbuctoo.model.neww;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.model.neww.RelTypeNames.LANGUAGE_OF;
-
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
@@ -38,7 +36,7 @@ import com.google.common.collect.Lists;
 public class WWPerson extends Person {
 
   private String bibliography;
-  private int numberOfChildren;
+  private String children;
   private List<String> collaborations;
   private List<String> educations;
   private List<String> financials;
@@ -50,13 +48,13 @@ public class WWPerson extends Person {
   private String nationality;
   private String notes;
   private String personalSituation;
-  private String psChildren;
   private List<String> professions;
   private List<String> religions;
   private List<String> socialClasses;
 
   // Fields scheduled for removal
   public String tempBirthPlace;
+  public String tempChildren;
   public String tempDeathPlace;
   public String tempDeath;
   public String tempFinancialSituation;
@@ -64,6 +62,7 @@ public class WWPerson extends Person {
   public String tempMotherTongue;
   public String tempName;
   public List<String> tempPlaceOfBirth = Lists.newArrayList();
+  public String tempPsChildren;
   public List<String> tempPseudonyms = Lists.newArrayList();
   public List<String> tempPublishingLanguages = Lists.newArrayList();
   public String tempSpouse;
@@ -77,11 +76,12 @@ public class WWPerson extends Person {
     professions = Lists.newArrayList();
     religions = Lists.newArrayList();
     socialClasses = Lists.newArrayList();
+    setChildren(null); // default
   }
 
   @Override
   public String getDisplayName() {
-    String name = getName().getShortName();
+    String name = defaultName().getShortName();
     return StringUtils.stripToEmpty(name).isEmpty() ? "[TEMP] " + tempName : name;
   }
 
@@ -93,12 +93,12 @@ public class WWPerson extends Person {
     this.bibliography = bibliography;
   }
 
-  public int getNumberOfChildren() {
-    return numberOfChildren;
+  public String getChildren() {
+    return children;
   }
 
-  public void setNumberOfChildren(int numberOfChildren) {
-    this.numberOfChildren = numberOfChildren;
+  public void setChildren(String value) {
+    children = Children.normalize(value);
   }
 
   public List<String> getCollaborations() {
@@ -237,14 +237,6 @@ public class WWPerson extends Person {
     }
   }
 
-  public String getPsChildren() {
-    return psChildren;
-  }
-
-  public void setPsChildren(String psChildren) {
-    this.psChildren = psChildren;
-  }
-
   public List<String> getReligions() {
     return religions;
   }
@@ -279,7 +271,7 @@ public class WWPerson extends Person {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPrimaryLanguages() {
-    return getRelations().get(LANGUAGE_OF.inverse);
+    return getRelations().get("has_language");
   }
 
   @JsonIgnore
@@ -298,6 +290,25 @@ public class WWPerson extends Person {
   @IndexAnnotation(fieldName = "dynamic_s_deathplace", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getDeathPlace() {
     return getRelations().get("has_death_place");
+  }
+
+  // ---------------------------------------------------------------------------
+
+  // Not an enumerated type because of serialization problems.
+  public static class Children {
+    public static final String UNKNOWN = "UNKNOWN";
+    public static final String NO = "NO";
+    public static final String YES = "YES";
+
+    public static String normalize(String value) {
+    	  if (NO.equalsIgnoreCase(value)) {
+        return NO;
+      } else if (YES.equalsIgnoreCase(value)) {
+        return YES;
+      } else {
+        return UNKNOWN;
+      }
+    }
   }
 
 }

@@ -38,7 +38,6 @@ public class WWDocument extends Document {
   private String notes;
   private String origin;
   private List<String> topoi;
-  private Source source;
 
   public String tempCreator;
   public String tempLanguage;
@@ -81,14 +80,6 @@ public class WWDocument extends Document {
 
   public void addTempPrint(Print print) {
     tempPrints.add(print);
-  }
-
-  public Source getSource() {
-    return source;
-  }
-
-  public void setSource(Source source) {
-    this.source = source;
   }
 
   @JsonIgnore
@@ -156,50 +147,6 @@ public class WWDocument extends Document {
     public String toString() {
       return String.format("[%s] [%s] [%s] [%s]", edition, publisher, location, year);
     }
-
-  }
-
-  // ---------------------------------------------------------------------------
-
-  public static class Source {
-
-    private String type;
-    private String fullName;
-    private String shortName;
-    private String notes;
-
-    public String getType() {
-      return type;
-    }
-
-    public void setType(String type) {
-      this.type = type;
-    }
-
-    public String getFullName() {
-      return fullName;
-    }
-
-    public void setFullName(String fullName) {
-      this.fullName = fullName;
-    }
-
-    public String getShortName() {
-      return shortName;
-    }
-
-    public void setShortName(String shortName) {
-      this.shortName = shortName;
-    }
-
-    public String getNotes() {
-      return notes;
-    }
-
-    public void setNotes(String notes) {
-      this.notes = notes;
-    }
-
   }
 
 }
