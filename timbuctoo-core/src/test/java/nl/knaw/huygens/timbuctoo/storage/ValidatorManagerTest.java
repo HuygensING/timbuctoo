@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.neww.WWRelation;
 
 import org.junit.Test;
 
@@ -16,6 +17,15 @@ public class ValidatorManagerTest {
     ValidatorManager instance = new ValidatorManager(mock(Storage.class));
 
     Validator<? extends DomainEntity> validator = instance.getValidatorFor(Relation.class);
+
+    assertThat(validator, is(instanceOf(RelationValidator.class)));
+  }
+
+  @Test
+  public void testGetValidatorForSubClassOfRelation() {
+    ValidatorManager instance = new ValidatorManager(mock(Storage.class));
+
+    Validator<? extends DomainEntity> validator = instance.getValidatorFor(WWRelation.class);
 
     assertThat(validator, is(instanceOf(RelationValidator.class)));
   }

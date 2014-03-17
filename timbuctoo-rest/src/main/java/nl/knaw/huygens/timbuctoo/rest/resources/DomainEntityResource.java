@@ -142,7 +142,8 @@ public class DomainEntityResource extends ResourceBase {
     try {
       id = storageManager.addDomainEntity((Class<T>) type, (T) input, change);
     } catch (ValidationException e) {
-      throw new WebApplicationException();
+      throw new WebApplicationException(Status.CONFLICT);
+
     }
     notifyChange(ActionType.ADD, type, id);
 
