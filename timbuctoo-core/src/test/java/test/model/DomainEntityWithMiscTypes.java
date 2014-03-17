@@ -23,6 +23,9 @@ package test.model;
  */
 
 import java.util.Date;
+import java.util.List;
+
+import com.google.common.collect.Lists;
 
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 
@@ -34,10 +37,14 @@ public class DomainEntityWithMiscTypes extends BaseDomainEntity {
   private Class<?> type;
   private Date date;
   private PersonName personName;
+  private Container container;
 
-  public DomainEntityWithMiscTypes() {}
+  public DomainEntityWithMiscTypes() {
+    container = new Container();
+  }
 
   public DomainEntityWithMiscTypes(String id) {
+    container = new Container();
     setId(id);
   }
 
@@ -63,6 +70,27 @@ public class DomainEntityWithMiscTypes extends BaseDomainEntity {
 
   public void setPersonName(PersonName personName) {
     this.personName = personName;
+  }
+
+  public List<PersonName> getPersonNames() {
+    return container.names;
+  }
+
+  public void setPersonNames(List<PersonName> personNames) {
+    container.names = personNames;
+  }
+
+  public void addPersonName(PersonName personName) {
+    container.names.add(personName);
+  }
+
+  // ---------------------------------------------------------------------------
+
+  private static class Container {
+    public Container() {
+      names = Lists.newArrayList();
+    }
+    public List<PersonName> names;
   }
 
 }

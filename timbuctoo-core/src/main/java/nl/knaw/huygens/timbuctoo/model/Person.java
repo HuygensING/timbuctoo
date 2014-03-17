@@ -36,8 +36,21 @@ import com.google.common.collect.Lists;
 @IDPrefix("PERS")
 public class Person extends DomainEntity {
 
+  // Container class, for entity reducer
+  private static class Names {
+    public List<PersonName> list;
+
+    public Names() {
+      list = Lists.newArrayList();
+    }
+
+    public PersonName defaultName() {
+      return (list != null && !list.isEmpty()) ? list.get(0) : new PersonName();
+    }
+  }
+
   private List<String> types;
-  private PersonName name;
+  private Names names;
   /** Gender at birth. */
   private String gender;
   private Datable birthDate;
@@ -45,21 +58,25 @@ public class Person extends DomainEntity {
   private List<Link> links;
 
   public Person() {
-    name = new PersonName();
+    names = new Names();
     links = Lists.newArrayList();
     types = Lists.newArrayList();
     gender = Gender.UNKNOWN;
   }
 
+  protected PersonName defaultName() {
+    return names.defaultName();
+  }
+
   @Override
   public String getDisplayName() {
-    return name.getShortName();
+    return defaultName().getShortName();
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false, isSortable = true)
   public String getIndexedName() {
-    return name.getFullName();
+    return defaultName().getFullName();
   }
 
   public List<String> getTypes() {
@@ -77,12 +94,18 @@ public class Person extends DomainEntity {
     }
   }
 
-  public PersonName getName() {
-    return name;
+  public List<PersonName> getNames() {
+    return names.list;
   }
 
-  public void setName(PersonName name) {
-    this.name = name;
+  public void setNames(List<PersonName> names) {
+    this.names.list = names;
+  }
+
+  public void addName(PersonName name) {
+    if (name != null) {
+      names.list.add(name);
+    }
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_gender", isFaceted = true, canBeEmpty = true)
@@ -94,7 +117,7 @@ public class Person extends DomainEntity {
     this.gender = Gender.normalize(gender);
   }
 
-  @IndexAnnotation(fieldName = "dynamic_s_birthDate", isFaceted = true, canBeEmpty = true)
+  @IndexAnnotation(fieldName = "dynamic_s_birthDate", isFaceted = true, canBeEmpty = true, isSortable = true)
   public Datable getBirthDate() {
     return birthDate;
   }
@@ -103,7 +126,7 @@ public class Person extends DomainEntity {
     this.birthDate = birthDate;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_s_deathDate", isFaceted = true, canBeEmpty = true)
+  @IndexAnnotation(fieldName = "dynamic_s_deathDate", isFaceted = true, canBeEmpty = true, isSortable = true)
   public Datable getDeathDate() {
     return deathDate;
   }

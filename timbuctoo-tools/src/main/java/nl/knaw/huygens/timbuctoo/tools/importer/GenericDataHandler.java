@@ -34,6 +34,7 @@ import java.util.Properties;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 public abstract class GenericDataHandler {
 
@@ -90,6 +91,6 @@ public abstract class GenericDataHandler {
     return values;
   }
 
-  protected abstract <T extends DomainEntity> void save(Class<T> type, List<T> objects, Change change) throws IOException;
+  protected abstract <T extends DomainEntity> void save(Class<T> type, List<T> objects, Change change) throws IOException, ValidationException;
 
 }

@@ -85,7 +85,7 @@ public class RelationManagerTest {
   }
 
   @Test
-  public void testStoreRelation() throws IOException {
+  public void testStoreRelation() throws IOException, ValidationException {
     // when
     String relationTypeId = "relationTypeId";
     setUpStorageManagerGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
@@ -105,7 +105,7 @@ public class RelationManagerTest {
   }
 
   @Test
-  public void testStoreSymetricRelation() throws IOException {
+  public void testStoreSymetricRelation() throws IOException, ValidationException {
     //when
     String relationTypeId = "relationTypeId";
     setUpStorageManagerGetRelationType(ProjectADomainEntity.class, ProjectADomainEntity.class, relationTypeId, true);
@@ -124,7 +124,7 @@ public class RelationManagerTest {
   }
 
   @Test
-  public void testStoreSymetricRelationSwitchIds() throws IOException {
+  public void testStoreSymetricRelationSwitchIds() throws IOException, ValidationException {
     String relationTypeId = "relationTypeId";
     // when
     setUpStorageManagerGetRelationType(ProjectADomainEntity.class, ProjectADomainEntity.class, relationTypeId, true);

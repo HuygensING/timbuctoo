@@ -65,9 +65,12 @@ public class StorageManager {
 
   private final Storage storage;
 
+  private final ValidatorManager validatorManager;
+
   @Inject
-  public StorageManager(Storage storage) {
+  public StorageManager(Storage storage, ValidatorManager validatorManager) {
     this.storage = storage;
+    this.validatorManager = validatorManager;
   }
 
   /**
@@ -115,8 +118,10 @@ public class StorageManager {
     return storage.addSystemEntity(type, entity);
   }
 
-  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws IOException {
+  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws IOException, ValidationException {
     checkArgument(BusinessRules.allowDomainEntityAdd(type), "Not allowed to add %s", type);
+    Validator<T> validator = validatorManager.getValidatorFor(type);
+    validator.validate(entity);
     return storage.addDomainEntity(type, entity, change);
   }
 

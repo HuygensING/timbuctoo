@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
 /**
@@ -52,7 +53,7 @@ public abstract class WomenWritersDefaultImporter extends DefaultImporter {
     return storageManager.getEntity(type, id);
   }
 
-  protected <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) {
+  protected <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) throws ValidationException {
     try {
       storageManager.addDomainEntity(type, entity, change);
       return entity.getId();

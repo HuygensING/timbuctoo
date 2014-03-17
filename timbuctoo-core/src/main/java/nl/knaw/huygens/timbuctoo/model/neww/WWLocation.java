@@ -32,11 +32,6 @@ public class WWLocation extends Location {
   public String tempCountry;
   public String tempZipcode;
 
-  @Override
-  public String getDisplayName() {
-    return String.format("address [%s], settlement [%s], country [%s], zipcode [%s]", tempAddress, tempSettlement, tempCountry, tempZipcode);
-  }
-
   @JsonIgnore
   public boolean isValid() {
     return tempAddress != null || tempSettlement != null || tempCountry != null || tempZipcode != null;
