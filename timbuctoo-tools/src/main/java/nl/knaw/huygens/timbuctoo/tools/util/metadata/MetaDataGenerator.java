@@ -19,11 +19,10 @@ public class MetaDataGenerator {
     Map<String, Object> metadataMap = Maps.newTreeMap();
 
     if (!isAbstract(type)) {
-      fieldMetaDataGeneratorFactory.setType(type);
       for (Field field : getFields(type)) {
-        FieldMetaDataGenerator fieldMetaDataGenerator = fieldMetaDataGeneratorFactory.createFieldMetaDataGenerator(field);
+        FieldMetaDataGenerator fieldMetaDataGenerator = fieldMetaDataGeneratorFactory.createFieldMetaDataGenerator(field, type);
 
-        fieldMetaDataGenerator.addMetaDataToMap(metadataMap, field, type);
+        fieldMetaDataGenerator.addMetaDataToMap(metadataMap, field);
 
       }
     }

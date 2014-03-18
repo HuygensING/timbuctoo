@@ -11,10 +11,12 @@ public abstract class FieldMetaDataGenerator {
   protected static final String VALUE_FIELD = "value";
   protected final TypeNameGenerator typeNameGenerator;
   private final FieldMapper fieldMapper;
+  private final Class<?> containingType;
 
-  public FieldMetaDataGenerator(TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
+  public FieldMetaDataGenerator(Class<?> containingType, TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
     this.typeNameGenerator = typeNameGenerator;
     this.fieldMapper = fieldMapper;
+    this.containingType = containingType;
 
   }
 
@@ -22,9 +24,8 @@ public abstract class FieldMetaDataGenerator {
    * Add the metadata to the map of the {@code containingType}
    * @param mapToAddTo
    * @param field the field to get the metadata from.
-   * @param containingType the type that contains the field.
    */
-  public void addMetaDataToMap(Map<String, Object> mapToAddTo, Field field, Class<?> containingType) {
+  public void addMetaDataToMap(Map<String, Object> mapToAddTo, Field field) {
 
     Map<String, Object> value = constructValue(field);
 

@@ -9,8 +9,8 @@ import com.google.common.collect.Maps;
 
 public class ConstantFieldMetaDataGenerator extends FieldMetaDataGenerator {
 
-  public ConstantFieldMetaDataGenerator(TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
-    super(typeNameGenerator, fieldMapper);
+  public ConstantFieldMetaDataGenerator(Class<?> containingType, TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
+    super(containingType, typeNameGenerator, fieldMapper);
   }
 
   @Override

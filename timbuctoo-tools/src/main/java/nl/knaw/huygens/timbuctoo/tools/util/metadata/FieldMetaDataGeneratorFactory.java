@@ -13,34 +13,35 @@ import com.google.common.collect.Lists;
 public class FieldMetaDataGeneratorFactory {
   private final TypeNameGenerator typeNameGenerator;
   private final FieldMapper fieldMapper;
-  private Class<?> type;
 
   public FieldMetaDataGeneratorFactory(TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
     this.typeNameGenerator = typeNameGenerator;
     this.fieldMapper = fieldMapper;
   }
 
-  public void setType(Class<?> type) {
-    this.type = type;
-  }
-
-  public FieldMetaDataGenerator createFieldMetaDataGenerator(Field field) {
+  /**
+   * Creates a meta data generator for {@code field}.
+   * @param field the field where the meta data generator has to be created for.
+   * @param containingType the class containing the field.
+   * @return the meta data generator of the field.
+   */
+  public FieldMetaDataGenerator createFieldMetaDataGenerator(Field field, Class<?> containingType) {
     if (isEnumValueField(field.getType(), field)) {
-      return new EnumValueFieldMetaDataGenerator(typeNameGenerator, fieldMapper);
+      return new EnumValueFieldMetaDataGenerator(containingType, typeNameGenerator, fieldMapper);
     } else if (isConstantField(field)) {
-      return new ConstantFieldMetaDataGenerator(typeNameGenerator, fieldMapper);
-    } else if (isPoorMansEnumField(field)) {
-      return new PoorMansEnumFieldMetaDataGenerator(typeNameGenerator, fieldMapper, getPoorMansEnumType(field));
+      return new ConstantFieldMetaDataGenerator(containingType, typeNameGenerator, fieldMapper);
+    } else if (isPoorMansEnumField(field, containingType)) {
+      return new PoorMansEnumFieldMetaDataGenerator(containingType, typeNameGenerator, fieldMapper, getPoorMansEnumType(field, containingType));
     } else if (!isStaticField(field)) {
-      return new DefaultFieldMetaDataGenerator(typeNameGenerator, fieldMapper);
+      return new DefaultFieldMetaDataGenerator(containingType, typeNameGenerator, fieldMapper);
     } else {
-      return new NoOpFieldMetaDataGenerator(typeNameGenerator, fieldMapper);
+      return new NoOpFieldMetaDataGenerator(containingType, typeNameGenerator, fieldMapper);
     }
   }
 
-  private Class<?> getPoorMansEnumType(Field field) {
+  private Class<?> getPoorMansEnumType(Field field, Class<?> containingType) {
     String fieldName = field.getName();
-    for (Class<?> innerClass : getInnerClasses(type)) {
+    for (Class<?> innerClass : getInnerClasses(containingType)) {
       if (isMatchingName(fieldName, innerClass)) {
         return innerClass;
       }
@@ -48,8 +49,8 @@ public class FieldMetaDataGeneratorFactory {
     return null;
   }
 
-  private boolean isPoorMansEnumField(Field field) {
-    return getPoorMansEnumType(field) != null;
+  private boolean isPoorMansEnumField(Field field, Class<?> containingType) {
+    return getPoorMansEnumType(field, containingType) != null;
   }
 
   private List<Class<?>> getInnerClasses(Class<?> type) {

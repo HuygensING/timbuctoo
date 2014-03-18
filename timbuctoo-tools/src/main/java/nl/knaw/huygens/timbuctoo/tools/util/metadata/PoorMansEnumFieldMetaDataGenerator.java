@@ -13,8 +13,8 @@ public class PoorMansEnumFieldMetaDataGenerator extends EnumValueFieldMetaDataGe
 
   private final Class<?> enumType;
 
-  public PoorMansEnumFieldMetaDataGenerator(TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper, Class<?> enumType) {
-    super(typeNameGenerator, fieldMapper);
+  public PoorMansEnumFieldMetaDataGenerator(Class<?> containingType, TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper, Class<?> enumType) {
+    super(containingType, typeNameGenerator, fieldMapper);
     this.enumType = enumType;
   }
 
