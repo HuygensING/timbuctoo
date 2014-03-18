@@ -182,6 +182,12 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     printBoxedText("Import");
 
+    System.out.println(".. Languages");
+    System.out.printf("Number = %6d%n%n", importLanguages());
+
+    System.out.println(".. Locations");
+    System.out.printf("Number = %6d%n%n", importLocations());
+
     System.out.println(".. Collectives");
     System.out.printf("Number = %6d%n%n", importCollectives());
 
@@ -190,12 +196,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     System.out.println(".. Keywords");
     System.out.printf("Number = %6d%n%n", importKeywords());
-
-    System.out.println(".. Languages");
-    System.out.printf("Number = %6d%n%n", importLanguages());
-
-    System.out.println(".. Locations");
-    System.out.printf("Number = %6d%n%n", importLocations());
 
     System.out.println(".. Persons");
     System.out.printf("Number = %6d%n%n", importPersons());
@@ -318,7 +318,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     String notes = filterField(object.notes);
     if (notes != null && !notes.equals(shortName)) {
-      converted.setNotes(filterField(object.notes));
+      converted.setNotes(filterNotesField(object.notes));
     }
 
     String url = filterField(object.url);
@@ -445,8 +445,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       }
     }
 
-    converted.setNotes(filterField(object.notes));
-    converted.setOrigin(filterField(object.origin));
+    converted.setNotes(filterNotesField(object.notes));
+    converted.tempOrigin = filterField(object.origin);
     converted.setReference(filterField(object.reference));
 
     // the keywords are not normalized: identical topoi occur as different items
@@ -470,19 +470,19 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         filteredPrint.setYear(filterField(entry.getValue().getYear()));
         converted.addTempPrint(filteredPrint);
       }
-      // if (selectFirstEdition(converted.tempPrints, date) != null) {
-      //   converted.setEdition("1");
-      // }
+      if (selectFirstEdition(converted.tempPrints, date) != null) {
+        converted.setEdition("1");
+      }
     }
 
     if (object.source != null) {
       StringBuilder builder = new StringBuilder();
       appendTo(builder, converted.getNotes(), "");
-      appendTo(builder, "* Source", "<lb/>");
-      appendTo(builder, filterField(object.source.type), "<lb/>Type: ");
-      appendTo(builder, filterField(object.source.full_name), "<lb/>Full Name: ");
-      appendTo(builder, filterField(object.source.short_name), "<lb/>Short Name: ");
-      appendTo(builder, filterField(object.source.notes), "<lb/>Notes: ");
+      appendTo(builder, "* Source", NEWLINE);
+      appendTo(builder, filterField(object.source.type), NEWLINE + "Type: ");
+      appendTo(builder, filterField(object.source.full_name), NEWLINE + "Full Name: ");
+      appendTo(builder, filterField(object.source.short_name), NEWLINE + "Short Name: ");
+      appendTo(builder, filterField(object.source.notes), NEWLINE + "Notes: ");
       converted.setNotes(builder.toString());
     }
 
@@ -521,7 +521,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
             String storedId = addDomainEntity(WWCollective.class, collective);
             publisherRef = new Reference(WWCollective.class, storedId);
             references.put(key, publisherRef);
-            System.out.printf("Publisher: %s%n", name);
+            // System.out.printf("Publisher: %s%n", name);
           }
           Reference relationRef = relationTypes.get(IS_PUBLISHED_BY);
           storeRelation(WWRelation.class, documentRef, relationRef, publisherRef, change, "");
@@ -1236,9 +1236,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
 
     converted.setNationality(filterField(object.nationality));
-
-    converted.setNotes(filterField(object.notes));
-
+    converted.setNotes(filterNotesField(object.notes));
     converted.setPersonalSituation(filterField(object.personal_situation));
 
     verifyEmptyField(line, "personalSituation", object.personalSituation);
