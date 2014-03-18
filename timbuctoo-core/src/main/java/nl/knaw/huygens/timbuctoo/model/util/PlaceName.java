@@ -43,10 +43,18 @@ public class PlaceName {
     if (settlement != null) {
       builder.append(settlement);
     }
-    if (countryCode != null) {
+    if (builder.length() == 0 && region != null) {
+      builder.append(region);
+    }
+    if (builder.length() == 0 && country != null) {
+      builder.append(country);
+    } else if (countryCode != null) {
       builder.append(" (").append(countryCode).append(")");
     } else if (country != null) {
       builder.append(" (").append(country).append(")");
+    }
+    if (builder.length() == 0 && bloc != null) {
+      builder.append(bloc);
     }
     return builder.toString();
   }
