@@ -22,7 +22,7 @@ public class MetaDataGeneratorTest {
 
   @Before
   public void setUp() {
-    instance = new MetaDataGenerator(new FieldMapper());
+    instance = new MetaDataGenerator(new FieldMetaDataGeneratorFactory(new TypeNameGenerator(), new FieldMapper()));
   }
 
   @Test

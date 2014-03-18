@@ -33,7 +33,7 @@ public class MetaDataGeneratorTool {
 
   public MetaDataGeneratorTool(String saveDir) {
     this.saveDir = saveDir;
-    generator = new MetaDataGenerator(new FieldMapper());
+    generator = new MetaDataGenerator(new FieldMetaDataGeneratorFactory(new TypeNameGenerator(), new FieldMapper()));
   }
 
   public void execute() throws IllegalArgumentException, IllegalAccessException {

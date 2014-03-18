@@ -5,25 +5,21 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class MetaDataGenerator {
-  private final FieldMapper fieldMapper;
-  private final TypeNameGenerator typeNameGenerator;
+  private final FieldMetaDataGeneratorFactory fieldMetaDataGeneratorFactory;
 
-  public MetaDataGenerator(FieldMapper fieldMapper) {
-    this.fieldMapper = fieldMapper;
-    this.typeNameGenerator = new TypeNameGenerator();
+  public MetaDataGenerator(FieldMetaDataGeneratorFactory fieldMetaDataGeneratorFactory) {
+    this.fieldMetaDataGeneratorFactory = fieldMetaDataGeneratorFactory;
   }
 
   public Map<String, Object> generate(Class<?> type) throws IllegalArgumentException, IllegalAccessException {
     Map<String, Object> metadataMap = Maps.newTreeMap();
 
     if (!isAbstract(type)) {
-      FieldMetaDataGeneratorFactory fieldMetaDataGeneratorFactory = new FieldMetaDataGeneratorFactory(typeNameGenerator, fieldMapper, getInnerClasses(type));
+      fieldMetaDataGeneratorFactory.setType(type);
       for (Field field : getFields(type)) {
         FieldMetaDataGenerator fieldMetaDataGenerator = fieldMetaDataGeneratorFactory.createFieldMetaDataGenerator(field);
 
@@ -33,16 +29,6 @@ public class MetaDataGenerator {
     }
 
     return metadataMap;
-  }
-
-  private List<Class<?>> getInnerClasses(Class<?> type) {
-    List<Class<?>> classes = Lists.newArrayList(type.getDeclaredClasses());
-
-    if (!Object.class.equals(type.getSuperclass())) {
-      classes.addAll(getInnerClasses(type.getSuperclass()));
-    }
-
-    return classes;
   }
 
   private List<Field> getFields(Class<?> type) {

@@ -8,15 +8,20 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 
+import com.google.common.collect.Lists;
+
 public class FieldMetaDataGeneratorFactory {
   private final TypeNameGenerator typeNameGenerator;
   private final FieldMapper fieldMapper;
-  private final List<Class<?>> innerClasses;
+  private Class<?> type;
 
-  public FieldMetaDataGeneratorFactory(TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper, List<Class<?>> innerClasses) {
+  public FieldMetaDataGeneratorFactory(TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
     this.typeNameGenerator = typeNameGenerator;
     this.fieldMapper = fieldMapper;
-    this.innerClasses = innerClasses;
+  }
+
+  public void setType(Class<?> type) {
+    this.type = type;
   }
 
   public FieldMetaDataGenerator createFieldMetaDataGenerator(Field field) {
@@ -35,7 +40,7 @@ public class FieldMetaDataGeneratorFactory {
 
   private Class<?> getPoorMansEnumType(Field field) {
     String fieldName = field.getName();
-    for (Class<?> innerClass : innerClasses) {
+    for (Class<?> innerClass : getInnerClasses(type)) {
       if (isMatchingName(fieldName, innerClass)) {
         return innerClass;
       }
@@ -44,13 +49,17 @@ public class FieldMetaDataGeneratorFactory {
   }
 
   private boolean isPoorMansEnumField(Field field) {
-    String fieldName = field.getName();
-    for (Class<?> innerClass : innerClasses) {
-      if (isMatchingName(fieldName, innerClass)) {
-        return true;
-      }
+    return getPoorMansEnumType(field) != null;
+  }
+
+  private List<Class<?>> getInnerClasses(Class<?> type) {
+    List<Class<?>> classes = Lists.newArrayList(type.getDeclaredClasses());
+
+    if (!Object.class.equals(type.getSuperclass())) {
+      classes.addAll(getInnerClasses(type.getSuperclass()));
     }
-    return false;
+
+    return classes;
   }
 
   private boolean isMatchingName(String fieldName, Class<?> innerClass) {
@@ -88,4 +97,5 @@ public class FieldMetaDataGeneratorFactory {
   private boolean hasTypeParameters(Class<?> type) {
     return type.getTypeParameters() != null && type.getTypeParameters().length > 0;
   }
+
 }
