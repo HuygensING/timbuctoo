@@ -505,7 +505,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   private void handlePublisher(WWDocument document, Reference documentRef) throws ValidationException {
     Datable datable = document.getDate();
     String date = (datable != null) ? datable.toString() : null;
-    Print  first = selectFirstEdition(document.tempPrints, date);
+    Print first = selectFirstEdition(document.tempPrints, date);
     if (first != null) {
       String name = first.getPublisher();
       if (name != null && !name.isEmpty()) {
@@ -558,8 +558,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       for (char ch : text.toCharArray()) {
         if (Character.isDigit(ch)) {
           n = 10 * n + (ch - '0');
-        }
-        else break;
+        } else
+          break;
       }
     }
     return n;
@@ -1521,6 +1521,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   private <T extends Relation> String storeRelation(Class<T> type, Reference sourceRef, Reference relTypeRef, Reference targetRef, Change change, String line) {
     if (sourceRef == null || relTypeRef == null || targetRef == null) {
       System.out.println(line);
+      LOG.info("sourceRef {}", sourceRef);
+      LOG.info("relTypeRef {}", relTypeRef);
+      LOG.info("targetRef {}", targetRef);
+
       throw new IllegalArgumentException("Missing references");
     }
     try {
