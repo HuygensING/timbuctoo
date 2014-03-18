@@ -149,6 +149,10 @@
             <program>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.neww.WomenWritersImporter</mainClass>
               <name>newwImport</name>
+              <jvmSettings>
+                <initialMemorySize>256m</initialMemorySize>
+                <maxMemorySize>1024m</maxMemorySize>
+              </jvmSettings>
             </program>
             <program>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.TransformedDataImporter</mainClass>
