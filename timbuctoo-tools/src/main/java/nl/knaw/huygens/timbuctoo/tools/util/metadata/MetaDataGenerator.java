@@ -15,19 +15,23 @@ public class MetaDataGenerator {
     this.fieldMetaDataGeneratorFactory = fieldMetaDataGeneratorFactory;
   }
 
-  public Map<String, Object> generate(Class<?> type) throws IllegalArgumentException, IllegalAccessException {
-    Map<String, Object> metadataMap = Maps.newTreeMap();
+  public Map<String, Object> generate(Class<?> type) {
+    Map<String, Object> metaDataMap = createMetaDataMap();
 
     if (!isAbstract(type)) {
       for (Field field : getFields(type)) {
         FieldMetaDataGenerator fieldMetaDataGenerator = fieldMetaDataGeneratorFactory.createFieldMetaDataGenerator(field, type);
 
-        fieldMetaDataGenerator.addMetaDataToMap(metadataMap, field);
+        fieldMetaDataGenerator.addMetaDataToMap(metaDataMap, field);
 
       }
     }
 
-    return metadataMap;
+    return metaDataMap;
+  }
+
+  protected Map<String, Object> createMetaDataMap() {
+    return Maps.newHashMap();
   }
 
   private List<Field> getFields(Class<?> type) {
