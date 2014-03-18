@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-public class MetaDataGeneratorTest {
+public class MetaDataGeneratorAcceptanceTest {
   private MetaDataGenerator instance;
 
   @Before
