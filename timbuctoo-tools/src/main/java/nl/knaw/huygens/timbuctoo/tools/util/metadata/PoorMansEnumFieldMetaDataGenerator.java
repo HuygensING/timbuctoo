@@ -9,16 +9,15 @@ import com.google.common.collect.Lists;
 
 public class PoorMansEnumFieldMetaDataGenerator extends EnumValueFieldMetaDataGenerator {
 
-  private final Class<?> enumType;
-
-  public PoorMansEnumFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator, Class<?> enumType) {
+  public PoorMansEnumFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator) {
     super(containingType, typeNameGenerator);
-    this.enumType = enumType;
   }
 
   @Override
   protected void addValueToValueMap(Field field, Map<String, Object> metadataMap) {
     List<Object> values = Lists.newArrayList();
+
+    Class<?> enumType = containingType.getPoorMansEnumType(field);
 
     for (Field enumField : enumType.getDeclaredFields()) {
       enumField.setAccessible(true);

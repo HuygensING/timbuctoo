@@ -22,7 +22,7 @@ public class FieldMetaDataGeneratorFactory {
       case CONSTANT:
         return new ConstantFieldMetaDataGenerator(containingType, typeNameGenerator);
       case POOR_MANS_ENUM:
-        return new PoorMansEnumFieldMetaDataGenerator(containingType, typeNameGenerator, containingType.getPoorMansEnumType(field));
+        return new PoorMansEnumFieldMetaDataGenerator(containingType, typeNameGenerator);
       case DEFAULT:
         return new DefaultFieldMetaDataGenerator(containingType, typeNameGenerator);
       default:
