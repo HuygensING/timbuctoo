@@ -3,12 +3,10 @@ package nl.knaw.huygens.timbuctoo.tools.util.metadata;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
-
 public class NoOpFieldMetaDataGenerator extends FieldMetaDataGenerator {
 
-  public NoOpFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
-    super(containingType, typeNameGenerator, fieldMapper);
+  public NoOpFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator) {
+    super(containingType, typeNameGenerator);
   }
 
   @Override

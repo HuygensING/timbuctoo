@@ -6,15 +6,13 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class EnumValueFieldMetaDataGenerator extends FieldMetaDataGenerator {
 
-  public EnumValueFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
-    super(containingType, typeNameGenerator, fieldMapper);
+  public EnumValueFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator) {
+    super(containingType, typeNameGenerator);
   }
 
   @Override

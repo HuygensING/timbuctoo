@@ -5,16 +5,14 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
-
 import com.google.common.collect.Lists;
 
 public class PoorMansEnumFieldMetaDataGenerator extends EnumValueFieldMetaDataGenerator {
 
   private final Class<?> enumType;
 
-  public PoorMansEnumFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper, Class<?> enumType) {
-    super(containingType, typeNameGenerator, fieldMapper);
+  public PoorMansEnumFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator, Class<?> enumType) {
+    super(containingType, typeNameGenerator);
     this.enumType = enumType;
   }
 

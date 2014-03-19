@@ -2,15 +2,11 @@ package nl.knaw.huygens.timbuctoo.tools.util.metadata;
 
 import java.lang.reflect.Field;
 
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
-
 public class FieldMetaDataGeneratorFactory {
   private final TypeNameGenerator typeNameGenerator;
-  private final FieldMapper fieldMapper;
 
-  public FieldMetaDataGeneratorFactory(TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
+  public FieldMetaDataGeneratorFactory(TypeNameGenerator typeNameGenerator) {
     this.typeNameGenerator = typeNameGenerator;
-    this.fieldMapper = fieldMapper;
   }
 
   /**
@@ -22,15 +18,15 @@ public class FieldMetaDataGeneratorFactory {
   public FieldMetaDataGenerator create(Field field, TypeFacade containingType) {
     switch (containingType.getFieldType(field)) {
       case ENUM:
-        return new EnumValueFieldMetaDataGenerator(containingType, typeNameGenerator, fieldMapper);
+        return new EnumValueFieldMetaDataGenerator(containingType, typeNameGenerator);
       case CONSTANT:
-        return new ConstantFieldMetaDataGenerator(containingType, typeNameGenerator, fieldMapper);
+        return new ConstantFieldMetaDataGenerator(containingType, typeNameGenerator);
       case POOR_MANS_ENUM:
-        return new PoorMansEnumFieldMetaDataGenerator(containingType, typeNameGenerator, fieldMapper, containingType.getPoorMansEnumType(field));
+        return new PoorMansEnumFieldMetaDataGenerator(containingType, typeNameGenerator, containingType.getPoorMansEnumType(field));
       case DEFAULT:
-        return new DefaultFieldMetaDataGenerator(containingType, typeNameGenerator, fieldMapper);
+        return new DefaultFieldMetaDataGenerator(containingType, typeNameGenerator);
       default:
-        return new NoOpFieldMetaDataGenerator(containingType, typeNameGenerator, fieldMapper);
+        return new NoOpFieldMetaDataGenerator(containingType, typeNameGenerator);
     }
   }
 

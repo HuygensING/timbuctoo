@@ -25,7 +25,7 @@ public class FieldMetaDataGeneratorFactoryTest {
     TypeNameGenerator typeNameGeneratorMock = mock(TypeNameGenerator.class);
     FieldMapper fieldMapperMock = mock(FieldMapper.class);
     containingTypeMock = mock(TypeFacade.class);
-    instance = new FieldMetaDataGeneratorFactory(typeNameGeneratorMock, fieldMapperMock);
+    instance = new FieldMetaDataGeneratorFactory(typeNameGeneratorMock);
   }
 
   private void testCreateFieldTypeResultsInGenerator(FieldType fieldType, Class<? extends FieldMetaDataGenerator> expectedGeneratorType) {

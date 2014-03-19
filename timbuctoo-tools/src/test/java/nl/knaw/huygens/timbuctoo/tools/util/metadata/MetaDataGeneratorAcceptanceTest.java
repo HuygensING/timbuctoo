@@ -7,8 +7,6 @@ import static org.hamcrest.Matchers.isIn;
 import java.util.ArrayList;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
-
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -21,7 +19,7 @@ public class MetaDataGeneratorAcceptanceTest {
 
   @Before
   public void setUp() {
-    instance = new MetaDataGenerator(new FieldMetaDataGeneratorFactory(new TypeNameGenerator(), new FieldMapper()));
+    instance = new MetaDataGenerator(new FieldMetaDataGeneratorFactory(new TypeNameGenerator()));
   }
 
   @Test
