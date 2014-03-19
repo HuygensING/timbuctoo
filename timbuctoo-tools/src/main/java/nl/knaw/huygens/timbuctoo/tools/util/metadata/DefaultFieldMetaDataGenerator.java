@@ -9,7 +9,7 @@ import com.google.common.collect.Maps;
 
 public class DefaultFieldMetaDataGenerator extends FieldMetaDataGenerator {
 
-  public DefaultFieldMetaDataGenerator(Class<?> containingType, TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
+  public DefaultFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
     super(containingType, typeNameGenerator, fieldMapper);
   }
 

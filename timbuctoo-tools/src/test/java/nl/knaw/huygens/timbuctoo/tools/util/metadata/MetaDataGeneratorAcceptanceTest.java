@@ -5,15 +5,14 @@ import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.isIn;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -34,7 +33,7 @@ public class MetaDataGeneratorAcceptanceTest {
     expectedMap.put("testLong", createMapForSimpleField("Long"));
     expectedMap.put("nestedObject", createMapForSimpleField("TestModel"));
 
-    testGenerate(expectedMap, TestModel.class);
+    testGenerate(expectedMap, MetaDataGeneratorTestData.TestModel.class);
   }
 
   private void testGenerate(Map<String, Object> expectedMap, Class<?> type) throws IllegalArgumentException, IllegalAccessException {
@@ -54,7 +53,7 @@ public class MetaDataGeneratorAcceptanceTest {
     expectedMap.put("nestedObject", createMapForSimpleField("TestModel"));
     expectedMap.put("test", createMapForSimpleField("String"));
 
-    testGenerate(expectedMap, OtherModel.class);
+    testGenerate(expectedMap, MetaDataGeneratorTestData.OtherModel.class);
 
   }
 
@@ -70,7 +69,7 @@ public class MetaDataGeneratorAcceptanceTest {
     expectedMap.put("subOtherInt", createMapForSimpleField("Integer"));
     expectedMap.put("subSubOtherInt", createMapForSimpleField("int"));
 
-    testGenerate(expectedMap, SubSubOtherModel.class);
+    testGenerate(expectedMap, MetaDataGeneratorTestData.SubSubOtherModel.class);
   }
 
   private Map<String, Object> createMapForSimpleField(String typeName) {
@@ -88,14 +87,14 @@ public class MetaDataGeneratorAcceptanceTest {
     expectedMap.put("testLong", createMapForSimpleField("Long"));
     expectedMap.put("nestedObject", createMapForSimpleField("TestModel"));
 
-    testGenerate(expectedMap, SubTypeWithoutDeclaredFields.class);
+    testGenerate(expectedMap, MetaDataGeneratorTestData.SubTypeWithoutDeclaredFields.class);
   }
 
   @Test
   public void testGenerateInterface() throws IllegalArgumentException, IllegalAccessException {
     Map<String, Object> expectedMap = Maps.newHashMap();
 
-    testGenerate(expectedMap, TestInterface.class);
+    testGenerate(expectedMap, MetaDataGeneratorTestData.TestInterface.class);
   }
 
   @Test
@@ -103,7 +102,7 @@ public class MetaDataGeneratorAcceptanceTest {
     Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("test", createMapForSimpleField("String"));
 
-    testGenerate(expectedMap, TypeWithStaticFields.class);
+    testGenerate(expectedMap, MetaDataGeneratorTestData.TypeWithStaticFields.class);
   }
 
   @Test
@@ -113,7 +112,7 @@ public class MetaDataGeneratorAcceptanceTest {
     expectedMap.put("testMap", createMapForSimpleField("Map of (String, String)"));
     expectedMap.put("testNestedGenerics", createMapForSimpleField("List of (List of (String))"));
 
-    testGenerate(expectedMap, TypeWithGenericFields.class);
+    testGenerate(expectedMap, MetaDataGeneratorTestData.TypeWithGenericFields.class);
   }
 
   @Test
@@ -121,7 +120,7 @@ public class MetaDataGeneratorAcceptanceTest {
     Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("@annotated", createMapForSimpleField("String"));
 
-    testGenerate(expectedMap, TypeWithAnnotatedField.class);
+    testGenerate(expectedMap, MetaDataGeneratorTestData.TypeWithAnnotatedField.class);
   }
 
   @Test
@@ -129,7 +128,7 @@ public class MetaDataGeneratorAcceptanceTest {
     Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("@annotated", createMapForSimpleField("String"));
 
-    testGenerate(expectedMap, TypeWithAnnotatedGetter.class);
+    testGenerate(expectedMap, MetaDataGeneratorTestData.TypeWithAnnotatedGetter.class);
   }
 
   @Test
@@ -137,7 +136,7 @@ public class MetaDataGeneratorAcceptanceTest {
     Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("annotatedString", createMapForSimpleField("String"));
 
-    testGenerate(expectedMap, TypeWithAnnotatedSetter.class);
+    testGenerate(expectedMap, MetaDataGeneratorTestData.TypeWithAnnotatedSetter.class);
   }
 
   @Test
@@ -147,7 +146,7 @@ public class MetaDataGeneratorAcceptanceTest {
     expectedMap.put("TEST_STRING", createConstantFieldMap("String", "TEST"));
     expectedMap.put("TEST_INT", createConstantFieldMap("int", 1234));
 
-    testGenerate(expectedMap, ClassWithConstants.class);
+    testGenerate(expectedMap, MetaDataGeneratorTestData.ClassWithConstants.class);
 
   }
 
@@ -165,7 +164,7 @@ public class MetaDataGeneratorAcceptanceTest {
     Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("test", createEnumValueMap("TestEnum", Lists.newArrayList("TEST1", "TEST2")));
 
-    testGenerate(expectedMap, ClassWithEnumValues.class);
+    testGenerate(expectedMap, MetaDataGeneratorTestData.ClassWithEnumValues.class);
   }
 
   @Test
@@ -174,7 +173,7 @@ public class MetaDataGeneratorAcceptanceTest {
     Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("test", createEnumValueMap("List of (TestEnum)", Lists.newArrayList("TEST1", "TEST2")));
 
-    testGenerate(expectedMap, ClassWithListOfEnumValues.class);
+    testGenerate(expectedMap, MetaDataGeneratorTestData.ClassWithListOfEnumValues.class);
   }
 
   private Map<String, Object> createEnumValueMap(String typeName, ArrayList<String> values) {
@@ -190,7 +189,7 @@ public class MetaDataGeneratorAcceptanceTest {
     Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("poorMansEnum", createEnumValueMap("String", Lists.newArrayList("TEST1", "TEST2")));
 
-    testGenerate(expectedMap, ClassWithPoorMansEnum.class);
+    testGenerate(expectedMap, MetaDataGeneratorTestData.ClassWithPoorMansEnum.class);
   }
 
   @Test
@@ -198,107 +197,16 @@ public class MetaDataGeneratorAcceptanceTest {
     Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("poorMansEnum", createEnumValueMap("List of (String)", Lists.newArrayList("TEST1", "TEST2")));
 
-    testGenerate(expectedMap, ClassWithPoorMansEnumList.class);
+    testGenerate(expectedMap, MetaDataGeneratorTestData.ClassWithPoorMansEnumList.class);
   }
 
-  private static class TestModel {
-    protected int testInt;
-    private String testString;
-    public double testDouble;
-    Long testLong;
-    private TestModel nestedObject;
+  @Ignore
+  @Test
+  public void testGenerateClassWithPropertyWithTypeOfInnerClass() throws IllegalArgumentException, IllegalAccessException {
+    Map<String, Object> expectedMap = Maps.newHashMap();
+    expectedMap.put("testClass", createMapForSimpleField("ClassWithTypeOfInnterClass.InnerClass"));
+
+    testGenerate(expectedMap, MetaDataGeneratorTestData.ClassWithTypeOfInnterClass.class);
   }
 
-  private static class OtherModel extends TestModel {
-    private String test;
-  }
-
-  private static class SubOtherModel extends OtherModel {
-    private Integer subOtherInt;
-  }
-
-  private static class SubSubOtherModel extends SubOtherModel {
-    private int subSubOtherInt;
-  }
-
-  private static class SubTypeWithoutDeclaredFields extends TestModel {
-
-  }
-
-  private static interface TestInterface {
-
-  }
-
-  private static class TypeWithStaticFields {
-    private static String staticTest;
-    private String test;
-  }
-
-  private static class TypeWithGenericFields {
-    private List<String> testList;
-    private Map<String, String> testMap;
-    private List<List<String>> testNestedGenerics;
-  }
-
-  public static class TypeWithAnnotatedField {
-    @JsonProperty("@annotated")
-    private String annotatedString;
-  }
-
-  public static class TypeWithAnnotatedGetter {
-    private String annotatedString;
-
-    @JsonProperty("@annotated")
-    public String getAnnotatedString() {
-      return annotatedString;
-    }
-  }
-
-  public static class TypeWithAnnotatedSetter {
-    private String annotatedString;
-
-    @JsonProperty("@annotated")
-    public void setAnnotatedString(String annotatedString) {
-      this.annotatedString = annotatedString;
-    }
-  }
-
-  private static class ClassWithConstants {
-    private static final String TEST_STRING = "TEST";
-    public static final int TEST_INT = 1234;
-  }
-
-  private static class ClassWithEnumValues {
-    private enum TestEnum {
-      TEST1, TEST2
-    };
-
-    private TestEnum test;
-  }
-
-  private static class ClassWithListOfEnumValues {
-    private enum TestEnum {
-      TEST1, TEST2
-    };
-
-    private List<TestEnum> test;
-  }
-
-  private static class ClassWithPoorMansEnum {
-    private static class PoorMansEnum {
-      public static final String VALUE1 = "TEST1";
-      public static final String VALUE2 = "TEST2";
-    }
-
-    private String poorMansEnum;
-  }
-
-  private static class ClassWithPoorMansEnumList {
-    private static class PoorMansEnum {
-      public static final String VALUE1 = "TEST1";
-      public static final String VALUE2 = "TEST2";
-    }
-
-    private List<String> poorMansEnum;
-  }
 }

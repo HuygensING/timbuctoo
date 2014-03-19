@@ -18,14 +18,22 @@ public class MetaDataGeneratorTest {
   private HashMap<String, Object> metaDataMapMock;
   private FieldMetaDataGeneratorFactory fieldMetaDataGeneratorFactoryMock;
   private MetaDataGenerator instance;
+  private TypeFacade containingType;
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
+    containingType = mock(TypeFacade.class);
+
     fieldMetaDataGeneratorFactoryMock = mock(FieldMetaDataGeneratorFactory.class);
     instance = new MetaDataGenerator(fieldMetaDataGeneratorFactoryMock) {
       protected java.util.Map<String, Object> createMetaDataMap() {
         return metaDataMapMock;
+      }
+
+      @Override
+      protected TypeFacade createTypeFacade(Class<?> type) {
+        return containingType;
       }
     };
   }
@@ -40,17 +48,16 @@ public class MetaDataGeneratorTest {
     Field field1 = type.getDeclaredField("field1");
     Field field2 = type.getDeclaredField("field2");
 
-    // when
-    when(fieldMetaDataGeneratorFactoryMock.createFieldMetaDataGenerator(field1, type)).thenReturn(fieldMetaDataGeneratorMock1);
-    when(fieldMetaDataGeneratorFactoryMock.createFieldMetaDataGenerator(field2, type)).thenReturn(fieldMetaDataGeneratorMock2);
+    when(fieldMetaDataGeneratorFactoryMock.create(field1, containingType)).thenReturn(fieldMetaDataGeneratorMock1);
+    when(fieldMetaDataGeneratorFactoryMock.create(field2, containingType)).thenReturn(fieldMetaDataGeneratorMock2);
 
     // action
     instance.generate(type);
 
     // verify
-    verify(fieldMetaDataGeneratorFactoryMock).createFieldMetaDataGenerator(field1, type);
+    verify(fieldMetaDataGeneratorFactoryMock).create(field1, containingType);
     verify(fieldMetaDataGeneratorMock1).addMetaDataToMap(metaDataMapMock, field1);
-    verify(fieldMetaDataGeneratorFactoryMock).createFieldMetaDataGenerator(field2, type);
+    verify(fieldMetaDataGeneratorFactoryMock).create(field2, containingType);
     verify(fieldMetaDataGeneratorMock2).addMetaDataToMap(metaDataMapMock, field2);
 
   }

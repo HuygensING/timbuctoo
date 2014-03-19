@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 
 public class NoOpFieldMetaDataGenerator extends FieldMetaDataGenerator {
 
-  public NoOpFieldMetaDataGenerator(Class<?> containingType, TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
+  public NoOpFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
     super(containingType, typeNameGenerator, fieldMapper);
   }
 

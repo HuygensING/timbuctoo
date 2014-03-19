@@ -13,7 +13,7 @@ import com.google.common.collect.Maps;
 
 public class EnumValueFieldMetaDataGenerator extends FieldMetaDataGenerator {
 
-  public EnumValueFieldMetaDataGenerator(Class<?> containingType, TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
+  public EnumValueFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
     super(containingType, typeNameGenerator, fieldMapper);
   }
 

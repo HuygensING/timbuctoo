@@ -11,9 +11,9 @@ public abstract class FieldMetaDataGenerator {
   protected static final String VALUE_FIELD = "value";
   protected final TypeNameGenerator typeNameGenerator;
   private final FieldMapper fieldMapper;
-  private final Class<?> containingType;
+  private final TypeFacade containingType;
 
-  public FieldMetaDataGenerator(Class<?> containingType, TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
+  public FieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
     this.typeNameGenerator = typeNameGenerator;
     this.fieldMapper = fieldMapper;
     this.containingType = containingType;
@@ -29,7 +29,7 @@ public abstract class FieldMetaDataGenerator {
 
     Map<String, Object> value = constructValue(field);
 
-    mapToAddTo.put(getFieldName(containingType, field), value);
+    mapToAddTo.put(containingType.getFieldName(field), value);
   }
 
   protected abstract Map<String, Object> constructValue(Field field);

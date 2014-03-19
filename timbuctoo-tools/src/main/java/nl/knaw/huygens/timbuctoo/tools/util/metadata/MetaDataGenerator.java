@@ -18,9 +18,11 @@ public class MetaDataGenerator {
   public Map<String, Object> generate(Class<?> type) {
     Map<String, Object> metaDataMap = createMetaDataMap();
 
+    TypeFacade typeFacade = createTypeFacade(type);
+
     if (!isAbstract(type)) {
       for (Field field : getFields(type)) {
-        FieldMetaDataGenerator fieldMetaDataGenerator = fieldMetaDataGeneratorFactory.createFieldMetaDataGenerator(field, type);
+        FieldMetaDataGenerator fieldMetaDataGenerator = fieldMetaDataGeneratorFactory.create(field, typeFacade);
 
         fieldMetaDataGenerator.addMetaDataToMap(metaDataMap, field);
 
@@ -28,6 +30,10 @@ public class MetaDataGenerator {
     }
 
     return metaDataMap;
+  }
+
+  protected TypeFacade createTypeFacade(Class<?> type) {
+    return new TypeFacade(type);
   }
 
   protected Map<String, Object> createMetaDataMap() {
