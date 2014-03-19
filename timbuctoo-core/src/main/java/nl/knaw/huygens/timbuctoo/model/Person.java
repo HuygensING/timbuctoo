@@ -26,6 +26,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
@@ -74,7 +75,8 @@ public class Person extends DomainEntity {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false, isSortable = true)
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false), //
+      @IndexAnnotation(fieldName = "dynamic_sort_name", isFaceted = false, isSortable = true) })
   public String getIndexedName() {
     return defaultName().getFullName();
   }
@@ -117,7 +119,8 @@ public class Person extends DomainEntity {
     this.gender = Gender.normalize(gender);
   }
 
-  @IndexAnnotation(fieldName = "dynamic_s_birthDate", isFaceted = true, canBeEmpty = true, isSortable = true)
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_birthDate", isFaceted = true, canBeEmpty = true), //
+      @IndexAnnotation(fieldName = "dynamic_sort_birthDate", canBeEmpty = true, isSortable = true) })
   public Datable getBirthDate() {
     return birthDate;
   }
@@ -126,7 +129,8 @@ public class Person extends DomainEntity {
     this.birthDate = birthDate;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_s_deathDate", isFaceted = true, canBeEmpty = true, isSortable = true)
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_deathDate", isFaceted = true, canBeEmpty = true), //
+      @IndexAnnotation(fieldName = "dynamic_sort_deathDate", isSortable = true, canBeEmpty = true) })
   public Datable getDeathDate() {
     return deathDate;
   }

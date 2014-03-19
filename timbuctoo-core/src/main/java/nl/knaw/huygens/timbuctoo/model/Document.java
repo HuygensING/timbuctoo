@@ -26,6 +26,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 
@@ -85,7 +86,8 @@ public class Document extends DomainEntity {
     return getTitle();
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_title", canBeEmpty = true, isSortable = true)
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_t_title", canBeEmpty = true),//
+      @IndexAnnotation(fieldName = "dynamic_sort_title", canBeEmpty = true, isSortable = true) })
   public String getTitle() {
     return title;
   }
@@ -175,7 +177,8 @@ public class Document extends DomainEntity {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true, isSortable = true)
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true), //
+      @IndexAnnotation(fieldName = "dynamic_sort_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isSortable = true) })
   public List<EntityRef> getCreators() {
     return getRelations().get("created_by");
   }
