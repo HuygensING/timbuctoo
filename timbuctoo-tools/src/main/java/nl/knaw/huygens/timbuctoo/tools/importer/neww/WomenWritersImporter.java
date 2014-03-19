@@ -1164,12 +1164,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.tempChildren = filterField(object.children);
 
     if (object.collaborations != null) {
+      StringBuilder builder = new StringBuilder();
       for (String item : object.collaborations) {
-        String collaboration = filterField(item);
-        if (collaboration != null && !"Not yet checked".equals(collaboration) && !"unknown".equals(collaboration)) {
-          converted.addCollaboration(collaboration);
-        }
+        appendTo(builder, filterField(item), "; ");
       }
+      converted.tempCollaborations = filterField(builder.toString());
     }
 
     text = filterField(object.dateOfBirth);

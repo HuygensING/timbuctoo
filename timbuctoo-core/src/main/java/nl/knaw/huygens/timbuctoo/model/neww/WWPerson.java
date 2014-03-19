@@ -37,7 +37,6 @@ public class WWPerson extends Person {
 
   private String bibliography;
   private String children;
-  private List<String> collaborations;
   private List<String> educations;
   private List<String> financials;
   private List<String> fsPseudonyms;
@@ -55,6 +54,7 @@ public class WWPerson extends Person {
   // Fields scheduled for removal
   public String tempBirthPlace;
   public String tempChildren;
+  public String tempCollaborations; // as relation
   public String tempDeathPlace;
   public String tempDeath;
   public String tempFinancialSituation;
@@ -68,7 +68,6 @@ public class WWPerson extends Person {
   public String tempSpouse;
 
   public WWPerson() {
-    collaborations = Lists.newArrayList();
     educations = Lists.newArrayList();
     financials = Lists.newArrayList();
     fsPseudonyms = Lists.newArrayList();
@@ -99,20 +98,6 @@ public class WWPerson extends Person {
 
   public void setChildren(String value) {
     children = Children.normalize(value);
-  }
-
-  public List<String> getCollaborations() {
-    return collaborations;
-  }
-
-  public void setCollaborations(List<String> collaborations) {
-    this.collaborations = collaborations;
-  }
-
-  public void addCollaboration(String value) {
-    if (value != null) {
-      collaborations.add(value);
-    }
   }
 
   public List<String> getEducations() {
@@ -301,7 +286,7 @@ public class WWPerson extends Person {
     public static final String YES = "YES";
 
     public static String normalize(String value) {
-    	  if (NO.equalsIgnoreCase(value)) {
+      if (NO.equalsIgnoreCase(value)) {
         return NO;
       } else if (YES.equalsIgnoreCase(value)) {
         return YES;
