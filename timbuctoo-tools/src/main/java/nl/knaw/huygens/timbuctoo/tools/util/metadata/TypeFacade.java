@@ -12,15 +12,17 @@ import com.google.common.collect.Lists;
 
 public class TypeFacade {
   private final Class<?> type;
-  private final FieldMapper fieldMapper;
+  private FieldMapper fieldMapper;
+  private TypeNameGenerator typeNameGenerator;
 
   public TypeFacade(Class<?> type) {
-    this(type, new FieldMapper());
+    this(type, new FieldMapper(), new TypeNameGenerator());
   }
 
-  public TypeFacade(Class<?> type, FieldMapper fieldMapper) {
+  public TypeFacade(Class<?> type, FieldMapper fieldMapper, TypeNameGenerator typeNameGenerator) {
     this.type = type;
     this.fieldMapper = fieldMapper;
+    this.typeNameGenerator = typeNameGenerator;
   }
 
   public String getFieldName(Field field) {
@@ -41,6 +43,25 @@ public class TypeFacade {
 
     return FieldType.UNKNOWN;
 
+  }
+
+  public enum FieldType {
+    ENUM, CONSTANT, POOR_MANS_ENUM, DEFAULT, UNKNOWN
+  }
+
+  public String getTypeNameOfField(Field field) {
+    StringBuilder typeNameBuilder = new StringBuilder();
+    if (isOfInnerClassType(field)) {
+      typeNameBuilder.append(type.getSimpleName());
+      typeNameBuilder.append(".");
+    }
+    typeNameBuilder.append(typeNameGenerator.getTypeName(field));
+
+    return typeNameBuilder.toString();
+  }
+
+  private boolean isOfInnerClassType(Field field) {
+    return getInnerClasses(type).contains(field.getType());
   }
 
   private boolean isEnumValueField(Field field, Class<?> type) {
@@ -103,7 +124,4 @@ public class TypeFacade {
     return classes;
   }
 
-  public enum FieldType {
-    ENUM, CONSTANT, POOR_MANS_ENUM, DEFAULT, UNKNOWN
-  }
 }

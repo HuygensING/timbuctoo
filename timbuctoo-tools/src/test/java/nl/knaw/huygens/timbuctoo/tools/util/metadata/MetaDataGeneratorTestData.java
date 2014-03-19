@@ -107,7 +107,7 @@ public class MetaDataGeneratorTestData {
     private List<String> poorMansEnum;
   }
 
-  public static class ClassWithTypeOfInnterClass {
+  public static class ClassWithTypeOfInnerClass {
     public static class InnerClass {
       private String test;
     }

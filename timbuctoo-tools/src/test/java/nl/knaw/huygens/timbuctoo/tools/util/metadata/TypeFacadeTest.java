@@ -1,9 +1,11 @@
 package nl.knaw.huygens.timbuctoo.tools.util.metadata;
 
+import static nl.knaw.huygens.timbuctoo.tools.util.metadata.TypeFacadeBuilder.aTypeFacade;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 
@@ -15,7 +17,7 @@ import org.junit.Test;
 public class TypeFacadeTest {
 
   private void testGetFieldTypeForFieldOfClass(Class<?> type, Field field, FieldType expectedType) {
-    TypeFacade instance = new TypeFacade(type);
+    TypeFacade instance = aTypeFacade(type).build();
 
     // action
     FieldType actualFieldType = instance.getFieldType(field);
@@ -99,7 +101,7 @@ public class TypeFacadeTest {
 
     FieldMapper fieldMapperMock = mock(FieldMapper.class);
 
-    TypeFacade instance = new TypeFacade(classWithSimpleField, fieldMapperMock);
+    TypeFacade instance = aTypeFacade(classWithSimpleField).withFieldMapper(fieldMapperMock).build();
 
     // action
     instance.getFieldName(simpleField);
@@ -109,4 +111,42 @@ public class TypeFacadeTest {
 
   }
 
+  @Test
+  public void testGetTypeName() throws SecurityException, NoSuchFieldException {
+    // setup
+    Class<?> classWithSimpleField = MetaDataGeneratorTestData.TestModel.class;
+    Field simpleField = classWithSimpleField.getDeclaredField("testString");
+    TypeNameGenerator typeNameGeneratorMock = mock(TypeNameGenerator.class);
+
+    TypeFacade instance = aTypeFacade(classWithSimpleField).withTypeNameGenerator(typeNameGeneratorMock).build();
+
+    // when
+    String expectedTypeName = "String";
+    when(typeNameGeneratorMock.getTypeName(simpleField)).thenReturn(expectedTypeName);
+
+    // action
+    String actualTypeName = instance.getTypeNameOfField(simpleField);
+
+    verify(typeNameGeneratorMock).getTypeName(simpleField);
+    assertThat(actualTypeName, equalTo(expectedTypeName));
+  }
+
+  @Test
+  public void testGetTypeNameForInnerClass() throws SecurityException, NoSuchFieldException {
+    // setup
+    Class<?> classWithTypeOfInnterClass = MetaDataGeneratorTestData.ClassWithTypeOfInnerClass.class;
+    Field innerClassTypeField = classWithTypeOfInnterClass.getDeclaredField("testClass");
+    TypeNameGenerator typeNameGeneratorMock = mock(TypeNameGenerator.class);
+
+    TypeFacade instance = aTypeFacade(classWithTypeOfInnterClass).withTypeNameGenerator(typeNameGeneratorMock).build();
+
+    // when
+    when(typeNameGeneratorMock.getTypeName(innerClassTypeField)).thenReturn("InnerType");
+
+    // action
+    String actualTypeName = instance.getTypeNameOfField(innerClassTypeField);
+
+    verify(typeNameGeneratorMock).getTypeName(innerClassTypeField);
+    assertThat(actualTypeName, equalTo("ClassWithTypeOfInnerClass.InnerType"));
+  }
 }

@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -198,13 +197,12 @@ public class MetaDataGeneratorAcceptanceTest {
     testGenerate(expectedMap, MetaDataGeneratorTestData.ClassWithPoorMansEnumList.class);
   }
 
-  @Ignore
   @Test
   public void testGenerateClassWithPropertyWithTypeOfInnerClass() throws IllegalArgumentException, IllegalAccessException {
     Map<String, Object> expectedMap = Maps.newHashMap();
     expectedMap.put("testClass", createMapForSimpleField("ClassWithTypeOfInnterClass.InnerClass"));
 
-    testGenerate(expectedMap, MetaDataGeneratorTestData.ClassWithTypeOfInnterClass.class);
+    testGenerate(expectedMap, MetaDataGeneratorTestData.ClassWithTypeOfInnerClass.class);
   }
 
 }
