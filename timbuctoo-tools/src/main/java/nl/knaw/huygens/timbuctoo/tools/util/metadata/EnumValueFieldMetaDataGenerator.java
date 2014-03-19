@@ -11,14 +11,14 @@ import com.google.common.collect.Maps;
 
 public class EnumValueFieldMetaDataGenerator extends FieldMetaDataGenerator {
 
-  public EnumValueFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator) {
-    super(containingType, typeNameGenerator);
+  public EnumValueFieldMetaDataGenerator(TypeFacade containingType) {
+    super(containingType);
   }
 
   @Override
   protected Map<String, Object> constructValue(Field field) {
     Map<String, Object> metadataMap = Maps.newHashMap();
-    metadataMap.put(TYPE_FIELD, typeNameGenerator.getTypeName(field));
+    metadataMap.put(TYPE_FIELD, containingType.getTypeNameOfField(field));
 
     addValueToValueMap(field, metadataMap);
 

@@ -7,11 +7,9 @@ public abstract class FieldMetaDataGenerator {
 
   protected static final String TYPE_FIELD = "type";
   protected static final String VALUE_FIELD = "value";
-  protected final TypeNameGenerator typeNameGenerator;
   protected final TypeFacade containingType;
 
-  public FieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator) {
-    this.typeNameGenerator = typeNameGenerator;
+  public FieldMetaDataGenerator(TypeFacade containingType) {
     this.containingType = containingType;
 
   }

@@ -5,8 +5,8 @@ import java.util.Map;
 
 public class NoOpFieldMetaDataGenerator extends FieldMetaDataGenerator {
 
-  public NoOpFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator) {
-    super(containingType, typeNameGenerator);
+  public NoOpFieldMetaDataGenerator(TypeFacade containingType) {
+    super(containingType);
   }
 
   @Override

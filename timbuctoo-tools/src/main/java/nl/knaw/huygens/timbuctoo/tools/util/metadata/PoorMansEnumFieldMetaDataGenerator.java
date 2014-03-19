@@ -10,7 +10,7 @@ import com.google.common.collect.Lists;
 public class PoorMansEnumFieldMetaDataGenerator extends EnumValueFieldMetaDataGenerator {
 
   public PoorMansEnumFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator) {
-    super(containingType, typeNameGenerator);
+    super(containingType);
   }
 
   @Override

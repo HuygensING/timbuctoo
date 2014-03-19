@@ -7,14 +7,14 @@ import com.google.common.collect.Maps;
 
 public class DefaultFieldMetaDataGenerator extends FieldMetaDataGenerator {
 
-  public DefaultFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator) {
-    super(containingType, typeNameGenerator);
+  public DefaultFieldMetaDataGenerator(TypeFacade containingType) {
+    super(containingType);
   }
 
   @Override
   protected Map<String, Object> constructValue(Field field) {
     Map<String, Object> valueMap = Maps.newHashMap();
-    valueMap.put(TYPE_FIELD, typeNameGenerator.getTypeName(field));
+    valueMap.put(TYPE_FIELD, containingType.getTypeNameOfField(field));
 
     return valueMap;
   }

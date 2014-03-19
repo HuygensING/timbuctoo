@@ -18,15 +18,15 @@ public class FieldMetaDataGeneratorFactory {
   public FieldMetaDataGenerator create(Field field, TypeFacade containingType) {
     switch (containingType.getFieldType(field)) {
       case ENUM:
-        return new EnumValueFieldMetaDataGenerator(containingType, typeNameGenerator);
+        return new EnumValueFieldMetaDataGenerator(containingType);
       case CONSTANT:
-        return new ConstantFieldMetaDataGenerator(containingType, typeNameGenerator);
+        return new ConstantFieldMetaDataGenerator(containingType);
       case POOR_MANS_ENUM:
         return new PoorMansEnumFieldMetaDataGenerator(containingType, typeNameGenerator);
       case DEFAULT:
-        return new DefaultFieldMetaDataGenerator(containingType, typeNameGenerator);
+        return new DefaultFieldMetaDataGenerator(containingType);
       default:
-        return new NoOpFieldMetaDataGenerator(containingType, typeNameGenerator);
+        return new NoOpFieldMetaDataGenerator(containingType);
     }
   }
 

@@ -7,14 +7,14 @@ import com.google.common.collect.Maps;
 
 public class ConstantFieldMetaDataGenerator extends FieldMetaDataGenerator {
 
-  public ConstantFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator) {
-    super(containingType, typeNameGenerator);
+  public ConstantFieldMetaDataGenerator(TypeFacade containingType) {
+    super(containingType);
   }
 
   @Override
   protected Map<String, Object> constructValue(Field field) {
     Map<String, Object> metaDataMap = Maps.newHashMap();
-    metaDataMap.put(TYPE_FIELD, typeNameGenerator.getTypeName(field));
+    metaDataMap.put(TYPE_FIELD, containingType.getTypeNameOfField(field));
     // to get the values of private constants
     field.setAccessible(true);
 
