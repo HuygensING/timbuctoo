@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.tools.util.metadata.TypeFacade.FieldType;
 
 import org.junit.Before;
@@ -23,7 +22,6 @@ public class FieldMetaDataGeneratorFactoryTest {
   @Before
   public void setUp() {
     TypeNameGenerator typeNameGeneratorMock = mock(TypeNameGenerator.class);
-    FieldMapper fieldMapperMock = mock(FieldMapper.class);
     containingTypeMock = mock(TypeFacade.class);
     instance = new FieldMetaDataGeneratorFactory(typeNameGeneratorMock);
   }
