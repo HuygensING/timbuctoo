@@ -211,6 +211,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     importRelations();
     System.out.printf("Number of missing relation types = %6d%n%n", missingRelationTypes);
     System.out.printf("Number of unstored relations     = %6d%n%n", unstoredRelations);
+    System.exit(0);
 
     printBoxedText("Indexing");
 
@@ -1377,9 +1378,12 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   }
 
   private void setupRelationMappings() {
+    addRelationMapping("authored_by", "isCreatedBy", SAME_ORDER);
+    addRelationMapping("collaborated_with", "isCollaboratorOf", SAME_ORDER);
     addRelationMapping("membership", "isMemberOf", REVERSED_ORDER);
     addRelationMapping("place_of_birth", "hasBirthPlace", SAME_ORDER);
     addRelationMapping("place_of_death", "hasDeathPlace", SAME_ORDER);
+    addRelationMapping("spouse_of", "isSpouseOf", SAME_ORDER);
   }
 
   private int missingRelationTypes = 0;
