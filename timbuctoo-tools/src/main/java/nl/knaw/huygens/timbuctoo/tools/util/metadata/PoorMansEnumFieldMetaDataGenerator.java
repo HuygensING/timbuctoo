@@ -5,22 +5,19 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
-
 import com.google.common.collect.Lists;
 
-public class PoorMansEnumFieldMetadataGenerator extends EnumValueFieldMetaDataGenerator {
+public class PoorMansEnumFieldMetaDataGenerator extends EnumValueFieldMetaDataGenerator {
 
-  private final Class<?> enumType;
-
-  public PoorMansEnumFieldMetadataGenerator(TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper, Class<?> enumType) {
-    super(typeNameGenerator, fieldMapper);
-    this.enumType = enumType;
+  public PoorMansEnumFieldMetaDataGenerator(TypeFacade containingType, TypeNameGenerator typeNameGenerator) {
+    super(containingType);
   }
 
   @Override
   protected void addValueToValueMap(Field field, Map<String, Object> metadataMap) {
     List<Object> values = Lists.newArrayList();
+
+    Class<?> enumType = containingType.getPoorMansEnumType(field);
 
     for (Field enumField : enumType.getDeclaredFields()) {
       enumField.setAccessible(true);

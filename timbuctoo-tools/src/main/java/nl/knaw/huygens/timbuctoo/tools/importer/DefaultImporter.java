@@ -35,6 +35,7 @@ import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -122,14 +123,18 @@ public abstract class DefaultImporter {
    */
   protected <T extends DomainEntity> void indexEntities(Class<T> type) throws IndexException {
     System.out.println(".. " + type.getSimpleName());
+    Progress progress = new Progress();
     StorageIterator<T> iterator = null;
     try {
       iterator = storageManager.getAll(type);
       while (iterator.hasNext()) {
+        progress.step();
         T entity = iterator.next();
         indexManager.addEntity(type, entity.getId());
       }
+      indexManager.commitAll();
     } finally {
+      progress.done();
       if (iterator != null) {
         iterator.close();
       }
@@ -175,6 +180,27 @@ public abstract class DefaultImporter {
       text = text.replaceAll("\\\\n", " ");
     }
     text = text.replaceAll("[\\s\\u00A0]+", " ");
+    return StringUtils.stripToNull(text);
+  }
+
+  
+  /** Line separator in note fields */
+  public static final String NEWLINE = "\n";
+
+  /**
+   * Filters a notes text field by collapsing whitespace and removing leading and trailing whitespace.
+   * Newlines are  retained
+   * Returns {@code null} if the remaining text is empty.
+   */
+  protected String filterNotesField(String text) {
+    if (text == null) {
+      return null;
+    }
+    if (text.contains("\\")) {
+      text = text.replaceAll("\\\\r", NEWLINE);
+      text = text.replaceAll("\\\\n", NEWLINE);
+    }
+    text = text.replaceAll("[ \\u00A0]+", " ");
     return StringUtils.stripToNull(text);
   }
 

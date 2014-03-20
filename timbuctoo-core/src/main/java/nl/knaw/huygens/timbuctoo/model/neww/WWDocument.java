@@ -28,24 +28,20 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.EntityRef;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
 public class WWDocument extends Document {
 
   private String notes;
-  private String origin;
   private List<String> topoi;
 
   public String tempCreator;
   public String tempLanguage;
-  public List<Print> tempPrints;
+  public String tempOrigin;
 
   public WWDocument() {
     topoi = Lists.newArrayList();
-    tempPrints = Lists.newArrayList();
   }
 
   public String getNotes() {
@@ -54,15 +50,6 @@ public class WWDocument extends Document {
 
   public void setNotes(String notes) {
     this.notes = notes;
-  }
-
-  @IndexAnnotation(fieldName = "dynamic_s_origin", canBeEmpty = true, isFaceted = true)
-  public String getOrigin() {
-    return origin;
-  }
-
-  public void setOrigin(String origin) {
-    this.origin = origin;
   }
 
   public List<String> getTopoi() {
@@ -79,10 +66,6 @@ public class WWDocument extends Document {
     }
   }
 
-  public void addTempPrint(Print print) {
-    tempPrints.add(print);
-  }
-
   @JsonIgnore
   public boolean isValid() {
     return getTitle() != null;
@@ -94,60 +77,10 @@ public class WWDocument extends Document {
     return getRelations().get("library");
   }
 
-  // ---------------------------------------------------------------------------
-
-  public static class Print {
-
-    private String edition;
-    private String publisher;
-    private String location;
-    private String year;
-
-    public Print() {}
-
-    public Print(String edition, String publisher, String location, String year) {
-      setEdition(edition);
-      setPublisher(publisher);
-      setLocation(location);
-      setYear(year);
-    }
-
-    public String getEdition() {
-      return edition;
-    }
-
-    public void setEdition(String edition) {
-      this.edition = StringUtils.stripToEmpty(edition);
-    }
-
-    public String getPublisher() {
-      return publisher;
-    }
-
-    public void setPublisher(String publisher) {
-      this.publisher = StringUtils.stripToEmpty(publisher);
-    }
-
-    public String getLocation() {
-      return location;
-    }
-
-    public void setLocation(String location) {
-      this.location = StringUtils.stripToEmpty(location);
-    }
-
-    public String getYear() {
-      return year;
-    }
-
-    public void setYear(String year) {
-      this.year = StringUtils.stripToEmpty(year);
-    }
-
-    @Override
-    public String toString() {
-      return String.format("[%s] [%s] [%s] [%s]", edition, publisher, location, year);
-    }
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_origin", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  public List<EntityRef> getOrigins() {
+    return getRelations().get("origin");
   }
 
 }

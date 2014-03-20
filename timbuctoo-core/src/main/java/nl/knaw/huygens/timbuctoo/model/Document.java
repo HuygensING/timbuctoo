@@ -26,6 +26,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 
@@ -40,7 +41,7 @@ import com.google.common.collect.Lists;
  * <tr><td>Creator</td><td>implemented as relation to <code>Person</code>; see <code>getCreators()</code></td></tr>
  * <tr><td>Subject</td><td>implemented as relation to <code>Keyword</code>; see <code>getSubjects()</code></td></tr>
  * <tr><td>Description</td><td>the <code>description</code> property</td></tr>
- * <tr><td>Publisher</td><td>the <code>publisher</code> property</td></tr>
+ * <tr><td>Publisher</td><td>implemented as relation to <code>Collective</code></td></tr>
  * <tr><td>Contributor</td><td>not (yet) implemented</td></tr>
  * <tr><td>Date</td><td>the <code>date</code> property</td></tr>
  * <tr><td>Type</td><td>the <code>resourceType</code> property</td></tr>
@@ -65,12 +66,12 @@ public class Document extends DomainEntity {
 
   private String title;
   private String description;
+  private String edition;
   private Datable date;
   private DocumentType documentType;
   private ResourceType resourceType;
   private String resourceFormat;
   private List<Link> links;
-  private String publisher;
   private String reference;
   private String rights;
 
@@ -85,7 +86,8 @@ public class Document extends DomainEntity {
     return getTitle();
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_title", canBeEmpty = true, isSortable = true)
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_t_title", canBeEmpty = true),//
+      @IndexAnnotation(fieldName = "dynamic_sort_title", canBeEmpty = true, isSortable = true) })
   public String getTitle() {
     return title;
   }
@@ -100,6 +102,14 @@ public class Document extends DomainEntity {
 
   public void setDescription(String description) {
     this.description = description;
+  }
+
+  public String getEdition() {
+    return edition;
+  }
+
+  public void setEdition(String edition) {
+    this.edition = edition;
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_date", canBeEmpty = true, isFaceted = true)
@@ -150,14 +160,6 @@ public class Document extends DomainEntity {
     }
   }
 
-  public String getPublisher() {
-    return publisher;
-  }
-
-  public void setPublisher(String publisher) {
-    this.publisher = publisher;
-  }
-
   public String getReference() {
     return reference;
   }
@@ -175,7 +177,8 @@ public class Document extends DomainEntity {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true, isSortable = true)
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true), //
+      @IndexAnnotation(fieldName = "dynamic_sort_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isSortable = true) })
   public List<EntityRef> getCreators() {
     return getRelations().get("created_by");
   }

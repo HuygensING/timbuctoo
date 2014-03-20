@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +31,7 @@ public class MetaDataGeneratorTool {
 
   public MetaDataGeneratorTool(String saveDir) {
     this.saveDir = saveDir;
-    generator = new MetaDataGenerator(new FieldMapper());
+    generator = new MetaDataGenerator(new FieldMetaDataGeneratorFactory(new TypeNameGenerator()));
   }
 
   public void execute() throws IllegalArgumentException, IllegalAccessException {

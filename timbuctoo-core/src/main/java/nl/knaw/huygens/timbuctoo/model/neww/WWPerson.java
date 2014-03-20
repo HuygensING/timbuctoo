@@ -37,14 +37,12 @@ public class WWPerson extends Person {
 
   private String bibliography;
   private String children;
-  private List<String> collaborations;
   private List<String> educations;
   private List<String> financials;
   private List<String> fsPseudonyms;
   private String health;
   private String livedIn;
   private String maritalStatus;
-  private List<String> memberships;
   private String nationality;
   private String notes;
   private String personalSituation;
@@ -55,24 +53,24 @@ public class WWPerson extends Person {
   // Fields scheduled for removal
   public String tempBirthPlace;
   public String tempChildren;
+  public String tempCollaborations; // as relation
   public String tempDeathPlace;
   public String tempDeath;
   public String tempFinancialSituation;
-  public List<String> tempLanguages = Lists.newArrayList();
+  public String tempLanguages;
+  public String tempMemberships; // as relation
   public String tempMotherTongue;
   public String tempName;
-  public List<String> tempPlaceOfBirth = Lists.newArrayList();
+  public String tempPlaceOfBirth;
   public String tempPsChildren;
-  public List<String> tempPseudonyms = Lists.newArrayList();
-  public List<String> tempPublishingLanguages = Lists.newArrayList();
+  public String tempPseudonyms;
+  public String tempPublishingLanguages;
   public String tempSpouse;
 
   public WWPerson() {
-    collaborations = Lists.newArrayList();
     educations = Lists.newArrayList();
     financials = Lists.newArrayList();
     fsPseudonyms = Lists.newArrayList();
-    memberships = Lists.newArrayList();
     professions = Lists.newArrayList();
     religions = Lists.newArrayList();
     socialClasses = Lists.newArrayList();
@@ -99,20 +97,6 @@ public class WWPerson extends Person {
 
   public void setChildren(String value) {
     children = Children.normalize(value);
-  }
-
-  public List<String> getCollaborations() {
-    return collaborations;
-  }
-
-  public void setCollaborations(List<String> collaborations) {
-    this.collaborations = collaborations;
-  }
-
-  public void addCollaboration(String value) {
-    if (value != null) {
-      collaborations.add(value);
-    }
   }
 
   public List<String> getEducations() {
@@ -165,12 +149,6 @@ public class WWPerson extends Person {
     this.health = health;
   }
 
-  public void addTempLanguage(String value) {
-    if (value != null) {
-      tempLanguages.add(value);
-    }
-  }
-
   public String getLivedIn() {
     return livedIn;
   }
@@ -185,18 +163,6 @@ public class WWPerson extends Person {
 
   public void setMaritalStatus(String maritalStatus) {
     this.maritalStatus = maritalStatus;
-  }
-
-  public List<String> getMemberships() {
-    return memberships;
-  }
-
-  public void setMemberships(List<String> memberships) {
-    this.memberships = memberships;
-  }
-
-  public void addMembership(String value) {
-    memberships.add(value);
   }
 
   public String getNationality() {
@@ -301,7 +267,7 @@ public class WWPerson extends Person {
     public static final String YES = "YES";
 
     public static String normalize(String value) {
-    	  if (NO.equalsIgnoreCase(value)) {
+      if (NO.equalsIgnoreCase(value)) {
         return NO;
       } else if (YES.equalsIgnoreCase(value)) {
         return YES;

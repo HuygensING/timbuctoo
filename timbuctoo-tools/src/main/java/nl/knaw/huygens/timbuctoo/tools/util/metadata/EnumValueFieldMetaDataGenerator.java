@@ -6,21 +6,19 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class EnumValueFieldMetaDataGenerator extends FieldMetaDataGenerator {
 
-  public EnumValueFieldMetaDataGenerator(TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
-    super(typeNameGenerator, fieldMapper);
+  public EnumValueFieldMetaDataGenerator(TypeFacade containingType) {
+    super(containingType);
   }
 
   @Override
   protected Map<String, Object> constructValue(Field field) {
     Map<String, Object> metadataMap = Maps.newHashMap();
-    metadataMap.put(TYPE_FIELD, typeNameGenerator.getTypeName(field));
+    metadataMap.put(TYPE_FIELD, containingType.getTypeNameOfField(field));
 
     addValueToValueMap(field, metadataMap);
 

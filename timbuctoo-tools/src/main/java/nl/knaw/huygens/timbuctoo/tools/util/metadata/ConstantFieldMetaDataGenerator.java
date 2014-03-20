@@ -3,20 +3,18 @@ package nl.knaw.huygens.timbuctoo.tools.util.metadata;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
-
 import com.google.common.collect.Maps;
 
-public class ConstantFieldMetadataGenerator extends FieldMetaDataGenerator {
+public class ConstantFieldMetaDataGenerator extends FieldMetaDataGenerator {
 
-  public ConstantFieldMetadataGenerator(TypeNameGenerator typeNameGenerator, FieldMapper fieldMapper) {
-    super(typeNameGenerator, fieldMapper);
+  public ConstantFieldMetaDataGenerator(TypeFacade containingType) {
+    super(containingType);
   }
 
   @Override
   protected Map<String, Object> constructValue(Field field) {
     Map<String, Object> metaDataMap = Maps.newHashMap();
-    metaDataMap.put(TYPE_FIELD, typeNameGenerator.getTypeName(field));
+    metaDataMap.put(TYPE_FIELD, containingType.getTypeNameOfField(field));
     // to get the values of private constants
     field.setAccessible(true);
 

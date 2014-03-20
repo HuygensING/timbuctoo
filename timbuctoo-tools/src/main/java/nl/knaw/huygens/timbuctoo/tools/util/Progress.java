@@ -44,7 +44,7 @@ public class Progress {
   }
 
   public void done() {
-    System.out.printf("%n%05d%n", count);
+    System.out.printf("%n%05d%n%n", count);
   }
 
 }
