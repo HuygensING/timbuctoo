@@ -18,11 +18,19 @@ public class EnumValueFieldMetaDataGenerator extends FieldMetaDataGenerator {
   @Override
   protected Map<String, Object> constructValue(Field field) {
     Map<String, Object> metadataMap = Maps.newHashMap();
-    metadataMap.put(TYPE_FIELD, containingType.getTypeNameOfField(field));
+    metadataMap.put(TYPE_FIELD, getTypeName(field));
 
     addValueToValueMap(field, metadataMap);
 
     return metadataMap;
+  }
+
+  private String getTypeName(Field field) {
+    if (List.class.isAssignableFrom(field.getType())) {
+      return "List of (String)";
+    }
+
+    return "String";
   }
 
   protected void addValueToValueMap(Field field, Map<String, Object> metadataMap) {

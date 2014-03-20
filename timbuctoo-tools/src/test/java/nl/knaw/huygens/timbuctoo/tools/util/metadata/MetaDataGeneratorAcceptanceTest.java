@@ -159,7 +159,7 @@ public class MetaDataGeneratorAcceptanceTest {
   public void testGenerateClassWithEnumValues() throws IllegalArgumentException, IllegalAccessException {
 
     Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.put("test", createEnumValueMap("ClassWithEnumValues.TestEnum", Lists.newArrayList("TEST1", "TEST2")));
+    expectedMap.put("test", createEnumValueMap("String", Lists.newArrayList("TEST1", "TEST2")));
 
     testGenerate(expectedMap, MetaDataGeneratorTestData.ClassWithEnumValues.class);
   }
@@ -168,7 +168,7 @@ public class MetaDataGeneratorAcceptanceTest {
   public void testGenerateClassWithListOfEnumValues() throws IllegalArgumentException, IllegalAccessException {
 
     Map<String, Object> expectedMap = Maps.newHashMap();
-    expectedMap.put("test", createEnumValueMap("List of (TestEnum)", Lists.newArrayList("TEST1", "TEST2")));
+    expectedMap.put("test", createEnumValueMap("List of (String)", Lists.newArrayList("TEST1", "TEST2")));
 
     testGenerate(expectedMap, MetaDataGeneratorTestData.ClassWithListOfEnumValues.class);
   }
