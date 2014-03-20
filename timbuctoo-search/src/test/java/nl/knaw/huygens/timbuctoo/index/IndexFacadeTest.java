@@ -26,6 +26,7 @@ import com.google.common.collect.Lists;
 
 public class IndexFacadeTest {
 
+  private static final String DEFAULT_ID = "id01234";
   private ScopeManager scopeManagerMock;
   private TypeRegistry typeRegistryMock;
   private IndexFacade instance;
@@ -45,7 +46,6 @@ public class IndexFacadeTest {
     Scope scopeMock = mock(Scope.class);
     Index indexMock = mock(Index.class);
 
-    String id = "id01234";
     Class<SubModel> type = SubModel.class;
     Class<ExplicitlyAnnotatedModel> baseType = ExplicitlyAnnotatedModel.class;
     List<ExplicitlyAnnotatedModel> variations = Lists.newArrayList(mock(ExplicitlyAnnotatedModel.class), mock(SubModel.class));
@@ -54,18 +54,18 @@ public class IndexFacadeTest {
 
     // when
     doReturn(baseType).when(typeRegistryMock).getBaseClass(type);
-    when(storageManagerMock.getAllVariations(baseType, id)).thenReturn(variations);
+    when(storageManagerMock.getAllVariations(baseType, DEFAULT_ID)).thenReturn(variations);
     when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock));
     when(scopeManagerMock.getIndexFor(scopeMock, baseType)).thenReturn(indexMock);
     when(scopeMock.filter(variations)).thenReturn(filteredVariations);
 
     // action
-    instance.addEntity(type, id);
+    instance.addEntity(type, DEFAULT_ID);
 
     // verify
     InOrder inOrder = Mockito.inOrder(typeRegistryMock, storageManagerMock, scopeManagerMock, scopeMock, indexMock);
     inOrder.verify(typeRegistryMock).getBaseClass(type);
-    inOrder.verify(storageManagerMock).getAllVariations(baseType, id);
+    inOrder.verify(storageManagerMock).getAllVariations(baseType, DEFAULT_ID);
     inOrder.verify(scopeManagerMock).getAllScopes();
     inOrder.verify(scopeManagerMock).getIndexFor(scopeMock, baseType);
     inOrder.verify(scopeMock).filter(variations);
@@ -87,11 +87,9 @@ public class IndexFacadeTest {
     filteredVariations1.add(mock(SubModel.class));
     List<ExplicitlyAnnotatedModel> filteredVariations2 = Lists.newArrayList(mock(ExplicitlyAnnotatedModel.class));
 
-    String id = "id01234";
-
     // when
     doReturn(baseType).when(typeRegistryMock).getBaseClass(type);
-    when(storageManagerMock.getAllVariations(baseType, id)).thenReturn(variations);
+    when(storageManagerMock.getAllVariations(baseType, DEFAULT_ID)).thenReturn(variations);
     when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock1, scopeMock2));
     when(scopeManagerMock.getIndexFor(scopeMock1, baseType)).thenReturn(indexMock1);
     when(scopeManagerMock.getIndexFor(scopeMock2, baseType)).thenReturn(indexMock2);
@@ -99,11 +97,11 @@ public class IndexFacadeTest {
     when(scopeMock2.filter(variations)).thenReturn(filteredVariations2);
 
     // action
-    instance.addEntity(type, id);
+    instance.addEntity(type, DEFAULT_ID);
 
     // verify
     verify(typeRegistryMock).getBaseClass(type);
-    verify(storageManagerMock).getAllVariations(baseType, id);
+    verify(storageManagerMock).getAllVariations(baseType, DEFAULT_ID);
     verify(scopeManagerMock).getAllScopes();
     verify(scopeManagerMock).getIndexFor(scopeMock1, baseType);
     verify(scopeManagerMock).getIndexFor(scopeMock2, baseType);
@@ -117,19 +115,17 @@ public class IndexFacadeTest {
   public void testAddEntityStorageManagerThrowsAnIOException() throws IOException, IndexException {
     Class<SubModel> type = SubModel.class;
     Class<ExplicitlyAnnotatedModel> baseType = ExplicitlyAnnotatedModel.class;
-    String id = "id01234";
-
     // when
     doReturn(baseType).when(typeRegistryMock).getBaseClass(type);
-    doThrow(IOException.class).when(storageManagerMock).getAllVariations(baseType, id);
+    doThrow(IOException.class).when(storageManagerMock).getAllVariations(baseType, DEFAULT_ID);
 
     try {
       // action
-      instance.addEntity(type, id);
+      instance.addEntity(type, DEFAULT_ID);
     } finally {
       // verify
       verify(typeRegistryMock).getBaseClass(type);
-      verify(storageManagerMock).getAllVariations(baseType, id);
+      verify(storageManagerMock).getAllVariations(baseType, DEFAULT_ID);
       verifyZeroInteractions(scopeManagerMock);
     }
   }
@@ -140,7 +136,6 @@ public class IndexFacadeTest {
     Scope scopeMock = mock(Scope.class);
     Index indexMock = mock(Index.class);
 
-    String id = "id01234";
     Class<SubModel> type = SubModel.class;
     Class<ExplicitlyAnnotatedModel> baseType = ExplicitlyAnnotatedModel.class;
     List<ExplicitlyAnnotatedModel> variations = Lists.newArrayList(mock(ExplicitlyAnnotatedModel.class), mock(SubModel.class));
@@ -149,7 +144,7 @@ public class IndexFacadeTest {
 
     // when
     doReturn(baseType).when(typeRegistryMock).getBaseClass(type);
-    when(storageManagerMock.getAllVariations(baseType, id)).thenReturn(variations);
+    when(storageManagerMock.getAllVariations(baseType, DEFAULT_ID)).thenReturn(variations);
     when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock));
     when(scopeManagerMock.getIndexFor(scopeMock, baseType)).thenReturn(indexMock);
     when(scopeMock.filter(variations)).thenReturn(filteredVariations);
@@ -157,12 +152,12 @@ public class IndexFacadeTest {
 
     try {
       // action
-      instance.addEntity(type, id);
+      instance.addEntity(type, DEFAULT_ID);
     } finally {
       // verify
       InOrder inOrder = Mockito.inOrder(typeRegistryMock, storageManagerMock, scopeManagerMock, scopeMock, indexMock);
       inOrder.verify(typeRegistryMock).getBaseClass(type);
-      inOrder.verify(storageManagerMock).getAllVariations(baseType, id);
+      inOrder.verify(storageManagerMock).getAllVariations(baseType, DEFAULT_ID);
       inOrder.verify(scopeManagerMock).getAllScopes();
       inOrder.verify(scopeManagerMock).getIndexFor(scopeMock, baseType);
       inOrder.verify(scopeMock).filter(variations);
@@ -178,7 +173,6 @@ public class IndexFacadeTest {
 
     Class<? extends DomainEntity> type = SubModel.class;
     Class<? extends DomainEntity> baseType = ExplicitlyAnnotatedModel.class;
-    String id = "id01234";
     List<DomainEntity> variations = Lists.newArrayList();
     SubModel model1 = mock(SubModel.class);
     variations.add(model1);
@@ -187,20 +181,44 @@ public class IndexFacadeTest {
 
     // when
     doReturn(baseType).when(typeRegistryMock).getBaseClass(type);
-    doReturn(variations).when(storageManagerMock).getAllVariations(baseType, id);
+    doReturn(variations).when(storageManagerMock).getAllVariations(baseType, DEFAULT_ID);
     when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock));
     when(scopeManagerMock.getIndexFor(scopeMock, baseType)).thenReturn(indexMock);
     when(scopeMock.filter(variations)).thenReturn(filteredVariations);
 
     // action
-    instance.updateEntity(type, id);
+    instance.updateEntity(type, DEFAULT_ID);
 
     // verify
     verify(typeRegistryMock).getBaseClass(type);
-    verify(storageManagerMock).getAllVariations(baseType, id);
+    verify(storageManagerMock).getAllVariations(baseType, DEFAULT_ID);
     verify(scopeManagerMock).getAllScopes();
     verify(scopeManagerMock).getIndexFor(scopeMock, baseType);
     verify(scopeMock).filter(variations);
     verify(indexMock).update(filteredVariations);
+  }
+
+  @Test
+  public void testDelete() throws IndexException {
+    // setup
+    Scope scopeMock = mock(Scope.class);
+    Index indexMock = mock(Index.class);
+
+    Class<? extends DomainEntity> type = SubModel.class;
+    Class<? extends DomainEntity> baseType = ExplicitlyAnnotatedModel.class;
+
+    // when
+    doReturn(baseType).when(typeRegistryMock).getBaseClass(type);
+    when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock));
+    when(scopeManagerMock.getIndexFor(scopeMock, baseType)).thenReturn(indexMock);
+
+    // action
+    instance.deleteEntity(type, DEFAULT_ID);
+
+    //verify
+    verify(typeRegistryMock).getBaseClass(type);
+    verify(scopeManagerMock).getAllScopes();
+    verify(scopeManagerMock).getIndexFor(scopeMock, baseType);
+    verify(indexMock).deleteById(DEFAULT_ID);
   }
 }

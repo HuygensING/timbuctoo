@@ -42,4 +42,10 @@ public class SolrIndex implements Index {
     updateIndex(variations);
   }
 
+  @Override
+  public void deleteById(String id) {
+    // TODO Auto-generated method stub
+
+  }
+
 }

@@ -43,7 +43,7 @@ public class IndexFacade implements SearchManager, IndexManager {
   }
 
   private <T extends DomainEntity> void changeIndex(Class<T> type, String id, IndexChanger indexChanger) throws IndexException {
-    Class<? extends DomainEntity> baseType = TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type));
+    Class<? extends DomainEntity> baseType = baseTypeFor(type);
     List<? extends DomainEntity> variations = null;
 
     try {
@@ -60,6 +60,11 @@ public class IndexFacade implements SearchManager, IndexManager {
     }
   }
 
+  private <T extends DomainEntity> Class<? extends DomainEntity> baseTypeFor(Class<T> type) {
+    Class<? extends DomainEntity> baseType = TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type));
+    return baseType;
+  }
+
   @Override
   public <T extends DomainEntity> void updateEntity(Class<T> type, String id) throws IndexException {
     IndexChanger indexUpdater = new IndexChanger() {
@@ -74,7 +79,13 @@ public class IndexFacade implements SearchManager, IndexManager {
 
   @Override
   public <T extends DomainEntity> void deleteEntity(Class<T> type, String id) throws IndexException {
-    // TODO Auto-generated method stub
+    Class<? extends DomainEntity> baseType = baseTypeFor(type);
+
+    for (Scope scope : scopeManager.getAllScopes()) {
+      Index index = scopeManager.getIndexFor(scope, baseType);
+
+      index.deleteById(id);
+    }
 
   }
 

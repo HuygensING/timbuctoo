@@ -20,4 +20,10 @@ public interface Index {
    */
   public void update(List<? extends DomainEntity> variations) throws IndexException;
 
+  /**
+   * Delete an item from the index.
+   * @param id the id of the item to delete.
+   */
+  public void deleteById(String id);
+
 }
