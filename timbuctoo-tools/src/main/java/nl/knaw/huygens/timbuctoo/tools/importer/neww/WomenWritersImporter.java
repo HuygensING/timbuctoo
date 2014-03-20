@@ -34,6 +34,7 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Collective;
+import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.Document.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Location;
@@ -424,6 +425,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   private WWDocument convert(String line, XDocument object) {
     WWDocument converted = new WWDocument();
+    converted.setResourceType(Document.ResourceType.TEXT);
 
     String type = filterField(object.type);
     verifyNonEmptyField(line, "type", type);
@@ -1162,14 +1164,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
 
     converted.tempChildren = filterField(object.children);
-
-    if (object.collaborations != null) {
-      StringBuilder builder = new StringBuilder();
-      for (String item : object.collaborations) {
-        appendTo(builder, filterField(item), "; ");
-      }
-      converted.tempCollaborations = filterField(builder.toString());
-    }
+    converted.tempCollaborations = concatenate(object.collaborations);
 
     text = filterField(object.dateOfBirth);
     if (text != null) {
@@ -1220,23 +1215,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
 
     converted.setHealth(filterField(object.health));
-
-    if (object.languages != null) {
-      for (String item : object.languages) {
-        converted.addTempLanguage(filterField(item));
-      }
-    }
-
+    converted.tempLanguages = concatenate(object.languages);
     converted.setLivedIn(filterField(object.lived_in));
-
     converted.setMaritalStatus(filterField(object.marital_status));
-
-    if (object.memberships != null) {
-      for (String item : object.memberships) {
-        converted.addMembership(filterField(item));
-      }
-    }
-
+    converted.tempMemberships = concatenate(object.memberships);
     converted.tempMotherTongue = filterField(object.mother_tongue);
 
     String name = converted.tempName = filterField(object.name);
@@ -1257,33 +1239,17 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     verifyEmptyField(line, "personalSituation", object.personalSituation);
 
-    if (object.placeOfBirth != null) {
-      for (String item : object.placeOfBirth) {
-        converted.tempPlaceOfBirth.add(filterField(item));
-      }
-    }
-
+    converted.tempPlaceOfBirth = concatenate(object.placeOfBirth);
     converted.tempDeathPlace = filterField(object.placeOfDeath);
 
     if (object.professions != null) {
       for (String item : object.professions) {
-        converted.tempPlaceOfBirth.add(filterField(item));
+        converted.addProfession(filterField(item));
       }
     }
 
-    if (object.pseudonyms != null) {
-      for (String item : object.pseudonyms) {
-        converted.tempPseudonyms.add(filterField(item));
-      }
-    }
-
-    if (object.ps_children != null) {
-      StringBuilder builder = new StringBuilder();
-      for (String item : object.ps_children) {
-        appendTo(builder, filterField(item), "; ");
-      }
-      converted.tempPsChildren = filterField(builder.toString());
-    }
+    converted.tempPseudonyms = concatenate(object.pseudonyms);
+    converted.tempPsChildren = concatenate(object.ps_children);
 
     if (object.religion != null) {
       for (String item : object.religion) {
@@ -1297,15 +1263,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       }
     }
 
-    if (object.publishing_languages != null) {
-      for (String item : object.publishing_languages) {
-        text = filterField(item);
-        if (text != null) {
-          converted.tempPublishingLanguages.add(text);
-        }
-      }
-    }
-
+    converted.tempPublishingLanguages = concatenate(object.publishing_languages);
     converted.tempSpouse = filterField(object.spouse);
 
     String type = filterField(object.type);
@@ -1333,6 +1291,16 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
 
     return converted;
+  }
+
+  private String concatenate(String[] items) {
+    StringBuilder builder = new StringBuilder();
+    if (items != null) {
+      for (String item : items) {
+        appendTo(builder, filterField(item), "; ");
+      }
+    }
+    return (builder.length() > 0) ? builder.toString() : null;
   }
 
   private final Set<String> types = Sets.newTreeSet();

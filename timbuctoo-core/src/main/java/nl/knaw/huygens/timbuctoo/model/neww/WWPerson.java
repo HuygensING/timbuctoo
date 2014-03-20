@@ -43,7 +43,6 @@ public class WWPerson extends Person {
   private String health;
   private String livedIn;
   private String maritalStatus;
-  private List<String> memberships;
   private String nationality;
   private String notes;
   private String personalSituation;
@@ -58,20 +57,20 @@ public class WWPerson extends Person {
   public String tempDeathPlace;
   public String tempDeath;
   public String tempFinancialSituation;
-  public List<String> tempLanguages = Lists.newArrayList();
+  public String tempLanguages;
+  public String tempMemberships; // as relation
   public String tempMotherTongue;
   public String tempName;
-  public List<String> tempPlaceOfBirth = Lists.newArrayList();
+  public String tempPlaceOfBirth;
   public String tempPsChildren;
-  public List<String> tempPseudonyms = Lists.newArrayList();
-  public List<String> tempPublishingLanguages = Lists.newArrayList();
+  public String tempPseudonyms;
+  public String tempPublishingLanguages;
   public String tempSpouse;
 
   public WWPerson() {
     educations = Lists.newArrayList();
     financials = Lists.newArrayList();
     fsPseudonyms = Lists.newArrayList();
-    memberships = Lists.newArrayList();
     professions = Lists.newArrayList();
     religions = Lists.newArrayList();
     socialClasses = Lists.newArrayList();
@@ -150,12 +149,6 @@ public class WWPerson extends Person {
     this.health = health;
   }
 
-  public void addTempLanguage(String value) {
-    if (value != null) {
-      tempLanguages.add(value);
-    }
-  }
-
   public String getLivedIn() {
     return livedIn;
   }
@@ -170,18 +163,6 @@ public class WWPerson extends Person {
 
   public void setMaritalStatus(String maritalStatus) {
     this.maritalStatus = maritalStatus;
-  }
-
-  public List<String> getMemberships() {
-    return memberships;
-  }
-
-  public void setMemberships(List<String> memberships) {
-    this.memberships = memberships;
-  }
-
-  public void addMembership(String value) {
-    memberships.add(value);
   }
 
   public String getNationality() {
