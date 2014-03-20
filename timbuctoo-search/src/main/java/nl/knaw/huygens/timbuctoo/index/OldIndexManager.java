@@ -121,8 +121,7 @@ public class OldIndexManager implements IndexManager {
     deleteBaseEntity(toDomainEntity(registry.getBaseClass(type)), id);
   }
 
-  @Override
-  public <T extends DomainEntity> void deleteBaseEntity(Class<T> type, String id) throws IndexException {
+  private <T extends DomainEntity> void deleteBaseEntity(Class<T> type, String id) throws IndexException {
     // No need to check for being in scope: it doesn't harm to remove an item that's not there
     try {
       for (Scope scope : scopes) {

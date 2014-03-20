@@ -79,12 +79,6 @@ public class IndexFacade implements SearchManager, IndexManager {
   }
 
   @Override
-  public <T extends DomainEntity> void deleteBaseEntity(Class<T> type, String id) throws IndexException {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
   public <T extends DomainEntity> void deleteEntities(Class<T> type, List<String> ids) throws IndexException {
     // TODO Auto-generated method stub
 

@@ -16,8 +16,6 @@ public interface IndexManager {
 
   <T extends DomainEntity> void deleteEntity(Class<T> type, String id) throws IndexException;
 
-  <T extends DomainEntity> void deleteBaseEntity(Class<T> type, String id) throws IndexException;
-
   <T extends DomainEntity> void deleteEntities(Class<T> type, List<String> ids) throws IndexException;
 
   void deleteAllEntities() throws IndexException;
