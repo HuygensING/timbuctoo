@@ -241,21 +241,21 @@ public class WWPerson extends Person {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_collective", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getCollectives() {
-    return getRelations().get("is_member_of");
-  }
-
-  @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_birthplace", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getBirthPlace() {
-    return getRelations().get("has_birth_place");
+    return getRelations().get("hasBirthPlace");
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_deathplace", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getDeathPlace() {
-    return getRelations().get("has_death_place");
+    return getRelations().get("hasDeathPlace");
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_collective", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  public List<EntityRef> getCollectives() {
+    return getRelations().get("isMemberOf");
   }
 
   // ---------------------------------------------------------------------------

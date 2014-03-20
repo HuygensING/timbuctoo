@@ -29,7 +29,6 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.Period;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
 /**
@@ -99,12 +98,6 @@ public class Collective extends DomainEntity {
     if (link != null) {
       links.add(link);
     }
-  }
-
-  @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_member", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
-  public List<EntityRef> getMembers() {
-    return getRelations().get("has_member");
   }
 
   // ---------------------------------------------------------------------------

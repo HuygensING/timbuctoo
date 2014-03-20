@@ -1377,8 +1377,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   }
 
   private void setupRelationMappings() {
-    addRelationMapping("membership", "is_member_of", REVERSED_ORDER);
-    addRelationMapping("place_of_birth", "has_birth_place", SAME_ORDER);
+    addRelationMapping("membership", "isMemberOf", REVERSED_ORDER);
+    addRelationMapping("place_of_birth", "hasBirthPlace", SAME_ORDER);
+    addRelationMapping("place_of_death", "hasDeathPlace", SAME_ORDER);
   }
 
   private int missingRelationTypes = 0;
@@ -1488,7 +1489,13 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     //verifyEmptyField( line, "parent_male",  filterTextField(object.parent_male));
     verifyEmptyField(line, "qualification", filterField(object.qualification));
 
-    String storedId = storeRelation(WWRelation.class, sourceRef, relationRef, targetRef, change, line);
+    String storedId = null;
+    try {
+      storedId = storeRelation(WWRelation.class, sourceRef, relationRef, targetRef, change, line);
+    } catch (Exception e) {
+      LOG.error(line);
+      System.exit(-1);
+    }
     if (storedId == null) {
       if (++unstoredRelations <= 10) {
         handleError("Not stored.. %s", line);
