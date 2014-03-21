@@ -80,7 +80,7 @@ public class WWDocument extends Document {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_origin", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getOrigins() {
-    return getRelations().get("origin");
+    return getRelations().get("hasPublishLocation");
   }
 
 }

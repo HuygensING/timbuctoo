@@ -237,25 +237,13 @@ public class WWPerson extends Person {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPrimaryLanguages() {
-    return getRelations().get("has_language");
+    return getRelations().get("hasLanguage");
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_collective", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getCollectives() {
-    return getRelations().get("is_member_of");
-  }
-
-  @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_birthplace", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getBirthPlace() {
-    return getRelations().get("has_birth_place");
-  }
-
-  @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_deathplace", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getDeathPlace() {
-    return getRelations().get("has_death_place");
+    return getRelations().get("isMemberOf");
   }
 
   // ---------------------------------------------------------------------------

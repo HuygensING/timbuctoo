@@ -54,7 +54,13 @@ public class WWCollective extends Collective {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_location", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getLocations() {
-    return getRelations().get("located_at");
+    return getRelations().get("hasLocation");
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_member", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
+  public List<EntityRef> getMembers() {
+    return getRelations().get("hasMember");
   }
 
 }

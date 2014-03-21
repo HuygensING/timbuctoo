@@ -39,6 +39,7 @@ import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationEntityRef;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -493,13 +494,13 @@ public class MongoStorage implements Storage {
           Class<? extends Entity> cls = typeRegistry.getTypeForIName(relation.getSourceType());
           if (cls != null && cls.isAssignableFrom(type)) {
             Reference reference = relation.getTargetRef();
-            entity.addRelation(relType.getRegularName(), getEntityRef(reference)); // db access
+            entity.addRelation(relType.getRegularName(), getEntityRef(reference, relation.getId())); // db access
           }
         } else if (relation.hasTargetId(id)) {
           Class<? extends Entity> cls = typeRegistry.getTypeForIName(relation.getTargetType());
           if (cls != null && cls.isAssignableFrom(type)) {
             Reference reference = relation.getSourceRef();
-            entity.addRelation(relType.getInverseName(), getEntityRef(reference)); // db access
+            entity.addRelation(relType.getInverseName(), getEntityRef(reference, relation.getId())); // db access
           }
         } else {
           throw new IllegalStateException("Impossible");
@@ -514,13 +515,13 @@ public class MongoStorage implements Storage {
     }
   }
 
-  private EntityRef getEntityRef(Reference reference) throws StorageException, IOException {
+  private EntityRef getEntityRef(Reference reference, String relationId) throws StorageException, IOException {
     String iname = reference.getType();
     String xname = typeRegistry.getXNameForIName(iname);
     Class<? extends Entity> type = typeRegistry.getTypeForIName(iname);
     Entity entity = getItem(type, reference.getId());
 
-    return new EntityRef(iname, xname, reference.getId(), entity.getDisplayName());
+    return new RelationEntityRef(iname, xname, reference.getId(), entity.getDisplayName(), relationId);
   }
 
   @Override
