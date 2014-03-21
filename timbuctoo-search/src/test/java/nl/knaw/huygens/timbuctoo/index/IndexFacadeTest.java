@@ -245,13 +245,12 @@ public class IndexFacadeTest {
     instance.deleteEntity(type, DEFAULT_ID);
 
     //verify
-    InOrder inOrder = Mockito.inOrder(typeRegistryMock, scopeManagerMock, indexMock1, indexMock2);
-    inOrder.verify(typeRegistryMock).getBaseClass(type);
-    inOrder.verify(scopeManagerMock).getAllScopes();
-    inOrder.verify(scopeManagerMock).getIndexFor(scopeMock1, baseType);
-    inOrder.verify(scopeManagerMock).getIndexFor(scopeMock2, baseType);
-    inOrder.verify(indexMock1).deleteById(DEFAULT_ID);
-    inOrder.verify(indexMock2).deleteById(DEFAULT_ID);
+    verify(typeRegistryMock).getBaseClass(type);
+    verify(scopeManagerMock).getAllScopes();
+    verify(scopeManagerMock).getIndexFor(scopeMock1, baseType);
+    verify(scopeManagerMock).getIndexFor(scopeMock2, baseType);
+    verify(indexMock1).deleteById(DEFAULT_ID);
+    verify(indexMock2).deleteById(DEFAULT_ID);
   }
 
   @Test(expected = IndexException.class)
@@ -275,11 +274,10 @@ public class IndexFacadeTest {
       instance.deleteEntity(type, DEFAULT_ID);
     } finally {
       //verify
-      InOrder inOrder = Mockito.inOrder(typeRegistryMock, scopeManagerMock, indexMock1);
-      inOrder.verify(typeRegistryMock).getBaseClass(type);
-      inOrder.verify(scopeManagerMock).getAllScopes();
-      inOrder.verify(scopeManagerMock).getIndexFor(scopeMock1, baseType);
-      inOrder.verify(indexMock1).deleteById(DEFAULT_ID);
+      verify(typeRegistryMock).getBaseClass(type);
+      verify(scopeManagerMock).getAllScopes();
+      verify(scopeManagerMock).getIndexFor(scopeMock1, baseType);
+      verify(indexMock1).deleteById(DEFAULT_ID);
       verifyNoMoreInteractions(scopeManagerMock);
     }
   }
