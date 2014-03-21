@@ -211,7 +211,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     importRelations();
     System.out.printf("Number of missing relation types = %6d%n%n", missingRelationTypes);
     System.out.printf("Number of unstored relations     = %6d%n%n", unstoredRelations);
-    System.exit(0);
 
     printBoxedText("Indexing");
 
@@ -1351,6 +1350,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Relations -------------------------------------------------------------
 
+  public Set<String> names = Sets.newTreeSet();
+
   private static boolean SAME_ORDER = false;
   private static boolean REVERSED_ORDER = true;
 
@@ -1378,12 +1379,25 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   }
 
   private void setupRelationMappings() {
+    addRelationMapping("adaptation of", "isAdaptationOf", SAME_ORDER);
     addRelationMapping("authored_by", "isCreatedBy", SAME_ORDER);
     addRelationMapping("collaborated_with", "isCollaboratorOf", SAME_ORDER);
+    addRelationMapping("edition of", "isEditionOf", SAME_ORDER);
+    addRelationMapping("keyword", "hasKeyword", REVERSED_ORDER);
+    addRelationMapping("language", "hasLanguage", SAME_ORDER);
+    addRelationMapping("located_at", "hasLocation", SAME_ORDER);
     addRelationMapping("membership", "isMemberOf", REVERSED_ORDER);
+    addRelationMapping("origin", "hasPublishLocation", SAME_ORDER);
     addRelationMapping("place_of_birth", "hasBirthPlace", SAME_ORDER);
     addRelationMapping("place_of_death", "hasDeathPlace", SAME_ORDER);
+    addRelationMapping("plagiarism of", "isPlagiarismOf", SAME_ORDER);
+    addRelationMapping("publishing_pseudonym", "isPseudonymOf", SAME_ORDER);
+    addRelationMapping("relation", "isRelatedTo", SAME_ORDER);
+    addRelationMapping("sequeled by", "hasSequel", SAME_ORDER);
     addRelationMapping("spouse_of", "isSpouseOf", SAME_ORDER);
+    addRelationMapping("stored_at", "isStoredAt", SAME_ORDER);
+    addRelationMapping("translation of", "isTranslationOf", SAME_ORDER);
+    addRelationMapping("adaptation of", "isAdaptationOf", SAME_ORDER);
   }
 
   private int missingRelationTypes = 0;
@@ -1424,6 +1438,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     } finally {
       LineIterator.closeQuietly(iterator);
     }
+    for (String name : names) {
+      	System.out.println(name);
+    }
   }
 
   private void handleRelation(String line) throws Exception {
@@ -1459,6 +1476,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     if (rightId == null) {
       return;
     }
+    names.add(type + ":" + leftObject + "-->" +rightObject);
+
     if (mapping.reverse) {
       String tempObject = leftObject;
       leftObject = rightObject;

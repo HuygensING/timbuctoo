@@ -153,6 +153,18 @@ public class Person extends DomainEntity {
     }
   }
 
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_birthplace", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  public List<EntityRef> getBirthPlace() {
+    return getRelations().get("hasBirthPlace");
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_deathplace", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  public List<EntityRef> getDeathPlace() {
+    return getRelations().get("hasDeathPlace");
+  }
+
   // ---------------------------------------------------------------------------
 
   // Not an enumerated type because of serialization problems.
