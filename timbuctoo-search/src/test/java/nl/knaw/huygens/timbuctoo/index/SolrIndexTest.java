@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.index;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -91,6 +92,41 @@ public class SolrIndexTest {
     InOrder inOrder = Mockito.inOrder(documentCreatorMock, solrServerMock);
     inOrder.verify(documentCreatorMock).create(variationsToAdd);
     inOrder.verify(solrServerMock).add(solrInputDocumentMock);
+  }
+
+  @Test
+  public void testDelete() throws SolrServerException, IOException, IndexException {
+    String id = "ID";
+    // action
+    instance.deleteById(id);
+
+    // verify
+    verify(solrServerMock).deleteById(id);
+  }
+
+  @Test(expected = IndexException.class)
+  public void testDeleteSolrServerThrowsSolrServerException() throws SolrServerException, IOException, IndexException {
+    testDeleteSolrServerThrowsException(SolrServerException.class);
+  }
+
+  @Test(expected = IndexException.class)
+  public void testDeleteSolrServerThrowsIOException() throws SolrServerException, IOException, IndexException {
+    testDeleteSolrServerThrowsException(IOException.class);
+  }
+
+  private void testDeleteSolrServerThrowsException(Class<? extends Exception> exceptionToThrow) throws SolrServerException, IOException, IndexException {
+    String id = "ID";
+
+    // when
+    doThrow(exceptionToThrow).when(solrServerMock).deleteById(id);
+
+    try {
+      // action
+      instance.deleteById(id);
+    } finally {
+      // verify
+      verify(solrServerMock).deleteById(id);
+    }
   }
 
 }

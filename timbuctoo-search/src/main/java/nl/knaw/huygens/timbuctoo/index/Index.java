@@ -23,7 +23,8 @@ public interface Index {
   /**
    * Delete an item from the index.
    * @param id the id of the item to delete.
+   * @throws IndexException 
    */
-  public void deleteById(String id);
+  public void deleteById(String id) throws IndexException;
 
 }

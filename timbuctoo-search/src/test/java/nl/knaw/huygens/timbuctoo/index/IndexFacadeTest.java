@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.index;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -220,5 +221,66 @@ public class IndexFacadeTest {
     verify(scopeManagerMock).getAllScopes();
     verify(scopeManagerMock).getIndexFor(scopeMock, baseType);
     verify(indexMock).deleteById(DEFAULT_ID);
+  }
+
+  @Test
+  public void testDeleteMultipleScopes() throws IndexException {
+    // setup
+    Scope scopeMock1 = mock(Scope.class);
+    Scope scopeMock2 = mock(Scope.class);
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+
+    Class<? extends DomainEntity> type = SubModel.class;
+    Class<? extends DomainEntity> baseType = ExplicitlyAnnotatedModel.class;
+
+    // when
+    doReturn(baseType).when(typeRegistryMock).getBaseClass(type);
+    when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock1, scopeMock2));
+    when(scopeManagerMock.getIndexFor(scopeMock1, baseType)).thenReturn(indexMock1);
+    when(scopeManagerMock.getIndexFor(scopeMock2, baseType)).thenReturn(indexMock2);
+
+    // action
+    instance.deleteEntity(type, DEFAULT_ID);
+
+    //verify
+    verify(typeRegistryMock).getBaseClass(type);
+    verify(scopeManagerMock).getAllScopes();
+    verify(scopeManagerMock).getIndexFor(scopeMock1, baseType);
+    verify(scopeManagerMock).getIndexFor(scopeMock2, baseType);
+    verify(indexMock1).deleteById(DEFAULT_ID);
+    verify(indexMock2).deleteById(DEFAULT_ID);
+  }
+
+  @Test(expected = IndexException.class)
+  public void testDeleteMultipleScopesFirstThrowsAnException() throws IndexException {
+    // setup
+    Scope scopeMock1 = mock(Scope.class);
+    Scope scopeMock2 = mock(Scope.class);
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+
+    Class<? extends DomainEntity> type = SubModel.class;
+    Class<? extends DomainEntity> baseType = ExplicitlyAnnotatedModel.class;
+
+    // when
+    doReturn(baseType).when(typeRegistryMock).getBaseClass(type);
+    when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock1, scopeMock2));
+    when(scopeManagerMock.getIndexFor(scopeMock1, baseType)).thenReturn(indexMock1);
+    when(scopeManagerMock.getIndexFor(scopeMock2, baseType)).thenReturn(indexMock2);
+    doThrow(IndexException.class).when(indexMock1).deleteById(DEFAULT_ID);
+
+    try {
+      // action
+      instance.deleteEntity(type, DEFAULT_ID);
+    } finally {
+      //verify
+      verify(typeRegistryMock).getBaseClass(type);
+      verify(scopeManagerMock).getAllScopes();
+      verify(scopeManagerMock).getIndexFor(scopeMock1, baseType);
+      verify(indexMock1).deleteById(DEFAULT_ID);
+      verify(scopeManagerMock, times(0)).getIndexFor(scopeMock2, baseType);
+      verifyZeroInteractions(indexMock2);
+    }
   }
 }

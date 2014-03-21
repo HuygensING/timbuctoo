@@ -43,8 +43,14 @@ public class SolrIndex implements Index {
   }
 
   @Override
-  public void deleteById(String id) {
-    // TODO Auto-generated method stub
+  public void deleteById(String id) throws IndexException {
+    try {
+      solrServer.deleteById(id);
+    } catch (SolrServerException e) {
+      throw new IndexException(e);
+    } catch (IOException e) {
+      throw new IndexException(e);
+    }
 
   }
 
