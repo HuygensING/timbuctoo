@@ -48,10 +48,14 @@ public class SolrIndexTest {
     instance.add(variationsToAdd);
 
     // verify
+    verifyTheIndexIsUpdated();
+
+  }
+
+  private void verifyTheIndexIsUpdated() throws SolrServerException, IOException {
     InOrder inOrder = Mockito.inOrder(documentCreatorMock, solrServerMock);
     inOrder.verify(documentCreatorMock).create(variationsToAdd);
     inOrder.verify(solrServerMock).add(solrInputDocumentMock);
-
   }
 
   @Test(expected = IndexException.class)
@@ -74,9 +78,7 @@ public class SolrIndexTest {
       instance.add(variationsToAdd);
     } finally {
       // verify
-      InOrder inOrder = Mockito.inOrder(documentCreatorMock, solrServerMock);
-      inOrder.verify(documentCreatorMock).create(variationsToAdd);
-      inOrder.verify(solrServerMock).add(solrInputDocumentMock);
+      verifyTheIndexIsUpdated();
     }
   }
 
@@ -89,9 +91,7 @@ public class SolrIndexTest {
     instance.update(variationsToAdd);
 
     // verify
-    InOrder inOrder = Mockito.inOrder(documentCreatorMock, solrServerMock);
-    inOrder.verify(documentCreatorMock).create(variationsToAdd);
-    inOrder.verify(solrServerMock).add(solrInputDocumentMock);
+    verifyTheIndexIsUpdated();
   }
 
   @Test
