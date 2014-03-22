@@ -43,7 +43,7 @@ public abstract class EBNMDefaultImporter extends DefaultImporter {
 	protected void setup(RelationManager relationManager) {
 		if (relationManager != null) {
 			try {
-				new RelationTypeImporter(relationManager, this.typeRegistry)
+				new RelationTypeImporter(typeRegistry, relationManager)
 						.importRelationTypes(RELATION_TYPE_DEFS);
 			} catch (ValidationException e) {
 				// TODO Auto-generated catch block

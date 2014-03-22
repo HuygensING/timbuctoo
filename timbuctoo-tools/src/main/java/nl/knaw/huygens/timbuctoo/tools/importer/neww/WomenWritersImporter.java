@@ -1379,10 +1379,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   }
 
   private void setupRelationMappings() {
-    addRelationMapping("adaptation of", "isAdaptationOf", SAME_ORDER);
+    addRelationMapping("adaptation of", "isAdaptationOf", SAME_ORDER); // reception
     addRelationMapping("authored_by", "isCreatedBy", SAME_ORDER);
     addRelationMapping("collaborated_with", "isCollaboratorOf", SAME_ORDER);
-    addRelationMapping("edition of", "isEditionOf", SAME_ORDER);
+    addRelationMapping("edition of", "isEditionOf", SAME_ORDER); // reception
     addRelationMapping("keyword", "hasKeyword", REVERSED_ORDER);
     addRelationMapping("language", "hasLanguage", SAME_ORDER);
     addRelationMapping("located_at", "hasLocation", SAME_ORDER);
@@ -1390,14 +1390,13 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     addRelationMapping("origin", "hasPublishLocation", SAME_ORDER);
     addRelationMapping("place_of_birth", "hasBirthPlace", SAME_ORDER);
     addRelationMapping("place_of_death", "hasDeathPlace", SAME_ORDER);
-    addRelationMapping("plagiarism of", "isPlagiarismOf", SAME_ORDER);
+    addRelationMapping("plagiarism of", "isPlagiarismOf", SAME_ORDER); // reception
     addRelationMapping("publishing_pseudonym", "isPseudonymOf", SAME_ORDER);
     addRelationMapping("relation", "isRelatedTo", SAME_ORDER);
-    addRelationMapping("sequeled by", "hasSequel", SAME_ORDER);
+    addRelationMapping("sequeled by", "hasSequel", SAME_ORDER); // reception
     addRelationMapping("spouse_of", "isSpouseOf", SAME_ORDER);
     addRelationMapping("stored_at", "isStoredAt", SAME_ORDER);
-    addRelationMapping("translation of", "isTranslationOf", SAME_ORDER);
-    addRelationMapping("adaptation of", "isAdaptationOf", SAME_ORDER);
+    addRelationMapping("translation of", "isTranslationOf", SAME_ORDER); // reception
   }
 
   private int missingRelationTypes = 0;

@@ -85,6 +85,13 @@ public class SearchResource {
   @Inject
   private Configuration config;
 
+  @GET
+  @Path("/vres")
+  @Produces({ MediaType.APPLICATION_JSON })
+  public Set<String> getAvailableVREs() {
+    return vreManager.getAvailableVREIds();
+  }
+
   @POST
   @APIDesc("Searches the Solr index")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -182,19 +189,17 @@ public class SearchResource {
     List<String> idsToGet = ids.subList(lo, hi);
     @SuppressWarnings("unchecked")
     List<DomainEntity> entities = (List<DomainEntity>) storageManager.getAllByIds(type, idsToGet);
-    List<EntityRef> entityRefs = createEntityRefs(type, entities);
-    Set<String> sortableFields = searchManager.findSortableFields(type);
 
     Map<String, Object> returnValue = Maps.newHashMap();
     returnValue.put("term", result.getTerm());
     returnValue.put("facets", result.getFacets());
     returnValue.put("numFound", idsSize);
     returnValue.put("ids", idsToGet);
-    returnValue.put("refs", entityRefs);
+    returnValue.put("refs", createEntityRefs(type, entities));
     returnValue.put("results", entities);
     returnValue.put("start", lo);
     returnValue.put("rows", idsToGet.size());
-    returnValue.put("sortableFields", sortableFields);
+    returnValue.put("sortableFields", searchManager.findSortableFields(type));
 
     LOG.debug("path: {}", uriInfo.getAbsolutePath());
 
@@ -224,13 +229,6 @@ public class SearchResource {
     return Math.min(Math.max(value, minValue), maxValue);
   }
 
-  @GET
-  @Path("/vres")
-  @Produces({ MediaType.APPLICATION_JSON })
-  public Set<String> getAvailableVREs() {
-    return vreManager.getAvailableVREIds();
-  }
-
   private List<EntityRef> createEntityRefs(Class<? extends DomainEntity> type, List<DomainEntity> entities) {
     String itype = registry.getINameForType(type);
     String xtype = registry.getXNameForType(type);
@@ -241,13 +239,11 @@ public class SearchResource {
     return list;
   }
 
-  // ---------------------------------------------------------------------------
-
   public static class EntityRef {
-    private String type;
-    private String id;
-    private String path;
-    private String displayName;
+    private final String type;
+    private final String id;
+    private final String path;
+    private final String displayName;
 
     public EntityRef(String type, String xtype, String id, String displayName) {
       this.type = type;
