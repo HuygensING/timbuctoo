@@ -35,6 +35,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
  */
 @IDPrefix(RelationType.ID_PREFIX)
 public class RelationType extends SystemEntity {
+
   public static final String ID_PREFIX = "RELT";
 
   /** The name of this relation type. */
@@ -53,17 +54,17 @@ public class RelationType extends SystemEntity {
   // For deserialization...
   public RelationType() {}
 
-  public RelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) {
+  public RelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean reflexive, boolean symmetric) {
     this.regularName = regularName;
     this.inverseName = inverseName;
     this.sourceTypeName = TypeNames.getInternalName(sourceType);
     this.targetTypeName = TypeNames.getInternalName(targetType);
-    this.reflexive = sourceType.equals(targetType);
-    this.symmetric = false;
+    this.reflexive = reflexive;
+    this.symmetric = symmetric;
   }
 
-  public RelationType(String name, Class<? extends DomainEntity> type) {
-    this(name, name, type, type);
+  public RelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) {
+    this(regularName, inverseName, sourceType, targetType, false, false);
   }
 
   @Override
@@ -121,7 +122,7 @@ public class RelationType extends SystemEntity {
 
   @Override
   public String toString() {
-    return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE, false);
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.DEFAULT_STYLE, false);
   }
 
 }

@@ -47,9 +47,9 @@ import com.google.inject.Singleton;
 @Singleton
 public class RelationManager {
 
-  static final Logger LOG = LoggerFactory.getLogger(RelationManager.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RelationManager.class);
 
-  final TypeRegistry registry;
+  private final TypeRegistry registry;
   private final StorageManager storageManager;
 
   @Inject
@@ -58,15 +58,12 @@ public class RelationManager {
     this.storageManager = storageManager;
   }
 
-  public void addRelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean reflexive, boolean symmetric) {
-    RelationType type = new RelationType(regularName, inverseName, sourceType, targetType);
-    type.setReflexive(reflexive);
-    type.setSymmetric(symmetric);
-    try {
-      storageManager.addSystemEntity(RelationType.class, type);
-    } catch (IOException e) {
-      LOG.error("Failed to add {}; {}", type.getDisplayName(), e.getMessage());
-    }
+  /**
+   * Stores the specified relation type.
+   */
+  public void addRelationType(RelationType type) throws IOException {
+    // TODO add validation
+    storageManager.addSystemEntity(RelationType.class, type);
   }
 
   private static final String REGULAR_NAME = FieldMapper.propertyName(RelationType.class, "regularName");

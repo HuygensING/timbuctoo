@@ -30,9 +30,9 @@ public class RelationTypeTest {
 
   @Test
   public void testConstructor() {
-    RelationType relationType = new RelationType("name", DomainEntity.class);
-    assertEquals("name", relationType.getRegularName());
-    assertEquals("name", relationType.getInverseName());
+    RelationType relationType = new RelationType("rname", "iname", DomainEntity.class, DomainEntity.class);
+    assertEquals("rname", relationType.getRegularName());
+    assertEquals("iname", relationType.getInverseName());
     assertEquals("domainentity", relationType.getSourceTypeName());
     assertEquals("domainentity", relationType.getTargetTypeName());
   }

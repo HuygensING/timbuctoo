@@ -29,6 +29,7 @@ import java.io.PrintWriter;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -73,10 +74,14 @@ public class RelationTypeImporter extends CSVImporter {
     boolean symmetric = Boolean.parseBoolean(items[5]);
 
     // FIXME neither the regular name nor the inverse name should exist
-    if (relationManager.getRelationTypeByName(regularName) != null) {
-      LOG.debug("Relation type '{}' already exists", regularName);
-    } else {
-      relationManager.addRelationType(regularName, inverseName, sourceType, targetType, reflexive, symmetric);
+    if (relationManager.getRelationTypeByName(regularName) == null) {
+      RelationType type = new RelationType(regularName, inverseName, sourceType, targetType, reflexive, symmetric);
+      try {
+        relationManager.addRelationType(type);
+      } catch (IOException e) {
+        LOG.error("Failed to add {}", type);
+        throw new ValidationException("Failed to add relation type");
+      }
     }
   }
 
