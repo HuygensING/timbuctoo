@@ -76,15 +76,7 @@ public class EntityReducer {
   }
 
   public <T extends Entity> T reduceVariation(Class<T> type, JsonNode tree) throws IOException {
-    return reduceVariation(type, tree, null);
-  }
-
-  public <T extends Entity> T reduceVariation(Class<T> type, JsonNode tree, String variation) throws IOException {
     checkNotNull(tree);
-
-    // For the time being I'm not quite sure whether variation should be used at all
-    // because we can arrange things by looking at the type.
-
     Set<String> prefixes = getPrefixes(tree);
     return reduceObject(tree, prefixes, type, Entity.class);
   }

@@ -120,11 +120,6 @@ public interface Storage {
    */
   <T extends Entity> T findItem(Class<T> type, T example) throws IOException;
 
-  /**
-   * Get the given variation of an entity.
-   */
-  <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) throws IOException;
-
   <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws IOException;
 
   <T extends DomainEntity> T getRevision(Class<T> type, String id, int revisionId) throws IOException;

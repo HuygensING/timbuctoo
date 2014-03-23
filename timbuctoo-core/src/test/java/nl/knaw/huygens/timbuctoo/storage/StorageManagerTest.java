@@ -82,12 +82,6 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testGetVariation() throws IOException {
-    manager.getVariation(BaseDomainEntity.class, "id", "variation");
-    verify(storage).getVariation(BaseDomainEntity.class, "id", "variation");
-  }
-
-  @Test
   public void testGetAllVariations() throws IOException {
     manager.getAllVariations(BaseDomainEntity.class, "id");
     verify(storage).getAllVariations(BaseDomainEntity.class, "id");

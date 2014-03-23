@@ -56,7 +56,7 @@ class MongoStorageIterator<T extends Entity> implements StorageIterator<T> {
   public T next() {
     try {
       DBObject next = delegate.next();
-      return reducer.reduceVariation(type, toJsonNode(next), null);
+      return reducer.reduceVariation(type, toJsonNode(next));
     } catch (NoSuchElementException e) {
       close();
       throw e;
@@ -91,7 +91,7 @@ class MongoStorageIterator<T extends Entity> implements StorageIterator<T> {
       }
 
       try {
-        list.add((T) reducer.reduceVariation((Class<? extends DomainEntity>) type, toJsonNode(next), null));
+        list.add((T) reducer.reduceVariation((Class<? extends DomainEntity>) type, toJsonNode(next)));
       } catch (IOException e) {
         e.printStackTrace();
         list.add(null);
