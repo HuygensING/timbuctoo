@@ -296,8 +296,7 @@ public class MongoStorage implements Storage {
     DBObject query = queries.selectByIdAndRevision(id, revision);
 
     JsonNode tree = getExisting(type, query);
-
-    SystemEntity systemEntity = reducer.reduceExistingVariation(type, tree);
+    SystemEntity systemEntity = reducer.reduceVariation(type, tree);
 
     systemEntity.setRev(revision + 1);
     systemEntity.setModified(change);
@@ -315,8 +314,7 @@ public class MongoStorage implements Storage {
     DBObject query = queries.selectByIdAndRevision(id, revision);
 
     JsonNode tree = getExisting(type, query);
-
-    DomainEntity domainEntity = reducer.reduceExistingVariation(toBaseDomainEntity(type), tree);
+    DomainEntity domainEntity = reducer.reduceVariation(toBaseDomainEntity(type), tree);
 
     domainEntity.setRev(revision + 1);
     domainEntity.setModified(change);
@@ -334,8 +332,7 @@ public class MongoStorage implements Storage {
     DBObject query = queries.selectById(id);
 
     JsonNode tree = getExisting(type, query);
-
-    DomainEntity entity = reducer.reduceExistingVariation(toBaseDomainEntity(type), tree);
+    DomainEntity entity = reducer.reduceVariation(toBaseDomainEntity(type), tree);
     int revision = entity.getRev();
 
     entity.setRev(revision + 1);
@@ -355,8 +352,7 @@ public class MongoStorage implements Storage {
     DBObject query = queries.selectById(id);
 
     JsonNode tree = getExisting(type, query);
-
-    DomainEntity domainEntity = reducer.reduceExistingVariation(toBaseDomainEntity(type), tree);
+    DomainEntity domainEntity = reducer.reduceVariation(toBaseDomainEntity(type), tree);
 
     if (!StringUtils.isBlank(domainEntity.getPid())) {
       throw new IllegalStateException(String.format("%s with %s already has a pid: %s", type.getSimpleName(), id, pid));

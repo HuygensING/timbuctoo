@@ -66,15 +66,6 @@ public class EntityReducer {
     fieldMapper = new FieldMapper();
   }
 
-  public <T extends Entity> T reduceExistingVariation(Class<T> type, JsonNode tree) throws IOException {
-    T entity = reduceVariation(type, tree);
-    if (entity == null) {
-      LOG.error("Missing variation for {}", type.getSimpleName());
-      throw new IOException("Missing variation");
-    }
-    return entity;
-  }
-
   public <T extends Entity> T reduceVariation(Class<T> type, JsonNode tree) throws IOException {
     checkNotNull(tree);
     Set<String> prefixes = getPrefixes(tree);
