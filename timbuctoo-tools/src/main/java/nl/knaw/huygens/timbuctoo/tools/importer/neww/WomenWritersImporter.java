@@ -36,7 +36,6 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.Document.DocumentType;
-import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
@@ -779,23 +778,18 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
           verifyNonEmptyField(line, "name", name);
           if (name != null) {
             String code = mapName(map, name);
-            Language language = storageManager.findEntity(Language.class, "^code", code);
+            // Get WWLanguage instance with values of primitive entity Language
+            WWLanguage language = storageManager.findEntity(WWLanguage.class, "^code", code);
             if (language == null) {
               verifyNonEmptyField(line, "name", null);
             } else {
               String flag = name.equals(language.getName()) ? "" : "  *";
               System.out.printf("%-30s%-8s%-30s%s%n", name, language.getCode(), language.getName(), flag);
-              WWLanguage wwLanguage = new WWLanguage();
-              wwLanguage.setId(language.getId());
-              wwLanguage.setRev(language.getRev());
-              wwLanguage.setCode(language.getCode());
-              wwLanguage.setName(language.getName());
-              wwLanguage.setCore(true);
+              language.setCore(true);
               // TODO prevent multiple updates for same language
-              updateDomainEntity(WWLanguage.class, wwLanguage);
+              updateDomainEntity(WWLanguage.class, language);
               String key = newKey("Language", object.tempid);
-              references.put(key, new Reference(WWLanguage.class, wwLanguage.getId()));
-              // System.out.printf("%s, %s --> %s%n", key, object.name, wwLanguage.getId());
+              references.put(key, new Reference(WWLanguage.class, language.getId()));
             }
           }
         }

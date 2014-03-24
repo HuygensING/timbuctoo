@@ -52,6 +52,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+/**
+ * This is the complementary class of {@link EntityInducer}.
+ * It contains various ways of reducing a Json tree retrieved from storage.
+ * Such Json trees always correspond with an entity collection for the type
+ * specified in the public methods of this class.
+ * System entities are always immediate subclasses of {@link SystemEntity}.
+ * Domain entities are primitive, immediate subclasses of {@link DomainEntity},
+ * or derived, immediate subclasses of primitive domain entities.
+ */
 public class EntityReducer {
 
   private static final Logger LOG = LoggerFactory.getLogger(EntityReducer.class);
@@ -68,8 +77,13 @@ public class EntityReducer {
 
   public <T extends Entity> T reduceVariation(Class<T> type, JsonNode tree) throws IOException {
     checkNotNull(tree);
-    Set<String> prefixes = getPrefixes(tree);
-    return reduceObject(tree, prefixes, type, Entity.class);
+    if (TypeRegistry.isSystemEntity(type)) {
+      return reduceObject(tree, null, type, type, Entity.class);
+    } else {
+      Set<String> prefixes = getPrefixes(tree);
+      Class<?> viewType = variationExists(tree, type) ? type : type.getSuperclass();
+      return reduceObject(tree, prefixes, type, viewType, Entity.class);
+    }
   }
 
   // TODO This is the "old" behaviour, but we need to re-think the resposibilities
@@ -89,7 +103,7 @@ public class EntityReducer {
         String variation = node.textValue();
         Class<? extends Entity> varType = typeRegistry.getTypeForIName(variation);
         if (varType != null && type.isAssignableFrom(varType)) {
-          T entity = type.cast(reduceObject(tree, prefixes, varType, Entity.class));
+          T entity = type.cast(reduceObject(tree, prefixes, varType, varType, Entity.class));
           entities.add(entity);
         } else {
           LOG.error("Not a variation of {}: {}", type, variation);
@@ -121,6 +135,25 @@ public class EntityReducer {
   // -------------------------------------------------------------------
 
   /**
+   * Returns the names of the variations in the specified Json tree.
+   */
+  private List<String> getVariations(JsonNode tree) {
+    List<String> variations = Lists.newArrayList();
+    JsonNode variationsNode = tree.findValue(DomainEntity.VARIATIONS);
+    if (variationsNode != null) {
+      Iterator<JsonNode> iterator = variationsNode.elements();
+      while (iterator.hasNext()) {
+        variations.add(iterator.next().textValue());
+      }
+    }
+    return variations;
+  }
+
+  private boolean variationExists(JsonNode tree, Class<?> type) {
+    return getVariations(tree).contains(TypeNames.getInternalName(type));
+  }
+
+  /**
    * Returns the prefixes of the fields in the specified Json tree.
    * These prefixes correpond with the names of entities and roles.
    */
@@ -137,11 +170,18 @@ public class EntityReducer {
     return prefixes;
   }
 
-  private <T> T reduceObject(JsonNode tree, Set<String> prefixes, Class<T> type, Class<?> stopType) throws StorageException {
+  /**
+   * Extracts the entity of the specified {@code type} from the specified Json tree.
+   * The view type controls the variation that is actually stored in the entity.
+   * For example, if the type is {@code BaseLanguage} and the view type is {@code Language}
+   * this method returns a {@code BaseLanguage} entity with values of the {@code Language}
+   * variation and default values of the fields that are defined in {@code BaseLanguage}.
+   */
+  private <T> T reduceObject(JsonNode tree, Set<String> prefixes, Class<T> type, Class<?> viewType, Class<?> stopType) throws StorageException {
     try {
       T object = newInstance(type);
 
-      Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, stopType);
+      Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(viewType, viewType, stopType);
       for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
         String key = entry.getKey();
         JsonNode node = tree.findValue(key);
@@ -159,7 +199,7 @@ public class EntityReducer {
         DomainEntity entity = DomainEntity.class.cast(object);
         for (Class<? extends Role> role : typeRegistry.getAllowedRolesFor(type)) {
           if (prefixes.contains(TypeNames.getInternalName(role))) {
-            entity.addRole(reduceObject(tree, prefixes, role, Role.class));
+            entity.addRole(reduceObject(tree, prefixes, role, role, Role.class));
           }
         }
       }
