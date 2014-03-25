@@ -27,4 +27,10 @@ public interface Index {
    */
   public void deleteById(String id) throws IndexException;
 
+  /**
+   * Delete multiple items by id.
+   * @param ids the id's of the items to delete.  
+   */
+  public void deleteById(List<String> ids);
+
 }

@@ -91,7 +91,13 @@ public class IndexFacade implements SearchManager, IndexManager {
 
   @Override
   public <T extends DomainEntity> void deleteEntities(Class<T> type, List<String> ids) throws IndexException {
-    // TODO Auto-generated method stub
+    Class<? extends DomainEntity> baseType = baseTypeFor(type);
+
+    for (Scope scope : scopeManager.getAllScopes()) {
+      Index index = scopeManager.getIndexFor(scope, baseType);
+
+      index.deleteById(ids);
+    }
 
   }
 

@@ -53,6 +53,12 @@ public class ScopeManager {
 
     }
 
+    @Override
+    public void deleteById(List<String> ids) {
+      // TODO Auto-generated method stub
+
+    }
+
   }
 
 }

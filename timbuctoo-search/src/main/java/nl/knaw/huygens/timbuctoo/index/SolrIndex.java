@@ -54,4 +54,10 @@ public class SolrIndex implements Index {
 
   }
 
+  @Override
+  public void deleteById(List<String> ids) {
+    // TODO Auto-generated method stub
+
+  }
+
 }
