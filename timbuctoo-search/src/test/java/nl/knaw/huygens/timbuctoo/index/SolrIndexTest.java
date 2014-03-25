@@ -20,6 +20,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import com.google.common.collect.Lists;
+
 public class SolrIndexTest {
   @Mock
   private List<? extends DomainEntity> variationsToAdd;
@@ -126,6 +128,43 @@ public class SolrIndexTest {
     } finally {
       // verify
       verify(solrServerMock).deleteById(id);
+    }
+  }
+
+  @Test
+  public void testDeleteMultipleItems() throws SolrServerException, IOException, IndexException {
+    // setup
+    List<String> ids = Lists.newArrayList("id1", "id2", "id3");
+
+    // action
+    instance.deleteById(ids);
+
+    // verify
+    verify(solrServerMock).deleteById(ids);
+  }
+
+  @Test(expected = IndexException.class)
+  public void testDeleteMultipleItemsSolrServerThrowsIOException() throws SolrServerException, IOException, IndexException {
+    testDeleteMultipleItemsSolrServerThrowsException(IOException.class);
+  }
+
+  @Test(expected = IndexException.class)
+  public void testDeleteMultipleItemsSolrServerThrowsSolrServerException() throws SolrServerException, IOException, IndexException {
+    testDeleteMultipleItemsSolrServerThrowsException(SolrServerException.class);
+  }
+
+  private void testDeleteMultipleItemsSolrServerThrowsException(Class<? extends Exception> exceptionToThrow) throws SolrServerException, IOException, IndexException {
+    List<String> ids = Lists.newArrayList("id1", "id2", "id3");
+
+    // when
+    doThrow(exceptionToThrow).when(solrServerMock).deleteById(ids);
+
+    try {
+      // action
+      instance.deleteById(ids);
+    } finally {
+      // verify
+      verify(solrServerMock).deleteById(ids);
     }
   }
 
