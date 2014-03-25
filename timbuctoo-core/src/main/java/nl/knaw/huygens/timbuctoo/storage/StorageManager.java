@@ -245,7 +245,7 @@ public class StorageManager {
       return storage.getAllVariations(type, id);
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
-      return null;
+      return Collections.emptyList();
     }
   }
 

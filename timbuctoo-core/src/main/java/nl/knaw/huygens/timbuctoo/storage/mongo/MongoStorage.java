@@ -27,6 +27,7 @@ import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -422,17 +423,17 @@ public class MongoStorage implements Storage {
   // --- domain entities -----------------------------------------------
 
   @Override
-  public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException, IOException {
+  public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws IOException {
     DBObject query = queries.selectById(id);
     DBObject item = getDBCollection(type).findOne(query);
-    if (item == null) {
-      return null;
+    if (item != null) {
+      List<T> variations = reducer.reduceAllVariations(type, toJsonNode(item));
+      for (T variation : variations) {
+        addRelationsTo(variation.getClass(), id, variation);
+      }
+      return variations;
     }
-    List<T> variations = reducer.reduceAllVariations(type, toJsonNode(item));
-    for (T variation : variations) {
-      addRelationsTo(variation.getClass(), id, variation);
-    }
-    return variations;
+    return Collections.emptyList();
   }
 
   @Override
