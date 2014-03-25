@@ -460,10 +460,6 @@ public class MongoStorage implements Storage {
     return getItems(Relation.class, query);
   }
 
-  // We retrieve all relations involving the specified entity by its id.
-  // Next we need to filter the relations that are compatible with the entity type:
-  // a relation is only valid if the entity type we are handling is assignable
-  // to the type specified in the relation.
   @Override
   public <T extends DomainEntity> void addRelationsTo(T entity) {
     if (entity != null) {
@@ -477,19 +473,11 @@ public class MongoStorage implements Storage {
           RelationType relType = getRelationType(relation.getTypeRef().getId());
           Preconditions.checkNotNull(relType, "Failed to retrieve relation type");
           if (relation.hasSourceId(id)) {
-            Class<? extends Entity> cls = typeRegistry.getTypeForIName(relation.getSourceType());
-            if (cls != null && cls.isAssignableFrom(type)) {
-              Reference reference = relation.getTargetRef();
-              entity.addRelation(relType.getRegularName(), getEntityRef(reference, relation.getId())); // db access
-            }
+            Reference reference = relation.getTargetRef();
+            entity.addRelation(relType.getRegularName(), getEntityRef(reference, relation.getId())); // db access
           } else if (relation.hasTargetId(id)) {
-            Class<? extends Entity> cls = typeRegistry.getTypeForIName(relation.getTargetType());
-            if (cls != null && cls.isAssignableFrom(type)) {
-              Reference reference = relation.getSourceRef();
-              entity.addRelation(relType.getInverseName(), getEntityRef(reference, relation.getId())); // db access
-            }
-          } else {
-            throw new IllegalStateException("Impossible");
+            Reference reference = relation.getSourceRef();
+            entity.addRelation(relType.getInverseName(), getEntityRef(reference, relation.getId())); // db access
           }
         }
       } catch (IOException e) {
