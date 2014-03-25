@@ -427,13 +427,10 @@ public class MongoStorage implements Storage {
     DBObject query = queries.selectById(id);
     DBObject item = getDBCollection(type).findOne(query);
     if (item != null) {
-      List<T> variations = reducer.reduceAllVariations(type, toJsonNode(item));
-      for (T variation : variations) {
-        addRelationsTo(variation.getClass(), id, variation);
-      }
-      return variations;
+      return reducer.reduceAllVariations(type, toJsonNode(item));
+    } else {
+      return Collections.emptyList();
     }
-    return Collections.emptyList();
   }
 
   @Override
@@ -467,40 +464,40 @@ public class MongoStorage implements Storage {
   // Next we need to filter the relations that are compatible with the entity type:
   // a relation is only valid if the entity type we are handling is assignable
   // to the type specified in the relation.
-  // For example, if a relation is specified for a DCARArchiver, it is visible when
-  // dealing with an entity type DCARArchiver, but not for Archiver.
-  //TODO add tests.
   @Override
-  public void addRelationsTo(Class<? extends DomainEntity> type, String id, DomainEntity entity) {
-    Preconditions.checkNotNull(entity, "entity cannot be null");
-    StorageIterator<Relation> iterator = null;
-    try {
-      iterator = getRelationsOf(type, id); // db access
-      while (iterator.hasNext()) {
-        Relation relation = iterator.next(); // db access
-        RelationType relType = getRelationType(relation.getTypeRef().getId());
-        Preconditions.checkNotNull(relType, "Failed to retrieve relation type");
-        if (relation.hasSourceId(id)) {
-          Class<? extends Entity> cls = typeRegistry.getTypeForIName(relation.getSourceType());
-          if (cls != null && cls.isAssignableFrom(type)) {
-            Reference reference = relation.getTargetRef();
-            entity.addRelation(relType.getRegularName(), getEntityRef(reference, relation.getId())); // db access
+  public <T extends DomainEntity> void addRelationsTo(T entity) {
+    if (entity != null) {
+      Class<? extends DomainEntity> type = entity.getClass();
+      String id = entity.getId();
+      StorageIterator<Relation> iterator = null;
+      try {
+        iterator = getRelationsOf(type, id); // db access
+        while (iterator.hasNext()) {
+          Relation relation = iterator.next(); // db access
+          RelationType relType = getRelationType(relation.getTypeRef().getId());
+          Preconditions.checkNotNull(relType, "Failed to retrieve relation type");
+          if (relation.hasSourceId(id)) {
+            Class<? extends Entity> cls = typeRegistry.getTypeForIName(relation.getSourceType());
+            if (cls != null && cls.isAssignableFrom(type)) {
+              Reference reference = relation.getTargetRef();
+              entity.addRelation(relType.getRegularName(), getEntityRef(reference, relation.getId())); // db access
+            }
+          } else if (relation.hasTargetId(id)) {
+            Class<? extends Entity> cls = typeRegistry.getTypeForIName(relation.getTargetType());
+            if (cls != null && cls.isAssignableFrom(type)) {
+              Reference reference = relation.getSourceRef();
+              entity.addRelation(relType.getInverseName(), getEntityRef(reference, relation.getId())); // db access
+            }
+          } else {
+            throw new IllegalStateException("Impossible");
           }
-        } else if (relation.hasTargetId(id)) {
-          Class<? extends Entity> cls = typeRegistry.getTypeForIName(relation.getTargetType());
-          if (cls != null && cls.isAssignableFrom(type)) {
-            Reference reference = relation.getSourceRef();
-            entity.addRelation(relType.getInverseName(), getEntityRef(reference, relation.getId())); // db access
-          }
-        } else {
-          throw new IllegalStateException("Impossible");
         }
-      }
-    } catch (IOException e) {
-      LOG.error("Error while handling {} {}", type.getSimpleName(), id);
-    } finally {
-      if (iterator != null) {
-        iterator.close();
+      } catch (IOException e) {
+        LOG.error("Error while handling {} {}", type.getSimpleName(), id);
+      } finally {
+        if (iterator != null) {
+          iterator.close();
+        }
       }
     }
   }

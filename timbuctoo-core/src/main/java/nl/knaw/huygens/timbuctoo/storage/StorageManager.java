@@ -196,9 +196,7 @@ public class StorageManager {
     T entity = null;
     try {
       entity = storage.getItem(type, id);
-      if (entity != null) {
-        storage.addRelationsTo(type, id, entity);
-      }
+      storage.addRelationsTo(entity);
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
     }
@@ -209,9 +207,7 @@ public class StorageManager {
     T entity = null;
     try {
       entity = storage.getRevision(type, id, revision);
-      if (entity != null) {
-        storage.addRelationsTo(type, id, entity);
-      }
+      storage.addRelationsTo(entity);
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
     }
@@ -242,7 +238,11 @@ public class StorageManager {
 
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) {
     try {
-      return storage.getAllVariations(type, id);
+      List<T> variations = storage.getAllVariations(type, id);
+      for (T variation : variations) {
+        storage.addRelationsTo(variation);
+      }
+      return variations;
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
       return Collections.emptyList();
