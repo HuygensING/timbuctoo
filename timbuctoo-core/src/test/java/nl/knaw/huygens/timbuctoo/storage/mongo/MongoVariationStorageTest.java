@@ -97,14 +97,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     return createDBJsonNode(map);
   }
 
-  private DBObject createProjectAGeneralTestDBObject(String id, String name, String generalTestDocValue, String projectAGeneralTestDocValue) {
-    Map<String, Object> map = createDefaultMap(id);
-    map.put(propertyName(TestConcreteDoc.class, "name"), "projecta");
-    map.put(propertyName(BaseDomainEntity.class, "generalTestDocValue"), generalTestDocValue);
-    map.put(propertyName(ProjectADomainEntity.class, "projectAGeneralTestDocValue"), projectAGeneralTestDocValue);
-    return createDBJsonNode(map);
-  }
-
   private Map<String, Object> createSimpleMap(String id, Object value) {
     Map<String, Object> map = Maps.newHashMap();
     map.put(id, value);
@@ -159,39 +151,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     when(anyCollection.find(any(DBObject.class))).thenReturn(cursor);
 
     assertEquals(0, storage.getAllVariations(BaseDomainEntity.class, DEFAULT_ID).size());
-  }
-
-  @Test
-  // Reported as failure [#1919]
-  // Fixed by setting "name" on BaseDomainEntity instead of TestConcreteDoc
-  public void testGetVariation() throws IOException {
-    Map<String, Object> map = createDefaultMap(DEFAULT_ID);
-    map.put(propertyName(BaseDomainEntity.class, "name"), "name");
-    map.put(propertyName(BaseDomainEntity.class, "generalTestDocValue"), "value1");
-    map.put(propertyName(ProjectADomainEntity.class, "projectAGeneralTestDocValue"), "value2");
-    DBObject projectAGeneralTestDBNode = createDBJsonNode(map);
-
-    DBObject query = new MongoQueries().selectById(DEFAULT_ID);
-    when(anyCollection.findOne(query)).thenReturn(projectAGeneralTestDBNode);
-
-    BaseDomainEntity actual = storage.getVariation(BaseDomainEntity.class, DEFAULT_ID, "projecta");
-
-    assertEquals("name", actual.name);
-    assertEquals(DEFAULT_ID, actual.getId());
-  }
-
-  @Test
-  public void testGetVariationVariationNonExisting() throws IOException {
-    DBObject query = queries.selectById(DEFAULT_ID);
-
-    String name = "projecta";
-    DBObject node = createProjectAGeneralTestDBObject(DEFAULT_ID, name, "value1", "value2");
-    when(anyCollection.findOne(query)).thenReturn(node);
-
-    TestConcreteDoc actual = storage.getVariation(TestConcreteDoc.class, DEFAULT_ID, "projectb");
-
-    assertEquals(name, actual.name);
-    assertEquals(DEFAULT_ID, actual.getId());
   }
 
   @Test

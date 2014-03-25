@@ -24,11 +24,13 @@ package nl.knaw.huygens.timbuctoo.storage;
 
 import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
@@ -90,11 +92,19 @@ public class EntityReducerTest {
     return mapper.valueToTree(map);
   }
 
-  private Map<String, Object> newDomainEntityMap() {
+  private Map<String, Object> newPrimitiveDomainEntityMap() {
     Map<String, Object> map = Maps.newHashMap();
     map.put("_id", ID);
     map.put("^rev", 0);
-    map.put("^variations", new String[] { "basedomainentity", "subadomainentity", "subbdomainentity" });
+    map.put(DomainEntity.VARIATIONS, new String[] { "basedomainentity" });
+    map.put(propertyName(BaseDomainEntity.class, "value1"), "v1");
+    map.put(propertyName(BaseDomainEntity.class, "value2"), "v2");
+    return map;
+  }
+
+  private Map<String, Object> newDomainEntityMap() {
+    Map<String, Object> map = newPrimitiveDomainEntityMap();
+    map.put(DomainEntity.VARIATIONS, new String[] { "basedomainentity", "subadomainentity", "subbdomainentity" });
     map.put(propertyName(BaseDomainEntity.class, "value1"), "v1");
     map.put(propertyName(BaseDomainEntity.class, "value2"), "v2");
     map.put(propertyName(SubADomainEntity.class, "value1"), "v1");
@@ -104,6 +114,11 @@ public class EntityReducerTest {
     map.put(propertyName(SubBDomainEntity.class, "value2"), "v2");
     map.put(propertyName(SubBDomainEntity.class, "valueb"), "vb");
     return map;
+  }
+
+  private JsonNode newPrimitiveDomainEntityTree() {
+    Map<String, Object> map = newPrimitiveDomainEntityMap();
+    return mapper.valueToTree(map);
   }
 
   private JsonNode newDomainEntityTree() {
@@ -155,6 +170,21 @@ public class EntityReducerTest {
     assertEquals("v1", entity.getValue1());
     assertEquals("v2", entity.getValue2());
     assertEquals("va", entity.getValuea());
+    assertEquals(0, entity.getRev());
+  }
+
+  @Test
+  // Construct a tree for a primitive domain entity.
+  // Reduce for a derived domain entity.
+  // We should get the derived domain entity with the vales of the primitive assigned.
+  public void testReducePrimitiveVariationDerived() throws Exception {
+    JsonNode tree = newPrimitiveDomainEntityTree();
+
+    SubADomainEntity entity = reducer.reduceVariation(SubADomainEntity.class, tree);
+    assertEquals(ID, entity.getId());
+    assertEquals("v1", entity.getValue1());
+    assertEquals("v2", entity.getValue2());
+    assertNull(entity.getValuea());
     assertEquals(0, entity.getRev());
   }
 

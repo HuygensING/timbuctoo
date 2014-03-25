@@ -212,7 +212,7 @@ public class MongoStorage implements Storage {
 
   private <T extends Entity> T getItem(Class<T> type, DBObject query) throws IOException {
     DBObject item = getDBCollection(type).findOne(query);
-    return (item != null) ? reducer.reduceVariation(type, toJsonNode(item), null) : null;
+    return (item != null) ? reducer.reduceVariation(type, toJsonNode(item)) : null;
   }
 
   private <T extends Entity> StorageIterator<T> getItems(Class<T> type, DBObject query) {
@@ -296,8 +296,7 @@ public class MongoStorage implements Storage {
     DBObject query = queries.selectByIdAndRevision(id, revision);
 
     JsonNode tree = getExisting(type, query);
-
-    SystemEntity systemEntity = reducer.reduceExistingVariation(type, tree);
+    SystemEntity systemEntity = reducer.reduceVariation(type, tree);
 
     systemEntity.setRev(revision + 1);
     systemEntity.setModified(change);
@@ -315,8 +314,7 @@ public class MongoStorage implements Storage {
     DBObject query = queries.selectByIdAndRevision(id, revision);
 
     JsonNode tree = getExisting(type, query);
-
-    DomainEntity domainEntity = reducer.reduceExistingVariation(toBaseDomainEntity(type), tree);
+    DomainEntity domainEntity = reducer.reduceVariation(toBaseDomainEntity(type), tree);
 
     domainEntity.setRev(revision + 1);
     domainEntity.setModified(change);
@@ -334,8 +332,7 @@ public class MongoStorage implements Storage {
     DBObject query = queries.selectById(id);
 
     JsonNode tree = getExisting(type, query);
-
-    DomainEntity entity = reducer.reduceExistingVariation(toBaseDomainEntity(type), tree);
+    DomainEntity entity = reducer.reduceVariation(toBaseDomainEntity(type), tree);
     int revision = entity.getRev();
 
     entity.setRev(revision + 1);
@@ -355,8 +352,7 @@ public class MongoStorage implements Storage {
     DBObject query = queries.selectById(id);
 
     JsonNode tree = getExisting(type, query);
-
-    DomainEntity domainEntity = reducer.reduceExistingVariation(toBaseDomainEntity(type), tree);
+    DomainEntity domainEntity = reducer.reduceVariation(toBaseDomainEntity(type), tree);
 
     if (!StringUtils.isBlank(domainEntity.getPid())) {
       throw new IllegalStateException(String.format("%s with %s already has a pid: %s", type.getSimpleName(), id, pid));
@@ -437,13 +433,6 @@ public class MongoStorage implements Storage {
       addRelationsTo(variation.getClass(), id, variation);
     }
     return variations;
-  }
-
-  @Override
-  public <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) throws IOException {
-    DBObject query = queries.selectById(id);
-    DBObject item = getDBCollection(type).findOne(query);
-    return (item != null) ? reducer.reduceVariation(type, toJsonNode(item), variation) : null;
   }
 
   @Override

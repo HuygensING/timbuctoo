@@ -97,7 +97,7 @@ public abstract class DefaultImporter {
 
   protected void setup(RelationManager relationManager) throws ValidationException {
     if (relationManager != null) {
-      new RelationTypeImporter(relationManager, this.typeRegistry).importRelationTypes(RELATION_TYPE_DEFS);
+      new RelationTypeImporter(typeRegistry, relationManager).importRelationTypes(RELATION_TYPE_DEFS);
     }
   }
 

@@ -120,6 +120,8 @@ public class EntityInducerReducerTest {
     DomainEntityWithReferences initial = new DomainEntityWithReferences(ID);
     initial.setSharedReference(new Reference("type1", "id1"));
     initial.setUniqueReference(new Reference("type2", "id2"));
+    initial.addVariation(BaseDomainEntity.class);
+    initial.addVariation(DomainEntityWithReferences.class);
 
     JsonNode tree = inducer.induceDomainEntity(DomainEntityWithReferences.class, initial);
     DomainEntityWithReferences reduced = reducer.reduceVariation(DomainEntityWithReferences.class, tree);
@@ -135,6 +137,8 @@ public class EntityInducerReducerTest {
     initial.setDate(new Date());
     initial.setType(String.class);
     initial.setPersonName(PersonName.newInstance("Christiaan", "Huygens"));
+    initial.addVariation(BaseDomainEntity.class);
+    initial.addVariation(DomainEntityWithMiscTypes.class);
 
     JsonNode tree = inducer.induceDomainEntity(DomainEntityWithMiscTypes.class, initial);
     DomainEntityWithMiscTypes reduced = reducer.reduceVariation(DomainEntityWithMiscTypes.class, tree);
@@ -150,6 +154,8 @@ public class EntityInducerReducerTest {
     PersonName name = PersonName.newInstance("Christiaan", "Huygens");
     DomainEntityWithMiscTypes initial = new DomainEntityWithMiscTypes(ID);
     initial.addPersonName(name);
+    initial.addVariation(BaseDomainEntity.class);
+    initial.addVariation(DomainEntityWithMiscTypes.class);
 
     JsonNode tree = inducer.induceDomainEntity(DomainEntityWithMiscTypes.class, initial);
     DomainEntityWithMiscTypes reduced = reducer.reduceVariation(DomainEntityWithMiscTypes.class, tree);

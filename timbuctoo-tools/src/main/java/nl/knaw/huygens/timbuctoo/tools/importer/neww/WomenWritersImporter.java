@@ -36,7 +36,6 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.Document.DocumentType;
-import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
@@ -779,23 +778,18 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
           verifyNonEmptyField(line, "name", name);
           if (name != null) {
             String code = mapName(map, name);
-            Language language = storageManager.findEntity(Language.class, "^code", code);
+            // Get WWLanguage instance with values of primitive entity Language
+            WWLanguage language = storageManager.findEntity(WWLanguage.class, "^code", code);
             if (language == null) {
               verifyNonEmptyField(line, "name", null);
             } else {
               String flag = name.equals(language.getName()) ? "" : "  *";
               System.out.printf("%-30s%-8s%-30s%s%n", name, language.getCode(), language.getName(), flag);
-              WWLanguage wwLanguage = new WWLanguage();
-              wwLanguage.setId(language.getId());
-              wwLanguage.setRev(language.getRev());
-              wwLanguage.setCode(language.getCode());
-              wwLanguage.setName(language.getName());
-              wwLanguage.setCore(true);
+              language.setCore(true);
               // TODO prevent multiple updates for same language
-              updateDomainEntity(WWLanguage.class, wwLanguage);
+              updateDomainEntity(WWLanguage.class, language);
               String key = newKey("Language", object.tempid);
-              references.put(key, new Reference(WWLanguage.class, wwLanguage.getId()));
-              // System.out.printf("%s, %s --> %s%n", key, object.name, wwLanguage.getId());
+              references.put(key, new Reference(WWLanguage.class, language.getId()));
             }
           }
         }
@@ -1379,10 +1373,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   }
 
   private void setupRelationMappings() {
-    addRelationMapping("adaptation of", "isAdaptationOf", SAME_ORDER);
+    addRelationMapping("adaptation of", "isAdaptationOf", SAME_ORDER); // reception
     addRelationMapping("authored_by", "isCreatedBy", SAME_ORDER);
     addRelationMapping("collaborated_with", "isCollaboratorOf", SAME_ORDER);
-    addRelationMapping("edition of", "isEditionOf", SAME_ORDER);
+    addRelationMapping("edition of", "isEditionOf", SAME_ORDER); // reception
     addRelationMapping("keyword", "hasKeyword", REVERSED_ORDER);
     addRelationMapping("language", "hasLanguage", SAME_ORDER);
     addRelationMapping("located_at", "hasLocation", SAME_ORDER);
@@ -1390,14 +1384,13 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     addRelationMapping("origin", "hasPublishLocation", SAME_ORDER);
     addRelationMapping("place_of_birth", "hasBirthPlace", SAME_ORDER);
     addRelationMapping("place_of_death", "hasDeathPlace", SAME_ORDER);
-    addRelationMapping("plagiarism of", "isPlagiarismOf", SAME_ORDER);
+    addRelationMapping("plagiarism of", "isPlagiarismOf", SAME_ORDER); // reception
     addRelationMapping("publishing_pseudonym", "isPseudonymOf", SAME_ORDER);
     addRelationMapping("relation", "isRelatedTo", SAME_ORDER);
-    addRelationMapping("sequeled by", "hasSequel", SAME_ORDER);
+    addRelationMapping("sequeled by", "hasSequel", SAME_ORDER); // reception
     addRelationMapping("spouse_of", "isSpouseOf", SAME_ORDER);
     addRelationMapping("stored_at", "isStoredAt", SAME_ORDER);
-    addRelationMapping("translation of", "isTranslationOf", SAME_ORDER);
-    addRelationMapping("adaptation of", "isAdaptationOf", SAME_ORDER);
+    addRelationMapping("translation of", "isTranslationOf", SAME_ORDER); // reception
   }
 
   private int missingRelationTypes = 0;

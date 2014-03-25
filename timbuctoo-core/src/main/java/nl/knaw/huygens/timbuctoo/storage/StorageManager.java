@@ -240,14 +240,6 @@ public class StorageManager {
     }
   }
 
-  public <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) {
-    try {
-      return storage.getVariation(type, id, variation);
-    } catch (Exception e) {
-      LOG.error("Error while handling {} {}", type.getName(), id);
-      return null;
-    }
-  }
 
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws IOException {
     return storage.getAllVariations(type, id);
