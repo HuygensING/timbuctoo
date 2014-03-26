@@ -132,12 +132,6 @@ public interface Storage {
   boolean relationExists(Relation relation) throws IOException;
 
   /**
-   * Returns an iterator for all relations involving the specified domain entity,
-   * either as 'source' or as 'target' (or both).
-   */
-  StorageIterator<Relation> getRelationsOf(Class<? extends DomainEntity> type, String id) throws IOException;
-
-  /**
    * Adds all stored relations to the specified entity.
    */
   <T extends DomainEntity> void addRelationsTo(T entity);
