@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation.model;
+package nl.knaw.huygens.timbuctoo.variation.model.projecta;
 
 /*
  * #%L
@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.variation.model;
 
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
+import nl.knaw.huygens.timbuctoo.variation.model.DomainEntityWithIndexAnnotations;
 
 public class ModelWithOverriddenIndexAnnotations extends DomainEntityWithIndexAnnotations {
 

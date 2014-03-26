@@ -55,7 +55,7 @@ public class EntityMapper {
     Preconditions.checkArgument(TypeRegistry.isPrimitiveDomainEntity(type));
     if (data.put(type, mappedType) != null) {
       LOG.error("Multiple subclasses of {} in {}", type, modelPackage);
-      throw new IllegalStateException("Invalid data model");
+      // throw new IllegalStateException("Invalid data model");
     };
   }
 

@@ -36,6 +36,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.Document.DocumentType;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
@@ -57,8 +58,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
-import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
-import nl.knaw.huygens.timbuctoo.util.Files;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
@@ -150,24 +149,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
   }
 
-  /** Returns map for a reference map. */
-  private String newKey(String name, String id) {
-    return name + ":" + id;
-  }
-
-  protected <T> T readJsonValue(File file, Class<T> valueType) throws Exception {
-    String text = Files.readTextFromFile(file);
-    // For Dutch Caribbean it seems OK to map "Ã " --> "à "
-    String converted = EncodingFixer.convert2(text).replaceAll("Ã ", "à ");
-    if (!converted.equals(text)) {
-      int n = text.length() - converted.length();
-      handleError("Fixed %d character encoding error%s in '%s'", n, (n == 1) ? "" : "s", file.getName());
-    }
-    return objectMapper.readValue(converted, valueType);
-  }
-
   public void importAll() throws Exception {
-
     printBoxedText("Initialization");
 
     removeNonPersistentEntities(WWCollective.class);
@@ -225,6 +207,17 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   }
 
   // --- Support ---------------------------------------------------------------
+
+  /** Returns key for a reference map. */
+  private String newKey(String name, String id) {
+    return name + ":" + id;
+  }
+
+  private Reference storeReference(String key, Class<? extends DomainEntity> type, String id) {
+    Reference reference = newDomainEntityReference(type, id);
+    references.put(key, reference);
+    return reference;
+  }
 
   private LineIterator getLineIterator(String filename) throws IOException {
     File file = new File(inputDir, filename);
@@ -286,7 +279,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         invalids.add(key);
       } else {
         String storedId = addDomainEntity(WWCollective.class, converted);
-        references.put(key, new Reference(WWCollective.class, storedId));
+        storeReference(key, WWCollective.class, storedId);
       }
     }
   }
@@ -415,8 +408,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       WWDocument converted = convert(json, object);
       if (converted != null) {
         String storedId = addDomainEntity(WWDocument.class, converted);
-        Reference reference = new Reference(WWDocument.class, storedId);
-        references.put(key, reference);
+        Reference reference = storeReference(key, WWDocument.class, storedId);
         handlePublisher(extractPrints(object), converted.getDate(), reference);
       }
     }
@@ -533,9 +525,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
             collective.setName(name);
             collective.tempLocationPlacename = first.location;
             String storedId = addDomainEntity(WWCollective.class, collective);
-            publisherRef = new Reference(WWCollective.class, storedId);
-            references.put(key, publisherRef);
-            // System.out.printf("Publisher: %s%n", name);
+            publisherRef = storeReference(key, WWCollective.class, storedId);
           }
           Reference relationRef = relationTypes.get(IS_PUBLISHED_BY);
           storeRelation(WWRelation.class, documentRef, relationRef, publisherRef, change, "");
@@ -659,7 +649,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
           storedId = addDomainEntity(WWKeyword.class, converted);
           keywordValueIdMap.put(value, storedId);
         }
-        references.put(key, new Reference(WWKeyword.class, storedId));
+        storeReference(key, WWKeyword.class, storedId);
       }
     }
   }
@@ -789,7 +779,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
               // TODO prevent multiple updates for same language
               updateDomainEntity(WWLanguage.class, language);
               String key = newKey("Language", object.tempid);
-              references.put(key, new Reference(WWLanguage.class, language.getId()));
+              storeReference(key, WWLanguage.class, language.getId());
             }
           }
         }
@@ -1009,7 +999,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     if (urn == null) {
       System.out.println(".. Adding new location: " + code);
       String storedId = addDomainEntity(WWLocation.class, converted);
-      references.put(key, new Reference(WWLocation.class, storedId));
+      storeReference(key, WWLocation.class, storedId);
       return;
     }
     if (urn.equals("IGNORE")) {
@@ -1030,8 +1020,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.setLatitude(location.getLatitude());
     converted.setLongitude(location.getLongitude());
     updateDomainEntity(WWLocation.class, converted);
-    references.put(key, new Reference(WWLocation.class, location.getId()));
-    // System.out.printf(".. Matched: '%s' -- '%s'", code, converted.getDisplayName());
+    storeReference(key, WWLocation.class, location.getId());
   }
 
   private WWLocation convert(String line, XLocation object) {
@@ -1141,7 +1130,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
           storedId = addDomainEntity(WWPerson.class, converted);
           lines.put(line, storedId);
         }
-        references.put(key, new Reference(WWPerson.class, storedId));
+        storeReference(key, WWPerson.class, storedId);
       }
     }
   }
