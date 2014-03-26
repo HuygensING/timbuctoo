@@ -30,6 +30,8 @@ import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Used for talking to a specific index on the Solr Server that matches the
@@ -50,6 +52,8 @@ import org.apache.solr.common.SolrInputDocument;
  *          and (implicitly) which index to index them in.
  */
 class DomainEntityIndex<T extends DomainEntity> implements EntityIndex<T> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(DomainEntityIndex.class);
 
   /**
    * Creates a new {@code DomainEntityIndex} instance.
@@ -81,57 +85,44 @@ class DomainEntityIndex<T extends DomainEntity> implements EntityIndex<T> {
   }
 
   /**
-   * Add a {@link nl.knaw.huygens.timbuctoo.model.Entity
-   * <code>Entity</code>} to the index.
-   * 
-   * @param entities
-   *          the <code>Entity</code> to add.
-   * @throws IndexException
-   *          if adding the entity fails for some reason.
+   * Adds a {@link nl.knaw.huygens.timbuctoo.model.Entity} to the index.
    */
   @Override
-  public void add(Class<T> docType, String docId) throws IndexException {
+  public void add(Class<T> type, String id) throws IndexException {
     try {
-      List<T> variations = storageManager.getAllVariations(docType, docId);
-      solrServer.add(core, getSolrInputDocument(variations));
+      List<T> variations = storageManager.getAllVariations(type, id);
+      if (!variations.isEmpty()) {
+        solrServer.add(core, getSolrInputDocument(variations));
+      }
     } catch (Exception e) {
+      LOG.error("Failed to add {} {}", type.getSimpleName(), id);
       throw new IndexException(e);
     }
   }
 
   /**
-   * Update a {@link nl.knaw.huygens.timbuctoo.model.Entity
-   * <code>Entity</code>} already in the index. The existing entity will be
-   * found using the ID of the entity you pass.
-   * 
-   * @param entity
-   *          the <code>Entity</code> and it's subtypes to update.
-   * @throws IndexException
-   *          if adding the entity fails for some reason.
+   * Updates a {@link nl.knaw.huygens.timbuctoo.model.Entity} already in the index.
    */
   @Override
-  public void modify(Class<T> docType, String docId) throws IndexException {
+  public void modify(Class<T> type, String id) throws IndexException {
     try {
-      List<T> variations = storageManager.getAllVariations(docType, docId);
-      solrServer.add(core, getSolrInputDocument(variations));
+      List<T> variations = storageManager.getAllVariations(type, id);
+      if (!variations.isEmpty()) {
+        solrServer.add(core, getSolrInputDocument(variations));
+      }
     } catch (Exception e) {
+      LOG.error("Failed to modify {} {}", type.getSimpleName(), id);
       throw new IndexException(e);
     }
   }
 
   /**
-   * Remove a {@link nl.knaw.huygens.timbuctoo.model.Entity
-   * <code>Entity</code>} from the index.
-   * 
-   * @param docId
-   *          the id of the <code>Entity</code> to remove.
-   * @throws IndexException
-   *          if removing the entity fails for some reason.
+   * Removes a {@link nl.knaw.huygens.timbuctoo.model.Entity} from the index.
    */
   @Override
-  public void remove(String docId) throws IndexException {
+  public void remove(String id) throws IndexException {
     try {
-      solrServer.deleteById(core, docId);
+      solrServer.deleteById(core, id);
     } catch (Exception e) {
       throw new IndexException(e);
     }
@@ -143,7 +134,6 @@ class DomainEntityIndex<T extends DomainEntity> implements EntityIndex<T> {
       for (String id : ids) {
         solrServer.deleteById(core, id);
       }
-
       //solrServer.deleteById(core, ids);
     } catch (Exception e) {
       throw new IndexException(e);
@@ -151,10 +141,7 @@ class DomainEntityIndex<T extends DomainEntity> implements EntityIndex<T> {
   }
 
   /**
-   * Remove all items from the index.
-   *
-   * @throws IndexException
-   *          if removing fails for some reason.
+   * Removes all items from the index.
    */
   @Override
   public void removeAll() throws IndexException {
@@ -166,10 +153,7 @@ class DomainEntityIndex<T extends DomainEntity> implements EntityIndex<T> {
   }
 
   /**
-   * Commit all changes to the SolrServer, and notify the world that the index
-   * has been changed. Use responsibly.
-   * 
-   * @throws IndexException
+   * Commits all changes to the SolrServer. Use responsibly.
    */
   @Override
   public void flush() throws IndexException {

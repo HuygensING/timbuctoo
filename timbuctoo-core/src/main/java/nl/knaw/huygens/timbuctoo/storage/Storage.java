@@ -137,7 +137,10 @@ public interface Storage {
    */
   StorageIterator<Relation> getRelationsOf(Class<? extends DomainEntity> type, String id) throws IOException;
 
-  void addRelationsTo(Class<? extends DomainEntity> type, String id, DomainEntity entity);
+  /**
+   * Adds all stored relations to the specified entity.
+   */
+  <T extends DomainEntity> void addRelationsTo(T entity);
 
   /**
   * Returns the id's of the domain entities of the specified type, that are not persisted.
