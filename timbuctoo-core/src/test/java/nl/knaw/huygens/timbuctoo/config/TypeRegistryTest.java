@@ -51,11 +51,6 @@ import test.model.projecta.OtherADomainEntity;
 import test.model.projecta.SubADomainEntity;
 import test.model.projectb.SubBDomainEntity;
 
-/**
- * Tests for the TypeRegistry. Watch-out the register is highly
- * dependent on the getCollectionName method. When that
- * implementation changes, a lot of tests will fail.
- */
 public class TypeRegistryTest {
 
   private static final String PROJECT_A_MODEL = "timbuctoo.variation.model.projecta";
