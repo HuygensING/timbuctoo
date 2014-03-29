@@ -72,9 +72,16 @@ public class WWDocument extends Document {
   }
 
   @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_genre", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  public List<EntityRef> getGenres() {
+    return getRelations().get("hasGenre");
+  }
+
+  @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_library", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getLibraries() {
-    return getRelations().get("library");
+    // Relation with collectives with type "library".
+    return getRelations().get("isStoredAt");
   }
 
   @JsonIgnore
