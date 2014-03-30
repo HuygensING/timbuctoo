@@ -52,11 +52,6 @@ public abstract class AbstractVRE implements VRE {
   }
 
   @Override
-  public String getDomainEntityPrefix() {
-    return null;
-  }
-
-  @Override
   public List<String> getReceptionNames() {
     return Collections.emptyList();
   }

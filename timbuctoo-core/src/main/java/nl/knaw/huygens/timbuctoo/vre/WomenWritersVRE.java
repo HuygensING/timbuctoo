@@ -75,11 +75,6 @@ public class WomenWritersVRE extends AbstractVRE {
   }
 
   @Override
-  public String getDomainEntityPrefix() {
-    return "ww";
-  }
-
-  @Override
   public List<String> getReceptionNames() {
     return RECEPTION_NAMES;
   }

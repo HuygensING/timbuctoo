@@ -44,7 +44,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 @Path(Paths.SYSTEM_PREFIX + "/vres")
-public class VREResource extends ResourceBase{
+public class VREResource extends ResourceBase {
 
   @Inject
   private VREManager vreManager;
@@ -70,14 +70,13 @@ public class VREResource extends ResourceBase{
     info.setName(vre.getName());
     info.setDescription(vre.getDescription());
 
-    String prefix = vre.getDomainEntityPrefix();
     for (String name : vre.getReceptionNames()) {
       RelationType type = map.get(name);
       if (type != null) {
         Reception reception = new Reception();
         reception.name = type.getRegularName();
-        reception.source = prefix + type.getSourceTypeName();
-        reception.target = prefix + type.getTargetTypeName();
+        reception.source = type.getSourceTypeName();
+        reception.target = type.getTargetTypeName();
         reception.typeId = type.getId();
         info.addReception(reception);
       }
