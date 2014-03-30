@@ -25,16 +25,15 @@ package nl.knaw.huygens.timbuctoo.vre;
 import java.io.IOException;
 
 /**
- * Scope containing all primitive domain entities.
+ * VRE for primitive domain entities.
  */
-public class PrimitivesVRE implements VRE {
+public class PrimitivesVRE extends AbstractVRE {
 
   public static final String NAME = "Primitives";
 
-  private final Scope scope;
-
-  public PrimitivesVRE() throws IOException {
-    scope = new PrimitivesScope();
+  @Override
+  protected Scope createScope() throws IOException {
+    return new PrimitivesScope();
   }
 
   @Override
@@ -43,8 +42,8 @@ public class PrimitivesVRE implements VRE {
   }
 
   @Override
-  public Scope getScope() {
-    return scope;
+  public String getDescription() {
+    return "VRE for primitive domain entities.";
   }
 
 }

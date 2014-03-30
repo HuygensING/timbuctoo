@@ -33,6 +33,11 @@ public interface VRE {
   String getName();
 
   /**
+   * Returns the unique name of this VRE.
+   */
+   String getDescription();
+
+  /**
    * Returns the {@code Scope} of this VRE.
    * Currently a {@codeVRE} has one {@code Scope}.
    */

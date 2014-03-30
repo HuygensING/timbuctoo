@@ -24,12 +24,11 @@ package nl.knaw.huygens.timbuctoo.vre;
 
 import java.io.IOException;
 
-public class WomenWritersVRE implements VRE {
+public class WomenWritersVRE extends AbstractVRE {
 
-  private final Scope scope;
-
-  public WomenWritersVRE() throws IOException {
-    scope = new WomenWritersScope();
+  @Override
+  protected Scope createScope() throws IOException {
+    return new WomenWritersScope();
   }
 
   @Override
@@ -38,8 +37,8 @@ public class WomenWritersVRE implements VRE {
   }
 
   @Override
-  public Scope getScope() {
-    return scope;
+  public String getDescription() {
+    return "VRE for the 'New European Women Writers' project.";
   }
 
 }

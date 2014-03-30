@@ -24,24 +24,23 @@ package nl.knaw.huygens.timbuctoo.vre;
 
 import java.io.IOException;
 
-/**
- * VRE for base domain entities, such as language.
- */
-public class BaseVRE extends AbstractVRE {
+public abstract class AbstractVRE implements VRE {
 
-  @Override
-  protected Scope createScope() throws IOException {
-    return new BaseScope();
+  private final Scope scope;
+
+  public AbstractVRE() {
+    try {
+      scope = createScope();
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to create scope");
+    }
   }
 
-  @Override
-  public String getDescription() {
-    return "VRE for base domain entities.";
-  }
+  protected abstract Scope createScope() throws IOException;
 
   @Override
-  public String getName() {
-    return "Base";
+  public Scope getScope() {
+    return scope;
   }
 
 }
