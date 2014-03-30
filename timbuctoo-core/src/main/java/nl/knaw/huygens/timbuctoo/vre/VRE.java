@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.vre;
 
+import java.util.List;
+
 /*
  * #%L
  * Timbuctoo core
@@ -42,5 +44,10 @@ public interface VRE {
    * Currently a {@codeVRE} has one {@code Scope}.
    */
   Scope getScope();
+
+  /**
+   * Returns names of relation types that are considered to be receptions.
+   */
+  List<String> getReceptionNames();
 
 }

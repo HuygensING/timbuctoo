@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
+import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.GET;
@@ -36,6 +37,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 @Path(Paths.SYSTEM_PREFIX + "/vres")
@@ -61,6 +63,7 @@ public class VREResource extends ResourceBase{
     VREInfo info = new VREInfo();
     info.setName(vre.getName());
     info.setDescription(vre.getDescription());
+    info.setReceptions(vre.getReceptionNames());
     return info;
   }
 
@@ -69,6 +72,7 @@ public class VREResource extends ResourceBase{
   public static class VREInfo {
     private String name;
     private String description;
+    private List<String> receptions = Lists.newArrayList();
 
     public String getName() {
       return name;
@@ -84,6 +88,14 @@ public class VREResource extends ResourceBase{
 
     public void setDescription(String description) {
       this.description = description;
+    }
+
+    public List<String> getReceptions() {
+      return receptions;
+    }
+
+    public void setReceptions(List<String> receptions) {
+      this.receptions = receptions;
     }
   }
 

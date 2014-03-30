@@ -23,8 +23,15 @@ package nl.knaw.huygens.timbuctoo.vre;
  */
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractVRE implements VRE {
+
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractVRE.class);
 
   private final Scope scope;
 
@@ -32,6 +39,7 @@ public abstract class AbstractVRE implements VRE {
     try {
       scope = createScope();
     } catch (IOException e) {
+      LOG.error(e.getMessage());
       throw new IllegalStateException("Failed to create scope");
     }
   }
@@ -41,6 +49,11 @@ public abstract class AbstractVRE implements VRE {
   @Override
   public Scope getScope() {
     return scope;
+  }
+
+  @Override
+  public List<String> getReceptionNames() {
+    return Collections.emptyList();
   }
 
 }
