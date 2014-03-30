@@ -46,6 +46,13 @@ public interface VRE {
   Scope getScope();
 
   /**
+   * Returns the prefix for domain entities to derive their internal name
+   * from the internal name of the primitive domain entities.
+   * NOTE. This solution can be made more general.
+   */
+  String getDomainEntityPrefix();
+
+  /**
    * Returns names of relation types that are considered to be receptions.
    */
   List<String> getReceptionNames();

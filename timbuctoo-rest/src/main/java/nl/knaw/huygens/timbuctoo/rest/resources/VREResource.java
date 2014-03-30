@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  */
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.GET;
@@ -34,6 +35,8 @@ import javax.ws.rs.core.Response.Status;
 
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -45,6 +48,8 @@ public class VREResource extends ResourceBase{
 
   @Inject
   private VREManager vreManager;
+  @Inject
+  private RelationManager relationManager;
 
   @GET
   @Produces({ MediaType.APPLICATION_JSON })
@@ -59,11 +64,24 @@ public class VREResource extends ResourceBase{
   @APIDesc("Provides info about the specified VRE.")
   public VREInfo getVREInfo(@PathParam("id") String vreId) {
     VRE vre = checkNotNull(vreManager.getVREById(vreId), Status.NOT_FOUND);
+    Map<String, RelationType> map = relationManager.getRelationTypeMap();
 
     VREInfo info = new VREInfo();
     info.setName(vre.getName());
     info.setDescription(vre.getDescription());
-    info.setReceptions(vre.getReceptionNames());
+
+    String prefix = vre.getDomainEntityPrefix();
+    for (String name : vre.getReceptionNames()) {
+      RelationType type = map.get(name);
+      if (type != null) {
+        Reception reception = new Reception();
+        reception.name = type.getRegularName();
+        reception.source = prefix + type.getSourceTypeName();
+        reception.target = prefix + type.getTargetTypeName();
+        reception.typeId = type.getId();
+        info.addReception(reception);
+      }
+    }
     return info;
   }
 
@@ -72,7 +90,7 @@ public class VREResource extends ResourceBase{
   public static class VREInfo {
     private String name;
     private String description;
-    private List<String> receptions = Lists.newArrayList();
+    private List<Reception> receptions = Lists.newArrayList();
 
     public String getName() {
       return name;
@@ -90,13 +108,20 @@ public class VREResource extends ResourceBase{
       this.description = description;
     }
 
-    public List<String> getReceptions() {
+    public List<Reception> getReceptions() {
       return receptions;
     }
 
-    public void setReceptions(List<String> receptions) {
-      this.receptions = receptions;
+    public void addReception(Reception reception) {
+      receptions.add(reception);
     }
+  }
+
+  public static class Reception {
+    public String name;
+    public String source;
+    public String target;
+    public String typeId;
   }
 
 }

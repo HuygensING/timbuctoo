@@ -27,6 +27,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -41,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -82,6 +84,19 @@ public class RelationManager {
    */
   public RelationType getRelationTypeById(String id) {
     return storageManager.getEntity(RelationType.class, id);
+  }
+
+  /**
+   * Returns a map for retrieving relation types by their regular name.
+   */
+  public Map<String, RelationType> getRelationTypeMap() {
+    Map<String, RelationType> map = Maps.newHashMap();
+    StorageIterator<RelationType> iterator = storageManager.getAll(RelationType.class);
+    while (iterator.hasNext()) {
+      RelationType type = iterator.next();
+      map.put(type.getRegularName(), type);
+    }
+    return map;
   }
 
   /**
