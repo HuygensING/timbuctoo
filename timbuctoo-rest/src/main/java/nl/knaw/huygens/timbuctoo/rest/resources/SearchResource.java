@@ -81,13 +81,14 @@ public class SearchResource {
   @Inject
   private SearchManager searchManager;
   @Inject
-  VREManager vreManager;
+  private VREManager vreManager;
   @Inject
   private Configuration config;
 
   @GET
   @Path("/vres")
   @Produces({ MediaType.APPLICATION_JSON })
+  @Deprecated
   public Set<String> getAvailableVREs() {
     return vreManager.getAvailableVREIds();
   }
