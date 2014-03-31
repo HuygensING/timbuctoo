@@ -36,6 +36,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.Document.DocumentType;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
@@ -57,8 +58,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
-import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
-import nl.knaw.huygens.timbuctoo.util.Files;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
@@ -150,24 +149,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
   }
 
-  /** Returns map for a reference map. */
-  private String newKey(String name, String id) {
-    return name + ":" + id;
-  }
-
-  protected <T> T readJsonValue(File file, Class<T> valueType) throws Exception {
-    String text = Files.readTextFromFile(file);
-    // For Dutch Caribbean it seems OK to map "Ã " --> "à "
-    String converted = EncodingFixer.convert2(text).replaceAll("Ã ", "à ");
-    if (!converted.equals(text)) {
-      int n = text.length() - converted.length();
-      handleError("Fixed %d character encoding error%s in '%s'", n, (n == 1) ? "" : "s", file.getName());
-    }
-    return objectMapper.readValue(converted, valueType);
-  }
-
   public void importAll() throws Exception {
-
     printBoxedText("Initialization");
 
     removeNonPersistentEntities(WWCollective.class);
@@ -177,7 +159,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     removeNonPersistentEntities(WWRelation.class);
 
     setup(relationManager);
-    setupRelationMappings();
     setupRelationDefs();
 
     printBoxedText("Import");
@@ -188,14 +169,14 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     System.out.println(".. Locations");
     System.out.printf("Number = %6d%n%n", importLocations());
 
+    System.out.println(".. Keywords");
+    System.out.printf("Number = %6d%n%n", importKeywords());
+
     System.out.println(".. Collectives");
     System.out.printf("Number = %6d%n%n", importCollectives());
 
     System.out.println(".. Documents");
     System.out.printf("Number = %6d%n%n", importDocuments());
-
-    System.out.println(".. Keywords");
-    System.out.printf("Number = %6d%n%n", importKeywords());
 
     System.out.println(".. Persons");
     System.out.printf("Number = %6d%n%n", importPersons());
@@ -225,6 +206,17 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   }
 
   // --- Support ---------------------------------------------------------------
+
+  /** Returns key for a reference map. */
+  private String newKey(String name, String id) {
+    return name + ":" + id;
+  }
+
+  private Reference storeReference(String key, Class<? extends DomainEntity> type, String id) {
+    Reference reference = newDomainEntityReference(type, id);
+    references.put(key, reference);
+    return reference;
+  }
 
   private LineIterator getLineIterator(String filename) throws IOException {
     File file = new File(inputDir, filename);
@@ -286,7 +278,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         invalids.add(key);
       } else {
         String storedId = addDomainEntity(WWCollective.class, converted);
-        references.put(key, new Reference(WWCollective.class, storedId));
+        storeReference(key, WWCollective.class, storedId);
       }
     }
   }
@@ -415,8 +407,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       WWDocument converted = convert(json, object);
       if (converted != null) {
         String storedId = addDomainEntity(WWDocument.class, converted);
-        Reference reference = new Reference(WWDocument.class, storedId);
-        references.put(key, reference);
+        Reference reference = storeReference(key, WWDocument.class, storedId);
         handlePublisher(extractPrints(object), converted.getDate(), reference);
       }
     }
@@ -533,9 +524,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
             collective.setName(name);
             collective.tempLocationPlacename = first.location;
             String storedId = addDomainEntity(WWCollective.class, collective);
-            publisherRef = new Reference(WWCollective.class, storedId);
-            references.put(key, publisherRef);
-            // System.out.printf("Publisher: %s%n", name);
+            publisherRef = storeReference(key, WWCollective.class, storedId);
           }
           Reference relationRef = relationTypes.get(IS_PUBLISHED_BY);
           storeRelation(WWRelation.class, documentRef, relationRef, publisherRef, change, "");
@@ -659,7 +648,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
           storedId = addDomainEntity(WWKeyword.class, converted);
           keywordValueIdMap.put(value, storedId);
         }
-        references.put(key, new Reference(WWKeyword.class, storedId));
+        storeReference(key, WWKeyword.class, storedId);
       }
     }
   }
@@ -673,6 +662,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.setValue(filterField(object.keyword));
     verifyNonEmptyField(line, "keyword", converted.getValue());
 
+    // We only store keywords of type "genre"
+    // Relations with keywords are of type "hasGenre"
     if ("topos".equals(converted.getType())) {
       invalids.add(newKey("Keyword", object.tempid));
       toposIds.add(object.tempid);
@@ -774,9 +765,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
           XLanguage object = objectMapper.readValue(line, XLanguage.class);
-          String name = filterField(object.name);
-          verifyNonEmptyField(line, "name", name);
-          if (name != null) {
+          String name = verifyNonEmptyField(line, "name", filterField(object.name));
+          if (name == null) {
+            invalids.add(newKey("Language", object.tempid));
+          } else {
             String code = mapName(map, name);
             // Get WWLanguage instance with values of primitive entity Language
             WWLanguage language = storageManager.findEntity(WWLanguage.class, "^code", code);
@@ -789,7 +781,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
               // TODO prevent multiple updates for same language
               updateDomainEntity(WWLanguage.class, language);
               String key = newKey("Language", object.tempid);
-              references.put(key, new Reference(WWLanguage.class, language.getId()));
+              storeReference(key, WWLanguage.class, language.getId());
             }
           }
         }
@@ -1009,7 +1001,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     if (urn == null) {
       System.out.println(".. Adding new location: " + code);
       String storedId = addDomainEntity(WWLocation.class, converted);
-      references.put(key, new Reference(WWLocation.class, storedId));
+      storeReference(key, WWLocation.class, storedId);
       return;
     }
     if (urn.equals("IGNORE")) {
@@ -1030,8 +1022,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.setLatitude(location.getLatitude());
     converted.setLongitude(location.getLongitude());
     updateDomainEntity(WWLocation.class, converted);
-    references.put(key, new Reference(WWLocation.class, location.getId()));
-    // System.out.printf(".. Matched: '%s' -- '%s'", code, converted.getDisplayName());
+    storeReference(key, WWLocation.class, location.getId());
   }
 
   private WWLocation convert(String line, XLocation object) {
@@ -1141,7 +1132,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
           storedId = addDomainEntity(WWPerson.class, converted);
           lines.put(line, storedId);
         }
-        references.put(key, new Reference(WWPerson.class, storedId));
+        storeReference(key, WWPerson.class, storedId);
       }
     }
   }
@@ -1344,54 +1335,15 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Relations -------------------------------------------------------------
 
+  // Maps from names used in json to registered relation type names
+  private RelationTypeConcordance relationTypeConcordance;
+
+  private RelationTypeConcordance getRelationTypeConcordance() throws Exception{
+    File file = new File(inputDir, "relationtypes.txt");
+    return new RelationTypeConcordance(file);
+  }
+
   public Set<String> names = Sets.newTreeSet();
-
-  private static boolean SAME_ORDER = false;
-  private static boolean REVERSED_ORDER = true;
-
-  private static class RelationMapping {
-    public RelationMapping(String oldName, String newName, boolean reverse) {
-      this.oldName = oldName;
-      this.newName = newName;
-      this.reverse = reverse;
-    }
-
-    public String oldName;
-    public String newName;
-    public boolean reverse;
-  }
-
-  private final Map<String, RelationMapping> relationMappings = Maps.newHashMap();
-
-  private void addRelationMapping(String oldName, String newName, boolean reverse) {
-    relationMappings.put(oldName, new RelationMapping(oldName, newName, reverse));
-  }
-
-  private RelationMapping getRelationMapping(String name) {
-    RelationMapping mapping = relationMappings.get(name);
-    return (mapping != null) ? mapping : new RelationMapping(name, name, SAME_ORDER);
-  }
-
-  private void setupRelationMappings() {
-    addRelationMapping("adaptation of", "isAdaptationOf", SAME_ORDER); // reception
-    addRelationMapping("authored_by", "isCreatedBy", SAME_ORDER);
-    addRelationMapping("collaborated_with", "isCollaboratorOf", SAME_ORDER);
-    addRelationMapping("edition of", "isEditionOf", SAME_ORDER); // reception
-    addRelationMapping("keyword", "hasKeyword", REVERSED_ORDER);
-    addRelationMapping("language", "hasLanguage", SAME_ORDER);
-    addRelationMapping("located_at", "hasLocation", SAME_ORDER);
-    addRelationMapping("membership", "isMemberOf", REVERSED_ORDER);
-    addRelationMapping("origin", "hasPublishLocation", SAME_ORDER);
-    addRelationMapping("place_of_birth", "hasBirthPlace", SAME_ORDER);
-    addRelationMapping("place_of_death", "hasDeathPlace", SAME_ORDER);
-    addRelationMapping("plagiarism of", "isPlagiarismOf", SAME_ORDER); // reception
-    addRelationMapping("publishing_pseudonym", "isPseudonymOf", SAME_ORDER);
-    addRelationMapping("relation", "isRelatedTo", SAME_ORDER);
-    addRelationMapping("sequeled by", "hasSequel", SAME_ORDER); // reception
-    addRelationMapping("spouse_of", "isSpouseOf", SAME_ORDER);
-    addRelationMapping("stored_at", "isStoredAt", SAME_ORDER);
-    addRelationMapping("translation of", "isTranslationOf", SAME_ORDER); // reception
-  }
 
   private int missingRelationTypes = 0;
   private int unstoredRelations = 0;
@@ -1416,6 +1368,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   }
 
   private void importRelations() throws Exception {
+    relationTypeConcordance = getRelationTypeConcordance();
     LineIterator iterator = getLineIterator("relations.json");
     String line = "";
     try {
@@ -1430,48 +1383,47 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       throw e;
     } finally {
       LineIterator.closeQuietly(iterator);
+      relationTypeConcordance = null;
     }
-    for (String name : names) {
-      	System.out.println(name);
-    }
+    // for (String name : names) {
+    //   System.out.println(name);
+    // }
   }
 
   private void handleRelation(String line) throws Exception {
     XRelation object = objectMapper.readValue(line, XRelation.class);
 
-    String type = filterField(object.relation_type);
-    if (type == null) {
-      if (++missingRelationTypes <= 10) {
-        verifyNonEmptyField(line, "relation_type", type);
+    // First verify that essential fields are non-empty
+    String relationType = filterField(object.relation_type);
+    if (relationType == null) {
+      if (++missingRelationTypes <= 5) {
+        verifyNonEmptyField(line, "relation_type", relationType);
       }
       return;
     }
-    RelationMapping mapping = getRelationMapping(type);
-    Reference relationRef = relationTypes.get(mapping.newName);
-    if (relationRef == null) {
-      handleError("No relation type for '%s' --> '%s'", mapping.oldName, mapping.newName);
-      return;
-    }
-
     String leftObject = verifyNonEmptyField(line, "leftObject", filterField(object.leftObject));
-    if (leftObject == null) {
-      return;
-    }
     String leftId = verifyNonEmptyField(line, "leftId", filterField(object.leftId));
-    if (leftId == null) {
-      return;
-    }
     String rightObject = verifyNonEmptyField(line, "rightObject", filterField(object.rightObject));
-    if (rightObject == null) {
-      return;
-    }
     String rightId = verifyNonEmptyField(line, "rightId", filterField(object.rightId));
-    if (rightId == null) {
+    if (leftObject == null || leftId == null || rightObject == null || rightId == null) {
       return;
     }
-    names.add(type + ":" + leftObject + "-->" +rightObject);
 
-    if (mapping.reverse) {
+    // Keep track of types seen
+    names.add(relationType + ":" + leftObject + "-->" +rightObject);
+
+    // Map to registered relation type and validate
+    RelationTypeConcordance.Mapping mapping = relationTypeConcordance.lookup(relationType, leftObject, rightObject);
+    if (mapping == null) {
+      handleError("No relation type for (%s, %s, %s)", relationType, leftObject, rightObject);
+      return;
+    }
+    if (mapping.newName.equalsIgnoreCase("ILLEGAL")) {
+      // skip this one, append to log file
+      return;
+    }
+
+    if (mapping.inverse) {
       String tempObject = leftObject;
       leftObject = rightObject;
       rightObject = tempObject;
@@ -1480,6 +1432,14 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       rightId = tempId;
     }
 
+    // Now we should be able to retrieve the reference to the relation type
+    Reference relationRef = relationTypes.get(mapping.newName);
+    if (relationRef == null) {
+      handleError("No relation type for '%s' (derived from '%s')", mapping.newName, mapping.oldName);
+      return;
+    }
+
+    // Obtain references to source and target entities
     Reference sourceRef = getReference(leftObject, leftId);
     if (sourceRef == null) {
       if (!invalids.contains(newKey(leftObject, leftId))) {
@@ -1487,7 +1447,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       }
       return;
     }
-
     Reference targetRef = getReference(rightObject, rightId);
     if (targetRef == null) {
       if (!invalids.contains(newKey(rightObject, rightId))) {
@@ -1496,6 +1455,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       return;
     }
 
+    // Some more validation, to check Json lives up to our expectations
     verifyEmptyField(line, "canonizing", filterField(object.canonizing));
     verifyEmptyField(line, "certainty", filterField(object.certainty));
     //verifyEmptyField( line, "child_female",  filterTextField(object.child_female));
@@ -1505,22 +1465,25 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     //verifyEmptyField( line, "parent_male",  filterTextField(object.parent_male));
     verifyEmptyField(line, "qualification", filterField(object.qualification));
 
+    // Finally we're ready to store
     String storedId = null;
     try {
       storedId = storeRelation(WWRelation.class, sourceRef, relationRef, targetRef, change, line);
     } catch (Exception e) {
-      LOG.error(line);
+      LOG.error("Failed to store: {}", line);
       System.exit(-1);
     }
     if (storedId == null) {
-      if (++unstoredRelations <= 10) {
+      // WHY would this happen??
+      if (++unstoredRelations <= 5) {
         handleError("Not stored.. %s", line);
       }
       return;
     }
 
+    // Once the relation is in place, we update the project specific attributes
     WWRelation relation = storageManager.getEntity(WWRelation.class, storedId);
-
+    relation.setAccepted(true);
     relation.setReception(object.isReception);
     updateDomainEntity(WWRelation.class, relation);
   }
@@ -1553,8 +1516,8 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     public String leftName;
     public String leftObject;
     public String notes; // EMPTY
-    public int old_id; // ignored
-    public String original_table; // ignored
+    public int old_id;
+    public String original_table;
     public String parent_female;
     public String parent_male;
     public String qualification; // EMPTY

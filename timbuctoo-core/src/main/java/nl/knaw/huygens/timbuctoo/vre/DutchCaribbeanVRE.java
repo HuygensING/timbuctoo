@@ -24,12 +24,11 @@ package nl.knaw.huygens.timbuctoo.vre;
 
 import java.io.IOException;
 
-public class DutchCaribbeanVRE implements VRE {
+public class DutchCaribbeanVRE extends AbstractVRE {
 
-  private final Scope scope;
-
-  public DutchCaribbeanVRE() throws IOException {
-    scope = new DutchCaribbeanScope();
+  @Override
+  protected Scope createScope() throws IOException {
+    return new DutchCaribbeanScope();
   }
 
   @Override
@@ -38,8 +37,8 @@ public class DutchCaribbeanVRE implements VRE {
   }
 
   @Override
-  public Scope getScope() {
-    return scope;
+  public String getDescription() {
+    return "VRE for 'The Dutch in the Caribbean World, C. 1670-C. 1870.";
   }
 
 }

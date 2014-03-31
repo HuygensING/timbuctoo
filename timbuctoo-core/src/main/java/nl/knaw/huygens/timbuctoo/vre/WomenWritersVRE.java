@@ -23,13 +23,45 @@ package nl.knaw.huygens.timbuctoo.vre;
  */
 
 import java.io.IOException;
+import java.util.List;
 
-public class WomenWritersVRE implements VRE {
+import com.google.common.collect.ImmutableList;
 
-  private final Scope scope;
+public class WomenWritersVRE extends AbstractVRE {
 
-  public WomenWritersVRE() throws IOException {
-    scope = new WomenWritersScope();
+  private static final List<String> RECEPTION_NAMES = ImmutableList.of(
+    "containedInAnthology",
+    "hasAdaptation",
+    "hasBiography",
+    "hasEdition",
+    "hasObituary",
+    "hasPlagiarismBy",
+    "hasPreface",
+    "hasSequel",
+    "hasTranslation",
+    "isAnnotatedIn",
+    "isCensoredBy",
+    "isCopiedBy",
+    "isDedicatedPersonOf",
+    "isIntertextualOf",
+    "isParodiedBy",
+    "isPersonAwarded",
+    "isPersonCommentedOnIn",
+    "isPersonListedOn",
+    "isPersonMentionedIn",
+    "isPersonQuotedIn",
+    "isPersonReferencedIn",
+    "isWorkAwarded",
+    "isWorkCommentedOnIn",
+    "isWorkListedOn",
+    "isWorkMentionedIn",
+    "isWorkQuotedIn",
+    "isWorkReferencedIn"
+  );
+
+  @Override
+  protected Scope createScope() throws IOException {
+    return new WomenWritersScope();
   }
 
   @Override
@@ -38,8 +70,13 @@ public class WomenWritersVRE implements VRE {
   }
 
   @Override
-  public Scope getScope() {
-    return scope;
+  public String getDescription() {
+    return "VRE for the 'New European Women Writers' project.";
+  }
+
+  @Override
+  public List<String> getReceptionNames() {
+    return RECEPTION_NAMES;
   }
 
 }

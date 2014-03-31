@@ -83,6 +83,7 @@ public class WWPerson extends Person {
     return StringUtils.stripToEmpty(name).isEmpty() ? "[TEMP] " + tempName : name;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_bibliography", canBeEmpty = true)
   public String getBibliography() {
     return bibliography;
   }
@@ -99,6 +100,7 @@ public class WWPerson extends Person {
     children = Children.normalize(value);
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_educations", canBeEmpty = true)
   public List<String> getEducations() {
     return educations;
   }
@@ -113,6 +115,7 @@ public class WWPerson extends Person {
     }
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_financials", canBeEmpty = true)
   public List<String> getFinancials() {
     return financials;
   }
@@ -141,6 +144,7 @@ public class WWPerson extends Person {
     }
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_health", canBeEmpty = true)
   public String getHealth() {
     return health;
   }
@@ -157,6 +161,7 @@ public class WWPerson extends Person {
     this.livedIn = livedIn;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_maritalstatus", canBeEmpty = true)
   public String getMaritalStatus() {
     return maritalStatus;
   }
@@ -165,6 +170,7 @@ public class WWPerson extends Person {
     this.maritalStatus = maritalStatus;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_nationality", canBeEmpty = true)
   public String getNationality() {
     return nationality;
   }
@@ -173,6 +179,7 @@ public class WWPerson extends Person {
     this.nationality = nationality;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_notes", canBeEmpty = true)
   public String getNotes() {
     return notes;
   }
@@ -181,6 +188,7 @@ public class WWPerson extends Person {
     this.notes = notes;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_personalsituation", canBeEmpty = true)
   public String getPersonalSituation() {
     return personalSituation;
   }
@@ -193,6 +201,7 @@ public class WWPerson extends Person {
     return professions;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_professions", canBeEmpty = true)
   public void setProfessions(List<String> professions) {
     this.professions = professions;
   }
@@ -221,6 +230,7 @@ public class WWPerson extends Person {
     return socialClasses;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_socialclasses", canBeEmpty = true)
   public void setSocialClasses(List<String> socialClasses) {
     this.socialClasses = socialClasses;
   }

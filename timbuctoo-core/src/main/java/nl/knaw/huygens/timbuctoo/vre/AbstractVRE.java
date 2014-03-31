@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.vre;
 
-import java.util.List;
-
 /*
  * #%L
  * Timbuctoo core
@@ -24,30 +22,38 @@ import java.util.List;
  * #L%
  */
 
-/**
- * Defines a Virtual Research Environment.
- */
-public interface VRE {
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
-  /**
-   * Returns the unique name of this VRE.
-   */
-  String getName();
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-  /**
-   * Returns the unique name of this VRE.
-   */
-   String getDescription();
+public abstract class AbstractVRE implements VRE {
 
-  /**
-   * Returns the {@code Scope} of this VRE.
-   * Currently a {@codeVRE} has one {@code Scope}.
-   */
-  Scope getScope();
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractVRE.class);
 
-  /**
-   * Returns names of relation types that are considered to be receptions.
-   */
-  List<String> getReceptionNames();
+  private final Scope scope;
+
+  public AbstractVRE() {
+    try {
+      scope = createScope();
+    } catch (IOException e) {
+      LOG.error(e.getMessage());
+      throw new IllegalStateException("Failed to create scope");
+    }
+  }
+
+  protected abstract Scope createScope() throws IOException;
+
+  @Override
+  public Scope getScope() {
+    return scope;
+  }
+
+  @Override
+  public List<String> getReceptionNames() {
+    return Collections.emptyList();
+  }
 
 }
