@@ -82,7 +82,7 @@ import com.google.inject.Injector;
  */
 public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
-  static final Logger LOG = LoggerFactory.getLogger(WomenWritersImporter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(WomenWritersImporter.class);
 
   public static void main(String[] args) throws Exception {
 
@@ -1267,6 +1267,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       this.handleError("Illegal type '%s'%n", type);
     }
 
+    if ("author".equalsIgnoreCase(type) && "authors".equals(object.original_table) && object.old_id != 0) {
+      String url = "http://neww.huygens.knaw.nl/authors/show/" + object.old_id;
+      converted.addLink(new Link(url, "NEWW"));
+    }
+
     if (object.url != null) {
       for (Map.Entry<String, String> entry : object.url.entrySet()) {
         String label = filterField(entry.getKey());
@@ -1314,7 +1319,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     public String name; // unstructured
     public String nationality; // sparse, how does this relate to pace of birth?
     public String notes; // text
-    public int old_id; // ignore
+    public int old_id; // record number in NEWW database
     public String original_field; // ignore
     public String original_table; // ignore
     public String personal_situation; // unstructured
