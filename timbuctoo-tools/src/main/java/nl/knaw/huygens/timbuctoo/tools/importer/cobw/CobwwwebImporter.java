@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.tools.importer.cobw;
  */
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.tei.DelegatingVisitor;
@@ -35,7 +36,10 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Document;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.Reference;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.cobw.COBWDocument;
 import nl.knaw.huygens.timbuctoo.model.cobw.COBWPerson;
 import nl.knaw.huygens.timbuctoo.model.cobw.COBWRelation;
@@ -43,18 +47,20 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
-import org.apache.commons.lang.StringUtils;
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -64,8 +70,7 @@ import com.google.inject.Injector;
  */
 public class CobwwwebImporter extends DefaultImporter {
 
-  // Base URL for import
-  private static final String URL = "https://www2.hf.uio.no/tjenester/bibliografi/Robinsonades";
+  private static final Logger LOG = LoggerFactory.getLogger(CobwwwebImporter.class);
 
   public static void main(String[] args) throws Exception {
 
@@ -103,20 +108,29 @@ public class CobwwwebImporter extends DefaultImporter {
 
   // -------------------------------------------------------------------
 
+  // Base URL for import
+  private static final String URL = "https://www2.hf.uio.no/tjenester/bibliografi/Robinsonades";
+
   private final Change change;
-  private final ObjectMapper mapper;
+  private final RelationManager relationManager;
+  /** Reference to relation types. */
+  private final Map<String, Reference> relationTypes = Maps.newHashMap();
+  /** References of stored primitive entities */
+  private final Map<String, Reference> references = Maps.newHashMap();
 
   public CobwwwebImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager) {
     super(registry, storageManager, indexManager);
     change = new Change("importer", "neww");
-    mapper = new ObjectMapper();
+    this.relationManager = relationManager;
   }
 
   public void importAll() throws Exception {
-    String xml = "";
-    mapper.writeValueAsString(xml);
+    setup(relationManager);
+    setupRelationDefs();
 
-    if ("skip".isEmpty()) {
+    String xml = "";
+
+    if ("".isEmpty()) {
       xml = getResource(URL, "persons");
       List<String> personIds = parseIdResource(xml, "personId");
       System.out.printf("Retrieved %d id's.%n", personIds.size());
@@ -124,11 +138,12 @@ public class CobwwwebImporter extends DefaultImporter {
       for (String id : personIds) {
         xml = getResource(URL, "person", id);
         COBWPerson entity = parsePersonResource(xml, id);
-        addDomainEntity(COBWPerson.class, entity, change);
+        String storedId = addDomainEntity(COBWPerson.class, entity, change);
+        storeReference(id, COBWPerson.class, storedId);
       }
     }
 
-    if ("skip".isEmpty()) {
+    if ("".isEmpty()) {
       xml = getResource(URL, "documents");
       List<String> documentIds = parseIdResource(xml, "documentId");
       System.out.printf("Retrieved %d id's.%n", documentIds.size());
@@ -136,7 +151,8 @@ public class CobwwwebImporter extends DefaultImporter {
       for (String id : documentIds) {
         xml = getResource(URL, "document", id);
         COBWDocument entity = parseDocumentResource(xml, id);
-        addDomainEntity(COBWDocument.class, entity, change);
+        String storedId = addDomainEntity(COBWDocument.class, entity, change);
+        storeReference(id, COBWDocument.class, storedId);
       }
     }
 
@@ -147,9 +163,16 @@ public class CobwwwebImporter extends DefaultImporter {
 
       for (String id : relationIds) {
         xml = getResource(URL, "relation", id);
-        COBWRelation entity = parseRelationResource(xml, id);
-        // addDomainEntity(COBWRelation.class, entity, change);
+        parseRelationResource(xml, id);
       }
+    }
+  }
+
+  private void setupRelationDefs() {
+    StorageIterator<RelationType> iterator = storageManager.getAll(RelationType.class);
+    while (iterator.hasNext()) {
+      RelationType type = iterator.next();
+      relationTypes.put(type.getRegularName(), new Reference(RelationType.class, type.getId()));
     }
   }
 
@@ -159,6 +182,46 @@ public class CobwwwebImporter extends DefaultImporter {
     ClientResource resource = new ClientResource(url);
     Representation representation = resource.get(MediaType.APPLICATION_XML);
     return representation.getText();
+  }
+
+  private Reference storeReference(String key, Class<? extends DomainEntity> type, String id) {
+    Reference reference = newDomainEntityReference(type, id);
+    if (references.put(key, reference) != null) {
+      LOG.error("Duplicate key '{}'", key);
+      System.exit(-1);
+    }
+    return reference;
+  }
+
+  /**
+   * TEI element handler that captures and filters the content of the element.
+   */
+  private static abstract class CaptureHandler<T extends XmlContext> implements ElementHandler<T> {
+    @Override
+    public Traversal enterElement(Element element, T context) {
+      context.openLayer();
+      return Traversal.NEXT;
+    }
+
+    @Override
+    public Traversal leaveElement(Element element, T context) {
+      String text = context.closeLayer().trim();
+      if (!text.isEmpty()) {
+        handleContent(filterField(text), context);
+      }
+      return Traversal.NEXT;
+    }
+
+    private String filterField(String text) {
+      if (text.contains("\\")) {
+        text = text.replaceAll("\\\\r", " ");
+        text = text.replaceAll("\\\\n", " ");
+      }
+      text = text.replaceAll("[\\s\\u00A0]+", " ");
+      return text.trim();
+    }
+
+    protected abstract void handleContent(String text, T context);
   }
 
   // ---------------------------------------------------------------------------
@@ -256,26 +319,7 @@ public class CobwwwebImporter extends DefaultImporter {
     }
   }
 
-  private static abstract class PersonCaptureHandler implements ElementHandler<PersonContext> {
-    @Override
-    public Traversal enterElement(Element element, PersonContext context) {
-      context.openLayer();
-      return Traversal.NEXT;
-    }
-
-    @Override
-    public Traversal leaveElement(Element element, PersonContext context) {
-      String text = context.closeLayer().trim();
-      if (!text.isEmpty()) {
-        handleContent(text, context);
-      }
-      return Traversal.NEXT;
-    }
-
-    public abstract void handleContent(String text, PersonContext context);
-  }
-
-  private static class PersonIdHandler extends PersonCaptureHandler {
+  private static class PersonIdHandler extends CaptureHandler<PersonContext> {
     @Override
     public void handleContent(String text, PersonContext context) {
       if (!context.id.equals(text)) {
@@ -284,7 +328,7 @@ public class CobwwwebImporter extends DefaultImporter {
     }
   }
 
-  private static class PersonTypeHandler extends PersonCaptureHandler {
+  private static class PersonTypeHandler extends CaptureHandler<PersonContext> {
     @Override
     public void handleContent(String text, PersonContext context) {
       if (text.equalsIgnoreCase(Person.Type.ARCHETYPE)) {
@@ -299,7 +343,7 @@ public class CobwwwebImporter extends DefaultImporter {
     }
   }
 
-  private static class GenderHandler extends PersonCaptureHandler {
+  private static class GenderHandler extends CaptureHandler<PersonContext> {
     @Override
     public void handleContent(String text, PersonContext context) {
       if (text.equals("1")) {
@@ -314,7 +358,7 @@ public class CobwwwebImporter extends DefaultImporter {
     }
   }
 
-  private static class DateOfBirthHandler extends PersonCaptureHandler {
+  private static class DateOfBirthHandler extends CaptureHandler<PersonContext> {
     @Override
     public void handleContent(String text, PersonContext context) {
       Datable datable = new Datable(text);
@@ -322,7 +366,7 @@ public class CobwwwebImporter extends DefaultImporter {
     }
   }
 
-  private static class DateOfDeathHandler extends PersonCaptureHandler {
+  private static class DateOfDeathHandler extends CaptureHandler<PersonContext> {
     @Override
     public void handleContent(String text, PersonContext context) {
       Datable datable = new Datable(text);
@@ -330,14 +374,14 @@ public class CobwwwebImporter extends DefaultImporter {
     }
   }
 
-  private static class NameHandler extends PersonCaptureHandler {
+  private static class NameHandler extends CaptureHandler<PersonContext> {
     @Override
     public void handleContent(String text, PersonContext context) {
       context.person.addTempName(text);
     }
   }
 
-  private static class PersonLinkHandler extends PersonCaptureHandler {
+  private static class PersonLinkHandler extends CaptureHandler<PersonContext> {
     @Override
     public void handleContent(String text, PersonContext context) {
       Link link = new Link(text, "NEWW");
@@ -345,7 +389,7 @@ public class CobwwwebImporter extends DefaultImporter {
     }
   }
 
-  private static class PersonNotesHandler extends PersonCaptureHandler {
+  private static class PersonNotesHandler extends CaptureHandler<PersonContext> {
     @Override
     public void handleContent(String text, PersonContext context) {
       context.person.setNotes(text);
@@ -425,38 +469,7 @@ public class CobwwwebImporter extends DefaultImporter {
     }
   }
 
-  private static abstract class DocumentCaptureHandler implements ElementHandler<DocumentContext> {
-    @Override
-    public Traversal enterElement(Element element, DocumentContext context) {
-      context.openLayer();
-      return Traversal.NEXT;
-    }
-
-    @Override
-    public Traversal leaveElement(Element element, DocumentContext context) {
-      String text = context.closeLayer().trim();
-      if (!text.isEmpty()) {
-        handleContent(filterField(text), context);
-      }
-      return Traversal.NEXT;
-    }
-
-    private String filterField(String text) {
-      if (text == null) {
-        return null;
-      }
-      if (text.contains("\\")) {
-        text = text.replaceAll("\\\\r", " ");
-        text = text.replaceAll("\\\\n", " ");
-      }
-      text = text.replaceAll("[\\s\\u00A0]+", " ");
-      return StringUtils.stripToNull(text);
-    }
-
-    public abstract void handleContent(String text, DocumentContext context);
-  }
-
-  private static class DocumentIdHandler extends DocumentCaptureHandler {
+  private static class DocumentIdHandler extends CaptureHandler<DocumentContext> {
     @Override
     public void handleContent(String text, DocumentContext context) {
       if (!context.id.equals(text)) {
@@ -465,7 +478,7 @@ public class CobwwwebImporter extends DefaultImporter {
     }
   }
 
-  private static class DocumentTypeHandler extends DocumentCaptureHandler {
+  private static class DocumentTypeHandler extends CaptureHandler<DocumentContext> {
     @Override
     public void handleContent(String text, DocumentContext context) {
       if (text.equalsIgnoreCase(Document.DocumentType.WORK.name())) {
@@ -476,21 +489,21 @@ public class CobwwwebImporter extends DefaultImporter {
     }
   }
 
-  private static class DocumentTitleHandler extends DocumentCaptureHandler {
+  private static class DocumentTitleHandler extends CaptureHandler<DocumentContext> {
     @Override
     public void handleContent(String text, DocumentContext context) {
       context.document.setTitle(text);
     }
   }
 
-  private static class DocumentDescriptionHandler extends DocumentCaptureHandler {
+  private static class DocumentDescriptionHandler extends CaptureHandler<DocumentContext> {
     @Override
     public void handleContent(String text, DocumentContext context) {
       context.document.setDescription(text);
     }
   }
 
-  private static class DocumentDateHandler extends DocumentCaptureHandler {
+  private static class DocumentDateHandler extends CaptureHandler<DocumentContext> {
     @Override
     public void handleContent(String text, DocumentContext context) {
       Datable datable = new Datable(text);
@@ -498,21 +511,21 @@ public class CobwwwebImporter extends DefaultImporter {
     }
   }
 
-  private static class DocumentNotesHandler extends DocumentCaptureHandler {
+  private static class DocumentNotesHandler extends CaptureHandler<DocumentContext> {
     @Override
     public void handleContent(String text, DocumentContext context) {
       context.document.setNotes(text);
     }
   }
 
-  private static class DocumentLanguageHandler extends DocumentCaptureHandler {
+  private static class DocumentLanguageHandler extends CaptureHandler<DocumentContext> {
     @Override
     public void handleContent(String text, DocumentContext context) {
       context.document.addTempLanguage(text);
     }
   }
 
-  private static class DocumentLinkHandler extends DocumentCaptureHandler {
+  private static class DocumentLinkHandler extends CaptureHandler<DocumentContext> {
     @Override
     public void handleContent(String text, DocumentContext context) {
       Link link = new Link(text, "NEWW");
@@ -522,11 +535,18 @@ public class CobwwwebImporter extends DefaultImporter {
 
   // ---------------------------------------------------------------------------
 
-  private COBWRelation parseRelationResource(String xml, String id) {
+  private void parseRelationResource(String xml, String id) {
     nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
     RelationContext context = new RelationContext(id);
     document.accept(new RelationVisitor(context));
-    return context.relation;
+    Reference typeRef = relationTypes.get(context.relationTypeName);
+    Reference sourceRef = references.get(context.sourceId);
+    Reference targetRef = references.get(context.targetId);
+    if (typeRef != null && sourceRef != null && targetRef != null) {
+      relationManager.storeRelation(COBWRelation.class, sourceRef, typeRef, targetRef, change);
+    } else {
+      System.err.printf("Error in %s: %s --> %s%n", context.relationTypeName, context.sourceId, context.targetId);
+    }
   }
 
   private static class RelationContext extends XmlContext {
@@ -535,7 +555,9 @@ public class CobwwwebImporter extends DefaultImporter {
     }
 
     public String id;
-    public COBWRelation relation = new COBWRelation();
+    public String relationTypeName = "";
+    public String sourceId = "";
+    public String targetId = "";
 
     public void error(String format, Object... args) {
       System.err.printf("## [%s] %s%n", id, String.format(format, args));
@@ -567,26 +589,7 @@ public class CobwwwebImporter extends DefaultImporter {
     }
   }
 
-  private static abstract class RelationCaptureHandler implements ElementHandler<RelationContext> {
-    @Override
-    public Traversal enterElement(Element element, RelationContext context) {
-      context.openLayer();
-      return Traversal.NEXT;
-    }
-
-    @Override
-    public Traversal leaveElement(Element element, RelationContext context) {
-      String text = context.closeLayer().trim();
-      if (!text.isEmpty()) {
-        handleContent(text, context);
-      }
-      return Traversal.NEXT;
-    }
-
-    public abstract void handleContent(String text, RelationContext context);
-  }
-
-  private static class RelationIdHandler extends RelationCaptureHandler {
+  private static class RelationIdHandler extends CaptureHandler<RelationContext> {
     @Override
     public void handleContent(String text, RelationContext context) {
       if (!context.id.equals(text)) {
@@ -595,24 +598,24 @@ public class CobwwwebImporter extends DefaultImporter {
     }
   }
 
-  private static class RelationLinkHandler extends RelationCaptureHandler {
+  private static class RelationLinkHandler extends CaptureHandler<RelationContext> {
     @Override
     public void handleContent(String text, RelationContext context) {
       context.error("Unexpected reference: %s", text);
     }
   }
 
-  private static class RelationTypeHandler extends RelationCaptureHandler {
+  private static class RelationTypeHandler extends CaptureHandler<RelationContext> {
     @Override
     public void handleContent(String text, RelationContext context) {
       if (text.equalsIgnoreCase("translation of")) {
-        // process
+        context.relationTypeName = "hasTranslation";
       } else if (text.equalsIgnoreCase("edition of")) {
-        // process
+        context.relationTypeName = "hasEdition";
       } else if (text.equalsIgnoreCase("written by")) {
-        // process
+        context.relationTypeName = "isCreatedBy";
       } else if (text.equalsIgnoreCase("pseudonym")) {
-        // process
+        context.relationTypeName = "isPseudonymOf";
       } else {
         context.error("Unexpected relation type: '%s'", text);
         System.exit(0);
@@ -620,14 +623,18 @@ public class CobwwwebImporter extends DefaultImporter {
     }
   }
 
-  private static class RelationActiveHandler extends RelationCaptureHandler {
+  private static class RelationActiveHandler extends CaptureHandler<RelationContext> {
     @Override
-    public void handleContent(String text, RelationContext context) {}
+    public void handleContent(String text, RelationContext context) {
+      context.sourceId = text;
+    }
   }
 
-  private static class RelationPassiveHandler extends RelationCaptureHandler {
+  private static class RelationPassiveHandler extends CaptureHandler<RelationContext> {
     @Override
-    public void handleContent(String text, RelationContext context) {}
+    public void handleContent(String text, RelationContext context) {
+      context.targetId = text;
+    }
   }
 
 }
