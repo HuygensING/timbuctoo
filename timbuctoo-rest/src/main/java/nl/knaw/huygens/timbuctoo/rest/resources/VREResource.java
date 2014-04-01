@@ -76,7 +76,8 @@ public class VREResource extends ResourceBase {
       if (type != null) {
         Reception reception = new Reception();
         reception.typeId = type.getId();
-        reception.name = type.getRegularName();
+        reception.regularName = type.getRegularName();
+        reception.inverseName = type.getInverseName();
         reception.baseSourceType = type.getSourceTypeName();
         reception.baseTargetType = type.getTargetTypeName();
         reception.derivedSourceType = prefix + type.getSourceTypeName();
@@ -121,7 +122,8 @@ public class VREResource extends ResourceBase {
 
   public static class Reception {
     public String typeId;
-    public String name;
+    public String regularName;
+    public String inverseName;
     public String baseSourceType;
     public String baseTargetType;
     public String derivedSourceType;
