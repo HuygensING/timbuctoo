@@ -1267,10 +1267,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       this.handleError("Illegal type '%s'%n", type);
     }
 
-    if ("author".equalsIgnoreCase(type) && "authors".equals(object.original_table) && object.old_id != 0) {
-      String url = "http://neww.huygens.knaw.nl/authors/show/" + object.old_id;
-      converted.addLink(new Link(url, "NEWW"));
-    }
+    // if ("author".equalsIgnoreCase(type) && "authors".equals(object.original_table) && object.old_id != 0) {
+    //   String url = "http://neww.huygens.knaw.nl/authors/show/" + object.old_id;
+    //   converted.addLink(new Link(url, "NEWW"));
+    // }
 
     if (object.url != null) {
       for (Map.Entry<String, String> entry : object.url.entrySet()) {
@@ -1343,7 +1343,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   // Maps from names used in json to registered relation type names
   private RelationTypeConcordance relationTypeConcordance;
 
-  private RelationTypeConcordance getRelationTypeConcordance() throws Exception{
+  private RelationTypeConcordance getRelationTypeConcordance() throws Exception {
     File file = new File(inputDir, "relationtypes.txt");
     return new RelationTypeConcordance(file);
   }
@@ -1415,7 +1415,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
 
     // Keep track of types seen
-    names.add(relationType + ":" + leftObject + "-->" +rightObject);
+    names.add(relationType + ":" + leftObject + "-->" + rightObject);
 
     // Map to registered relation type and validate
     RelationTypeConcordance.Mapping mapping = relationTypeConcordance.lookup(relationType, leftObject, rightObject);
