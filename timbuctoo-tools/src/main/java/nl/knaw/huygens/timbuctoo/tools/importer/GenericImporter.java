@@ -28,8 +28,8 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.util.Progress;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 /**
  * A sub class of the GenericDataHandler, that imports the data directly into the database. 

@@ -1,8 +1,9 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.validation;
 
 import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.Storage;
 
 public class RelationValidator implements Validator<Relation> {
 

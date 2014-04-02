@@ -35,8 +35,8 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;

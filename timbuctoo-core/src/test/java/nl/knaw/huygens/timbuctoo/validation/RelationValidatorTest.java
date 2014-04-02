@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.validation;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -9,6 +9,10 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.validation.DuplicateException;
+import nl.knaw.huygens.timbuctoo.validation.RelationValidator;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 import org.junit.Before;
 import org.junit.Test;

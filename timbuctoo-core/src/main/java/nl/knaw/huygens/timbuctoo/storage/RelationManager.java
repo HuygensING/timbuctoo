@@ -36,6 +36,7 @@ import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;

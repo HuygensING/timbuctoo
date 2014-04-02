@@ -63,7 +63,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;

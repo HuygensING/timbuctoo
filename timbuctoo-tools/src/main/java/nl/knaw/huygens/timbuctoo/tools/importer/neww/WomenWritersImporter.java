@@ -56,8 +56,8 @@ import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.validation;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
@@ -7,6 +7,11 @@ import static org.mockito.Mockito.mock;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.neww.WWRelation;
+import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.validation.NoOpValidator;
+import nl.knaw.huygens.timbuctoo.validation.RelationValidator;
+import nl.knaw.huygens.timbuctoo.validation.Validator;
+import nl.knaw.huygens.timbuctoo.validation.ValidatorManager;
 
 import org.junit.Test;
 
