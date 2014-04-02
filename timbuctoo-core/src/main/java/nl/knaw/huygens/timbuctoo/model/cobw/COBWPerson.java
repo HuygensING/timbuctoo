@@ -24,27 +24,18 @@ package nl.knaw.huygens.timbuctoo.model.cobw;
 
 import java.util.List;
 
-import com.google.common.collect.Lists;
-
 import nl.knaw.huygens.timbuctoo.model.Person;
+
+import com.google.common.collect.Lists;
 
 public class COBWPerson extends Person {
 
-  private List<String> tempNames = Lists.newArrayList();
+  // Fields scheduled for removal
+  public List<String> tempNames = Lists.newArrayList();
+  public String tempNewwId;
+
   private List<String> nationalities = Lists.newArrayList();
   private String notes;
-
-  public List<String> getTempNames() {
-    return tempNames;
-  }
-
-  public void setTempNames(List<String> tempNames) {
-    this.tempNames = tempNames;
-  }
-
-  public void addTempName(String tempName) {
-    tempNames.add(tempName);
-  }
 
   public List<String> getNationalities() {
     return nationalities;

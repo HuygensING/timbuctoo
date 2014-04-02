@@ -30,20 +30,11 @@ import com.google.common.collect.Lists;
 
 public class COBWDocument extends Document {
 
-  private List<String> tempLanguages = Lists.newArrayList();
+  // Fields scheduled for removal
+  public String tempNewwId;
+  public List<String> tempLanguages = Lists.newArrayList();
+
   private String notes;
-
-  public List<String> getTempLanguages() {
-    return tempLanguages;
-  }
-
-  public void setTempLanguages(List<String> languages) {
-    tempLanguages = languages;
-  }
-
-  public void addTempLanguage(String languages) {
-    tempLanguages.add(languages);
-  }
 
   public String getNotes() {
     return notes;

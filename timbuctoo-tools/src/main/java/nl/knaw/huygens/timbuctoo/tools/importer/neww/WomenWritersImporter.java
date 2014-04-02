@@ -486,7 +486,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.tempLanguage = filterField(object.language);
 
     if ("work".equalsIgnoreCase(type) && "works".equals(object.original_table) && object.old_id != 0) {
-      converted.tempOldId = object.old_id;
+      converted.tempOldId = Integer.toString(object.old_id);
     }
 
     return converted.isValid() ? converted : null;
@@ -1280,7 +1280,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
 
     if ("author".equalsIgnoreCase(type) && "authors".equals(object.original_table) && object.old_id != 0) {
-      converted.tempOldId = object.old_id;
+      converted.tempOldId = Integer.toString(object.old_id);
     }
 
     return converted;
