@@ -224,7 +224,7 @@ public class RelationManagerTest {
   private RelationType createRelationType(Class<? extends DomainEntity> sourceClass, Class<? extends DomainEntity> targetClass, boolean symmetric) {
     RelationType relationType = new RelationType();
     relationType.setSourceTypeName(TypeNames.getInternalName(sourceClass));
-    relationType.setTargetDocType(TypeNames.getInternalName(targetClass));
+    relationType.setTargetTypeName(TypeNames.getInternalName(targetClass));
     relationType.setSymmetric(symmetric);
     return relationType;
   }

@@ -100,7 +100,7 @@ public class RelationType extends SystemEntity {
     return targetTypeName;
   }
 
-  public void setTargetDocType(String name) {
+  public void setTargetTypeName(String name) {
     targetTypeName = name;
   }
 
