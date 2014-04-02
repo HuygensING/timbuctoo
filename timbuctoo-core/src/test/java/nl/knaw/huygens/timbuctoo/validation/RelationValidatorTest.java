@@ -17,15 +17,20 @@ import org.mockito.Mockito;
 public class RelationValidatorTest {
 
   private RelationDuplicationValidator relationDuplicationValidatorMock;
-  private RelationTypeConformationValidator relationTypeConformationValidator;
+  private RelationTypeConformationValidator relationTypeConformationValidatorMock;
+  private RelationReferenceValidator relationReferenceValidatorMock;
   private RelationValidator instance;
   private Relation relation = new Relation();
 
   @Before
   public void setUp() {
     relationDuplicationValidatorMock = mock(RelationDuplicationValidator.class);
-    relationTypeConformationValidator = mock(RelationTypeConformationValidator.class);
-    instance = new RelationValidator(relationTypeConformationValidator, relationDuplicationValidatorMock);
+    relationTypeConformationValidatorMock = mock(RelationTypeConformationValidator.class);
+    relationReferenceValidatorMock = mock(RelationReferenceValidator.class);
+    instance = new RelationValidator(//
+        relationTypeConformationValidatorMock, //
+        relationReferenceValidatorMock, //
+        relationDuplicationValidatorMock);
   }
 
   @Test
@@ -34,8 +39,9 @@ public class RelationValidatorTest {
     instance.validate(relation);
 
     // verify
-    InOrder inOrder = Mockito.inOrder(relationTypeConformationValidator, relationDuplicationValidatorMock);
-    inOrder.verify(relationTypeConformationValidator).validate(relation);
+    InOrder inOrder = Mockito.inOrder(relationTypeConformationValidatorMock, relationReferenceValidatorMock, relationDuplicationValidatorMock);
+    inOrder.verify(relationTypeConformationValidatorMock).validate(relation);
+    inOrder.verify(relationReferenceValidatorMock).validate(relation);
     inOrder.verify(relationDuplicationValidatorMock).validate(relation);
   }
 
@@ -49,23 +55,41 @@ public class RelationValidatorTest {
       instance.validate(relation);
     } finally {
       //verify
-      verify(relationTypeConformationValidator).validate(relation);
+      verify(relationTypeConformationValidatorMock).validate(relation);
+      verify(relationReferenceValidatorMock).validate(relation);
       verify(relationDuplicationValidatorMock).validate(relation);
     }
   }
 
   @Test(expected = ValidationException.class)
-  public void testValidateRelationFieldValidatorThrowsAnValidationException() throws ValidationException, IOException {
+  public void testValidateRelationTypeConformationValidatorThrowsAnValidationException() throws ValidationException, IOException {
     // when
-    doThrow(ValidationException.class).when(relationTypeConformationValidator).validate(relation);
+    doThrow(ValidationException.class).when(relationTypeConformationValidatorMock).validate(relation);
 
     try {
       // action
       instance.validate(relation);
     } finally {
       //verify
-      verify(relationTypeConformationValidator).validate(relation);
+      verify(relationTypeConformationValidatorMock).validate(relation);
+      verifyZeroInteractions(relationReferenceValidatorMock, relationDuplicationValidatorMock);
+    }
+  }
+
+  @Test(expected = ValidationException.class)
+  public void testValidateRelationFieldValidatorThrowsAnValidationException() throws ValidationException, IOException {
+    // when
+    doThrow(ValidationException.class).when(relationReferenceValidatorMock).validate(relation);
+
+    try {
+      // action
+      instance.validate(relation);
+    } finally {
+      //verify
+      verify(relationTypeConformationValidatorMock).validate(relation);
+      verify(relationReferenceValidatorMock).validate(relation);
       verifyZeroInteractions(relationDuplicationValidatorMock);
     }
   }
+
 }

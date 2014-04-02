@@ -6,17 +6,20 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 
 public class RelationValidator implements Validator<Relation> {
 
-  private RelationDuplicationValidator relationDuplicationValidator;
-  private RelationTypeConformationValidator relationTypeConformationValidator;
+  private final RelationDuplicationValidator relationDuplicationValidator;
+  private final RelationTypeConformationValidator relationTypeConformationValidator;
+  private final RelationReferenceValidator relationReferenceValidator;
 
-  public RelationValidator(RelationTypeConformationValidator relationTypeConformationValidator, RelationDuplicationValidator relationDuplicationValidator) {
+  public RelationValidator(RelationTypeConformationValidator relationTypeConformationValidator, RelationReferenceValidator relationFieldValidator, RelationDuplicationValidator relationDuplicationValidator) {
     this.relationTypeConformationValidator = relationTypeConformationValidator;
     this.relationDuplicationValidator = relationDuplicationValidator;
+    this.relationReferenceValidator = relationFieldValidator;
   }
 
   @Override
   public void validate(Relation entityToValidate) throws ValidationException, IOException {
     relationTypeConformationValidator.validate(entityToValidate);
+    relationReferenceValidator.validate(entityToValidate);
     relationDuplicationValidator.validate(entityToValidate);
   }
 
