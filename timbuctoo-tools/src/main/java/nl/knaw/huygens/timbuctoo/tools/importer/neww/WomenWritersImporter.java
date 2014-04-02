@@ -485,6 +485,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.tempCreator = filterField(object.creator);
     converted.tempLanguage = filterField(object.language);
 
+    if ("work".equalsIgnoreCase(type) && "works".equals(object.original_table) && object.old_id != 0) {
+      converted.tempOldId = object.old_id;
+    }
+
     return converted.isValid() ? converted : null;
   }
 
@@ -578,9 +582,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     public String language_id; // object id of language - must occur in relations
     public String[] libraries; // list of library id's - must occur in relations
     public String notes; // text
-    public int old_id; // ignore
+    public int old_id; // record number in NEWW database
     public String origin; // item of a list of countries. BUT origin of what?
-    public String original_table; // ignore
+    public String original_table; // table in NEWW database
     public Map<String, XPrint> prints; // printed editions
     public String reference; // text, sparse, unstructured
     public XSource source;
@@ -1267,17 +1271,16 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       this.handleError("Illegal type '%s'%n", type);
     }
 
-    // if ("author".equalsIgnoreCase(type) && "authors".equals(object.original_table) && object.old_id != 0) {
-    //   String url = "http://neww.huygens.knaw.nl/authors/show/" + object.old_id;
-    //   converted.addLink(new Link(url, "NEWW"));
-    // }
-
     if (object.url != null) {
       for (Map.Entry<String, String> entry : object.url.entrySet()) {
         String label = filterField(entry.getKey());
         String url = filterField(entry.getValue());
         converted.addLink(new Link(url, label));
       }
+    }
+
+    if ("author".equalsIgnoreCase(type) && "authors".equals(object.original_table) && object.old_id != 0) {
+      converted.tempOldId = object.old_id;
     }
 
     return converted;
@@ -1321,7 +1324,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     public String notes; // text
     public int old_id; // record number in NEWW database
     public String original_field; // ignore
-    public String original_table; // ignore
+    public String original_table; // table in NEWW database
     public String personal_situation; // unstructured
     public String personalSituation; // EMPTY
     public String[] placeOfBirth; // how can this be an array?

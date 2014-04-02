@@ -51,6 +51,7 @@ public class WWPerson extends Person {
   private List<String> socialClasses;
 
   // Fields scheduled for removal
+  public int tempOldId; // record number in NEWW database
   public String tempBirthPlace;
   public String tempChildren;
   public String tempCollaborations; // as relation
