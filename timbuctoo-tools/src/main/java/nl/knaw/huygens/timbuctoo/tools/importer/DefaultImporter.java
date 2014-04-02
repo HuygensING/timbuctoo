@@ -67,7 +67,7 @@ public abstract class DefaultImporter {
     String message = String.format(format, args);
     if (!message.equals(prevMessage)) {
       System.out.print("## ");
-      System.out.printf(message);
+      System.out.print(message);
       System.out.println();
       prevMessage = message;
     }
@@ -192,7 +192,6 @@ public abstract class DefaultImporter {
     return StringUtils.stripToNull(text);
   }
 
-  
   /** Line separator in note fields */
   public static final String NEWLINE = "\n";
 
