@@ -418,13 +418,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.setResourceType(Document.ResourceType.TEXT);
 
     String type = filterField(object.type);
-    verifyNonEmptyField(line, "type", type);
-    DocumentType documentType = (type == null) ? null : documentTypeMap.get(type);
-    converted.setDocumentType(documentType);
+    converted.setDocumentType(toDocumentType(type));
 
     String title = filterField(object.title);
-    verifyNonEmptyField(line, "title", title);
-    converted.setTitle(title != null ? title : "TBD");
+    converted.setTitle(title != null ? title : "[Untitled]");
 
     converted.setDescription(filterField(object.description));
 
@@ -490,6 +487,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
 
     return converted.isValid() ? converted : null;
+  }
+
+  public DocumentType toDocumentType(String type) {
+    DocumentType documentType = (type != null) ? documentTypeMap.get(type) : null;
+    return (documentType != null) ? documentType : DocumentType.UNKNOWN ;
   }
 
   private List<XPrint> extractPrints(XDocument object) {
@@ -828,6 +830,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     conc.put("bologna#italy", "se:bologna.ita");
     conc.put("bruxelles#belgium/southern netherlands", "se:brussel.bel");
     conc.put("bucharest#romania", "se:bucharest.rou");
+    conc.put("budapest#hungary", "se:budapest.hun");
     conc.put("cambridge#england", "se:cambridge.eng");
     conc.put("cesena#italy", "se:cesena.ita");
     conc.put("copenhagen#denmark", "se:kobenhavn.dnk");
