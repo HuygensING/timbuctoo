@@ -18,7 +18,7 @@ public class ValidatorManager {
   @SuppressWarnings("unchecked")
   public <T extends DomainEntity> Validator<T> getValidatorFor(Class<T> type) {
     if (Relation.class.isAssignableFrom(type)) {
-      return (Validator<T>) new RelationValidator(storage);
+      return (Validator<T>) new RelationValidatorFactory(storage).createRelationValidator();
     }
     return new NoOpValidator<T>();
 

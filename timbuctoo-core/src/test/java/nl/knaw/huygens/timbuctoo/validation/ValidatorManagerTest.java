@@ -8,10 +8,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.neww.WWRelation;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
-import nl.knaw.huygens.timbuctoo.validation.NoOpValidator;
-import nl.knaw.huygens.timbuctoo.validation.RelationValidator;
-import nl.knaw.huygens.timbuctoo.validation.Validator;
-import nl.knaw.huygens.timbuctoo.validation.ValidatorManager;
 
 import org.junit.Test;
 
