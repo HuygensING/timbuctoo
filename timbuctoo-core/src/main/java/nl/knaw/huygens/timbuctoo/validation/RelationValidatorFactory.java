@@ -10,6 +10,7 @@ public class RelationValidatorFactory {
   }
 
   public RelationValidator createRelationValidator() {
-    return new RelationValidator(new RelationDuplicationValidator(storage));
+
+    return new RelationValidator(new RelationTypeConformationValidator(storage), new RelationDuplicationValidator(storage));
   }
 }

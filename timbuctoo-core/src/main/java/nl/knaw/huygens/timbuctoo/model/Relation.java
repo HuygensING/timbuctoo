@@ -26,6 +26,7 @@ import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
 
 /**
  * A relation between domain entities.
@@ -237,6 +238,11 @@ public class Relation extends DomainEntity {
     sb.append(targetId);
 
     return sb.toString();
+  }
+
+  public boolean conformsToRelationType(RelationType relationType) {
+    return Objects.equal(relationType.getSourceTypeName(), sourceType) //
+        && Objects.equal(relationType.getTargetTypeName(), targetType);
   }
 
 }
