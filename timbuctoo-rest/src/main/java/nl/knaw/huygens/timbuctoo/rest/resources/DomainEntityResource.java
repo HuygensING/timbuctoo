@@ -63,6 +63,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.validation.DuplicateException;
 import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -141,9 +142,10 @@ public class DomainEntityResource extends ResourceBase {
     String id = null;
     try {
       id = storageManager.addDomainEntity((Class<T>) type, (T) input, change);
-    } catch (ValidationException e) {
+    } catch (DuplicateException e) {
       throw new WebApplicationException(Status.CONFLICT);
-
+    } catch (ValidationException ex) {
+      throw new WebApplicationException(Status.BAD_REQUEST);
     }
     notifyChange(ActionType.ADD, type, id);
 
