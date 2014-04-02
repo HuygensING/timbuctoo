@@ -189,8 +189,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     System.out.println(".. Relations");
     importRelations();
-    System.out.printf("Number of missing relation types = %6d%n%n", missingRelationTypes);
-    System.out.printf("Number of unstored relations     = %6d%n%n", unstoredRelations);
+    System.out.printf("Number of missing relation types = %6d%n", missingRelationTypes);
+    System.out.printf("Number of unstored relations     = %6d%n", unstoredRelations);
+    System.out.printf("Number of duplicate relations    = %6d%n", relationManager.getDuplicateRelationCount());
 
     printBoxedText("Indexing");
 

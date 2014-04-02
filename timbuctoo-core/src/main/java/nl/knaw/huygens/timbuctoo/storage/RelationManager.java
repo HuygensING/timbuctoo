@@ -54,11 +54,17 @@ public class RelationManager {
 
   private final TypeRegistry registry;
   private final StorageManager storageManager;
+  private int duplicateRelationCount;
 
   @Inject
   public RelationManager(TypeRegistry registry, StorageManager storageManager) {
     this.registry = registry;
     this.storageManager = storageManager;
+    duplicateRelationCount = 0;
+  }
+
+  public int getDuplicateRelationCount() {
+    return duplicateRelationCount;
   }
 
   /**
@@ -173,6 +179,7 @@ public class RelationManager {
     if (relation != null) {
       try {
         if (storageManager.relationExists(relation)) {
+          duplicateRelationCount++;
           LOG.debug("Ignored duplicate {}", relation.getDisplayName());
         } else {
           return storageManager.addDomainEntity(type, relation, change);
