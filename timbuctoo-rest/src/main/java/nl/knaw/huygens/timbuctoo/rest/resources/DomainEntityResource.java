@@ -143,13 +143,27 @@ public class DomainEntityResource extends ResourceBase {
     try {
       id = storageManager.addDomainEntity((Class<T>) type, (T) input, change);
     } catch (DuplicateException e) {
-      throw new WebApplicationException(Status.CONFLICT);
+      // TODO find a better solution
+      LOG.info("Duplicate entity {} with id {}", entityName, e.getDuplicateId());
+      id = updateTheDuplicateEntity(entityName, input, vreId, userId, e.getDuplicateId());
     } catch (ValidationException ex) {
+      LOG.info("Non-valid entity", ex);
       throw new WebApplicationException(Status.BAD_REQUEST);
     }
     notifyChange(ActionType.ADD, type, id);
 
     return Response.created(new URI(id)).build();
+  }
+
+  private String updateTheDuplicateEntity(String entityName, DomainEntity input, String vreId, String userId, String id) throws IOException {
+    Class<? extends DomainEntity> entityType = getEntityType(entityName, Status.NOT_FOUND);
+    DomainEntity duplicatEnity = storageManager.getEntity(entityType, id);
+
+    input.setRev(duplicatEnity.getRev());
+    input.setId(id);
+
+    put(entityName, id, input, vreId, userId);
+    return id;
   }
 
   @GET
