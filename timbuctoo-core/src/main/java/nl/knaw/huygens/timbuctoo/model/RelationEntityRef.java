@@ -26,11 +26,13 @@ public class RelationEntityRef extends EntityRef {
 
   private String relationId;
   private boolean accepted;
+  private int rev;
 
   public RelationEntityRef() {}
 
-  public RelationEntityRef(String type, String xtype, String id, String displayName, String relationId, boolean accepted) {
+  public RelationEntityRef(String type, String xtype, String id, String displayName, String relationId, boolean accepted, int rev) {
     super(type, xtype, id, displayName);
+    this.rev = rev;
     setRelationId(relationId);
     setAccepted(accepted);
   }
@@ -51,4 +53,7 @@ public class RelationEntityRef extends EntityRef {
     this.accepted = accepted;
   }
 
+  public int getRev() {
+    return rev;
+  }
 }

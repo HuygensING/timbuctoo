@@ -478,10 +478,10 @@ public class MongoStorage implements Storage {
           checkState(relType != null, "Failed to retrieve relation type");
           if (relation.hasSource() && relation.hasTarget()) {
             if (relation.hasSourceId(id)) {
-              EntityRef entityRef = getEntityRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted());
+              EntityRef entityRef = getEntityRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
               entity.addRelation(relType.getRegularName(), entityRef); // db access
             } else if (relation.hasTargetId(id)) {
-              EntityRef entityRef = getEntityRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted());
+              EntityRef entityRef = getEntityRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
               entity.addRelation(relType.getInverseName(), entityRef); // db access
             }
           }
@@ -498,7 +498,7 @@ public class MongoStorage implements Storage {
 
   // Relations are defined between primitive domain entities
   // Map to a domain entity in the package from which an entity is requested
-  private EntityRef getEntityRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted) throws StorageException, IOException {
+  private EntityRef getEntityRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws StorageException, IOException {
     String iname = reference.getType();
     Class<? extends DomainEntity> type = TypeRegistry.toDomainEntity(typeRegistry.getTypeForIName(iname));
     type = mapper.map(type);
@@ -506,7 +506,7 @@ public class MongoStorage implements Storage {
     String xname = typeRegistry.getXNameForIName(iname);
     DomainEntity entity = getItem(type, reference.getId());
 
-    return new RelationEntityRef(iname, xname, reference.getId(), entity.getDisplayName(), relationId, accepted);
+    return new RelationEntityRef(iname, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
   }
 
   @Override
