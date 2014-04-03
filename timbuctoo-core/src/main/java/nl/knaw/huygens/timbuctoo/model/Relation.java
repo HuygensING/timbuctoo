@@ -24,6 +24,8 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
@@ -243,6 +245,14 @@ public class Relation extends DomainEntity {
   public boolean conformsToRelationType(RelationType relationType) {
     return Objects.equal(relationType.getSourceTypeName(), sourceType) //
         && Objects.equal(relationType.getTargetTypeName(), targetType);
+  }
+
+  public boolean hasSource() {
+    return !StringUtils.isBlank(sourceId);
+  }
+
+  public boolean hasTarget() {
+    return !StringUtils.isBlank(targetId);
   }
 
 }
