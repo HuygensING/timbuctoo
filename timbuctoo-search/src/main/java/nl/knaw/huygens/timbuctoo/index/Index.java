@@ -34,4 +34,9 @@ public interface Index {
    */
   public void deleteById(List<String> ids) throws IndexException;
 
+  /**
+   * Deletes all the items of the index.
+   */
+  public void clear();
+
 }

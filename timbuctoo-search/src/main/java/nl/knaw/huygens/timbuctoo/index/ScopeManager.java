@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 public class ScopeManager {
 
+  private static final NoOpIndex NO_OP_INDEX = new NoOpIndex();
   private final List<Scope> scopes;
   private final Map<String, Index> indexes;
   private final IndexNameCreator indexNameCreator;
@@ -27,12 +28,19 @@ public class ScopeManager {
 
     Index index = indexes.get(indexName);
     if (index == null) {
-      index = new NoOpIndex();
+      index = NO_OP_INDEX;
     }
 
     return index;
   }
 
+  public List<Index> getAllIndexes() {
+    // TODO Auto-generated method stub
+    return null;
+
+  }
+
+  //--------------------------------------------------------------
   protected static class NoOpIndex implements Index {
 
     @Override
@@ -55,6 +63,12 @@ public class ScopeManager {
 
     @Override
     public void deleteById(List<String> ids) {
+      // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void clear() {
       // TODO Auto-generated method stub
 
     }

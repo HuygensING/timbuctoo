@@ -282,4 +282,23 @@ public class IndexFacadeTest {
     verify(scopeManagerMock).getIndexFor(scopeMock, baseType);
     verify(indexMock).deleteById(ids);
   }
+
+  @Test
+  public void testDeleteAllEntities() throws IndexException {
+    // setup
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+
+    // when
+    List<Index> indexes = Lists.newArrayList(indexMock1, indexMock2);
+    when(scopeManagerMock.getAllIndexes()).thenReturn(indexes);
+
+    // action
+    instance.deleteAllEntities();
+
+    // verify
+    verify(scopeManagerMock).getAllIndexes();
+    verify(indexMock1).clear();
+    verify(indexMock2).clear();
+  }
 }

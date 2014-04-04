@@ -103,11 +103,14 @@ public class IndexFacade implements SearchManager, IndexManager {
 
   @Override
   public void deleteAllEntities() throws IndexException {
-    // TODO Auto-generated method stub
-
+    List<Index> allIndexes = scopeManager.getAllIndexes();
+    for (Index index : allIndexes) {
+      index.clear();
+    }
   }
 
   @Override
+  @Deprecated
   public <T extends DomainEntity> QueryResponse search(Scope scope, Class<T> type, SolrQuery query) throws IndexException {
     // TODO Auto-generated method stub
     return null;

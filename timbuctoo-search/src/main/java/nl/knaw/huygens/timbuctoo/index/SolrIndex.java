@@ -66,4 +66,10 @@ public class SolrIndex implements Index {
 
   }
 
+  @Override
+  public void clear() {
+    // TODO Auto-generated method stub
+
+  }
+
 }
