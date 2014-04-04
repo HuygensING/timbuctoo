@@ -51,6 +51,7 @@ public class WWPerson extends Person {
   private List<String> socialClasses;
 
   // Fields scheduled for removal
+  public String tempOldId; // record id in NEWW database
   public String tempBirthPlace;
   public String tempChildren;
   public String tempCollaborations; // as relation
@@ -197,11 +198,11 @@ public class WWPerson extends Person {
     this.personalSituation = personalSituation;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_professions", canBeEmpty = true)
   public List<String> getProfessions() {
     return professions;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_professions", canBeEmpty = true)
   public void setProfessions(List<String> professions) {
     this.professions = professions;
   }
@@ -226,11 +227,11 @@ public class WWPerson extends Person {
     }
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_socialclasses", canBeEmpty = true)
   public List<String> getSocialClasses() {
     return socialClasses;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_socialclasses", canBeEmpty = true)
   public void setSocialClasses(List<String> socialClasses) {
     this.socialClasses = socialClasses;
   }

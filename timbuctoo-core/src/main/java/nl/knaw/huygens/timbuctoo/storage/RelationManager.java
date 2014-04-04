@@ -36,6 +36,7 @@ import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -53,11 +54,17 @@ public class RelationManager {
 
   private final TypeRegistry registry;
   private final StorageManager storageManager;
+  private int duplicateRelationCount;
 
   @Inject
   public RelationManager(TypeRegistry registry, StorageManager storageManager) {
     this.registry = registry;
     this.storageManager = storageManager;
+    duplicateRelationCount = 0;
+  }
+
+  public int getDuplicateRelationCount() {
+    return duplicateRelationCount;
   }
 
   /**
@@ -172,6 +179,7 @@ public class RelationManager {
     if (relation != null) {
       try {
         if (storageManager.relationExists(relation)) {
+          duplicateRelationCount++;
           LOG.debug("Ignored duplicate {}", relation.getDisplayName());
         } else {
           return storageManager.addDomainEntity(type, relation, change);

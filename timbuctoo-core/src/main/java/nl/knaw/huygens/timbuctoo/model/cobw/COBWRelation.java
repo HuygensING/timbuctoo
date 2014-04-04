@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.model.cobw;
 
 /*
  * #%L
@@ -22,24 +22,8 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-public class ValidationException extends Exception {
+import nl.knaw.huygens.timbuctoo.model.Relation;
 
-  private static final long serialVersionUID = 1L;
-
-  public ValidationException() {
-    super();
-  }
-
-  public ValidationException(String message) {
-    super(message);
-  }
-
-  public ValidationException(Throwable cause) {
-    super(cause);
-  }
-
-  public ValidationException(String message, Throwable cause) {
-    super(message, cause);
-  }
+public class COBWRelation extends Relation {
 
 }

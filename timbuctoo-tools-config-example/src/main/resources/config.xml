@@ -50,7 +50,6 @@
       timbuctoo.model.dwcbia
       timbuctoo.model.ckcc
       timbuctoo.model.dcar
-      timbuctoo.model.raa
       timbuctoo.model.test
     </model-packages>
   </settings>

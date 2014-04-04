@@ -56,8 +56,8 @@ import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
@@ -82,7 +82,7 @@ import com.google.inject.Injector;
  */
 public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
-  static final Logger LOG = LoggerFactory.getLogger(WomenWritersImporter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(WomenWritersImporter.class);
 
   public static void main(String[] args) throws Exception {
 
@@ -189,8 +189,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
     System.out.println(".. Relations");
     importRelations();
-    System.out.printf("Number of missing relation types = %6d%n%n", missingRelationTypes);
-    System.out.printf("Number of unstored relations     = %6d%n%n", unstoredRelations);
+    System.out.printf("Number of missing relation types = %6d%n", missingRelationTypes);
+    System.out.printf("Number of unstored relations     = %6d%n", unstoredRelations);
+    System.out.printf("Number of duplicate relations    = %6d%n", relationManager.getDuplicateRelationCount());
 
     printBoxedText("Indexing");
 
@@ -418,13 +419,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.setResourceType(Document.ResourceType.TEXT);
 
     String type = filterField(object.type);
-    verifyNonEmptyField(line, "type", type);
-    DocumentType documentType = (type == null) ? null : documentTypeMap.get(type);
-    converted.setDocumentType(documentType);
+    converted.setDocumentType(toDocumentType(type));
 
     String title = filterField(object.title);
-    verifyNonEmptyField(line, "title", title);
-    converted.setTitle(title != null ? title : "TBD");
+    converted.setTitle(title != null ? title : "[Untitled]");
 
     converted.setDescription(filterField(object.description));
 
@@ -485,7 +483,16 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.tempCreator = filterField(object.creator);
     converted.tempLanguage = filterField(object.language);
 
+    if ("work".equalsIgnoreCase(type) && "works".equals(object.original_table) && object.old_id != 0) {
+      converted.tempOldId = Integer.toString(object.old_id);
+    }
+
     return converted.isValid() ? converted : null;
+  }
+
+  public DocumentType toDocumentType(String type) {
+    DocumentType documentType = (type != null) ? documentTypeMap.get(type) : null;
+    return (documentType != null) ? documentType : DocumentType.UNKNOWN ;
   }
 
   private List<XPrint> extractPrints(XDocument object) {
@@ -578,9 +585,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     public String language_id; // object id of language - must occur in relations
     public String[] libraries; // list of library id's - must occur in relations
     public String notes; // text
-    public int old_id; // ignore
+    public int old_id; // record number in NEWW database
     public String origin; // item of a list of countries. BUT origin of what?
-    public String original_table; // ignore
+    public String original_table; // table in NEWW database
     public Map<String, XPrint> prints; // printed editions
     public String reference; // text, sparse, unstructured
     public XSource source;
@@ -824,6 +831,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     conc.put("bologna#italy", "se:bologna.ita");
     conc.put("bruxelles#belgium/southern netherlands", "se:brussel.bel");
     conc.put("bucharest#romania", "se:bucharest.rou");
+    conc.put("budapest#hungary", "se:budapest.hun");
     conc.put("cambridge#england", "se:cambridge.eng");
     conc.put("cesena#italy", "se:cesena.ita");
     conc.put("copenhagen#denmark", "se:kobenhavn.dnk");
@@ -1275,6 +1283,10 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       }
     }
 
+    if ("author".equalsIgnoreCase(type) && "authors".equals(object.original_table) && object.old_id != 0) {
+      converted.tempOldId = Integer.toString(object.old_id);
+    }
+
     return converted;
   }
 
@@ -1314,9 +1326,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     public String name; // unstructured
     public String nationality; // sparse, how does this relate to pace of birth?
     public String notes; // text
-    public int old_id; // ignore
+    public int old_id; // record number in NEWW database
     public String original_field; // ignore
-    public String original_table; // ignore
+    public String original_table; // table in NEWW database
     public String personal_situation; // unstructured
     public String personalSituation; // EMPTY
     public String[] placeOfBirth; // how can this be an array?
@@ -1338,7 +1350,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   // Maps from names used in json to registered relation type names
   private RelationTypeConcordance relationTypeConcordance;
 
-  private RelationTypeConcordance getRelationTypeConcordance() throws Exception{
+  private RelationTypeConcordance getRelationTypeConcordance() throws Exception {
     File file = new File(inputDir, "relationtypes.txt");
     return new RelationTypeConcordance(file);
   }
@@ -1410,7 +1422,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
 
     // Keep track of types seen
-    names.add(relationType + ":" + leftObject + "-->" +rightObject);
+    names.add(relationType + ":" + leftObject + "-->" + rightObject);
 
     // Map to registered relation type and validate
     RelationTypeConcordance.Mapping mapping = relationTypeConcordance.lookup(relationType, leftObject, rightObject);

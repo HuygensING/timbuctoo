@@ -36,6 +36,7 @@ public class WWDocument extends Document {
   private String notes;
   private List<String> topoi;
 
+  public String tempOldId; // record id in NEWW database
   public String tempCreator;
   public String tempLanguage;
   public String tempOrigin;

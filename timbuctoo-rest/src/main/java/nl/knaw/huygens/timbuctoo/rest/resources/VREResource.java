@@ -70,14 +70,18 @@ public class VREResource extends ResourceBase {
     info.setName(vre.getName());
     info.setDescription(vre.getDescription());
 
+    String prefix = vre.getDomainEntityPrefix();
     for (String name : vre.getReceptionNames()) {
       RelationType type = map.get(name);
       if (type != null) {
         Reception reception = new Reception();
-        reception.name = type.getRegularName();
-        reception.source = type.getSourceTypeName();
-        reception.target = type.getTargetTypeName();
         reception.typeId = type.getId();
+        reception.regularName = type.getRegularName();
+        reception.inverseName = type.getInverseName();
+        reception.baseSourceType = type.getSourceTypeName();
+        reception.baseTargetType = type.getTargetTypeName();
+        reception.derivedSourceType = prefix + type.getSourceTypeName();
+        reception.derivedTargetType = prefix + type.getTargetTypeName();
         info.addReception(reception);
       }
     }
@@ -89,7 +93,7 @@ public class VREResource extends ResourceBase {
   public static class VREInfo {
     private String name;
     private String description;
-    private List<Reception> receptions = Lists.newArrayList();
+    private final List<Reception> receptions = Lists.newArrayList();
 
     public String getName() {
       return name;
@@ -117,10 +121,13 @@ public class VREResource extends ResourceBase {
   }
 
   public static class Reception {
-    public String name;
-    public String source;
-    public String target;
     public String typeId;
+    public String regularName;
+    public String inverseName;
+    public String baseSourceType;
+    public String baseTargetType;
+    public String derivedSourceType;
+    public String derivedTargetType;
   }
 
 }

@@ -63,7 +63,8 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.validation.DuplicateException;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
@@ -141,13 +142,28 @@ public class DomainEntityResource extends ResourceBase {
     String id = null;
     try {
       id = storageManager.addDomainEntity((Class<T>) type, (T) input, change);
-    } catch (ValidationException e) {
-      throw new WebApplicationException(Status.CONFLICT);
-
+    } catch (DuplicateException e) {
+      // TODO find a better solution
+      LOG.info("Duplicate entity {} with id {}", entityName, e.getDuplicateId());
+      id = updateTheDuplicateEntity(entityName, input, vreId, userId, e.getDuplicateId());
+    } catch (ValidationException ex) {
+      LOG.info("Non-valid entity", ex);
+      throw new WebApplicationException(Status.BAD_REQUEST);
     }
     notifyChange(ActionType.ADD, type, id);
 
     return Response.created(new URI(id)).build();
+  }
+
+  private String updateTheDuplicateEntity(String entityName, DomainEntity input, String vreId, String userId, String id) throws IOException {
+    Class<? extends DomainEntity> entityType = getEntityType(entityName, Status.NOT_FOUND);
+    DomainEntity duplicatEnity = storageManager.getEntity(entityType, id);
+
+    input.setRev(duplicatEnity.getRev());
+    input.setId(id);
+
+    put(entityName, id, input, vreId, userId);
+    return id;
   }
 
   @GET

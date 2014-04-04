@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.validation;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -9,13 +9,17 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.validation.DuplicateException;
+import nl.knaw.huygens.timbuctoo.validation.RelationDuplicationValidator;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 import org.junit.Before;
 import org.junit.Test;
 
-public class RelationValidatorTest {
+public class RelationDuplicationValidatorTest {
   private Storage storageMock;
-  private RelationValidator instance;
+  private RelationDuplicationValidator instance;
   private String firstId = "Id00001";
   private String secondId = "Id00002";
   private String typeId = "typeId";
@@ -23,7 +27,7 @@ public class RelationValidatorTest {
   @Before
   public void setUp() {
     storageMock = mock(Storage.class);
-    instance = new RelationValidator(storageMock);
+    instance = new RelationDuplicationValidator(storageMock);
   }
 
   @Test

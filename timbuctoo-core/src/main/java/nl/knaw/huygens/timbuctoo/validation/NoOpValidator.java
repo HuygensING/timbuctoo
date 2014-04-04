@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.validation;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 

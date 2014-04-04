@@ -35,8 +35,8 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.util.Progress;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -67,7 +67,7 @@ public abstract class DefaultImporter {
     String message = String.format(format, args);
     if (!message.equals(prevMessage)) {
       System.out.print("## ");
-      System.out.printf(message);
+      System.out.print(message);
       System.out.println();
       prevMessage = message;
     }
@@ -192,7 +192,6 @@ public abstract class DefaultImporter {
     return StringUtils.stripToNull(text);
   }
 
-  
   /** Line separator in note fields */
   public static final String NEWLINE = "\n";
 

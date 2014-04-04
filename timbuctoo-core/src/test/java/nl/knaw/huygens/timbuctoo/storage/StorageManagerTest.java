@@ -38,6 +38,9 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
+import nl.knaw.huygens.timbuctoo.validation.Validator;
+import nl.knaw.huygens.timbuctoo.validation.ValidatorManager;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;

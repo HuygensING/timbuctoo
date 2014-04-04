@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.model.raa;
+package nl.knaw.huygens.timbuctoo.validation;
 
 /*
  * #%L
@@ -22,7 +22,24 @@ package nl.knaw.huygens.timbuctoo.model.raa;
  * #L%
  */
 
-// Used to extend RAAPerson
-public class RAACivilServant {
+public class ValidationException extends Exception {
+
+  private static final long serialVersionUID = 1L;
+
+  public ValidationException() {
+    super();
+  }
+
+  public ValidationException(String message) {
+    super(message);
+  }
+
+  public ValidationException(Throwable cause) {
+    super(cause);
+  }
+
+  public ValidationException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
 }

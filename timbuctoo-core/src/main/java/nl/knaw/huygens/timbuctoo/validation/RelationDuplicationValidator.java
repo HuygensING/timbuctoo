@@ -1,14 +1,18 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.validation;
 
 import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.Storage;
 
-public class RelationValidator implements Validator<Relation> {
+import com.google.inject.Inject;
+
+public class RelationDuplicationValidator implements Validator<Relation> {
 
   private final Storage storage;
 
-  public RelationValidator(Storage storage) {
+  @Inject
+  public RelationDuplicationValidator(Storage storage) {
     this.storage = storage;
   }
 
@@ -24,11 +28,13 @@ public class RelationValidator implements Validator<Relation> {
     inverseExample.setTargetId(entityToValidate.getSourceId());
     inverseExample.setTypeId(entityToValidate.getTypeId());
 
-    if (storage.findItem(Relation.class, example) != null) {
-      throw new DuplicateException();
+    Relation foundExample = storage.findItem(Relation.class, example);
+    if (foundExample != null) {
+      throw new DuplicateException(foundExample.getId());
     }
-    if (storage.findItem(Relation.class, inverseExample) != null) {
-      throw new DuplicateException();
+    Relation foundInverse = storage.findItem(Relation.class, inverseExample);
+    if (foundInverse != null) {
+      throw new DuplicateException(foundInverse.getId());
     }
   }
 }

@@ -37,13 +37,20 @@ public interface VRE {
   /**
    * Returns the unique name of this VRE.
    */
-   String getDescription();
+  String getDescription();
 
   /**
    * Returns the {@code Scope} of this VRE.
    * Currently a {@codeVRE} has one {@code Scope}.
    */
   Scope getScope();
+
+  /**
+   * Returns the prefix for domain entities to derive their internal name
+   * from the internal name of the primitive domain entities.
+   * NOTE. This solution can be made more general.
+   */
+  String getDomainEntityPrefix();
 
   /**
    * Returns names of relation types that are considered to be receptions.

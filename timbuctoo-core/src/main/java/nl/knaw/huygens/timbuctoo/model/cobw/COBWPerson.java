@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.model.raa;
+package nl.knaw.huygens.timbuctoo.model.cobw;
 
 /*
  * #%L
@@ -22,8 +22,39 @@ package nl.knaw.huygens.timbuctoo.model.raa;
  * #L%
  */
 
+import java.util.List;
+
 import nl.knaw.huygens.timbuctoo.model.Person;
 
-public class RAAPerson extends Person {
+import com.google.common.collect.Lists;
+
+public class COBWPerson extends Person {
+
+  // Fields scheduled for removal
+  public List<String> tempNames = Lists.newArrayList();
+  public String tempNewwId;
+
+  private List<String> nationalities = Lists.newArrayList();
+  private String notes;
+
+  public List<String> getNationalities() {
+    return nationalities;
+  }
+
+  public void setNationalities(List<String> nationalities) {
+    this.nationalities = nationalities;
+  }
+
+  public void addNationality(String nationality) {
+    nationalities.add(nationality);
+  }
+
+  public String getNotes() {
+    return notes;
+  }
+
+  public void setNotes(String notes) {
+    this.notes = notes;
+  }
 
 }
