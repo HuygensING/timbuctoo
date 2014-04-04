@@ -301,4 +301,26 @@ public class IndexFacadeTest {
     verify(indexMock1).clear();
     verify(indexMock2).clear();
   }
+
+  @Test(expected = IndexException.class)
+  public void testDeleteAllEntitiesIndexClearThrowsAnIndexException() throws IndexException {
+    // setup
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+
+    // when
+    List<Index> indexes = Lists.newArrayList(indexMock1, indexMock2);
+    when(scopeManagerMock.getAllIndexes()).thenReturn(indexes);
+    doThrow(IndexException.class).when(indexMock1).clear();
+
+    try {
+      // action
+      instance.deleteAllEntities();
+    } finally {
+      // verify
+      verify(scopeManagerMock).getAllIndexes();
+      verify(indexMock1).clear();
+      verifyZeroInteractions(indexMock2);
+    }
+  }
 }

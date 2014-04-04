@@ -36,7 +36,8 @@ public interface Index {
 
   /**
    * Deletes all the items of the index.
+   * @throws IndexException 
    */
-  public void clear();
+  public void clear() throws IndexException;
 
 }

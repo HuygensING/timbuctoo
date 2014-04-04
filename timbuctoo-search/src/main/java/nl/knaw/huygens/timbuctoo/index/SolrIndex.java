@@ -67,9 +67,15 @@ public class SolrIndex implements Index {
   }
 
   @Override
-  public void clear() {
-    // TODO Auto-generated method stub
-
+  public void clear() throws IndexException {
+    try {
+      solrServer.deleteByQuery("*:*");
+      solrServer.commit();
+    } catch (SolrServerException e) {
+      throw new IndexException(e);
+    } catch (IOException e) {
+      throw new IndexException(e);
+    }
   }
 
 }

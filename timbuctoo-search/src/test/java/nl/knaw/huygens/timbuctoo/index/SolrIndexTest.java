@@ -1,8 +1,10 @@
 package nl.knaw.huygens.timbuctoo.index;
 
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -168,4 +170,62 @@ public class SolrIndexTest {
     }
   }
 
+  @Test
+  public void testClear() throws SolrServerException, IOException, IndexException {
+    // action
+    instance.clear();
+
+    // verify
+    InOrder inOrder = inOrder(solrServerMock);
+    inOrder.verify(solrServerMock).deleteByQuery("*:*");
+    inOrder.verify(solrServerMock).commit();
+  }
+
+  @Test(expected = IndexException.class)
+  public void testClearDeleteByQueryThrowsSolrServerException() throws SolrServerException, IOException, IndexException {
+    testClearDeleteByQueryThrowsException(SolrServerException.class);
+  }
+
+  @Test(expected = IndexException.class)
+  public void testClearDeleteByQueryThrowsIOException() throws SolrServerException, IOException, IndexException {
+    testClearDeleteByQueryThrowsException(IOException.class);
+  }
+
+  private void testClearDeleteByQueryThrowsException(Class<? extends Exception> exception) throws SolrServerException, IOException, IndexException {
+    //when
+    doThrow(exception).when(solrServerMock).deleteByQuery("*:*");
+
+    try {
+      // action
+      instance.clear();
+    } finally {
+      // verify
+      verify(solrServerMock).deleteByQuery("*:*");
+      verifyNoMoreInteractions(solrServerMock);
+    }
+  }
+
+  @Test(expected = IndexException.class)
+  public void testClearCommitThrowsAnSolrServerException() throws SolrServerException, IOException, IndexException {
+    testClearCommitThrowsAnException(SolrServerException.class);
+  }
+
+  @Test(expected = IndexException.class)
+  public void testClearCommitThrowsAnIOException() throws SolrServerException, IOException, IndexException {
+    testClearCommitThrowsAnException(IOException.class);
+  }
+
+  private void testClearCommitThrowsAnException(Class<? extends Exception> exception) throws SolrServerException, IOException, IndexException {
+    //when
+    doThrow(exception).when(solrServerMock).commit();
+
+    try {
+      // action
+      instance.clear();
+    } finally {
+      // verify
+      verify(solrServerMock).deleteByQuery("*:*");
+      verify(solrServerMock).commit();
+    }
+  }
 }
