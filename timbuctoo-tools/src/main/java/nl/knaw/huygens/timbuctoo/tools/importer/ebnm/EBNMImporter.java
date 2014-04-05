@@ -1,13 +1,5 @@
 package nl.knaw.huygens.timbuctoo.tools.importer.ebnm;
 
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_KEYWORD;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PARENT_ARCHIVE;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PERSON;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PLACE;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_SIBLING_ARCHIVE;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_SIBLING_ARCHIVER;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.IS_CREATOR_OF;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -264,13 +256,6 @@ public class EBNMImporter extends EBNMDefaultImporter {
 	// --- relations -----------------------------------------------------
 
 	private void setupRelationTypes() {
-		isCreatorRef = retrieveRelationType(IS_CREATOR_OF.regular);
-		hasKeywordRef = retrieveRelationType(HAS_KEYWORD.regular);
-		hasPersonRef = retrieveRelationType(HAS_PERSON.regular);
-		hasPlaceRef = retrieveRelationType(HAS_PLACE.regular);
-		hasParentArchive = retrieveRelationType(HAS_PARENT_ARCHIVE.regular);
-		hasSiblingArchive = retrieveRelationType(HAS_SIBLING_ARCHIVE.regular);
-		hasSiblingArchiver = retrieveRelationType(HAS_SIBLING_ARCHIVER.regular);
 	}
 
 	private Reference retrieveRelationType(String name) {

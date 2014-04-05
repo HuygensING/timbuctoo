@@ -29,9 +29,15 @@ package nl.knaw.huygens.timbuctoo.model.dcar;
 public enum RelTypeNames {
 
   IS_CREATOR_OF("is_creator_of", "is_created_by"), //
-  HAS_KEYWORD("has_keyword", "is_keyword_of"), //
-  HAS_PERSON("has_person", "is_person_of"), //
-  HAS_PLACE("has_place", "is_place_of"), //
+  HAS_ARCHIVE_KEYWORD("has_archive_keyword", "is_archive_keyword_of"), //
+  HAS_ARCHIVER_KEYWORD("has_archiver_keyword", "is_archiver_keyword_of"), //
+  HAS_LEGISLATION_KEYWORD("has_legislation_keyword", "is_legislation_keyword_of"), //
+  HAS_ARCHIVE_PERSON("has_archive_person", "is_archive_person_of"), //
+  HAS_ARCHIVER_PERSON("has_archiver_person", "is_archive_person_of"), //
+  HAS_LEGISLATION_PERSON("has_legislation_person", "is_legislation_person_of"), //
+  HAS_ARCHIVE_PLACE("has_archive_place", "is_archive_place_of"), //
+  HAS_ARCHIVER_PLACE("has_archiver_place", "is_archiver_place_of"), //
+  HAS_LEGISLATION_PLACE("has_legislation_place", "is_legislation_place_of"), //
   HAS_PARENT_ARCHIVE("has_parent_archive", "has_child_archive"), //
   HAS_SIBLING_ARCHIVE("has_sibling_archive", "has_sibling_archive"), //
   HAS_SIBLING_ARCHIVER("has_sibling_archiver", "has_sibling_archiver");

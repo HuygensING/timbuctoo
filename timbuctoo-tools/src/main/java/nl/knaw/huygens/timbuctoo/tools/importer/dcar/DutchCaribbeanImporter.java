@@ -23,10 +23,16 @@ package nl.knaw.huygens.timbuctoo.tools.importer.dcar;
  */
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_KEYWORD;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVE_KEYWORD;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVER_KEYWORD;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_LEGISLATION_KEYWORD;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PARENT_ARCHIVE;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PERSON;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PLACE;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVE_PERSON;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVER_PERSON;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_LEGISLATION_PERSON;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVE_PLACE;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVER_PLACE;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_LEGISLATION_PLACE;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_SIBLING_ARCHIVE;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_SIBLING_ARCHIVER;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.IS_CREATOR_OF;
@@ -39,6 +45,11 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.model.Archive;
+import nl.knaw.huygens.timbuctoo.model.Archiver;
+import nl.knaw.huygens.timbuctoo.model.Keyword;
+import nl.knaw.huygens.timbuctoo.model.Legislation;
+import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARArchive;
@@ -137,9 +148,15 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
   private final Map<String, Reference> archiverRefMap = Maps.newHashMap();
 
   private Reference isCreatorRef;
-  private Reference hasKeywordRef;
-  private Reference hasPersonRef;
-  private Reference hasPlaceRef;
+  private Reference hasArchiveKeywordRef;
+  private Reference hasArchiverKeywordRef;
+  private Reference hasLegislationKeywordRef;
+  private Reference hasArchivePersonRef;
+  private Reference hasArchiverPersonRef;
+  private Reference hasLegislationPersonRef;
+  private Reference hasArchivePlaceRef;
+  private Reference hasArchiverPlaceRef;
+  private Reference hasLegislationPlaceRef;
   private Reference hasParentArchive;
   private Reference hasSiblingArchive;
   private Reference hasSiblingArchiver;
@@ -236,9 +253,15 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
 
   private void setupRelationTypes() {
     isCreatorRef = retrieveRelationType(IS_CREATOR_OF.regular);
-    hasKeywordRef = retrieveRelationType(HAS_KEYWORD.regular);
-    hasPersonRef = retrieveRelationType(HAS_PERSON.regular);
-    hasPlaceRef = retrieveRelationType(HAS_PLACE.regular);
+    hasArchiveKeywordRef = retrieveRelationType(HAS_ARCHIVE_KEYWORD.regular);
+    hasArchiverKeywordRef = retrieveRelationType(HAS_ARCHIVER_KEYWORD.regular);
+    hasLegislationKeywordRef = retrieveRelationType(HAS_LEGISLATION_KEYWORD.regular);
+    hasArchivePersonRef = retrieveRelationType(HAS_ARCHIVE_PERSON.regular);
+    hasArchiverPersonRef = retrieveRelationType(HAS_ARCHIVER_PERSON.regular);
+    hasLegislationPersonRef = retrieveRelationType(HAS_LEGISLATION_PERSON.regular);
+    hasArchivePlaceRef = retrieveRelationType(HAS_ARCHIVE_PLACE.regular);
+    hasArchiverPlaceRef = retrieveRelationType(HAS_ARCHIVER_PLACE.regular);
+    hasLegislationPlaceRef = retrieveRelationType(HAS_LEGISLATION_PLACE.regular);
     hasParentArchive = retrieveRelationType(HAS_PARENT_ARCHIVE.regular);
     hasSiblingArchive = retrieveRelationType(HAS_SIBLING_ARCHIVE.regular);
     hasSiblingArchiver = retrieveRelationType(HAS_SIBLING_ARCHIVER.regular);
@@ -285,7 +308,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
       } else {
         DCARKeyword keyword = convert(xkeyword);
         String storedId = addDomainEntity(DCARKeyword.class, keyword);
-        referenceMap.put(jsonId, new Reference(DCARKeyword.class, storedId));
+        referenceMap.put(jsonId, new Reference(Keyword.class, storedId));
       }
     }
   }
@@ -328,7 +351,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
       } else {
         DCARPerson person = convert(xperson);
         String storedId = addDomainEntity(DCARPerson.class, person);
-        referenceMap.put(jsonId, new Reference(DCARPerson.class, storedId));
+        referenceMap.put(jsonId, new Reference(Person.class, storedId));
       }
     }
   }
@@ -380,7 +403,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
         } else {
           DCARLegislation legislation = convert(wetgeving);
           String storedId = addDomainEntity(DCARLegislation.class, legislation);
-          referenceMap.put(jsonId, new Reference(DCARLegislation.class, storedId));
+          referenceMap.put(jsonId, new Reference(Legislation.class, storedId));
         }
       }
     }
@@ -434,10 +457,10 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
 
   private void addLegislationRelations(Reference reference, Wetgeving wetgeving) {
     checkNotNull(reference, "Missing legislation reference");
-    addRegularRelations(reference, hasPlaceRef, keywordRefMap, wetgeving.geography);
-    addRegularRelations(reference, hasKeywordRef, keywordRefMap, wetgeving.keywords);
-    addRegularRelations(reference, hasKeywordRef, keywordRefMap, wetgeving.keywords_extra);
-    addRegularRelations(reference, hasPersonRef, personRefMap, wetgeving.persons);
+    addRegularRelations(reference, hasLegislationPlaceRef, keywordRefMap, wetgeving.geography);
+    addRegularRelations(reference, hasLegislationKeywordRef, keywordRefMap, wetgeving.keywords);
+    addRegularRelations(reference, hasLegislationKeywordRef, keywordRefMap, wetgeving.keywords_extra);
+    addRegularRelations(reference, hasLegislationPersonRef, personRefMap, wetgeving.persons);
   }
 
   // --- Archives ------------------------------------------------------
@@ -455,7 +478,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
         } else {
           DCARArchive archive = convert(archiefmat);
           String storedId = addDomainEntity(DCARArchive.class, archive);
-          referenceMap.put(jsonId, new Reference(DCARArchive.class, storedId));
+          referenceMap.put(jsonId, new Reference(Archive.class, storedId));
         }
       }
     }
@@ -513,9 +536,9 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
 
   private void addArchiveRelations(Reference reference, ArchiefMat archiefmat) {
     checkNotNull(reference, "Missing archive reference");
-    addRegularRelations(reference, hasPlaceRef, keywordRefMap, archiefmat.geography);
-    addRegularRelations(reference, hasKeywordRef, keywordRefMap, archiefmat.keywords);
-    addRegularRelations(reference, hasPersonRef, personRefMap, archiefmat.persons);
+    addRegularRelations(reference, hasArchivePlaceRef, keywordRefMap, archiefmat.geography);
+    addRegularRelations(reference, hasArchiveKeywordRef, keywordRefMap, archiefmat.keywords);
+    addRegularRelations(reference, hasArchivePersonRef, personRefMap, archiefmat.persons);
 
     if (archiefmat.related != null) {
       for (XRelated item : archiefmat.related) {
@@ -551,7 +574,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
         } else {
           DCARArchiver archiver = convert(creator);
           String storedId = addDomainEntity(DCARArchiver.class, archiver);
-          referenceMap.put(jsonId, new Reference(DCARArchiver.class, storedId));
+          referenceMap.put(jsonId, new Reference(Archiver.class, storedId));
         }
       }
     }
@@ -600,9 +623,9 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
 
   private void addArchiverRelations(Reference reference, Creator creator) {
     checkNotNull(reference, "Missing archiver reference");
-    addRegularRelations(reference, hasPlaceRef, keywordRefMap, creator.geography);
-    addRegularRelations(reference, hasKeywordRef, keywordRefMap, creator.keywords);
-    addRegularRelations(reference, hasPersonRef, personRefMap, creator.persons);
+    addRegularRelations(reference, hasArchiverPlaceRef, keywordRefMap, creator.geography);
+    addRegularRelations(reference, hasArchiverKeywordRef, keywordRefMap, creator.keywords);
+    addRegularRelations(reference, hasArchiverPersonRef, personRefMap, creator.persons);
 
     if (creator.related != null) {
       for (XRelated item : creator.related) {
