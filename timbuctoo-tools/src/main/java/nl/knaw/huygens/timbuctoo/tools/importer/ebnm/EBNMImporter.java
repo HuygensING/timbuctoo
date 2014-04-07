@@ -82,8 +82,6 @@ public class EBNMImporter extends EBNMDefaultImporter {
 			indexManager = injector.getInstance(IndexManager.class);
 
 			TypeRegistry registry = injector.getInstance(TypeRegistry.class);
-			RelationManager relationManager = new RelationManager(registry,
-					storageManager);
 			new EBNMImporter(registry, storageManager, null, indexManager,
 					importDirName).importAll();
 

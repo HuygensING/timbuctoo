@@ -22,11 +22,7 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,7 +30,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -48,17 +43,14 @@ import org.junit.Test;
 
 public class RelationManagerTest {
 
-  private static TypeRegistry registry;
-
   private StorageManager storageManager;
   private RelationManager relationManager;
   private Change change;
 
   @Before
-  public void setUp() {
-    registry = mock(TypeRegistry.class);
+  public void setup() {
     storageManager = mock(StorageManager.class);
-    relationManager = new RelationManager(registry, storageManager);
+    relationManager = new RelationManager(storageManager);
     change = new Change("test", "test");
   }
 
@@ -79,8 +71,6 @@ public class RelationManagerTest {
     // when
     String relationTypeId = "relationTypeId";
     setUpStorageManagerGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
-    doReturn(ProjectADomainEntity.class).when(registry).getTypeForIName(TypeNames.getInternalName(ProjectADomainEntity.class));
-    doReturn(ProjectATestDocWithPersonName.class).when(registry).getTypeForIName(TypeNames.getInternalName(ProjectATestDocWithPersonName.class));
 
     Reference typeRef = new Reference(RelationType.class, relationTypeId);
     Reference sourceRef = new Reference(ProjectADomainEntity.class, "test");
@@ -99,7 +89,6 @@ public class RelationManagerTest {
     //when
     String relationTypeId = "relationTypeId";
     setUpStorageManagerGetRelationType(ProjectADomainEntity.class, ProjectADomainEntity.class, relationTypeId, true);
-    doReturn(ProjectADomainEntity.class).when(registry).getTypeForIName(TypeNames.getInternalName(ProjectADomainEntity.class));
 
     Reference typeRef = new Reference(RelationType.class, relationTypeId);
     Reference sourceRef = new Reference(ProjectADomainEntity.class, "test");
@@ -118,7 +107,6 @@ public class RelationManagerTest {
     String relationTypeId = "relationTypeId";
     // when
     setUpStorageManagerGetRelationType(ProjectADomainEntity.class, ProjectADomainEntity.class, relationTypeId, true);
-    doReturn(ProjectADomainEntity.class).when(registry).getTypeForIName(TypeNames.getInternalName(ProjectADomainEntity.class));
 
     Reference typeRef = new Reference(RelationType.class, relationTypeId);
     Reference sourceRef = new Reference(ProjectADomainEntity.class, "zztest23");
@@ -167,36 +155,6 @@ public class RelationManagerTest {
     Reference typeRef = new Reference(RelationType.class, relationTypeId);
     Reference sourceRef = new Reference(ProjectADomainEntity.class, "test");
     Reference targetRef = null;
-
-    ProjectARelation expectedRelation = new ProjectARelation(sourceRef, typeRef, targetRef);
-    expectedRelation.setAccepted(true);
-
-    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef, change);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testStoreRelationSourceRefWrongType() {
-    String relationTypeId = "relationTypeId";
-    setUpStorageManagerGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
-
-    Reference typeRef = new Reference(RelationType.class, relationTypeId);
-    Reference sourceRef = new Reference(ProjectATestDocWithPersonName.class, "test");
-    Reference targetRef = new Reference(ProjectATestDocWithPersonName.class, "test23");
-
-    ProjectARelation expectedRelation = new ProjectARelation(sourceRef, typeRef, targetRef);
-    expectedRelation.setAccepted(true);
-
-    relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef, change);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testStoreRelationTargetRefWrongType() {
-    String relationTypeId = "relationTypeId";
-    setUpStorageManagerGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
-
-    Reference typeRef = new Reference(RelationType.class, relationTypeId);
-    Reference sourceRef = new Reference(ProjectADomainEntity.class, "test");
-    Reference targetRef = new Reference(ProjectADomainEntity.class, "test23");
 
     ProjectARelation expectedRelation = new ProjectARelation(sourceRef, typeRef, targetRef);
     expectedRelation.setAccepted(true);

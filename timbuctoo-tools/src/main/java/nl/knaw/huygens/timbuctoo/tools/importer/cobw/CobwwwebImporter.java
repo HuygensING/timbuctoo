@@ -94,7 +94,7 @@ public class CobwwwebImporter extends DefaultImporter {
       storageManager = injector.getInstance(StorageManager.class);
 
       TypeRegistry registry = injector.getInstance(TypeRegistry.class);
-      RelationManager relationManager = new RelationManager(registry, storageManager);
+      RelationManager relationManager = new RelationManager(storageManager);
 
       CobwwwebImporter importer = new CobwwwebImporter(registry, storageManager, relationManager, null);
       importer.importAll();
@@ -140,7 +140,7 @@ public class CobwwwebImporter extends DefaultImporter {
 
       String xml = "";
 
-      if ("skip".isEmpty()) {
+      if ("".isEmpty()) {
         xml = getResource(URL, "persons");
         List<String> personIds = parseIdResource(xml, "personId");
         log("Retrieved %d id's.%n", personIds.size());
@@ -161,12 +161,12 @@ public class CobwwwebImporter extends DefaultImporter {
         for (String id : documentIds) {
           xml = getResource(URL, "document", id);
           COBWDocument entity = parseDocumentResource(xml, id);
-          //String storedId = addDomainEntity(COBWDocument.class, entity, change);
-          //storeReference(id, COBWDocument.class, storedId);
+          String storedId = addDomainEntity(COBWDocument.class, entity, change);
+          storeReference(id, COBWDocument.class, storedId);
         }
       }
 
-      if ("skip".isEmpty()) {
+      if ("".isEmpty()) {
         xml = getResource(URL, "relations");
         List<String> relationIds = parseIdResource(xml, "relationId");
         log("Retrieved %d id's.%n", relationIds.size());

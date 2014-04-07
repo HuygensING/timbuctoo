@@ -111,7 +111,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
       indexManager = injector.getInstance(IndexManager.class);
 
       TypeRegistry registry = injector.getInstance(TypeRegistry.class);
-      RelationManager relationManager = new RelationManager(registry, storageManager);
+      RelationManager relationManager = new RelationManager(storageManager);
       new DutchCaribbeanImporter(registry, storageManager, relationManager, indexManager, importDirName).importAll();
 
       long time = (System.currentTimeMillis() - start) / 1000;

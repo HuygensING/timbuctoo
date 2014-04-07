@@ -102,7 +102,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       indexManager = injector.getInstance(IndexManager.class);
 
       TypeRegistry registry = injector.getInstance(TypeRegistry.class);
-      RelationManager relationManager = new RelationManager(registry, storageManager);
+      RelationManager relationManager = new RelationManager(storageManager);
       WomenWritersImporter importer = new WomenWritersImporter(registry, storageManager, relationManager, indexManager, directory);
 
       importer.importAll();
