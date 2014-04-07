@@ -33,6 +33,8 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.NewTestRole;
 import nl.knaw.huygens.timbuctoo.variation.model.TestRole;
@@ -292,6 +294,9 @@ public class TypeRegistryTest {
     public String getDisplayName() {
       return null;
     }
+
+    @Override
+    public void validateForAdd(TypeRegistry registry, Storage storage) throws ValidationException {}
   }
 
   private static class ASystemEntity extends SystemEntity {

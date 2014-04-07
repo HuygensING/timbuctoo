@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.validation;
  */
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 public class NoOpValidator<T extends DomainEntity> implements Validator<T> {
 

@@ -27,6 +27,7 @@ import java.io.IOException;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 /**
  * Checks if the relation conforms to the type.

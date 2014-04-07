@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.validation;
 import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 public interface Validator<T extends DomainEntity> {
 

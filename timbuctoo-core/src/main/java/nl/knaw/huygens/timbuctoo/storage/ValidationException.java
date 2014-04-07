@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.validation;
+package nl.knaw.huygens.timbuctoo.storage;
 
 /*
  * #%L

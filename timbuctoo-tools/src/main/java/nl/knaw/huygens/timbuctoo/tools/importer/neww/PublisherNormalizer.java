@@ -9,8 +9,8 @@ import org.apache.commons.lang.StringUtils;
 
 import com.google.common.collect.Maps;
 
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
-import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 /**
  * Normalizes names of publishers.

@@ -31,7 +31,7 @@ import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.validation.ValidationException;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;

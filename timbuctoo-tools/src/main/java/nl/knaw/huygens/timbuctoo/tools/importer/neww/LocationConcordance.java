@@ -7,8 +7,8 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
-import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 /**
  * Normalizes names of locations.

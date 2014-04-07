@@ -25,7 +25,7 @@ package nl.knaw.huygens.timbuctoo.model;
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
-import nl.knaw.huygens.timbuctoo.validation.ValidationException;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 public abstract class SystemEntity extends Entity {
 

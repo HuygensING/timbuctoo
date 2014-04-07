@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import com.google.inject.Inject;
 

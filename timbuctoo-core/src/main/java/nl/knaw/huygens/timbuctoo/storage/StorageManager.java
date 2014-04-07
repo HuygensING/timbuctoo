@@ -51,7 +51,6 @@ import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.util.KV;
-import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 import nl.knaw.huygens.timbuctoo.validation.Validator;
 import nl.knaw.huygens.timbuctoo.validation.ValidatorManager;
 

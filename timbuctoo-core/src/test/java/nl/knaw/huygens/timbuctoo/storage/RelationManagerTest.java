@@ -40,7 +40,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectARelation;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;

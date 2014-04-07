@@ -31,7 +31,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.RelationManager;
-import nl.knaw.huygens.timbuctoo.validation.ValidationException;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
