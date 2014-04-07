@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
+import java.util.Iterator;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -32,13 +33,18 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
-import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 @Path(Paths.SYSTEM_PREFIX + "/relationtypes")
@@ -47,20 +53,20 @@ public class RelationTypeResource extends ResourceBase {
   private static final String ID_PARAM = "id";
   private static final String ID_PATH = "/{id: " + RelationType.ID_PREFIX + "\\d+}";
 
+  private final TypeRegistry registry;
   private final StorageManager storageManager;
-  private final RelationManager relationManager;
 
   @Inject
-  public RelationTypeResource(StorageManager storageManager, RelationManager relationManager) {
+  public RelationTypeResource(TypeRegistry registry, StorageManager storageManager) {
+    this.registry = registry;
     this.storageManager = storageManager;
-    this.relationManager = relationManager;
   }
 
   @GET
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
   public List<RelationType> getRelationTypes(@QueryParam("iname") String name) {
-    return relationManager.getRelationTypesForEntity(name);
+    return getRelationTypesForEntity(name);
   }
 
   @GET
@@ -69,6 +75,62 @@ public class RelationTypeResource extends ResourceBase {
   @JsonView(JsonViews.WebView.class)
   public RelationType getRelationType(@PathParam(ID_PARAM) String id) {
     return checkNotNull(storageManager.getEntity(RelationType.class, id), Status.NOT_FOUND);
+  }
+
+  /**
+   * Returns the relation types in which an entity with the specified internal name
+   * can participate, either as "source" or as "target".
+   * If {@code iname} is {@code null} or empty all relation types are returned.
+   */
+  protected List<RelationType> getRelationTypesForEntity(String iname) {
+    boolean shouldFilter = !StringUtils.isEmpty(iname);
+    List<RelationType> types = Lists.newArrayList();
+    Iterator<RelationType> iterator = storageManager.getAll(RelationType.class);
+    while (iterator.hasNext()) {
+      RelationType type = iterator.next();
+      if (!shouldFilter || isApplicable(iname, type)) {
+        types.add(type);
+      }
+    }
+    return types;
+  }
+
+  protected boolean isApplicable(String iname, RelationType type) {
+    Class<? extends DomainEntity> requestType = TypeRegistry.toDomainEntity(convertToType(iname));
+    Class<? extends DomainEntity> sourceType = TypeRegistry.toDomainEntity(convertToType(type.getSourceTypeName()));
+    Class<? extends DomainEntity> targetType = TypeRegistry.toDomainEntity(convertToType(type.getTargetTypeName()));
+
+    // iname is assignable from source or target of relation
+    boolean isAssignable = isAssignable(sourceType, requestType) || isAssignable(targetType, requestType);
+
+    boolean isSourceCompatible = isCompatible(requestType, sourceType);
+    boolean isTargetCompatible = isCompatible(requestType, targetType);
+
+    boolean isRequestTypePrimitive = TypeRegistry.isPrimitiveDomainEntity(requestType);
+
+    boolean isPrimitiveCompatible = isRequestTypePrimitive && isAssignable && (isSourceCompatible || isTargetCompatible);
+    boolean isCompatibleForProjectType = isAssignable && isSourceCompatible && isTargetCompatible;
+
+    return isPrimitiveCompatible || isCompatibleForProjectType;
+  }
+
+  private Class<? extends Entity> convertToType(String iname) {
+    return "domainentity".equals(iname) ? DomainEntity.class : registry.getTypeForIName(iname);
+  }
+
+  private boolean isCompatible(Class<? extends DomainEntity> requestType, Class<? extends DomainEntity> typeFromRelation) {
+    return registry.isFromSameProject(requestType, typeFromRelation) || //
+      TypeRegistry.isPrimitiveDomainEntity(requestType) || // 
+      TypeRegistry.isPrimitiveDomainEntity(typeFromRelation) || //
+      DomainEntity.class.equals(requestType) || //
+      DomainEntity.class.equals(typeFromRelation);
+  }
+  /**
+   * Convenience method for deciding assignability of an entity to another entity,
+   * given the internal names of the target entity type and the source entity type.
+   */
+  private boolean isAssignable(Class<? extends DomainEntity> targetType, Class<? extends DomainEntity> sourceType) {
+    return targetType != null && sourceType != null && targetType.isAssignableFrom(sourceType);
   }
 
 }
