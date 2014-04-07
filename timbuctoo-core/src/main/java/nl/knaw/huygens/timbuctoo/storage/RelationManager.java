@@ -70,8 +70,7 @@ public class RelationManager {
   /**
    * Stores the specified relation type.
    */
-  public void addRelationType(RelationType type) throws IOException {
-    // TODO add validation
+  public void addRelationType(RelationType type) throws IOException, ValidationException {
     storageManager.addSystemEntity(RelationType.class, type);
   }
 

@@ -27,7 +27,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -146,6 +150,13 @@ public abstract class DomainEntity extends Entity implements Variable {
 
   public void addRole(Role role) {
     roles.add(role);
+  }
+
+  @Override
+  public void validateForAdd(TypeRegistry registry, Storage storage) throws ValidationException {
+    if (!BusinessRules.allowDomainEntityAdd(getClass())) {
+      throw new ValidationException("Not allowed to add " + getClass());
+    }
   }
 
 }

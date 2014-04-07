@@ -66,12 +66,14 @@ public class StorageManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(StorageManager.class);
 
+  private final TypeRegistry registry;
   private final Storage storage;
 
   private final ValidatorManager validatorManager;
 
   @Inject
-  public StorageManager(Storage storage, ValidatorManager validatorManager) {
+  public StorageManager(TypeRegistry registry, Storage storage, ValidatorManager validatorManager) {
+    this.registry = registry;
     this.storage = storage;
     this.validatorManager = validatorManager;
   }
@@ -116,8 +118,8 @@ public class StorageManager {
 
   // --- add entities --------------------------------------------------
 
-  public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException {
-    checkArgument(BusinessRules.allowSystemEntityAdd(type), "Not allowed to add %s", type);
+  public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException, ValidationException {
+    entity.validateForAdd(registry, storage);
     return storage.addSystemEntity(type, entity);
   }
 

@@ -181,7 +181,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testGetMyUserDataAsNewUser() throws IOException {
+  public void testGetMyUserDataAsNewUser() throws Exception {
     setUpUser(USER_ID);
     setUpVREManager(VRE_ID, true);
 
@@ -256,7 +256,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testPutUserUserNotFound() throws IOException {
+  public void testPutUserUserNotFound() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
@@ -420,7 +420,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostVREAuthorizationAsAdmin() throws IOException {
+  public void testPostVREAuthorizationAsAdmin() throws Exception {
     setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
@@ -436,7 +436,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostVREAuthorizationAsUser() throws IOException {
+  public void testPostVREAuthorizationAsUser() throws Exception {
     setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
 
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
@@ -449,7 +449,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostVREAuthorizationNotLoggedIn() throws IOException {
+  public void testPostVREAuthorizationNotLoggedIn() throws Exception {
     setUserNotLoggedIn();
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
 
@@ -460,7 +460,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostVREAuthorizationVREAuthorizationIsNull() throws IOException {
+  public void testPostVREAuthorizationVREAuthorizationIsNull() throws Exception {
     setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization vreAuthorization = null;
@@ -474,7 +474,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostVREAuthorizationNotInScope() throws IOException {
+  public void testPostVREAuthorizationNotInScope() throws Exception {
     setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), OTHER_VRE_ID);
     setUpVREManager(OTHER_VRE_ID, true);
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
@@ -488,7 +488,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPutVREAuthorizationAsAdmin() throws IOException {
+  public void testPutVREAuthorizationAsAdmin() throws Exception {
     setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
@@ -505,7 +505,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPutVREAuthorizationAsUser() throws IOException {
+  public void testPutVREAuthorizationAsUser() throws Exception {
     setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
@@ -521,7 +521,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPutVREAuthorizationNotLoggedIn() throws IOException {
+  public void testPutVREAuthorizationNotLoggedIn() throws Exception {
     setUserNotLoggedIn();
     setUpVREManager(VRE_ID, true);
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
@@ -534,11 +534,10 @@ public class UserResourceTest extends WebServiceTestSetup {
     StorageManager storageManager = getStorageManager();
     verify(storageManager, never()).findEntity(VREAuthorization.class, example);
     verify(storageManager, never()).updateSystemEntity(VREAuthorization.class, vreAuthorization);
-
   }
 
   @Test
-  public void testPutVREAuthorizationVREAuthorizationIsNull() throws IOException {
+  public void testPutVREAuthorizationVREAuthorizationIsNull() throws Exception {
     setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization vreAuthorization = null;
@@ -554,7 +553,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPutVREAuthorizationNotFound() throws IOException {
+  public void testPutVREAuthorizationNotFound() throws Exception {
     setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
@@ -570,7 +569,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPutVREAuthorizationNotInScope() throws IOException {
+  public void testPutVREAuthorizationNotInScope() throws Exception {
     setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), OTHER_VRE_ID);
     setUpVREManager(OTHER_VRE_ID, true);
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
@@ -587,7 +586,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testDeleteVREAuthorizationAsAdmin() throws IOException {
+  public void testDeleteVREAuthorizationAsAdmin() throws Exception {
     setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
@@ -604,7 +603,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testDeleteAuthorizationAsUser() throws IOException {
+  public void testDeleteAuthorizationAsUser() throws Exception {
     setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
@@ -619,7 +618,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testDeleteVREAuthorizationNotLoggedIn() throws IOException {
+  public void testDeleteVREAuthorizationNotLoggedIn() throws Exception {
     setUserNotLoggedIn();
     setUpVREManager(VRE_ID, true);
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
@@ -634,7 +633,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testDeleteAuthorizationNotFound() throws IOException {
+  public void testDeleteAuthorizationNotFound() throws Exception {
     setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
@@ -650,7 +649,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testDeleteVREAuthorizationNotInScope() throws IOException {
+  public void testDeleteVREAuthorizationNotInScope() throws Exception {
     setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), OTHER_VRE_ID);
     setUpVREManager(OTHER_VRE_ID, true);
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);

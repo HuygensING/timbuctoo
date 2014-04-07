@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -44,49 +45,47 @@ import com.google.inject.Inject;
  * It will send an email to the admin of the VRE when the user is not known in the VRE.
  */
 public class DefaultVREAuthorizationHandler implements VREAuthorizationHandler {
+
   private static final Logger LOG = LoggerFactory.getLogger(DefaultVREAuthorizationHandler.class);
-  
+
   private final MailSender mailSender;
   private final StorageManager storageManager;
-  
+
   @Inject
   public DefaultVREAuthorizationHandler(MailSender mailSender, StorageManager storageManager){
     this.mailSender = mailSender;
     this.storageManager = storageManager;
   }
-  
 
   @Override
   public VREAuthorization getVREAuthorization(User user, String vreId) {
     String userId = user.getId();
-    
-    VREAuthorization vreAuthorization = findVreAuthorization(userId, vreId);
+    VREAuthorization authorization = findVreAuthorization(userId, vreId);
 
-    // The user is not know with the VRE, if vreAuthorization is equal to null. 
-    if (vreAuthorization == null) {
+    if (authorization == null) {
+      // VRE does not know about the user
       try {
-        vreAuthorization = createVreAuthorization(userId, vreId);
-      } catch (IOException e) {
-        LOG.error("Creation of VREAuthorization for user with id {} and vre {} failed", userId, vreId);
+        authorization = createVreAuthorization(userId, vreId);
+      } catch (Exception e) {
+        LOG.error("Creation of VREAuthorization for user {} and vre {} failed", userId, vreId);
       }
       sendEmail(user, vreId);
     }
-    return vreAuthorization;
+    return authorization;
   }
 
-  private VREAuthorization createVreAuthorization(String userId, String vreId) throws IOException {
-    VREAuthorization vreAuthorization = new VREAuthorization();
-    vreAuthorization.setUserId(userId);
-    vreAuthorization.setVreId(vreId);
-    vreAuthorization.setRoles(Lists.newArrayList(UNVERIFIED_USER_ROLE));
+  private VREAuthorization createVreAuthorization(String userId, String vreId) throws IOException, ValidationException {
+    VREAuthorization authorization = new VREAuthorization();
+    authorization.setUserId(userId);
+    authorization.setVreId(vreId);
+    authorization.setRoles(Lists.newArrayList(UNVERIFIED_USER_ROLE));
 
-    vreAuthorization.setId(storageManager.addSystemEntity(VREAuthorization.class, vreAuthorization));
+    authorization.setId(storageManager.addSystemEntity(VREAuthorization.class, authorization));
 
-    return vreAuthorization;
+    return authorization;
   }
 
   private VREAuthorization findVreAuthorization(String userId, String vreId) {
-
     VREAuthorization example = new VREAuthorization();
     example.setVreId(vreId);
     example.setUserId(userId);
@@ -122,4 +121,5 @@ public class DefaultVREAuthorizationHandler implements VREAuthorizationHandler {
 
     return authorization != null ? storageManager.getEntity(User.class, authorization.getUserId()) : null;
   }
+
 }

@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.validation.ValidationException;
@@ -54,14 +55,16 @@ public class StorageManagerTest {
 
   private ValidatorManager validatorManager;
   private StorageManager manager;
+  private TypeRegistry registry;
   private Storage storage;
   private Change change;
 
   @Before
   public void setup() {
     validatorManager = mock(ValidatorManager.class);
+    registry = mock(TypeRegistry.class);
     storage = mock(Storage.class);
-    manager = new StorageManager(storage, validatorManager);
+    manager = new StorageManager(registry, storage, validatorManager);
     change = new Change("userId", "vreId");
   }
 
@@ -102,6 +105,14 @@ public class StorageManagerTest {
     verify(storage).getAllRevisions(BaseDomainEntity.class, "id");
   }
 
+  @Test
+  public void testAddSystemEntity() throws IOException, ValidationException {
+   TestSystemEntity entity = mock(TestSystemEntity.class);
+   manager.addSystemEntity(TestSystemEntity.class, entity);
+   verify(entity).validateForAdd(registry, storage);
+   verify(storage).addSystemEntity(TestSystemEntity.class, entity);
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testAddPrimitiveDomainEntity() throws IOException, ValidationException {
     BaseDomainEntity entity = new BaseDomainEntity();
@@ -111,7 +122,7 @@ public class StorageManagerTest {
   @Test
   public void testAddDerivedDomainEntity() throws IOException, ValidationException {
     // mock
-    Validator validator = mock(Validator.class);
+    Validator<ProjectADomainEntity> validator = mock(Validator.class);
 
     ProjectADomainEntity entity = new ProjectADomainEntity();
 

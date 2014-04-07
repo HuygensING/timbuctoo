@@ -22,8 +22,6 @@ package nl.knaw.huygens.timbuctoo.security;
  * #L%
  */
 
-import java.io.IOException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,8 +62,8 @@ public class ExampleVREAuthorizationHandler implements VREAuthorizationHandler {
 
       try {
         vreAuthorization.setId(storageManager.addSystemEntity(VREAuthorization.class, vreAuthorization));
-      } catch (IOException e) {
-        LOG.error("Creating VREAuthorization for user {} and VRE {} thrown exception", user.getCommonName(), vreId, e);
+      } catch (Exception e) {
+        LOG.error("Creating VREAuthorization for user {} and VRE {} throws exception {}", user.getCommonName(), vreId, e);
       }
 
     }
