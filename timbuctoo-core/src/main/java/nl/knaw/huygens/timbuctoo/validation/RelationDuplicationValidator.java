@@ -29,7 +29,7 @@ import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
-public class RelationDuplicationValidator {
+public class RelationDuplicationValidator implements Validator<Relation> {
 
   private final Storage storage;
 
@@ -37,6 +37,7 @@ public class RelationDuplicationValidator {
     this.storage = storage;
   }
 
+  @Override
   public void validate(Relation entity) throws ValidationException {
     try {
       Relation example = new Relation();

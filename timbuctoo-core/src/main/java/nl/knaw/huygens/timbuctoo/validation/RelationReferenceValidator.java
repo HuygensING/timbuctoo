@@ -30,7 +30,7 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
-public class RelationReferenceValidator {
+public class RelationReferenceValidator implements Validator<Relation> {
 
   private final TypeRegistry registry;
   private final Storage storage;
@@ -40,6 +40,7 @@ public class RelationReferenceValidator {
     this.storage = storage;
   }
 
+  @Override
   public void validate(Relation entity) throws ValidationException {
     try {
       String sourceType = entity.getSourceType();

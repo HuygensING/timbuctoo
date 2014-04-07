@@ -32,7 +32,7 @@ import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 /**
  * Checks if the relation conforms to the type.
  */
-public class RelationTypeConformationValidator {
+public class RelationTypeConformationValidator implements Validator<Relation> {
 
   private final Storage storage;
 
@@ -40,6 +40,7 @@ public class RelationTypeConformationValidator {
     this.storage = storage;
   }
 
+  @Override
   public void validate(Relation entity) throws ValidationException {
     try {
       String relationTypeId = entity.getTypeId();

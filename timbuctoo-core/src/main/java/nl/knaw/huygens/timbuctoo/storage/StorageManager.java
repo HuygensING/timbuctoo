@@ -78,7 +78,7 @@ public class StorageManager {
     storage.close();
   }
 
-  // -------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
 
   public StorageStatus getStatus() {
     StorageStatus status = new StorageStatus();
@@ -109,7 +109,7 @@ public class StorageManager {
     return new KV<Long>(type.getSimpleName(), storage.count(type));
   }
 
-  // --- add entities --------------------------------------------------
+  // --- add entities ----------------------------------------------------------
 
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException, ValidationException {
     entity.validateForAdd(registry, storage);
@@ -121,7 +121,7 @@ public class StorageManager {
     return storage.addDomainEntity(type, entity, change);
   }
 
-  // --- update entities -----------------------------------------------
+  // --- update entities -------------------------------------------------------
 
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws IOException {
     storage.updateSystemEntity(type, entity);
@@ -141,7 +141,7 @@ public class StorageManager {
     storage.setPID(type, id, pid);
   }
 
-  // --- delete entities -----------------------------------------------
+  // --- delete entities -------------------------------------------------------
 
   public <T extends SystemEntity> int deleteSystemEntities(Class<T> type) throws IOException {
     return storage.deleteAll(type);
@@ -177,7 +177,7 @@ public class StorageManager {
     return storage.deleteByDate(SearchResult.class, SearchResult.DATE_FIELD, date);
   }
 
-  // -------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
 
   public <T extends Entity> T getEntity(Class<T> type, String id) {
     try {
@@ -273,18 +273,6 @@ public class StorageManager {
     return storage.getAllIdsWithoutPIDOfType(type);
   }
 
-  /**
-   * Returns the id's of the relations, connected to the entities with the input id's.
-   * The input id's can be the source id as well as the target id of the Relation. 
-   * 
-   * @param ids a list of id's to find the relations for
-   * @return a list of id's of the corresponding relations
-   * @throws IOException re-throws the IOExceptions of the storage
-   */
-  public List<String> getRelationIds(List<String> ids) throws IOException {
-    return storage.getRelationIds(ids);
-  }
-
   public <T extends Entity> List<T> getAllLimited(Class<T> type, int offset, int limit) {
     if (limit == 0) {
       return Collections.<T> emptyList();
@@ -301,6 +289,8 @@ public class StorageManager {
     return list;
   }
 
+  // --- relations -------------------------------------------------------------
+
   public boolean relationExists(Relation relation) {
     try {
       return storage.relationExists(relation);
@@ -308,6 +298,18 @@ public class StorageManager {
       LOG.error("Error while retrieving relation");
       return false;
     }
+  }
+
+  /**
+   * Returns the id's of the relations, connected to the entities with the input id's.
+   * The input id's can be the source id as well as the target id of the Relation. 
+   * 
+   * @param ids a list of id's to find the relations for
+   * @return a list of id's of the corresponding relations
+   * @throws IOException re-throws the IOExceptions of the storage
+   */
+  public List<String> getRelationIds(List<String> ids) throws IOException {
+    return storage.getRelationIds(ids);
   }
 
 }
