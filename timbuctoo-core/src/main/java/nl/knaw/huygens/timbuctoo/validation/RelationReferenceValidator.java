@@ -25,7 +25,6 @@ package nl.knaw.huygens.timbuctoo.validation;
 import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -42,30 +41,18 @@ public class RelationReferenceValidator implements Validator<Relation> {
 
   @Override
   public void validate(Relation entity) throws ValidationException {
-    try {
-      String sourceType = entity.getSourceType();
-      String sourceId = entity.getSourceId();
-      if (!entityExists(sourceType, sourceId)) {
-        throw new ValidationException(createValidationMessage(sourceType, sourceId));
-      }
+    validateEntityExists(entity.getSourceType(), entity.getSourceId());
+    validateEntityExists(entity.getTargetType(), entity.getTargetId());
+  }
 
-      String targetType = entity.getTargetType();
-      String targetId = entity.getTargetId();
-      if (!entityExists(targetType, targetId)) {
-        throw new ValidationException(createValidationMessage(targetType, targetId));
+  private void validateEntityExists(String iname, String id) throws ValidationException {
+    try {
+      if (!storage.entityExists(registry.getTypeForIName(iname), id)) {
+        throw new ValidationException("Entity [%s,%s] does not exist", iname, id);
       }
     } catch (IOException e) {
       throw new ValidationException(e);
     }
-  }
-
-  private String createValidationMessage(String type, String id) {
-    return String.format("Entity of type %s with id %s does not exist.", type, id);
-  }
-
-  private boolean entityExists(String typeString, String id) throws IOException {
-    Class<? extends Entity> sourceType = registry.getTypeForIName(typeString);
-    return storage.getItem(sourceType, id) != null;
   }
 
 }

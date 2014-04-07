@@ -99,6 +99,11 @@ public interface Storage {
 
   // -------------------------------------------------------------------
 
+  /**
+   * Returns {@code true} if the specified entity exists, {@code false} otherwise.
+   */
+  <T extends Entity> boolean entityExists(Class<T> type, String id) throws IOException;
+
   <T extends Entity> T getItem(Class<T> type, String id) throws IOException;
 
   <T extends Entity> StorageIterator<T> getAllByType(Class<T> type);

@@ -34,6 +34,10 @@ public class ValidationException extends Exception {
     super(message);
   }
 
+  public ValidationException(String format, Object... args) {
+    super(String.format(format, args));
+  }
+
   public ValidationException(Throwable cause) {
     super(cause);
   }

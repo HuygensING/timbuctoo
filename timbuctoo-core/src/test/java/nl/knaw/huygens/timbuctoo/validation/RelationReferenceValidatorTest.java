@@ -2,12 +2,8 @@ package nl.knaw.huygens.timbuctoo.validation;
 
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static test.util.RelationBuilder.createRelation;
-
-import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -33,7 +29,7 @@ public class RelationReferenceValidatorTest {
   private RelationReferenceValidator relationReferenceValidator;
 
   @Before
-  public void setUp() {
+  public void setup() {
     typeRegistryMock = mock(TypeRegistry.class);
     storageMock = mock(Storage.class);
     relationReferenceValidator = new RelationReferenceValidator(typeRegistryMock, storageMock);
@@ -54,11 +50,10 @@ public class RelationReferenceValidatorTest {
   }
 
   @Test
-  public void testValidateIsValid() throws IOException, ValidationException {
-
+  public void testValidateIsValid() throws Exception {
     // when
-    when(storageMock.getItem(sourceType, sourceId)).thenReturn(new SourceType());
-    when(storageMock.getItem(targetType, targetId)).thenReturn(new TargetType());
+    when(storageMock.entityExists(sourceType, sourceId)).thenReturn(true);
+    when(storageMock.entityExists(targetType, targetId)).thenReturn(true);
 
     // action
     relationReferenceValidator.validate(relation);
@@ -66,64 +61,37 @@ public class RelationReferenceValidatorTest {
     // verify
     InOrder inOrder = Mockito.inOrder(typeRegistryMock, storageMock);
     inOrder.verify(typeRegistryMock).getTypeForIName(sourceTypeString);
-    inOrder.verify(storageMock).getItem(sourceType, sourceId);
+    inOrder.verify(storageMock).entityExists(sourceType, sourceId);
     inOrder.verify(typeRegistryMock).getTypeForIName(targetTypeString);
-    inOrder.verify(storageMock).getItem(targetType, targetId);
-
+    inOrder.verify(storageMock).entityExists(targetType, targetId);
   }
 
   @Test(expected = ValidationException.class)
-  public void testValidateSourceDoesNotExist() throws IOException, ValidationException {
-    // when
-    when(storageMock.getItem(sourceType, sourceId)).thenReturn(null);
-
-    try {
-      // action
-      relationReferenceValidator.validate(relation);
-    } finally {
-      // verify
-      verify(typeRegistryMock).getTypeForIName(sourceTypeString);
-      verify(storageMock).getItem(sourceType, sourceId);
-      verifyNoMoreInteractions(typeRegistryMock, storageMock);
-    }
+  public void testValidateSourceDoesNotExist() throws Exception {
+    when(storageMock.entityExists(sourceType, sourceId)).thenReturn(false);
+    when(storageMock.entityExists(targetType, targetId)).thenReturn(true);
+    relationReferenceValidator.validate(relation);
   }
 
   @Test(expected = ValidationException.class)
-  public void testValidateTargetDoesNotExist() throws IOException, ValidationException {
-    // when
-    when(storageMock.getItem(sourceType, sourceId)).thenReturn(new SourceType());
-    when(storageMock.getItem(targetType, targetId)).thenReturn(null);
-
-    try {
-      // action
-      relationReferenceValidator.validate(relation);
-    } finally {
-      // verify
-      verify(typeRegistryMock).getTypeForIName(sourceTypeString);
-      verify(storageMock).getItem(sourceType, sourceId);
-      verify(typeRegistryMock).getTypeForIName(targetTypeString);
-      verify(storageMock).getItem(targetType, targetId);
-    }
+  public void testValidateTargetDoesNotExist() throws Exception {
+    when(storageMock.entityExists(sourceType, sourceId)).thenReturn(true);
+    when(storageMock.entityExists(targetType, targetId)).thenReturn(false);
+    relationReferenceValidator.validate(relation);
   }
 
   private static class SourceType extends DomainEntity {
-
     @Override
     public String getDisplayName() {
-      // TODO Auto-generated method stub
       return null;
     }
-
   }
 
   private static class TargetType extends DomainEntity {
-
     @Override
     public String getDisplayName() {
-      // TODO Auto-generated method stub
       return null;
     }
-
   }
 
 }
