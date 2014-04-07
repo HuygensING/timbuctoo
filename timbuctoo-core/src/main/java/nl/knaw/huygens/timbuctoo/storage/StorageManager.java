@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Archive;
 import nl.knaw.huygens.timbuctoo.model.Archiver;
@@ -51,8 +50,6 @@ import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.util.KV;
-import nl.knaw.huygens.timbuctoo.validation.Validator;
-import nl.knaw.huygens.timbuctoo.validation.ValidatorManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,13 +65,10 @@ public class StorageManager {
   private final TypeRegistry registry;
   private final Storage storage;
 
-  private final ValidatorManager validatorManager;
-
   @Inject
-  public StorageManager(TypeRegistry registry, Storage storage, ValidatorManager validatorManager) {
+  public StorageManager(TypeRegistry registry, Storage storage) {
     this.registry = registry;
     this.storage = storage;
-    this.validatorManager = validatorManager;
   }
 
   /**
@@ -123,9 +117,7 @@ public class StorageManager {
   }
 
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws IOException, ValidationException {
-    checkArgument(BusinessRules.allowDomainEntityAdd(type), "Not allowed to add %s", type);
-    Validator<T> validator = validatorManager.getValidatorFor(type);
-    validator.validate(entity);
+    entity.validateForAdd(registry, storage);
     return storage.addDomainEntity(type, entity, change);
   }
 

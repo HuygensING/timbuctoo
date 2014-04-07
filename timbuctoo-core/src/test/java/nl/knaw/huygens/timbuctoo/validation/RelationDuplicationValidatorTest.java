@@ -9,9 +9,9 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.validation.DuplicateException;
 import nl.knaw.huygens.timbuctoo.validation.RelationDuplicationValidator;
 
 import org.junit.Before;
@@ -102,8 +102,8 @@ public class RelationDuplicationValidatorTest {
     }
   }
 
-  @Test(expected = IOException.class)
-  public void testValidateStorageThrowsAnExceptionOnExampleSearch() throws ValidationException, IOException {
+  @Test(expected = ValidationException.class)
+  public void testValidateStorageThrowsAnExceptionOnExampleSearch() throws Exception {
     Relation example = createRelation(firstId, secondId, typeId);
 
     Relation entityToValidate = createRelation(firstId, secondId, typeId);
@@ -129,8 +129,8 @@ public class RelationDuplicationValidatorTest {
     }
   }
 
-  @Test(expected = IOException.class)
-  public void testValidateStorageThrowsAnExceptionOnInverseExampleSearch() throws ValidationException, IOException {
+  @Test(expected = ValidationException.class)
+  public void testValidateStorageThrowsAnExceptionOnInverseExampleSearch() throws Exception {
     Relation example = createRelation(firstId, secondId, typeId);
     Relation inverseExample = createRelation(secondId, firstId, typeId);
 

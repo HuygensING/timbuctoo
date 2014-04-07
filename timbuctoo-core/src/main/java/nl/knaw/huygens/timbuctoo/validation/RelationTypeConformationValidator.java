@@ -32,26 +32,28 @@ import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 /**
  * Checks if the relation conforms to the type.
  */
-public class RelationTypeConformationValidator implements Validator<Relation> {
+public class RelationTypeConformationValidator {
 
-  private final Storage storageMock;
+  private final Storage storage;
 
   public RelationTypeConformationValidator(Storage storage) {
-    this.storageMock = storage;
+    this.storage = storage;
   }
 
-  @Override
-  public void validate(Relation entityToValidate) throws ValidationException, IOException {
-    String relationTypeId = entityToValidate.getTypeId();
+  public void validate(Relation entity) throws ValidationException {
+    try {
+      String relationTypeId = entity.getTypeId();
 
-    RelationType relationType = storageMock.getItem(RelationType.class, relationTypeId);
+      RelationType relationType = storage.getItem(RelationType.class, relationTypeId);
+      if (relationType == null) {
+        throw new ValidationException("RelationType with id " + relationTypeId + " does not exist");
+      }
 
-    if (relationType == null) {
-      throw new ValidationException("RelationType with id " + relationTypeId + " does not exist");
-    }
-
-    if (!entityToValidate.conformsToRelationType(relationType)) {
-      throw new ValidationException("Relation is not conform the RelationType with id " + relationTypeId);
+      if (!entity.conformsToRelationType(relationType)) {
+        throw new ValidationException("Relation is not conform the RelationType with id " + relationTypeId);
+      }
+    } catch (IOException e) {
+      throw new ValidationException(e);
     }
   }
 

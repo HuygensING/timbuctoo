@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.validation;
+package nl.knaw.huygens.timbuctoo.storage;
 
 /*
  * #%L
@@ -22,20 +22,19 @@ package nl.knaw.huygens.timbuctoo.validation;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.storage.Storage;
+public class DuplicateException extends ValidationException {
 
-public class RelationValidatorFactory {
-  public final Storage storage;
-  private final TypeRegistry typeRegistry;
+  private static final long serialVersionUID = 1L;
 
-  public RelationValidatorFactory(Storage storage, TypeRegistry typeRegistry) {
-    this.storage = storage;
-    this.typeRegistry = typeRegistry;
+  private String duplicateId;
+
+  public DuplicateException(String duplicateId) {
+    super();
+    this.duplicateId = duplicateId;
   }
 
-  public RelationValidator createRelationValidator() {
-    return new RelationValidator(new RelationTypeConformationValidator(storage), new RelationReferenceValidator(typeRegistry, storage), new RelationDuplicationValidator(storage));
+  public String getDuplicateId() {
+    return duplicateId;
   }
 
 }

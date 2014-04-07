@@ -30,31 +30,32 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
-public class RelationReferenceValidator implements Validator<Relation> {
+public class RelationReferenceValidator {
 
-  private final TypeRegistry typeRegistry;
+  private final TypeRegistry registry;
   private final Storage storage;
 
-  public RelationReferenceValidator(TypeRegistry typeRegistry, Storage storage) {
-    this.typeRegistry = typeRegistry;
+  public RelationReferenceValidator(TypeRegistry registry, Storage storage) {
+    this.registry = registry;
     this.storage = storage;
   }
 
-  @Override
-  public void validate(Relation entityToValidate) throws ValidationException, IOException {
-    String sourceType = entityToValidate.getSourceType();
-    String sourceId = entityToValidate.getSourceId();
+  public void validate(Relation entity) throws ValidationException {
+    try {
+      String sourceType = entity.getSourceType();
+      String sourceId = entity.getSourceId();
+      if (!entityExists(sourceType, sourceId)) {
+        throw new ValidationException(createValidationMessage(sourceType, sourceId));
+      }
 
-    if (!entityExists(sourceType, sourceId)) {
-      throw new ValidationException(createValidationMessage(sourceType, sourceId));
+      String targetType = entity.getTargetType();
+      String targetId = entity.getTargetId();
+      if (!entityExists(targetType, targetId)) {
+        throw new ValidationException(createValidationMessage(targetType, targetId));
+      }
+    } catch (IOException e) {
+      throw new ValidationException(e);
     }
-
-    String targetType = entityToValidate.getTargetType();
-    String targetId = entityToValidate.getTargetId();
-    if (!entityExists(targetType, targetId)) {
-      throw new ValidationException(createValidationMessage(targetType, targetId));
-    }
-
   }
 
   private String createValidationMessage(String type, String id) {
@@ -62,7 +63,7 @@ public class RelationReferenceValidator implements Validator<Relation> {
   }
 
   private boolean entityExists(String typeString, String id) throws IOException {
-    Class<? extends Entity> sourceType = typeRegistry.getTypeForIName(typeString);
+    Class<? extends Entity> sourceType = registry.getTypeForIName(typeString);
     return storage.getItem(sourceType, id) != null;
   }
 
