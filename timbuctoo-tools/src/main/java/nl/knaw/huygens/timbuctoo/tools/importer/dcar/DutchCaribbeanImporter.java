@@ -61,7 +61,6 @@ import nl.knaw.huygens.timbuctoo.model.dcar.DCARRelation;
 import nl.knaw.huygens.timbuctoo.model.dcar.XRelated;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
-import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
@@ -111,8 +110,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
       indexManager = injector.getInstance(IndexManager.class);
 
       TypeRegistry registry = injector.getInstance(TypeRegistry.class);
-      RelationManager relationManager = new RelationManager(storageManager);
-      new DutchCaribbeanImporter(registry, storageManager, relationManager, indexManager, importDirName).importAll();
+      new DutchCaribbeanImporter(registry, storageManager, indexManager, importDirName).importAll();
 
       long time = (System.currentTimeMillis() - start) / 1000;
       System.out.printf("%n=== Used %d seconds%n%n", time);
@@ -138,7 +136,6 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
   private static final String[] JSON_EXTENSION = { "json" };
 
   private final ObjectMapper objectMapper;
-  private final RelationManager relationManager;
   private final File inputDir;
 
   private final Map<String, Reference> keywordRefMap = Maps.newHashMap();
@@ -161,10 +158,9 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
   private Reference hasSiblingArchive;
   private Reference hasSiblingArchiver;
 
-  public DutchCaribbeanImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager, String inputDirName) {
+  public DutchCaribbeanImporter(TypeRegistry registry, StorageManager storageManager, IndexManager indexManager, String inputDirName) {
     super(registry, storageManager, indexManager);
     objectMapper = new ObjectMapper();
-    this.relationManager = relationManager;
     inputDir = new File(inputDirName);
     System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());
   }
@@ -268,7 +264,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
   }
 
   private Reference retrieveRelationType(String name) {
-    RelationType type = relationManager.getRelationTypeByName(name);
+    RelationType type = storageManager.getRelationTypeByName(name);
     if (type != null) {
       LOG.debug("Retrieved {}", type.getDisplayName());
       return new Reference(RelationType.class, type.getId());
@@ -281,7 +277,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
   private void addRegularRelations(Reference sourceRef, Reference relTypeRef, Map<String, Reference> map, String[] keys) {
     if (keys != null) {
       for (String key : keys) {
-        relationManager.storeRelation(DCARRelation.class, sourceRef, relTypeRef, map.get(key), change);
+        storageManager.storeRelation(DCARRelation.class, sourceRef, relTypeRef, map.get(key), change);
       }
     }
   }
@@ -289,7 +285,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
   private void addInverseRelations(Reference targetRef, Reference relTypeRef, Map<String, Reference> map, String[] keys) {
     if (keys != null) {
       for (String key : keys) {
-        relationManager.storeRelation(DCARRelation.class, map.get(key), relTypeRef, targetRef, change);
+    	  storageManager.storeRelation(DCARRelation.class, map.get(key), relTypeRef, targetRef, change);
       }
     }
   }

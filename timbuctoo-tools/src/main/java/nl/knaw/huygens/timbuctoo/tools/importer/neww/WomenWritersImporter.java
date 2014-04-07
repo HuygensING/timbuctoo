@@ -53,7 +53,6 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
-import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -102,8 +101,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       indexManager = injector.getInstance(IndexManager.class);
 
       TypeRegistry registry = injector.getInstance(TypeRegistry.class);
-      RelationManager relationManager = new RelationManager(storageManager);
-      WomenWritersImporter importer = new WomenWritersImporter(registry, storageManager, relationManager, indexManager, directory);
+      WomenWritersImporter importer = new WomenWritersImporter(registry, storageManager, indexManager, directory);
 
       importer.importAll();
 
@@ -134,13 +132,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   private final Set<String> invalids = Sets.newHashSet();
   /** For deserializing JSON */
   private final ObjectMapper objectMapper;
-  private final RelationManager relationManager;
   private final File inputDir;
 
-  public WomenWritersImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager, String inputDirName) {
+  public WomenWritersImporter(TypeRegistry registry, StorageManager storageManager, IndexManager indexManager, String inputDirName) {
     super(registry, storageManager, indexManager);
     objectMapper = new ObjectMapper();
-    this.relationManager = relationManager;
     inputDir = new File(inputDirName);
     if (inputDir.isDirectory()) {
       System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());
@@ -191,7 +187,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     importRelations();
     System.out.printf("Number of missing relation types = %6d%n", missingRelationTypes);
     System.out.printf("Number of unstored relations     = %6d%n", unstoredRelations);
-    System.out.printf("Number of duplicate relations    = %6d%n", relationManager.getDuplicateRelationCount());
+    System.out.printf("Number of duplicate relations    = %6d%n", storageManager.getDuplicateRelationCount());
 
     printBoxedText("Indexing");
 
@@ -1510,7 +1506,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       throw new IllegalArgumentException("Missing references");
     }
     try {
-      return relationManager.storeRelation(type, sourceRef, relTypeRef, targetRef, change);
+      return storageManager.storeRelation(type, sourceRef, relTypeRef, targetRef, change);
     } catch (IllegalArgumentException e) {
       System.out.println(line);
       throw e;

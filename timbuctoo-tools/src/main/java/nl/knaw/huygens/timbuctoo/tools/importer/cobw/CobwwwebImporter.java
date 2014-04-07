@@ -55,7 +55,6 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
-import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
@@ -91,12 +90,10 @@ public class CobwwwebImporter extends DefaultImporter {
     try {
       long start = System.currentTimeMillis();
 
+      TypeRegistry registry = injector.getInstance(TypeRegistry.class);
       storageManager = injector.getInstance(StorageManager.class);
 
-      TypeRegistry registry = injector.getInstance(TypeRegistry.class);
-      RelationManager relationManager = new RelationManager(storageManager);
-
-      CobwwwebImporter importer = new CobwwwebImporter(registry, storageManager, relationManager, null);
+      CobwwwebImporter importer = new CobwwwebImporter(registry, storageManager, null);
       importer.importAll();
 
       long time = (System.currentTimeMillis() - start) / 1000;
@@ -118,17 +115,15 @@ public class CobwwwebImporter extends DefaultImporter {
   // -------------------------------------------------------------------
 
   private final Change change;
-  private final RelationManager relationManager;
   /** Reference to relation types. */
   private final Map<String, Reference> relationTypes = Maps.newHashMap();
   /** References of stored primitive entities */
   private final Map<String, Reference> references = Maps.newHashMap();
   private Writer importLog = null;
 
-  public CobwwwebImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager) {
+  public CobwwwebImporter(TypeRegistry registry, StorageManager storageManager, IndexManager indexManager) {
     super(registry, storageManager, indexManager);
     change = new Change("importer", "neww");
-    this.relationManager = relationManager;
   }
 
   public void importAll() throws Exception {
@@ -597,7 +592,7 @@ public class CobwwwebImporter extends DefaultImporter {
     Reference sourceRef = references.get(context.sourceId);
     Reference targetRef = references.get(context.targetId);
     if (typeRef != null && sourceRef != null && targetRef != null) {
-      relationManager.storeRelation(COBWRelation.class, sourceRef, typeRef, targetRef, change);
+      storageManager.storeRelation(COBWRelation.class, sourceRef, typeRef, targetRef, change);
     } else {
       System.err.printf("Error in %s: %s --> %s%n", context.relationTypeName, context.sourceId, context.targetId);
     }
