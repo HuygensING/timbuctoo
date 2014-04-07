@@ -135,7 +135,7 @@ public class CobwwwebImporter extends DefaultImporter {
     try {
       importLog = newWriter("cobwwweb-log.txt");
 
-      setup(relationManager);
+      importRelationTypes();
       setupRelationDefs();
 
       String xml = "";

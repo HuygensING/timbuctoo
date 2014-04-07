@@ -192,7 +192,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
 
     System.out.printf("%n.. Setup relation types%n");
     // FIXME system entities shouldn't have been removed!
-    setup(relationManager);
+    importRelationTypes();
     setupRelationTypes();
 
     printBoxedText("2. Basic properties");

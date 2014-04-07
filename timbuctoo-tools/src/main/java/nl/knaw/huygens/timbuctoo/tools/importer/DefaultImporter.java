@@ -32,7 +32,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -96,10 +95,8 @@ public abstract class DefaultImporter {
   /** File with {@code RelationType} definitions; must be present on classpath. */
   private static final String RELATION_TYPE_DEFS = "relationtype-defs.txt";
 
-  protected void setup(RelationManager relationManager) throws ValidationException {
-    if (relationManager != null) {
-      new RelationTypeImporter(typeRegistry, relationManager).importRelationTypes(RELATION_TYPE_DEFS);
-    }
+  protected void importRelationTypes() throws ValidationException {
+    new RelationTypeImporter(typeRegistry, storageManager).importRelationTypes(RELATION_TYPE_DEFS);
   }
 
   protected Reference newDomainEntityReference(Class<? extends DomainEntity> type, String id) {

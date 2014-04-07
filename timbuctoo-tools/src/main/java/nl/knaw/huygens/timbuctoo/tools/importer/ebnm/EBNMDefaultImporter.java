@@ -37,18 +37,15 @@ public abstract class EBNMDefaultImporter extends DefaultImporter {
 		super(registry, storageManager, indexManager);
 		prevMessage = "";
 		errors = 0;
-		setup(relationManager);
+		setup(storageManager);
 	}
 
-	protected void setup(RelationManager relationManager) {
-		if (relationManager != null) {
-			try {
-				new RelationTypeImporter(typeRegistry, relationManager)
-						.importRelationTypes(RELATION_TYPE_DEFS);
-			} catch (ValidationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+	protected void setup(StorageManager storageManager) {
+		try {
+			new RelationTypeImporter(typeRegistry, storageManager).importRelationTypes(RELATION_TYPE_DEFS);
+		} catch (ValidationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

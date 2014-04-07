@@ -158,7 +158,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     removeNonPersistentEntities(WWPerson.class);
     removeNonPersistentEntities(WWRelation.class);
 
-    setup(relationManager);
+    importRelationTypes();
     setupRelationDefs();
 
     printBoxedText("Import");

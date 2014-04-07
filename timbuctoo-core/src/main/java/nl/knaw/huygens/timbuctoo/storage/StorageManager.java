@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Archive;
@@ -42,6 +43,7 @@ import nl.knaw.huygens.timbuctoo.model.Legislation;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Place;
+import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
@@ -54,6 +56,7 @@ import nl.knaw.huygens.timbuctoo.util.KV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -290,6 +293,98 @@ public class StorageManager {
   }
 
   // --- relations -------------------------------------------------------------
+
+  private int duplicateRelationCount = 0;
+
+  public int getDuplicateRelationCount() {
+    return duplicateRelationCount;
+  }
+
+  /**
+   * Stores the specified relation type.
+   */
+  public void addRelationType(RelationType type) throws IOException, ValidationException {
+    addSystemEntity(RelationType.class, type);
+  }
+
+  private static final String REGULAR_NAME = FieldMapper.propertyName(RelationType.class, "regularName");
+
+  /**
+   * Returns the relation type with the specified name,
+   * or {@code null} if it does not exist.
+   */
+  public RelationType getRelationTypeByName(String name) {
+    return findEntity(RelationType.class, REGULAR_NAME, name);
+  }
+
+  /**
+   * Returns the relation type with the specified id,
+   * or {@code null} if it does not exist.
+   */
+  public RelationType getRelationTypeById(String id) {
+    return getEntity(RelationType.class, id);
+  }
+
+  /**
+   * Returns a map for retrieving relation types by their regular name.
+   */
+  public Map<String, RelationType> getRelationTypeMap() {
+    Map<String, RelationType> map = Maps.newHashMap();
+    StorageIterator<RelationType> iterator = getAll(RelationType.class);
+    while (iterator.hasNext()) {
+      RelationType type = iterator.next();
+      map.put(type.getRegularName(), type);
+    }
+    return map;
+  }
+
+  /**
+   * Returns the relation type with the specified reference,
+   * or {@code null} if it does not exist.
+   */
+  public RelationType getRelationType(Reference reference) {
+    checkArgument(reference.refersToType(RelationType.class), "got type %s", reference.getType());
+    return getRelationTypeById(reference.getId());
+  }
+
+  public <T extends Relation> String storeRelation(Class<T> type, Reference sourceRef, Reference relTypeRef, Reference targetRef, Change change) {
+    T relation = null;
+    try {
+      relation = type.newInstance();
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to create instance of " + type);
+    }
+
+    relation.setTypeRef(relTypeRef);
+
+    RelationType relationType = getRelationType(relTypeRef);
+    if (relationType == null) {
+      LOG.error("Unknown relation type {}", relation.getTypeRef().getId());
+      return null;
+    }
+
+    // If the relationType is symmetric, order the relation on id.
+    // This way we can be sure the relation is saved once.
+    if (relationType.isSymmetric() && sourceRef.getId().compareTo(targetRef.getId()) > 0) {
+      relation.setSourceRef(targetRef);
+      relation.setTargetRef(sourceRef);
+    } else {
+      relation.setSourceRef(sourceRef);
+      relation.setTargetRef(targetRef);
+    }
+
+    try {
+      return addDomainEntity(type, relation, change);
+    } catch (DuplicateException e) {
+      duplicateRelationCount++;
+      LOG.debug("Ignored duplicate {}", relation.getDisplayName());
+    } catch (ValidationException e) {
+      LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
+    } catch (IOException e) {
+      LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
+    }
+    return null;
+  }
 
   public boolean relationExists(Relation relation) {
     try {

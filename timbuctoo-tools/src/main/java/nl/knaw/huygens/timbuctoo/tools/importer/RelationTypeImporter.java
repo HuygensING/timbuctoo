@@ -30,7 +30,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.storage.RelationManager;
+import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.slf4j.Logger;
@@ -44,12 +44,12 @@ public class RelationTypeImporter extends CSVImporter {
   private final static Logger LOG = LoggerFactory.getLogger(RelationTypeImporter.class);
 
   private final TypeRegistry registry;
-  private final RelationManager relationManager;
+  private final StorageManager storageManager;
 
-  public RelationTypeImporter(TypeRegistry registry, RelationManager relationManager) {
+  public RelationTypeImporter(TypeRegistry registry, StorageManager manager) {
     super(new PrintWriter(System.err), ';', '"', 4);
     this.registry = registry;
-    this.relationManager = relationManager;
+    this.storageManager = manager;
   }
 
   /**
@@ -57,7 +57,7 @@ public class RelationTypeImporter extends CSVImporter {
    */
   public void importRelationTypes(String fileName) throws ValidationException {
     try {
-      InputStream stream = RelationManager.class.getClassLoader().getResourceAsStream(fileName);
+      InputStream stream = StorageManager.class.getClassLoader().getResourceAsStream(fileName);
       handleFile(stream, 6, false);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -74,22 +74,19 @@ public class RelationTypeImporter extends CSVImporter {
     boolean symmetric = Boolean.parseBoolean(items[5]);
 
     // FIXME neither the regular name nor the inverse name should exist
-    if (relationManager.getRelationTypeByName(regularName) == null) {
+    if (storageManager.getRelationTypeByName(regularName) == null) {
       RelationType type = new RelationType(regularName, inverseName, sourceType, targetType, reflexive, symmetric);
       try {
-        relationManager.addRelationType(type);
+        storageManager.addSystemEntity(RelationType.class, type);
       } catch (IOException e) {
         LOG.error("Failed to add {}", type);
-        throw new ValidationException("Failed to add relation type");
+        throw new ValidationException("Failed to add RelationType");
       }
     }
   }
 
   private Class<? extends DomainEntity> convertToType(String typeName) throws ValidationException {
     String iname = typeName.toLowerCase();
-    if (iname.equals("domainentity")) {
-      return DomainEntity.class;
-    }
     Class<? extends Entity> type = registry.getTypeForIName(iname);
     if (type == null) {
       LOG.error("Name '{}' is not a registered entity", typeName);
