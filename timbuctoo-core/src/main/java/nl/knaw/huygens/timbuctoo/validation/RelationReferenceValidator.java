@@ -22,19 +22,17 @@ package nl.knaw.huygens.timbuctoo.validation;
  * #L%
  */
 
-import java.io.IOException;
-
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 public class RelationReferenceValidator implements Validator<Relation> {
 
   private final TypeRegistry registry;
-  private final Storage storage;
+  private final StorageManager storage;
 
-  public RelationReferenceValidator(TypeRegistry registry, Storage storage) {
+  public RelationReferenceValidator(TypeRegistry registry, StorageManager storage) {
     this.registry = registry;
     this.storage = storage;
   }
@@ -46,12 +44,8 @@ public class RelationReferenceValidator implements Validator<Relation> {
   }
 
   private void validateEntityExists(String iname, String id) throws ValidationException {
-    try {
-      if (!storage.entityExists(registry.getTypeForIName(iname), id)) {
-        throw new ValidationException("Entity [%s,%s] does not exist", iname, id);
-      }
-    } catch (IOException e) {
-      throw new ValidationException(e);
+    if (storage.getEntity(registry.getTypeForIName(iname), id) == null) {
+      throw new ValidationException("Entity [%s,%s] does not exist", iname, id);
     }
   }
 

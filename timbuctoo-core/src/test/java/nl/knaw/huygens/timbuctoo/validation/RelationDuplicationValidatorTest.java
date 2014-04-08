@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.validation;
 
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -10,7 +9,7 @@ import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
-import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.validation.RelationDuplicationValidator;
 
@@ -18,16 +17,17 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class RelationDuplicationValidatorTest {
-  private Storage storageMock;
-  private RelationDuplicationValidator instance;
+
+  private StorageManager storage;
+  private RelationDuplicationValidator validator;
   private String firstId = "Id00001";
   private String secondId = "Id00002";
   private String typeId = "typeId";
 
   @Before
   public void setUp() {
-    storageMock = mock(Storage.class);
-    instance = new RelationDuplicationValidator(storageMock);
+    storage = mock(StorageManager.class);
+    validator = new RelationDuplicationValidator(storage);
   }
 
   @Test
@@ -41,11 +41,11 @@ public class RelationDuplicationValidatorTest {
     entityToValidate.setTypeType("typeType");
 
     // action
-    instance.validate(entityToValidate);
+    validator.validate(entityToValidate);
 
     // verify
-    verify(storageMock).findItem(Relation.class, example);
-    verify(storageMock).findItem(Relation.class, inverseExample);
+    verify(storage).findEntity(Relation.class, example);
+    verify(storage).findEntity(Relation.class, inverseExample);
   }
 
   @Test(expected = DuplicateException.class)
@@ -62,15 +62,15 @@ public class RelationDuplicationValidatorTest {
     itemFound.setTypeType("typeType");
 
     //when
-    when(storageMock.findItem(Relation.class, example)).thenReturn(itemFound);
+    when(storage.findEntity(Relation.class, example)).thenReturn(itemFound);
 
     try {
       // action
-      instance.validate(itemFound);
+      validator.validate(itemFound);
     } finally {
       // verify
-      verify(storageMock).findItem(Relation.class, example);
-      verifyNoMoreInteractions(storageMock);
+      verify(storage).findEntity(Relation.class, example);
+      verifyNoMoreInteractions(storage);
     }
   }
 
@@ -90,70 +90,15 @@ public class RelationDuplicationValidatorTest {
     itemFound.setTypeType("typeType");
 
     // when
-    when(storageMock.findItem(Relation.class, inverseExample)).thenReturn(itemFound);
+    when(storage.findEntity(Relation.class, inverseExample)).thenReturn(itemFound);
 
     try {
       // action
-      instance.validate(entityToValidate);
+      validator.validate(entityToValidate);
     } finally {
       // verify
-      verify(storageMock).findItem(Relation.class, example);
-      verify(storageMock).findItem(Relation.class, inverseExample);
-    }
-  }
-
-  @Test(expected = ValidationException.class)
-  public void testValidateStorageThrowsAnExceptionOnExampleSearch() throws Exception {
-    Relation example = createRelation(firstId, secondId, typeId);
-
-    Relation entityToValidate = createRelation(firstId, secondId, typeId);
-    entityToValidate.setSourceType("sourceType");
-    entityToValidate.setTargetType("targetType");
-    entityToValidate.setTypeType("typeType");
-
-    Relation itemFound = createRelation(secondId, firstId, typeId);
-    itemFound.setSourceType("sourceType");
-    itemFound.setTargetType("targetType");
-    itemFound.setTypeType("typeType");
-
-    // when
-    doThrow(IOException.class).when(storageMock).findItem(Relation.class, example);
-
-    try {
-      // action
-      instance.validate(entityToValidate);
-    } finally {
-      // verify
-      verify(storageMock).findItem(Relation.class, example);
-      verifyNoMoreInteractions(storageMock);
-    }
-  }
-
-  @Test(expected = ValidationException.class)
-  public void testValidateStorageThrowsAnExceptionOnInverseExampleSearch() throws Exception {
-    Relation example = createRelation(firstId, secondId, typeId);
-    Relation inverseExample = createRelation(secondId, firstId, typeId);
-
-    Relation entityToValidate = createRelation(firstId, secondId, typeId);
-    entityToValidate.setSourceType("sourceType");
-    entityToValidate.setTargetType("targetType");
-    entityToValidate.setTypeType("typeType");
-
-    Relation itemFound = createRelation(secondId, firstId, typeId);
-    itemFound.setSourceType("sourceType");
-    itemFound.setTargetType("targetType");
-    itemFound.setTypeType("typeType");
-
-    // when
-    doThrow(IOException.class).when(storageMock).findItem(Relation.class, inverseExample);
-
-    try {
-      // action
-      instance.validate(entityToValidate);
-    } finally {
-      // verify
-      verify(storageMock).findItem(Relation.class, example);
-      verify(storageMock).findItem(Relation.class, inverseExample);
+      verify(storage).findEntity(Relation.class, example);
+      verify(storage).findEntity(Relation.class, inverseExample);
     }
   }
 
@@ -164,4 +109,5 @@ public class RelationDuplicationValidatorTest {
     example.setTypeId(typeId);
     return example;
   }
+
 }

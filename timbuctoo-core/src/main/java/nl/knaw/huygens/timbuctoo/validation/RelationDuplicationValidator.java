@@ -22,43 +22,37 @@ package nl.knaw.huygens.timbuctoo.validation;
  * #L%
  */
 
-import java.io.IOException;
-
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
-import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 public class RelationDuplicationValidator implements Validator<Relation> {
 
-  private final Storage storage;
+  private final StorageManager storage;
 
-  public RelationDuplicationValidator(Storage storage) {
+  public RelationDuplicationValidator(StorageManager storage) {
     this.storage = storage;
   }
 
   @Override
   public void validate(Relation entity) throws ValidationException {
-    try {
-      Relation example = new Relation();
-      example.setSourceId(entity.getSourceId());
-      example.setTargetId(entity.getTargetId());
-      example.setTypeId(entity.getTypeId());
-      Relation foundExample = storage.findItem(Relation.class, example);
-      if (foundExample != null) {
-        throw new DuplicateException(foundExample.getId());
-      }
+    Relation example = new Relation();
+    example.setSourceId(entity.getSourceId());
+    example.setTargetId(entity.getTargetId());
+    example.setTypeId(entity.getTypeId());
+    Relation foundExample = storage.findEntity(Relation.class, example);
+    if (foundExample != null) {
+      throw new DuplicateException(foundExample.getId());
+    }
 
-      Relation inverseExample = new Relation();
-      inverseExample.setSourceId(entity.getTargetId());
-      inverseExample.setTargetId(entity.getSourceId());
-      inverseExample.setTypeId(entity.getTypeId());
-      Relation foundInverse = storage.findItem(Relation.class, inverseExample);
-      if (foundInverse != null) {
-        throw new DuplicateException(foundInverse.getId());
-      }
-    } catch (IOException e) {
-      throw new ValidationException(e);
+    Relation inverseExample = new Relation();
+    inverseExample.setSourceId(entity.getTargetId());
+    inverseExample.setTargetId(entity.getSourceId());
+    inverseExample.setTypeId(entity.getTypeId());
+    Relation foundInverse = storage.findEntity(Relation.class, inverseExample);
+    if (foundInverse != null) {
+      throw new DuplicateException(foundInverse.getId());
     }
   }
 

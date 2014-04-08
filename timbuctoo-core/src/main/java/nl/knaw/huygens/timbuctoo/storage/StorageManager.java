@@ -115,12 +115,12 @@ public class StorageManager {
   // --- add entities ----------------------------------------------------------
 
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException, ValidationException {
-    entity.validateForAdd(registry, storage);
+    entity.validateForAdd(registry, this);
     return storage.addSystemEntity(type, entity);
   }
 
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws IOException, ValidationException {
-    entity.validateForAdd(registry, storage);
+    entity.validateForAdd(registry, this);
     return storage.addDomainEntity(type, entity, change);
   }
 
@@ -223,10 +223,10 @@ public class StorageManager {
   }
 
   /**
-   * Returns a single system entity matching the non-null fields of
+   * Returns a single entity matching the non-null fields of
    * the specified entity, or null if no such entity exists.
    */
-  public <T extends SystemEntity> T findEntity(Class<T> type, T example) {
+  public <T extends Entity> T findEntity(Class<T> type, T example) {
     try {
       return storage.findItem(type, example);
     } catch (IOException e) {

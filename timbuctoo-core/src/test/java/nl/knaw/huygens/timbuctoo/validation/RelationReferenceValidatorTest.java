@@ -8,7 +8,7 @@ import static test.util.RelationBuilder.createRelation;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.junit.Before;
@@ -17,6 +17,7 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 public class RelationReferenceValidatorTest {
+
   private String sourceId = "sourceId";
   private String sourceTypeString = "sourceType";
   private Class<SourceType> sourceType = SourceType.class;
@@ -25,14 +26,14 @@ public class RelationReferenceValidatorTest {
   private Class<TargetType> targetType = TargetType.class;
   private Relation relation;
   private TypeRegistry typeRegistryMock;
-  private Storage storageMock;
-  private RelationReferenceValidator relationReferenceValidator;
+  private StorageManager storage;
+  private RelationReferenceValidator validator;
 
   @Before
   public void setup() {
     typeRegistryMock = mock(TypeRegistry.class);
-    storageMock = mock(Storage.class);
-    relationReferenceValidator = new RelationReferenceValidator(typeRegistryMock, storageMock);
+    storage = mock(StorageManager.class);
+    validator = new RelationReferenceValidator(typeRegistryMock, storage);
 
     relation = createRelation() //
         .withSourceId(sourceId) //
@@ -52,32 +53,32 @@ public class RelationReferenceValidatorTest {
   @Test
   public void testValidateIsValid() throws Exception {
     // when
-    when(storageMock.entityExists(sourceType, sourceId)).thenReturn(true);
-    when(storageMock.entityExists(targetType, targetId)).thenReturn(true);
+    when(storage.getEntity(sourceType, sourceId)).thenReturn(new SourceType());
+    when(storage.getEntity(targetType, targetId)).thenReturn(new TargetType());
 
     // action
-    relationReferenceValidator.validate(relation);
+    validator.validate(relation);
 
     // verify
-    InOrder inOrder = Mockito.inOrder(typeRegistryMock, storageMock);
+    InOrder inOrder = Mockito.inOrder(typeRegistryMock, storage);
     inOrder.verify(typeRegistryMock).getTypeForIName(sourceTypeString);
-    inOrder.verify(storageMock).entityExists(sourceType, sourceId);
+    inOrder.verify(storage).getEntity(sourceType, sourceId);
     inOrder.verify(typeRegistryMock).getTypeForIName(targetTypeString);
-    inOrder.verify(storageMock).entityExists(targetType, targetId);
+    inOrder.verify(storage).getEntity(targetType, targetId);
   }
 
   @Test(expected = ValidationException.class)
   public void testValidateSourceDoesNotExist() throws Exception {
-    when(storageMock.entityExists(sourceType, sourceId)).thenReturn(false);
-    when(storageMock.entityExists(targetType, targetId)).thenReturn(true);
-    relationReferenceValidator.validate(relation);
+    when(storage.getEntity(sourceType, sourceId)).thenReturn(null);
+    when(storage.getEntity(targetType, targetId)).thenReturn(new TargetType());
+    validator.validate(relation);
   }
 
   @Test(expected = ValidationException.class)
   public void testValidateTargetDoesNotExist() throws Exception {
-    when(storageMock.entityExists(sourceType, sourceId)).thenReturn(true);
-    when(storageMock.entityExists(targetType, targetId)).thenReturn(false);
-    relationReferenceValidator.validate(relation);
+    when(storage.getEntity(sourceType, sourceId)).thenReturn(new SourceType());
+    when(storage.getEntity(targetType, targetId)).thenReturn(null);
+    validator.validate(relation);
   }
 
   private static class SourceType extends DomainEntity {

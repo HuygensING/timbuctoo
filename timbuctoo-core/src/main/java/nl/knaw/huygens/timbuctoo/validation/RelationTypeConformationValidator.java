@@ -22,11 +22,9 @@ package nl.knaw.huygens.timbuctoo.validation;
  * #L%
  */
 
-import java.io.IOException;
-
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 /**
@@ -34,27 +32,23 @@ import nl.knaw.huygens.timbuctoo.storage.ValidationException;
  */
 public class RelationTypeConformationValidator implements Validator<Relation> {
 
-  private final Storage storage;
+  private final StorageManager storage;
 
-  public RelationTypeConformationValidator(Storage storage) {
+  public RelationTypeConformationValidator(StorageManager storage) {
     this.storage = storage;
   }
 
   @Override
   public void validate(Relation entity) throws ValidationException {
-    try {
-      String relationTypeId = entity.getTypeId();
+    String relationTypeId = entity.getTypeId();
 
-      RelationType relationType = storage.getItem(RelationType.class, relationTypeId);
-      if (relationType == null) {
-        throw new ValidationException("RelationType with id " + relationTypeId + " does not exist");
-      }
+    RelationType relationType = storage.getRelationTypeById(relationTypeId);
+    if (relationType == null) {
+      throw new ValidationException("RelationType with id " + relationTypeId + " does not exist");
+    }
 
-      if (!entity.conformsToRelationType(relationType)) {
-        throw new ValidationException("Relation is not conform the RelationType with id " + relationTypeId);
-      }
-    } catch (IOException e) {
-      throw new ValidationException(e);
+    if (!entity.conformsToRelationType(relationType)) {
+      throw new ValidationException("Relation is not conform the RelationType with id " + relationTypeId);
     }
   }
 

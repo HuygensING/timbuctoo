@@ -30,7 +30,7 @@ import nl.knaw.huygens.timbuctoo.config.TimbuctooTypeIdResolver;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -63,11 +63,6 @@ public abstract class Entity {
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
   public abstract String getDisplayName();
-
-  /**
-   * Validation targeted at dependencies between entities.
-   */
-  public abstract void validateForAdd(TypeRegistry registry, Storage storage) throws ValidationException;
 
   @JsonProperty(ID)
   @IndexAnnotation(fieldName = "id")
@@ -108,6 +103,12 @@ public abstract class Entity {
   @JsonProperty("^modified")
   public void setModified(Change modified) {
     this.modified = modified;
+  }
+
+  /**
+   * Validation targeted at dependencies between entities.
+   */
+  public void validateForAdd(TypeRegistry registry, StorageManager storage) throws ValidationException {
   }
 
 }
