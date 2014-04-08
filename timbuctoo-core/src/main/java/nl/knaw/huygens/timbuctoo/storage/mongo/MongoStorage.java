@@ -460,12 +460,6 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public boolean relationExists(Relation relation) throws IOException {
-    DBObject query = queries.selectRelation(relation);
-    return getItem(Relation.class, query) != null;
-  }
-
-  @Override
   public <T extends DomainEntity> void addRelationsTo(T entity) {
     if (entity != null) {
       String id = entity.getId();

@@ -132,11 +132,6 @@ public interface Storage {
   <T extends DomainEntity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException;
 
   /**
-   * Is the specified relation present in the storage?
-   */
-  boolean relationExists(Relation relation) throws IOException;
-
-  /**
    * Adds all stored relations to the specified entity.
    */
   <T extends DomainEntity> void addRelationsTo(T entity);

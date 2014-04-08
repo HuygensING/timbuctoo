@@ -292,20 +292,7 @@ public class StorageManager {
     return list;
   }
 
-  // --- relations -------------------------------------------------------------
-
-  private int duplicateRelationCount = 0;
-
-  public int getDuplicateRelationCount() {
-    return duplicateRelationCount;
-  }
-
-  /**
-   * Stores the specified relation type.
-   */
-  public void addRelationType(RelationType type) throws IOException, ValidationException {
-    addSystemEntity(RelationType.class, type);
-  }
+  // --- relation types --------------------------------------------------------
 
   private static final String REGULAR_NAME = FieldMapper.propertyName(RelationType.class, "regularName");
 
@@ -326,6 +313,15 @@ public class StorageManager {
   }
 
   /**
+   * Returns the relation type with the specified reference,
+   * or {@code null} if it does not exist.
+   */
+  public RelationType getRelationType(Reference reference) {
+    checkArgument(reference.refersToType(RelationType.class), "got type %s", reference.getType());
+    return getRelationTypeById(reference.getId());
+  }
+
+  /**
    * Returns a map for retrieving relation types by their regular name.
    */
   public Map<String, RelationType> getRelationTypeMap() {
@@ -338,13 +334,29 @@ public class StorageManager {
     return map;
   }
 
+  // --- relations -------------------------------------------------------------
+
+  private int duplicateRelationCount = 0;
+
+  public int getDuplicateRelationCount() {
+    return duplicateRelationCount;
+  }
+
   /**
-   * Returns the relation type with the specified reference,
-   * or {@code null} if it does not exist.
+   * Returns the stored version of the specified relation,
+   * or {@code null} if no such relation exists.
    */
-  public RelationType getRelationType(Reference reference) {
-    checkArgument(reference.refersToType(RelationType.class), "got type %s", reference.getType());
-    return getRelationTypeById(reference.getId());
+  public Relation getStoredRelation(Relation relation) {
+    try {
+      Relation query = new Relation();
+      query.setTypeId(relation.getTypeId());
+      query.setSourceId(relation.getSourceId());
+      query.setTargetId(relation.getTargetId());
+      return storage.findItem(Relation.class, query);
+    } catch (IOException e) {
+      LOG.error("Error while retrieving {}", relation);
+      return null;
+    }
   }
 
   public <T extends Relation> String storeRelation(Class<T> type, Reference sourceRef, Reference relTypeRef, Reference targetRef, Change change) {
@@ -384,15 +396,6 @@ public class StorageManager {
       LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
     }
     return null;
-  }
-
-  public boolean relationExists(Relation relation) {
-    try {
-      return storage.relationExists(relation);
-    } catch (IOException e) {
-      LOG.error("Error while retrieving relation");
-      return false;
-    }
   }
 
   /**
