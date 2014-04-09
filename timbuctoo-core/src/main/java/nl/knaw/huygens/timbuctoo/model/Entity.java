@@ -106,6 +106,12 @@ public abstract class Entity {
   }
 
   /**
+   * Normalize this entity; should be called before validation.
+   */
+  public void normalize(TypeRegistry registry, StorageManager storage) {
+  }
+
+  /**
    * Validation targeted at dependencies between entities.
    */
   public void validateForAdd(TypeRegistry registry, StorageManager storage) throws ValidationException {

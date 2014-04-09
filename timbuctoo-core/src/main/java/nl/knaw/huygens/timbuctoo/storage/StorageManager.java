@@ -115,11 +115,13 @@ public class StorageManager {
   // --- add entities ----------------------------------------------------------
 
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException, ValidationException {
+    entity.normalize(registry, this);
     entity.validateForAdd(registry, this);
     return storage.addSystemEntity(type, entity);
   }
 
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws IOException, ValidationException {
+    entity.normalize(registry, this);
     entity.validateForAdd(registry, this);
     return storage.addDomainEntity(type, entity, change);
   }
@@ -368,22 +370,8 @@ public class StorageManager {
     }
 
     relation.setTypeRef(relTypeRef);
-
-    RelationType relationType = getRelationType(relTypeRef);
-    if (relationType == null) {
-      LOG.error("Unknown relation type {}", relation.getTypeRef().getId());
-      return null;
-    }
-
-    // If the relationType is symmetric, order the relation on id.
-    // This way we can be sure the relation is saved once.
-    if (relationType.isSymmetric() && sourceRef.getId().compareTo(targetRef.getId()) > 0) {
-      relation.setSourceRef(targetRef);
-      relation.setTargetRef(sourceRef);
-    } else {
-      relation.setSourceRef(sourceRef);
-      relation.setTargetRef(targetRef);
-    }
+    relation.setSourceRef(sourceRef);
+    relation.setTargetRef(targetRef);
 
     try {
       return addDomainEntity(type, relation, change);

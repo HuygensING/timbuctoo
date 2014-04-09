@@ -204,6 +204,19 @@ public class Relation extends DomainEntity {
   }
 
   @Override
+  public void normalize(TypeRegistry registry, StorageManager storage) {
+    // Make sure symmetric relations are stored in canonical order
+    if (typeId != null & sourceId != null && targetId != null) {
+      RelationType relationType = storage.getRelationTypeById(typeId);
+      if (relationType != null && relationType.isSymmetric() && sourceId.compareTo(targetId) > 0) {
+        String temp = sourceId;
+        sourceId = targetId;
+        targetId = temp;
+      }
+    }
+  }
+
+  @Override
   public void validateForAdd(TypeRegistry registry, StorageManager storage) throws ValidationException {
     super.validateForAdd(registry, storage);
     new RelationTypeConformationValidator(storage).validate(this);

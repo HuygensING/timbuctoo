@@ -41,18 +41,9 @@ public class RelationDuplicationValidator implements Validator<Relation> {
     example.setSourceId(entity.getSourceId());
     example.setTargetId(entity.getTargetId());
     example.setTypeId(entity.getTypeId());
-    Relation foundExample = storage.findEntity(Relation.class, example);
-    if (foundExample != null) {
-      throw new DuplicateException(foundExample.getId());
-    }
-
-    Relation inverseExample = new Relation();
-    inverseExample.setSourceId(entity.getTargetId());
-    inverseExample.setTargetId(entity.getSourceId());
-    inverseExample.setTypeId(entity.getTypeId());
-    Relation foundInverse = storage.findEntity(Relation.class, inverseExample);
-    if (foundInverse != null) {
-      throw new DuplicateException(foundInverse.getId());
+    Relation stored = storage.findEntity(Relation.class, example);
+    if (stored != null) {
+      throw new DuplicateException(stored.getId());
     }
   }
 
