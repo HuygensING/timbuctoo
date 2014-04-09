@@ -341,54 +341,6 @@ public class StorageManager {
 
   // --- relations -------------------------------------------------------------
 
-  private int duplicateRelationCount = 0;
-
-  public int getDuplicateRelationCount() {
-    return duplicateRelationCount;
-  }
-
-  /**
-   * Returns the stored version of the specified relation,
-   * or {@code null} if no such relation exists.
-   */
-  public Relation getStoredRelation(Relation relation) {
-    try {
-      Relation query = new Relation();
-      query.setTypeId(relation.getTypeId());
-      query.setSourceId(relation.getSourceId());
-      query.setTargetId(relation.getTargetId());
-      return storage.findItem(Relation.class, query);
-    } catch (IOException e) {
-      LOG.error("Error while retrieving {}", relation);
-      return null;
-    }
-  }
-
-  public <T extends Relation> String storeRelation(Class<T> type, Reference sourceRef, Reference relTypeRef, Reference targetRef, Change change) {
-    T relation = null;
-    try {
-      relation = type.newInstance();
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to create instance of " + type);
-    }
-
-    relation.setTypeRef(relTypeRef);
-    relation.setSourceRef(sourceRef);
-    relation.setTargetRef(targetRef);
-
-    try {
-      return addDomainEntity(type, relation, change);
-    } catch (DuplicateException e) {
-      duplicateRelationCount++;
-      LOG.debug("Ignored duplicate {}", relation.getDisplayName());
-    } catch (ValidationException e) {
-      LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
-    } catch (IOException e) {
-      LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
-    }
-    return null;
-  }
-
   /**
    * Returns the id's of the relations, connected to the entities with the input id's.
    * The input id's can be the source id as well as the target id of the Relation. 

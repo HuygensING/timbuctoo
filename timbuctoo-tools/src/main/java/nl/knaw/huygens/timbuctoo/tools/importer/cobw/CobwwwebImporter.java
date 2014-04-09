@@ -592,7 +592,7 @@ public class CobwwwebImporter extends DefaultImporter {
     Reference sourceRef = references.get(context.sourceId);
     Reference targetRef = references.get(context.targetId);
     if (typeRef != null && sourceRef != null && targetRef != null) {
-      storageManager.storeRelation(COBWRelation.class, sourceRef, typeRef, targetRef, change);
+      addRelation(COBWRelation.class, typeRef, sourceRef, targetRef, change, xml);
     } else {
       System.err.printf("Error in %s: %s --> %s%n", context.relationTypeName, context.sourceId, context.targetId);
     }

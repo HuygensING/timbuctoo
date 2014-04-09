@@ -528,7 +528,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
             publisherRef = storeReference(key, WWCollective.class, storedId);
           }
           Reference relationRef = relationTypes.get(IS_PUBLISHED_BY);
-          storeRelation(WWRelation.class, relationRef, documentRef, publisherRef, change, "");
+          addRelation(WWRelation.class, relationRef, documentRef, publisherRef, change, "");
         }
       }
     }
@@ -1474,7 +1474,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     // Finally we're ready to store
     String storedId = null;
     try {
-      storedId = storeRelation(WWRelation.class, relationRef, sourceRef, targetRef, change, line);
+      storedId = addRelation(WWRelation.class, relationRef, sourceRef, targetRef, change, line);
     } catch (Exception e) {
       LOG.error("Failed to store: {}", line);
       System.exit(-1);

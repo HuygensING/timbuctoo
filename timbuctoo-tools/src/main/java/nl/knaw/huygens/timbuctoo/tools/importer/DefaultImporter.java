@@ -115,7 +115,7 @@ public abstract class DefaultImporter {
     return duplicateRelationCount;
   }
 
-  protected <T extends Relation> String storeRelation(Class<T> type, Reference relType, Reference source, Reference target, Change change, String line) {
+  protected <T extends Relation> String addRelation(Class<T> type, Reference relType, Reference source, Reference target, Change change, String line) {
     try {
       T relation = RelationBuilder.createRelation(type) //
           .withRelationTypeRef(relType) //
