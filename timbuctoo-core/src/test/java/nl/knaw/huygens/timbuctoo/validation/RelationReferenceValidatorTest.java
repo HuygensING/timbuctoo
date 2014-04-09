@@ -3,11 +3,11 @@ package nl.knaw.huygens.timbuctoo.validation;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static test.util.RelationBuilder.createRelation;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -35,7 +35,7 @@ public class RelationReferenceValidatorTest {
     storage = mock(StorageManager.class);
     validator = new RelationReferenceValidator(typeRegistryMock, storage);
 
-    relation = createRelation() //
+    relation = RelationBuilder.createRelation(Relation.class) //
         .withSourceId(sourceId) //
         .withSourceType(sourceTypeString) //
         .withTargetId(targetId) //

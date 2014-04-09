@@ -4,12 +4,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static test.util.RelationBuilder.createRelation;
 
 import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.model.util.MockRelationBuilder;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -28,9 +28,9 @@ public class RelationTypeConformationValidatorTest {
 
   @Before
   public void setUp() {
-    relationMock = createRelation()//
+    relationMock = MockRelationBuilder.createRelation(Relation.class)//
         .withRelationTypeId(relationTypeId)//
-        .buildMock();
+        .build();
 
     relationType = new RelationType();
     storage = mock(StorageManager.class);
