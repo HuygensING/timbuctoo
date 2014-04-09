@@ -29,14 +29,36 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
  */
 public class WWRelation extends Relation {
 
-  private boolean reception;
-
-  public boolean isReception() {
-    return reception;
+  public static enum Qualification {
+    UNKNOWN, NEGATIVE, NEUTRAL, POSITIVE
   }
 
-  public void setReception(boolean reception) {
-    this.reception = reception;
+  public static enum Certainty {
+    UNKNOWN, LOW, MEDIUM, HIGH
+  }
+
+  private Qualification qualification;
+  private Certainty certainty;
+
+  public WWRelation() {
+    setQualification(Qualification.UNKNOWN);
+    setCertainty(Certainty.UNKNOWN);
+  }
+
+  public Qualification getQualification() {
+    return qualification;
+  }
+
+  public void setQualification(Qualification qualification) {
+    this.qualification = qualification;
+  }
+
+  public Certainty getCertainty() {
+    return certainty;
+  }
+
+  public void setCertainty(Certainty certainty) {
+    this.certainty = certainty;
   }
 
 }

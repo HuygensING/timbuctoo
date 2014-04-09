@@ -488,7 +488,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   public DocumentType toDocumentType(String type) {
     DocumentType documentType = (type != null) ? documentTypeMap.get(type) : null;
-    return (documentType != null) ? documentType : DocumentType.UNKNOWN ;
+    return (documentType != null) ? documentType : DocumentType.UNKNOWN;
   }
 
   private List<XPrint> extractPrints(XDocument object) {
@@ -1482,7 +1482,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       System.exit(-1);
     }
     if (storedId == null) {
-      // WHY would this happen??
       if (++unstoredRelations <= 5) {
         handleError("Not stored.. %s", line);
       }
@@ -1490,10 +1489,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
 
     // Once the relation is in place, we update the project specific attributes
-    WWRelation relation = storageManager.getEntity(WWRelation.class, storedId);
-    relation.setAccepted(true);
-    relation.setReception(object.isReception);
-    updateDomainEntity(WWRelation.class, relation);
+    // WWRelation relation = storageManager.getEntity(WWRelation.class, storedId);
+    // relation.setQualification(Qualification.UNKNOWN);
+    // updateDomainEntity(WWRelation.class, relation);
   }
 
   private <T extends Relation> String storeRelation(Class<T> type, Reference sourceRef, Reference relTypeRef, Reference targetRef, Change change, String line) {

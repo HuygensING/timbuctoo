@@ -129,16 +129,19 @@ public class StorageManager {
   // --- update entities -------------------------------------------------------
 
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws IOException {
+    entity.normalize(registry, this);
     storage.updateSystemEntity(type, entity);
   }
 
   public <T extends DomainEntity> void updatePrimitiveDomainEntity(Class<T> type, T entity, Change change) throws IOException {
     checkArgument(TypeRegistry.isPrimitiveDomainEntity(type), "%s must be a primitive domain entity", type.getSimpleName());
+    entity.normalize(registry, this);
     storage.updateDomainEntity(type, entity, change);
   }
 
   public <T extends DomainEntity> void updateProjectDomainEntity(Class<T> type, T entity, Change change) throws IOException {
     checkArgument(!TypeRegistry.isPrimitiveDomainEntity(type), "%s must be a project domain entity", type.getSimpleName());
+    entity.normalize(registry, this);
     storage.updateDomainEntity(type, entity, change);
   }
 

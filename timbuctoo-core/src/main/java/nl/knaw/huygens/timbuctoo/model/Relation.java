@@ -69,12 +69,15 @@ public class Relation extends DomainEntity {
    * Do we accept the existence of this relation? As such it also controls
    * the visibility of this relation for VRE's.
    */
-  private boolean accepted = true;
+  private boolean accepted;
 
   // For deserialization...
-  public Relation() {}
+  public Relation() {
+    setAccepted(true);
+  }
 
   public Relation(Reference sourceRef, Reference typeRef, Reference targetRef) {
+    setAccepted(true);
     setSourceRef(sourceRef);
     setTypeRef(typeRef);
     setTargetRef(targetRef);
