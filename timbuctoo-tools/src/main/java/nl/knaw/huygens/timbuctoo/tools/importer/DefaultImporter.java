@@ -32,6 +32,8 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
+import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -90,6 +92,14 @@ public abstract class DefaultImporter {
     }
   }
 
+  protected Reference newDomainEntityReference(Class<? extends DomainEntity> type, String id) {
+    if (TypeRegistry.isPrimitiveDomainEntity(type)) {
+      return new Reference(type, id);
+    } else {
+      return new Reference(TypeRegistry.toDomainEntity(type.getSuperclass()), id);
+    }
+  }
+
   // --- Relations -------------------------------------------------------------
 
   /** File with {@code RelationType} definitions; must be present on classpath. */
@@ -99,12 +109,27 @@ public abstract class DefaultImporter {
     new RelationTypeImporter(typeRegistry, storageManager).importRelationTypes(RELATION_TYPE_DEFS);
   }
 
-  protected Reference newDomainEntityReference(Class<? extends DomainEntity> type, String id) {
-    if (TypeRegistry.isPrimitiveDomainEntity(type)) {
-      return new Reference(type, id);
-    } else {
-      return new Reference(TypeRegistry.toDomainEntity(type.getSuperclass()), id);
+  private int duplicateRelationCount = 0;
+
+  protected int getDuplicateRelationCount() {
+    return duplicateRelationCount;
+  }
+
+  protected <T extends Relation> String storeRelation(Class<T> type, Reference relType, Reference source, Reference target, Change change, String line) {
+    try {
+      T relation = RelationBuilder.createRelation(type) //
+          .withRelationTypeRef(relType) //
+          .withSourceRef(source) //
+          .withTargetRef(target) //
+          .build();
+      return storageManager.addDomainEntity(type, relation, change);
+    } catch (DuplicateException e) {
+      duplicateRelationCount++;
+    } catch (Exception e) {
+      System.out.println(line);
+      System.out.println(">> " + e.getMessage());
     }
+    return null;
   }
 
   // ---------------------------------------------------------------------------

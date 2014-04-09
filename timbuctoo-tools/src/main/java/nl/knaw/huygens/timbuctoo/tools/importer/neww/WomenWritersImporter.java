@@ -40,7 +40,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
-import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.neww.WWCollective;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
@@ -49,7 +48,6 @@ import nl.knaw.huygens.timbuctoo.model.neww.WWLanguage;
 import nl.knaw.huygens.timbuctoo.model.neww.WWLocation;
 import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 import nl.knaw.huygens.timbuctoo.model.neww.WWRelation;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
@@ -187,7 +185,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     importRelations();
     System.out.printf("Number of missing relation types = %6d%n", missingRelationTypes);
     System.out.printf("Number of unstored relations     = %6d%n", unstoredRelations);
-    System.out.printf("Number of duplicate relations    = %6d%n", storageManager.getDuplicateRelationCount());
+    System.out.printf("Number of duplicate relations    = %6d%n", getDuplicateRelationCount());
 
     printBoxedText("Indexing");
 
@@ -530,7 +528,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
             publisherRef = storeReference(key, WWCollective.class, storedId);
           }
           Reference relationRef = relationTypes.get(IS_PUBLISHED_BY);
-          storeRelation(WWRelation.class, documentRef, relationRef, publisherRef, change, "");
+          storeRelation(WWRelation.class, relationRef, documentRef, publisherRef, change, "");
         }
       }
     }
@@ -1476,7 +1474,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     // Finally we're ready to store
     String storedId = null;
     try {
-      storedId = storeRelation(WWRelation.class, sourceRef, relationRef, targetRef, change, line);
+      storedId = storeRelation(WWRelation.class, relationRef, sourceRef, targetRef, change, line);
     } catch (Exception e) {
       LOG.error("Failed to store: {}", line);
       System.exit(-1);
@@ -1492,23 +1490,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     // WWRelation relation = storageManager.getEntity(WWRelation.class, storedId);
     // relation.setQualification(Qualification.UNKNOWN);
     // updateDomainEntity(WWRelation.class, relation);
-  }
-
-  private <T extends Relation> String storeRelation(Class<T> type, Reference sourceRef, Reference relTypeRef, Reference targetRef, Change change, String line) {
-    if (sourceRef == null || relTypeRef == null || targetRef == null) {
-      System.out.println(line);
-      LOG.info("sourceRef {}", sourceRef);
-      LOG.info("relTypeRef {}", relTypeRef);
-      LOG.info("targetRef {}", targetRef);
-
-      throw new IllegalArgumentException("Missing references");
-    }
-    try {
-      return storageManager.storeRelation(type, sourceRef, relTypeRef, targetRef, change);
-    } catch (IllegalArgumentException e) {
-      System.out.println(line);
-      throw e;
-    }
   }
 
   protected static class XRelation {
