@@ -23,16 +23,16 @@ package nl.knaw.huygens.timbuctoo.tools.importer.dcar;
  */
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVE_KEYWORD;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVER_KEYWORD;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_LEGISLATION_KEYWORD;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PARENT_ARCHIVE;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVE_PERSON;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVER_PERSON;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_LEGISLATION_PERSON;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVE_PLACE;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVER_PLACE;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVE_KEYWORD;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVE_PERSON;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVE_PLACE;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_LEGISLATION_KEYWORD;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_LEGISLATION_PERSON;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_LEGISLATION_PLACE;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PARENT_ARCHIVE;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_SIBLING_ARCHIVE;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_SIBLING_ARCHIVER;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.IS_CREATOR_OF;
@@ -124,6 +124,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
         indexManager.close();
       }
       if (storageManager != null) {
+        storageManager.logCacheStats();
         storageManager.close();
       }
       // If the application is not explicitly closed a finalizer thread of Guice keeps running.
@@ -248,25 +249,25 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
   // --- relations -----------------------------------------------------
 
   private void setupRelationTypes() {
-    isCreatorRef = retrieveRelationType(IS_CREATOR_OF.regular);
-    hasArchiveKeywordRef = retrieveRelationType(HAS_ARCHIVE_KEYWORD.regular);
-    hasArchiverKeywordRef = retrieveRelationType(HAS_ARCHIVER_KEYWORD.regular);
-    hasLegislationKeywordRef = retrieveRelationType(HAS_LEGISLATION_KEYWORD.regular);
-    hasArchivePersonRef = retrieveRelationType(HAS_ARCHIVE_PERSON.regular);
-    hasArchiverPersonRef = retrieveRelationType(HAS_ARCHIVER_PERSON.regular);
-    hasLegislationPersonRef = retrieveRelationType(HAS_LEGISLATION_PERSON.regular);
-    hasArchivePlaceRef = retrieveRelationType(HAS_ARCHIVE_PLACE.regular);
-    hasArchiverPlaceRef = retrieveRelationType(HAS_ARCHIVER_PLACE.regular);
-    hasLegislationPlaceRef = retrieveRelationType(HAS_LEGISLATION_PLACE.regular);
-    hasParentArchive = retrieveRelationType(HAS_PARENT_ARCHIVE.regular);
-    hasSiblingArchive = retrieveRelationType(HAS_SIBLING_ARCHIVE.regular);
-    hasSiblingArchiver = retrieveRelationType(HAS_SIBLING_ARCHIVER.regular);
+    Map<String, RelationType> map = storageManager.getRelationTypeMap();
+    isCreatorRef = retrieveRelationType(map, IS_CREATOR_OF.regular);
+    hasArchiveKeywordRef = retrieveRelationType(map, HAS_ARCHIVE_KEYWORD.regular);
+    hasArchiverKeywordRef = retrieveRelationType(map, HAS_ARCHIVER_KEYWORD.regular);
+    hasLegislationKeywordRef = retrieveRelationType(map, HAS_LEGISLATION_KEYWORD.regular);
+    hasArchivePersonRef = retrieveRelationType(map, HAS_ARCHIVE_PERSON.regular);
+    hasArchiverPersonRef = retrieveRelationType(map, HAS_ARCHIVER_PERSON.regular);
+    hasLegislationPersonRef = retrieveRelationType(map, HAS_LEGISLATION_PERSON.regular);
+    hasArchivePlaceRef = retrieveRelationType(map, HAS_ARCHIVE_PLACE.regular);
+    hasArchiverPlaceRef = retrieveRelationType(map, HAS_ARCHIVER_PLACE.regular);
+    hasLegislationPlaceRef = retrieveRelationType(map, HAS_LEGISLATION_PLACE.regular);
+    hasParentArchive = retrieveRelationType(map, HAS_PARENT_ARCHIVE.regular);
+    hasSiblingArchive = retrieveRelationType(map, HAS_SIBLING_ARCHIVE.regular);
+    hasSiblingArchiver = retrieveRelationType(map, HAS_SIBLING_ARCHIVER.regular);
   }
 
-  private Reference retrieveRelationType(String name) {
-    RelationType type = storageManager.getRelationTypeByName(name);
+  private Reference retrieveRelationType(Map<String, RelationType> map, String name) {
+    RelationType type = map.get(name);
     if (type != null) {
-      LOG.debug("Retrieved {}", type.getDisplayName());
       return new Reference(RelationType.class, type.getId());
     } else {
       LOG.error("Failed to retrieve relation type {}", name);
@@ -277,7 +278,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
   private void addRegularRelations(Reference sourceRef, Reference relTypeRef, Map<String, Reference> map, String[] keys) {
     if (keys != null) {
       for (String key : keys) {
-        addRelation(DCARRelation.class, relTypeRef, sourceRef,  map.get(key), change, "");
+        addRelation(DCARRelation.class, relTypeRef, sourceRef, map.get(key), change, "");
       }
     }
   }

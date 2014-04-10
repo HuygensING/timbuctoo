@@ -23,10 +23,12 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,6 +38,7 @@ import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
@@ -101,10 +104,10 @@ public class StorageManagerTest {
 
   @Test
   public void testAddSystemEntity() throws Exception {
-   TestSystemEntity entity = mock(TestSystemEntity.class);
-   manager.addSystemEntity(TestSystemEntity.class, entity);
-   verify(entity).validateForAdd(registry, manager);
-   verify(storage).addSystemEntity(TestSystemEntity.class, entity);
+    TestSystemEntity entity = mock(TestSystemEntity.class);
+    manager.addSystemEntity(TestSystemEntity.class, entity);
+    verify(entity).validateForAdd(registry, manager);
+    verify(storage).addSystemEntity(TestSystemEntity.class, entity);
   }
 
   @Test(expected = ValidationException.class)
@@ -243,4 +246,40 @@ public class StorageManagerTest {
     verify(iterator).getSome(3);
     assertEquals(3, actualList.size());
   }
+
+  @Test
+  public void testGetRelationTypeByIdExceptionOccurs() throws Exception {
+    String id = "id";
+    when(storage.getItem(RelationType.class, id)).thenThrow(new IOException());
+    assertNull(manager.getRelationTypeById(id));
+    verify(storage, times(1)).getItem(RelationType.class, id);
+  }
+
+  @Test
+  public void testGetRelationTypeByIdItemUnknown() throws Exception {
+    String id = "id";
+    when(storage.getItem(RelationType.class, id)).thenReturn(null);
+    assertNull(manager.getRelationTypeById(id));
+    verify(storage, times(1)).getItem(RelationType.class, id);
+  }
+
+  @Test
+  public void testGetRelationTypeByIdItemNotInCache() throws Exception {
+    String id = "id";
+    RelationType type = new RelationType();
+    when(storage.getItem(RelationType.class, id)).thenReturn(type);
+    assertEquals(type, manager.getRelationTypeById(id));
+    verify(storage, times(1)).getItem(RelationType.class, id);
+  }
+
+  @Test
+  public void testGetRelationTypeByIdItemInCache() throws Exception {
+    String id = "id";
+    RelationType type = new RelationType();
+    when(storage.getItem(RelationType.class, id)).thenReturn(type);
+    manager.getRelationTypeById(id);
+    assertEquals(type, manager.getRelationTypeById(id));
+    verify(storage, times(1)).getItem(RelationType.class, id);
+  }
+
 }

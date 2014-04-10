@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Archive;
@@ -43,7 +44,6 @@ import nl.knaw.huygens.timbuctoo.model.Legislation;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Place;
-import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
@@ -56,6 +56,9 @@ import nl.knaw.huygens.timbuctoo.util.KV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -72,6 +75,7 @@ public class StorageManager {
   public StorageManager(TypeRegistry registry, Storage storage) {
     this.registry = registry;
     this.storage = storage;
+    setupRelationTypeCache();
   }
 
   /**
@@ -299,31 +303,39 @@ public class StorageManager {
 
   // --- relation types --------------------------------------------------------
 
-  private static final String REGULAR_NAME = FieldMapper.propertyName(RelationType.class, "regularName");
+  private LoadingCache<String, RelationType> relationTypeCache;
 
-  /**
-   * Returns the relation type with the specified name,
-   * or {@code null} if it does not exist.
-   */
-  public RelationType getRelationTypeByName(String name) {
-    return findEntity(RelationType.class, REGULAR_NAME, name);
+  private void setupRelationTypeCache() {
+    relationTypeCache = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<String, RelationType>() {
+      @Override
+      public RelationType load(String id) throws IOException {
+        // Not allowed to return null
+        RelationType relationType = storage.getItem(RelationType.class, id);
+        if (relationType == null) {
+          throw new IOException("item does not exist");
+        }
+        return relationType;
+      }
+    });
+  }
+
+  public void logCacheStats() {
+    if (relationTypeCache != null) {
+      LOG.info("RelationType {}", relationTypeCache.stats());
+    }
   }
 
   /**
    * Returns the relation type with the specified id,
-   * or {@code null} if it does not exist.
+   * or {@code null} if no such relation type exists.
    */
   public RelationType getRelationTypeById(String id) {
-    return getEntity(RelationType.class, id);
-  }
-
-  /**
-   * Returns the relation type with the specified reference,
-   * or {@code null} if it does not exist.
-   */
-  public RelationType getRelationType(Reference reference) {
-    checkArgument(reference.refersToType(RelationType.class), "got type %s", reference.getType());
-    return getRelationTypeById(reference.getId());
+    try {
+      return relationTypeCache.get(id);
+    } catch (ExecutionException e) {
+      LOG.debug("Failed to retrieve relation type {}: {}", id, e.getMessage());
+      return null;
+    }
   }
 
   /**

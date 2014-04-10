@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -41,7 +42,9 @@ import org.slf4j.LoggerFactory;
  */
 public class RelationTypeImporter extends CSVImporter {
 
-  private final static Logger LOG = LoggerFactory.getLogger(RelationTypeImporter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RelationTypeImporter.class);
+
+  private static final String REGULAR_NAME = FieldMapper.propertyName(RelationType.class, "regularName");
 
   private final TypeRegistry registry;
   private final StorageManager storageManager;
@@ -74,7 +77,7 @@ public class RelationTypeImporter extends CSVImporter {
     boolean symmetric = Boolean.parseBoolean(items[5]);
 
     // FIXME neither the regular name nor the inverse name should exist
-    if (storageManager.getRelationTypeByName(regularName) == null) {
+    if (storageManager.findEntity(RelationType.class, REGULAR_NAME, regularName) == null) {
       RelationType type = new RelationType(regularName, inverseName, sourceType, targetType, reflexive, symmetric);
       try {
         storageManager.addSystemEntity(RelationType.class, type);

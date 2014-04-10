@@ -105,6 +105,7 @@ public class CobwwwebImporter extends DefaultImporter {
     } finally {
       // Close resources
       if (storageManager != null) {
+        storageManager.logCacheStats();
         storageManager.close();
       }
       // If the application is not explicitly closed a finalizer thread of Guice keeps running.
