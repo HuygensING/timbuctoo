@@ -34,6 +34,8 @@ public class WWCollective extends Collective {
 
   private String notes;
 
+  // --- temporary fields ------------------------------------------------------
+
   // For establishing the type of the collective
   public String tempType;
   // For establishing relation with location
@@ -42,6 +44,8 @@ public class WWCollective extends Collective {
   public String tempOrigin;
   // Redundant
   public String tempShortName;
+
+  // ---------------------------------------------------------------------------
 
   public String getNotes() {
     return notes;

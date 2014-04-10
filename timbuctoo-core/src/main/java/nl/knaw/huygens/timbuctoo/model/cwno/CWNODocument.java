@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.model.cobw;
+package nl.knaw.huygens.timbuctoo.model.cwno;
 
 /*
  * #%L
@@ -24,30 +24,20 @@ package nl.knaw.huygens.timbuctoo.model.cobw;
 
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.Document;
 
 import com.google.common.collect.Lists;
 
-public class COBWPerson extends Person {
+public class CWNODocument extends Document {
 
-  // Fields scheduled for removal
-  public List<String> tempNames = Lists.newArrayList();
-  public String tempNewwId;
-
-  private List<String> nationalities = Lists.newArrayList();
   private String notes;
 
-  public List<String> getNationalities() {
-    return nationalities;
-  }
+  // --- temporary fields ------------------------------------------------------
 
-  public void setNationalities(List<String> nationalities) {
-    this.nationalities = nationalities;
-  }
+  public String tempNewwId;
+  public List<String> tempLanguages = Lists.newArrayList();
 
-  public void addNationality(String nationality) {
-    nationalities.add(nationality);
-  }
+  // ---------------------------------------------------------------------------
 
   public String getNotes() {
     return notes;

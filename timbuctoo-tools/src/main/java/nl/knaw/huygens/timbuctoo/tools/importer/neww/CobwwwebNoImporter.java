@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.cobw;
+package nl.knaw.huygens.timbuctoo.tools.importer.neww;
 
 /*
  * #%L
@@ -46,9 +46,9 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.model.cobw.COBWDocument;
-import nl.knaw.huygens.timbuctoo.model.cobw.COBWPerson;
-import nl.knaw.huygens.timbuctoo.model.cobw.COBWRelation;
+import nl.knaw.huygens.timbuctoo.model.cwno.CWNODocument;
+import nl.knaw.huygens.timbuctoo.model.cwno.CWNOPerson;
+import nl.knaw.huygens.timbuctoo.model.cwno.CWNORelation;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
 import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -74,9 +74,9 @@ import com.google.inject.Injector;
 /**
  * Importer for Norwegian COBWWWEB data.
  * Assumes the presence of New European Women Writers data,
- * because some COBWWWEB records are linked to that data.
+ * because COBWWWEB records are linked to that data.
  */
-public class CobwwwebImporter extends DefaultImporter {
+public class CobwwwebNoImporter extends DefaultImporter {
 
   // Base URL for import
   private static final String URL = "https://www2.hf.uio.no/tjenester/bibliografi/Robinsonades";
@@ -93,7 +93,7 @@ public class CobwwwebImporter extends DefaultImporter {
       TypeRegistry registry = injector.getInstance(TypeRegistry.class);
       storageManager = injector.getInstance(StorageManager.class);
 
-      CobwwwebImporter importer = new CobwwwebImporter(registry, storageManager, null);
+      CobwwwebNoImporter importer = new CobwwwebNoImporter(registry, storageManager, null);
       importer.importAll();
 
       long time = (System.currentTimeMillis() - start) / 1000;
@@ -122,7 +122,7 @@ public class CobwwwebImporter extends DefaultImporter {
   private final Map<String, Reference> references = Maps.newHashMap();
   private Writer importLog = null;
 
-  public CobwwwebImporter(TypeRegistry registry, StorageManager storageManager, IndexManager indexManager) {
+  public CobwwwebNoImporter(TypeRegistry registry, StorageManager storageManager, IndexManager indexManager) {
     super(registry, storageManager, indexManager);
     change = new Change("importer", "neww");
   }
@@ -143,9 +143,9 @@ public class CobwwwebImporter extends DefaultImporter {
 
         for (String id : personIds) {
           xml = getResource(URL, "person", id);
-          COBWPerson entity = parsePersonResource(xml, id);
-          String storedId = addDomainEntity(COBWPerson.class, entity, change);
-          storeReference(id, COBWPerson.class, storedId);
+          CWNOPerson entity = parsePersonResource(xml, id);
+          String storedId = addDomainEntity(CWNOPerson.class, entity, change);
+          storeReference(id, CWNOPerson.class, storedId);
         }
       }
 
@@ -156,9 +156,9 @@ public class CobwwwebImporter extends DefaultImporter {
 
         for (String id : documentIds) {
           xml = getResource(URL, "document", id);
-          COBWDocument entity = parseDocumentResource(xml, id);
-          String storedId = addDomainEntity(COBWDocument.class, entity, change);
-          storeReference(id, COBWDocument.class, storedId);
+          CWNODocument entity = parseDocumentResource(xml, id);
+          String storedId = addDomainEntity(CWNODocument.class, entity, change);
+          storeReference(id, CWNODocument.class, storedId);
         }
       }
 
@@ -308,7 +308,7 @@ public class CobwwwebImporter extends DefaultImporter {
 
   // ---------------------------------------------------------------------------
 
-  private COBWPerson parsePersonResource(String xml, String id) {
+  private CWNOPerson parsePersonResource(String xml, String id) {
     nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
     PersonContext context = new PersonContext(id);
     document.accept(new PersonVisitor(context));
@@ -317,7 +317,7 @@ public class CobwwwebImporter extends DefaultImporter {
 
   private class PersonContext extends XmlContext {
     public String id;
-    public COBWPerson person = new COBWPerson();
+    public CWNOPerson person = new CWNOPerson();
 
     public PersonContext(String id) {
       this.id = id;
@@ -465,7 +465,7 @@ public class CobwwwebImporter extends DefaultImporter {
 
   // ---------------------------------------------------------------------------
 
-  private COBWDocument parseDocumentResource(String xml, String id) {
+  private CWNODocument parseDocumentResource(String xml, String id) {
     nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
     DocumentContext context = new DocumentContext(id);
     document.accept(new DocumentVisitor(context));
@@ -474,7 +474,7 @@ public class CobwwwebImporter extends DefaultImporter {
 
   private class DocumentContext extends XmlContext {
     public String id;
-    public COBWDocument document = new COBWDocument();
+    public CWNODocument document = new CWNODocument();
 
     public DocumentContext(String id) {
       this.id = id;
@@ -593,7 +593,7 @@ public class CobwwwebImporter extends DefaultImporter {
     Reference sourceRef = references.get(context.sourceId);
     Reference targetRef = references.get(context.targetId);
     if (typeRef != null && sourceRef != null && targetRef != null) {
-      addRelation(COBWRelation.class, typeRef, sourceRef, targetRef, change, xml);
+      addRelation(CWNORelation.class, typeRef, sourceRef, targetRef, change, xml);
     } else {
       System.err.printf("Error in %s: %s --> %s%n", context.relationTypeName, context.sourceId, context.targetId);
     }

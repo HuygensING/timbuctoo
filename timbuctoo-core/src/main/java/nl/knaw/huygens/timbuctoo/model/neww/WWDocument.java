@@ -36,10 +36,14 @@ public class WWDocument extends Document {
   private String notes;
   private List<String> topoi;
 
+  // --- temporary fields ------------------------------------------------------
+
   public String tempOldId; // record id in NEWW database
   public String tempCreator;
   public String tempLanguage;
   public String tempOrigin;
+
+  // ---------------------------------------------------------------------------
 
   public WWDocument() {
     topoi = Lists.newArrayList();

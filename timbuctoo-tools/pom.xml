@@ -156,6 +156,10 @@
               <name>baseImport</name>
             </program>
             <program>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.neww.CobwwwebNoImporter</mainClass>
+              <name>cwnoImport</name>
+            </program>
+            <program>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.dcar.DutchCaribbeanImporter</mainClass>
               <name>dcarImport</name>
             </program>
