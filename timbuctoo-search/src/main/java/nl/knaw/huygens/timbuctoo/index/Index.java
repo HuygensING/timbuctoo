@@ -47,4 +47,9 @@ public interface Index {
    */
   public long getCount() throws IndexException;
 
+  /**
+   * Commit all the changes to the index.
+   */
+  public void commitAll();
+
 }

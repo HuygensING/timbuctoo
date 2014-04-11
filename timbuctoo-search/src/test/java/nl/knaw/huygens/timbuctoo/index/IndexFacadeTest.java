@@ -427,6 +427,26 @@ public class IndexFacadeTest {
     assertNotNull(actualStatus);
   }
 
+  @Test
+  public void testCommitAll() throws IndexException {
+    // setup
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+
+    List<Index> indexes = Lists.newArrayList(indexMock1, indexMock2);
+
+    // when
+    when(scopeManagerMock.getAllIndexes()).thenReturn(indexes);
+
+    // action
+    instance.commitAll();
+
+    // verify
+    verify(scopeManagerMock).getAllIndexes();
+    verify(indexMock1).commitAll();
+    verify(indexMock2).commitAll();
+  }
+
   private static class OtherIndexBaseType extends DomainEntity {
 
     @Override

@@ -78,6 +78,12 @@ public class ScopeManager {
       // TODO Auto-generated method stub
       return 0;
     }
+
+    @Override
+    public void commitAll() {
+      // TODO Auto-generated method stub
+
+    }
   }
 
 }

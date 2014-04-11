@@ -96,4 +96,10 @@ public class SolrIndex implements Index {
       throw new IndexException(e);
     }
   }
+
+  @Override
+  public void commitAll() {
+    // TODO Auto-generated method stub
+
+  }
 }

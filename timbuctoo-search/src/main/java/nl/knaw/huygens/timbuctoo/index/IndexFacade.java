@@ -148,8 +148,9 @@ public class IndexFacade implements SearchManager, IndexManager {
 
   @Override
   public void commitAll() throws IndexException {
-    // TODO Auto-generated method stub
-
+    for (Index index : scopeManager.getAllIndexes()) {
+      index.commitAll();
+    }
   }
 
   @Override
