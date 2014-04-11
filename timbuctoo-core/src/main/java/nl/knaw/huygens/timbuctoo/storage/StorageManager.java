@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -31,6 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import nl.knaw.huygens.timbuctoo.config.EntityMapper;
+import nl.knaw.huygens.timbuctoo.config.EntityMappers;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Archive;
 import nl.knaw.huygens.timbuctoo.model.Archiver;
@@ -38,13 +42,16 @@ import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.model.Keyword;
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Legislation;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Place;
+import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationEntityRef;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
@@ -70,11 +77,13 @@ public class StorageManager {
 
   private final TypeRegistry registry;
   private final Storage storage;
+  private final EntityMappers entityMappers;
 
   @Inject
   public StorageManager(TypeRegistry registry, Storage storage) {
     this.registry = registry;
     this.storage = storage;
+    entityMappers = new EntityMappers(registry.getDomainEntityTypes());
     setupRelationTypeCache();
   }
 
@@ -204,7 +213,7 @@ public class StorageManager {
     T entity = null;
     try {
       entity = storage.getItem(type, id);
-      storage.addRelationsTo(entity);
+      addRelationsTo(entity);
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
     }
@@ -215,7 +224,7 @@ public class StorageManager {
     T entity = null;
     try {
       entity = storage.getRevision(type, id, revision);
-      storage.addRelationsTo(entity);
+      addRelationsTo(entity);
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
     }
@@ -248,7 +257,7 @@ public class StorageManager {
     try {
       List<T> variations = storage.getAllVariations(type, id);
       for (T variation : variations) {
-        storage.addRelationsTo(variation);
+        addRelationsTo(variation);
       }
       return variations;
     } catch (IOException e) {
@@ -363,6 +372,57 @@ public class StorageManager {
    */
   public List<String> getRelationIds(List<String> ids) throws IOException {
     return storage.getRelationIds(ids);
+  }
+
+  /**
+   * Adds all relations for the specified entity as virtual properties.
+   */
+  private <T extends DomainEntity> void addRelationsTo(T entity) {
+    if (entity != null) {
+      String id = entity.getId();
+      Class<? extends DomainEntity> type = entity.getClass();
+      EntityMapper mapper = entityMappers.getEntityMapper(type);
+      checkState(mapper != null, "No EntityMapper for type %s", type);
+      @SuppressWarnings("unchecked")
+      Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
+      StorageIterator<? extends Relation> iterator = null;
+      try {
+        iterator = storage.getRelationsForEntityId(mappedType, id); // db access
+        while (iterator.hasNext()) {
+          Relation relation = iterator.next(); // db access
+          RelationType relType = getRelationTypeById(relation.getTypeRef().getId());
+          checkState(relType != null, "Failed to retrieve relation type");
+          if (relation.hasSource() && relation.hasTarget()) {
+            if (relation.hasSourceId(id)) {
+              EntityRef entityRef = getEntityRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+              entity.addRelation(relType.getRegularName(), entityRef); // db access
+            } else if (relation.hasTargetId(id)) {
+              EntityRef entityRef = getEntityRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+              entity.addRelation(relType.getInverseName(), entityRef); // db access
+            }
+          }
+        }
+      } catch (IOException e) {
+        LOG.error("Error while handling {} {}", type.getSimpleName(), id);
+      } finally {
+        if (iterator != null) {
+          iterator.close();
+        }
+      }
+    }
+  }
+
+  // Relations are defined between primitive domain entities
+  // Map to a domain entity in the package from which an entity is requested
+  private EntityRef getEntityRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws StorageException, IOException {
+    String iname = reference.getType();
+    Class<? extends DomainEntity> type = TypeRegistry.toDomainEntity(registry.getTypeForIName(iname));
+    type = mapper.map(type);
+    iname = TypeNames.getInternalName(type);
+    String xname = registry.getXNameForIName(iname);
+    DomainEntity entity = storage.getItem(type, reference.getId());
+
+    return new RelationEntityRef(iname, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
   }
 
 }

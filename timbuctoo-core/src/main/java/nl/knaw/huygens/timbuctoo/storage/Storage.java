@@ -135,11 +135,6 @@ public interface Storage {
   <T extends DomainEntity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException;
 
   /**
-   * Adds all stored relations to the specified entity.
-   */
-  <T extends DomainEntity> void addRelationsTo(T entity);
-
-  /**
    * Returns an iterator for all relations of the specified entity id.
    */
   <T extends Relation> StorageIterator<T> getRelationsForEntityId(Class<T> type, String id);

@@ -248,7 +248,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testGetRelationTypeByIdExceptionOccurs() throws Exception {
+  public void testGetRelationTypeWhenExceptionOccurs() throws Exception {
     String id = "id";
     when(storage.getItem(RelationType.class, id)).thenThrow(new IOException());
     assertNull(manager.getRelationTypeById(id));
@@ -256,7 +256,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testGetRelationTypeByIdItemUnknown() throws Exception {
+  public void testGetRelationTypeWhenItemIsUnknown() throws Exception {
     String id = "id";
     when(storage.getItem(RelationType.class, id)).thenReturn(null);
     assertNull(manager.getRelationTypeById(id));
@@ -264,7 +264,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testGetRelationTypeByIdItemNotInCache() throws Exception {
+  public void testGetRelationTypeWhenItemIsNotInCache() throws Exception {
     String id = "id";
     RelationType type = new RelationType();
     when(storage.getItem(RelationType.class, id)).thenReturn(type);
@@ -273,7 +273,7 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testGetRelationTypeByIdItemInCache() throws Exception {
+  public void testGetRelationTypeWhenItemIsInCache() throws Exception {
     String id = "id";
     RelationType type = new RelationType();
     when(storage.getItem(RelationType.class, id)).thenReturn(type);
