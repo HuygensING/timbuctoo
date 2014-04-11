@@ -23,12 +23,13 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -36,11 +37,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.validation.ValidationException;
-import nl.knaw.huygens.timbuctoo.validation.Validator;
-import nl.knaw.huygens.timbuctoo.validation.ValidatorManager;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
@@ -52,16 +52,16 @@ import com.google.common.collect.Lists;
 
 public class StorageManagerTest {
 
-  private ValidatorManager validatorManager;
-  private StorageManager manager;
+  private TypeRegistry registry;
   private Storage storage;
+  private StorageManager manager;
   private Change change;
 
   @Before
   public void setup() {
-    validatorManager = mock(ValidatorManager.class);
+    registry = mock(TypeRegistry.class);
     storage = mock(Storage.class);
-    manager = new StorageManager(storage, validatorManager);
+    manager = new StorageManager(registry, storage);
     change = new Change("userId", "vreId");
   }
 
@@ -102,52 +102,33 @@ public class StorageManagerTest {
     verify(storage).getAllRevisions(BaseDomainEntity.class, "id");
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testAddPrimitiveDomainEntity() throws IOException, ValidationException {
+  @Test
+  public void testAddSystemEntity() throws Exception {
+    TestSystemEntity entity = mock(TestSystemEntity.class);
+    manager.addSystemEntity(TestSystemEntity.class, entity);
+    verify(entity).validateForAdd(registry, manager);
+    verify(storage).addSystemEntity(TestSystemEntity.class, entity);
+  }
+
+  @Test(expected = ValidationException.class)
+  public void testAddPrimitiveDomainEntity() throws Exception {
     BaseDomainEntity entity = new BaseDomainEntity();
     manager.addDomainEntity(BaseDomainEntity.class, entity, change);
   }
 
   @Test
-  public void testAddDerivedDomainEntity() throws IOException, ValidationException {
-    // mock
-    Validator validator = mock(Validator.class);
-
-    ProjectADomainEntity entity = new ProjectADomainEntity();
-
-    // when
-    when(validatorManager.getValidatorFor(ProjectADomainEntity.class)).thenReturn(validator);
-
-    // action
+  public void testAddDerivedDomainEntity() throws Exception {
+    ProjectADomainEntity entity = mock(ProjectADomainEntity.class);
     manager.addDomainEntity(ProjectADomainEntity.class, entity, change);
-
-    // verify
-    verify(validatorManager).getValidatorFor(ProjectADomainEntity.class);
-    verify(validator).validate(entity);
+    verify(entity).validateForAdd(registry, manager);
     verify(storage).addDomainEntity(ProjectADomainEntity.class, entity, change);
   }
 
   @Test(expected = ValidationException.class)
   public void testAddInvalidDerivedDomainEntity() throws IOException, ValidationException {
-    // mock
-    @SuppressWarnings("unchecked")
-    Validator<ProjectADomainEntity> validator = mock(Validator.class);
-
-    ProjectADomainEntity entity = new ProjectADomainEntity();
-
-    // when
-    when(validatorManager.getValidatorFor(ProjectADomainEntity.class)).thenReturn(validator);
-    doThrow(ValidationException.class).when(validator).validate(entity);
-
-    // action
-    try {
-      manager.addDomainEntity(ProjectADomainEntity.class, entity, change);
-    } finally {
-      // verify
-      verify(validatorManager).getValidatorFor(ProjectADomainEntity.class);
-      verify(validator).validate(entity);
-      verifyZeroInteractions(storage);
-    }
+    ProjectADomainEntity entity = mock(ProjectADomainEntity.class);
+    doThrow(ValidationException.class).when(entity).validateForAdd(registry, manager);
+    manager.addDomainEntity(ProjectADomainEntity.class, entity, change);
   }
 
   @Test
@@ -265,4 +246,40 @@ public class StorageManagerTest {
     verify(iterator).getSome(3);
     assertEquals(3, actualList.size());
   }
+
+  @Test
+  public void testGetRelationTypeByIdExceptionOccurs() throws Exception {
+    String id = "id";
+    when(storage.getItem(RelationType.class, id)).thenThrow(new IOException());
+    assertNull(manager.getRelationTypeById(id));
+    verify(storage, times(1)).getItem(RelationType.class, id);
+  }
+
+  @Test
+  public void testGetRelationTypeByIdItemUnknown() throws Exception {
+    String id = "id";
+    when(storage.getItem(RelationType.class, id)).thenReturn(null);
+    assertNull(manager.getRelationTypeById(id));
+    verify(storage, times(1)).getItem(RelationType.class, id);
+  }
+
+  @Test
+  public void testGetRelationTypeByIdItemNotInCache() throws Exception {
+    String id = "id";
+    RelationType type = new RelationType();
+    when(storage.getItem(RelationType.class, id)).thenReturn(type);
+    assertEquals(type, manager.getRelationTypeById(id));
+    verify(storage, times(1)).getItem(RelationType.class, id);
+  }
+
+  @Test
+  public void testGetRelationTypeByIdItemInCache() throws Exception {
+    String id = "id";
+    RelationType type = new RelationType();
+    when(storage.getItem(RelationType.class, id)).thenReturn(type);
+    manager.getRelationTypeById(id);
+    assertEquals(type, manager.getRelationTypeById(id));
+    verify(storage, times(1)).getItem(RelationType.class, id);
+  }
+
 }

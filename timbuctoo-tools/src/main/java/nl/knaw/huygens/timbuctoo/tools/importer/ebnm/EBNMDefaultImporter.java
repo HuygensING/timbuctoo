@@ -8,12 +8,11 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 import nl.knaw.huygens.timbuctoo.tools.importer.RelationTypeImporter;
-import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 /**
  * A class that contains the base functionality used in both the
@@ -32,23 +31,19 @@ public abstract class EBNMDefaultImporter extends DefaultImporter {
 	private int errors;
 
 	public EBNMDefaultImporter(TypeRegistry registry,
-			StorageManager storageManager, RelationManager relationManager,
-			IndexManager indexManager) {
+			StorageManager storageManager, IndexManager indexManager) {
 		super(registry, storageManager, indexManager);
 		prevMessage = "";
 		errors = 0;
-		setup(relationManager);
+		setup(storageManager);
 	}
 
-	protected void setup(RelationManager relationManager) {
-		if (relationManager != null) {
-			try {
-				new RelationTypeImporter(typeRegistry, relationManager)
-						.importRelationTypes(RELATION_TYPE_DEFS);
-			} catch (ValidationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+	protected void setup(StorageManager storageManager) {
+		try {
+			new RelationTypeImporter(typeRegistry, storageManager).importRelationTypes(RELATION_TYPE_DEFS);
+		} catch (ValidationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

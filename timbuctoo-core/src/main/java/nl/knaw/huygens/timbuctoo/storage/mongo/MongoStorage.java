@@ -241,6 +241,12 @@ public class MongoStorage implements Storage {
   // --- entities ------------------------------------------------------
 
   @Override
+  public <T extends Entity> boolean entityExists(Class<T> type, String id) throws IOException {
+    // TODO improve implementation
+    return getItem(type, id) != null;
+  }
+
+  @Override
   public <T extends Entity> T getItem(Class<T> type, String id) throws IOException {
     DBObject query = queries.selectById(id);
     return getItem(type, query);
@@ -454,12 +460,6 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public boolean relationExists(Relation relation) throws IOException {
-    DBObject query = queries.selectRelation(relation);
-    return getItem(Relation.class, query) != null;
-  }
-
-  @Override
   public <T extends DomainEntity> void addRelationsTo(T entity) {
     if (entity != null) {
       String id = entity.getId();
@@ -470,8 +470,7 @@ public class MongoStorage implements Storage {
       Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
       StorageIterator<? extends Relation> iterator = null;
       try {
-        DBObject query = DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id));
-        iterator = getItems(mappedType, query); // db access
+        iterator = getRelationsForEntityId(mappedType, id); // db access
         while (iterator.hasNext()) {
           Relation relation = iterator.next(); // db access
           RelationType relType = getRelationType(relation.getTypeRef().getId());
@@ -507,6 +506,12 @@ public class MongoStorage implements Storage {
     DomainEntity entity = getItem(type, reference.getId());
 
     return new RelationEntityRef(iname, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
+  }
+
+  @Override
+  public <T extends Relation> StorageIterator<T> getRelationsForEntityId(Class<T> type, String id) {
+    DBObject query = DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id));
+    return getItems(type, query);
   }
 
   @Override

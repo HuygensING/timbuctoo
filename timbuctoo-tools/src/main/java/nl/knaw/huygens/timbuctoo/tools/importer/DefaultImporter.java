@@ -32,11 +32,12 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.RelationManager;
+import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
+import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.util.Progress;
-import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -91,23 +92,44 @@ public abstract class DefaultImporter {
     }
   }
 
-  // --- Relations -------------------------------------------------------------
-
-  /** File with {@code RelationType} definitions; must be present on classpath. */
-  private static final String RELATION_TYPE_DEFS = "relationtype-defs.txt";
-
-  protected void setup(RelationManager relationManager) throws ValidationException {
-    if (relationManager != null) {
-      new RelationTypeImporter(typeRegistry, relationManager).importRelationTypes(RELATION_TYPE_DEFS);
-    }
-  }
-
   protected Reference newDomainEntityReference(Class<? extends DomainEntity> type, String id) {
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
       return new Reference(type, id);
     } else {
       return new Reference(TypeRegistry.toDomainEntity(type.getSuperclass()), id);
     }
+  }
+
+  // --- Relations -------------------------------------------------------------
+
+  /** File with {@code RelationType} definitions; must be present on classpath. */
+  private static final String RELATION_TYPE_DEFS = "relationtype-defs.txt";
+
+  protected void importRelationTypes() throws ValidationException {
+    new RelationTypeImporter(typeRegistry, storageManager).importRelationTypes(RELATION_TYPE_DEFS);
+  }
+
+  private int duplicateRelationCount = 0;
+
+  protected int getDuplicateRelationCount() {
+    return duplicateRelationCount;
+  }
+
+  protected <T extends Relation> String addRelation(Class<T> type, Reference relType, Reference source, Reference target, Change change, String line) {
+    try {
+      T relation = RelationBuilder.createRelation(type) //
+          .withRelationTypeRef(relType) //
+          .withSourceRef(source) //
+          .withTargetRef(target) //
+          .build();
+      return storageManager.addDomainEntity(type, relation, change);
+    } catch (DuplicateException e) {
+      duplicateRelationCount++;
+    } catch (Exception e) {
+      System.out.println(line);
+      System.out.println(">> " + e.getMessage());
+    }
+    return null;
   }
 
   // ---------------------------------------------------------------------------

@@ -36,7 +36,7 @@ import javax.ws.rs.core.Response.Status;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.storage.RelationManager;
+import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -49,7 +49,7 @@ public class VREResource extends ResourceBase {
   @Inject
   private VREManager vreManager;
   @Inject
-  private RelationManager relationManager;
+  private StorageManager storageManager;
 
   @GET
   @Produces({ MediaType.APPLICATION_JSON })
@@ -64,7 +64,7 @@ public class VREResource extends ResourceBase {
   @APIDesc("Provides info about the specified VRE.")
   public VREInfo getVREInfo(@PathParam("id") String vreId) {
     VRE vre = checkNotNull(vreManager.getVREById(vreId), Status.NOT_FOUND);
-    Map<String, RelationType> map = relationManager.getRelationTypeMap();
+    Map<String, RelationType> map = storageManager.getRelationTypeMap();
 
     VREInfo info = new VREInfo();
     info.setName(vre.getName());

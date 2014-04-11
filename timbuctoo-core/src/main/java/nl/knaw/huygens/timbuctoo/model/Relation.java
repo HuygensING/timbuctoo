@@ -23,6 +23,12 @@ package nl.knaw.huygens.timbuctoo.model;
  */
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.validation.RelationDuplicationValidator;
+import nl.knaw.huygens.timbuctoo.validation.RelationReferenceValidator;
+import nl.knaw.huygens.timbuctoo.validation.RelationTypeConformationValidator;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -63,12 +69,15 @@ public class Relation extends DomainEntity {
    * Do we accept the existence of this relation? As such it also controls
    * the visibility of this relation for VRE's.
    */
-  private boolean accepted = true;
+  private boolean accepted;
 
   // For deserialization...
-  public Relation() {}
+  public Relation() {
+    setAccepted(true);
+  }
 
   public Relation(Reference sourceRef, Reference typeRef, Reference targetRef) {
+    setAccepted(true);
     setSourceRef(sourceRef);
     setTypeRef(typeRef);
     setTargetRef(targetRef);
@@ -195,6 +204,27 @@ public class Relation extends DomainEntity {
 
   public void setAccepted(boolean accepted) {
     this.accepted = accepted;
+  }
+
+  @Override
+  public void normalize(TypeRegistry registry, StorageManager storage) {
+    // Make sure symmetric relations are stored in canonical order
+    if (typeId != null & sourceId != null && targetId != null) {
+      RelationType relationType = storage.getRelationTypeById(typeId);
+      if (relationType != null && relationType.isSymmetric() && sourceId.compareTo(targetId) > 0) {
+        String temp = sourceId;
+        sourceId = targetId;
+        targetId = temp;
+      }
+    }
+  }
+
+  @Override
+  public void validateForAdd(TypeRegistry registry, StorageManager storage) throws ValidationException {
+    super.validateForAdd(registry, storage);
+    new RelationTypeConformationValidator(storage).validate(this);
+    new RelationReferenceValidator(registry, storage).validate(this);
+    new RelationDuplicationValidator(storage).validate(this);
   }
 
   @Override

@@ -99,6 +99,14 @@ public interface Storage {
 
   // -------------------------------------------------------------------
 
+  /**
+   * Returns {@code true} if the specified entity exists, {@code false} otherwise.
+   */
+  <T extends Entity> boolean entityExists(Class<T> type, String id) throws IOException;
+
+  /**
+   * Retrieves the specified entity, or {@code null} if no such entity exists.
+   */
   <T extends Entity> T getItem(Class<T> type, String id) throws IOException;
 
   <T extends Entity> StorageIterator<T> getAllByType(Class<T> type);
@@ -127,14 +135,14 @@ public interface Storage {
   <T extends DomainEntity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException;
 
   /**
-   * Is the specified relation present in the storage?
-   */
-  boolean relationExists(Relation relation) throws IOException;
-
-  /**
    * Adds all stored relations to the specified entity.
    */
   <T extends DomainEntity> void addRelationsTo(T entity);
+
+  /**
+   * Returns an iterator for all relations of the specified entity id.
+   */
+  <T extends Relation> StorageIterator<T> getRelationsForEntityId(Class<T> type, String id);
 
   /**
   * Returns the id's of the domain entities of the specified type, that are not persisted.

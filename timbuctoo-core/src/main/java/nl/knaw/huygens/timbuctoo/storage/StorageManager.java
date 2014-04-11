@@ -28,8 +28,9 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
-import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Archive;
 import nl.knaw.huygens.timbuctoo.model.Archiver;
@@ -51,13 +52,14 @@ import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.util.KV;
-import nl.knaw.huygens.timbuctoo.validation.ValidationException;
-import nl.knaw.huygens.timbuctoo.validation.Validator;
-import nl.knaw.huygens.timbuctoo.validation.ValidatorManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -66,14 +68,14 @@ public class StorageManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(StorageManager.class);
 
+  private final TypeRegistry registry;
   private final Storage storage;
 
-  private final ValidatorManager validatorManager;
-
   @Inject
-  public StorageManager(Storage storage, ValidatorManager validatorManager) {
+  public StorageManager(TypeRegistry registry, Storage storage) {
+    this.registry = registry;
     this.storage = storage;
-    this.validatorManager = validatorManager;
+    setupRelationTypeCache();
   }
 
   /**
@@ -83,7 +85,7 @@ public class StorageManager {
     storage.close();
   }
 
-  // -------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
 
   public StorageStatus getStatus() {
     StorageStatus status = new StorageStatus();
@@ -114,33 +116,36 @@ public class StorageManager {
     return new KV<Long>(type.getSimpleName(), storage.count(type));
   }
 
-  // --- add entities --------------------------------------------------
+  // --- add entities ----------------------------------------------------------
 
-  public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException {
-    checkArgument(BusinessRules.allowSystemEntityAdd(type), "Not allowed to add %s", type);
+  public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException, ValidationException {
+    entity.normalize(registry, this);
+    entity.validateForAdd(registry, this);
     return storage.addSystemEntity(type, entity);
   }
 
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws IOException, ValidationException {
-    checkArgument(BusinessRules.allowDomainEntityAdd(type), "Not allowed to add %s", type);
-    Validator<T> validator = validatorManager.getValidatorFor(type);
-    validator.validate(entity);
+    entity.normalize(registry, this);
+    entity.validateForAdd(registry, this);
     return storage.addDomainEntity(type, entity, change);
   }
 
-  // --- update entities -----------------------------------------------
+  // --- update entities -------------------------------------------------------
 
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws IOException {
+    entity.normalize(registry, this);
     storage.updateSystemEntity(type, entity);
   }
 
   public <T extends DomainEntity> void updatePrimitiveDomainEntity(Class<T> type, T entity, Change change) throws IOException {
     checkArgument(TypeRegistry.isPrimitiveDomainEntity(type), "%s must be a primitive domain entity", type.getSimpleName());
+    entity.normalize(registry, this);
     storage.updateDomainEntity(type, entity, change);
   }
 
   public <T extends DomainEntity> void updateProjectDomainEntity(Class<T> type, T entity, Change change) throws IOException {
     checkArgument(!TypeRegistry.isPrimitiveDomainEntity(type), "%s must be a project domain entity", type.getSimpleName());
+    entity.normalize(registry, this);
     storage.updateDomainEntity(type, entity, change);
   }
 
@@ -148,7 +153,7 @@ public class StorageManager {
     storage.setPID(type, id, pid);
   }
 
-  // --- delete entities -----------------------------------------------
+  // --- delete entities -------------------------------------------------------
 
   public <T extends SystemEntity> int deleteSystemEntities(Class<T> type) throws IOException {
     return storage.deleteAll(type);
@@ -184,7 +189,7 @@ public class StorageManager {
     return storage.deleteByDate(SearchResult.class, SearchResult.DATE_FIELD, date);
   }
 
-  // -------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
 
   public <T extends Entity> T getEntity(Class<T> type, String id) {
     try {
@@ -227,10 +232,10 @@ public class StorageManager {
   }
 
   /**
-   * Returns a single system entity matching the non-null fields of
+   * Returns a single entity matching the non-null fields of
    * the specified entity, or null if no such entity exists.
    */
-  public <T extends SystemEntity> T findEntity(Class<T> type, T example) {
+  public <T extends Entity> T findEntity(Class<T> type, T example) {
     try {
       return storage.findItem(type, example);
     } catch (IOException e) {
@@ -271,18 +276,6 @@ public class StorageManager {
     return storage.getAllIdsWithoutPIDOfType(type);
   }
 
-  /**
-   * Returns the id's of the relations, connected to the entities with the input id's.
-   * The input id's can be the source id as well as the target id of the Relation. 
-   * 
-   * @param ids a list of id's to find the relations for
-   * @return a list of id's of the corresponding relations
-   * @throws IOException re-throws the IOExceptions of the storage
-   */
-  public List<String> getRelationIds(List<String> ids) throws IOException {
-    return storage.getRelationIds(ids);
-  }
-
   public <T extends Entity> List<T> getAllLimited(Class<T> type, int offset, int limit) {
     if (limit == 0) {
       return Collections.<T> emptyList();
@@ -299,12 +292,67 @@ public class StorageManager {
     return list;
   }
 
-  public boolean relationExists(Relation relation) {
-    try {
-      return storage.relationExists(relation);
-    } catch (IOException e) {
-      LOG.error("Error while retrieving relation");
-      return false;
+  // --- relation types --------------------------------------------------------
+
+  private LoadingCache<String, RelationType> relationTypeCache;
+
+  private void setupRelationTypeCache() {
+    relationTypeCache = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<String, RelationType>() {
+      @Override
+      public RelationType load(String id) throws IOException {
+        // Not allowed to return null
+        RelationType relationType = storage.getItem(RelationType.class, id);
+        if (relationType == null) {
+          throw new IOException("item does not exist");
+        }
+        return relationType;
+      }
+    });
+  }
+
+  public void logCacheStats() {
+    if (relationTypeCache != null) {
+      LOG.info("RelationType {}", relationTypeCache.stats());
     }
+  }
+
+  /**
+   * Returns the relation type with the specified id,
+   * or {@code null} if no such relation type exists.
+   */
+  public RelationType getRelationTypeById(String id) {
+    try {
+      return relationTypeCache.get(id);
+    } catch (ExecutionException e) {
+      LOG.debug("Failed to retrieve relation type {}: {}", id, e.getMessage());
+      return null;
+    }
+  }
+
+  /*
+   * Returns a map for retrieving relation types by their regular name.
+   */
+  public Map<String, RelationType> getRelationTypeMap() {
+    Map<String, RelationType> map = Maps.newHashMap();
+    StorageIterator<RelationType> iterator = getAll(RelationType.class);
+    while (iterator.hasNext()) {
+      RelationType type = iterator.next();
+      map.put(type.getRegularName(), type);
+    }
+    return map;
+  }
+
+  // --- relations -------------------------------------------------------------
+
+  /**
+   * Returns the id's of the relations, connected to the entities with the input id's.
+   * The input id's can be the source id as well as the target id of the Relation. 
+   * 
+   * @param ids a list of id's to find the relations for
+   * @return a list of id's of the corresponding relations
+   * @throws IOException re-throws the IOExceptions of the storage
+   */
+  public List<String> getRelationIds(List<String> ids) throws IOException {
+    return storage.getRelationIds(ids);
   }
 }

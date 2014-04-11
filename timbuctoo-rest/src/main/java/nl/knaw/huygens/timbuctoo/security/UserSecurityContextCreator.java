@@ -22,8 +22,6 @@ package nl.knaw.huygens.timbuctoo.security;
  * #L%
  */
 
-import java.io.IOException;
-
 import javax.ws.rs.core.SecurityContext;
 
 import nl.knaw.huygens.security.client.SecurityContextCreator;
@@ -81,10 +79,8 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
     user.setOrganisation(securityInformation.getOrganization());
 
     try {
-
       storageManager.addSystemEntity(User.class, user);
-
-    } catch (IOException e) {
+    } catch (Exception e) {
       LOG.error(e.getMessage());
     }
     // This is needed, to be less dependend on the StorageLayer to set the id.

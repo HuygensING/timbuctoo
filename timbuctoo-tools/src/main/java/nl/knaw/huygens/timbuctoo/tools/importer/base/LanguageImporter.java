@@ -29,8 +29,8 @@ import java.util.Set;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
-import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 import com.google.common.collect.Sets;
 import com.mongodb.MongoException;

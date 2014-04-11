@@ -27,8 +27,11 @@ import javax.validation.constraints.Pattern;
 
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TimbuctooTypeIdResolver;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -100,6 +103,18 @@ public abstract class Entity {
   @JsonProperty("^modified")
   public void setModified(Change modified) {
     this.modified = modified;
+  }
+
+  /**
+   * Normalize this entity; should be called before validation.
+   */
+  public void normalize(TypeRegistry registry, StorageManager storage) {
+  }
+
+  /**
+   * Validation targeted at dependencies between entities.
+   */
+  public void validateForAdd(TypeRegistry registry, StorageManager storage) throws ValidationException {
   }
 
 }

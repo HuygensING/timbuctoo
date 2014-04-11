@@ -37,6 +37,10 @@ import com.google.common.collect.Lists;
 @IDPrefix("PERS")
 public class Person extends DomainEntity {
 
+  public static enum Gender {
+    UNKNOWN, MALE, FEMALE, NOT_APPLICABLE
+  }
+
   // Container class, for entity reducer
   private static class Names {
     public List<PersonName> list;
@@ -51,9 +55,9 @@ public class Person extends DomainEntity {
   }
 
   private List<String> types;
-  private Names names;
+  private final Names names;
   /** Gender at birth. */
-  private String gender;
+  private Gender gender;
   private Datable birthDate;
   private Datable deathDate;
   private List<Link> links;
@@ -111,12 +115,12 @@ public class Person extends DomainEntity {
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_gender", isFaceted = true, canBeEmpty = true)
-  public String getGender() {
+  public Gender getGender() {
     return gender;
   }
 
-  public void setGender(String gender) {
-    this.gender = Gender.normalize(gender);
+  public void setGender(Gender gender) {
+    this.gender = gender;
   }
 
   @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_birthDate", isFaceted = true, canBeEmpty = true), //
@@ -182,26 +186,6 @@ public class Person extends DomainEntity {
         return PSEUDONYM;
       } else {
         return null;
-      }
-    }
-  }
-
-  // Not an enumerated type because of serialization problems.
-  public static class Gender {
-    public static final String UNKNOWN = "UNKNOWN";
-    public static final String MALE = "MALE";
-    public static final String FEMALE = "FEMALE";
-    public static final String NOT_APPLICABLE = "NOT_APPLICABLE";
-
-    public static String normalize(String text) {
-      if (MALE.equalsIgnoreCase(text)) {
-        return MALE;
-      } else if (FEMALE.equalsIgnoreCase(text)) {
-        return FEMALE;
-      } else if (NOT_APPLICABLE.equalsIgnoreCase(text)) {
-        return NOT_APPLICABLE;
-      } else {
-        return UNKNOWN;
       }
     }
   }

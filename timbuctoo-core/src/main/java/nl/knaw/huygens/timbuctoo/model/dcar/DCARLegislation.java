@@ -22,9 +22,9 @@ package nl.knaw.huygens.timbuctoo.model.dcar;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_KEYWORD;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PERSON;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PLACE;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_LEGISLATION_KEYWORD;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_LEGISLATION_PERSON;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_LEGISLATION_PLACE;
 
 import java.util.List;
 
@@ -172,19 +172,19 @@ public class DCARLegislation extends Legislation {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPlaceKeywords() {
-    return getRelations().get(HAS_PLACE.regular);
+    return getRelations().get(HAS_LEGISLATION_PLACE.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getSubjectKeywords() {
-    return getRelations().get(HAS_KEYWORD.regular);
+    return getRelations().get(HAS_LEGISLATION_KEYWORD.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPersons() {
-    return getRelations().get(HAS_PERSON.regular);
+    return getRelations().get(HAS_LEGISLATION_PERSON.regular);
   }
 
   @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false)

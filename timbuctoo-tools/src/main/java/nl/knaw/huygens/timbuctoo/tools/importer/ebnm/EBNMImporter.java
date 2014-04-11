@@ -1,13 +1,5 @@
 package nl.knaw.huygens.timbuctoo.tools.importer.ebnm;
 
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_KEYWORD;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PARENT_ARCHIVE;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PERSON;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PLACE;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_SIBLING_ARCHIVE;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_SIBLING_ARCHIVER;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.IS_CREATOR_OF;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -17,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Reference;
-import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARArchive;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARArchiver;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARLegislation;
@@ -31,14 +22,10 @@ import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMTaal;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMTekst;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMTekstdrager;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMWatermerk;
-import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
 import nl.knaw.huygens.timbuctoo.util.Files;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
@@ -61,11 +48,6 @@ import com.google.inject.Injector;
  */
 public class EBNMImporter extends EBNMDefaultImporter {
 
-	public static boolean UPDATE_TEST = false;
-
-	private static final Logger LOG = LoggerFactory
-			.getLogger(EBNMImporter.class);
-
 	public static void main(String[] args) throws Exception {
 
 		// Handle commandline arguments
@@ -77,8 +59,7 @@ public class EBNMImporter extends EBNMDefaultImporter {
 		String configFileName = (args.length > 1) ? args[1] : "config.xml";
 
 		Configuration config = new Configuration(configFileName);
-		Injector injector = Guice.createInjector(new ToolsInjectionModule(
-				config));
+		Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
 		StorageManager storageManager = null;
 		IndexManager indexManager = null;
@@ -90,10 +71,7 @@ public class EBNMImporter extends EBNMDefaultImporter {
 			indexManager = injector.getInstance(IndexManager.class);
 
 			TypeRegistry registry = injector.getInstance(TypeRegistry.class);
-			RelationManager relationManager = new RelationManager(registry,
-					storageManager);
-			new EBNMImporter(registry, storageManager, null, indexManager,
-					importDirName).importAll();
+			new EBNMImporter(registry, null, indexManager, importDirName).importAll();
 
 			long time = (System.currentTimeMillis() - start) / 1000;
 			System.out.printf("%n=== Used %d seconds%n%n", time);
@@ -117,38 +95,23 @@ public class EBNMImporter extends EBNMDefaultImporter {
 
 	// -------------------------------------------------------------------
 
-	private static final String[] JSON_EXTENSION = {"json"};
-
 	private final ObjectMapper objectMapper;
-	private final RelationManager relationManager;
 	private final File inputDir;
 
 	private final Map<String, Reference> documentatieRefMap = Maps.newHashMap();
 	private final Map<String, Reference> lexiconRefMap = Maps.newHashMap();
 	private final Map<String, Reference> tekstdragerRefMap = Maps.newHashMap();
 	private final Map<String, Reference> tekstRefMap = Maps.newHashMap();
-	private final Map<String, Reference> archiverRefMap = Maps.newHashMap();
 	private final Map<String, Reference> taalRefMap = Maps.newHashMap();
 	private final Map<String, Reference> periodeRefMap = Maps.newHashMap();
 	private final Map<String, Reference> regiocodeRefMap = Maps.newHashMap();
-	private final Map<String, Reference> signalementcodeRefMap = Maps
-			.newHashMap();
+	private final Map<String, Reference> signalementcodeRefMap = Maps.newHashMap();
 	private final Map<String, Reference> watermerkRefMap = Maps.newHashMap();
 
-	private Reference isCreatorRef;
-	private Reference hasKeywordRef;
-	private Reference hasPersonRef;
-	private Reference hasPlaceRef;
-	private Reference hasParentArchive;
-	private Reference hasSiblingArchive;
-	private Reference hasSiblingArchiver;
-
 	public EBNMImporter(TypeRegistry registry, StorageManager storageManager,
-			RelationManager relationManager, IndexManager indexManager,
-			String inputDirName) {
-		super(registry, storageManager, relationManager, indexManager);
+			IndexManager indexManager, String inputDirName) {
+		super(registry, storageManager, indexManager);
 		objectMapper = new ObjectMapper();
-		this.relationManager = relationManager;
 		inputDir = new File(inputDirName);
 		System.out.printf("%n.. Importing from %s%n",
 				inputDir.getAbsolutePath());
@@ -177,9 +140,6 @@ public class EBNMImporter extends EBNMDefaultImporter {
 		displayStatus();
 
 		System.out.printf("%n.. Setup relation types%n");
-		// FIXME system entities shouldn't have been removed!
-		// setup(relationManager);
-		// setupRelationTypes();
 
 		printBoxedText("2. Basic properties");
 
@@ -222,19 +182,8 @@ public class EBNMImporter extends EBNMDefaultImporter {
 		System.out.printf("Number of entries = %d%n", watermerkRefMap.size());
 
 		printBoxedText("3. Relations");
-		//
-		// System.out.println(".. Legislation");
-		// importLegislationRelations(legislationRefMap);
-		//
-		// System.out.println(".. Archives");
-		// importArchiveRelations(archiveRefMap);
-		//
-		// System.out.println(".. Archivers");
-		// importArchiverRelations(archiverRefMap);
 
 		printBoxedText("4. Indexing");
-
-		// indexEntities(CodlWatermerk.class);
 
 		displayStatus();
 
@@ -261,49 +210,6 @@ public class EBNMImporter extends EBNMDefaultImporter {
 		System.out.println();
 	}
 
-	// --- relations -----------------------------------------------------
-
-	private void setupRelationTypes() {
-		isCreatorRef = retrieveRelationType(IS_CREATOR_OF.regular);
-		hasKeywordRef = retrieveRelationType(HAS_KEYWORD.regular);
-		hasPersonRef = retrieveRelationType(HAS_PERSON.regular);
-		hasPlaceRef = retrieveRelationType(HAS_PLACE.regular);
-		hasParentArchive = retrieveRelationType(HAS_PARENT_ARCHIVE.regular);
-		hasSiblingArchive = retrieveRelationType(HAS_SIBLING_ARCHIVE.regular);
-		hasSiblingArchiver = retrieveRelationType(HAS_SIBLING_ARCHIVER.regular);
-	}
-
-	private Reference retrieveRelationType(String name) {
-		RelationType type = relationManager.getRelationTypeByName(name);
-		if (type != null) {
-			LOG.debug("Retrieved {}", type.getDisplayName());
-			return new Reference(RelationType.class, type.getId());
-		} else {
-			LOG.error("Failed to retrieve relation type {}", name);
-			throw new IllegalStateException("Initialization error");
-		}
-	}
-	//
-	// private void addRegularRelations(Reference sourceRef, Reference
-	// relTypeRef, Map<String, Reference> map, String[] keys) {
-	// if (keys != null) {
-	// for (String key : keys) {
-	// relationManager.storeRelation(DCARRelation.class, sourceRef, relTypeRef,
-	// map.get(key));
-	// }
-	// }
-	// }
-	//
-	// private void addInverseRelations(Reference targetRef, Reference
-	// relTypeRef, Map<String, Reference> map, String[] keys) {
-	// if (keys != null) {
-	// for (String key : keys) {
-	// relationManager.storeRelation(DCARRelation.class, map.get(key),
-	// relTypeRef, targetRef);
-	// }
-	// }
-	// }
-
 	// --- Documentatie ------------------------------------------------------
 
 	private static final String DOCUMENTATIE_DIR = ".";
@@ -325,28 +231,7 @@ public class EBNMImporter extends EBNMDefaultImporter {
 						documentatie);
 				referenceMap.put(jsonId, new Reference(EBNMDocumentatie.class,
 						storedId));
-
-				if (UPDATE_TEST) {
-					updateDomainEntity(EBNMDocumentatie.class, documentatie);
-					documentatie.setValue(documentatie.getValue() + "-mod");
-
-					// ATLGDocumentatie newDocumentatie = new
-					// ATLGDocumentatie();
-					// newDocumentatie.setId(documentatie.getId());
-					// newDocumentatie.setRev(documentatie.getRev());
-					// newDocumentatie.setVariations(documentatie.getVariations());
-					// newDocumentatie.setType(documentatie.getType());
-					// newDocumentatie.setValue(documentatie.getValue());
-					// newDocumentatie.setLabel("ATLG-" +
-					// documentatie.getLabel());
-					// updateDomainEntity(ATLGDocumentatie.class,
-					// newDocumentatie);
-				}
 			}
-		}
-
-		if (UPDATE_TEST) {
-			System.exit(0);
 		}
 	}
 
@@ -504,25 +389,7 @@ public class EBNMImporter extends EBNMDefaultImporter {
 				String storedId = addDomainEntity(EBNMLexicon.class, lexicon);
 				referenceMap.put(jsonId, new Reference(EBNMLexicon.class,
 						storedId));
-
-				if (UPDATE_TEST) {
-					updateDomainEntity(EBNMLexicon.class, lexicon);
-					lexicon.setValue(lexicon.getValue() + "-mod");
-
-					// ATLGLexicon newLexicon = new ATLGLexicon();
-					// newLexicon.setId(lexicon.getId());
-					// newLexicon.setRev(lexicon.getRev());
-					// newLexicon.setVariations(lexicon.getVariations());
-					// newLexicon.setType(lexicon.getType());
-					// newLexicon.setValue(lexicon.getValue());
-					// newLexicon.setLabel("ATLG-" + lexicon.getLabel());
-					// updateDomainEntity(ATLGLexicon.class, newLexicon);
-				}
 			}
-		}
-
-		if (UPDATE_TEST) {
-			System.exit(0);
 		}
 	}
 
@@ -604,27 +471,7 @@ public class EBNMImporter extends EBNMDefaultImporter {
 						tekstdrager);
 				referenceMap.put(jsonId, new Reference(EBNMTekstdrager.class,
 						storedId));
-
-				if (UPDATE_TEST) {
-					updateDomainEntity(EBNMTekstdrager.class, tekstdrager);
-					tekstdrager.setValue(tekstdrager.getValue() + "-mod");
-
-					// ATLGTekstdrager newTekstdrager = new ATLGTekstdrager();
-					// newTekstdrager.setId(tekstdrager.getId());
-					// newTekstdrager.setRev(tekstdrager.getRev());
-					// newTekstdrager.setVariations(tekstdrager.getVariations());
-					// newTekstdrager.setType(tekstdrager.getType());
-					// newTekstdrager.setValue(tekstdrager.getValue());
-					// newTekstdrager.setLabel("ATLG-" +
-					// tekstdrager.getLabel());
-					// updateDomainEntity(ATLGTekstdrager.class,
-					// newTekstdrager);
-				}
 			}
-		}
-
-		if (UPDATE_TEST) {
-			System.exit(0);
 		}
 	}
 
@@ -722,25 +569,7 @@ public class EBNMImporter extends EBNMDefaultImporter {
 				String storedId = addDomainEntity(EBNMTekst.class, tekst);
 				referenceMap.put(jsonId, new Reference(EBNMTekst.class,
 						storedId));
-
-				if (UPDATE_TEST) {
-					updateDomainEntity(EBNMTekst.class, tekst);
-					tekst.setValue(tekst.getValue() + "-mod");
-
-					// ATLGTekst newTekst = new ATLGTekst();
-					// newTekst.setId(tekst.getId());
-					// newTekst.setRev(tekst.getRev());
-					// newTekst.setVariations(tekst.getVariations());
-					// newTekst.setType(tekst.getType());
-					// newTekst.setValue(tekst.getValue());
-					// newTekst.setLabel("ATLG-" + tekst.getLabel());
-					// updateDomainEntity(ATLGTekst.class, newTekst);
-				}
 			}
-		}
-
-		if (UPDATE_TEST) {
-			System.exit(0);
 		}
 	}
 
@@ -838,25 +667,7 @@ public class EBNMImporter extends EBNMDefaultImporter {
 				String storedId = addDomainEntity(EBNMTaal.class, taal);
 				referenceMap.put(jsonId,
 						new Reference(EBNMTaal.class, storedId));
-
-				if (UPDATE_TEST) {
-					updateDomainEntity(EBNMTaal.class, taal);
-					taal.setValue(taal.getValue() + "-mod");
-
-					// ATLGTaal newTaal = new ATLGTaal();
-					// newTaal.setId(taal.getId());
-					// newTaal.setRev(taal.getRev());
-					// newTaal.setVariations(taal.getVariations());
-					// // newTaal.setType(taal.getType());
-					// newTaal.setValue(taal.getValue());
-					// newTaal.setLabel("ATLG-" + taal.getLabel());
-					// updateDomainEntity(ATLGTaal.class, newTaal);
-				}
 			}
-		}
-
-		if (UPDATE_TEST) {
-			System.exit(0);
 		}
 	}
 
@@ -890,24 +701,7 @@ public class EBNMImporter extends EBNMDefaultImporter {
 				String storedId = addDomainEntity(EBNMPeriode.class, periode);
 				referenceMap.put(jsonId, new Reference(EBNMPeriode.class,
 						storedId));
-
-				if (UPDATE_TEST) {
-					updateDomainEntity(EBNMPeriode.class, periode);
-					periode.setValue(periode.getValue() + "-mod");
-
-					// ATLGPeriode newPeriode = new ATLGPeriode();
-					// newPeriode.setId(periode.getId());
-					// newPeriode.setRev(periode.getRev());
-					// newPeriode.setVariations(periode.getVariations());
-					// newPeriode.setValue(periode.getValue());
-					// newPeriode.setLabel("ATLG-" + periode.getLabel());
-					// updateDomainEntity(ATLGPeriode.class, newPeriode);
-				}
 			}
-		}
-
-		if (UPDATE_TEST) {
-			System.exit(0);
 		}
 	}
 
@@ -944,23 +738,7 @@ public class EBNMImporter extends EBNMDefaultImporter {
 						regiocode);
 				referenceMap.put(jsonId, new Reference(EBNMRegiocode.class,
 						storedId));
-
-				if (UPDATE_TEST) {
-					System.out.println("UPDATE_TEST");
-					updateDomainEntity(EBNMRegiocode.class, regiocode);
-					regiocode.setValue(regiocode.getValue() + "-mod");
-
-					// ATLGRegiocode newRegiocode = new ATLGRegiocode();
-					// newRegiocode.setId(regiocode.getId());
-					// newRegiocode.setRegio(regiocode.getRegio());
-					// newRegiocode.setLabel("ATLG-" + regiocode.getLabel());
-					// updateDomainEntity(ATLGRegiocode.class, newRegiocode);
-				}
 			}
-		}
-
-		if (UPDATE_TEST) {
-			System.exit(0);
 		}
 	}
 
@@ -999,30 +777,7 @@ public class EBNMImporter extends EBNMDefaultImporter {
 						signalementcode);
 				referenceMap.put(jsonId, new Reference(
 						EBNMSignalementcode.class, storedId));
-
-				if (UPDATE_TEST) {
-					updateDomainEntity(EBNMSignalementcode.class,
-							signalementcode);
-					signalementcode.setValue(signalementcode.getValue()
-							+ "-mod");
-
-					// ATLGSignalementcode newSignalementcode = new
-					// ATLGSignalementcode();
-					// newSignalementcode.setId(signalementcode.getId());
-					// newSignalementcode.setRev(signalementcode.getRev());
-					// newSignalementcode.setVariations(signalementcode
-					// .getVariations());
-					// newSignalementcode.setValue(signalementcode.getValue());
-					// newSignalementcode.setLabel("ATLG-"
-					// + signalementcode.getLabel());
-					// updateDomainEntity(ATLGSignalementcode.class,
-					// newSignalementcode);
-				}
 			}
-		}
-
-		if (UPDATE_TEST) {
-			System.exit(0);
 		}
 	}
 
@@ -1059,24 +814,7 @@ public class EBNMImporter extends EBNMDefaultImporter {
 						watermerk);
 				referenceMap.put(jsonId, new Reference(EBNMWatermerk.class,
 						storedId));
-
-				if (UPDATE_TEST) {
-					updateDomainEntity(EBNMWatermerk.class, watermerk);
-					watermerk.setValue(watermerk.getValue() + "-mod");
-
-					// ATLGWatermerk newWatermerk = new ATLGWatermerk();
-					// newWatermerk.setId(watermerk.getId());
-					// newWatermerk.setRev(watermerk.getRev());
-					// newWatermerk.setVariations(watermerk.getVariations());
-					// newWatermerk.setValue(watermerk.getValue());
-					// newWatermerk.setLabel("ATLG-" + watermerk.getLabel());
-					// updateDomainEntity(ATLGWatermerk.class, newWatermerk);
-				}
 			}
-		}
-
-		if (UPDATE_TEST) {
-			System.exit(0);
 		}
 	}
 
@@ -1251,7 +989,6 @@ public class EBNMImporter extends EBNMDefaultImporter {
 		public Object[] verwijzing_pseudoniem;
 		public String[] volledige_naam;
 		public String[] years;
-
 	}
 
 	// -------------------------------------------------------------------
@@ -1312,7 +1049,6 @@ public class EBNMImporter extends EBNMDefaultImporter {
 		public Object[] trefwoord;
 		public String[] url;
 		public String[] watermerk;
-
 	}
 
 	// -------------------------------------------------------------------
@@ -1409,30 +1145,6 @@ public class EBNMImporter extends EBNMDefaultImporter {
 		public Object[] trefwoord;
 		public String[] url;
 		public String[] watermerk;
-
-	}
-
-	// -------------------------------------------------------------------
-
-	private static class XDates {
-		public String date1;
-		public String date2;
-	}
-
-	private static class XPeriod {
-		public String begin_date;
-		public String end_date;
-	}
-
-	private static class XSeeAlso {
-		public String ref_id;
-		public String text_line;
-
-		@Override
-		public String toString() {
-			return (ref_id == null) ? text_line : String.format("%s: %s",
-					ref_id, text_line);
-		}
 	}
 
 }
