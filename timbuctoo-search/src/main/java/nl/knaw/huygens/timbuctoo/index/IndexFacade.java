@@ -121,8 +121,22 @@ public class IndexFacade implements SearchManager, IndexManager {
 
   @Override
   public IndexStatus getStatus() {
-    // TODO Auto-generated method stub
+    List<Scope> scopes = scopeManager.getAllScopes();
+
+    IndexStatus indexStatus = creatIndexStatus();
+
+    for (Scope scope : scopes) {
+      for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
+        Index index = scopeManager.getIndexFor(scope, type);
+        indexStatus.addCount(scope, type, index.getCount());
+      }
+    }
+
     return null;
+  }
+
+  protected IndexStatus creatIndexStatus() {
+    return new IndexStatus();
   }
 
   @Override

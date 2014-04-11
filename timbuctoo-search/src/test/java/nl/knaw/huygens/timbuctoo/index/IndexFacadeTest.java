@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
@@ -24,6 +25,7 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class IndexFacadeTest {
 
@@ -34,14 +36,21 @@ public class IndexFacadeTest {
   private StorageManager storageManagerMock;
   private Class<SubModel> type = SubModel.class;
   private Class<ExplicitlyAnnotatedModel> baseType = ExplicitlyAnnotatedModel.class;
+  private IndexStatus indexStatusMock;
 
   @Before
   public void setUp() {
+    indexStatusMock = mock(IndexStatus.class);
     storageManagerMock = mock(StorageManager.class);
     scopeManagerMock = mock(ScopeManager.class);
     typeRegistryMock = mock(TypeRegistry.class);
     doReturn(baseType).when(typeRegistryMock).getBaseClass(type);
-    instance = new IndexFacade(scopeManagerMock, typeRegistryMock, storageManagerMock);
+    instance = new IndexFacade(scopeManagerMock, typeRegistryMock, storageManagerMock) {
+      @Override
+      protected IndexStatus creatIndexStatus() {
+        return indexStatusMock;
+      }
+    };
   }
 
   @Test
@@ -321,6 +330,74 @@ public class IndexFacadeTest {
       verify(scopeManagerMock).getAllIndexes();
       verify(indexMock1).clear();
       verifyZeroInteractions(indexMock2);
+    }
+  }
+
+  @Test
+  public void testGetStatus() {
+    // setup
+    Class<? extends DomainEntity> otherBaseType = OtherIndexBaseType.class;
+
+    Set<Class<? extends DomainEntity>> baseTypes = Sets.newHashSet();
+    baseTypes.add(baseType);
+    baseTypes.add(otherBaseType);
+
+    Scope scopeMock1 = mock(Scope.class);
+    Index scope1BaseTypeIndex = mock(Index.class);
+    Index scope1OtherBaseTypeIndex = mock(Index.class);
+
+    Scope scopeMock2 = mock(Scope.class);
+    Index scope2BaseTypeIndex = mock(Index.class);
+    Index scope2OtherBaseTypeIndex = mock(Index.class);
+
+    // when
+    when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock1, scopeMock2));
+
+    doReturn(baseTypes).when(scopeMock1).getBaseEntityTypes();
+    when(scopeManagerMock.getIndexFor(scopeMock1, baseType)).thenReturn(scope1BaseTypeIndex);
+    when(scopeManagerMock.getIndexFor(scopeMock1, otherBaseType)).thenReturn(scope1OtherBaseTypeIndex);
+    long itemCount1 = 42;
+    when(scope1BaseTypeIndex.getCount()).thenReturn(itemCount1);
+    long itemCount2 = 43;
+    when(scope1OtherBaseTypeIndex.getCount()).thenReturn(itemCount2);
+
+    doReturn(baseTypes).when(scopeMock2).getBaseEntityTypes();
+    when(scopeManagerMock.getIndexFor(scopeMock2, baseType)).thenReturn(scope2BaseTypeIndex);
+    when(scopeManagerMock.getIndexFor(scopeMock2, otherBaseType)).thenReturn(scope2OtherBaseTypeIndex);
+    long itemCount3 = 44;
+    when(scope2BaseTypeIndex.getCount()).thenReturn(itemCount3);
+    long itemCount4 = 45;
+    when(scope2OtherBaseTypeIndex.getCount()).thenReturn(itemCount4);
+
+    // action
+    instance.getStatus();
+
+    // verify
+    verify(scopeManagerMock).getAllScopes();
+    verify(scopeMock1).getBaseEntityTypes();
+    verify(scopeManagerMock).getIndexFor(scopeMock1, baseType);
+    verify(scopeManagerMock).getIndexFor(scopeMock1, otherBaseType);
+    verify(scopeMock2).getBaseEntityTypes();
+    verify(scopeManagerMock).getIndexFor(scopeMock2, baseType);
+    verify(scopeManagerMock).getIndexFor(scopeMock2, otherBaseType);
+    verify(scope1BaseTypeIndex).getCount();
+    verify(scope1OtherBaseTypeIndex).getCount();
+    verify(scope2BaseTypeIndex).getCount();
+    verify(scope2OtherBaseTypeIndex).getCount();
+
+    verify(indexStatusMock).addCount(scopeMock1, baseType, itemCount1);
+    verify(indexStatusMock).addCount(scopeMock1, otherBaseType, itemCount2);
+    verify(indexStatusMock).addCount(scopeMock2, baseType, itemCount3);
+    verify(indexStatusMock).addCount(scopeMock2, otherBaseType, itemCount4);
+
+  }
+
+  private static class OtherIndexBaseType extends DomainEntity {
+
+    @Override
+    public String getDisplayName() {
+      // TODO Auto-generated method stub
+      return null;
     }
   }
 }

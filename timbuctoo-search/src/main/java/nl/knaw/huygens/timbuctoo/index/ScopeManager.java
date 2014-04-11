@@ -73,6 +73,11 @@ public class ScopeManager {
 
     }
 
+    @Override
+    public long getCount() {
+      // TODO Auto-generated method stub
+      return 0;
+    }
   }
 
 }

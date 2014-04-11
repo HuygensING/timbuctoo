@@ -78,4 +78,9 @@ public class SolrIndex implements Index {
     }
   }
 
+  @Override
+  public long getCount() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
 }

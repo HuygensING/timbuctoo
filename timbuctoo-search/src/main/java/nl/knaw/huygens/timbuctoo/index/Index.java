@@ -40,4 +40,10 @@ public interface Index {
    */
   public void clear() throws IndexException;
 
+  /**
+   * Get the number of items in the index.
+   * @return
+   */
+  public long getCount();
+
 }
