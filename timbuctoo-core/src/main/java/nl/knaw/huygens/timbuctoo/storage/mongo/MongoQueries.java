@@ -30,7 +30,6 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.storage.PropertyMap;
 
@@ -95,14 +94,6 @@ public class MongoQueries {
     return new BasicDBObject(key, new BasicDBObject("$lt", dateValue.getTime()));
   }
 
-  public DBObject selectRelation(Relation relation) {
-    DBObject query = new BasicDBObject();
-    query.put("^typeId", relation.getTypeId());
-    query.put("^sourceId", relation.getSourceId());
-    query.put("^targetId", relation.getTargetId());
-    return query;
-  }
-
   public DBObject selectVariation(String name) {
     return new BasicDBObject(DomainEntity.VARIATIONS, name);
   }
@@ -110,4 +101,5 @@ public class MongoQueries {
   public DBObject setProperty(String key, Object value) {
     return new BasicDBObject("$set", new BasicDBObject(key, value));
   }
+
 }

@@ -32,7 +32,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.security.Principal;
 
 import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
@@ -64,7 +63,7 @@ public class UserSecurityContextCreatorTest {
   }
 
   @Test
-  public void testCreateSecurityContextKnownUser() throws IOException {
+  public void testCreateSecurityContextKnownUser() throws Exception {
     User user = createUser(DISPLAY_NAME, USER_ID);
 
     User example = new User();
@@ -98,7 +97,7 @@ public class UserSecurityContextCreatorTest {
   }
 
   @Test
-  public void testCreateSecurityContextUnknownUser() throws IOException {
+  public void testCreateSecurityContextUnknownUser() throws Exception {
     SecurityInformation securityInformation = createSecurityInformation(DISPLAY_NAME, USER_ID);
     User user = createUser(DISPLAY_NAME, USER_ID);
 

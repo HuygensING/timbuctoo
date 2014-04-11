@@ -40,7 +40,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
-import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.neww.WWCollective;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
@@ -49,15 +48,13 @@ import nl.knaw.huygens.timbuctoo.model.neww.WWLanguage;
 import nl.knaw.huygens.timbuctoo.model.neww.WWLocation;
 import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 import nl.knaw.huygens.timbuctoo.model.neww.WWRelation;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
-import nl.knaw.huygens.timbuctoo.storage.RelationManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
-import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
@@ -102,8 +99,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       indexManager = injector.getInstance(IndexManager.class);
 
       TypeRegistry registry = injector.getInstance(TypeRegistry.class);
-      RelationManager relationManager = new RelationManager(registry, storageManager);
-      WomenWritersImporter importer = new WomenWritersImporter(registry, storageManager, relationManager, indexManager, directory);
+      WomenWritersImporter importer = new WomenWritersImporter(registry, storageManager, indexManager, directory);
 
       importer.importAll();
 
@@ -119,6 +115,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         indexManager.close();
       }
       if (storageManager != null) {
+        storageManager.logCacheStats();
         storageManager.close();
       }
       // If the application is not explicitly closed a finalizer thread of Guice keeps running.
@@ -134,13 +131,11 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   private final Set<String> invalids = Sets.newHashSet();
   /** For deserializing JSON */
   private final ObjectMapper objectMapper;
-  private final RelationManager relationManager;
   private final File inputDir;
 
-  public WomenWritersImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager, String inputDirName) {
+  public WomenWritersImporter(TypeRegistry registry, StorageManager storageManager, IndexManager indexManager, String inputDirName) {
     super(registry, storageManager, indexManager);
     objectMapper = new ObjectMapper();
-    this.relationManager = relationManager;
     inputDir = new File(inputDirName);
     if (inputDir.isDirectory()) {
       System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());
@@ -158,7 +153,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     removeNonPersistentEntities(WWPerson.class);
     removeNonPersistentEntities(WWRelation.class);
 
-    setup(relationManager);
+    importRelationTypes();
     setupRelationDefs();
 
     printBoxedText("Import");
@@ -191,7 +186,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     importRelations();
     System.out.printf("Number of missing relation types = %6d%n", missingRelationTypes);
     System.out.printf("Number of unstored relations     = %6d%n", unstoredRelations);
-    System.out.printf("Number of duplicate relations    = %6d%n", relationManager.getDuplicateRelationCount());
+    System.out.printf("Number of duplicate relations    = %6d%n", getDuplicateRelationCount());
 
     printBoxedText("Indexing");
 
@@ -492,7 +487,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   public DocumentType toDocumentType(String type) {
     DocumentType documentType = (type != null) ? documentTypeMap.get(type) : null;
-    return (documentType != null) ? documentType : DocumentType.UNKNOWN ;
+    return (documentType != null) ? documentType : DocumentType.UNKNOWN;
   }
 
   private List<XPrint> extractPrints(XDocument object) {
@@ -534,7 +529,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
             publisherRef = storeReference(key, WWCollective.class, storedId);
           }
           Reference relationRef = relationTypes.get(IS_PUBLISHED_BY);
-          storeRelation(WWRelation.class, documentRef, relationRef, publisherRef, change, "");
+          addRelation(WWRelation.class, relationRef, documentRef, publisherRef, change, "");
         }
       }
     }
@@ -1480,13 +1475,12 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     // Finally we're ready to store
     String storedId = null;
     try {
-      storedId = storeRelation(WWRelation.class, sourceRef, relationRef, targetRef, change, line);
+      storedId = addRelation(WWRelation.class, relationRef, sourceRef, targetRef, change, line);
     } catch (Exception e) {
       LOG.error("Failed to store: {}", line);
       System.exit(-1);
     }
     if (storedId == null) {
-      // WHY would this happen??
       if (++unstoredRelations <= 5) {
         handleError("Not stored.. %s", line);
       }
@@ -1494,27 +1488,9 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
 
     // Once the relation is in place, we update the project specific attributes
-    WWRelation relation = storageManager.getEntity(WWRelation.class, storedId);
-    relation.setAccepted(true);
-    relation.setReception(object.isReception);
-    updateDomainEntity(WWRelation.class, relation);
-  }
-
-  private <T extends Relation> String storeRelation(Class<T> type, Reference sourceRef, Reference relTypeRef, Reference targetRef, Change change, String line) {
-    if (sourceRef == null || relTypeRef == null || targetRef == null) {
-      System.out.println(line);
-      LOG.info("sourceRef {}", sourceRef);
-      LOG.info("relTypeRef {}", relTypeRef);
-      LOG.info("targetRef {}", targetRef);
-
-      throw new IllegalArgumentException("Missing references");
-    }
-    try {
-      return relationManager.storeRelation(type, sourceRef, relTypeRef, targetRef, change);
-    } catch (IllegalArgumentException e) {
-      System.out.println(line);
-      throw e;
-    }
+    // WWRelation relation = storageManager.getEntity(WWRelation.class, storedId);
+    // relation.setQualification(Qualification.UNKNOWN);
+    // updateDomainEntity(WWRelation.class, relation);
   }
 
   protected static class XRelation {

@@ -41,7 +41,14 @@ public class VREManager {
 
   public VREManager() {
     vreMap = Maps.newHashMap();
-    List<VRE> vreList = ImmutableList.<VRE> of(new PrimitivesVRE(), new BaseVRE(), new DutchCaribbeanVRE(), new DWCVRE(), new WomenWritersVRE(), new TestVRE());
+    List<VRE> vreList = ImmutableList.<VRE> of( //
+        new PrimitivesVRE(), //
+        new BaseVRE(), //
+        new DutchCaribbeanVRE(), //
+        new DWCVRE(), //
+        new WomenWritersVRE(), //
+        new CobwwwebNoVRE(), //
+        new TestVRE());
 
     for (VRE vre : vreList) {
       vreMap.put(vre.getName(), vre);

@@ -50,7 +50,8 @@ public class WWPerson extends Person {
   private List<String> religions;
   private List<String> socialClasses;
 
-  // Fields scheduled for removal
+  // --- temporary fields ------------------------------------------------------
+
   public String tempOldId; // record id in NEWW database
   public String tempBirthPlace;
   public String tempChildren;
@@ -67,6 +68,8 @@ public class WWPerson extends Person {
   public String tempPseudonyms;
   public String tempPublishingLanguages;
   public String tempSpouse;
+
+  // ---------------------------------------------------------------------------
 
   public WWPerson() {
     educations = Lists.newArrayList();

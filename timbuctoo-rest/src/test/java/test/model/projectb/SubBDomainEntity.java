@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.validation;
+package test.model.projectb;
 
 /*
  * #%L
@@ -22,24 +22,29 @@ package nl.knaw.huygens.timbuctoo.validation;
  * #L%
  */
 
-public class ValidationException extends Exception {
+import test.model.BaseDomainEntity;
 
-  private static final long serialVersionUID = 1L;
+public class SubBDomainEntity extends BaseDomainEntity {
 
-  public ValidationException() {
-    super();
+  private String valueb;
+
+  public SubBDomainEntity() {}
+
+  public SubBDomainEntity(String id) {
+    setId(id);
   }
 
-  public ValidationException(String message) {
-    super(message);
+  public SubBDomainEntity(String id, String pid) {
+    setId(id);
+    setPid(pid);
   }
 
-  public ValidationException(Throwable cause) {
-    super(cause);
+  public String getValueb() {
+    return valueb;
   }
 
-  public ValidationException(String message, Throwable cause) {
-    super(message, cause);
+  public void setValueb(String value) {
+    valueb = value;
   }
 
 }

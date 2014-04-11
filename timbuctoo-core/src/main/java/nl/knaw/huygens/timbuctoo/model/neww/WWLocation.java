@@ -27,10 +27,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class WWLocation extends Location {
 
+  // --- temporary fields ------------------------------------------------------
+
   public String tempAddress;
   public String tempSettlement;
   public String tempCountry;
   public String tempZipcode;
+
+  // ---------------------------------------------------------------------------
 
   @JsonIgnore
   public boolean isValid() {

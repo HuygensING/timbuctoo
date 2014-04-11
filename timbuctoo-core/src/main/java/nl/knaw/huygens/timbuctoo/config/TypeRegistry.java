@@ -246,11 +246,19 @@ public class TypeRegistry {
   }
 
   /**
-   * Returns the type token for the specified internal type name,
+   * Returns the entity type token for the specified internal type name,
    * or {@code null} if there is no such token.
    */
   public Class<? extends Entity> getTypeForIName(String iname) {
     return iname2type.get(iname);
+  }
+
+  /**
+   * Returns {@code true} if the specified internal type name corresponds
+   * with a primitive domain entity type, {@code false} otherwise.
+   */
+  public boolean mapsToPrimitiveDomainEntity(String iname) {
+    return isPrimitiveDomainEntity(iname2type.get(iname));
   }
 
   /**

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.model.cobw;
+package nl.knaw.huygens.timbuctoo.storage;
 
 /*
  * #%L
@@ -22,39 +22,28 @@ package nl.knaw.huygens.timbuctoo.model.cobw;
  * #L%
  */
 
-import java.util.List;
+public class ValidationException extends Exception {
 
-import nl.knaw.huygens.timbuctoo.model.Person;
+  private static final long serialVersionUID = 1L;
 
-import com.google.common.collect.Lists;
-
-public class COBWPerson extends Person {
-
-  // Fields scheduled for removal
-  public List<String> tempNames = Lists.newArrayList();
-  public String tempNewwId;
-
-  private List<String> nationalities = Lists.newArrayList();
-  private String notes;
-
-  public List<String> getNationalities() {
-    return nationalities;
+  public ValidationException() {
+    super();
   }
 
-  public void setNationalities(List<String> nationalities) {
-    this.nationalities = nationalities;
+  public ValidationException(String message) {
+    super(message);
   }
 
-  public void addNationality(String nationality) {
-    nationalities.add(nationality);
+  public ValidationException(String format, Object... args) {
+    super(String.format(format, args));
   }
 
-  public String getNotes() {
-    return notes;
+  public ValidationException(Throwable cause) {
+    super(cause);
   }
 
-  public void setNotes(String notes) {
-    this.notes = notes;
+  public ValidationException(String message, Throwable cause) {
+    super(message, cause);
   }
 
 }

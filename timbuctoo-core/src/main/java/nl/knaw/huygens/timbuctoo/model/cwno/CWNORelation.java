@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.model.cobw;
+package nl.knaw.huygens.timbuctoo.model.cwno;
 
 /*
  * #%L
@@ -24,6 +24,6 @@ package nl.knaw.huygens.timbuctoo.model.cobw;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
 
-public class COBWRelation extends Relation {
+public class CWNORelation extends Relation {
 
 }
