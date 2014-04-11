@@ -20,6 +20,7 @@ public interface IndexManager {
 
   void deleteAllEntities() throws IndexException;
 
+  @Deprecated
   <T extends DomainEntity> QueryResponse search(Scope scope, Class<T> type, SolrQuery query) throws IndexException;
 
   IndexStatus getStatus();

@@ -109,6 +109,9 @@ public class IndexFacade implements SearchManager, IndexManager {
     }
   }
 
+  /**
+   * @deprecated use SearchManager.search
+   */
   @Override
   @Deprecated
   public <T extends DomainEntity> QueryResponse search(Scope scope, Class<T> type, SolrQuery query) throws IndexException {
