@@ -42,8 +42,9 @@ public interface Index {
 
   /**
    * Get the number of items in the index.
-   * @return
+   * @return the number of items in the index.
+   * @throws IndexException 
    */
-  public long getCount();
+  public long getCount() throws IndexException;
 
 }

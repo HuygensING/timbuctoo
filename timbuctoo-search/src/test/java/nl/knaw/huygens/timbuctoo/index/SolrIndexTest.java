@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.index;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -14,6 +16,8 @@ import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.Before;
 import org.junit.Test;
@@ -226,6 +230,42 @@ public class SolrIndexTest {
       // verify
       verify(solrServerMock).deleteByQuery("*:*");
       verify(solrServerMock).commit();
+    }
+  }
+
+  @Test
+  public void testGetCount() throws SolrServerException, IndexException {
+    // setup
+    QueryResponse queryResponseMock = mock(QueryResponse.class);
+    SolrDocumentList resultsMock = mock(SolrDocumentList.class);
+    long numFound = 42l;
+
+    // when
+    when(solrServerMock.search(SolrIndex.COUNT_QUERY)).thenReturn(queryResponseMock);
+    when(queryResponseMock.getResults()).thenReturn(resultsMock);
+    when(resultsMock.getNumFound()).thenReturn(numFound);
+
+    // action
+    long actualNumFound = instance.getCount();
+
+    // verify
+    InOrder inOrder = inOrder(solrServerMock, resultsMock);
+    inOrder.verify(solrServerMock).search(SolrIndex.COUNT_QUERY);
+    inOrder.verify(resultsMock).getNumFound();
+
+    assertThat(actualNumFound, equalTo(numFound));
+  }
+
+  @Test(expected = IndexException.class)
+  public void testGetCountSolrServerThrowsSolrException() throws SolrServerException, IndexException {
+    // when
+    doThrow(SolrServerException.class).when(solrServerMock).search(SolrIndex.COUNT_QUERY);
+
+    try {
+      // action
+      instance.getCount();
+    } finally {
+      verify(solrServerMock).search(SolrIndex.COUNT_QUERY);
     }
   }
 }

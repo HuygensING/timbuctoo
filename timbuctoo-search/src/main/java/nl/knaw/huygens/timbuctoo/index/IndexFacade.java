@@ -15,9 +15,12 @@ import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IndexFacade implements SearchManager, IndexManager {
 
+  private static final Logger LOG = LoggerFactory.getLogger(IndexFacade.class);
   private final ScopeManager scopeManager;
   private final TypeRegistry typeRegistry;
   private final StorageManager storageManager;
@@ -128,7 +131,11 @@ public class IndexFacade implements SearchManager, IndexManager {
     for (Scope scope : scopes) {
       for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
         Index index = scopeManager.getIndexFor(scope, type);
-        indexStatus.addCount(scope, type, index.getCount());
+        try {
+          indexStatus.addCount(scope, type, index.getCount());
+        } catch (IndexException e) {
+          LOG.error("Failed to obtain status: {}", e.getMessage());
+        }
       }
     }
 

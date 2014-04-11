@@ -6,13 +6,22 @@ import java.util.List;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 
 public class SolrIndex implements Index {
 
   private final SolrInputDocumentCreator solrDocumentCreator;
   private final AbstractSolrServer solrServer;
+  protected static final SolrQuery COUNT_QUERY;
+
+  static {
+    COUNT_QUERY = new SolrQuery();
+    COUNT_QUERY.setQuery("*:*");
+    COUNT_QUERY.setRows(0);
+  }
 
   public SolrIndex(SolrInputDocumentCreator solrDocumentCreator, AbstractSolrServer solrServer) {
     this.solrDocumentCreator = solrDocumentCreator;
@@ -79,8 +88,12 @@ public class SolrIndex implements Index {
   }
 
   @Override
-  public long getCount() {
-    // TODO Auto-generated method stub
-    return 0;
+  public long getCount() throws IndexException {
+    try {
+      SolrDocumentList results = solrServer.search(COUNT_QUERY).getResults();
+      return results.getNumFound();
+    } catch (SolrServerException e) {
+      throw new IndexException(e);
+    }
   }
 }
