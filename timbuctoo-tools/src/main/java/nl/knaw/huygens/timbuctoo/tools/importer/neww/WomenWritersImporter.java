@@ -1073,7 +1073,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
 
   // --- Persons ---------------------------------------------------------------
 
-  private final Pattern simpleNamePattern = Pattern.compile("^([A-Z]\\w+), ([A-Z]\\w+)$");
+  private final Pattern simpleNamePattern = Pattern.compile("^(\\p{Lu}\\p{L}+), (\\p{Lu}\\p{L}+)$");
   private final Set<String> excludedNames = Sets.newHashSet("Comtesse", "Madame", "Madamoiselle", "Mejuffrouw", "Mevrouw", "Mme", "Mrs", "Queen", "Vrou");
 
   // maps line without id to stored id
@@ -1140,6 +1140,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     }
   }
 
+  // \p{Lu}
   private WWPerson convert(String line, XPerson object) {
     String text;
     WWPerson converted = new WWPerson();
