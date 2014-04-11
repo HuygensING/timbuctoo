@@ -149,7 +149,7 @@ public class IndexFacade implements SearchManager, IndexManager {
   @Override
   public void commitAll() throws IndexException {
     for (Index index : scopeManager.getAllIndexes()) {
-      index.commitAll();
+      index.commit();
     }
   }
 

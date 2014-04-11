@@ -98,8 +98,15 @@ public class SolrIndex implements Index {
   }
 
   @Override
-  public void commitAll() {
-    // TODO Auto-generated method stub
+  public void commit() throws IndexException {
+    try {
+      solrServer.commit();
+    } catch (SolrServerException e) {
+      throw new IndexException(e);
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      throw new IndexException(e);
+    }
 
   }
 }

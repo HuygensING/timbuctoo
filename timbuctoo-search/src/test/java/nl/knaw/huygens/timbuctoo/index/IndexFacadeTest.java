@@ -443,8 +443,31 @@ public class IndexFacadeTest {
 
     // verify
     verify(scopeManagerMock).getAllIndexes();
-    verify(indexMock1).commitAll();
-    verify(indexMock2).commitAll();
+    verify(indexMock1).commit();
+    verify(indexMock2).commit();
+  }
+
+  @Test(expected = IndexException.class)
+  public void testCommitAllFirstIndexThrowsAnIndexException() throws IndexException {
+    // setup
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+
+    List<Index> indexes = Lists.newArrayList(indexMock1, indexMock2);
+
+    // when
+    when(scopeManagerMock.getAllIndexes()).thenReturn(indexes);
+    doThrow(IndexException.class).when(indexMock1).commit();
+
+    try {
+      // action
+      instance.commitAll();
+    } finally {
+      // verify
+      verify(scopeManagerMock).getAllIndexes();
+      verify(indexMock1).commit();
+      verifyZeroInteractions(indexMock2);
+    }
   }
 
   private static class OtherIndexBaseType extends DomainEntity {

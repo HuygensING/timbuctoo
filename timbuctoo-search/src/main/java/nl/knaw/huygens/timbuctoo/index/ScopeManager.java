@@ -80,7 +80,7 @@ public class ScopeManager {
     }
 
     @Override
-    public void commitAll() {
+    public void commit() {
       // TODO Auto-generated method stub
 
     }

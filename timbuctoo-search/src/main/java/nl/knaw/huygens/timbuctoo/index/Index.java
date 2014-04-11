@@ -49,7 +49,8 @@ public interface Index {
 
   /**
    * Commit all the changes to the index.
+   * @throws IndexException 
    */
-  public void commitAll();
+  public void commit() throws IndexException;
 
 }

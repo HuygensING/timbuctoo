@@ -268,4 +268,36 @@ public class SolrIndexTest {
       verify(solrServerMock).search(SolrIndex.COUNT_QUERY);
     }
   }
+
+  @Test
+  public void testCommit() throws SolrServerException, IOException, IndexException {
+    // action
+    instance.commit();
+
+    // verify
+    verify(solrServerMock).commit();
+  }
+
+  @Test(expected = IndexException.class)
+  public void testCommitSolrServerMockThrowsAnSolrServerException() throws SolrServerException, IOException, IndexException {
+    testCommitSolrServerThrowsAnException(SolrServerException.class);
+  }
+
+  @Test(expected = IndexException.class)
+  public void testCommitSolrServerMockThrowsAnIOException() throws SolrServerException, IOException, IndexException {
+    testCommitSolrServerThrowsAnException(IOException.class);
+  }
+
+  private void testCommitSolrServerThrowsAnException(Class<? extends Exception> exceptionToBeThrown) throws SolrServerException, IOException, IndexException {
+    // when
+    doThrow(exceptionToBeThrown).when(solrServerMock).commit();
+
+    try {
+      // action
+      instance.commit();
+    } finally {
+      // verify
+      verify(solrServerMock).commit();
+    }
+  }
 }
