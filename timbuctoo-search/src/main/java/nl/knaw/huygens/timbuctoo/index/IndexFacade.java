@@ -121,9 +121,9 @@ public class IndexFacade implements SearchManager, IndexManager {
 
   @Override
   public IndexStatus getStatus() {
-    List<Scope> scopes = scopeManager.getAllScopes();
-
     IndexStatus indexStatus = creatIndexStatus();
+
+    List<Scope> scopes = scopeManager.getAllScopes();
 
     for (Scope scope : scopes) {
       for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
@@ -132,7 +132,7 @@ public class IndexFacade implements SearchManager, IndexManager {
       }
     }
 
-    return null;
+    return indexStatus;
   }
 
   protected IndexStatus creatIndexStatus() {

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.index;
 
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -370,7 +371,7 @@ public class IndexFacadeTest {
     when(scope2OtherBaseTypeIndex.getCount()).thenReturn(itemCount4);
 
     // action
-    instance.getStatus();
+    IndexStatus actualIndexStatus = instance.getStatus();
 
     // verify
     verify(scopeManagerMock).getAllScopes();
@@ -389,6 +390,8 @@ public class IndexFacadeTest {
     verify(indexStatusMock).addCount(scopeMock1, otherBaseType, itemCount2);
     verify(indexStatusMock).addCount(scopeMock2, baseType, itemCount3);
     verify(indexStatusMock).addCount(scopeMock2, otherBaseType, itemCount4);
+
+    assertNotNull(actualIndexStatus);
 
   }
 
