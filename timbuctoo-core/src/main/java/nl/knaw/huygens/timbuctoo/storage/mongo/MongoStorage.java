@@ -510,7 +510,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Relation> StorageIterator<T> getRelationsForEntityId(Class<T> type, String id) {
-    DBObject query = DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id));
+    DBObject query = queries.selectRelationsForEntityId(id);
     return getItems(type, query);
   }
 
