@@ -36,27 +36,15 @@ import nl.knaw.huygens.timbuctoo.config.EntityMapper;
 import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.Archive;
-import nl.knaw.huygens.timbuctoo.model.Archiver;
-import nl.knaw.huygens.timbuctoo.model.Collective;
-import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.EntityRef;
-import nl.knaw.huygens.timbuctoo.model.Keyword;
-import nl.knaw.huygens.timbuctoo.model.Language;
-import nl.knaw.huygens.timbuctoo.model.Legislation;
-import nl.knaw.huygens.timbuctoo.model.Location;
-import nl.knaw.huygens.timbuctoo.model.Person;
-import nl.knaw.huygens.timbuctoo.model.Place;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationEntityRef;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.util.KV;
 
@@ -98,26 +86,12 @@ public class StorageManager {
 
   public StorageStatus getStatus() {
     StorageStatus status = new StorageStatus();
-
-    // TODO determine list dynamically
-    status.addSystemEntityCount(getCount(RelationType.class));
-    status.addSystemEntityCount(getCount(SearchResult.class));
-    status.addSystemEntityCount(getCount(User.class));
-    status.addSystemEntityCount(getCount(VREAuthorization.class));
-
-    // TODO determine list dynamically
-    status.addDomainEntityCount(getCount(Archive.class));
-    status.addDomainEntityCount(getCount(Archiver.class));
-    status.addDomainEntityCount(getCount(Collective.class));
-    status.addDomainEntityCount(getCount(Document.class));
-    status.addDomainEntityCount(getCount(Keyword.class));
-    status.addDomainEntityCount(getCount(Language.class));
-    status.addDomainEntityCount(getCount(Legislation.class));
-    status.addDomainEntityCount(getCount(Location.class));
-    status.addDomainEntityCount(getCount(Person.class));
-    status.addDomainEntityCount(getCount(Place.class));
-    status.addDomainEntityCount(getCount(Relation.class));
-
+    for (Class<? extends SystemEntity> type : registry.getSystemEntityTypes()) {
+      status.addSystemEntityCount(getCount(type));
+    }
+    for (Class<? extends DomainEntity> type : registry.getPrimitiveDomainEntityTypes()) {
+      status.addDomainEntityCount(getCount(type));
+    }
     return status;
   }
 

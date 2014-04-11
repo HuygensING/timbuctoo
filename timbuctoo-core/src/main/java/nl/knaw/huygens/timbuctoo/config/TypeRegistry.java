@@ -27,6 +27,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,8 +43,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.ClassPath;
@@ -91,7 +95,8 @@ public class TypeRegistry {
 
   // ---------------------------------------------------------------------------
 
-  private final Set<Class<? extends DomainEntity>> domainEntities = Sets.newHashSet();
+  private final Set<Class<? extends SystemEntity>> systemEntities = Sets.newTreeSet(new SimpleNameComparator());
+  private final Set<Class<? extends DomainEntity>> domainEntities = Sets.newTreeSet(new SimpleNameComparator());
 
   private final Map<Class<? extends Entity>, String> type2iname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> iname2type = Maps.newHashMap();
@@ -146,7 +151,9 @@ public class TypeRegistry {
       Class<?> type = info.load();
       if (isEntity(type) && !shouldNotRegister(type)) {
         if (BusinessRules.isValidSystemEntity(type)) {
-          registerEntity(toSystemEntity(type));
+          Class<? extends SystemEntity> entityType = toSystemEntity(type);
+          systemEntities.add(entityType);
+          registerEntity(entityType);
         } else if (BusinessRules.isValidDomainEntity(type)) {
           Class<? extends DomainEntity> entityType = toDomainEntity(type);
           domainEntities.add(entityType);
@@ -216,10 +223,24 @@ public class TypeRegistry {
   // --- public api ------------------------------------------------------------
 
   /**
-   * Returns a set with all registered domain entity types.
+   * Returns a list with all registered system entity types.
    */
-  public Set<Class<? extends DomainEntity>> getDomainEntityTypes() {
-    return ImmutableSet.copyOf(domainEntities);
+  public List<Class<? extends SystemEntity>> getSystemEntityTypes() {
+    return Lists.newArrayList(systemEntities);
+  }
+
+  /**
+   * Returns a list with all registered domain entity types.
+   */
+  public List<Class<? extends DomainEntity>> getDomainEntityTypes() {
+    return Lists.newArrayList(domainEntities);
+  }
+
+  /**
+   * Returns a list with all registered primitive domain entity types.
+   */
+  public List<Class<? extends DomainEntity>> getPrimitiveDomainEntityTypes() {
+    return Lists.newArrayList(Iterables.filter(domainEntities, isPrimitiveDomainEntityPredicate));
   }
 
   /**
@@ -333,6 +354,13 @@ public class TypeRegistry {
     return cls != null && cls.getSuperclass() == DomainEntity.class;
   }
 
+  public static final Predicate<Class<? extends DomainEntity>> isPrimitiveDomainEntityPredicate = new Predicate<Class<? extends DomainEntity>>() {
+    @Override
+    public boolean apply(Class<? extends DomainEntity> type) {
+      return isPrimitiveDomainEntity(type);
+    }
+  };
+
   public static boolean isRole(Class<?> cls) {
     return cls == null ? false : Role.class.isAssignableFrom(cls);
   }
@@ -395,6 +423,15 @@ public class TypeRegistry {
     String package1 = class1.getPackage().getName();
     String package2 = class2.getPackage().getName();
     return Objects.equal(package1, package2);
+  }
+
+  // ---------------------------------------------------------------------------
+
+  private static class SimpleNameComparator implements Comparator<Class<?>> {
+    @Override
+    public int compare(Class<?> type1, Class<?> type2) {
+      return type1.getSimpleName().compareTo(type2.getSimpleName());
+    }
   }
 
 }
