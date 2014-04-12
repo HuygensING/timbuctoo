@@ -46,9 +46,6 @@ public class EmptyStorageIterator<T> implements StorageIterator<T> {
   }
 
   @Override
-  public void close() {}
-
-  @Override
   public int size() {
     return 0;
   }
@@ -60,5 +57,8 @@ public class EmptyStorageIterator<T> implements StorageIterator<T> {
   public List<T> getSome(int limit) {
     return Collections.emptyList();
   }
+
+  @Override
+  public void close() {}
 
 }

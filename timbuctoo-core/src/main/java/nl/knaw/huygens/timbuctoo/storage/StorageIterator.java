@@ -31,12 +31,24 @@ import java.util.List;
  */
 public interface StorageIterator<T> extends Iterator<T> {
 
-  void close();
-
+  /**
+   * Returns the number of items that can be iterated over.
+   */
   int size();
 
+  /**
+   * Skips the specified number of items.
+   */
   void skip(int count);
 
+  /**
+   * Returns at most {@code limit} items and closes iterator.
+   */
   List<T> getSome(int limit);
+
+  /**
+   * Closes this iterator, after which it cannot be used anymore.
+   */
+  void close();
 
 }

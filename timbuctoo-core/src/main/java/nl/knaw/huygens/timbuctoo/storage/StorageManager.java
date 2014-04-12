@@ -63,6 +63,9 @@ public class StorageManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(StorageManager.class);
 
+  /** Maximum number of relations added to an entity. */
+  private static final int DEFAULT_RELATION_LIMIT = 100;
+
   private final TypeRegistry registry;
   private final Storage storage;
   private final EntityMappers entityMappers;
@@ -187,7 +190,7 @@ public class StorageManager {
     T entity = null;
     try {
       entity = storage.getItem(type, id);
-      addRelationsTo(entity);
+      addRelationsTo(entity, DEFAULT_RELATION_LIMIT);
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
     }
@@ -198,7 +201,7 @@ public class StorageManager {
     T entity = null;
     try {
       entity = storage.getRevision(type, id, revision);
-      addRelationsTo(entity);
+      addRelationsTo(entity, DEFAULT_RELATION_LIMIT);
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
     }
@@ -231,7 +234,7 @@ public class StorageManager {
     try {
       List<T> variations = storage.getAllVariations(type, id);
       for (T variation : variations) {
-        addRelationsTo(variation);
+        addRelationsTo(variation, DEFAULT_RELATION_LIMIT);
       }
       return variations;
     } catch (IOException e) {
@@ -279,9 +282,7 @@ public class StorageManager {
     if (offset > 0) {
       iterator.skip(offset);
     }
-    List<T> list = iterator.getSome(limit);
-    iterator.close();
-    return list;
+    return iterator.getSome(limit);
   }
 
   // --- relation types --------------------------------------------------------
@@ -349,38 +350,30 @@ public class StorageManager {
   }
 
   /**
-   * Adds all relations for the specified entity as virtual properties.
+   * Adds relations for the specified entity as virtual properties.
+   *
+   * NOTE We retrieve relations where the entity is source or target with one query;
+   * handling them separately would cause complications with reflexive relations.
    */
-  private <T extends DomainEntity> void addRelationsTo(T entity) {
-    if (entity != null) {
-      String id = entity.getId();
-      Class<? extends DomainEntity> type = entity.getClass();
-      EntityMapper mapper = entityMappers.getEntityMapper(type);
-      checkState(mapper != null, "No EntityMapper for type %s", type);
+  private <T extends DomainEntity> void addRelationsTo(T entity, int limit) throws IOException {
+    if (entity != null && limit > 0) {
+      String entityId = entity.getId();
+      Class<? extends DomainEntity> entityType = entity.getClass();
+      EntityMapper mapper = entityMappers.getEntityMapper(entityType);
+      checkState(mapper != null, "No EntityMapper for type %s", entityType);
       @SuppressWarnings("unchecked")
       Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
-      StorageIterator<? extends Relation> iterator = null;
-      try {
-        iterator = storage.getRelationsForEntityId(mappedType, id); // db access
-        while (iterator.hasNext()) {
-          Relation relation = iterator.next(); // db access
-          RelationType relType = getRelationTypeById(relation.getTypeRef().getId());
-          checkState(relType != null, "Failed to retrieve relation type");
-          if (relation.hasSource() && relation.hasTarget()) {
-            if (relation.hasSourceId(id)) {
-              EntityRef entityRef = getEntityRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
-              entity.addRelation(relType.getRegularName(), entityRef); // db access
-            } else if (relation.hasTargetId(id)) {
-              EntityRef entityRef = getEntityRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
-              entity.addRelation(relType.getInverseName(), entityRef); // db access
-            }
+      for (Relation relation : storage.getRelationsForEntityId(mappedType, entityId).getSome(limit)) {
+        RelationType relType = getRelationTypeById(relation.getTypeId());
+        checkState(relType != null, "Failed to retrieve relation type");
+        if (relation.hasSource() && relation.hasTarget()) {
+          if (relation.hasSourceId(entityId)) {
+            EntityRef entityRef = getEntityRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+            entity.addRelation(relType.getRegularName(), entityRef); // db access
+          } else if (relation.hasTargetId(entityId)) {
+            EntityRef entityRef = getEntityRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+            entity.addRelation(relType.getInverseName(), entityRef); // db access
           }
-        }
-      } catch (IOException e) {
-        LOG.error("Error while handling {} {}", type.getSimpleName(), id);
-      } finally {
-        if (iterator != null) {
-          iterator.close();
         }
       }
     }
@@ -388,7 +381,7 @@ public class StorageManager {
 
   // Relations are defined between primitive domain entities
   // Map to a domain entity in the package from which an entity is requested
-  private EntityRef getEntityRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws StorageException, IOException {
+  private EntityRef getEntityRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws IOException {
     String iname = reference.getType();
     Class<? extends DomainEntity> type = TypeRegistry.toDomainEntity(registry.getTypeForIName(iname));
     type = mapper.map(type);
