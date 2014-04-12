@@ -40,7 +40,7 @@ public class RelationTypeConformationValidatorTest {
   @Test
   public void testValidate() throws IOException, ValidationException {
     // when
-    when(storage.getRelationTypeById(relationTypeId)).thenReturn(relationType);
+    when(storage.getRelationType(relationTypeId)).thenReturn(relationType);
     when(relationMock.conformsToRelationType(relationType)).thenReturn(true);
 
     // action
@@ -49,14 +49,14 @@ public class RelationTypeConformationValidatorTest {
     // verify
     InOrder inOrder = Mockito.inOrder(storage, relationMock);
     inOrder.verify(relationMock).getTypeId();
-    inOrder.verify(storage).getRelationTypeById(relationTypeId);
+    inOrder.verify(storage).getRelationType(relationTypeId);
     inOrder.verify(relationMock).conformsToRelationType(relationType);
   }
 
   @Test(expected = ValidationException.class)
   public void testValidateRelationTypeDoesNotExist() throws IOException, ValidationException {
     // when
-    when(storage.getRelationTypeById(relationTypeId)).thenReturn(null);
+    when(storage.getRelationType(relationTypeId)).thenReturn(null);
 
     try {
       // action
@@ -64,7 +64,7 @@ public class RelationTypeConformationValidatorTest {
     } finally {
       // verify
       verify(relationMock).getTypeId();
-      verify(storage).getRelationTypeById(relationTypeId);
+      verify(storage).getRelationType(relationTypeId);
       verifyNoMoreInteractions(relationMock);
     }
   }
@@ -72,7 +72,7 @@ public class RelationTypeConformationValidatorTest {
   @Test(expected = ValidationException.class)
   public void testValidateRelationDoesNotConformToRelationType() throws IOException, ValidationException {
     // when
-    when(storage.getRelationTypeById(relationTypeId)).thenReturn(relationType);
+    when(storage.getRelationType(relationTypeId)).thenReturn(relationType);
     when(relationMock.conformsToRelationType(relationType)).thenReturn(false);
 
     try {
@@ -81,7 +81,7 @@ public class RelationTypeConformationValidatorTest {
     } finally {
       // verify
       verify(relationMock).getTypeId();
-      verify(storage).getRelationTypeById(relationTypeId);
+      verify(storage).getRelationType(relationTypeId);
       verify(relationMock).conformsToRelationType(relationType);
     }
   }

@@ -27,7 +27,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +36,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.util.SimpleNameComparator;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -240,7 +240,12 @@ public class TypeRegistry {
    * Returns a list with all registered primitive domain entity types.
    */
   public List<Class<? extends DomainEntity>> getPrimitiveDomainEntityTypes() {
-    return Lists.newArrayList(Iterables.filter(domainEntities, isPrimitiveDomainEntityPredicate));
+    return Lists.newArrayList(Iterables.filter(domainEntities, new Predicate<Class<?>>() {
+        @Override
+        public boolean apply(Class<?> type) {
+          return isPrimitiveDomainEntity(type);
+        }
+      }));
   }
 
   /**
@@ -354,13 +359,6 @@ public class TypeRegistry {
     return cls != null && cls.getSuperclass() == DomainEntity.class;
   }
 
-  public static final Predicate<Class<? extends DomainEntity>> isPrimitiveDomainEntityPredicate = new Predicate<Class<? extends DomainEntity>>() {
-    @Override
-    public boolean apply(Class<? extends DomainEntity> type) {
-      return isPrimitiveDomainEntity(type);
-    }
-  };
-
   public static boolean isRole(Class<?> cls) {
     return cls == null ? false : Role.class.isAssignableFrom(cls);
   }
@@ -423,15 +421,6 @@ public class TypeRegistry {
     String package1 = class1.getPackage().getName();
     String package2 = class2.getPackage().getName();
     return Objects.equal(package1, package2);
-  }
-
-  // ---------------------------------------------------------------------------
-
-  private static class SimpleNameComparator implements Comparator<Class<?>> {
-    @Override
-    public int compare(Class<?> type1, Class<?> type2) {
-      return type1.getSimpleName().compareTo(type2.getSimpleName());
-    }
   }
 
 }

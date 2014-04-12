@@ -42,7 +42,7 @@ public class RelationTypeConformationValidator implements Validator<Relation> {
   public void validate(Relation entity) throws ValidationException {
     String relationTypeId = entity.getTypeId();
 
-    RelationType relationType = storage.getRelationTypeById(relationTypeId);
+    RelationType relationType = storage.getRelationType(relationTypeId);
     if (relationType == null) {
       throw new ValidationException("RelationType with id " + relationTypeId + " does not exist");
     }

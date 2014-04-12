@@ -210,7 +210,7 @@ public class Relation extends DomainEntity {
   public void normalize(TypeRegistry registry, StorageManager storage) {
     // Make sure symmetric relations are stored in canonical order
     if (typeId != null & sourceId != null && targetId != null) {
-      RelationType relationType = storage.getRelationTypeById(typeId);
+      RelationType relationType = storage.getRelationType(typeId);
       if (relationType != null && relationType.isSymmetric() && sourceId.compareTo(targetId) > 0) {
         String temp = sourceId;
         sourceId = targetId;

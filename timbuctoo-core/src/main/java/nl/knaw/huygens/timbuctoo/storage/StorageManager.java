@@ -313,7 +313,7 @@ public class StorageManager {
    * Returns the relation type with the specified id,
    * or {@code null} if no such relation type exists.
    */
-  public RelationType getRelationTypeById(String id) {
+  public RelationType getRelationType(String id) {
     try {
       return relationTypeCache.get(id);
     } catch (ExecutionException e) {
@@ -364,7 +364,7 @@ public class StorageManager {
       @SuppressWarnings("unchecked")
       Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
       for (Relation relation : storage.getRelationsForEntityId(mappedType, entityId).getSome(limit)) {
-        RelationType relType = getRelationTypeById(relation.getTypeId());
+        RelationType relType = getRelationType(relation.getTypeId());
         checkState(relType != null, "Failed to retrieve relation type");
         if (relation.hasSource() && relation.hasTarget()) {
           if (relation.hasSourceId(entityId)) {
