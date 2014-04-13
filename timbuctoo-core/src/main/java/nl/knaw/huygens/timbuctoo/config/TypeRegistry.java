@@ -36,7 +36,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-import nl.knaw.huygens.timbuctoo.util.SimpleNameComparator;
+import nl.knaw.huygens.timbuctoo.util.ClassComparator;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -95,8 +95,8 @@ public class TypeRegistry {
 
   // ---------------------------------------------------------------------------
 
-  private final Set<Class<? extends SystemEntity>> systemEntities = Sets.newTreeSet(new SimpleNameComparator());
-  private final Set<Class<? extends DomainEntity>> domainEntities = Sets.newTreeSet(new SimpleNameComparator());
+  private final Set<Class<? extends SystemEntity>> systemEntities = Sets.newTreeSet(new ClassComparator());
+  private final Set<Class<? extends DomainEntity>> domainEntities = Sets.newTreeSet(new ClassComparator());
 
   private final Map<Class<? extends Entity>, String> type2iname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> iname2type = Maps.newHashMap();

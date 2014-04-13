@@ -340,10 +340,6 @@ public class StorageManager {
   /**
    * Returns the id's of the relations, connected to the entities with the input id's.
    * The input id's can be the source id as well as the target id of the Relation. 
-   * 
-   * @param ids a list of id's to find the relations for
-   * @return a list of id's of the corresponding relations
-   * @throws IOException re-throws the IOExceptions of the storage
    */
   public List<String> getRelationIds(List<String> ids) throws IOException {
     return storage.getRelationIds(ids);
@@ -363,17 +359,15 @@ public class StorageManager {
       checkState(mapper != null, "No EntityMapper for type %s", entityType);
       @SuppressWarnings("unchecked")
       Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
-      for (Relation relation : storage.getRelationsForEntityId(mappedType, entityId).getSome(limit)) {
+      for (Relation relation : storage.getRelationsByEntityId(mappedType, entityId).getSome(limit)) {
         RelationType relType = getRelationType(relation.getTypeId());
         checkState(relType != null, "Failed to retrieve relation type");
-        if (relation.hasSource() && relation.hasTarget()) {
-          if (relation.hasSourceId(entityId)) {
-            EntityRef entityRef = getEntityRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
-            entity.addRelation(relType.getRegularName(), entityRef); // db access
-          } else if (relation.hasTargetId(entityId)) {
-            EntityRef entityRef = getEntityRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
-            entity.addRelation(relType.getInverseName(), entityRef); // db access
-          }
+        if (relation.hasSourceId(entityId)) {
+          EntityRef entityRef = getEntityRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+          entity.addRelation(relType.getRegularName(), entityRef);
+        } else if (relation.hasTargetId(entityId)) {
+          EntityRef entityRef = getEntityRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+          entity.addRelation(relType.getInverseName(), entityRef);
         }
       }
     }

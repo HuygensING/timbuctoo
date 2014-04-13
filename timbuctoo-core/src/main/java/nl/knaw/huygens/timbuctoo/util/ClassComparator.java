@@ -24,7 +24,7 @@ package nl.knaw.huygens.timbuctoo.util;
 
 import java.util.Comparator;
 
-public class SimpleNameComparator implements Comparator<Class<?>> {
+public class ClassComparator implements Comparator<Class<?>> {
 
   @Override
   public int compare(Class<?> class1, Class<?> class2) {

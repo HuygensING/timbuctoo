@@ -104,7 +104,7 @@ public class MongoQueries {
    * Returns a query for selecting relations of an entity by using its id.
    * This assumes that entity id's are unique over the various collections.
    */
-  public DBObject selectRelationsForEntityId(String id) {
+  public DBObject selectRelationsByEntityId(String id) {
     return DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id));
   }
 
