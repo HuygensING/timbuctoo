@@ -251,13 +251,13 @@ public class WWPerson extends Person {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPrimaryLanguages() {
-    return getRelations().get("hasLanguage");
+    return getRelations("hasPersonLanguage");
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_collective", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getCollectives() {
-    return getRelations().get("isMemberOf");
+    return getRelations("isMemberOf");
   }
 
   // ---------------------------------------------------------------------------

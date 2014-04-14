@@ -81,6 +81,11 @@ public abstract class DomainEntity extends Entity implements Variable {
     return relations;
   }
 
+  @JsonIgnore
+  public List<EntityRef> getRelations(String name) {
+    return relations.get(name);
+  }
+
   @JsonProperty("@relationCount")
   public int getRelationCount() {
     return relationCount;
