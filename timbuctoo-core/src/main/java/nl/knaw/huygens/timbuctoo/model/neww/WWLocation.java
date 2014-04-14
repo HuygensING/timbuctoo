@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /*
  * #%L
+ * Timbuctoo core
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
  * =======
