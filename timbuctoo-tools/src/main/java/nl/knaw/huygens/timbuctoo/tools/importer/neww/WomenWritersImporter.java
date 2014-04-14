@@ -64,6 +64,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -82,6 +83,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   private static final Logger LOG = LoggerFactory.getLogger(WomenWritersImporter.class);
 
   public static void main(String[] args) throws Exception {
+    Stopwatch stopWatch = Stopwatch.createStarted();
 
     // Handle commandline arguments
     String directory = (args.length > 0) ? args[0] : "../../timbuctoo-testdata/src/main/resources/neww/";
@@ -93,8 +95,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     IndexManager indexManager = null;
 
     try {
-      long start = System.currentTimeMillis();
-
       storageManager = injector.getInstance(StorageManager.class);
       indexManager = injector.getInstance(IndexManager.class);
 
@@ -102,9 +102,6 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       WomenWritersImporter importer = new WomenWritersImporter(registry, storageManager, indexManager, directory);
 
       importer.importAll();
-
-      long time = (System.currentTimeMillis() - start) / 1000;
-      System.out.printf("%n=== Used %d seconds%n%n", time);
 
     } catch (Exception e) {
       // for debugging
@@ -118,6 +115,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         storageManager.logCacheStats();
         storageManager.close();
       }
+      LOG.info("Time used: {}", stopWatch);
       // If the application is not explicitly closed a finalizer thread of Guice keeps running.
       System.exit(0);
     }

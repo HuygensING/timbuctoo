@@ -24,6 +24,9 @@ package nl.knaw.huygens.timbuctoo.tools.importer.base;
 
 import java.io.File;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
@@ -34,6 +37,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
+import com.google.common.base.Stopwatch;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -42,10 +46,13 @@ import com.google.inject.Injector;
  */
 public class BaseImporter extends DefaultImporter {
 
+  private static final Logger LOG = LoggerFactory.getLogger(BaseImporter.class);
+
   private static final String USER_ID = "importer";
   private static final String VRE_ID = "base";
 
   public static void main(String[] args) throws Exception {
+    Stopwatch stopWatch = Stopwatch.createStarted();
 
     // Handle commandline arguments
     String directoryName = (args.length > 0) ? args[0] : "../../timbuctoo-testdata/src/main/resources/general/";
@@ -103,6 +110,7 @@ public class BaseImporter extends DefaultImporter {
       if (storageManager != null) {
         storageManager.close();
       }
+      LOG.info("Time used: {}", stopWatch);
       // If the application is not explicitly closed a finalizer thread of Guice keeps running.
       System.exit(0);
     }

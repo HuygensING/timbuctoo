@@ -72,6 +72,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -92,6 +93,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
   private static final Logger LOG = LoggerFactory.getLogger(DutchCaribbeanImporter.class);
 
   public static void main(String[] args) throws Exception {
+    Stopwatch stopWatch = Stopwatch.createStarted();
 
     // Handle commandline arguments
     String importDirName = (args.length > 0) ? args[0] : "../../AtlantischeGids/work/";
@@ -104,16 +106,12 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
     IndexManager indexManager = null;
 
     try {
-      long start = System.currentTimeMillis();
 
       storageManager = injector.getInstance(StorageManager.class);
       indexManager = injector.getInstance(IndexManager.class);
 
       TypeRegistry registry = injector.getInstance(TypeRegistry.class);
       new DutchCaribbeanImporter(registry, storageManager, indexManager, importDirName).importAll();
-
-      long time = (System.currentTimeMillis() - start) / 1000;
-      System.out.printf("%n=== Used %d seconds%n%n", time);
 
     } catch (Exception e) {
       // for debugging
@@ -127,6 +125,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
         storageManager.logCacheStats();
         storageManager.close();
       }
+      LOG.info("Time used: {}", stopWatch);
       // If the application is not explicitly closed a finalizer thread of Guice keeps running.
       System.exit(0);
     }

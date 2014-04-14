@@ -22,15 +22,14 @@ package nl.knaw.huygens.timbuctoo.tools.other;
  * #L%
  */
 
-import java.net.UnknownHostException;
-
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 
-import org.apache.commons.configuration.ConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Stopwatch;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -38,18 +37,25 @@ import com.google.inject.Injector;
  * A class to clean up the database and the index.
  */
 public class EnvironmentCleaner {
-  public static void main(String[] args) throws ConfigurationException, UnknownHostException, IndexException {
+
+  private static final Logger LOG = LoggerFactory.getLogger(EnvironmentCleaner.class);
+
+  public static void main(String[] args) throws Exception {
+    Stopwatch stopWatch = Stopwatch.createStarted();
+
     Configuration config = new Configuration("config.xml");
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
-    // clean the database.
+    // clean the database
     MongoAdmin admin = new MongoAdmin(config);
     admin.dropDatabase();
 
-    // clean the index.
+    // clean the index
     IndexManager indexManager = injector.getInstance(IndexManager.class);
     indexManager.deleteAllEntities();
-
     indexManager.close();
+
+    LOG.info("Time used: {}", stopWatch);
   }
+
 }
