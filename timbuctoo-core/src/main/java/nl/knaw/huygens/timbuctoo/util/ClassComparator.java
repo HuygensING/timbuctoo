@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.util;
 
 /*
  * #%L
@@ -22,33 +22,13 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.Comparator;
 
-/**
- * WARNING The current implementation does not allow you to safely 
- * update items while iterating.
- */
-public interface StorageIterator<T> extends Iterator<T> {
+public class ClassComparator implements Comparator<Class<?>> {
 
-  /**
-   * Returns the number of items that can be iterated over.
-   */
-  int size();
-
-  /**
-   * Skips the specified number of items.
-   */
-  void skip(int count);
-
-  /**
-   * Returns at most {@code limit} items and closes iterator.
-   */
-  List<T> getSome(int limit);
-
-  /**
-   * Closes this iterator, after which it cannot be used anymore.
-   */
-  void close();
+  @Override
+  public int compare(Class<?> class1, Class<?> class2) {
+    return class1.getSimpleName().compareTo(class2.getSimpleName());
+  }
 
 }

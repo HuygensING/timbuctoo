@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -31,25 +32,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import nl.knaw.huygens.timbuctoo.config.EntityMapper;
+import nl.knaw.huygens.timbuctoo.config.EntityMappers;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.Archive;
-import nl.knaw.huygens.timbuctoo.model.Archiver;
-import nl.knaw.huygens.timbuctoo.model.Collective;
-import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Keyword;
-import nl.knaw.huygens.timbuctoo.model.Language;
-import nl.knaw.huygens.timbuctoo.model.Legislation;
-import nl.knaw.huygens.timbuctoo.model.Location;
-import nl.knaw.huygens.timbuctoo.model.Person;
-import nl.knaw.huygens.timbuctoo.model.Place;
+import nl.knaw.huygens.timbuctoo.model.EntityRef;
+import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationEntityRef;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.util.KV;
 
@@ -68,13 +63,18 @@ public class StorageManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(StorageManager.class);
 
+  /** Maximum number of relations added to an entity. */
+  private static final int DEFAULT_RELATION_LIMIT = 100;
+
   private final TypeRegistry registry;
   private final Storage storage;
+  private final EntityMappers entityMappers;
 
   @Inject
   public StorageManager(TypeRegistry registry, Storage storage) {
     this.registry = registry;
     this.storage = storage;
+    entityMappers = new EntityMappers(registry.getDomainEntityTypes());
     setupRelationTypeCache();
   }
 
@@ -89,26 +89,12 @@ public class StorageManager {
 
   public StorageStatus getStatus() {
     StorageStatus status = new StorageStatus();
-
-    // TODO determine list dynamically
-    status.addSystemEntityCount(getCount(RelationType.class));
-    status.addSystemEntityCount(getCount(SearchResult.class));
-    status.addSystemEntityCount(getCount(User.class));
-    status.addSystemEntityCount(getCount(VREAuthorization.class));
-
-    // TODO determine list dynamically
-    status.addDomainEntityCount(getCount(Archive.class));
-    status.addDomainEntityCount(getCount(Archiver.class));
-    status.addDomainEntityCount(getCount(Collective.class));
-    status.addDomainEntityCount(getCount(Document.class));
-    status.addDomainEntityCount(getCount(Keyword.class));
-    status.addDomainEntityCount(getCount(Language.class));
-    status.addDomainEntityCount(getCount(Legislation.class));
-    status.addDomainEntityCount(getCount(Location.class));
-    status.addDomainEntityCount(getCount(Person.class));
-    status.addDomainEntityCount(getCount(Place.class));
-    status.addDomainEntityCount(getCount(Relation.class));
-
+    for (Class<? extends SystemEntity> type : registry.getSystemEntityTypes()) {
+      status.addSystemEntityCount(getCount(type));
+    }
+    for (Class<? extends DomainEntity> type : registry.getPrimitiveDomainEntityTypes()) {
+      status.addDomainEntityCount(getCount(type));
+    }
     return status;
   }
 
@@ -204,7 +190,7 @@ public class StorageManager {
     T entity = null;
     try {
       entity = storage.getItem(type, id);
-      storage.addRelationsTo(entity);
+      addRelationsTo(entity, DEFAULT_RELATION_LIMIT);
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
     }
@@ -215,7 +201,7 @@ public class StorageManager {
     T entity = null;
     try {
       entity = storage.getRevision(type, id, revision);
-      storage.addRelationsTo(entity);
+      addRelationsTo(entity, DEFAULT_RELATION_LIMIT);
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
     }
@@ -248,7 +234,7 @@ public class StorageManager {
     try {
       List<T> variations = storage.getAllVariations(type, id);
       for (T variation : variations) {
-        storage.addRelationsTo(variation);
+        addRelationsTo(variation, DEFAULT_RELATION_LIMIT);
       }
       return variations;
     } catch (IOException e) {
@@ -296,9 +282,7 @@ public class StorageManager {
     if (offset > 0) {
       iterator.skip(offset);
     }
-    List<T> list = iterator.getSome(limit);
-    iterator.close();
-    return list;
+    return iterator.getSome(limit);
   }
 
   // --- relation types --------------------------------------------------------
@@ -329,7 +313,7 @@ public class StorageManager {
    * Returns the relation type with the specified id,
    * or {@code null} if no such relation type exists.
    */
-  public RelationType getRelationTypeById(String id) {
+  public RelationType getRelationType(String id) {
     try {
       return relationTypeCache.get(id);
     } catch (ExecutionException e) {
@@ -356,13 +340,50 @@ public class StorageManager {
   /**
    * Returns the id's of the relations, connected to the entities with the input id's.
    * The input id's can be the source id as well as the target id of the Relation. 
-   * 
-   * @param ids a list of id's to find the relations for
-   * @return a list of id's of the corresponding relations
-   * @throws IOException re-throws the IOExceptions of the storage
    */
   public List<String> getRelationIds(List<String> ids) throws IOException {
     return storage.getRelationIds(ids);
+  }
+
+  /**
+   * Adds relations for the specified entity as virtual properties.
+   *
+   * NOTE We retrieve relations where the entity is source or target with one query;
+   * handling them separately would cause complications with reflexive relations.
+   */
+  private <T extends DomainEntity> void addRelationsTo(T entity, int limit) throws IOException {
+    if (entity != null && limit > 0) {
+      String entityId = entity.getId();
+      Class<? extends DomainEntity> entityType = entity.getClass();
+      EntityMapper mapper = entityMappers.getEntityMapper(entityType);
+      checkState(mapper != null, "No EntityMapper for type %s", entityType);
+      @SuppressWarnings("unchecked")
+      Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
+      for (Relation relation : storage.getRelationsByEntityId(mappedType, entityId).getSome(limit)) {
+        RelationType relType = getRelationType(relation.getTypeId());
+        checkState(relType != null, "Failed to retrieve relation type");
+        if (relation.hasSourceId(entityId)) {
+          EntityRef entityRef = getEntityRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+          entity.addRelation(relType.getRegularName(), entityRef);
+        } else if (relation.hasTargetId(entityId)) {
+          EntityRef entityRef = getEntityRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+          entity.addRelation(relType.getInverseName(), entityRef);
+        }
+      }
+    }
+  }
+
+  // Relations are defined between primitive domain entities
+  // Map to a domain entity in the package from which an entity is requested
+  private EntityRef getEntityRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws IOException {
+    String iname = reference.getType();
+    Class<? extends DomainEntity> type = TypeRegistry.toDomainEntity(registry.getTypeForIName(iname));
+    type = mapper.map(type);
+    iname = TypeNames.getInternalName(type);
+    String xname = registry.getXNameForIName(iname);
+    DomainEntity entity = storage.getItem(type, reference.getId());
+
+    return new RelationEntityRef(iname, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
   }
 
 }

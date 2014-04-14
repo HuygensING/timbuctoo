@@ -135,7 +135,7 @@ public class RelationTest {
 
     RelationType relationType = new RelationType();
     relationType.setSymmetric(symmetric);
-    when(storage.getRelationTypeById("typeId")).thenReturn(relationType);
+    when(storage.getRelationType("typeId")).thenReturn(relationType);
 
     relation.normalize(registry, storage);
     return relation;

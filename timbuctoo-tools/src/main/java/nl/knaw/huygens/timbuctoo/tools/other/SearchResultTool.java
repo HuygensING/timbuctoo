@@ -125,6 +125,7 @@ public class SearchResultTool {
       String text = UTCUtils.dateToString(result.getDate());
       System.out.printf(">> %s%n", text);
     }
+    iterator.close();
   }
 
 }

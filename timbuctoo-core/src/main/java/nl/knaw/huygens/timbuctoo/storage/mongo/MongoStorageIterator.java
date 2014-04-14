@@ -50,6 +50,7 @@ class MongoStorageIterator<T extends Entity> implements StorageIterator<T> {
     this.type = type;
     this.delegate = Preconditions.checkNotNull(delegate);
     this.reducer = reducer;
+    this.closed = false;
   }
 
   @Override
@@ -86,7 +87,6 @@ class MongoStorageIterator<T extends Entity> implements StorageIterator<T> {
         next = delegate.next();
       } catch (Exception ex) {
         // Gotta love how mongo documents that there's a nomoreelements exception... nuh-uh.
-        close();
         break;
       }
 
@@ -97,6 +97,7 @@ class MongoStorageIterator<T extends Entity> implements StorageIterator<T> {
         list.add(null);
       }
     }
+    close();
     return list;
   }
 

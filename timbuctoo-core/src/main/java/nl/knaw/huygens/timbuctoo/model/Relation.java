@@ -71,16 +71,8 @@ public class Relation extends DomainEntity {
    */
   private boolean accepted;
 
-  // For deserialization...
   public Relation() {
     setAccepted(true);
-  }
-
-  public Relation(Reference sourceRef, Reference typeRef, Reference targetRef) {
-    setAccepted(true);
-    setSourceRef(sourceRef);
-    setTypeRef(typeRef);
-    setTargetRef(targetRef);
   }
 
   @Override
@@ -210,7 +202,7 @@ public class Relation extends DomainEntity {
   public void normalize(TypeRegistry registry, StorageManager storage) {
     // Make sure symmetric relations are stored in canonical order
     if (typeId != null & sourceId != null && targetId != null) {
-      RelationType relationType = storage.getRelationTypeById(typeId);
+      RelationType relationType = storage.getRelationType(typeId);
       if (relationType != null && relationType.isSymmetric() && sourceId.compareTo(targetId) > 0) {
         String temp = sourceId;
         sourceId = targetId;
@@ -222,6 +214,9 @@ public class Relation extends DomainEntity {
   @Override
   public void validateForAdd(TypeRegistry registry, StorageManager storage) throws ValidationException {
     super.validateForAdd(registry, storage);
+    if (StringUtils.isBlank(sourceId) || StringUtils.isBlank(targetId)) {
+      throw new ValidationException("Undefined type id(s)");
+    }
     new RelationTypeConformationValidator(storage).validate(this);
     new RelationReferenceValidator(registry, storage).validate(this);
     new RelationDuplicationValidator(storage).validate(this);
@@ -275,14 +270,6 @@ public class Relation extends DomainEntity {
   public boolean conformsToRelationType(RelationType relationType) {
     return Objects.equal(relationType.getSourceTypeName(), sourceType) //
         && Objects.equal(relationType.getTargetTypeName(), targetType);
-  }
-
-  public boolean hasSource() {
-    return !StringUtils.isBlank(sourceId);
-  }
-
-  public boolean hasTarget() {
-    return !StringUtils.isBlank(targetId);
   }
 
 }

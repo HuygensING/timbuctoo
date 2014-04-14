@@ -26,11 +26,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.util.ClassComparator;
 
 import com.google.common.collect.ImmutableSortedSet.Builder;
 import com.google.common.reflect.ClassPath;
@@ -115,7 +115,7 @@ public abstract class AbstractScope implements Scope {
   }
 
   private Builder<Class<? extends DomainEntity>> newBuilder() {
-    return new Builder<Class<? extends DomainEntity>>(new SimpleNameComparator());
+    return new Builder<Class<? extends DomainEntity>>(new ClassComparator());
   }
 
   private Set<Class<? extends DomainEntity>> buildBaseTypes() {
@@ -135,18 +135,6 @@ public abstract class AbstractScope implements Scope {
     checkArgument(type != null && type != DomainEntity.class);
     Class<? extends DomainEntity> superType = TypeRegistry.toDomainEntity(type.getSuperclass());
     return (superType == DomainEntity.class) ? type : getBaseType(superType);
-  }
-
-  // -------------------------------------------------------------------
-
-  /**
-   * Compares {@code DomainEntity} instances using their simple class name.
-   */
-  private static class SimpleNameComparator implements Comparator<Class<? extends DomainEntity>> {
-    @Override
-    public int compare(Class<? extends DomainEntity> o1, Class<? extends DomainEntity> o2) {
-      return o1.getSimpleName().compareTo(o2.getSimpleName());
-    }
   }
 
 }
