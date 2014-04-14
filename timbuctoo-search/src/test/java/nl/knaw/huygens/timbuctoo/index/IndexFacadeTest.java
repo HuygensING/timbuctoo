@@ -374,18 +374,6 @@ public class IndexFacadeTest {
     IndexStatus actualIndexStatus = instance.getStatus();
 
     // verify
-    verify(scopeManagerMock).getAllScopes();
-    verify(scopeMock1).getBaseEntityTypes();
-    verify(scopeManagerMock).getIndexFor(scopeMock1, BASE_TYPE);
-    verify(scopeManagerMock).getIndexFor(scopeMock1, OTHER_BASE_TYPE);
-    verify(scopeMock2).getBaseEntityTypes();
-    verify(scopeManagerMock).getIndexFor(scopeMock2, BASE_TYPE);
-    verify(scopeManagerMock).getIndexFor(scopeMock2, OTHER_BASE_TYPE);
-    verify(scope1BaseTypeIndex).getCount();
-    verify(scope1OtherBaseTypeIndex).getCount();
-    verify(scope2BaseTypeIndex).getCount();
-    verify(scope2OtherBaseTypeIndex).getCount();
-
     verify(indexStatusMock).addCount(scopeMock1, BASE_TYPE, itemCount1);
     verify(indexStatusMock).addCount(scopeMock1, OTHER_BASE_TYPE, itemCount2);
     verify(indexStatusMock).addCount(scopeMock2, BASE_TYPE, itemCount3);
@@ -416,10 +404,6 @@ public class IndexFacadeTest {
     IndexStatus actualStatus = instance.getStatus();
 
     // verify
-    verify(scopeManagerMock).getAllScopes();
-    verify(scopeMock).getBaseEntityTypes();
-    verify(scopeManagerMock).getIndexFor(scopeMock, BASE_TYPE);
-    verify(scopeManagerMock).getIndexFor(scopeMock, OTHER_BASE_TYPE);
     verify(indexMock, times(2)).getCount();
 
     verifyZeroInteractions(indexStatusMock);
