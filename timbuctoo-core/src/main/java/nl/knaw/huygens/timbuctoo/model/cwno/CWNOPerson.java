@@ -40,6 +40,15 @@ public class CWNOPerson extends Person {
 
   // ---------------------------------------------------------------------------
 
+  @Override
+  public String getDisplayName() {
+    String name = defaultName().getShortName();
+    if (name.isEmpty() && tempNames.size() > 0) {
+      name = "[TEMP] " + tempNames.get(0);
+    }
+    return name;
+  }
+
   public List<String> getNationalities() {
     return nationalities;
   }

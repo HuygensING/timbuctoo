@@ -108,10 +108,11 @@ public class BaseImporter extends DefaultImporter {
         indexManager.close();
       }
       if (storageManager != null) {
+        storageManager.logCacheStats();
         storageManager.close();
       }
       LOG.info("Time used: {}", stopWatch);
-      // If the application is not explicitly closed a finalizer thread of Guice keeps running.
+      // Close explicitly to terminate finalizer thread of Guice
       System.exit(0);
     }
   }

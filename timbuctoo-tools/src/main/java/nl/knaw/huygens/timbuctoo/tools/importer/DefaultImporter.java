@@ -92,6 +92,16 @@ public abstract class DefaultImporter {
     }
   }
 
+  protected <T extends DomainEntity> T updateDomainEntity(Class<T> type, T entity, Change change) {
+    try {
+      storageManager.updateProjectDomainEntity(type, entity, change);
+      return entity;
+    } catch (IOException e) {
+      handleError("Failed to modify %s; %s", entity.getDisplayName(), e.getMessage());
+      return null;
+    }
+  }
+
   protected Reference newDomainEntityReference(Class<? extends DomainEntity> type, String id) {
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
       return new Reference(type, id);

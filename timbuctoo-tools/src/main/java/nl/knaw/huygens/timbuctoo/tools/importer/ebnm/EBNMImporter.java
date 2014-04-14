@@ -26,6 +26,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
@@ -50,6 +53,7 @@ import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
 import nl.knaw.huygens.timbuctoo.util.Files;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.inject.Guice;
@@ -70,7 +74,10 @@ import com.google.inject.Injector;
  */
 public class EBNMImporter extends EBNMDefaultImporter {
 
+	private static final Logger LOG = LoggerFactory.getLogger(EBNMImporter.class);
+
 	public static void main(String[] args) throws Exception {
+		Stopwatch stopWatch = Stopwatch.createStarted();
 
 		// Handle commandline arguments
 		// String importDirName = (args.length > 0) ? args[0] :
@@ -87,16 +94,11 @@ public class EBNMImporter extends EBNMDefaultImporter {
 		IndexManager indexManager = null;
 
 		try {
-			long start = System.currentTimeMillis();
-
 			storageManager = injector.getInstance(StorageManager.class);
 			indexManager = injector.getInstance(IndexManager.class);
 
 			TypeRegistry registry = injector.getInstance(TypeRegistry.class);
 			new EBNMImporter(registry, null, indexManager, importDirName).importAll();
-
-			long time = (System.currentTimeMillis() - start) / 1000;
-			System.out.printf("%n=== Used %d seconds%n%n", time);
 
 		} catch (Exception e) {
 			// for debugging
@@ -107,10 +109,11 @@ public class EBNMImporter extends EBNMDefaultImporter {
 				indexManager.close();
 			}
 			if (storageManager != null) {
+				storageManager.logCacheStats();
 				storageManager.close();
 			}
-			// If the application is not explicitly closed a finalizer thread of
-			// Guice keeps running.
+			LOG.info("Time used: {}", stopWatch);
+			// Close explicitly to terminate finalizer thread of Guice
 			System.exit(0);
 		}
 	}

@@ -126,7 +126,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
         storageManager.close();
       }
       LOG.info("Time used: {}", stopWatch);
-      // If the application is not explicitly closed a finalizer thread of Guice keeps running.
+      // Close explicitly to terminate finalizer thread of Guice
       System.exit(0);
     }
   }

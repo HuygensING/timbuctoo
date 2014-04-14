@@ -116,7 +116,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         storageManager.close();
       }
       LOG.info("Time used: {}", stopWatch);
-      // If the application is not explicitly closed a finalizer thread of Guice keeps running.
+      // Close explicitly to terminate finalizer thread of Guice
       System.exit(0);
     }
   }
@@ -779,7 +779,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
               System.out.printf("%-30s%-8s%-30s%s%n", name, language.getCode(), language.getName(), flag);
               language.setCore(true);
               // TODO prevent multiple updates for same language
-              updateDomainEntity(WWLanguage.class, language);
+              updateDomainEntity(WWLanguage.class, language, change);
               String key = newKey("Language", object.tempid);
               storeReference(key, WWLanguage.class, language.getId());
             }
@@ -1022,7 +1022,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     converted.setNames(location.getNames());
     converted.setLatitude(location.getLatitude());
     converted.setLongitude(location.getLongitude());
-    updateDomainEntity(WWLocation.class, converted);
+    updateDomainEntity(WWLocation.class, converted, change);
     storeReference(key, WWLocation.class, location.getId());
   }
 
