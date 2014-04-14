@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -40,9 +39,9 @@ public class VREManager {
 
   private final Map<String, VRE> vreMap;
 
-  public VREManager() throws IOException {
+  public VREManager() {
     vreMap = Maps.newHashMap();
-    List<VRE> vreList = ImmutableList.<VRE> of(new PrimitivesVRE(), new BaseVRE(), new DutchCaribbeanVRE(), new DWCVRE(), new TestVRE());
+    List<VRE> vreList = ImmutableList.<VRE> of(new PrimitivesVRE(), new BaseVRE(), new DutchCaribbeanVRE(), new DWCVRE(), new WomenWritersVRE(), new TestVRE());
 
     for (VRE vre : vreList) {
       vreMap.put(vre.getName(), vre);
@@ -60,7 +59,6 @@ public class VREManager {
 
   /**
    * Gets the VRE that is defined as the default.
-   * @return
    */
   public VRE getDefaultVRE() {
     return this.getVREById(DEFAULT_VRE);

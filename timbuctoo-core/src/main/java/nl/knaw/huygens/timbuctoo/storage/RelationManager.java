@@ -27,6 +27,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -35,38 +36,43 @@ import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
 public class RelationManager {
 
-  static final Logger LOG = LoggerFactory.getLogger(RelationManager.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RelationManager.class);
 
-  final TypeRegistry registry;
+  private final TypeRegistry registry;
   private final StorageManager storageManager;
+  private int duplicateRelationCount;
 
   @Inject
   public RelationManager(TypeRegistry registry, StorageManager storageManager) {
     this.registry = registry;
     this.storageManager = storageManager;
+    duplicateRelationCount = 0;
   }
 
-  public void addRelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean reflexive, boolean symmetric) {
-    RelationType type = new RelationType(regularName, inverseName, sourceType, targetType);
-    type.setReflexive(reflexive);
-    type.setSymmetric(symmetric);
-    try {
-      storageManager.addSystemEntity(RelationType.class, type);
-    } catch (IOException e) {
-      LOG.error("Failed to add {}; {}", type.getDisplayName(), e.getMessage());
-    }
+  public int getDuplicateRelationCount() {
+    return duplicateRelationCount;
+  }
+
+  /**
+   * Stores the specified relation type.
+   */
+  public void addRelationType(RelationType type) throws IOException {
+    // TODO add validation
+    storageManager.addSystemEntity(RelationType.class, type);
   }
 
   private static final String REGULAR_NAME = FieldMapper.propertyName(RelationType.class, "regularName");
@@ -88,21 +94,62 @@ public class RelationManager {
   }
 
   /**
+   * Returns a map for retrieving relation types by their regular name.
+   */
+  public Map<String, RelationType> getRelationTypeMap() {
+    Map<String, RelationType> map = Maps.newHashMap();
+    StorageIterator<RelationType> iterator = storageManager.getAll(RelationType.class);
+    while (iterator.hasNext()) {
+      RelationType type = iterator.next();
+      map.put(type.getRegularName(), type);
+    }
+    return map;
+  }
+
+  /**
    * Returns the relation types in which an entity with the specified internal name
    * can participate, either as "source" or as "target".
    * If {@code iname} is {@code null} or empty all relation types are returned.
    */
   public List<RelationType> getRelationTypesForEntity(String iname) {
-    boolean all = StringUtils.isEmpty(iname);
+    boolean shouldFilter = !StringUtils.isEmpty(iname);
     List<RelationType> types = Lists.newArrayList();
     Iterator<RelationType> iterator = storageManager.getAll(RelationType.class);
     while (iterator.hasNext()) {
       RelationType type = iterator.next();
-      if (all || isAssignableIName(type.getSourceTypeName(), iname) || isAssignableIName(type.getTargetTypeName(), iname)) {
+      if (!shouldFilter || isApplicable(iname, type)) {
         types.add(type);
       }
     }
     return types;
+  }
+
+  protected boolean isApplicable(String iname, RelationType type) {
+    Class<? extends DomainEntity> requestType = TypeRegistry.toDomainEntity(convertToType(iname));
+    Class<? extends DomainEntity> sourceType = TypeRegistry.toDomainEntity(convertToType(type.getSourceTypeName()));
+    Class<? extends DomainEntity> targetType = TypeRegistry.toDomainEntity(convertToType(type.getTargetTypeName()));
+
+    // iname is assignable from source or target of relation
+    boolean isAssignable = isAssignable(sourceType, requestType) || isAssignable(targetType, requestType);
+
+    boolean isSourceCompatible = isCompatible(requestType, sourceType);
+    boolean isTargetCompatible = isCompatible(requestType, targetType);
+
+    boolean isRequestTypePrimitive = TypeRegistry.isPrimitiveDomainEntity(requestType);
+
+    boolean isPrimitiveCompatible = isRequestTypePrimitive && isAssignable && (isSourceCompatible || isTargetCompatible);
+    boolean isCompatibleForProjectType = isAssignable && isSourceCompatible && isTargetCompatible;
+
+    return isPrimitiveCompatible || isCompatibleForProjectType;
+  }
+
+  private boolean isCompatible(Class<? extends DomainEntity> requestType, Class<? extends DomainEntity> typeFromRelation) {
+
+    return registry.isFromSameProject(requestType, typeFromRelation) || //
+        TypeRegistry.isPrimitiveDomainEntity(requestType) || // 
+        TypeRegistry.isPrimitiveDomainEntity(typeFromRelation) || //
+        DomainEntity.class.equals(requestType) || //
+        DomainEntity.class.equals(typeFromRelation);
   }
 
   /**
@@ -132,11 +179,14 @@ public class RelationManager {
     if (relation != null) {
       try {
         if (storageManager.relationExists(relation)) {
-          LOG.info("Ignored duplicate {}", relation.getDisplayName());
+          duplicateRelationCount++;
+          LOG.debug("Ignored duplicate {}", relation.getDisplayName());
         } else {
           return storageManager.addDomainEntity(type, relation, change);
         }
       } catch (IOException e) {
+        LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
+      } catch (ValidationException e) {
         LOG.error("Failed to add {}; {}", relation.getDisplayName(), e.getMessage());
       }
     }
@@ -220,9 +270,7 @@ public class RelationManager {
    * Convenience method for deciding assignability of an entity to another entity,
    * given the internal names of the target entity type and the source entity type.
    */
-  private boolean isAssignableIName(String target, String source) {
-    Class<? extends Entity> targetType = convertToType(target);
-    Class<? extends Entity> sourceType = convertToType(source);
+  private boolean isAssignable(Class<? extends DomainEntity> targetType, Class<? extends DomainEntity> sourceType) {
     return targetType != null && sourceType != null && targetType.isAssignableFrom(sourceType);
   }
 

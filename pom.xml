@@ -5,7 +5,7 @@
 
   <groupId>nl.knaw.huygens</groupId>
   <artifactId>timbuctoo</artifactId>
-  <version>v2.1.5</version>
+  <version>2.2.0</version>
   <packaging>pom</packaging>
   <name>Timbuctoo</name>
   <description>Back-end software that provides different front-ends to share data and variations on that data.</description>
@@ -52,6 +52,11 @@
     <repository>
       <id>surfconext</id>
       <url>https://build.surfconext.nl/repository/public/releases/</url>
+    </repository>
+    <repository>
+      <id>maven-restlet</id>
+      <name>maven-restlet repository</name>
+      <url>http://maven.restlet.org</url>
     </repository>
     <repository>
       <id>Huygens</id>

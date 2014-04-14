@@ -46,10 +46,10 @@ import javax.ws.rs.core.UriInfo;
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
@@ -63,6 +63,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -80,9 +81,17 @@ public class SearchResource {
   @Inject
   private SearchManager searchManager;
   @Inject
-  VREManager vreManager;
+  private VREManager vreManager;
   @Inject
   private Configuration config;
+
+  @GET
+  @Path("/vres")
+  @Produces({ MediaType.APPLICATION_JSON })
+  @Deprecated
+  public Set<String> getAvailableVREs() {
+    return vreManager.getAvailableVREIds();
+  }
 
   @POST
   @APIDesc("Searches the Solr index")
@@ -181,32 +190,28 @@ public class SearchResource {
     List<String> idsToGet = ids.subList(lo, hi);
     @SuppressWarnings("unchecked")
     List<DomainEntity> entities = (List<DomainEntity>) storageManager.getAllByIds(type, idsToGet);
-    List<EntityRef> entityRefs = createEntityRefs(entities);
-    Set<String> sortableFields = searchManager.findSortableFields(type);
 
     Map<String, Object> returnValue = Maps.newHashMap();
     returnValue.put("term", result.getTerm());
     returnValue.put("facets", result.getFacets());
     returnValue.put("numFound", idsSize);
     returnValue.put("ids", idsToGet);
-    returnValue.put("refs", entityRefs);
+    returnValue.put("refs", createEntityRefs(type, entities));
     returnValue.put("results", entities);
     returnValue.put("start", lo);
     returnValue.put("rows", idsToGet.size());
-    returnValue.put("sortableFields", sortableFields);
+    returnValue.put("sortableFields", searchManager.findSortableFields(type));
 
     LOG.debug("path: {}", uriInfo.getAbsolutePath());
 
     if (start > 0) {
       int prevStart = Math.max(start - rows, 0);
       URI prev = createHATEOASURI(prevStart, rows, uriInfo, queryId);
-
       returnValue.put("_prev", prev);
     }
 
     if (hi < idsSize) {
       URI next = createHATEOASURI(start + rows, rows, uriInfo, queryId);
-
       returnValue.put("_next", next);
     }
 
@@ -214,38 +219,55 @@ public class SearchResource {
   }
 
   private URI createHATEOASURI(final int start, final int rows, UriInfo uriInfo, String queryId) {
-    UriBuilder uriBuilder = UriBuilder.fromUri(config.getSetting("public_url"));
-    uriBuilder.path("search");
-    uriBuilder.path(queryId);
-
-    uriBuilder.queryParam("start", start).queryParam("rows", rows);
-
-    return uriBuilder.build();
+    UriBuilder builder = UriBuilder.fromUri(config.getSetting("public_url"));
+    builder.path("search");
+    builder.path(queryId);
+    builder.queryParam("start", start).queryParam("rows", rows);
+    return builder.build();
   }
 
   private int toRange(int value, int minValue, int maxValue) {
     return Math.min(Math.max(value, minValue), maxValue);
   }
 
-  private List<EntityRef> createEntityRefs(List<DomainEntity> entities) {
-    int size = entities.size();
-    List<EntityRef> list = Lists.newArrayListWithCapacity(size);
-    if (size != 0) {
-      Class<? extends DomainEntity> type = entities.get(0).getClass();
-      String itype = registry.getINameForType(type);
-      String xtype = registry.getXNameForType(type);
-      for (DomainEntity entity : entities) {
-        list.add(new EntityRef(itype, xtype, entity.getId(), entity.getDisplayName()));
-      }
+  private List<EntityRef> createEntityRefs(Class<? extends DomainEntity> type, List<DomainEntity> entities) {
+    String itype = registry.getINameForType(type);
+    String xtype = registry.getXNameForType(type);
+    List<EntityRef> list = Lists.newArrayListWithCapacity(entities.size());
+    for (DomainEntity entity : entities) {
+      list.add(new EntityRef(itype, xtype, entity.getId(), entity.getDisplayName()));
     }
     return list;
   }
 
-  @GET
-  @Path("/vres")
-  @Produces({ MediaType.APPLICATION_JSON })
-  public Set<String> getAvailableVREs() {
-    return vreManager.getAvailableVREIds();
+  public static class EntityRef {
+    private final String type;
+    private final String id;
+    private final String path;
+    private final String displayName;
+
+    public EntityRef(String type, String xtype, String id, String displayName) {
+      this.type = type;
+      this.id = id;
+      this.path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
+      this.displayName = displayName;
+    }
+
+    public String getType() {
+      return type;
+    }
+
+    public String getId() {
+      return id;
+    }
+
+    public String getPath() {
+      return path;
+    }
+
+    public String getDisplayName() {
+      return displayName;
+    }
   }
 
 }

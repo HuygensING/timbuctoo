@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation.model;
+package nl.knaw.huygens.timbuctoo.validation;
 
 /*
  * #%L
@@ -22,15 +22,24 @@ package nl.knaw.huygens.timbuctoo.variation.model;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
+public class ValidationException extends Exception {
 
-public class ModelWithOverriddenIndexAnnotations extends DomainEntityWithIndexAnnotations {
+  private static final long serialVersionUID = 1L;
 
-  @Override
-  @IndexAnnotations({ @IndexAnnotation(fieldName = "test"), @IndexAnnotation(fieldName = "test2"), @IndexAnnotation(fieldName = "test3") })
-  public String getString() {
-    return super.getString();
+  public ValidationException() {
+    super();
+  }
+
+  public ValidationException(String message) {
+    super(message);
+  }
+
+  public ValidationException(Throwable cause) {
+    super(cause);
+  }
+
+  public ValidationException(String message, Throwable cause) {
+    super(message, cause);
   }
 
 }

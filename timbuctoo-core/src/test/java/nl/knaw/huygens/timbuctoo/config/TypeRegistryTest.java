@@ -45,11 +45,12 @@ import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestRole;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * Tests for the TypeRegistry. Watch-out the register is highly
- * dependent on the getCollectionName method. When that
- * implementation changes, a lot of tests will fail.
- */
+import test.model.OtherPrimitiveDomainEntity;
+import test.model.PrimitiveDomainEntity;
+import test.model.projecta.OtherADomainEntity;
+import test.model.projecta.SubADomainEntity;
+import test.model.projectb.SubBDomainEntity;
+
 public class TypeRegistryTest {
 
   private static final String PROJECT_A_MODEL = "timbuctoo.variation.model.projecta";
@@ -173,8 +174,10 @@ public class TypeRegistryTest {
     assertFalse(TypeRegistry.isSystemEntity(null));
     assertFalse(TypeRegistry.isSystemEntity(NotAnEntity.class));
     assertFalse(TypeRegistry.isSystemEntity(AnEntity.class));
-    assertTrue(TypeRegistry.isSystemEntity(ASystemEntity.class));
     assertFalse(TypeRegistry.isSystemEntity(ADomainEntity.class));
+    assertTrue(TypeRegistry.isSystemEntity(ASystemEntity.class));
+    assertTrue(TypeRegistry.isSystemEntity(SystemEntity.class));
+
   }
 
   @Test
@@ -184,6 +187,7 @@ public class TypeRegistryTest {
     assertFalse(TypeRegistry.isDomainEntity(AnEntity.class));
     assertFalse(TypeRegistry.isDomainEntity(ASystemEntity.class));
     assertTrue(TypeRegistry.isDomainEntity(ADomainEntity.class));
+    assertTrue(TypeRegistry.isDomainEntity(DomainEntity.class));
   }
 
   @Test
@@ -257,6 +261,26 @@ public class TypeRegistryTest {
     assertEquals(2, roles.size());
     assertTrue(roles.contains(ProjectATestRole.class));
     assertTrue(roles.contains(ProjectANewTestRole.class));
+  }
+
+  @Test
+  public void testIsFromSameProject() {
+    assertTrue(registry.isFromSameProject(SubADomainEntity.class, OtherADomainEntity.class));
+  }
+
+  @Test
+  public void testIsFromSameProjectPrimitives() {
+    assertTrue(registry.isFromSameProject(OtherPrimitiveDomainEntity.class, PrimitiveDomainEntity.class));
+  }
+
+  @Test
+  public void testIsFromSameProjectDifferentProjects() {
+    assertFalse(registry.isFromSameProject(SubADomainEntity.class, SubBDomainEntity.class));
+  }
+
+  @Test
+  public void testIsFromSameProjectAndPrimitve() {
+    assertFalse(registry.isFromSameProject(SubADomainEntity.class, PrimitiveDomainEntity.class));
   }
 
   // -------------------------------------------------------------------

@@ -31,17 +31,29 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.Archive;
+import nl.knaw.huygens.timbuctoo.model.Archiver;
+import nl.knaw.huygens.timbuctoo.model.Collective;
+import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Keyword;
+import nl.knaw.huygens.timbuctoo.model.Language;
+import nl.knaw.huygens.timbuctoo.model.Legislation;
+import nl.knaw.huygens.timbuctoo.model.Location;
+import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.Place;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.User;
+import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.util.KV;
-import nl.knaw.huygens.timbuctoo.vre.Scope;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
+import nl.knaw.huygens.timbuctoo.validation.Validator;
+import nl.knaw.huygens.timbuctoo.validation.ValidatorManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,12 +67,13 @@ public class StorageManager {
   private static final Logger LOG = LoggerFactory.getLogger(StorageManager.class);
 
   private final Storage storage;
-  private final VREManager vreManager;
+
+  private final ValidatorManager validatorManager;
 
   @Inject
-  public StorageManager(Storage storage, VREManager vreManager) {
+  public StorageManager(Storage storage, ValidatorManager validatorManager) {
     this.storage = storage;
-    this.vreManager = vreManager;
+    this.validatorManager = validatorManager;
   }
 
   /**
@@ -75,14 +88,24 @@ public class StorageManager {
   public StorageStatus getStatus() {
     StorageStatus status = new StorageStatus();
 
-    Scope scope = vreManager.getAllScopes().get(0);
-    for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
-      status.addDomainEntityCount(getCount(type));
-    }
-
+    // TODO determine list dynamically
     status.addSystemEntityCount(getCount(RelationType.class));
     status.addSystemEntityCount(getCount(SearchResult.class));
     status.addSystemEntityCount(getCount(User.class));
+    status.addSystemEntityCount(getCount(VREAuthorization.class));
+
+    // TODO determine list dynamically
+    status.addDomainEntityCount(getCount(Archive.class));
+    status.addDomainEntityCount(getCount(Archiver.class));
+    status.addDomainEntityCount(getCount(Collective.class));
+    status.addDomainEntityCount(getCount(Document.class));
+    status.addDomainEntityCount(getCount(Keyword.class));
+    status.addDomainEntityCount(getCount(Language.class));
+    status.addDomainEntityCount(getCount(Legislation.class));
+    status.addDomainEntityCount(getCount(Location.class));
+    status.addDomainEntityCount(getCount(Person.class));
+    status.addDomainEntityCount(getCount(Place.class));
+    status.addDomainEntityCount(getCount(Relation.class));
 
     return status;
   }
@@ -98,8 +121,10 @@ public class StorageManager {
     return storage.addSystemEntity(type, entity);
   }
 
-  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws IOException {
+  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws IOException, ValidationException {
     checkArgument(BusinessRules.allowDomainEntityAdd(type), "Not allowed to add %s", type);
+    Validator<T> validator = validatorManager.getValidatorFor(type);
+    validator.validate(entity);
     return storage.addDomainEntity(type, entity, change);
   }
 
@@ -174,9 +199,7 @@ public class StorageManager {
     T entity = null;
     try {
       entity = storage.getItem(type, id);
-      if (entity != null) {
-        storage.addRelationsTo(type, id, entity);
-      }
+      storage.addRelationsTo(entity);
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
     }
@@ -187,16 +210,14 @@ public class StorageManager {
     T entity = null;
     try {
       entity = storage.getRevision(type, id, revision);
-      if (entity != null) {
-        storage.addRelationsTo(type, id, entity);
-      }
+      storage.addRelationsTo(entity);
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
     }
     return entity;
   }
 
-  public <T extends SystemEntity> T findEntity(Class<T> type, String key, String value) {
+  public <T extends Entity> T findEntity(Class<T> type, String key, String value) {
     try {
       return storage.findItemByKey(type, key, value);
     } catch (IOException e) {
@@ -218,21 +239,16 @@ public class StorageManager {
     }
   }
 
-  public <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) {
-    try {
-      return storage.getVariation(type, id, variation);
-    } catch (Exception e) {
-      LOG.error("Error while handling {} {}", type.getName(), id);
-      return null;
-    }
-  }
-
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) {
     try {
-      return storage.getAllVariations(type, id);
+      List<T> variations = storage.getAllVariations(type, id);
+      for (T variation : variations) {
+        storage.addRelationsTo(variation);
+      }
+      return variations;
     } catch (IOException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
-      return null;
+      return Collections.emptyList();
     }
   }
 

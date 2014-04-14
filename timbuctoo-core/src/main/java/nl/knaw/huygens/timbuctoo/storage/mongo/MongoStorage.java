@@ -22,16 +22,21 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
+import static com.google.common.base.Preconditions.checkState;
 import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.config.EntityMapper;
+import nl.knaw.huygens.timbuctoo.config.EntityMappers;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -39,6 +44,7 @@ import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationEntityRef;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -59,7 +65,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -87,6 +92,7 @@ public class MongoStorage implements Storage {
   private TreeDecoderFactory treeDecoderFactory;
   private EntityInducer inducer;
   private EntityReducer reducer;
+  private EntityMappers entityMappers;
 
   @Inject
   public MongoStorage(TypeRegistry registry, Configuration config) throws UnknownHostException, MongoException {
@@ -139,6 +145,7 @@ public class MongoStorage implements Storage {
     treeDecoderFactory = new TreeDecoderFactory();
     inducer = new EntityInducer();
     reducer = new EntityReducer(typeRegistry);
+    entityMappers = new EntityMappers(typeRegistry.getDomainEntityTypes());
   }
 
   private void ensureIndexes() {
@@ -211,7 +218,7 @@ public class MongoStorage implements Storage {
 
   private <T extends Entity> T getItem(Class<T> type, DBObject query) throws IOException {
     DBObject item = getDBCollection(type).findOne(query);
-    return (item != null) ? reducer.reduceVariation(type, toJsonNode(item), null) : null;
+    return (item != null) ? reducer.reduceVariation(type, toJsonNode(item)) : null;
   }
 
   private <T extends Entity> StorageIterator<T> getItems(Class<T> type, DBObject query) {
@@ -295,8 +302,7 @@ public class MongoStorage implements Storage {
     DBObject query = queries.selectByIdAndRevision(id, revision);
 
     JsonNode tree = getExisting(type, query);
-
-    SystemEntity systemEntity = reducer.reduceExistingVariation(type, tree);
+    SystemEntity systemEntity = reducer.reduceVariation(type, tree);
 
     systemEntity.setRev(revision + 1);
     systemEntity.setModified(change);
@@ -314,8 +320,7 @@ public class MongoStorage implements Storage {
     DBObject query = queries.selectByIdAndRevision(id, revision);
 
     JsonNode tree = getExisting(type, query);
-
-    DomainEntity domainEntity = reducer.reduceExistingVariation(toBaseDomainEntity(type), tree);
+    DomainEntity domainEntity = reducer.reduceVariation(toBaseDomainEntity(type), tree);
 
     domainEntity.setRev(revision + 1);
     domainEntity.setModified(change);
@@ -333,8 +338,7 @@ public class MongoStorage implements Storage {
     DBObject query = queries.selectById(id);
 
     JsonNode tree = getExisting(type, query);
-
-    DomainEntity entity = reducer.reduceExistingVariation(toBaseDomainEntity(type), tree);
+    DomainEntity entity = reducer.reduceVariation(toBaseDomainEntity(type), tree);
     int revision = entity.getRev();
 
     entity.setRev(revision + 1);
@@ -354,8 +358,7 @@ public class MongoStorage implements Storage {
     DBObject query = queries.selectById(id);
 
     JsonNode tree = getExisting(type, query);
-
-    DomainEntity domainEntity = reducer.reduceExistingVariation(toBaseDomainEntity(type), tree);
+    DomainEntity domainEntity = reducer.reduceVariation(toBaseDomainEntity(type), tree);
 
     if (!StringUtils.isBlank(domainEntity.getPid())) {
       throw new IllegalStateException(String.format("%s with %s already has a pid: %s", type.getSimpleName(), id, pid));
@@ -391,13 +394,13 @@ public class MongoStorage implements Storage {
   // --- system entities -----------------------------------------------
 
   @Override
-  public <T extends SystemEntity> T findItemByKey(Class<T> type, String key, String value) throws IOException {
+  public <T extends Entity> T findItemByKey(Class<T> type, String key, String value) throws IOException {
     DBObject query = queries.selectByProperty(key, value);
     return getItem(type, query);
   }
 
   @Override
-  public <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException {
+  public <T extends Entity> T findItem(Class<T> type, T example) throws IOException {
     DBObject query = queries.selectByProperties(type, example);
     return getItem(type, query);
   }
@@ -425,24 +428,14 @@ public class MongoStorage implements Storage {
   // --- domain entities -----------------------------------------------
 
   @Override
-  public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException, IOException {
+  public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws IOException {
     DBObject query = queries.selectById(id);
     DBObject item = getDBCollection(type).findOne(query);
-    if (item == null) {
-      return null;
+    if (item != null) {
+      return reducer.reduceAllVariations(type, toJsonNode(item));
+    } else {
+      return Collections.emptyList();
     }
-    List<T> variations = reducer.reduceAllVariations(type, toJsonNode(item));
-    for (T variation : variations) {
-      addRelationsTo(variation.getClass(), id, variation);
-    }
-    return variations;
-  }
-
-  @Override
-  public <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) throws IOException {
-    DBObject query = queries.selectById(id);
-    DBObject item = getDBCollection(type).findOne(query);
-    return (item != null) ? reducer.reduceVariation(type, toJsonNode(item), variation) : null;
   }
 
   @Override
@@ -467,60 +460,58 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public StorageIterator<Relation> getRelationsOf(Class<? extends DomainEntity> type, String id) throws IOException {
-    DBObject query = DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id));
-    return getItems(Relation.class, query);
-  }
-
-  // We retrieve all relations involving the specified entity by its id.
-  // Next we need to filter the relations that are compatible with the entity type:
-  // a relation is only valid if the entity type we are handling is assignable
-  // to the type specified in the relation.
-  // For example, if a relation is specified for a DCARArchiver, it is visible when
-  // dealing with an entity type DCARArchiver, but not for Archiver.
-  //TODO add tests.
-  @Override
-  public void addRelationsTo(Class<? extends DomainEntity> type, String id, DomainEntity entity) {
-    Preconditions.checkNotNull(entity, "entity cannot be null");
-    StorageIterator<Relation> iterator = null;
-    try {
-      iterator = getRelationsOf(type, id); // db access
-      while (iterator.hasNext()) {
-        Relation relation = iterator.next(); // db access
-        RelationType relType = getRelationType(relation.getTypeRef().getId());
-        Preconditions.checkNotNull(relType, "Failed to retrieve relation type");
-        if (relation.hasSourceId(id)) {
-          Class<? extends Entity> cls = typeRegistry.getTypeForIName(relation.getSourceType());
-          if (cls != null && cls.isAssignableFrom(type)) {
-            Reference reference = relation.getTargetRef();
-            entity.addRelation(relType.getRegularName(), getEntityRef(reference)); // db access
+  public <T extends DomainEntity> void addRelationsTo(T entity) {
+    if (entity != null) {
+      String id = entity.getId();
+      Class<? extends DomainEntity> type = entity.getClass();
+      EntityMapper mapper = entityMappers.getEntityMapper(type);
+      checkState(mapper != null, "No EntityMapper for type %s", type);
+      @SuppressWarnings("unchecked")
+      Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
+      StorageIterator<? extends Relation> iterator = null;
+      try {
+        iterator = getRelationsForEntityId(mappedType, id); // db access
+        while (iterator.hasNext()) {
+          Relation relation = iterator.next(); // db access
+          RelationType relType = getRelationType(relation.getTypeRef().getId());
+          checkState(relType != null, "Failed to retrieve relation type");
+          if (relation.hasSource() && relation.hasTarget()) {
+            if (relation.hasSourceId(id)) {
+              EntityRef entityRef = getEntityRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+              entity.addRelation(relType.getRegularName(), entityRef); // db access
+            } else if (relation.hasTargetId(id)) {
+              EntityRef entityRef = getEntityRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+              entity.addRelation(relType.getInverseName(), entityRef); // db access
+            }
           }
-        } else if (relation.hasTargetId(id)) {
-          Class<? extends Entity> cls = typeRegistry.getTypeForIName(relation.getTargetType());
-          if (cls != null && cls.isAssignableFrom(type)) {
-            Reference reference = relation.getSourceRef();
-            entity.addRelation(relType.getInverseName(), getEntityRef(reference)); // db access
-          }
-        } else {
-          throw new IllegalStateException("Impossible");
         }
-      }
-    } catch (IOException e) {
-      LOG.error("Error while handling {} {}", type.getSimpleName(), id);
-    } finally {
-      if (iterator != null) {
-        iterator.close();
+      } catch (IOException e) {
+        LOG.error("Error while handling {} {}", type.getSimpleName(), id);
+      } finally {
+        if (iterator != null) {
+          iterator.close();
+        }
       }
     }
   }
 
-  private EntityRef getEntityRef(Reference reference) throws StorageException, IOException {
+  // Relations are defined between primitive domain entities
+  // Map to a domain entity in the package from which an entity is requested
+  private EntityRef getEntityRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws StorageException, IOException {
     String iname = reference.getType();
+    Class<? extends DomainEntity> type = TypeRegistry.toDomainEntity(typeRegistry.getTypeForIName(iname));
+    type = mapper.map(type);
+    iname = TypeNames.getInternalName(type);
     String xname = typeRegistry.getXNameForIName(iname);
-    Class<? extends Entity> type = typeRegistry.getTypeForIName(iname);
-    Entity entity = getItem(type, reference.getId());
+    DomainEntity entity = getItem(type, reference.getId());
 
-    return new EntityRef(iname, xname, reference.getId(), entity.getDisplayName());
+    return new RelationEntityRef(iname, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
+  }
+
+  @Override
+  public <T extends Relation> StorageIterator<T> getRelationsForEntityId(Class<T> type, String id) {
+    DBObject query = DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id));
+    return getItems(type, query);
   }
 
   @Override

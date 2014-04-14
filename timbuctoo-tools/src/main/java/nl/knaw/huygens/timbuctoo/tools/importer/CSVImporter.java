@@ -31,6 +31,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
+
 import org.apache.commons.lang.StringUtils;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -60,15 +62,15 @@ public abstract class CSVImporter {
     this(out, SEPARATOR_CHAR, QUOTE_CHAR, LINES_TO_SKIP);
   }
 
-  public void handleFile(File file, int itemsPerLine, boolean verbose) throws IOException {
+  public void handleFile(File file, int itemsPerLine, boolean verbose) throws IOException, ValidationException {
     handleFile(new FileInputStream(file), itemsPerLine, verbose);
   }
 
-  public void handleFile(String filename, int itemsPerLine, boolean verbose) throws IOException {
+  public void handleFile(String filename, int itemsPerLine, boolean verbose) throws IOException, ValidationException {
     handleFile(new FileInputStream(filename), itemsPerLine, verbose);
   }
 
-  public void handleFile(InputStream stream, int itemsPerLine, boolean verbose) throws IOException {
+  public void handleFile(InputStream stream, int itemsPerLine, boolean verbose) throws IOException, ValidationException {
     initialize();
     CSVReader reader = null;
     try {
@@ -99,8 +101,9 @@ public abstract class CSVImporter {
 
   /**
    * Handles a parsed input line.
+   * @throws ValidationException 
    */
-  protected abstract void handleLine(String[] items);
+  protected abstract void handleLine(String[] items) throws ValidationException;
 
   /**
    * Performa actions after file has been handled.
@@ -108,14 +111,14 @@ public abstract class CSVImporter {
   protected void handleEndOfFile() {};
 
   private void validateLine(String[] line, int itemsPerLine, boolean verbose) {
-    boolean error = (itemsPerLine != 0 && itemsPerLine != line.length);
+    boolean error = (line.length < itemsPerLine);
     if (error || verbose) {
       out.println();
       for (String word : line) {
         out.println("[" + word + "]");
       }
       if (error) {
-        out.println("## Number of items must be " + itemsPerLine);
+        out.println("## Number of items < " + itemsPerLine);
         out.flush();
         throw new RuntimeException("Error on line '" + line[0] + "...'");
       }

@@ -36,7 +36,7 @@ public class DCARPerson extends Person {
 
   @Override
   public String getDisplayName() {
-    return getName().getSortName();
+    return defaultName().getSortName();
   }
 
   public String getLabel() {

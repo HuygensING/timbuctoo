@@ -24,11 +24,11 @@ package nl.knaw.huygens.timbuctoo.vre;
 
 import java.io.IOException;
 
-public class DWCVRE implements VRE {
-  private final Scope scope;
+public class DWCVRE extends AbstractVRE {
 
-  public DWCVRE() throws IOException {
-    scope = new DWCScope();
+  @Override
+  protected Scope createScope() throws IOException {
+    return new DWCScope();
   }
 
   @Override
@@ -37,8 +37,8 @@ public class DWCVRE implements VRE {
   }
 
   @Override
-  public Scope getScope() {
-    return scope;
+  public String getDescription() {
+    return "VRE for the 'Digitaal Wetenschapshistorisch Centrum'.";
   }
 
 }

@@ -4,7 +4,7 @@
   <parent>
     <groupId>nl.knaw.huygens</groupId>
     <artifactId>timbuctoo</artifactId>
-    <version>v2.1.5</version>
+    <version>2.2.0</version>
   </parent>
   <artifactId>timbuctoo-war-config-example</artifactId>
   <packaging>war</packaging>

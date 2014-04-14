@@ -22,10 +22,14 @@ package nl.knaw.huygens.timbuctoo.tools.importer.base;
  * #L%
  */
 
+import java.io.File;
+
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
+import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
@@ -43,8 +47,25 @@ public class BaseImporter extends DefaultImporter {
 
   public static void main(String[] args) throws Exception {
 
-    String fileName = (args.length > 0) ? args[0] : "../../timbuctoo-testdata/src/main/resources/general/iso-639-3.tab";
+    // Handle commandline arguments
+    String directoryName = (args.length > 0) ? args[0] : "../../timbuctoo-testdata/src/main/resources/general/";
+    File directory = new File(directoryName);
+    if (!directory.isDirectory()) {
+      System.out.println("## Not a directory: " + directoryName);
+      System.exit(-1);
+    }
+    File languageFile = new File(directory, "iso-639-3.tab");
+    if (!languageFile.canRead()) {
+      System.out.println("## Can not read file: " + languageFile.getAbsolutePath());
+      System.exit(-1);
+    }
+    File locationFile = new File(directory, "locations.json");
+    if (!locationFile.canRead()) {
+      System.out.println("## Can not read file: " + locationFile.getAbsolutePath());
+      System.exit(-1);
+    }
 
+    Change change = new Change(USER_ID, VRE_ID);
     Configuration config = new Configuration("config.xml");
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
@@ -59,15 +80,17 @@ public class BaseImporter extends DefaultImporter {
       // Get rid of existing stuff
       BaseImporter baseImporter = new BaseImporter(registry, storageManager, indexManager);
       baseImporter.removeNonPersistentEntities(BaseLanguage.class);
+      baseImporter.removeNonPersistentEntities(BaseLocation.class);
 
       baseImporter.printBoxedText("Import languages");
+      new LanguageImporter(storageManager, change).handleFile(languageFile, 0, false);
 
-      LanguageImporter importer = new LanguageImporter(storageManager, USER_ID, VRE_ID);
-      importer.handleFile(fileName, 0, false);
+      baseImporter.printBoxedText("Import locations");
+      new LocationImporter(registry, storageManager, change).handleFile(locationFile);
 
       baseImporter.printBoxedText("Indexing");
-
       baseImporter.indexEntities(BaseLanguage.class);
+      baseImporter.indexEntities(BaseLocation.class);
 
     } catch (Exception e) {
       // for debugging

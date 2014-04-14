@@ -25,6 +25,9 @@ package nl.knaw.huygens.timbuctoo.model;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+
 /**
  * The type of a relation between domain entities.
  *
@@ -32,6 +35,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
  */
 @IDPrefix(RelationType.ID_PREFIX)
 public class RelationType extends SystemEntity {
+
   public static final String ID_PREFIX = "RELT";
 
   /** The name of this relation type. */
@@ -50,17 +54,17 @@ public class RelationType extends SystemEntity {
   // For deserialization...
   public RelationType() {}
 
-  public RelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) {
+  public RelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean reflexive, boolean symmetric) {
     this.regularName = regularName;
     this.inverseName = inverseName;
     this.sourceTypeName = TypeNames.getInternalName(sourceType);
     this.targetTypeName = TypeNames.getInternalName(targetType);
-    this.reflexive = sourceType.equals(targetType);
-    this.symmetric = false;
+    this.reflexive = reflexive;
+    this.symmetric = symmetric;
   }
 
-  public RelationType(String name, Class<? extends DomainEntity> type) {
-    this(name, name, type, type);
+  public RelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) {
+    this(regularName, inverseName, sourceType, targetType, false, false);
   }
 
   @Override
@@ -96,7 +100,7 @@ public class RelationType extends SystemEntity {
     return targetTypeName;
   }
 
-  public void setTargetDocType(String name) {
+  public void setTargetTypeName(String name) {
     targetTypeName = name;
   }
 
@@ -114,6 +118,11 @@ public class RelationType extends SystemEntity {
 
   public void setSymmetric(boolean symmetric) {
     this.symmetric = symmetric;
+  }
+
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.DEFAULT_STYLE, false);
   }
 
 }

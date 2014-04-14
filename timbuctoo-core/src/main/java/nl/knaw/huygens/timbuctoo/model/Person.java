@@ -22,44 +22,105 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
+import java.util.List;
+
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Lists;
 
 @IDPrefix("PERS")
 public class Person extends DomainEntity {
 
-  private PersonName name;
+  // Container class, for entity reducer
+  private static class Names {
+    public List<PersonName> list;
+
+    public Names() {
+      list = Lists.newArrayList();
+    }
+
+    public PersonName defaultName() {
+      return (list != null && !list.isEmpty()) ? list.get(0) : new PersonName();
+    }
+  }
+
+  private List<String> types;
+  private Names names;
+  /** Gender at birth. */
+  private String gender;
   private Datable birthDate;
   private Datable deathDate;
+  private List<Link> links;
 
   public Person() {
-    name = new PersonName();
+    names = new Names();
+    links = Lists.newArrayList();
+    types = Lists.newArrayList();
+    gender = Gender.UNKNOWN;
+  }
+
+  protected PersonName defaultName() {
+    return names.defaultName();
   }
 
   @Override
   public String getDisplayName() {
-    return name.getShortName();
+    return defaultName().getShortName();
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false), //
+      @IndexAnnotation(fieldName = "dynamic_sort_name", isFaceted = false, isSortable = true) })
   public String getIndexedName() {
-    return name.getFullName();
+    return defaultName().getFullName();
   }
 
-  public PersonName getName() {
-    return name;
+  public List<String> getTypes() {
+    return types;
   }
 
-  public void setName(PersonName name) {
-    this.name = name;
+  public void setTypes(List<String> types) {
+    this.types = types;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_s_birthDate", isFaceted = true, canBeEmpty = true)
+  public void addType(String type) {
+    String normalized = Type.normalize(type);
+    if (normalized != null && !types.contains(normalized)) {
+      types.add(normalized);
+    }
+  }
+
+  public List<PersonName> getNames() {
+    return names.list;
+  }
+
+  public void setNames(List<PersonName> names) {
+    this.names.list = names;
+  }
+
+  public void addName(PersonName name) {
+    if (name != null) {
+      names.list.add(name);
+    }
+  }
+
+  @IndexAnnotation(fieldName = "dynamic_s_gender", isFaceted = true, canBeEmpty = true)
+  public String getGender() {
+    return gender;
+  }
+
+  public void setGender(String gender) {
+    this.gender = Gender.normalize(gender);
+  }
+
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_birthDate", isFaceted = true, canBeEmpty = true), //
+      @IndexAnnotation(fieldName = "dynamic_sort_birthDate", canBeEmpty = true, isSortable = true) })
   public Datable getBirthDate() {
     return birthDate;
   }
@@ -68,13 +129,81 @@ public class Person extends DomainEntity {
     this.birthDate = birthDate;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_s_deathDate", isFaceted = true, canBeEmpty = true)
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_deathDate", isFaceted = true, canBeEmpty = true), //
+      @IndexAnnotation(fieldName = "dynamic_sort_deathDate", isSortable = true, canBeEmpty = true) })
   public Datable getDeathDate() {
     return deathDate;
   }
 
   public void setDeathDate(Datable deathDate) {
     this.deathDate = deathDate;
+  }
+
+  public List<Link> getLinks() {
+    return links;
+  }
+
+  public void setLinks(List<Link> links) {
+    this.links = links;
+  }
+
+  public void addLink(Link link) {
+    if (link != null) {
+      links.add(link);
+    }
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_birthplace", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  public List<EntityRef> getBirthPlace() {
+    return getRelations().get("hasBirthPlace");
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_deathplace", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  public List<EntityRef> getDeathPlace() {
+    return getRelations().get("hasDeathPlace");
+  }
+
+  // ---------------------------------------------------------------------------
+
+  // Not an enumerated type because of serialization problems.
+  public static class Type {
+    public static final String ARCHETYPE = "ARCHETYPE";
+    public static final String AUTHOR = "AUTHOR";
+    public static final String PSEUDONYM = "PSEUDONYM";
+
+    public static String normalize(String text) {
+      if (ARCHETYPE.equalsIgnoreCase(text)) {
+        return ARCHETYPE;
+      } else if (AUTHOR.equalsIgnoreCase(text)) {
+        return AUTHOR;
+      } else if (PSEUDONYM.equalsIgnoreCase(text)) {
+        return PSEUDONYM;
+      } else {
+        return null;
+      }
+    }
+  }
+
+  // Not an enumerated type because of serialization problems.
+  public static class Gender {
+    public static final String UNKNOWN = "UNKNOWN";
+    public static final String MALE = "MALE";
+    public static final String FEMALE = "FEMALE";
+    public static final String NOT_APPLICABLE = "NOT_APPLICABLE";
+
+    public static String normalize(String text) {
+      if (MALE.equalsIgnoreCase(text)) {
+        return MALE;
+      } else if (FEMALE.equalsIgnoreCase(text)) {
+        return FEMALE;
+      } else if (NOT_APPLICABLE.equalsIgnoreCase(text)) {
+        return NOT_APPLICABLE;
+      } else {
+        return UNKNOWN;
+      }
+    }
   }
 
 }

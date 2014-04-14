@@ -6,7 +6,7 @@
   <parent>
     <groupId>nl.knaw.huygens</groupId>
     <artifactId>timbuctoo</artifactId>
-    <version>v2.1.5</version>
+    <version>2.2.0</version>
   </parent>
 
   <artifactId>timbuctoo-tools</artifactId>
@@ -68,6 +68,19 @@
       <artifactId>source-overlay-maven-plugin</artifactId>
       <version>1.16.1</version>
       <scope>provided</scope>
+    </dependency>
+
+    <!-- Restlet -->
+    <dependency>
+      <groupId>org.restlet.jse</groupId>
+      <artifactId>org.restlet</artifactId>
+      <version>2.0-RC2</version>
+    </dependency>
+    <!-- VisiTEI -->
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>visitei</artifactId>
+      <version>0.4.2-SNAPSHOT</version>
     </dependency>
   </dependencies>
 
@@ -144,7 +157,15 @@
             </program>
             <program>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.dcar.DutchCaribbeanImporter</mainClass>
-              <name>ducaImport</name>
+              <name>dcarImport</name>
+            </program>
+            <program>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.neww.WomenWritersImporter</mainClass>
+              <name>newwImport</name>
+              <jvmSettings>
+                <initialMemorySize>256m</initialMemorySize>
+                <maxMemorySize>1024m</maxMemorySize>
+              </jvmSettings>
             </program>
             <program>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.TransformedDataImporter</mainClass>

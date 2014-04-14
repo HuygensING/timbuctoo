@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.storage;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Date;
+import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -32,7 +33,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
-import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -120,6 +120,8 @@ public class EntityInducerReducerTest {
     DomainEntityWithReferences initial = new DomainEntityWithReferences(ID);
     initial.setSharedReference(new Reference("type1", "id1"));
     initial.setUniqueReference(new Reference("type2", "id2"));
+    initial.addVariation(BaseDomainEntity.class);
+    initial.addVariation(DomainEntityWithReferences.class);
 
     JsonNode tree = inducer.induceDomainEntity(DomainEntityWithReferences.class, initial);
     DomainEntityWithReferences reduced = reducer.reduceVariation(DomainEntityWithReferences.class, tree);
@@ -134,10 +136,9 @@ public class EntityInducerReducerTest {
     DomainEntityWithMiscTypes initial = new DomainEntityWithMiscTypes(ID);
     initial.setDate(new Date());
     initial.setType(String.class);
-    PersonName name = new PersonName();
-    name.addNameComponent(Type.FORENAME, "test");
-    name.addNameComponent(Type.SURNAME, "test");
-    initial.setPersonName(name);
+    initial.setPersonName(PersonName.newInstance("Christiaan", "Huygens"));
+    initial.addVariation(BaseDomainEntity.class);
+    initial.addVariation(DomainEntityWithMiscTypes.class);
 
     JsonNode tree = inducer.induceDomainEntity(DomainEntityWithMiscTypes.class, initial);
     DomainEntityWithMiscTypes reduced = reducer.reduceVariation(DomainEntityWithMiscTypes.class, tree);
@@ -146,6 +147,24 @@ public class EntityInducerReducerTest {
     assertEquals(initial.getDate(), reduced.getDate());
     assertEquals(initial.getType(), reduced.getType());
     assertEquals(initial.getPersonName(), reduced.getPersonName());
+  }
+
+  @Test
+  public void testDomainEntityWithPersonNames() throws Exception {
+    PersonName name = PersonName.newInstance("Christiaan", "Huygens");
+    DomainEntityWithMiscTypes initial = new DomainEntityWithMiscTypes(ID);
+    initial.addPersonName(name);
+    initial.addVariation(BaseDomainEntity.class);
+    initial.addVariation(DomainEntityWithMiscTypes.class);
+
+    JsonNode tree = inducer.induceDomainEntity(DomainEntityWithMiscTypes.class, initial);
+    DomainEntityWithMiscTypes reduced = reducer.reduceVariation(DomainEntityWithMiscTypes.class, tree);
+
+    validateBaseDomainEntityProperties(initial, reduced);
+    List<PersonName> names = reduced.getPersonNames();
+    assertEquals(1, names.size());
+    PersonName reducedName = names.get(0);
+    assertEquals(name, reducedName);
   }
 
 }

@@ -57,7 +57,7 @@ import org.mockito.Matchers;
 
 import com.google.common.collect.Lists;
 
-public class SearchManagerTest {
+public class OldSearchManagerTest {
 
   private static final ArrayList<String> FULL_TEXT_SEARCH_NAMES = Lists.newArrayList("dynamic_t_name");
   private static final Class<Person> TYPE = Person.class;
@@ -67,7 +67,7 @@ public class SearchManagerTest {
   private static final String EXPECTED_TERM = String.format("dynamic_t_name:%s", SEARCH_TERM);
 
   private Scope scope;
-  private SearchManager instance;
+  private OldSearchManager instance;
   private IndexManager indexManager;
   private TypeRegistry typeRegistry;
 
@@ -78,7 +78,7 @@ public class SearchManagerTest {
     indexManager = mock(IndexManager.class);
     typeRegistry = TypeRegistry.getInstance();
     typeRegistry.init(Person.class.getPackage().getName() + " " + DCARPerson.class.getPackage().getName() + " " + ClassWithMupltipleFullTestSearchFields.class.getPackage().getName());
-    instance = new SearchManager(typeRegistry, indexManager);
+    instance = new OldSearchManager(typeRegistry, indexManager);
   }
 
   @Test

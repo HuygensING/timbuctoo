@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 
 import com.google.common.collect.Sets;
 import com.mongodb.MongoException;
@@ -64,10 +65,10 @@ public class LanguageImporter extends CSVImporter {
   private int totalCount;
   private int coreCount;
 
-  public LanguageImporter(StorageManager storageManager, String userId, String vreId) {
+  public LanguageImporter(StorageManager storageManager, Change change) {
     super(new PrintWriter(System.err), SEPERATOR_CHAR, QUOTE_CHAR, LINES_TO_SKIP);
     this.storageManager = storageManager;
-    change = new Change(userId, vreId);
+    this.change = change;
   }
 
   @Override
@@ -83,7 +84,7 @@ public class LanguageImporter extends CSVImporter {
   };
 
   @Override
-  protected void handleLine(String[] items) {
+  protected void handleLine(String[] items) throws ValidationException {
     BaseLanguage language = new BaseLanguage();
 
     if (items.length < 7) {

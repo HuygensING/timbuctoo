@@ -31,6 +31,7 @@ import nl.knaw.huygens.security.client.AuthorizationHandler;
 import nl.knaw.huygens.security.client.SecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
@@ -73,6 +74,7 @@ class ResourceTestModule extends JerseyServletModule {
   private Producer indexProducer;
   private Producer persistenceProducer;
   private VREManager vreManager;
+  private IndexManager indexManager;
 
   public ResourceTestModule() {
     config = mock(Configuration.class);
@@ -89,6 +91,7 @@ class ResourceTestModule extends JerseyServletModule {
     indexProducer = mock(Producer.class);
     persistenceProducer = mock(Producer.class);
     vreManager = mock(VREManager.class);
+    indexManager = mock(IndexManager.class);
   }
 
   /* Because the RestAutoResourceModule is used in a static way for multiple tests,
@@ -96,7 +99,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(config, storageManager, jsonProvider, validator, mailSender, searchManager, authorizationHandler, broker, indexProducer, persistenceProducer, vreManager);
+    reset(config, storageManager, jsonProvider, validator, mailSender, searchManager, authorizationHandler, broker, indexProducer, persistenceProducer, vreManager, indexManager);
   }
 
   @Override
@@ -154,6 +157,12 @@ class ResourceTestModule extends JerseyServletModule {
   @Singleton
   public Configuration provideConfiguration() {
     return config;
+  }
+
+  @Provides
+  @Singleton
+  public IndexManager provideIndexManager() {
+    return indexManager;
   }
 
   @Provides

@@ -1,9 +1,7 @@
 package nl.knaw.huygens.timbuctoo.vre;
 
-import java.io.IOException;
-
 /*
-* #%L
+ * #%L
  * Timbuctoo core
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
@@ -24,11 +22,13 @@ import java.io.IOException;
  * #L%
 */
 
-public class TestVRE implements VRE {
-  private Scope scope;
+import java.io.IOException;
 
-  public TestVRE() throws IOException {
-    scope = new TestScope();
+public class TestVRE extends AbstractVRE {
+
+  @Override
+  protected Scope createScope() throws IOException {
+    return new TestScope();
   }
 
   @Override
@@ -37,8 +37,8 @@ public class TestVRE implements VRE {
   }
 
   @Override
-  public Scope getScope() {
-    return scope;
+  public String getDescription() {
+    return "VRE for testing.";
   }
 
 }

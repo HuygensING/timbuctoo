@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.model.raa;
+package nl.knaw.huygens.timbuctoo.variation.model.projecta;
 
 /*
  * #%L
@@ -22,7 +22,16 @@ package nl.knaw.huygens.timbuctoo.model.raa;
  * #L%
  */
 
-// Used to extend RAAPerson
-public class RAACivilServant {
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
+import nl.knaw.huygens.timbuctoo.variation.model.DomainEntityWithIndexAnnotations;
+
+public class ModelWithOverriddenIndexAnnotations extends DomainEntityWithIndexAnnotations {
+
+  @Override
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "test"), @IndexAnnotation(fieldName = "test2"), @IndexAnnotation(fieldName = "test3") })
+  public String getString() {
+    return super.getString();
+  }
 
 }

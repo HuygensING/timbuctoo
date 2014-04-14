@@ -145,7 +145,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
   private Reference hasSiblingArchiver;
 
   public DutchCaribbeanImporter(TypeRegistry registry, StorageManager storageManager, RelationManager relationManager, IndexManager indexManager, String inputDirName) {
-    super(registry, storageManager, relationManager, indexManager);
+    super(registry, storageManager, indexManager);
     objectMapper = new ObjectMapper();
     this.relationManager = relationManager;
     inputDir = new File(inputDirName);
@@ -350,7 +350,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
     if (xperson.toevoeging != null) {
       name.addNameComponent(Type.ADD_NAME, xperson.toevoeging);
     }
-    person.setName(name);
+    person.addName(name);
 
     if (xperson.label != null) {
       String value = StringUtils.join(xperson.label, "; ");

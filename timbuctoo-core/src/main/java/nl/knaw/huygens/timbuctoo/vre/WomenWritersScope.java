@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.model.raa;
+package nl.knaw.huygens.timbuctoo.vre;
 
 /*
  * #%L
@@ -22,8 +22,22 @@ package nl.knaw.huygens.timbuctoo.model.raa;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.model.Person;
+import java.io.IOException;
 
-public class RAAPerson extends Person {
+public class WomenWritersScope extends AbstractScope {
+
+  public WomenWritersScope() throws IOException {
+    super("timbuctoo.model.neww");
+  }
+
+  @Override
+  public String getId() {
+    return "neww";
+  }
+
+  @Override
+  public String getName() {
+    return "Women Writers Scope";
+  }
 
 }

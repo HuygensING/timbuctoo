@@ -22,13 +22,17 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -36,14 +40,22 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.validation.ValidationException;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectARelation;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestDocWithPersonName;
 
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+
+import test.model.BaseDomainEntity;
+import test.model.DomainEntityWithMiscTypes;
+import test.model.PrimitiveDomainEntity;
+import test.model.projecta.OtherADomainEntity;
+import test.model.projecta.SubADomainEntity;
+import test.model.projectb.SubBDomainEntity;
+
+import com.google.common.collect.Lists;
 
 public class RelationManagerTest {
 
@@ -53,19 +65,9 @@ public class RelationManagerTest {
   private RelationManager relationManager;
   private Change change;
 
-  @BeforeClass
-  public static void setupRegistry() {
-    registry = TypeRegistry.getInstance();
-    registry.init("timbuctoo.model timbuctoo.variation.model.*");
-  }
-
-  @AfterClass
-  public static void clearRegistry() {
-    registry = null;
-  }
-
   @Before
   public void setUp() {
+    registry = mock(TypeRegistry.class);
     storageManager = mock(StorageManager.class);
     relationManager = new RelationManager(registry, storageManager);
     change = new Change("test", "test");
@@ -84,9 +86,12 @@ public class RelationManagerTest {
   }
 
   @Test
-  public void testStoreRelation() throws IOException {
+  public void testStoreRelation() throws IOException, ValidationException {
+    // when
     String relationTypeId = "relationTypeId";
-    setUpGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
+    setUpStorageManagerGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
+    doReturn(ProjectADomainEntity.class).when(registry).getTypeForIName(TypeNames.getInternalName(ProjectADomainEntity.class));
+    doReturn(ProjectATestDocWithPersonName.class).when(registry).getTypeForIName(TypeNames.getInternalName(ProjectATestDocWithPersonName.class));
 
     Reference typeRef = new Reference(RelationType.class, relationTypeId);
     Reference sourceRef = new Reference(ProjectADomainEntity.class, "test");
@@ -101,9 +106,11 @@ public class RelationManagerTest {
   }
 
   @Test
-  public void testStoreSymetricRelation() throws IOException {
+  public void testStoreSymetricRelation() throws IOException, ValidationException {
+    //when
     String relationTypeId = "relationTypeId";
-    setUpGetRelationType(ProjectADomainEntity.class, ProjectADomainEntity.class, relationTypeId, true);
+    setUpStorageManagerGetRelationType(ProjectADomainEntity.class, ProjectADomainEntity.class, relationTypeId, true);
+    doReturn(ProjectADomainEntity.class).when(registry).getTypeForIName(TypeNames.getInternalName(ProjectADomainEntity.class));
 
     Reference typeRef = new Reference(RelationType.class, relationTypeId);
     Reference sourceRef = new Reference(ProjectADomainEntity.class, "test");
@@ -118,9 +125,11 @@ public class RelationManagerTest {
   }
 
   @Test
-  public void testStoreSymetricRelationSwitchIds() throws IOException {
+  public void testStoreSymetricRelationSwitchIds() throws IOException, ValidationException {
     String relationTypeId = "relationTypeId";
-    setUpGetRelationType(ProjectADomainEntity.class, ProjectADomainEntity.class, relationTypeId, true);
+    // when
+    setUpStorageManagerGetRelationType(ProjectADomainEntity.class, ProjectADomainEntity.class, relationTypeId, true);
+    doReturn(ProjectADomainEntity.class).when(registry).getTypeForIName(TypeNames.getInternalName(ProjectADomainEntity.class));
 
     Reference typeRef = new Reference(RelationType.class, relationTypeId);
     Reference sourceRef = new Reference(ProjectADomainEntity.class, "zztest23");
@@ -137,7 +146,7 @@ public class RelationManagerTest {
   @Test(expected = NullPointerException.class)
   public void testStoreRelationSourceRefNull() {
     String relationTypeId = "relationTypeId";
-    setUpGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
+    setUpStorageManagerGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
 
     Reference typeRef = new Reference(RelationType.class, relationTypeId);
     Reference sourceRef = null;
@@ -149,7 +158,7 @@ public class RelationManagerTest {
   @Test(expected = NullPointerException.class)
   public void testStoreRelationTypeRefNull() {
     String relationTypeId = "relationTypeId";
-    setUpGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
+    setUpStorageManagerGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
 
     Reference typeRef = null;
     Reference sourceRef = new Reference(ProjectADomainEntity.class, "test");
@@ -164,7 +173,7 @@ public class RelationManagerTest {
   @Test(expected = NullPointerException.class)
   public void testStoreRelationTargetRefNull() {
     String relationTypeId = "relationTypeId";
-    setUpGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
+    setUpStorageManagerGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
 
     Reference typeRef = new Reference(RelationType.class, relationTypeId);
     Reference sourceRef = new Reference(ProjectADomainEntity.class, "test");
@@ -179,7 +188,7 @@ public class RelationManagerTest {
   @Test(expected = IllegalArgumentException.class)
   public void testStoreRelationSourceRefWrongType() {
     String relationTypeId = "relationTypeId";
-    setUpGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
+    setUpStorageManagerGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
 
     Reference typeRef = new Reference(RelationType.class, relationTypeId);
     Reference sourceRef = new Reference(ProjectATestDocWithPersonName.class, "test");
@@ -194,7 +203,7 @@ public class RelationManagerTest {
   @Test(expected = IllegalArgumentException.class)
   public void testStoreRelationTargetRefWrongType() {
     String relationTypeId = "relationTypeId";
-    setUpGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
+    setUpStorageManagerGetRelationType(ProjectADomainEntity.class, ProjectATestDocWithPersonName.class, relationTypeId, false);
 
     Reference typeRef = new Reference(RelationType.class, relationTypeId);
     Reference sourceRef = new Reference(ProjectADomainEntity.class, "test");
@@ -206,14 +215,113 @@ public class RelationManagerTest {
     relationManager.storeRelation(ProjectARelation.class, sourceRef, typeRef, targetRef, change);
   }
 
-  protected void setUpGetRelationType(Class<? extends DomainEntity> sourceClass, Class<? extends DomainEntity> targetClass, String relationTypeId, boolean symmetric) {
-    RelationType relationType = new RelationType();
-    relationType.setSourceTypeName(TypeNames.getInternalName(sourceClass));
-    relationType.setTargetDocType(TypeNames.getInternalName(targetClass));
-    relationType.setSymmetric(symmetric);
+  private void setUpStorageManagerGetRelationType(Class<? extends DomainEntity> sourceClass, Class<? extends DomainEntity> targetClass, String relationTypeId, boolean symmetric) {
+    RelationType relationType = createRelationType(sourceClass, targetClass, symmetric);
 
     when(storageManager.getEntity(RelationType.class, relationTypeId)).thenReturn(relationType);
   }
 
-}
+  private RelationType createRelationType(Class<? extends DomainEntity> sourceClass, Class<? extends DomainEntity> targetClass, boolean symmetric) {
+    RelationType relationType = new RelationType();
+    relationType.setSourceTypeName(TypeNames.getInternalName(sourceClass));
+    relationType.setTargetTypeName(TypeNames.getInternalName(targetClass));
+    relationType.setSymmetric(symmetric);
+    return relationType;
+  }
 
+  @Test
+  public void testGetRelationTypeForEntityNoName() {
+    //mock
+    List<RelationType> relationTypes = Lists.newArrayList(mock(RelationType.class), mock(RelationType.class));
+    List<Boolean> hasNext = Lists.newArrayList(true, true, false);
+
+    //when
+    StorageIterator<RelationType> storageIterator = createStorageIterator(relationTypes, hasNext);
+    when(storageManager.getAll(RelationType.class)).thenReturn(storageIterator);
+
+    // action
+    List<RelationType> returnedRelationTypes = relationManager.getRelationTypesForEntity(null);
+
+    //verify
+    assertThat(returnedRelationTypes, contains(relationTypes.toArray(new RelationType[0])));
+  }
+
+  private StorageIterator<RelationType> createStorageIterator(List<RelationType> relationTypes, List<Boolean> hasNext) {
+    @SuppressWarnings("unchecked")
+    StorageIterator<RelationType> iterator = mock(StorageIterator.class);
+
+    when(iterator.next()).thenReturn(relationTypes.get(0), relationTypes.subList(1, relationTypes.size()).toArray(new RelationType[0]));
+
+    when(iterator.hasNext()).thenReturn(hasNext.get(0), hasNext.subList(1, hasNext.size()).toArray(new Boolean[0]));
+
+    return iterator;
+  }
+
+  @Test
+  public void testGetRelationTypeForEntityPrimitive() {
+    // return all the relations for the type and it's super classes
+    //when
+    RelationType relationType1 = createRelationType(BaseDomainEntity.class, SubADomainEntity.class, false);
+    RelationType relationType2 = createRelationType(DomainEntityWithMiscTypes.class, DomainEntity.class, false);
+    RelationType relationType3 = createRelationType(DomainEntityWithMiscTypes.class, SubADomainEntity.class, false);
+
+    List<RelationType> relationTypes = Lists.newArrayList(relationType1, relationType2, relationType3);
+    List<Boolean> hasNext = Lists.newArrayList(true, true, true, false);
+
+    StorageIterator<RelationType> storageIterator = createStorageIterator(relationTypes, hasNext);
+    when(storageManager.getAll(RelationType.class)).thenReturn(storageIterator);
+
+    setUpGetTypeForInName(BaseDomainEntity.class);
+    setUpGetTypeForInName(SubADomainEntity.class);
+    setUpGetTypeForInName(DomainEntityWithMiscTypes.class);
+    setUpGetTypeForInName(DomainEntity.class);
+
+    //action
+    List<RelationType> actualRelationTypes = relationManager.getRelationTypesForEntity(TypeNames.getInternalName(BaseDomainEntity.class));
+
+    //verify
+    assertThat(actualRelationTypes, contains(relationType1, relationType2));
+  }
+
+  protected void setUpGetTypeForInName(Class<? extends DomainEntity> type) {
+    doReturn(type).when(registry).getTypeForIName(TypeNames.getInternalName(type));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testGetRelationTypeForEntityProjectSpecific() {
+    // return all relations for the type and it's super classes except the ones that refer to a different project.
+    //when
+    RelationType relationType1 = createRelationType(BaseDomainEntity.class, SubADomainEntity.class, false);
+    RelationType relationType2 = createRelationType(SubBDomainEntity.class, DomainEntity.class, false);
+    RelationType relationType3 = createRelationType(PrimitiveDomainEntity.class, DomainEntity.class, false);
+    RelationType relationType4 = createRelationType(OtherADomainEntity.class, DomainEntity.class, false);
+    RelationType relationType5 = createRelationType(PrimitiveDomainEntity.class, PrimitiveDomainEntity.class, false);
+    RelationType relationType6 = createRelationType(PrimitiveDomainEntity.class, OtherADomainEntity.class, false);
+
+    List<RelationType> relationTypes = Lists.newArrayList(relationType1, relationType2, relationType3, relationType4, relationType5, relationType6);
+    List<Boolean> hasNext = Lists.newArrayList(true, true, true, true, false);
+
+    StorageIterator<RelationType> storageIterator = createStorageIterator(relationTypes, hasNext);
+    when(storageManager.getAll(RelationType.class)).thenReturn(storageIterator);
+
+    setUpGetTypeForInName(BaseDomainEntity.class);
+    setUpGetTypeForInName(SubADomainEntity.class);
+    setUpGetTypeForInName(PrimitiveDomainEntity.class);
+    setUpGetTypeForInName(DomainEntity.class);
+    setUpGetTypeForInName(SubBDomainEntity.class);
+    setUpGetTypeForInName(OtherADomainEntity.class);
+
+    when(registry.isFromSameProject(any(Class.class), any(Class.class))).thenReturn(false);
+    when(registry.isFromSameProject(SubADomainEntity.class, OtherADomainEntity.class)).thenReturn(true);
+    when(registry.isFromSameProject(SubADomainEntity.class, SubADomainEntity.class)).thenReturn(true);
+
+    //action
+    List<RelationType> actualRelationTypes = relationManager.getRelationTypesForEntity(TypeNames.getInternalName(SubADomainEntity.class));
+
+    //verify
+    verify(registry).isFromSameProject(SubADomainEntity.class, SubBDomainEntity.class);
+    verify(registry).isFromSameProject(SubADomainEntity.class, OtherADomainEntity.class);
+    assertThat(actualRelationTypes, contains(relationType1, relationType3, relationType4));
+  }
+}

@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.vre;
 
-import java.io.IOException;
-
 /*
 * #%L
  * Timbuctoo core
@@ -23,6 +21,8 @@ import java.io.IOException;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
 */
+
+import java.io.IOException;
 
 public class TestScope extends AbstractScope {
 

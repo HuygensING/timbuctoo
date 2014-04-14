@@ -111,19 +111,14 @@ public interface Storage {
   <T extends Entity> long count(Class<T> type);
 
   /**
-   * Find a system entity which has the specified key/value pair.
+   * Find an entity which has the specified key/value pair.
    */
-  <T extends SystemEntity> T findItemByKey(Class<T> type, String key, String value) throws IOException;
+  <T extends Entity> T findItemByKey(Class<T> type, String key, String value) throws IOException;
 
   /**
-   * Find a system entity which has the non-null properties of the example object.
+   * Find an entity which has the non-null properties of the example object.
    */
-  <T extends SystemEntity> T findItem(Class<T> type, T example) throws IOException;
-
-  /**
-   * Get the given variation of an entity.
-   */
-  <T extends DomainEntity> T getVariation(Class<T> type, String id, String variation) throws IOException;
+  <T extends Entity> T findItem(Class<T> type, T example) throws IOException;
 
   <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws IOException;
 
@@ -137,12 +132,14 @@ public interface Storage {
   boolean relationExists(Relation relation) throws IOException;
 
   /**
-   * Returns an iterator for all relations involving the specified domain entity,
-   * either as 'source' or as 'target' (or both).
+   * Adds all stored relations to the specified entity.
    */
-  StorageIterator<Relation> getRelationsOf(Class<? extends DomainEntity> type, String id) throws IOException;
+  <T extends DomainEntity> void addRelationsTo(T entity);
 
-  void addRelationsTo(Class<? extends DomainEntity> type, String id, DomainEntity entity);
+  /**
+   * Returns an iterator for all relations of the specified entity id.
+   */
+  <T extends Relation> StorageIterator<T> getRelationsForEntityId(Class<T> type, String id);
 
   /**
   * Returns the id's of the domain entities of the specified type, that are not persisted.

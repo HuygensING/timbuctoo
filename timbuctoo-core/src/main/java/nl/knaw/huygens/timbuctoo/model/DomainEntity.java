@@ -43,9 +43,14 @@ public abstract class DomainEntity extends Entity implements Variable {
 
   private String pid; // the persistent identifier.
   private boolean deleted;
+  private int relationCount;
   private Map<String, List<EntityRef>> relations = Maps.newHashMap();
   private List<String> variations = Lists.newArrayList();
   private List<Role> roles = Lists.newArrayList();
+
+  public DomainEntity() {
+    relationCount = 0;
+  }
 
   @JsonProperty(PID)
   public String getPid() {
@@ -72,12 +77,18 @@ public abstract class DomainEntity extends Entity implements Variable {
     return relations;
   }
 
-  @JsonProperty("@relations")
-  public void setRelations(Map<String, List<EntityRef>> relations) {
-    this.relations = checkNotNull(relations);
+  @JsonProperty("@relationCount")
+  public int getRelationCount() {
+    return relationCount;
+  }
+
+  @JsonProperty("@relationCount")
+  public void setRelationCount(int relationCount) {
+    this.relationCount = relationCount;
   }
 
   public void addRelation(String name, EntityRef ref) {
+    relationCount++;
     List<EntityRef> refs = relations.get(name);
     if (refs == null) {
       refs = Lists.newArrayList();

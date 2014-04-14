@@ -27,22 +27,21 @@ import java.io.IOException;
 /**
  * VRE for base domain entities, such as language.
  */
-public class BaseVRE implements VRE {
+public class BaseVRE extends AbstractVRE {
 
-  private final Scope scope;
+  @Override
+  protected Scope createScope() throws IOException {
+    return new BaseScope();
+  }
 
-  public BaseVRE() throws IOException {
-    scope = new BaseScope();
+  @Override
+  public String getDescription() {
+    return "VRE for base domain entities.";
   }
 
   @Override
   public String getName() {
     return "Base";
-  }
-
-  @Override
-  public Scope getScope() {
-    return scope;
   }
 
 }

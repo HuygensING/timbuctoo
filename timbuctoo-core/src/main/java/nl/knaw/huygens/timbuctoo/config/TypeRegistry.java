@@ -40,6 +40,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -88,6 +90,8 @@ public class TypeRegistry {
   }
 
   // ---------------------------------------------------------------------------
+
+  private final Set<Class<? extends DomainEntity>> domainEntities = Sets.newHashSet();
 
   private final Map<Class<? extends Entity>, String> type2iname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> iname2type = Maps.newHashMap();
@@ -145,6 +149,7 @@ public class TypeRegistry {
           registerEntity(toSystemEntity(type));
         } else if (BusinessRules.isValidDomainEntity(type)) {
           Class<? extends DomainEntity> entityType = toDomainEntity(type);
+          domainEntities.add(entityType);
           registerEntity(entityType);
           if (!Relation.class.isAssignableFrom(entityType)) {
             allowedRoles.put(entityType, roles);
@@ -209,6 +214,13 @@ public class TypeRegistry {
   }
 
   // --- public api ------------------------------------------------------------
+
+  /**
+   * Returns a set with all registered domain entity types.
+   */
+  public Set<Class<? extends DomainEntity>> getDomainEntityTypes() {
+    return ImmutableSet.copyOf(domainEntities);
+  }
 
   /**
    * Returns the internal type names.
@@ -369,6 +381,12 @@ public class TypeRegistry {
       return (Class<T>) type;
     }
     throw new ClassCastException(type.getName() + " is not a role");
+  }
+
+  public boolean isFromSameProject(Class<? extends DomainEntity> class1, Class<? extends DomainEntity> class2) {
+    String package1 = class1.getPackage().getName();
+    String package2 = class2.getPackage().getName();
+    return Objects.equal(package1, package2);
   }
 
 }
