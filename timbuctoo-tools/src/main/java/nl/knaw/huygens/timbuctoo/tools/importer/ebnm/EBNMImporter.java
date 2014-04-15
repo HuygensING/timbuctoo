@@ -46,7 +46,10 @@ import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMTekstdrager;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMWatermerk;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
+import nl.knaw.huygens.timbuctoo.tools.importer.RelationTypeImporter;
 import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
 import nl.knaw.huygens.timbuctoo.util.Files;
 
@@ -64,8 +67,7 @@ import com.google.inject.Injector;
  * Imports data of the "eBNM" project.
  * 
  * Usage: java -cp [specs]
- * nl.knaw.huygens.timbuctoo.importer.database.EBNMImporter importDirName
- * configFileName
+ * nl.knaw.huygens.timbuctoo.importer.database.EBNMImporter importDirName configFileName
  * 
  * The commandline arguments are optional.
  * 
@@ -73,7 +75,7 @@ import com.google.inject.Injector;
  * existing data is deleted. Future versions of this importer must use a more
  * subtle approach.
  */
-public class EBNMImporter extends EBNMDefaultImporter {
+public class EBNMImporter extends DefaultImporter {
 
   private static final Logger LOG = LoggerFactory.getLogger(EBNMImporter.class);
 
@@ -81,8 +83,7 @@ public class EBNMImporter extends EBNMDefaultImporter {
     Stopwatch stopWatch = Stopwatch.createStarted();
 
     // Handle commandline arguments
-    // String importDirName = (args.length > 0) ? args[0] :
-    // "../../codl_data/data/";
+    // String importDirName = (args.length > 0) ? args[0] : "../../codl_data/data/";
     String importDirName = (args.length > 0) ? args[0] : "../../AtlantischeGids/work/";
     String configFileName = (args.length > 1) ? args[1] : "config.xml";
 
@@ -139,6 +140,18 @@ public class EBNMImporter extends EBNMDefaultImporter {
     inputDir = new File(inputDirName);
     System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());
     change = new Change("importer", "ebnm");
+    setup(storageManager);
+  }
+
+  // File with {@code RelationType} definitions; must be present on classpath.
+  private static final String RELATION_TYPE_DEFS = "relationtype-defs-codl.txt";
+
+  private void setup(StorageManager storageManager) {
+    try {
+      new RelationTypeImporter(typeRegistry, storageManager).importRelationTypes(RELATION_TYPE_DEFS);
+    } catch (ValidationException e) {
+      e.printStackTrace();
+    }
   }
 
   private <T> T readJsonValue(File file, Class<T> valueType) throws Exception {
