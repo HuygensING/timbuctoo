@@ -92,12 +92,14 @@ public class CobwwwebNoImporter extends DefaultImporter {
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
     StorageManager storageManager = null;
+    IndexManager indexManager = null;
 
     try {
       TypeRegistry registry = injector.getInstance(TypeRegistry.class);
       storageManager = injector.getInstance(StorageManager.class);
+      indexManager = injector.getInstance(IndexManager.class);
 
-      CobwwwebNoImporter importer = new CobwwwebNoImporter(registry, storageManager, null);
+      CobwwwebNoImporter importer = new CobwwwebNoImporter(registry, storageManager, indexManager);
       importer.importAll();
 
     } catch (Exception e) {
@@ -105,13 +107,14 @@ public class CobwwwebNoImporter extends DefaultImporter {
       e.printStackTrace();
     } finally {
       // Close resources
+      if (indexManager != null) {
+        indexManager.close();
+      }
       if (storageManager != null) {
         storageManager.logCacheStats();
         storageManager.close();
       }
       LOG.info("Time used: {}", stopWatch);
-      // Close explicitly to terminate finalizer thread of Guice
-      System.exit(0);
     }
   }
 
@@ -140,6 +143,8 @@ public class CobwwwebNoImporter extends DefaultImporter {
       importDocuments();
       importRelations();
 
+      displayStatus();
+      displayErrorSummary();
     } finally {
       if (importLog != null) {
         importLog.close();
@@ -275,6 +280,8 @@ public class CobwwwebNoImporter extends DefaultImporter {
         storedId = createNewPerson(entity);
       }
       storeReference(id, CWNOPerson.class, storedId);
+      indexManager.addEntity(CWNOPerson.class, storedId);
+      indexManager.updateEntity(WWPerson.class, storedId);
     }
   }
 
@@ -473,6 +480,8 @@ public class CobwwwebNoImporter extends DefaultImporter {
         storedId = createNewDocument(entity);
       }
       storeReference(id, CWNODocument.class, storedId);
+      indexManager.addEntity(CWNODocument.class, storedId);
+      indexManager.updateEntity(WWDocument.class, storedId);
     }
   }
 

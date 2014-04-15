@@ -97,12 +97,11 @@ public class WomenWritersImporter extends DefaultImporter {
     IndexManager indexManager = null;
 
     try {
+      TypeRegistry registry = injector.getInstance(TypeRegistry.class);
       storageManager = injector.getInstance(StorageManager.class);
       indexManager = injector.getInstance(IndexManager.class);
 
-      TypeRegistry registry = injector.getInstance(TypeRegistry.class);
       WomenWritersImporter importer = new WomenWritersImporter(registry, storageManager, indexManager, directory);
-
       importer.importAll();
 
     } catch (Exception e) {
