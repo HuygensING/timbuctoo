@@ -22,21 +22,15 @@ package nl.knaw.huygens.timbuctoo.config;
  * #L%
  */
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.vre.DutchCaribbeanScope;
-import nl.knaw.huygens.timbuctoo.vre.PrimitivesScope;
-import nl.knaw.huygens.timbuctoo.vre.Scope;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang.StringUtils;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -47,8 +41,6 @@ public class Configuration {
   private static final String SETTINGS_PREFIX = "settings.";
 
   private final XMLConfiguration xmlConfig;
-  private final List<Scope> scopes;
-  private final Map<String, Scope> scopeMap;
 
   public Configuration() throws ConfigurationException {
     this(DEFAULT_CONFIG_FILE);
@@ -64,17 +56,6 @@ public class Configuration {
     } catch (ConfigurationException e) {
       System.err.println("ERROR: unable to load configuration!");
       throw e;
-    }
-    try {
-      // TODO determine dynamically
-      scopes = ImmutableList.<Scope> of(new PrimitivesScope(), new DutchCaribbeanScope());
-      scopeMap = Maps.newHashMap();
-      for (Scope scope : scopes) {
-        scopeMap.put(scope.getId(), scope);
-      }
-    } catch (IOException e) {
-      System.err.println("ERROR: unable to obtain scopes!");
-      throw new ConfigurationException(e);
     }
   }
 

@@ -48,6 +48,7 @@ import nl.knaw.huygens.timbuctoo.model.neww.WWLanguage;
 import nl.knaw.huygens.timbuctoo.model.neww.WWLocation;
 import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 import nl.knaw.huygens.timbuctoo.model.neww.WWRelation;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
@@ -55,6 +56,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
@@ -78,7 +80,7 @@ import com.google.inject.Injector;
  * Usage:
  *  java  -cp  [specs]  ${package-name}.WomenWritersImporter  [importDirName]
  */
-public class WomenWritersImporter extends WomenWritersDefaultImporter {
+public class WomenWritersImporter extends DefaultImporter {
 
   private static final Logger LOG = LoggerFactory.getLogger(WomenWritersImporter.class);
 
@@ -130,6 +132,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
   /** For deserializing JSON */
   private final ObjectMapper objectMapper;
   private final File inputDir;
+  private final Change change;
 
   public WomenWritersImporter(TypeRegistry registry, StorageManager storageManager, IndexManager indexManager, String inputDirName) {
     super(registry, storageManager, indexManager);
@@ -140,6 +143,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     } else {
       System.out.printf("%n.. Not a directory: %s%n", inputDir.getAbsolutePath());
     }
+    change = new Change("importer", "neww");
   }
 
   public void importAll() throws Exception {
@@ -271,7 +275,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
       if (converted == null) {
         invalids.add(key);
       } else {
-        String storedId = addDomainEntity(WWCollective.class, converted);
+        String storedId = addDomainEntity(WWCollective.class, converted, change);
         storeReference(key, WWCollective.class, storedId);
       }
     }
@@ -400,7 +404,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     } else {
       WWDocument converted = convert(json, object);
       if (converted != null) {
-        String storedId = addDomainEntity(WWDocument.class, converted);
+        String storedId = addDomainEntity(WWDocument.class, converted, change);
         Reference reference = storeReference(key, WWDocument.class, storedId);
         handlePublisher(extractPrints(object), converted.getDate(), reference);
       }
@@ -523,7 +527,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
             collective.setType(Collective.Type.PUBLISHER);
             collective.setName(name);
             collective.tempLocationPlacename = first.location;
-            String storedId = addDomainEntity(WWCollective.class, collective);
+            String storedId = addDomainEntity(WWCollective.class, collective, change);
             publisherRef = storeReference(key, WWCollective.class, storedId);
           }
           Reference relationRef = relationTypes.get(IS_PUBLISHED_BY);
@@ -645,7 +649,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         String value = converted.getValue();
         String storedId = keywordValueIdMap.get(value);
         if (storedId == null) {
-          storedId = addDomainEntity(WWKeyword.class, converted);
+          storedId = addDomainEntity(WWKeyword.class, converted, change);
           keywordValueIdMap.put(value, storedId);
         }
         storeReference(key, WWKeyword.class, storedId);
@@ -1001,7 +1005,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
     String urn = conc.get(code.toLowerCase());
     if (urn == null) {
       System.out.println(".. Adding new location: " + code);
-      String storedId = addDomainEntity(WWLocation.class, converted);
+      String storedId = addDomainEntity(WWLocation.class, converted, change);
       storeReference(key, WWLocation.class, storedId);
       return;
     }
@@ -1130,7 +1134,7 @@ public class WomenWritersImporter extends WomenWritersDefaultImporter {
         if (storedId != null) {
           nDuplicates++;
         } else {
-          storedId = addDomainEntity(WWPerson.class, converted);
+          storedId = addDomainEntity(WWPerson.class, converted, change);
           lines.put(line, storedId);
         }
         storeReference(key, WWPerson.class, storedId);
