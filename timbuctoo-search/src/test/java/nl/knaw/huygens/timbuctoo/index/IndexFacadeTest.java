@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -122,10 +123,10 @@ public class IndexFacadeTest {
   }
 
   @Test(expected = IndexException.class)
-  public void testAddEntityStorageManagerThrowsAnIOException() throws IOException, IndexException {
+  public void testAddEntityStorageManagerReturnsEmptyList() throws IOException, IndexException {
     Class<SubModel> type = SubModel.class;
     Class<ExplicitlyAnnotatedModel> baseType = ExplicitlyAnnotatedModel.class;
-    doThrow(IOException.class).when(storageManagerMock).getAllVariations(baseType, DEFAULT_ID);
+    doReturn(Collections.emptyList()).when(storageManagerMock).getAllVariations(baseType, DEFAULT_ID);
 
     try {
       // action

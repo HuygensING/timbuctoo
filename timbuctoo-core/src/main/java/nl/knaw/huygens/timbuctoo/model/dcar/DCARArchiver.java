@@ -171,31 +171,31 @@ public class DCARArchiver extends Archiver {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_archive", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getRelatedArchives() {
-    return getRelations().get(IS_CREATOR_OF.regular);
+    return getRelations(IS_CREATOR_OF.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_related_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getRelatedArchivers() {
-    return getRelations().get(HAS_SIBLING_ARCHIVER.regular);
+    return getRelations(HAS_SIBLING_ARCHIVER.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPlaceKeywords() {
-    return getRelations().get(HAS_ARCHIVER_PLACE.regular);
+    return getRelations(HAS_ARCHIVER_PLACE.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getSubjectKeywords() {
-    return getRelations().get(HAS_ARCHIVER_KEYWORD.regular);
+    return getRelations(HAS_ARCHIVER_KEYWORD.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPersons() {
-    return getRelations().get(HAS_ARCHIVER_PERSON.regular);
+    return getRelations(HAS_ARCHIVER_PERSON.regular);
   }
 
   @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false)

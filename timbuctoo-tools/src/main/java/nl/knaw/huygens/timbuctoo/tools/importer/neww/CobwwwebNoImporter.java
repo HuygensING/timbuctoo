@@ -63,8 +63,12 @@ import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -78,26 +82,25 @@ import com.google.inject.Injector;
  */
 public class CobwwwebNoImporter extends DefaultImporter {
 
+  private static final Logger LOG = LoggerFactory.getLogger(CobwwwebNoImporter.class);
+
   // Base URL for import
   private static final String URL = "https://www2.hf.uio.no/tjenester/bibliografi/Robinsonades";
 
   public static void main(String[] args) throws Exception {
+    Stopwatch stopWatch = Stopwatch.createStarted();
+
     Configuration config = new Configuration("config.xml");
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
     StorageManager storageManager = null;
 
     try {
-      long start = System.currentTimeMillis();
-
       TypeRegistry registry = injector.getInstance(TypeRegistry.class);
       storageManager = injector.getInstance(StorageManager.class);
 
       CobwwwebNoImporter importer = new CobwwwebNoImporter(registry, storageManager, null);
       importer.importAll();
-
-      long time = (System.currentTimeMillis() - start) / 1000;
-      System.out.printf("%n=== Used %d seconds%n%n", time);
 
     } catch (Exception e) {
       // for debugging
@@ -108,7 +111,8 @@ public class CobwwwebNoImporter extends DefaultImporter {
         storageManager.logCacheStats();
         storageManager.close();
       }
-      // If the application is not explicitly closed a finalizer thread of Guice keeps running.
+      LOG.info("Time used: {}", stopWatch);
+      // Close explicitly to terminate finalizer thread of Guice
       System.exit(0);
     }
   }
@@ -134,44 +138,10 @@ public class CobwwwebNoImporter extends DefaultImporter {
       importRelationTypes();
       setupRelationDefs();
 
-      String xml = "";
+      importPersons();
+      importDocuments();
+      importRelations();
 
-      if ("".isEmpty()) {
-        xml = getResource(URL, "persons");
-        List<String> personIds = parseIdResource(xml, "personId");
-        log("Retrieved %d id's.%n", personIds.size());
-
-        for (String id : personIds) {
-          xml = getResource(URL, "person", id);
-          CWNOPerson entity = parsePersonResource(xml, id);
-          String storedId = addDomainEntity(CWNOPerson.class, entity, change);
-          storeReference(id, CWNOPerson.class, storedId);
-        }
-      }
-
-      if ("".isEmpty()) {
-        xml = getResource(URL, "documents");
-        List<String> documentIds = parseIdResource(xml, "documentId");
-        log("Retrieved %d id's.%n", documentIds.size());
-
-        for (String id : documentIds) {
-          xml = getResource(URL, "document", id);
-          CWNODocument entity = parseDocumentResource(xml, id);
-          String storedId = addDomainEntity(CWNODocument.class, entity, change);
-          storeReference(id, CWNODocument.class, storedId);
-        }
-      }
-
-      if ("".isEmpty()) {
-        xml = getResource(URL, "relations");
-        List<String> relationIds = parseIdResource(xml, "relationId");
-        log("Retrieved %d id's.%n", relationIds.size());
-
-        for (String id : relationIds) {
-          xml = getResource(URL, "relation", id);
-          parseRelationResource(xml, id);
-        }
-      }
     } finally {
       if (importLog != null) {
         importLog.close();
@@ -306,13 +276,54 @@ public class CobwwwebNoImporter extends DefaultImporter {
     }
   }
 
-  // ---------------------------------------------------------------------------
+  // --- persons ---------------------------------------------------------------
+
+  private void importPersons() throws Exception {
+    String xml = getResource(URL, "persons");
+    List<String> personIds = parseIdResource(xml, "personId");
+    log("Retrieved %d id's.%n", personIds.size());
+
+    for (String id : personIds) {
+      xml = getResource(URL, "person", id);
+      CWNOPerson entity = parsePersonResource(xml, id);
+      String storedId = updateExistingPerson(entity);
+      if (storedId == null) {
+        storedId = createNewPerson(entity);
+      }
+      storeReference(id, CWNOPerson.class, storedId);
+    }
+  }
 
   private CWNOPerson parsePersonResource(String xml, String id) {
     nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
     PersonContext context = new PersonContext(id);
     document.accept(new PersonVisitor(context));
     return context.person;
+  }
+
+  // Retrieve existing WWPerson, add CWNOPerson variation
+  private String updateExistingPerson(CWNOPerson entity) {
+    String storedId = null;
+    if (!Strings.isNullOrEmpty(entity.tempNewwId)) {
+      String key = FieldMapper.propertyName(WWPerson.class, "tempOldId");
+      WWPerson person = storageManager.findEntity(WWPerson.class, key, entity.tempNewwId);
+      if (person != null) {
+        storedId = person.getId();
+        entity.setId(storedId);
+        entity.setRev(person.getRev());
+        updateDomainEntity(CWNOPerson.class, entity, change);
+        log("Updated person with id %s%n", storedId);
+      }
+    }
+    return storedId;
+  }
+
+  // Save as CWNOPerson, add WWPerson variantion
+  private String createNewPerson(CWNOPerson entity) {
+    String storedId = addDomainEntity(CWNOPerson.class, entity, change);
+    WWPerson person = storageManager.getEntity(WWPerson.class, storedId);
+    updateDomainEntity(WWPerson.class, person, change);
+    return storedId;
   }
 
   private class PersonContext extends XmlContext {
@@ -463,7 +474,20 @@ public class CobwwwebNoImporter extends DefaultImporter {
     }
   }
 
-  // ---------------------------------------------------------------------------
+  // --- documents -------------------------------------------------------------
+
+  private void importDocuments() throws Exception {
+    String xml = getResource(URL, "documents");
+    List<String> documentIds = parseIdResource(xml, "documentId");
+    log("Retrieved %d id's.%n", documentIds.size());
+
+    for (String id : documentIds) {
+      xml = getResource(URL, "document", id);
+      CWNODocument entity = parseDocumentResource(xml, id);
+      String storedId = addDomainEntity(CWNODocument.class, entity, change);
+      storeReference(id, CWNODocument.class, storedId);
+    }
+  }
 
   private CWNODocument parseDocumentResource(String xml, String id) {
     nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
@@ -583,7 +607,18 @@ public class CobwwwebNoImporter extends DefaultImporter {
     }
   }
 
-  // ---------------------------------------------------------------------------
+  // --- relations -------------------------------------------------------------
+
+  private void importRelations() throws Exception {
+    String xml = getResource(URL, "relations");
+    List<String> relationIds = parseIdResource(xml, "relationId");
+    log("Retrieved %d id's.%n", relationIds.size());
+
+    for (String id : relationIds) {
+      xml = getResource(URL, "relation", id);
+      parseRelationResource(xml, id);
+    }
+  }
 
   private void parseRelationResource(String xml, String id) {
     nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);

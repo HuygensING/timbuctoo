@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 
 /*
  * #%L
+ * Timbuctoo core
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
  * =======

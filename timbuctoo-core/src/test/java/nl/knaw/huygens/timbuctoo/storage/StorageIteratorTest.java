@@ -50,6 +50,7 @@ public class StorageIteratorTest {
   @Test
   public void testEmptyIteratorSize() {
     assertEquals(0, iterator.size());
+    assertEquals(0, iterator.getSome(1).size());
   }
 
 }

@@ -270,7 +270,7 @@ public class DCARArchive extends Archive {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getCreators() {
-    return getRelations().get(IS_CREATOR_OF.inverse);
+    return getRelations(IS_CREATOR_OF.inverse);
   }
 
   public String getScope() {
@@ -284,19 +284,19 @@ public class DCARArchive extends Archive {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPlaceKeywords() {
-    return getRelations().get(HAS_ARCHIVE_PLACE.regular);
+    return getRelations(HAS_ARCHIVE_PLACE.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getSubjectKeywords() {
-    return getRelations().get(HAS_ARCHIVE_KEYWORD.regular);
+    return getRelations(HAS_ARCHIVE_KEYWORD.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getPersons() {
-    return getRelations().get(HAS_ARCHIVE_PERSON.regular);
+    return getRelations(HAS_ARCHIVE_PERSON.regular);
   }
 
   @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false)
@@ -327,19 +327,19 @@ public class DCARArchive extends Archive {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_related_archive", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getOverheadArchives() {
-    return getRelations().get(HAS_PARENT_ARCHIVE.regular);
+    return getRelations(HAS_PARENT_ARCHIVE.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_related_archive", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getUnderlyingArchives() {
-    return getRelations().get(HAS_PARENT_ARCHIVE.inverse);
+    return getRelations(HAS_PARENT_ARCHIVE.inverse);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_related_archive", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
   public List<EntityRef> getRelatedUnitArchives() {
-    return getRelations().get(HAS_SIBLING_ARCHIVE.regular);
+    return getRelations(HAS_SIBLING_ARCHIVE.regular);
   }
 
 }

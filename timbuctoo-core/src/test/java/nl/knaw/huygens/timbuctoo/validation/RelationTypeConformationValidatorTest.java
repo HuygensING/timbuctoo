@@ -1,5 +1,27 @@
 package nl.knaw.huygens.timbuctoo.validation;
 
+/*
+ * #%L
+ * Timbuctoo core
+ * =======
+ * Copyright (C) 2012 - 2014 Huygens ING
+ * =======
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -40,7 +62,7 @@ public class RelationTypeConformationValidatorTest {
   @Test
   public void testValidate() throws IOException, ValidationException {
     // when
-    when(storage.getRelationTypeById(relationTypeId)).thenReturn(relationType);
+    when(storage.getRelationType(relationTypeId)).thenReturn(relationType);
     when(relationMock.conformsToRelationType(relationType)).thenReturn(true);
 
     // action
@@ -49,14 +71,14 @@ public class RelationTypeConformationValidatorTest {
     // verify
     InOrder inOrder = Mockito.inOrder(storage, relationMock);
     inOrder.verify(relationMock).getTypeId();
-    inOrder.verify(storage).getRelationTypeById(relationTypeId);
+    inOrder.verify(storage).getRelationType(relationTypeId);
     inOrder.verify(relationMock).conformsToRelationType(relationType);
   }
 
   @Test(expected = ValidationException.class)
   public void testValidateRelationTypeDoesNotExist() throws IOException, ValidationException {
     // when
-    when(storage.getRelationTypeById(relationTypeId)).thenReturn(null);
+    when(storage.getRelationType(relationTypeId)).thenReturn(null);
 
     try {
       // action
@@ -64,7 +86,7 @@ public class RelationTypeConformationValidatorTest {
     } finally {
       // verify
       verify(relationMock).getTypeId();
-      verify(storage).getRelationTypeById(relationTypeId);
+      verify(storage).getRelationType(relationTypeId);
       verifyNoMoreInteractions(relationMock);
     }
   }
@@ -72,7 +94,7 @@ public class RelationTypeConformationValidatorTest {
   @Test(expected = ValidationException.class)
   public void testValidateRelationDoesNotConformToRelationType() throws IOException, ValidationException {
     // when
-    when(storage.getRelationTypeById(relationTypeId)).thenReturn(relationType);
+    when(storage.getRelationType(relationTypeId)).thenReturn(relationType);
     when(relationMock.conformsToRelationType(relationType)).thenReturn(false);
 
     try {
@@ -81,7 +103,7 @@ public class RelationTypeConformationValidatorTest {
     } finally {
       // verify
       verify(relationMock).getTypeId();
-      verify(storage).getRelationTypeById(relationTypeId);
+      verify(storage).getRelationType(relationTypeId);
       verify(relationMock).conformsToRelationType(relationType);
     }
   }

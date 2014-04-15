@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.model.util;
 
 /*
  * #%L
+ * Timbuctoo core
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
  * =======

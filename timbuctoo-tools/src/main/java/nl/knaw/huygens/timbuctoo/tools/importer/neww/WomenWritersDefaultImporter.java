@@ -33,11 +33,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
-/**
- * A class that contains the base functionality used in both the {@code DutchCaribbeanImporter} 
- * as the now removed {@code AtlantischeGidsImporter}.
- * Those importers use(d) the data from the AtlantischeGids project.
- */
 public abstract class WomenWritersDefaultImporter extends DefaultImporter {
 
   protected final Change change;
@@ -59,16 +54,6 @@ public abstract class WomenWritersDefaultImporter extends DefaultImporter {
       return entity.getId();
     } catch (IOException e) {
       handleError("Failed to add %s; %s", entity.getDisplayName(), e.getMessage());
-      return null;
-    }
-  }
-
-  protected <T extends DomainEntity> T updateDomainEntity(Class<T> type, T entity) {
-    try {
-      storageManager.updateProjectDomainEntity(type, entity, change);
-      return entity;
-    } catch (IOException e) {
-      handleError("Failed to modify %s; %s", entity.getDisplayName(), e.getMessage());
       return null;
     }
   }

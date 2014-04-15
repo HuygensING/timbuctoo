@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
-import static com.google.common.base.Preconditions.checkState;
 import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 
@@ -34,25 +33,17 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.EntityMapper;
-import nl.knaw.huygens.timbuctoo.config.EntityMappers;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.model.Language;
-import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.model.RelationEntityRef;
-import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EmptyStorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 import org.apache.commons.lang.StringUtils;
@@ -92,7 +83,6 @@ public class MongoStorage implements Storage {
   private TreeDecoderFactory treeDecoderFactory;
   private EntityInducer inducer;
   private EntityReducer reducer;
-  private EntityMappers entityMappers;
 
   @Inject
   public MongoStorage(TypeRegistry registry, Configuration config) throws UnknownHostException, MongoException {
@@ -145,7 +135,6 @@ public class MongoStorage implements Storage {
     treeDecoderFactory = new TreeDecoderFactory();
     inducer = new EntityInducer();
     reducer = new EntityReducer(typeRegistry);
-    entityMappers = new EntityMappers(typeRegistry.getDomainEntityTypes());
   }
 
   private void ensureIndexes() {
@@ -426,11 +415,6 @@ public class MongoStorage implements Storage {
     return mongoDB.remove(getDBCollection(type), queries.selectByDate(type, dateField, dateValue));
   }
 
-  private RelationType getRelationType(String id) throws IOException {
-    DBObject query = queries.selectById(id);
-    return getItem(RelationType.class, query);
-  }
-
   // --- domain entities -----------------------------------------------
 
   @Override
@@ -460,57 +444,8 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends DomainEntity> void addRelationsTo(T entity) {
-    if (entity != null) {
-      String id = entity.getId();
-      Class<? extends DomainEntity> type = entity.getClass();
-      EntityMapper mapper = entityMappers.getEntityMapper(type);
-      checkState(mapper != null, "No EntityMapper for type %s", type);
-      @SuppressWarnings("unchecked")
-      Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
-      StorageIterator<? extends Relation> iterator = null;
-      try {
-        iterator = getRelationsForEntityId(mappedType, id); // db access
-        while (iterator.hasNext()) {
-          Relation relation = iterator.next(); // db access
-          RelationType relType = getRelationType(relation.getTypeRef().getId());
-          checkState(relType != null, "Failed to retrieve relation type");
-          if (relation.hasSource() && relation.hasTarget()) {
-            if (relation.hasSourceId(id)) {
-              EntityRef entityRef = getEntityRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
-              entity.addRelation(relType.getRegularName(), entityRef); // db access
-            } else if (relation.hasTargetId(id)) {
-              EntityRef entityRef = getEntityRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
-              entity.addRelation(relType.getInverseName(), entityRef); // db access
-            }
-          }
-        }
-      } catch (IOException e) {
-        LOG.error("Error while handling {} {}", type.getSimpleName(), id);
-      } finally {
-        if (iterator != null) {
-          iterator.close();
-        }
-      }
-    }
-  }
-
-  // Relations are defined between primitive domain entities
-  // Map to a domain entity in the package from which an entity is requested
-  private EntityRef getEntityRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws StorageException, IOException {
-    String iname = reference.getType();
-    Class<? extends DomainEntity> type = TypeRegistry.toDomainEntity(typeRegistry.getTypeForIName(iname));
-    type = mapper.map(type);
-    iname = TypeNames.getInternalName(type);
-    String xname = typeRegistry.getXNameForIName(iname);
-    DomainEntity entity = getItem(type, reference.getId());
-
-    return new RelationEntityRef(iname, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
-  }
-
-  @Override
-  public <T extends Relation> StorageIterator<T> getRelationsForEntityId(Class<T> type, String id) {
-    DBObject query = DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id));
+  public <T extends Relation> StorageIterator<T> getRelationsByEntityId(Class<T> type, String id) {
+    DBObject query = queries.selectRelationsByEntityId(id);
     return getItems(type, query);
   }
 

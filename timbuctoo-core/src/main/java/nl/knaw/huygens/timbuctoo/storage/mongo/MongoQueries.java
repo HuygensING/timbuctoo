@@ -28,6 +28,8 @@ import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.Map;
 
+import org.mongojack.DBQuery;
+
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
@@ -98,8 +100,12 @@ public class MongoQueries {
     return new BasicDBObject(DomainEntity.VARIATIONS, name);
   }
 
-  public DBObject setProperty(String key, Object value) {
-    return new BasicDBObject("$set", new BasicDBObject(key, value));
+  /**
+   * Returns a query for selecting relations of an entity by using its id.
+   * This assumes that entity id's are unique over the various collections.
+   */
+  public DBObject selectRelationsByEntityId(String id) {
+    return DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id));
   }
 
 }

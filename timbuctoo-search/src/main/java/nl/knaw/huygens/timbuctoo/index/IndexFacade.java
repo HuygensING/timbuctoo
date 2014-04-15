@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.index;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -49,9 +48,8 @@ public class IndexFacade implements SearchManager, IndexManager {
     Class<? extends DomainEntity> baseType = baseTypeFor(type);
     List<? extends DomainEntity> variations = null;
 
-    try {
-      variations = storageManager.getAllVariations(baseType, id);
-    } catch (IOException e) {
+    variations = storageManager.getAllVariations(baseType, id);
+    if (variations == null || variations.isEmpty()) {
       throw new IndexException("Could not retrieve variations for type " + type + "with id " + id);
     }
 

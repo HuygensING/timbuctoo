@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.model;
+package nl.knaw.huygens.timbuctoo.util;
 
 /*
  * #%L
@@ -22,27 +22,13 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
-import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import java.util.Comparator;
 
-@IDPrefix("REGI")
-public class Signalementcode extends DomainEntity {
-
-  //  private String type;
-  private String value;
+public class ClassComparator implements Comparator<Class<?>> {
 
   @Override
-  public String getDisplayName() {
-    return value;
-  };
-
-  @IndexAnnotation(fieldName = "dynamic_t_value", isFaceted = true)
-  public String getValue() {
-    return value;
-  }
-
-  public void setValue(String value) {
-    this.value = value;
+  public int compare(Class<?> class1, Class<?> class2) {
+    return class1.getSimpleName().compareTo(class2.getSimpleName());
   }
 
 }
