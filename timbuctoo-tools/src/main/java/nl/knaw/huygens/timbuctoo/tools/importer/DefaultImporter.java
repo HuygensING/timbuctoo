@@ -115,8 +115,8 @@ public abstract class DefaultImporter {
   /** File with {@code RelationType} definitions; must be present on classpath. */
   private static final String RELATION_TYPE_DEFS = "relationtype-defs.txt";
 
-  protected void importRelationTypes() throws ValidationException {
-    new RelationTypeImporter(typeRegistry, storageManager).importRelationTypes(RELATION_TYPE_DEFS);
+  protected void importRelationTypes() throws IOException, ValidationException {
+    new RelationTypeImporter(storageManager).importRelationTypes(RELATION_TYPE_DEFS);
   }
 
   private int duplicateRelationCount = 0;

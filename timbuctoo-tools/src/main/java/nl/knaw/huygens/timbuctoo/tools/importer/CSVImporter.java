@@ -103,7 +103,7 @@ public abstract class CSVImporter {
    * Handles a parsed input line.
    * @throws ValidationException 
    */
-  protected abstract void handleLine(String[] items) throws ValidationException;
+  protected abstract void handleLine(String[] items) throws IOException, ValidationException;
 
   /**
    * Performa actions after file has been handled.

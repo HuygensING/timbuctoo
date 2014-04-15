@@ -40,7 +40,6 @@ import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMTekstdrager;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMWatermerk;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 import nl.knaw.huygens.timbuctoo.tools.importer.RelationTypeImporter;
@@ -52,7 +51,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -142,9 +140,9 @@ public class EBNMImporter extends DefaultImporter {
 
   private void setup(StorageManager storageManager) {
     try {
-      new RelationTypeImporter(typeRegistry, storageManager).importRelationTypes(RELATION_TYPE_DEFS);
-    } catch (ValidationException e) {
-      e.printStackTrace();
+      new RelationTypeImporter(storageManager).importRelationTypes(RELATION_TYPE_DEFS);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -211,18 +209,6 @@ public class EBNMImporter extends DefaultImporter {
 
     displayStatus();
     displayErrorSummary();
-  }
-
-  @Override
-  protected void printBoxedText(String text) {
-    String line = Strings.repeat("-", text.length() + 8);
-    System.out.println();
-    System.out.println(line);
-    System.out.print("--  ");
-    System.out.print(text);
-    System.out.println("  --");
-    System.out.println(line);
-    System.out.println();
   }
 
   // --- Documentatie ------------------------------------------------------
