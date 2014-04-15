@@ -23,18 +23,12 @@ package nl.knaw.huygens.timbuctoo.tools.importer.ebnm;
  */
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Reference;
-import nl.knaw.huygens.timbuctoo.model.dcar.DCARArchive;
-import nl.knaw.huygens.timbuctoo.model.dcar.DCARArchiver;
-import nl.knaw.huygens.timbuctoo.model.dcar.DCARLegislation;
-import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMDocumentatie;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMLexicon;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMPeriode;
@@ -169,11 +163,7 @@ public class EBNMImporter extends DefaultImporter {
 
     printBoxedText("1. Initialization");
 
-    displayStatus();
-
-    removeNonPersistentEnties(storageManager, indexManager);
-
-    displayStatus();
+    removeNonPersistentEntities(EBNMDocumentatie.class);
 
     System.out.printf("%n.. Setup relation types%n");
 
@@ -220,16 +210,7 @@ public class EBNMImporter extends DefaultImporter {
     printBoxedText("4. Indexing");
 
     displayStatus();
-
     displayErrorSummary();
-  }
-
-  private void removeNonPersistentEnties(StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
-    removeNonPersistentEntities(EBNMDocumentatie.class);
-    removeNonPersistentEntities(DCARPerson.class);
-    removeNonPersistentEntities(DCARArchive.class);
-    removeNonPersistentEntities(DCARArchiver.class);
-    removeNonPersistentEntities(DCARLegislation.class);
   }
 
   @Override

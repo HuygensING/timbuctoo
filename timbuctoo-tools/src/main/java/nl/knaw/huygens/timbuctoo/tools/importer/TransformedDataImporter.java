@@ -86,7 +86,7 @@ public class TransformedDataImporter extends DefaultImporter {
       Class<? extends Entity> type = typeRegistry.getTypeForIName(className);
 
       if (TypeRegistry.isDomainEntity(type)) {
-        super.removeNonPersistentEntities(TypeRegistry.toDomainEntity(type));
+        removeNonPersistentEntities(TypeRegistry.toDomainEntity(type));
         save(TypeRegistry.toDomainEntity(type), jsonFile, change);
       } else {
         LOG.error("{} is not a DomainEntity.", className);
