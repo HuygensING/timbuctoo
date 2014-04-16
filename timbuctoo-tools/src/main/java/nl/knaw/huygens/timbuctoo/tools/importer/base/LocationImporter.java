@@ -25,18 +25,17 @@ package nl.knaw.huygens.timbuctoo.tools.importer.base;
 import java.io.File;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.LineIterator;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Maps;
-
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 
 /**
  * Imports domain entities from a file with on each line a json object.
@@ -46,8 +45,8 @@ public class LocationImporter extends DefaultImporter {
   private final Change change;
   private final ObjectMapper objectMapper;
 
-  public LocationImporter(TypeRegistry typeRegistry, StorageManager storageManager, Change change) {
-    super(typeRegistry, storageManager, null);
+  public LocationImporter(StorageManager storageManager, Change change) {
+    super(storageManager, null);
     this.change = change;
     objectMapper = new ObjectMapper();
   }
@@ -92,4 +91,3 @@ public class LocationImporter extends DefaultImporter {
   }
 
 }
-

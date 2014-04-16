@@ -38,12 +38,9 @@ import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_SIBLING_ARCH
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.IS_CREATOR_OF;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Archive;
 import nl.knaw.huygens.timbuctoo.model.Archiver;
@@ -59,10 +56,12 @@ import nl.knaw.huygens.timbuctoo.model.dcar.DCARLegislation;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARRelation;
 import nl.knaw.huygens.timbuctoo.model.dcar.XRelated;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
 import nl.knaw.huygens.timbuctoo.util.Files;
 
@@ -88,7 +87,7 @@ import com.google.inject.Injector;
  * Note that the Mongo database and the Solr index are built from scratch, any existing data is deleted.
  * Future versions of this importer must use a more subtle approach.
  */
-public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
+public class DutchCaribbeanImporter extends DefaultImporter {
 
   private static final Logger LOG = LoggerFactory.getLogger(DutchCaribbeanImporter.class);
 
@@ -110,8 +109,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
       storageManager = injector.getInstance(StorageManager.class);
       indexManager = injector.getInstance(IndexManager.class);
 
-      TypeRegistry registry = injector.getInstance(TypeRegistry.class);
-      new DutchCaribbeanImporter(registry, storageManager, indexManager, importDirName).importAll();
+      new DutchCaribbeanImporter(storageManager, indexManager, importDirName).importAll();
 
     } catch (Exception e) {
       // for debugging
@@ -122,7 +120,6 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
         indexManager.close();
       }
       if (storageManager != null) {
-        storageManager.logCacheStats();
         storageManager.close();
       }
       LOG.info("Time used: {}", stopWatch);
@@ -135,6 +132,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
 
   private static final String[] JSON_EXTENSION = { "json" };
 
+  private final Change change;
   private final ObjectMapper objectMapper;
   private final File inputDir;
 
@@ -158,8 +156,9 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
   private Reference hasSiblingArchive;
   private Reference hasSiblingArchiver;
 
-  public DutchCaribbeanImporter(TypeRegistry registry, StorageManager storageManager, IndexManager indexManager, String inputDirName) {
-    super(registry, storageManager, indexManager);
+  public DutchCaribbeanImporter(StorageManager storageManager, IndexManager indexManager, String inputDirName) {
+    super(storageManager, indexManager);
+    change = new Change("importer", "dcar");
     objectMapper = new ObjectMapper();
     inputDir = new File(inputDirName);
     System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());
@@ -180,14 +179,13 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
 
     printBoxedText("1. Initialization");
 
-    displayStatus();
-
-    removeNonPersistentEnties(storageManager, indexManager);
-
-    displayStatus();
+    removeNonPersistentEntities(DCARKeyword.class);
+    removeNonPersistentEntities(DCARPerson.class);
+    removeNonPersistentEntities(DCARArchive.class);
+    removeNonPersistentEntities(DCARArchiver.class);
+    removeNonPersistentEntities(DCARLegislation.class);
 
     System.out.printf("%n.. Setup relation types%n");
-    // FIXME system entities shouldn't have been removed!
     importRelationTypes();
     setupRelationTypes();
 
@@ -233,16 +231,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
     indexEntities(DCARArchiver.class);
 
     displayStatus();
-
     displayErrorSummary();
-  }
-
-  private void removeNonPersistentEnties(StorageManager storageManager, IndexManager indexManager) throws IOException, IndexException {
-    removeNonPersistentEntities(DCARKeyword.class);
-    removeNonPersistentEntities(DCARPerson.class);
-    removeNonPersistentEntities(DCARArchive.class);
-    removeNonPersistentEntities(DCARArchiver.class);
-    removeNonPersistentEntities(DCARLegislation.class);
   }
 
   // --- relations -----------------------------------------------------
@@ -303,7 +292,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
         handleError("[%s] Duplicate keyword id %s", KEYWORD_FILE, jsonId);
       } else {
         DCARKeyword keyword = convert(xkeyword);
-        String storedId = addDomainEntity(DCARKeyword.class, keyword);
+        String storedId = addDomainEntity(DCARKeyword.class, keyword, change);
         referenceMap.put(jsonId, new Reference(Keyword.class, storedId));
       }
     }
@@ -346,7 +335,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
         handleError("[%s] Duplicate person id %s", PERSON_FILE, jsonId);
       } else {
         DCARPerson person = convert(xperson);
-        String storedId = addDomainEntity(DCARPerson.class, person);
+        String storedId = addDomainEntity(DCARPerson.class, person, change);
         referenceMap.put(jsonId, new Reference(Person.class, storedId));
       }
     }
@@ -398,7 +387,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
           handleError("[%s] Duplicate 'wetgeving' id %s", file.getName(), jsonId);
         } else {
           DCARLegislation legislation = convert(wetgeving);
-          String storedId = addDomainEntity(DCARLegislation.class, legislation);
+          String storedId = addDomainEntity(DCARLegislation.class, legislation, change);
           referenceMap.put(jsonId, new Reference(Legislation.class, storedId));
         }
       }
@@ -473,7 +462,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
           handleError("[%s] Duplicate 'archiefmat' id %s", file.getName(), jsonId);
         } else {
           DCARArchive archive = convert(archiefmat);
-          String storedId = addDomainEntity(DCARArchive.class, archive);
+          String storedId = addDomainEntity(DCARArchive.class, archive, change);
           referenceMap.put(jsonId, new Reference(Archive.class, storedId));
         }
       }
@@ -569,7 +558,7 @@ public class DutchCaribbeanImporter extends DutchCaribbeanDefaultImporter {
           handleError("[%s] Duplicate 'creator' id %s", file.getName(), jsonId);
         } else {
           DCARArchiver archiver = convert(creator);
-          String storedId = addDomainEntity(DCARArchiver.class, archiver);
+          String storedId = addDomainEntity(DCARArchiver.class, archiver, change);
           referenceMap.put(jsonId, new Reference(Archiver.class, storedId));
         }
       }

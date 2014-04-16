@@ -26,80 +26,47 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Imports all relation types.
+ * Relies on the storage manager for validation.
  */
 public class RelationTypeImporter extends CSVImporter {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RelationTypeImporter.class);
-
   private static final String REGULAR_NAME = FieldMapper.propertyName(RelationType.class, "regularName");
 
-  private final TypeRegistry registry;
   private final StorageManager storageManager;
 
-  public RelationTypeImporter(TypeRegistry registry, StorageManager manager) {
+  public RelationTypeImporter(StorageManager manager) {
     super(new PrintWriter(System.err), ';', '"', 4);
-    this.registry = registry;
     this.storageManager = manager;
   }
 
   /**
-   * Reads {@code RelationType} definitions from the specified file which must be present on the classpath.
+   * Reads {@code RelationType} definitions from the specified file which must
+   * be present on the classpath.
    */
-  public void importRelationTypes(String fileName) throws ValidationException {
-    try {
-      InputStream stream = StorageManager.class.getClassLoader().getResourceAsStream(fileName);
-      handleFile(stream, 6, false);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  public void importRelationTypes(String fileName) throws IOException, ValidationException {
+    InputStream stream = StorageManager.class.getClassLoader().getResourceAsStream(fileName);
+    handleFile(stream, 6, false);
   }
 
   @Override
-  protected void handleLine(String[] items) throws ValidationException {
-    String regularName = items[0];
-    String inverseName = items[1];
-    Class<? extends DomainEntity> sourceType = convertToType(items[2]);
-    Class<? extends DomainEntity> targetType = convertToType(items[3]);
-    boolean reflexive = Boolean.parseBoolean(items[4]);
-    boolean symmetric = Boolean.parseBoolean(items[5]);
-
-    // FIXME neither the regular name nor the inverse name should exist
-    if (storageManager.findEntity(RelationType.class, REGULAR_NAME, regularName) == null) {
-      RelationType type = new RelationType(regularName, inverseName, sourceType, targetType, reflexive, symmetric);
-      try {
-        storageManager.addSystemEntity(RelationType.class, type);
-      } catch (IOException e) {
-        LOG.error("Failed to add {}", type);
-        throw new ValidationException("Failed to add RelationType");
-      }
+  protected void handleLine(String[] items) throws IOException, ValidationException {
+    RelationType entity = new RelationType();
+    entity.setRegularName(items[0]);
+    entity.setInverseName(items[1]);
+    entity.setSourceTypeName(items[2].toLowerCase());
+    entity.setTargetTypeName(items[3].toLowerCase());
+    entity.setReflexive(Boolean.parseBoolean(items[4]));
+    entity.setSymmetric(Boolean.parseBoolean(items[5]));
+    if (storageManager.findEntity(RelationType.class, REGULAR_NAME, entity.getRegularName()) == null) {
+      storageManager.addSystemEntity(RelationType.class, entity);
     }
-  }
-
-  private Class<? extends DomainEntity> convertToType(String typeName) throws ValidationException {
-    String iname = typeName.toLowerCase();
-    Class<? extends Entity> type = registry.getTypeForIName(iname);
-    if (type == null) {
-      LOG.error("Name '{}' is not a registered entity", typeName);
-      throw new ValidationException("Invalid entity type");
-    }
-    if (!TypeRegistry.isDomainEntity(type)) {
-      LOG.error("Name '{}' is not a domain entity", typeName);
-      throw new ValidationException("Invalid entity type");
-    }
-    return TypeRegistry.toDomainEntity(type);
   }
 
 }

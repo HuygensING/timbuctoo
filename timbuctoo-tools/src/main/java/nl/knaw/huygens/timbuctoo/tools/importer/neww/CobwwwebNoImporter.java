@@ -39,7 +39,6 @@ import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -55,13 +54,11 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
 import org.restlet.data.MediaType;
-import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,12 +91,13 @@ public class CobwwwebNoImporter extends DefaultImporter {
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
     StorageManager storageManager = null;
+    IndexManager indexManager = null;
 
     try {
-      TypeRegistry registry = injector.getInstance(TypeRegistry.class);
       storageManager = injector.getInstance(StorageManager.class);
+      indexManager = injector.getInstance(IndexManager.class);
 
-      CobwwwebNoImporter importer = new CobwwwebNoImporter(registry, storageManager, null);
+      CobwwwebNoImporter importer = new CobwwwebNoImporter(storageManager, indexManager);
       importer.importAll();
 
     } catch (Exception e) {
@@ -107,13 +105,13 @@ public class CobwwwebNoImporter extends DefaultImporter {
       e.printStackTrace();
     } finally {
       // Close resources
+      if (indexManager != null) {
+        indexManager.close();
+      }
       if (storageManager != null) {
-        storageManager.logCacheStats();
         storageManager.close();
       }
       LOG.info("Time used: {}", stopWatch);
-      // Close explicitly to terminate finalizer thread of Guice
-      System.exit(0);
     }
   }
 
@@ -124,10 +122,10 @@ public class CobwwwebNoImporter extends DefaultImporter {
   private final Map<String, Reference> relationTypes = Maps.newHashMap();
   /** References of stored primitive entities */
   private final Map<String, Reference> references = Maps.newHashMap();
-  private Writer importLog = null;
+  private Writer importLog;
 
-  public CobwwwebNoImporter(TypeRegistry registry, StorageManager storageManager, IndexManager indexManager) {
-    super(registry, storageManager, indexManager);
+  public CobwwwebNoImporter(StorageManager storageManager, IndexManager indexManager) {
+    super(storageManager, indexManager);
     change = new Change("importer", "neww");
   }
 
@@ -136,12 +134,14 @@ public class CobwwwebNoImporter extends DefaultImporter {
       importLog = newWriter("cobwwweb-log.txt");
 
       importRelationTypes();
-      setupRelationDefs();
+      setupRelationTypeRefs();
 
       importPersons();
       importDocuments();
       importRelations();
 
+      displayStatus();
+      displayErrorSummary();
     } finally {
       if (importLog != null) {
         importLog.close();
@@ -165,10 +165,8 @@ public class CobwwwebNoImporter extends DefaultImporter {
     }
   }
 
-  private void setupRelationDefs() {
-    StorageIterator<RelationType> iterator = storageManager.getAll(RelationType.class);
-    while (iterator.hasNext()) {
-      RelationType type = iterator.next();
+  private void setupRelationTypeRefs() {
+    for (RelationType type : storageManager.getRelationTypeMap().values()) {
       relationTypes.put(type.getRegularName(), new Reference(RelationType.class, type.getId()));
     }
   }
@@ -177,8 +175,7 @@ public class CobwwwebNoImporter extends DefaultImporter {
     String url = Joiner.on("/").join(parts);
     log("-- %s%n", url);
     ClientResource resource = new ClientResource(url);
-    Representation representation = resource.get(MediaType.APPLICATION_XML);
-    return representation.getText();
+    return resource.get(MediaType.APPLICATION_XML).getText();
   }
 
   private Reference storeReference(String key, Class<? extends DomainEntity> type, String id) {
@@ -188,17 +185,6 @@ public class CobwwwebNoImporter extends DefaultImporter {
       System.exit(-1);
     }
     return reference;
-  }
-
-  private static final String PERSON_OLD_ID = FieldMapper.propertyName(WWPerson.class, "tempOldId");
-  private static final String DOCUMENT_OLD_ID = FieldMapper.propertyName(WWDocument.class, "tempOldId");
-
-  public WWPerson getWWPersonByOldId(String id) {
-    return storageManager.findEntity(WWPerson.class, PERSON_OLD_ID, id);
-  }
-
-  public WWDocument getWWDocumentByOldId(String id) {
-    return storageManager.findEntity(WWDocument.class, DOCUMENT_OLD_ID, id);
   }
 
   /**
@@ -291,6 +277,8 @@ public class CobwwwebNoImporter extends DefaultImporter {
         storedId = createNewPerson(entity);
       }
       storeReference(id, CWNOPerson.class, storedId);
+      indexManager.addEntity(CWNOPerson.class, storedId);
+      indexManager.updateEntity(WWPerson.class, storedId);
     }
   }
 
@@ -318,7 +306,7 @@ public class CobwwwebNoImporter extends DefaultImporter {
     return storedId;
   }
 
-  // Save as CWNOPerson, add WWPerson variantion
+  // Save as CWNOPerson, add WWPerson variation
   private String createNewPerson(CWNOPerson entity) {
     String storedId = addDomainEntity(CWNOPerson.class, entity, change);
     WWPerson person = storageManager.getEntity(WWPerson.class, storedId);
@@ -484,8 +472,13 @@ public class CobwwwebNoImporter extends DefaultImporter {
     for (String id : documentIds) {
       xml = getResource(URL, "document", id);
       CWNODocument entity = parseDocumentResource(xml, id);
-      String storedId = addDomainEntity(CWNODocument.class, entity, change);
+      String storedId = updateExistingDocument(entity);
+      if (storedId == null) {
+        storedId = createNewDocument(entity);
+      }
       storeReference(id, CWNODocument.class, storedId);
+      indexManager.addEntity(CWNODocument.class, storedId);
+      indexManager.updateEntity(WWDocument.class, storedId);
     }
   }
 
@@ -494,6 +487,31 @@ public class CobwwwebNoImporter extends DefaultImporter {
     DocumentContext context = new DocumentContext(id);
     document.accept(new DocumentVisitor(context));
     return context.document;
+  }
+
+  // Retrieve existing WWDocument, add CWNODocument variation
+  private String updateExistingDocument(CWNODocument entity) {
+    String storedId = null;
+    if (!Strings.isNullOrEmpty(entity.tempNewwId)) {
+      String key = FieldMapper.propertyName(WWDocument.class, "tempOldId");
+      WWDocument document = storageManager.findEntity(WWDocument.class, key, entity.tempNewwId);
+      if (document != null) {
+        storedId = document.getId();
+        entity.setId(storedId);
+        entity.setRev(document.getRev());
+        updateDomainEntity(CWNODocument.class, entity, change);
+        log("Updated document with id %s%n", storedId);
+      }
+    }
+    return storedId;
+  }
+
+  // Save as CWNODocument, add WWDocument variation
+  private String createNewDocument(CWNODocument entity) {
+    String storedId = addDomainEntity(CWNODocument.class, entity, change);
+    WWDocument document = storageManager.getEntity(WWDocument.class, storedId);
+    updateDomainEntity(WWDocument.class, document, change);
+    return storedId;
   }
 
   private class DocumentContext extends XmlContext {
