@@ -41,7 +41,6 @@ import java.io.File;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Archive;
 import nl.knaw.huygens.timbuctoo.model.Archiver;
@@ -110,8 +109,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
       storageManager = injector.getInstance(StorageManager.class);
       indexManager = injector.getInstance(IndexManager.class);
 
-      TypeRegistry registry = injector.getInstance(TypeRegistry.class);
-      new DutchCaribbeanImporter(registry, storageManager, indexManager, importDirName).importAll();
+      new DutchCaribbeanImporter(storageManager, indexManager, importDirName).importAll();
 
     } catch (Exception e) {
       // for debugging
@@ -122,7 +120,6 @@ public class DutchCaribbeanImporter extends DefaultImporter {
         indexManager.close();
       }
       if (storageManager != null) {
-        storageManager.logCacheStats();
         storageManager.close();
       }
       LOG.info("Time used: {}", stopWatch);
@@ -159,8 +156,8 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private Reference hasSiblingArchive;
   private Reference hasSiblingArchiver;
 
-  public DutchCaribbeanImporter(TypeRegistry registry, StorageManager storageManager, IndexManager indexManager, String inputDirName) {
-    super(registry, storageManager, indexManager);
+  public DutchCaribbeanImporter(StorageManager storageManager, IndexManager indexManager, String inputDirName) {
+    super(storageManager, indexManager);
     change = new Change("importer", "dcar");
     objectMapper = new ObjectMapper();
     inputDir = new File(inputDirName);

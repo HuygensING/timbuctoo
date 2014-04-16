@@ -72,8 +72,11 @@ public class TransformedDataImporter extends DefaultImporter {
     new TransformedDataImporter(storageManager, registry, indexManager).importData(dataPath);
   }
 
+  private final TypeRegistry typeRegistry;
+
   public TransformedDataImporter(StorageManager storageManager, TypeRegistry typeRegistry, IndexManager indexManager) {
-    super(typeRegistry, storageManager, indexManager);
+    super(storageManager, indexManager);
+    this.typeRegistry = typeRegistry;
   }
 
   protected void importData(String dataPath) throws IOException, IndexException, JsonParseException, JsonMappingException, ClassCastException, ValidationException {
@@ -116,4 +119,5 @@ public class TransformedDataImporter extends DefaultImporter {
       indexManager.addEntity(type, id);
     }
   }
+
 }

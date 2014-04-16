@@ -31,7 +31,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document;
@@ -97,11 +96,10 @@ public class WomenWritersImporter extends DefaultImporter {
     IndexManager indexManager = null;
 
     try {
-      TypeRegistry registry = injector.getInstance(TypeRegistry.class);
       storageManager = injector.getInstance(StorageManager.class);
       indexManager = injector.getInstance(IndexManager.class);
 
-      WomenWritersImporter importer = new WomenWritersImporter(registry, storageManager, indexManager, directory);
+      WomenWritersImporter importer = new WomenWritersImporter(storageManager, indexManager, directory);
       importer.importAll();
 
     } catch (Exception e) {
@@ -113,7 +111,6 @@ public class WomenWritersImporter extends DefaultImporter {
         indexManager.close();
       }
       if (storageManager != null) {
-        storageManager.logCacheStats();
         storageManager.close();
       }
       LOG.info("Time used: {}", stopWatch);
@@ -133,8 +130,8 @@ public class WomenWritersImporter extends DefaultImporter {
   private final File inputDir;
   private final Change change;
 
-  public WomenWritersImporter(TypeRegistry registry, StorageManager storageManager, IndexManager indexManager, String inputDirName) {
-    super(registry, storageManager, indexManager);
+  public WomenWritersImporter(StorageManager storageManager, IndexManager indexManager, String inputDirName) {
+    super(storageManager, indexManager);
     objectMapper = new ObjectMapper();
     inputDir = new File(inputDirName);
     if (inputDir.isDirectory()) {

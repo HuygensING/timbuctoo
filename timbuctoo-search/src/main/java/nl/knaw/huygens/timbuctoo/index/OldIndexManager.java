@@ -145,8 +145,8 @@ public class OldIndexManager implements IndexManager {
     try {
       for (Scope scope : scopes) {
         if (!ids.isEmpty()) {
-          String coreName = getCoreName(scope, type);
-          //It is needed to check if the core exists. If it does not exist an exception will be thrown.
+          String coreName = getCoreName(scope, toDomainEntity(registry.getBaseClass(type)));
+          // It is needed to check if the core exists. If it does not exist an exception will be thrown.
           if (server.coreExits(coreName)) {
             server.deleteById(coreName, ids);
           }

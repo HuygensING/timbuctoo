@@ -39,7 +39,6 @@ import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -95,11 +94,10 @@ public class CobwwwebNoImporter extends DefaultImporter {
     IndexManager indexManager = null;
 
     try {
-      TypeRegistry registry = injector.getInstance(TypeRegistry.class);
       storageManager = injector.getInstance(StorageManager.class);
       indexManager = injector.getInstance(IndexManager.class);
 
-      CobwwwebNoImporter importer = new CobwwwebNoImporter(registry, storageManager, indexManager);
+      CobwwwebNoImporter importer = new CobwwwebNoImporter(storageManager, indexManager);
       importer.importAll();
 
     } catch (Exception e) {
@@ -111,7 +109,6 @@ public class CobwwwebNoImporter extends DefaultImporter {
         indexManager.close();
       }
       if (storageManager != null) {
-        storageManager.logCacheStats();
         storageManager.close();
       }
       LOG.info("Time used: {}", stopWatch);
@@ -127,8 +124,8 @@ public class CobwwwebNoImporter extends DefaultImporter {
   private final Map<String, Reference> references = Maps.newHashMap();
   private Writer importLog;
 
-  public CobwwwebNoImporter(TypeRegistry registry, StorageManager storageManager, IndexManager indexManager) {
-    super(registry, storageManager, indexManager);
+  public CobwwwebNoImporter(StorageManager storageManager, IndexManager indexManager) {
+    super(storageManager, indexManager);
     change = new Change("importer", "neww");
   }
 

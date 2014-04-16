@@ -82,6 +82,7 @@ public class StorageManager {
    * Closes the data store.
    */
   public void close() {
+    logCacheStats();
     storage.close();
   }
 

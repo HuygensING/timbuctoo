@@ -26,7 +26,6 @@ import java.io.File;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMDocumentatie;
@@ -89,8 +88,7 @@ public class EBNMImporter extends DefaultImporter {
       storageManager = injector.getInstance(StorageManager.class);
       indexManager = injector.getInstance(IndexManager.class);
 
-      TypeRegistry registry = injector.getInstance(TypeRegistry.class);
-      new EBNMImporter(registry, null, indexManager, importDirName).importAll();
+      new EBNMImporter(storageManager, indexManager, importDirName).importAll();
 
     } catch (Exception e) {
       // for debugging
@@ -101,7 +99,6 @@ public class EBNMImporter extends DefaultImporter {
         indexManager.close();
       }
       if (storageManager != null) {
-        storageManager.logCacheStats();
         storageManager.close();
       }
       LOG.info("Time used: {}", stopWatch);
@@ -126,8 +123,8 @@ public class EBNMImporter extends DefaultImporter {
   private final Map<String, Reference> signalementcodeRefMap = Maps.newHashMap();
   private final Map<String, Reference> watermerkRefMap = Maps.newHashMap();
 
-  public EBNMImporter(TypeRegistry registry, StorageManager storageManager, IndexManager indexManager, String inputDirName) {
-    super(registry, storageManager, indexManager);
+  public EBNMImporter(StorageManager storageManager, IndexManager indexManager, String inputDirName) {
+    super(storageManager, indexManager);
     objectMapper = new ObjectMapper();
     inputDir = new File(inputDirName);
     System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());

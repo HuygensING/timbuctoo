@@ -48,12 +48,10 @@ import com.google.common.base.Strings;
  */
 public abstract class DefaultImporter {
 
-  protected final TypeRegistry typeRegistry;
   protected final StorageManager storageManager;
   protected final IndexManager indexManager;
 
-  public DefaultImporter(TypeRegistry typeRegistry, StorageManager storageManager, IndexManager indexManager) {
-    this.typeRegistry = typeRegistry;
+  public DefaultImporter(StorageManager storageManager, IndexManager indexManager) {
     this.storageManager = storageManager;
     this.indexManager = indexManager;
   }
@@ -148,11 +146,9 @@ public abstract class DefaultImporter {
    * Deletes the non persisted entity's of {@code type} and it's relations from the storage and the index.
    */
   protected void removeNonPersistentEntities(Class<? extends DomainEntity> type) throws IOException, IndexException {
-    Class<? extends DomainEntity> baseType = TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type));
-
     List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
     storageManager.deleteNonPersistent(type, ids);
-    indexManager.deleteEntities(baseType, ids);
+    indexManager.deleteEntities(type, ids);
 
     List<String> relationIds = storageManager.getRelationIds(ids);
     storageManager.deleteNonPersistent(Relation.class, relationIds);

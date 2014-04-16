@@ -24,11 +24,7 @@ package nl.knaw.huygens.timbuctoo.tools.importer.base;
 
 import java.io.File;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
@@ -36,6 +32,9 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Stopwatch;
 import com.google.inject.Guice;
@@ -80,12 +79,11 @@ public class BaseImporter extends DefaultImporter {
     IndexManager indexManager = null;
 
     try {
-      TypeRegistry registry = injector.getInstance(TypeRegistry.class);
       storageManager = injector.getInstance(StorageManager.class);
       indexManager = injector.getInstance(IndexManager.class);
 
       // Get rid of existing stuff
-      BaseImporter baseImporter = new BaseImporter(registry, storageManager, indexManager);
+      BaseImporter baseImporter = new BaseImporter(storageManager, indexManager);
       baseImporter.removeNonPersistentEntities(BaseLanguage.class);
       baseImporter.removeNonPersistentEntities(BaseLocation.class);
 
@@ -93,7 +91,7 @@ public class BaseImporter extends DefaultImporter {
       new LanguageImporter(storageManager, change).handleFile(languageFile, 0, false);
 
       baseImporter.printBoxedText("Import locations");
-      new LocationImporter(registry, storageManager, change).handleFile(locationFile);
+      new LocationImporter(storageManager, change).handleFile(locationFile);
 
       baseImporter.printBoxedText("Indexing");
       baseImporter.indexEntities(BaseLanguage.class);
@@ -108,7 +106,6 @@ public class BaseImporter extends DefaultImporter {
         indexManager.close();
       }
       if (storageManager != null) {
-        storageManager.logCacheStats();
         storageManager.close();
       }
       LOG.info("Time used: {}", stopWatch);
@@ -119,8 +116,8 @@ public class BaseImporter extends DefaultImporter {
 
   // ---------------------------------------------------------------------------
 
-  public BaseImporter(TypeRegistry typeRegistry, StorageManager storageManager, IndexManager indexManager) {
-    super(typeRegistry, storageManager, indexManager);
+  public BaseImporter(StorageManager storageManager, IndexManager indexManager) {
+    super(storageManager, indexManager);
   }
 
 }
