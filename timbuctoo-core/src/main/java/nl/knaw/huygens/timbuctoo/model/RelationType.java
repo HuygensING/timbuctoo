@@ -23,7 +23,6 @@ package nl.knaw.huygens.timbuctoo.model;
  */
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -54,21 +53,7 @@ public class RelationType extends SystemEntity {
   /** If source and target types are the same, does relation(A,B) imply relation(B,A)? */
   private boolean symmetric;
 
-  // For deserialization...
   public RelationType() {}
-
-  public RelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType, boolean reflexive, boolean symmetric) {
-    this.regularName = regularName;
-    this.inverseName = inverseName;
-    this.sourceTypeName = TypeNames.getInternalName(sourceType);
-    this.targetTypeName = TypeNames.getInternalName(targetType);
-    this.reflexive = reflexive;
-    this.symmetric = symmetric;
-  }
-
-  public RelationType(String regularName, String inverseName, Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) {
-    this(regularName, inverseName, sourceType, targetType, false, false);
-  }
 
   @Override
   public String getDisplayName() {
