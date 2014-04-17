@@ -66,6 +66,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -274,13 +275,15 @@ public class CobwwwebRsImporter extends DefaultImporter {
     for (String id : personIds) {
       xml = getResource(URL, "person", id);
       CWRSPerson entity = parsePersonResource(xml, id);
-      String storedId = updateExistingPerson(entity);
-      if (storedId == null) {
-        storedId = createNewPerson(entity);
+      if (accept(entity)) {
+        String storedId = updateExistingPerson(entity);
+        if (storedId == null) {
+          storedId = createNewPerson(entity);
+        }
+        storeReference(id, CWRSPerson.class, storedId);
+        //indexManager.addEntity(CWRSPerson.class, storedId);
+        //indexManager.updateEntity(WWPerson.class, storedId);
       }
-      storeReference(id, CWRSPerson.class, storedId);
-      //indexManager.addEntity(CWRSPerson.class, storedId);
-      //indexManager.updateEntity(WWPerson.class, storedId);
     }
   }
 
@@ -289,6 +292,15 @@ public class CobwwwebRsImporter extends DefaultImporter {
     PersonContext context = new PersonContext(xml, id);
     document.accept(new PersonVisitor(context));
     return context.person;
+  }
+
+  private boolean accept(CWRSPerson entity) {
+    List<PersonName> names = entity.getNames();
+    if (names.size() == 1 && names.get(0).getFullName().equalsIgnoreCase("Anonymous")) {
+      // TODO register this one, in order to ignore relations
+      return false;
+    }
+    return true;
   }
 
   // Retrieve existing WWPerson, add CWRSPerson variation
@@ -345,6 +357,7 @@ public class CobwwwebRsImporter extends DefaultImporter {
       addElementHandler(new PlaceOfDeathHandler(), "placeOfDeath");
       addElementHandler(new NameHandler(), "names");
       addElementHandler(new NameComponentHandler(), "forename", "surname");
+      addElementHandler(new PersNameHandler(), "persName");
       addElementHandler(new PersonLanguagesHandler(), "languages");
       addElementHandler(new PersonLinkHandler(), "reference");
     }
@@ -429,6 +442,20 @@ public class CobwwwebRsImporter extends DefaultImporter {
     @Override
     public void handleContent(String text, PersonContext context) {
       context.person.tempDeathPlace = text;
+    }
+  }
+
+  private class PersNameHandler extends CaptureHandler<PersonContext> {
+    @Override
+    public void handleContent(String text, PersonContext context) {
+      List<String> words = Splitter.on(' ').splitToList(text);
+      int n = words.size();
+      if (n > 0) {
+        for (int i = 0; i < n - 1; i++) {
+          context.personName.addNameComponent(PersonNameComponent.Type.FORENAME, words.get(i));
+        }
+        context.personName.addNameComponent(PersonNameComponent.Type.SURNAME, words.get(n - 1));
+      }
     }
   }
 
