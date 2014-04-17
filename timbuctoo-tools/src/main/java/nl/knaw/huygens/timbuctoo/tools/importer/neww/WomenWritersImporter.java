@@ -771,7 +771,7 @@ public class WomenWritersImporter extends DefaultImporter {
           } else {
             String code = mapName(map, name);
             // Get WWLanguage instance with values of primitive entity Language
-            WWLanguage language = storageManager.findEntity(WWLanguage.class, "^code", code);
+            WWLanguage language = storageManager.getLanguageByCode(WWLanguage.class, code);
             if (language == null) {
               verifyNonEmptyField(line, "name", null);
             } else {

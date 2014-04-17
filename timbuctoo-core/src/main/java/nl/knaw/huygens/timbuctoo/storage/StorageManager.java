@@ -39,6 +39,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.EntityRef;
+import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationEntityRef;
@@ -385,6 +386,12 @@ public class StorageManager {
     DomainEntity entity = storage.getItem(type, reference.getId());
 
     return new RelationEntityRef(iname, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
+  }
+
+  // --- languages -------------------------------------------------------------
+
+  public <T extends Language> T getLanguageByCode(Class<T> type, String code) {
+    return findEntity(type, Language.CODE, code);
   }
 
 }
