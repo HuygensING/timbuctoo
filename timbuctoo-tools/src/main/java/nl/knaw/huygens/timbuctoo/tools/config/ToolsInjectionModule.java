@@ -22,30 +22,37 @@ package nl.knaw.huygens.timbuctoo.tools.config;
  * #L%
  */
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import org.apache.commons.configuration.ConfigurationException;
+
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.index.OldIndexManager;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A class to make it possible to use Guice @see http://code.google.com/p/google-guice . 
  */
 public class ToolsInjectionModule extends BasicInjectionModule {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ToolsInjectionModule.class);
+  /**
+   * Creates a configured repository instance.
+   */
+  public static Repository createRepositoryInstance() throws ConfigurationException {
+    Configuration config = new Configuration("config.xml");
+    Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
+    return injector.getInstance(Repository.class);
+  }
 
   public ToolsInjectionModule(Configuration config) {
     super(config);
-    LOG.info("In constructor");
   }
 
   @Override
   protected void configure() {
     super.configure();
-
     bind(IndexManager.class).to(OldIndexManager.class);
   }
 
