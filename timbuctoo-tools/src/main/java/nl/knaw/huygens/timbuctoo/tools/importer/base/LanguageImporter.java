@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Set;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -65,9 +66,9 @@ public class LanguageImporter extends CSVImporter {
   private int totalCount;
   private int coreCount;
 
-  public LanguageImporter(StorageManager storageManager, Change change) {
+  public LanguageImporter(Repository repository, Change change) {
     super(new PrintWriter(System.err), SEPERATOR_CHAR, QUOTE_CHAR, LINES_TO_SKIP);
-    this.storageManager = storageManager;
+    storageManager = repository.getStorageManager();
     this.change = change;
   }
 

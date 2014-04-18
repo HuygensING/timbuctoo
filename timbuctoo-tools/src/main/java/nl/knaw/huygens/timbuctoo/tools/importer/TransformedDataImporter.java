@@ -27,18 +27,15 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
-import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 
-import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,37 +43,25 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 
 /**
  * This importer uses json-files created by the {@code BulkDataTransformer}, to import into a database.
  * This json-files are named like {internal class name}.json. The structure of the classes in these 
  * files should be the same as the structure that is communicated with client applications.
- *
  */
 public class TransformedDataImporter extends DefaultImporter {
 
   private static final Logger LOG = LoggerFactory.getLogger(TransformedDataImporter.class);
 
-  public static void main(String[] args) throws ConfigurationException, ClassNotFoundException, IndexException, JsonParseException, JsonMappingException, IOException, ClassCastException,
-      ValidationException {
-    Configuration config = new Configuration("config.xml");
-    Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
-
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
-    IndexManager indexManager = injector.getInstance(IndexManager.class);
-    TypeRegistry registry = injector.getInstance(TypeRegistry.class);
-
+  public static void main(String[] args) throws Exception {
     String dataPath = args.length > 0 ? args[0] : "src/main/resources/testdata";
-    new TransformedDataImporter(storageManager, registry, indexManager).importData(dataPath);
+ 
+    Repository repository = ToolsInjectionModule.createRepositoryInstance();
+    new TransformedDataImporter(repository).importData(dataPath);
   }
 
-  private final TypeRegistry typeRegistry;
-
-  public TransformedDataImporter(StorageManager storageManager, TypeRegistry typeRegistry, IndexManager indexManager) {
-    super(storageManager, indexManager);
-    this.typeRegistry = typeRegistry;
+  public TransformedDataImporter(Repository repository) {
+    super(repository);
   }
 
   protected void importData(String dataPath) throws IOException, IndexException, JsonParseException, JsonMappingException, ClassCastException, ValidationException {
@@ -86,7 +71,7 @@ public class TransformedDataImporter extends DefaultImporter {
 
     for (File jsonFile : jsonFiles) {
       String className = jsonFile.getName().substring(0, jsonFile.getName().indexOf('.'));
-      Class<? extends Entity> type = typeRegistry.getTypeForIName(className);
+      Class<? extends Entity> type = repository.getTypeRegistry().getTypeForIName(className);
 
       if (TypeRegistry.isDomainEntity(type)) {
         removeNonPersistentEntities(TypeRegistry.toDomainEntity(type));
@@ -96,8 +81,7 @@ public class TransformedDataImporter extends DefaultImporter {
       }
     }
 
-    storageManager.close();
-    indexManager.close();
+    repository.close();
   }
 
   protected File[] getJsonFiles(String dataPath) {

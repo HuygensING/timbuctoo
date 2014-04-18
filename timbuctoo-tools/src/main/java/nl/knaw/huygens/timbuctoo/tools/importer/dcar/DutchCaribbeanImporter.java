@@ -40,8 +40,7 @@ import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.IS_CREATOR_OF;
 import java.io.File;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Archive;
 import nl.knaw.huygens.timbuctoo.model.Archiver;
 import nl.knaw.huygens.timbuctoo.model.Keyword;
@@ -59,7 +58,6 @@ import nl.knaw.huygens.timbuctoo.model.dcar.XRelated;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
@@ -73,19 +71,12 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 
 /**
  * Imports data of the "Dutch Caribbean" project.
  * 
  * Usage:
- *  java  -cp  [specs]  ${package-name}.DutchCaribbeanImporter  importDirName  configFileName
- * 
- * The commandline arguments are optional.
- * 
- * Note that the Mongo database and the Solr index are built from scratch, any existing data is deleted.
- * Future versions of this importer must use a more subtle approach.
+ *  java  -cp  [specs]  ${package-name}.DutchCaribbeanImporter  [importDirName]
  */
 public class DutchCaribbeanImporter extends DefaultImporter {
 
@@ -96,27 +87,16 @@ public class DutchCaribbeanImporter extends DefaultImporter {
 
     // Handle commandline arguments
     String importDirName = (args.length > 0) ? args[0] : "../../AtlantischeGids/work/";
-    String configFileName = (args.length > 1) ? args[1] : "config.xml";
 
-    Configuration config = new Configuration(configFileName);
-    Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
-
-    StorageManager storageManager = null;
-    IndexManager indexManager = null;
-
+    Repository repository = null;
     try {
-      storageManager = injector.getInstance(StorageManager.class);
-      indexManager = injector.getInstance(IndexManager.class);
-      new DutchCaribbeanImporter(storageManager, indexManager, importDirName).importAll();
+      repository = ToolsInjectionModule.createRepositoryInstance();
+      new DutchCaribbeanImporter(repository, importDirName).importAll();
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
-      // Close resources
-      if (indexManager != null) {
-        indexManager.close();
-      }
-      if (storageManager != null) {
-        storageManager.close();
+      if (repository != null) {
+        repository.close();
       }
       LOG.info("Time used: {}", stopWatch);
       // Close explicitly to terminate finalizer thread of Guice
@@ -152,8 +132,8 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private Reference hasSiblingArchive;
   private Reference hasSiblingArchiver;
 
-  public DutchCaribbeanImporter(StorageManager storageManager, IndexManager indexManager, String inputDirName) {
-    super(storageManager, indexManager);
+  public DutchCaribbeanImporter(Repository repository, String inputDirName) {
+    super(repository);
     change = new Change("importer", "dcar");
     objectMapper = new ObjectMapper();
     inputDir = new File(inputDirName);

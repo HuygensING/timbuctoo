@@ -38,8 +38,7 @@ import nl.knaw.huygens.tei.ElementHandler;
 import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
-import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -56,7 +55,6 @@ import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
@@ -72,8 +70,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 
 /**
  * Importer for Servian COBWWWEB data.
@@ -90,25 +86,15 @@ public class CobwwwebRsImporter extends DefaultImporter {
   public static void main(String[] args) throws Exception {
     Stopwatch stopWatch = Stopwatch.createStarted();
 
-    Configuration config = new Configuration("config.xml");
-    Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
-
-    StorageManager storageManager = null;
-    IndexManager indexManager = null;
-
+    Repository repository = null;
     try {
-      storageManager = injector.getInstance(StorageManager.class);
-      indexManager = injector.getInstance(IndexManager.class);
-      new CobwwwebRsImporter(storageManager, indexManager).importAll();
+      repository = ToolsInjectionModule.createRepositoryInstance();
+      new CobwwwebRsImporter(repository).importAll();
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
-      // Close resources
-      if (indexManager != null) {
-        indexManager.close();
-      }
-      if (storageManager != null) {
-        storageManager.close();
+      if (repository != null) {
+        repository.close();
       }
       LOG.info("Time used: {}", stopWatch);
     }
@@ -123,8 +109,8 @@ public class CobwwwebRsImporter extends DefaultImporter {
   private final Map<String, Reference> references = Maps.newHashMap();
   private Writer importLog;
 
-  public CobwwwebRsImporter(StorageManager storageManager, IndexManager indexManager) {
-    super(storageManager, indexManager);
+  public CobwwwebRsImporter(Repository repository) {
+    super(repository);
     change = new Change("importer", "cwrs");
   }
 

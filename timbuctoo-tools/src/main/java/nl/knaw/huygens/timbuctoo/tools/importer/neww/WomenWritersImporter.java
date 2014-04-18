@@ -30,8 +30,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.Document.DocumentType;
@@ -52,7 +51,6 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
@@ -70,8 +68,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 
 /**
  * Imports data of the "New European Women Writers" project.
@@ -89,25 +85,15 @@ public class WomenWritersImporter extends DefaultImporter {
     // Handle commandline arguments
     String directory = (args.length > 0) ? args[0] : "../../timbuctoo-testdata/src/main/resources/neww/";
 
-    Configuration config = new Configuration("config.xml");
-    Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
-
-    StorageManager storageManager = null;
-    IndexManager indexManager = null;
-
+    Repository repository = null;
     try {
-      storageManager = injector.getInstance(StorageManager.class);
-      indexManager = injector.getInstance(IndexManager.class);
-      new WomenWritersImporter(storageManager, indexManager, directory).importAll();
+      repository = ToolsInjectionModule.createRepositoryInstance();
+      new WomenWritersImporter(repository, directory).importAll();
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
-      // Close resources
-      if (indexManager != null) {
-        indexManager.close();
-      }
-      if (storageManager != null) {
-        storageManager.close();
+      if (repository != null) {
+        repository.close();
       }
       LOG.info("Time used: {}", stopWatch);
       // Close explicitly to terminate finalizer thread of Guice
@@ -126,8 +112,8 @@ public class WomenWritersImporter extends DefaultImporter {
   private final File inputDir;
   private final Change change;
 
-  public WomenWritersImporter(StorageManager storageManager, IndexManager indexManager, String inputDirName) {
-    super(storageManager, indexManager);
+  public WomenWritersImporter(Repository repository, String inputDirName) {
+    super(repository);
     objectMapper = new ObjectMapper();
     inputDir = new File(inputDirName);
     if (inputDir.isDirectory()) {
