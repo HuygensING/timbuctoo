@@ -105,14 +105,10 @@ public class DutchCaribbeanImporter extends DefaultImporter {
     IndexManager indexManager = null;
 
     try {
-
       storageManager = injector.getInstance(StorageManager.class);
       indexManager = injector.getInstance(IndexManager.class);
-
       new DutchCaribbeanImporter(storageManager, indexManager, importDirName).importAll();
-
     } catch (Exception e) {
-      // for debugging
       e.printStackTrace();
     } finally {
       // Close resources

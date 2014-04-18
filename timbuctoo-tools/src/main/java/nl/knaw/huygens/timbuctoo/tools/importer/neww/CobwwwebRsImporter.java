@@ -99,12 +99,8 @@ public class CobwwwebRsImporter extends DefaultImporter {
     try {
       storageManager = injector.getInstance(StorageManager.class);
       indexManager = injector.getInstance(IndexManager.class);
-
-      CobwwwebRsImporter importer = new CobwwwebRsImporter(storageManager, indexManager);
-      importer.importAll();
-
+      new CobwwwebRsImporter(storageManager, indexManager).importAll();
     } catch (Exception e) {
-      // for debugging
       e.printStackTrace();
     } finally {
       // Close resources
@@ -129,23 +125,20 @@ public class CobwwwebRsImporter extends DefaultImporter {
 
   public CobwwwebRsImporter(StorageManager storageManager, IndexManager indexManager) {
     super(storageManager, indexManager);
-    change = new Change("importer", "neww");
+    change = new Change("importer", "cwrs");
   }
 
   public void importAll() throws Exception {
     try {
-      importLog = newWriter("cobwwweb-log.txt");
-
+      importLog = newWriter("cobwwweb-rs-log.txt");
       importRelationTypes();
       setupRelationTypeRefs();
-
       importPersons();
       // importDocuments();
       // importRelations();
-
       displayStatus();
-      displayErrorSummary();
     } finally {
+      displayErrorSummary();
       if (importLog != null) {
         importLog.close();
       }

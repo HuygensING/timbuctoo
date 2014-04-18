@@ -98,12 +98,8 @@ public class WomenWritersImporter extends DefaultImporter {
     try {
       storageManager = injector.getInstance(StorageManager.class);
       indexManager = injector.getInstance(IndexManager.class);
-
-      WomenWritersImporter importer = new WomenWritersImporter(storageManager, indexManager, directory);
-      importer.importAll();
-
+      new WomenWritersImporter(storageManager, indexManager, directory).importAll();
     } catch (Exception e) {
-      // for debugging
       e.printStackTrace();
     } finally {
       // Close resources

@@ -74,11 +74,9 @@ public class EBNMImporter extends DefaultImporter {
     Stopwatch stopWatch = Stopwatch.createStarted();
 
     // Handle commandline arguments
-    // String importDirName = (args.length > 0) ? args[0] : "../../codl_data/data/";
-    String importDirName = (args.length > 0) ? args[0] : "../../AtlantischeGids/work/";
-    String configFileName = (args.length > 1) ? args[1] : "config.xml";
+    String importDirName = (args.length > 0) ? args[0] : "../../codl_data/data/";
 
-    Configuration config = new Configuration(configFileName);
+    Configuration config = new Configuration("config.xml");
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
     StorageManager storageManager = null;
@@ -87,11 +85,8 @@ public class EBNMImporter extends DefaultImporter {
     try {
       storageManager = injector.getInstance(StorageManager.class);
       indexManager = injector.getInstance(IndexManager.class);
-
       new EBNMImporter(storageManager, indexManager, importDirName).importAll();
-
     } catch (Exception e) {
-      // for debugging
       e.printStackTrace();
     } finally {
       // Close resources

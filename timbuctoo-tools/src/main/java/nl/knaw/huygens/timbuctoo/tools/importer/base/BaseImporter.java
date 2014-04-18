@@ -98,7 +98,6 @@ public class BaseImporter extends DefaultImporter {
       baseImporter.indexEntities(BaseLocation.class);
 
     } catch (Exception e) {
-      // for debugging
       e.printStackTrace();
     } finally {
       // Close resources
