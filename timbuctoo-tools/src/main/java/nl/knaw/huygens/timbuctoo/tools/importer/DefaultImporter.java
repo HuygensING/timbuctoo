@@ -127,14 +127,15 @@ public abstract class DefaultImporter {
   }
 
   protected <T extends Relation> String addRelation(Class<T> type, Reference relType, Reference source, Reference target, Change change, String line) {
+    T relation = RelationBuilder.createRelation(type) //
+        .withRelationTypeRef(relType) //
+        .withSourceRef(source) //
+        .withTargetRef(target) //
+        .build();
     try {
-      T relation = RelationBuilder.createRelation(type) //
-          .withRelationTypeRef(relType) //
-          .withSourceRef(source) //
-          .withTargetRef(target) //
-          .build();
       return storageManager.addDomainEntity(type, relation, change);
     } catch (DuplicateException e) {
+      System.out.println("Duplicate relation: " + relation);
       duplicateRelationCount++;
     } catch (Exception e) {
       System.out.println(line);

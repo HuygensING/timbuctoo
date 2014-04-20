@@ -22,6 +22,10 @@ package nl.knaw.huygens.timbuctoo.model.cwrs;
  * #L%
  */
 
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
 import nl.knaw.huygens.timbuctoo.model.Person;
 
 public class CWRSPerson extends Person {
@@ -30,9 +34,9 @@ public class CWRSPerson extends Person {
 
   // --- temporary fields ------------------------------------------------------
 
+  public List<String> tempLanguageCodes = Lists.newArrayList();
   public String tempBirthPlace;
   public String tempDeathPlace;
-  public String tempLanguages;
   public String tempNewwId;
 
   // ---------------------------------------------------------------------------

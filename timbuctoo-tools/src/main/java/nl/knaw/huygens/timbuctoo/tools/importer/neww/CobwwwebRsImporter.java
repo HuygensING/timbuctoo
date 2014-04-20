@@ -31,6 +31,7 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import nl.knaw.huygens.tei.DelegatingVisitor;
 import nl.knaw.huygens.tei.Element;
@@ -41,6 +42,7 @@ import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -67,6 +69,9 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -75,6 +80,11 @@ import com.google.common.collect.Sets;
  * Importer for Servian COBWWWEB data.
  * Assumes the presence of New European Women Writers data,
  * because COBWWWEB records are linked to that data.
+ * 
+ * Place Mappings:
+ * "Serbia" --> "co:srb"
+ * "Hungary" --> "co:hun"
+ * "Republic of Ragusa" --> "se:dubrovnik.hrv" (1358-1808)
  */
 public class CobwwwebRsImporter extends DefaultImporter {
 
@@ -103,15 +113,18 @@ public class CobwwwebRsImporter extends DefaultImporter {
   // -------------------------------------------------------------------
 
   private final Change change;
+  private Writer importLog;
   /** Reference to relation types. */
   private final Map<String, Reference> relationTypes = Maps.newHashMap();
-  /** References of stored primitive entities */
+  /** References of stored primitive entities. */
   private final Map<String, Reference> references = Maps.newHashMap();
-  private Writer importLog;
+  /** Used languages. */
+  private LoadingCache<String, Language> languages;
 
   public CobwwwebRsImporter(Repository repository) {
     super(repository);
     change = new Change("importer", "cwrs");
+    setupLanguageCache();
   }
 
   public void importAll() throws Exception {
@@ -131,6 +144,8 @@ public class CobwwwebRsImporter extends DefaultImporter {
     }
   }
 
+  // ---------------------------------------------------------------------------
+
   private Writer newWriter(String fileName) throws IOException {
     File file = new File(fileName);
     FileOutputStream fos = new FileOutputStream(file);
@@ -144,6 +159,28 @@ public class CobwwwebRsImporter extends DefaultImporter {
       importLog.write(text);
     } catch (IOException e) {
       System.out.println(text);
+    }
+  }
+
+  private void setupLanguageCache() {
+    languages = CacheBuilder.newBuilder().build(new CacheLoader<String, Language>() {
+      @Override
+      public Language load(String code) throws IOException {
+        Language language = storageManager.getLanguageByCode(Language.class, code);
+        if (language == null) {
+          throw new IOException(code);
+        }
+        return language;
+      }
+    });
+  }
+
+  private Language getLanguage(String code) {
+    try {
+      return languages.get(code);
+    } catch (ExecutionException e) {
+      LOG.error("No language with code {}", code);
+      return null;
     }
   }
 
@@ -260,8 +297,11 @@ public class CobwwwebRsImporter extends DefaultImporter {
           storedId = createNewPerson(entity);
         }
         storeReference(id, CWRSPerson.class, storedId);
-        //indexManager.addEntity(CWRSPerson.class, storedId);
-        //indexManager.updateEntity(WWPerson.class, storedId);
+
+        handleLanguages(entity);
+
+        indexManager.addEntity(CWRSPerson.class, storedId);
+        indexManager.updateEntity(WWPerson.class, storedId);
       }
     }
   }
@@ -305,6 +345,19 @@ public class CobwwwebRsImporter extends DefaultImporter {
     WWPerson person = storageManager.getEntity(WWPerson.class, storedId);
     updateDomainEntity(WWPerson.class, person, change);
     return storedId;
+  }
+
+  private void handleLanguages(CWRSPerson entity) {
+    for (String code : entity.tempLanguageCodes)  {
+      Language language = getLanguage(code);
+      if (language != null) {
+        Reference typeRef = relationTypes.get("hasPersonLanguage");
+        Reference sourceRef = new Reference(Person.class, entity.getId());
+        Reference targetRef =  new Reference(Language.class, language.getId());
+        addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, "");
+        log("Adding language %s --> %s%n", code, language.getName());
+      }
+    }
   }
 
   private class PersonContext extends XmlContext {
@@ -414,6 +467,7 @@ public class CobwwwebRsImporter extends DefaultImporter {
     @Override
     public void handleContent(String text, PersonContext context) {
       context.person.tempBirthPlace = text;
+      // System.out.println("PlaceOfBirth: " + text);
     }
   }
 
@@ -421,6 +475,7 @@ public class CobwwwebRsImporter extends DefaultImporter {
     @Override
     public void handleContent(String text, PersonContext context) {
       context.person.tempDeathPlace = text;
+      // System.out.println("PlaceOfDeath: " + text);
     }
   }
 
@@ -489,17 +544,10 @@ public class CobwwwebRsImporter extends DefaultImporter {
     }
   }
 
-  private class PersonNotesHandler extends CaptureHandler<PersonContext> {
-    @Override
-    public void handleContent(String text, PersonContext context) {
-      context.person.setNotes(text);
-    }
-  }
-
   private class PersonLanguagesHandler extends CaptureHandler<PersonContext> {
     @Override
     public void handleContent(String text, PersonContext context) {
-      context.person.tempLanguages = text;
+      context.person.tempLanguageCodes.add(text);
     }
   }
 
