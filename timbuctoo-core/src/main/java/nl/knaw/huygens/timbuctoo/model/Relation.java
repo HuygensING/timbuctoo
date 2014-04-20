@@ -226,45 +226,30 @@ public class Relation extends DomainEntity {
   public boolean equals(Object object) {
     if (object instanceof Relation) {
       Relation that = (Relation) object;
-      return (this.typeType == null ? that.typeType == null : this.typeType.equals(that.typeType)) //
-          && (this.typeId == null ? that.typeId == null : this.typeId.equals(that.typeId)) //
-          && (this.sourceType == null ? that.sourceType == null : this.sourceType.equals(that.sourceType)) //
-          && (this.sourceId == null ? that.sourceId == null : this.sourceId.equals(that.sourceId)) //
-          && (this.targetType == null ? that.targetType == null : this.targetType.equals(that.targetType)) //
-          && (this.targetId == null ? that.targetId == null : this.targetId.equals(that.targetId));
+      return Objects.equal(this.typeType, that.typeType) //
+          && Objects.equal(this.typeId, that.typeId) //
+          && Objects.equal(this.sourceType, that.sourceType) //
+          && Objects.equal(this.sourceId, that.sourceId) //
+          && Objects.equal(this.targetType, that.targetType) //
+          && Objects.equal(this.targetId, that.targetId);
     }
     return false;
   }
 
   @Override
   public int hashCode() {
-    int result = 17;
-    result = 31 * result + (typeType == null ? 0 : typeType.hashCode());
-    result = 31 * result + (typeId == null ? 0 : typeId.hashCode());
-    result = 31 * result + (sourceType == null ? 0 : sourceType.hashCode());
-    result = 31 * result + (sourceId == null ? 0 : sourceId.hashCode());
-    result = 31 * result + (targetType == null ? 0 : targetType.hashCode());
-    result = 31 * result + (targetId == null ? 0 : targetId.hashCode());
-    return result;
+    return Objects.hashCode(typeType, typeId, sourceType, sourceId, targetType, targetId);
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("Relation{\ntypeType: ");
-    sb.append(typeType);
-    sb.append("\ntypeId: ");
-    sb.append(typeId);
-    sb.append("\nsourceType: ");
-    sb.append(sourceType);
-    sb.append("\nsourceId: ");
-    sb.append(sourceId);
-    sb.append("\ntargetType: ");
-    sb.append(targetType);
-    sb.append("\ntargetId: ");
-    sb.append(targetId);
-
-    return sb.toString();
+    return Objects.toStringHelper(this) //
+      .add("typeId", typeId) //
+      .add("sourceType", sourceType) //
+      .add("sourceId", sourceId) //
+      .add("targetType", targetType) //
+      .add("targetId", targetId) //
+      .toString();
   }
 
   public boolean conformsToRelationType(RelationType relationType) {
