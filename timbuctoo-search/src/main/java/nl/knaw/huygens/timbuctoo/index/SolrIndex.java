@@ -15,6 +15,7 @@ public class SolrIndex implements Index {
 
   private final SolrInputDocumentCreator solrDocumentCreator;
   private final AbstractSolrServer solrServer;
+  private final String name;
   protected static final SolrQuery COUNT_QUERY;
 
   static {
@@ -23,7 +24,8 @@ public class SolrIndex implements Index {
     COUNT_QUERY.setRows(0);
   }
 
-  public SolrIndex(SolrInputDocumentCreator solrDocumentCreator, AbstractSolrServer solrServer) {
+  public SolrIndex(String name, SolrInputDocumentCreator solrDocumentCreator, AbstractSolrServer solrServer) {
+    this.name = name;
     this.solrDocumentCreator = solrDocumentCreator;
     this.solrServer = solrServer;
   }
@@ -104,15 +106,28 @@ public class SolrIndex implements Index {
     } catch (SolrServerException e) {
       throw new IndexException(e);
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       throw new IndexException(e);
     }
 
   }
 
   @Override
-  public void close() {
-    // TODO Auto-generated method stub
+  public void close() throws IndexException {
+    try {
+      this.commit();
+    } finally {
+      try {
+        solrServer.shutdown();
+      } catch (SolrServerException e) {
+        throw new IndexException(e);
+      } catch (IOException e) {
+        throw new IndexException(e);
+      }
+    }
+  }
 
+  @Override
+  public String getName() {
+    return name;
   }
 }

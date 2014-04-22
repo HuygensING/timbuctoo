@@ -154,7 +154,11 @@ public class IndexFacade implements SearchManager, IndexManager {
   @Override
   public void close() throws IndexException {
     for (Index index : scopeManager.getAllIndexes()) {
-      index.close();
+      try {
+        index.close();
+      } catch (IndexException ex) {
+        LOG.error("closing of index {} went wrong", index.getName(), ex);
+      }
     }
 
   }

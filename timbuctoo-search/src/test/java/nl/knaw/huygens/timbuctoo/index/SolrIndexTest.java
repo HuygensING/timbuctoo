@@ -44,7 +44,7 @@ public class SolrIndexTest {
     solrInputDocumentMock = mock(SolrInputDocument.class);
     documentCreatorMock = mock(SolrInputDocumentCreator.class);
 
-    instance = new SolrIndex(documentCreatorMock, solrServerMock);
+    instance = new SolrIndex("indexName", documentCreatorMock, solrServerMock);
   }
 
   @Test
@@ -300,4 +300,63 @@ public class SolrIndexTest {
       verify(solrServerMock).commit();
     }
   }
+
+  @Test
+  public void testClose() throws SolrServerException, IOException, IndexException {
+    // action
+    instance.close();
+
+    // verify
+    verify(solrServerMock).commit();
+    verify(solrServerMock).shutdown();
+  }
+
+  @Test(expected = IndexException.class)
+  public void testCloseCommitThrowsSolrServerException() throws SolrServerException, IOException, IndexException {
+    testCloseCommitThrowsAnException(SolrServerException.class);
+  }
+
+  @Test(expected = IndexException.class)
+  public void testCloseCommitThrowsIOException() throws SolrServerException, IOException, IndexException {
+    testCloseCommitThrowsAnException(IOException.class);
+  }
+
+  private void testCloseCommitThrowsAnException(Class<? extends Exception> exceptionToBeThrown) throws SolrServerException, IOException, IndexException {
+    // when
+    doThrow(exceptionToBeThrown).when(solrServerMock).commit();
+
+    try {
+      // action
+      instance.close();
+    } finally {
+      // verify
+      verify(solrServerMock).commit();
+      verify(solrServerMock).shutdown();
+    }
+  }
+
+  @Test(expected = IndexException.class)
+  public void testCloseShutdownThrowsSolrServerException() throws SolrServerException, IOException, IndexException {
+    testCloseShutdownThrowsAnException(SolrServerException.class);
+  }
+
+  @Test(expected = IndexException.class)
+  public void testCloseShutdownThrowsIOException() throws SolrServerException, IOException, IndexException {
+    testCloseShutdownThrowsAnException(IOException.class);
+  }
+
+  private void testCloseShutdownThrowsAnException(Class<? extends Exception> exceptionToBeThrown) throws SolrServerException, IOException, IndexException {
+    // when
+    doThrow(exceptionToBeThrown).when(solrServerMock).shutdown();
+
+    try {
+      // action
+      instance.close();
+    } finally {
+      // verify
+      verify(solrServerMock).commit();
+      verify(solrServerMock).shutdown();
+    }
+  }
+
 }

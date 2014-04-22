@@ -7,6 +7,12 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 public interface Index {
 
   /**
+   * Returns the name of the index.
+   * @return the name of the index.
+   */
+  public String getName();
+
+  /**
    * Adds new items to the index.
    * @param variations
    * @throws IndexException when the action fails.
@@ -54,8 +60,9 @@ public interface Index {
   public void commit() throws IndexException;
 
   /**
-   * Close the connection with the index.
+   * Close the index.
+   * @throws IndexException 
    */
-  public void close();
+  public void close() throws IndexException;
 
 }
