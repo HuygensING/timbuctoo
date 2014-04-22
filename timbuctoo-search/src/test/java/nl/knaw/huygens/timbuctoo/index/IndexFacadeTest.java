@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.index;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -15,10 +17,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.timbuctoo.index.model.SubModel;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
@@ -501,6 +506,25 @@ public class IndexFacadeTest {
 
     // verify
     verify(sortableFieldFinderMock).findFields(BASE_TYPE);
+  }
+
+  @Test
+  public void testSearch() throws IndexException, NoSuchFacetException {
+    // setup
+    Index indexMock = mock(Index.class);
+    Scope scopeMock = mock(Scope.class);
+    DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
+    SearchResult searchResult = new SearchResult();
+
+    // when
+    when(scopeManagerMock.getIndexFor(scopeMock, BASE_TYPE)).thenReturn(indexMock);
+    when(indexMock.search(searchParameters)).thenReturn(searchResult);
+
+    SearchResult actualSearchResult = instance.search(scopeMock, BASE_TYPE, searchParameters);
+
+    // verify
+    verify(indexMock).search(searchParameters);
+    assertThat(actualSearchResult, is(searchResult));
   }
 
   private static class OtherIndexBaseType extends DomainEntity {

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.solr.FacetInfo;
 import nl.knaw.huygens.solr.FacetParameter;
 import nl.knaw.huygens.solr.SearchParameters;
@@ -182,6 +183,13 @@ public class OldSearchManager implements SearchManager {
     }
 
     return facets;
+  }
+
+  @Override
+  public <T extends FacetedSearchParameters<T>> SearchResult search(Scope scope, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws IndexException,
+      NoSuchFacetException {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.index;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -172,12 +173,20 @@ public class IndexFacade implements SearchManager, IndexManager {
   }
 
   @Override
-  public SearchResult search(Scope scope, Class<? extends DomainEntity> type, SearchParameters searchParameters) throws IndexException, NoSuchFacetException {
-    // TODO Auto-generated method stub
-    return null;
+  public <T extends FacetedSearchParameters<T>> SearchResult search(Scope scope, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws IndexException,
+      NoSuchFacetException {
+    Index index = scopeManager.getIndexFor(scope, type);
+
+    return index.search(searchParameters);
   }
 
   private static interface IndexChanger {
     void executeIndexAction(Index index, List<? extends DomainEntity> variations) throws IndexException;
+  }
+
+  @Override
+  public SearchResult search(Scope scope, Class<? extends DomainEntity> type, SearchParameters searchParameters) throws IndexException, NoSuchFacetException {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

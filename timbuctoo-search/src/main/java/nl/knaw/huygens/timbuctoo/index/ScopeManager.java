@@ -3,7 +3,9 @@ package nl.knaw.huygens.timbuctoo.index;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
 public class ScopeManager {
@@ -93,6 +95,12 @@ public class ScopeManager {
 
     @Override
     public String getName() {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    @Override
+    public <T extends FacetedSearchParameters<T>> SearchResult search(FacetedSearchParameters<T> searchParamaters) {
       // TODO Auto-generated method stub
       return null;
     }

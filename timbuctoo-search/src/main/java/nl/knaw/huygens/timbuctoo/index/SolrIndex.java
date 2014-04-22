@@ -3,8 +3,10 @@ package nl.knaw.huygens.timbuctoo.index;
 import java.io.IOException;
 import java.util.List;
 
+import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -129,5 +131,12 @@ public class SolrIndex implements Index {
   @Override
   public String getName() {
     return name;
+  }
+
+  @Override
+  public <T extends FacetedSearchParameters<T>> SearchResult search(FacetedSearchParameters<T> searchParamaters) {
+    // TODO Auto-generated method stub
+    return null;
+
   }
 }

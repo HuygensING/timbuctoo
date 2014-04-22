@@ -2,7 +2,9 @@ package nl.knaw.huygens.timbuctoo.index;
 
 import java.util.List;
 
+import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
 public interface Index {
 
@@ -64,5 +66,12 @@ public interface Index {
    * @throws IndexException 
    */
   public void close() throws IndexException;
+
+  /**
+   * Search the index.
+   * @param searchParameters
+   * @return the search result.
+   */
+  public <T extends FacetedSearchParameters<T>> SearchResult search(FacetedSearchParameters<T> searchParameters);
 
 }
