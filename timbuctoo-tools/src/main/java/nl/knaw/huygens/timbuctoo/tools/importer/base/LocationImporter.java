@@ -25,10 +25,10 @@ package nl.knaw.huygens.timbuctoo.tools.importer.base;
 import java.io.File;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
 import org.apache.commons.io.FileUtils;
@@ -45,8 +45,8 @@ public class LocationImporter extends DefaultImporter {
   private final Change change;
   private final ObjectMapper objectMapper;
 
-  public LocationImporter(StorageManager storageManager, Change change) {
-    super(storageManager, null);
+  public LocationImporter(Repository repository, Change change) {
+    super(repository);
     this.change = change;
     objectMapper = new ObjectMapper();
   }

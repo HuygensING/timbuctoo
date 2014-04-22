@@ -25,8 +25,7 @@ package nl.knaw.huygens.timbuctoo.tools.importer.ebnm;
 import java.io.File;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMDocumentatie;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMLexicon;
@@ -51,20 +50,12 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 
 /**
  * Imports data of the "eBNM" project.
  * 
- * Usage: java -cp [specs]
- * nl.knaw.huygens.timbuctoo.importer.database.EBNMImporter importDirName configFileName
- * 
- * The commandline arguments are optional.
- * 
- * Note that the Mongo database and the Solr index are built from scratch, any
- * existing data is deleted. Future versions of this importer must use a more
- * subtle approach.
+ * Usage:
+ *  java  -cp  [specs]  ${package-name}.EBNMImporter  [importDirName]
  */
 public class EBNMImporter extends DefaultImporter {
 
@@ -74,32 +65,17 @@ public class EBNMImporter extends DefaultImporter {
     Stopwatch stopWatch = Stopwatch.createStarted();
 
     // Handle commandline arguments
-    // String importDirName = (args.length > 0) ? args[0] : "../../codl_data/data/";
-    String importDirName = (args.length > 0) ? args[0] : "../../AtlantischeGids/work/";
-    String configFileName = (args.length > 1) ? args[1] : "config.xml";
+    String importDirName = (args.length > 0) ? args[0] : "../../codl_data/data/";
 
-    Configuration config = new Configuration(configFileName);
-    Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
-
-    StorageManager storageManager = null;
-    IndexManager indexManager = null;
-
+    Repository repository = null;
     try {
-      storageManager = injector.getInstance(StorageManager.class);
-      indexManager = injector.getInstance(IndexManager.class);
-
-      new EBNMImporter(storageManager, indexManager, importDirName).importAll();
-
+      repository = ToolsInjectionModule.createRepositoryInstance();
+      new EBNMImporter(repository, importDirName).importAll();
     } catch (Exception e) {
-      // for debugging
       e.printStackTrace();
     } finally {
-      // Close resources
-      if (indexManager != null) {
-        indexManager.close();
-      }
-      if (storageManager != null) {
-        storageManager.close();
+      if (repository != null) {
+        repository.close();
       }
       LOG.info("Time used: {}", stopWatch);
       // Close explicitly to terminate finalizer thread of Guice
@@ -123,8 +99,8 @@ public class EBNMImporter extends DefaultImporter {
   private final Map<String, Reference> signalementcodeRefMap = Maps.newHashMap();
   private final Map<String, Reference> watermerkRefMap = Maps.newHashMap();
 
-  public EBNMImporter(StorageManager storageManager, IndexManager indexManager, String inputDirName) {
-    super(storageManager, indexManager);
+  public EBNMImporter(Repository repository, String inputDirName) {
+    super(repository);
     objectMapper = new ObjectMapper();
     inputDir = new File(inputDirName);
     System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());

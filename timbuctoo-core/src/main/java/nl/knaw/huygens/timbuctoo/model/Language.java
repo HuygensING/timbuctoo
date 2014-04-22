@@ -33,6 +33,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @IDPrefix("LANG")
 public class Language extends DomainEntity {
 
+  public static final String CODE = "^code";
+
   /** Unique code (ISO-639-3). */
   private String code;
   /** English name. */
@@ -49,12 +51,12 @@ public class Language extends DomainEntity {
     return getName();
   }
 
-  @JsonProperty("^code")
+  @JsonProperty(CODE)
   public String getCode() {
     return code;
   }
 
-  @JsonProperty("^code")
+  @JsonProperty(CODE)
   public void setCode(String code) {
     this.code = code;
   }

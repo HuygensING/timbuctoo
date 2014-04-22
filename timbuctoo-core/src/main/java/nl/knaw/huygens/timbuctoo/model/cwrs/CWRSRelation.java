@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.model;
+package nl.knaw.huygens.timbuctoo.model.cwrs;
 
 /*
  * #%L
@@ -22,19 +22,8 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import static org.junit.Assert.assertEquals;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 
-import org.junit.Test;
-
-public class RelationTypeTest {
-
-  @Test
-  public void testConstructor() {
-    RelationType relationType = new RelationType("rname", "iname", DomainEntity.class, DomainEntity.class);
-    assertEquals("rname", relationType.getRegularName());
-    assertEquals("iname", relationType.getInverseName());
-    assertEquals("domainentity", relationType.getSourceTypeName());
-    assertEquals("domainentity", relationType.getTargetTypeName());
-  }
+public class CWRSRelation extends Relation {
 
 }

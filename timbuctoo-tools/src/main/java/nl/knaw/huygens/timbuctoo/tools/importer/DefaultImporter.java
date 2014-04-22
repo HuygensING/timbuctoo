@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.tools.importer;
 import java.io.IOException;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
@@ -44,16 +45,18 @@ import org.apache.commons.lang.StringUtils;
 import com.google.common.base.Strings;
 
 /**
- * Contains functionality needed in each importer.
+ * Contains functionality needed in most importers.
  */
 public abstract class DefaultImporter {
 
+  protected final Repository repository;
   protected final StorageManager storageManager;
   protected final IndexManager indexManager;
 
-  public DefaultImporter(StorageManager storageManager, IndexManager indexManager) {
-    this.storageManager = storageManager;
-    this.indexManager = indexManager;
+  public DefaultImporter(Repository repository) {
+    this.repository = repository;
+    storageManager = repository.getStorageManager();
+    indexManager = repository.getIndexManager();
   }
 
   // --- Error handling --------------------------------------------------------
@@ -124,14 +127,15 @@ public abstract class DefaultImporter {
   }
 
   protected <T extends Relation> String addRelation(Class<T> type, Reference relType, Reference source, Reference target, Change change, String line) {
+    T relation = RelationBuilder.createRelation(type) //
+        .withRelationTypeRef(relType) //
+        .withSourceRef(source) //
+        .withTargetRef(target) //
+        .build();
     try {
-      T relation = RelationBuilder.createRelation(type) //
-          .withRelationTypeRef(relType) //
-          .withSourceRef(source) //
-          .withTargetRef(target) //
-          .build();
       return storageManager.addDomainEntity(type, relation, change);
     } catch (DuplicateException e) {
+      System.out.println("Duplicate relation: " + relation);
       duplicateRelationCount++;
     } catch (Exception e) {
       System.out.println(line);

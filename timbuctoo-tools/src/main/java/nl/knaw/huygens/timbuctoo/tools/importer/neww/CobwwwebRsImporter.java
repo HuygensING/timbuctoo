@@ -31,6 +31,7 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import nl.knaw.huygens.tei.DelegatingVisitor;
 import nl.knaw.huygens.tei.Element;
@@ -41,17 +42,20 @@ import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.model.cwno.CWNODocument;
-import nl.knaw.huygens.timbuctoo.model.cwno.CWNOPerson;
-import nl.knaw.huygens.timbuctoo.model.cwno.CWNORelation;
+import nl.knaw.huygens.timbuctoo.model.cwrs.CWRSDocument;
+import nl.knaw.huygens.timbuctoo.model.cwrs.CWRSPerson;
+import nl.knaw.huygens.timbuctoo.model.cwrs.CWRSRelation;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
 import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
+import nl.knaw.huygens.timbuctoo.model.util.PersonName;
+import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
@@ -62,23 +66,32 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
- * Importer for Norwegian COBWWWEB data.
+ * Importer for Servian COBWWWEB data.
  * Assumes the presence of New European Women Writers data,
  * because COBWWWEB records are linked to that data.
+ * 
+ * Place Mappings:
+ * "Serbia" --> "co:srb"
+ * "Hungary" --> "co:hun"
+ * "Republic of Ragusa" --> "se:dubrovnik.hrv" (1358-1808)
  */
-public class CobwwwebNoImporter extends DefaultImporter {
+public class CobwwwebRsImporter extends DefaultImporter {
 
-  private static final Logger LOG = LoggerFactory.getLogger(CobwwwebNoImporter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(CobwwwebRsImporter.class);
 
   // Base URL for import
-  private static final String URL = "https://www2.hf.uio.no/tjenester/bibliografi/Robinsonades";
+  private static final String URL = "http://ws-knjizenstvo.etf.rs/Knjizenstvo/Cobwwweb";
 
   public static void main(String[] args) throws Exception {
     Stopwatch stopWatch = Stopwatch.createStarted();
@@ -86,7 +99,7 @@ public class CobwwwebNoImporter extends DefaultImporter {
     Repository repository = null;
     try {
       repository = ToolsInjectionModule.createRepositoryInstance();
-      new CobwwwebNoImporter(repository).importAll();
+      new CobwwwebRsImporter(repository).importAll();
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
@@ -100,25 +113,28 @@ public class CobwwwebNoImporter extends DefaultImporter {
   // -------------------------------------------------------------------
 
   private final Change change;
+  private Writer importLog;
   /** Reference to relation types. */
   private final Map<String, Reference> relationTypes = Maps.newHashMap();
-  /** References of stored primitive entities */
+  /** References of stored primitive entities. */
   private final Map<String, Reference> references = Maps.newHashMap();
-  private Writer importLog;
+  /** Used languages. */
+  private LoadingCache<String, Language> languages;
 
-  public CobwwwebNoImporter(Repository repository) {
+  public CobwwwebRsImporter(Repository repository) {
     super(repository);
-    change = new Change("importer", "cwno");
+    change = new Change("importer", "cwrs");
+    setupLanguageCache();
   }
 
   public void importAll() throws Exception {
     try {
-      importLog = newWriter("cobwwweb-no-log.txt");
+      importLog = newWriter("cobwwweb-rs-log.txt");
       importRelationTypes();
       setupRelationTypeRefs();
       importPersons();
-      importDocuments();
-      importRelations();
+      // importDocuments();
+      // importRelations();
       displayStatus();
     } finally {
       displayErrorSummary();
@@ -127,6 +143,8 @@ public class CobwwwebNoImporter extends DefaultImporter {
       }
     }
   }
+
+  // ---------------------------------------------------------------------------
 
   private Writer newWriter(String fileName) throws IOException {
     File file = new File(fileName);
@@ -141,6 +159,28 @@ public class CobwwwebNoImporter extends DefaultImporter {
       importLog.write(text);
     } catch (IOException e) {
       System.out.println(text);
+    }
+  }
+
+  private void setupLanguageCache() {
+    languages = CacheBuilder.newBuilder().build(new CacheLoader<String, Language>() {
+      @Override
+      public Language load(String code) throws IOException {
+        Language language = storageManager.getLanguageByCode(Language.class, code);
+        if (language == null) {
+          throw new IOException(code);
+        }
+        return language;
+      }
+    });
+  }
+
+  private Language getLanguage(String code) {
+    try {
+      return languages.get(code);
+    } catch (ExecutionException e) {
+      LOG.error("No language with code {}", code);
+      return null;
     }
   }
 
@@ -250,26 +290,40 @@ public class CobwwwebNoImporter extends DefaultImporter {
 
     for (String id : personIds) {
       xml = getResource(URL, "person", id);
-      CWNOPerson entity = parsePersonResource(xml, id);
-      String storedId = updateExistingPerson(entity);
-      if (storedId == null) {
-        storedId = createNewPerson(entity);
+      CWRSPerson entity = parsePersonResource(xml, id);
+      if (accept(entity)) {
+        String storedId = updateExistingPerson(entity);
+        if (storedId == null) {
+          storedId = createNewPerson(entity);
+        }
+        storeReference(id, CWRSPerson.class, storedId);
+
+        handleLanguages(entity);
+
+        indexManager.addEntity(CWRSPerson.class, storedId);
+        indexManager.updateEntity(WWPerson.class, storedId);
       }
-      storeReference(id, CWNOPerson.class, storedId);
-      indexManager.addEntity(CWNOPerson.class, storedId);
-      indexManager.updateEntity(WWPerson.class, storedId);
     }
   }
 
-  private CWNOPerson parsePersonResource(String xml, String id) {
+  private CWRSPerson parsePersonResource(String xml, String id) {
     nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
-    PersonContext context = new PersonContext(id);
+    PersonContext context = new PersonContext(xml, id);
     document.accept(new PersonVisitor(context));
     return context.person;
   }
 
-  // Retrieve existing WWPerson, add CWNOPerson variation
-  private String updateExistingPerson(CWNOPerson entity) {
+  private boolean accept(CWRSPerson entity) {
+    List<PersonName> names = entity.getNames();
+    if (names.size() == 1 && names.get(0).getFullName().equalsIgnoreCase("Anonymous")) {
+      // TODO register this one, in order to ignore relations
+      return false;
+    }
+    return true;
+  }
+
+  // Retrieve existing WWPerson, add CWRSPerson variation
+  private String updateExistingPerson(CWRSPerson entity) {
     String storedId = null;
     if (!Strings.isNullOrEmpty(entity.tempNewwId)) {
       String key = FieldMapper.propertyName(WWPerson.class, "tempOldId");
@@ -278,26 +332,42 @@ public class CobwwwebNoImporter extends DefaultImporter {
         storedId = person.getId();
         entity.setId(storedId);
         entity.setRev(person.getRev());
-        updateDomainEntity(CWNOPerson.class, entity, change);
+        updateDomainEntity(CWRSPerson.class, entity, change);
         log("Updated person with id %s%n", storedId);
       }
     }
     return storedId;
   }
 
-  // Save as CWNOPerson, add WWPerson variation
-  private String createNewPerson(CWNOPerson entity) {
-    String storedId = addDomainEntity(CWNOPerson.class, entity, change);
+  // Save as CWRSPerson, add WWPerson variation
+  private String createNewPerson(CWRSPerson entity) {
+    String storedId = addDomainEntity(CWRSPerson.class, entity, change);
     WWPerson person = storageManager.getEntity(WWPerson.class, storedId);
     updateDomainEntity(WWPerson.class, person, change);
     return storedId;
   }
 
-  private class PersonContext extends XmlContext {
-    public String id;
-    public CWNOPerson person = new CWNOPerson();
+  private void handleLanguages(CWRSPerson entity) {
+    for (String code : entity.tempLanguageCodes)  {
+      Language language = getLanguage(code);
+      if (language != null) {
+        Reference typeRef = relationTypes.get("hasPersonLanguage");
+        Reference sourceRef = new Reference(Person.class, entity.getId());
+        Reference targetRef =  new Reference(Language.class, language.getId());
+        addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, "");
+        log("Adding language %s --> %s%n", code, language.getName());
+      }
+    }
+  }
 
-    public PersonContext(String id) {
+  private class PersonContext extends XmlContext {
+    public String xml;
+    public String id;
+    public PersonName personName;
+    public CWRSPerson person = new CWRSPerson();
+
+    public PersonContext(String xml, String id) {
+      this.xml = xml;
       this.id = id;
     }
 
@@ -314,11 +384,14 @@ public class CobwwwebNoImporter extends DefaultImporter {
       addElementHandler(new PersonTypeHandler(), "type");
       addElementHandler(new GenderHandler(), "gender");
       addElementHandler(new DateOfBirthHandler(), "dateOfBirth");
+      addElementHandler(new PlaceOfBirthHandler(), "placeOfBirth");
       addElementHandler(new DateOfDeathHandler(), "dateOfDeath");
-      addElementHandler(new NameHandler(), "name");
-      addElementHandler(new PersonLanguageHandler(), "language");
-      addElementHandler(new PersonLinkHandler(), "Reference");
-      addElementHandler(new PersonNotesHandler(), "notes");
+      addElementHandler(new PlaceOfDeathHandler(), "placeOfDeath");
+      addElementHandler(new NameHandler(), "names");
+      addElementHandler(new NameComponentHandler(), "forename", "surname");
+      addElementHandler(new PersNameHandler(), "persName");
+      addElementHandler(new PersonLanguagesHandler(), "languages");
+      addElementHandler(new PersonLinkHandler(), "reference");
     }
   }
 
@@ -329,7 +402,7 @@ public class CobwwwebNoImporter extends DefaultImporter {
     public Traversal enterElement(Element element, PersonContext context) {
       String name = element.getName();
       if (!ignoredNames.contains(name)) {
-        context.error("Unexpected element: %s", name);
+        context.error("Unexpected element: %s%n%s", name, context.xml);
       }
       return Traversal.NEXT;
     }
@@ -390,10 +463,70 @@ public class CobwwwebNoImporter extends DefaultImporter {
     }
   }
 
-  private class NameHandler extends CaptureHandler<PersonContext> {
+  private class PlaceOfBirthHandler extends CaptureHandler<PersonContext> {
     @Override
     public void handleContent(String text, PersonContext context) {
-      context.person.tempNames.add(text);
+      context.person.tempBirthPlace = text;
+      // System.out.println("PlaceOfBirth: " + text);
+    }
+  }
+
+  private class PlaceOfDeathHandler extends CaptureHandler<PersonContext> {
+    @Override
+    public void handleContent(String text, PersonContext context) {
+      context.person.tempDeathPlace = text;
+      // System.out.println("PlaceOfDeath: " + text);
+    }
+  }
+
+  private class PersNameHandler extends CaptureHandler<PersonContext> {
+    @Override
+    public void handleContent(String text, PersonContext context) {
+      List<String> words = Splitter.on(' ').splitToList(text);
+      int n = words.size();
+      if (n > 0) {
+        for (int i = 0; i < n - 1; i++) {
+          context.personName.addNameComponent(PersonNameComponent.Type.FORENAME, words.get(i));
+        }
+        context.personName.addNameComponent(PersonNameComponent.Type.SURNAME, words.get(n - 1));
+      }
+    }
+  }
+
+  private class NameHandler implements ElementHandler<PersonContext> {
+    @Override
+    public Traversal enterElement(Element element, PersonContext context) {
+      context.personName = new PersonName();
+      return Traversal.NEXT;
+    }
+
+    @Override
+    public Traversal leaveElement(Element element, PersonContext context) {
+      if (context.personName.getComponents().size() != 0) {
+        context.person.addName(context.personName);
+      }
+      return Traversal.NEXT;
+    }
+  }
+
+  private class NameComponentHandler implements ElementHandler<PersonContext> {
+    @Override
+    public Traversal enterElement(Element element, PersonContext context) {
+      context.openLayer();
+      return Traversal.NEXT;
+    }
+
+    @Override
+    public Traversal leaveElement(Element element, PersonContext context) {
+      String text = context.closeLayer();
+      if (element.hasName("forename")) {
+        context.personName.addNameComponent(PersonNameComponent.Type.FORENAME, text);
+      } else if (element.hasName("surname")) {
+        context.personName.addNameComponent(PersonNameComponent.Type.SURNAME, text);
+      } else {
+        context.error("Unknown component: %s", element.getName());
+      }
+      return Traversal.NEXT;
     }
   }
 
@@ -411,33 +544,10 @@ public class CobwwwebNoImporter extends DefaultImporter {
     }
   }
 
-  private class PersonNotesHandler extends CaptureHandler<PersonContext> {
+  private class PersonLanguagesHandler extends CaptureHandler<PersonContext> {
     @Override
     public void handleContent(String text, PersonContext context) {
-      context.person.setNotes(text);
-    }
-  }
-
-  private class PersonLanguageHandler implements ElementHandler<PersonContext> {
-    @Override
-    public Traversal enterElement(Element element, PersonContext context) {
-      context.openLayer();
-      return Traversal.NEXT;
-    }
-
-    @Override
-    public Traversal leaveElement(Element element, PersonContext context) {
-      String text = context.closeLayer().trim();
-      if (!text.isEmpty()) {
-        if (!element.hasParentWithName("languages")) {
-          context.error("Unexpected value in element 'language': %s", text);
-        } else if (context.person.getNationalities().contains(text)) {
-          context.error("Duplicate value in element 'languages/language': %s", text);
-        } else {
-          context.person.addNationality(text);
-        }
-      }
-      return Traversal.NEXT;
+      context.person.tempLanguageCodes.add(text);
     }
   }
 
@@ -450,26 +560,26 @@ public class CobwwwebNoImporter extends DefaultImporter {
 
     for (String id : documentIds) {
       xml = getResource(URL, "document", id);
-      CWNODocument entity = parseDocumentResource(xml, id);
+      CWRSDocument entity = parseDocumentResource(xml, id);
       String storedId = updateExistingDocument(entity);
       if (storedId == null) {
         storedId = createNewDocument(entity);
       }
-      storeReference(id, CWNODocument.class, storedId);
-      indexManager.addEntity(CWNODocument.class, storedId);
+      storeReference(id, CWRSDocument.class, storedId);
+      indexManager.addEntity(CWRSDocument.class, storedId);
       indexManager.updateEntity(WWDocument.class, storedId);
     }
   }
 
-  private CWNODocument parseDocumentResource(String xml, String id) {
+  private CWRSDocument parseDocumentResource(String xml, String id) {
     nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
     DocumentContext context = new DocumentContext(id);
     document.accept(new DocumentVisitor(context));
     return context.document;
   }
 
-  // Retrieve existing WWDocument, add CWNODocument variation
-  private String updateExistingDocument(CWNODocument entity) {
+  // Retrieve existing WWDocument, add CWRSDocument variation
+  private String updateExistingDocument(CWRSDocument entity) {
     String storedId = null;
     if (!Strings.isNullOrEmpty(entity.tempNewwId)) {
       String key = FieldMapper.propertyName(WWDocument.class, "tempOldId");
@@ -478,16 +588,16 @@ public class CobwwwebNoImporter extends DefaultImporter {
         storedId = document.getId();
         entity.setId(storedId);
         entity.setRev(document.getRev());
-        updateDomainEntity(CWNODocument.class, entity, change);
+        updateDomainEntity(CWRSDocument.class, entity, change);
         log("Updated document with id %s%n", storedId);
       }
     }
     return storedId;
   }
 
-  // Save as CWNODocument, add WWDocument variation
-  private String createNewDocument(CWNODocument entity) {
-    String storedId = addDomainEntity(CWNODocument.class, entity, change);
+  // Save as CWRSDocument, add WWDocument variation
+  private String createNewDocument(CWRSDocument entity) {
+    String storedId = addDomainEntity(CWRSDocument.class, entity, change);
     WWDocument document = storageManager.getEntity(WWDocument.class, storedId);
     updateDomainEntity(WWDocument.class, document, change);
     return storedId;
@@ -495,7 +605,7 @@ public class CobwwwebNoImporter extends DefaultImporter {
 
   private class DocumentContext extends XmlContext {
     public String id;
-    public CWNODocument document = new CWNODocument();
+    public CWRSDocument document = new CWRSDocument();
 
     public DocumentContext(String id) {
       this.id = id;
@@ -625,7 +735,7 @@ public class CobwwwebNoImporter extends DefaultImporter {
     Reference sourceRef = references.get(context.sourceId);
     Reference targetRef = references.get(context.targetId);
     if (typeRef != null && sourceRef != null && targetRef != null) {
-      addRelation(CWNORelation.class, typeRef, sourceRef, targetRef, change, xml);
+      addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, xml);
     } else {
       System.err.printf("Error in %s: %s --> %s%n", context.relationTypeName, context.sourceId, context.targetId);
     }

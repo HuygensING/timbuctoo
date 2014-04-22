@@ -24,12 +24,10 @@ package nl.knaw.huygens.timbuctoo.tools.importer.base;
 
 import java.io.File;
 
-import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
@@ -37,8 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Stopwatch;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 
 /**
  * Importer for base domain entities, such as language.
@@ -72,41 +68,31 @@ public class BaseImporter extends DefaultImporter {
     }
 
     Change change = new Change(USER_ID, VRE_ID);
-    Configuration config = new Configuration("config.xml");
-    Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
-    StorageManager storageManager = null;
-    IndexManager indexManager = null;
-
+    Repository repository = null;
     try {
-      storageManager = injector.getInstance(StorageManager.class);
-      indexManager = injector.getInstance(IndexManager.class);
+      repository = ToolsInjectionModule.createRepositoryInstance();
 
       // Get rid of existing stuff
-      BaseImporter baseImporter = new BaseImporter(storageManager, indexManager);
+      BaseImporter baseImporter = new BaseImporter(repository);
       baseImporter.removeNonPersistentEntities(BaseLanguage.class);
       baseImporter.removeNonPersistentEntities(BaseLocation.class);
 
       baseImporter.printBoxedText("Import languages");
-      new LanguageImporter(storageManager, change).handleFile(languageFile, 0, false);
+      new LanguageImporter(repository, change).handleFile(languageFile, 0, false);
 
       baseImporter.printBoxedText("Import locations");
-      new LocationImporter(storageManager, change).handleFile(locationFile);
+      new LocationImporter(repository, change).handleFile(locationFile);
 
       baseImporter.printBoxedText("Indexing");
       baseImporter.indexEntities(BaseLanguage.class);
       baseImporter.indexEntities(BaseLocation.class);
 
     } catch (Exception e) {
-      // for debugging
       e.printStackTrace();
     } finally {
-      // Close resources
-      if (indexManager != null) {
-        indexManager.close();
-      }
-      if (storageManager != null) {
-        storageManager.close();
+      if (repository != null) {
+        repository.close();
       }
       LOG.info("Time used: {}", stopWatch);
       // Close explicitly to terminate finalizer thread of Guice
@@ -114,10 +100,8 @@ public class BaseImporter extends DefaultImporter {
     }
   }
 
-  // ---------------------------------------------------------------------------
-
-  public BaseImporter(StorageManager storageManager, IndexManager indexManager) {
-    super(storageManager, indexManager);
+  public BaseImporter(Repository repository) {
+    super(repository);
   }
 
 }

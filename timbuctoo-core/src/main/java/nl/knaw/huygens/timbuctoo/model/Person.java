@@ -79,10 +79,15 @@ public class Person extends DomainEntity {
   }
 
   @JsonIgnore
-  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false), //
-      @IndexAnnotation(fieldName = "dynamic_sort_name", isFaceted = false, isSortable = true) })
+  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
   public String getIndexedName() {
     return defaultName().getFullName();
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_sort_name", isFaceted = false, isSortable = true)
+  public String getSortName() {
+    return defaultName().getSortName();
   }
 
   public List<String> getTypes() {
