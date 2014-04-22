@@ -109,4 +109,10 @@ public class SolrIndex implements Index {
     }
 
   }
+
+  @Override
+  public void close() {
+    // TODO Auto-generated method stub
+
+  }
 }

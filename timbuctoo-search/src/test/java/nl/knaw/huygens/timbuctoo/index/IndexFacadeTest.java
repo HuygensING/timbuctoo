@@ -455,6 +455,23 @@ public class IndexFacadeTest {
     }
   }
 
+  @Test
+  public void testClose() throws IndexException {
+    // setup
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+
+    // when
+    when(scopeManagerMock.getAllIndexes()).thenReturn(Lists.newArrayList(indexMock1, indexMock2));
+
+    // action
+    instance.close();
+
+    // verify
+    verify(indexMock1).close();
+    verify(indexMock2).close();
+  }
+
   private static class OtherIndexBaseType extends DomainEntity {
 
     @Override

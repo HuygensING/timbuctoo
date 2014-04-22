@@ -53,4 +53,9 @@ public interface Index {
    */
   public void commit() throws IndexException;
 
+  /**
+   * Close the connection with the index.
+   */
+  public void close();
+
 }
