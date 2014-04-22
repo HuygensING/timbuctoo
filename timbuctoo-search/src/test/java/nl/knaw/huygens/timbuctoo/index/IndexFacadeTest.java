@@ -19,6 +19,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.timbuctoo.index.model.SubModel;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
@@ -41,6 +42,7 @@ public class IndexFacadeTest {
   private StorageManager storageManagerMock;
   private Class<SubModel> type = SubModel.class;
   private IndexStatus indexStatusMock;
+  private SortableFieldFinder sortableFieldFinderMock;
 
   @Before
   public void setUp() {
@@ -48,8 +50,9 @@ public class IndexFacadeTest {
     storageManagerMock = mock(StorageManager.class);
     scopeManagerMock = mock(ScopeManager.class);
     typeRegistryMock = mock(TypeRegistry.class);
+    sortableFieldFinderMock = mock(SortableFieldFinder.class);
     doReturn(BASE_TYPE).when(typeRegistryMock).getBaseClass(type);
-    instance = new IndexFacade(scopeManagerMock, typeRegistryMock, storageManagerMock) {
+    instance = new IndexFacade(scopeManagerMock, typeRegistryMock, storageManagerMock, sortableFieldFinderMock) {
       @Override
       protected IndexStatus creatIndexStatus() {
         return indexStatusMock;
@@ -488,6 +491,16 @@ public class IndexFacadeTest {
     // verify
     verify(indexMock1).close();
     verify(indexMock2).close();
+  }
+
+  @Test
+  public void testFindSortableFields() {
+
+    // action 
+    instance.findSortableFields(BASE_TYPE);
+
+    // verify
+    verify(sortableFieldFinderMock).findFields(BASE_TYPE);
   }
 
   private static class OtherIndexBaseType extends DomainEntity {

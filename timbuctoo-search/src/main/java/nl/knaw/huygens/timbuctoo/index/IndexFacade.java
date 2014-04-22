@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
+import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
@@ -23,11 +24,13 @@ public class IndexFacade implements SearchManager, IndexManager {
   private final ScopeManager scopeManager;
   private final TypeRegistry typeRegistry;
   private final StorageManager storageManager;
+  private final SortableFieldFinder sortableFieldFinder;
 
-  public IndexFacade(ScopeManager scopeManager, TypeRegistry typeRegistry, StorageManager storageManager) {
+  public IndexFacade(ScopeManager scopeManager, TypeRegistry typeRegistry, StorageManager storageManager, SortableFieldFinder sortableFieldFinder) {
     this.scopeManager = scopeManager; // TODO place functionality of ScopeManager in VREManager
     this.typeRegistry = typeRegistry;
     this.storageManager = storageManager;
+    this.sortableFieldFinder = sortableFieldFinder;
   }
 
   @Override
@@ -165,8 +168,7 @@ public class IndexFacade implements SearchManager, IndexManager {
 
   @Override
   public Set<String> findSortableFields(Class<? extends DomainEntity> type) {
-    // TODO Auto-generated method stub
-    return null;
+    return sortableFieldFinder.findFields(type);
   }
 
   @Override

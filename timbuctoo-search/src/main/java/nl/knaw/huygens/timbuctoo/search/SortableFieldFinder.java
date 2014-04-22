@@ -28,7 +28,7 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 
 import org.apache.commons.lang.StringUtils;
 
-class SortableFieldFinder extends AbstractFieldFinder {
+public class SortableFieldFinder extends AbstractFieldFinder {
 
   @Override
   protected void addField(Set<String> fields, IndexAnnotation indexAnnotation) {
