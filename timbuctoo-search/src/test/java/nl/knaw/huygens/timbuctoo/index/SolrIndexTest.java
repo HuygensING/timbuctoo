@@ -2,18 +2,26 @@ package nl.knaw.huygens.timbuctoo.index;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.List;
 
+import nl.knaw.huygens.facetedsearch.FacetedSearchException;
+import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
+import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
+import nl.knaw.huygens.facetedsearch.model.NoSuchFieldInIndexException;
+import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -34,17 +42,20 @@ public class SolrIndexTest {
   private AbstractSolrServer solrServerMock;
   private SolrInputDocument solrInputDocumentMock;
   private SolrInputDocumentCreator documentCreatorMock;
+  private FacetedSearchLibrary facetedSearchLibraryMock;
   private SolrIndex instance;
+  private FacetedSearchResultConverter searchResultConverterMock;
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-
     solrServerMock = mock(AbstractSolrServer.class);
     solrInputDocumentMock = mock(SolrInputDocument.class);
     documentCreatorMock = mock(SolrInputDocumentCreator.class);
+    facetedSearchLibraryMock = mock(FacetedSearchLibrary.class);
+    searchResultConverterMock = mock(FacetedSearchResultConverter.class);
 
-    instance = new SolrIndex("indexName", documentCreatorMock, solrServerMock);
+    instance = new SolrIndex("indexName", documentCreatorMock, solrServerMock, facetedSearchLibraryMock, searchResultConverterMock);
   }
 
   @Test
@@ -359,4 +370,52 @@ public class SolrIndexTest {
     }
   }
 
+  @Test
+  public void testSearch() throws NoSuchFieldInIndexException, FacetedSearchException, SearchException {
+    // setup
+    DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
+    FacetedSearchResult facetedSearchResult = new FacetedSearchResult();
+    SearchResult searchResult = new SearchResult();
+
+    // when
+    when(facetedSearchLibraryMock.search(searchParameters)).thenReturn(facetedSearchResult);
+    when(searchResultConverterMock.convert(facetedSearchResult)).thenReturn(searchResult);
+
+    // action
+    SearchResult actualSearchResult = instance.search(searchParameters);
+
+    // verify
+    verify(facetedSearchLibraryMock).search(searchParameters);
+    verify(searchResultConverterMock).convert(facetedSearchResult);
+
+    assertThat(actualSearchResult, is(searchResult));
+  }
+
+  @Test(expected = SearchException.class)
+  public void testSearchFacetedSearchLibraryThrowsNoSuchFieldInIndexException() throws NoSuchFieldInIndexException, FacetedSearchException, SearchException {
+    testSeachFacetedSearchLibraryThrowsAnException(NoSuchFieldInIndexException.class);
+  }
+
+  @Test(expected = SearchException.class)
+  public void testSearchFacetedSearchLibraryThrowsFacetedSearchException() throws NoSuchFieldInIndexException, FacetedSearchException, SearchException {
+    testSeachFacetedSearchLibraryThrowsAnException(FacetedSearchException.class);
+  }
+
+  private void testSeachFacetedSearchLibraryThrowsAnException(Class<? extends Exception> exceptionToThrow) throws NoSuchFieldInIndexException, FacetedSearchException, SearchException {
+    // setup
+    DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
+
+    // when
+    doThrow(exceptionToThrow).when(facetedSearchLibraryMock).search(searchParameters);
+
+    try {
+      // action
+      instance.search(searchParameters);
+    } finally {
+      // verify
+      verify(facetedSearchLibraryMock).search(searchParameters);
+      verifyZeroInteractions(searchResultConverterMock);
+    }
+
+  }
 }

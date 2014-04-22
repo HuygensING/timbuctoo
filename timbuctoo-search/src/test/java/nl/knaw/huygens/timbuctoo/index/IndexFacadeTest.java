@@ -23,7 +23,6 @@ import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.timbuctoo.index.model.SubModel;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
@@ -509,7 +508,7 @@ public class IndexFacadeTest {
   }
 
   @Test
-  public void testSearch() throws IndexException, NoSuchFacetException {
+  public void testSearch() throws SearchException {
     // setup
     Index indexMock = mock(Index.class);
     Scope scopeMock = mock(Scope.class);
@@ -525,6 +524,20 @@ public class IndexFacadeTest {
     // verify
     verify(indexMock).search(searchParameters);
     assertThat(actualSearchResult, is(searchResult));
+  }
+
+  @Test(expected = SearchException.class)
+  public void testSearchIndexThrowsSearchException() throws SearchException {
+    // setup
+    Index indexMock = mock(Index.class);
+    Scope scopeMock = mock(Scope.class);
+    DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
+
+    // when
+    when(scopeManagerMock.getIndexFor(scopeMock, BASE_TYPE)).thenReturn(indexMock);
+    doThrow(SearchException.class).when(indexMock).search(searchParameters);
+
+    instance.search(scopeMock, BASE_TYPE, searchParameters);
   }
 
   private static class OtherIndexBaseType extends DomainEntity {

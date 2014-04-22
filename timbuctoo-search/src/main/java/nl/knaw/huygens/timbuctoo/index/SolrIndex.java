@@ -3,6 +3,10 @@ package nl.knaw.huygens.timbuctoo.index;
 import java.io.IOException;
 import java.util.List;
 
+import nl.knaw.huygens.facetedsearch.FacetedSearchException;
+import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
+import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
+import nl.knaw.huygens.facetedsearch.model.NoSuchFieldInIndexException;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -14,11 +18,13 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 
 public class SolrIndex implements Index {
+  protected static final SolrQuery COUNT_QUERY;
 
   private final SolrInputDocumentCreator solrDocumentCreator;
   private final AbstractSolrServer solrServer;
   private final String name;
-  protected static final SolrQuery COUNT_QUERY;
+  private final FacetedSearchLibrary facetedSearchLibraryMock;
+  private final FacetedSearchResultConverter searchResultConverter;
 
   static {
     COUNT_QUERY = new SolrQuery();
@@ -26,10 +32,13 @@ public class SolrIndex implements Index {
     COUNT_QUERY.setRows(0);
   }
 
-  public SolrIndex(String name, SolrInputDocumentCreator solrDocumentCreator, AbstractSolrServer solrServer) {
+  public SolrIndex(String name, SolrInputDocumentCreator solrDocumentCreator, AbstractSolrServer solrServer, FacetedSearchLibrary facetedSearchLibraryMock,
+      FacetedSearchResultConverter searchResultConverter) {
     this.name = name;
     this.solrDocumentCreator = solrDocumentCreator;
     this.solrServer = solrServer;
+    this.facetedSearchLibraryMock = facetedSearchLibraryMock;
+    this.searchResultConverter = searchResultConverter;
   }
 
   @Override
@@ -134,9 +143,17 @@ public class SolrIndex implements Index {
   }
 
   @Override
-  public <T extends FacetedSearchParameters<T>> SearchResult search(FacetedSearchParameters<T> searchParamaters) {
-    // TODO Auto-generated method stub
-    return null;
+  public <T extends FacetedSearchParameters<T>> SearchResult search(FacetedSearchParameters<T> searchParameters) throws SearchException {
+    FacetedSearchResult facetedSearchResult = null;
+    try {
+      facetedSearchResult = facetedSearchLibraryMock.search(searchParameters);
+    } catch (NoSuchFieldInIndexException e) {
+      throw new SearchException(e);
+    } catch (FacetedSearchException e) {
+      throw new SearchException(e);
+    }
+
+    return searchResultConverter.convert(facetedSearchResult);
 
   }
 }

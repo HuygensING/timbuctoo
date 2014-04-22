@@ -27,6 +27,7 @@ import java.util.Set;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
+import nl.knaw.huygens.timbuctoo.index.SearchException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
@@ -38,6 +39,6 @@ public interface SearchManager {
   @Deprecated
   SearchResult search(Scope scope, Class<? extends DomainEntity> type, SearchParameters searchParameters) throws IndexException, NoSuchFacetException;
 
-  <T extends FacetedSearchParameters<T>> SearchResult search(Scope scope, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws IndexException, NoSuchFacetException;
+  <T extends FacetedSearchParameters<T>> SearchResult search(Scope scope, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException;
 
 }

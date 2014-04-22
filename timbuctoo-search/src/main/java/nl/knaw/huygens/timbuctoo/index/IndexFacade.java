@@ -173,8 +173,7 @@ public class IndexFacade implements SearchManager, IndexManager {
   }
 
   @Override
-  public <T extends FacetedSearchParameters<T>> SearchResult search(Scope scope, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws IndexException,
-      NoSuchFacetException {
+  public <T extends FacetedSearchParameters<T>> SearchResult search(Scope scope, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException {
     Index index = scopeManager.getIndexFor(scope, type);
 
     return index.search(searchParameters);

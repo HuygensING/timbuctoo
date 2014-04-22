@@ -71,7 +71,8 @@ public interface Index {
    * Search the index.
    * @param searchParameters
    * @return the search result.
+   * @throws SearchException when the search request could not be processed.
    */
-  public <T extends FacetedSearchParameters<T>> SearchResult search(FacetedSearchParameters<T> searchParameters);
+  public <T extends FacetedSearchParameters<T>> SearchResult search(FacetedSearchParameters<T> searchParameters) throws SearchException;
 
 }

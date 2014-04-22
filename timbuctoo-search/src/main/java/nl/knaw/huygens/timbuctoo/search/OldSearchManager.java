@@ -186,8 +186,7 @@ public class OldSearchManager implements SearchManager {
   }
 
   @Override
-  public <T extends FacetedSearchParameters<T>> SearchResult search(Scope scope, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws IndexException,
-      NoSuchFacetException {
+  public <T extends FacetedSearchParameters<T>> SearchResult search(Scope scope, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) {
     // TODO Auto-generated method stub
     return null;
   }
