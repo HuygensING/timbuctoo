@@ -54,6 +54,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
+import nl.knaw.huygens.timbuctoo.util.Text;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
@@ -425,26 +426,26 @@ public class WomenWritersImporter extends DefaultImporter {
     }
 
     StringBuilder notesBuilder = new StringBuilder();
-    appendTo(notesBuilder, filterNotesField(object.notes), "");
+    Text.appendTo(notesBuilder, filterNotesField(object.notes), "");
 
     List<XPrint> prints = extractPrints(object);
     for (XPrint print : prints) {
-      appendTo(notesBuilder, "* Print", NEWLINE);
-      appendTo(notesBuilder, print.edition, NEWLINE + "Edition: ");
-      appendTo(notesBuilder, print.publisher, NEWLINE + "Publisher: ");
-      appendTo(notesBuilder, print.location, NEWLINE + "Location: ");
-      appendTo(notesBuilder, print.year, NEWLINE + "Year: ");
+      Text.appendTo(notesBuilder, "* Print", NEWLINE);
+      Text.appendTo(notesBuilder, print.edition, NEWLINE + "Edition: ");
+      Text.appendTo(notesBuilder, print.publisher, NEWLINE + "Publisher: ");
+      Text.appendTo(notesBuilder, print.location, NEWLINE + "Location: ");
+      Text.appendTo(notesBuilder, print.year, NEWLINE + "Year: ");
     }
     if (selectFirstEdition(prints, date) != null) {
       converted.setEdition("1");
     }
 
     if (object.source != null) {
-      appendTo(notesBuilder, "* Source", NEWLINE);
-      appendTo(notesBuilder, filterField(object.source.type), NEWLINE + "Type: ");
-      appendTo(notesBuilder, filterField(object.source.full_name), NEWLINE + "Full Name: ");
-      appendTo(notesBuilder, filterField(object.source.short_name), NEWLINE + "Short Name: ");
-      appendTo(notesBuilder, filterField(object.source.notes), NEWLINE + "Notes: ");
+      Text.appendTo(notesBuilder, "* Source", NEWLINE);
+      Text.appendTo(notesBuilder, filterField(object.source.type), NEWLINE + "Type: ");
+      Text.appendTo(notesBuilder, filterField(object.source.full_name), NEWLINE + "Full Name: ");
+      Text.appendTo(notesBuilder, filterField(object.source.short_name), NEWLINE + "Short Name: ");
+      Text.appendTo(notesBuilder, filterField(object.source.notes), NEWLINE + "Notes: ");
     }
 
     converted.setNotes(notesBuilder.toString());
@@ -1192,7 +1193,8 @@ public class WomenWritersImporter extends DefaultImporter {
     converted.tempMemberships = concatenate(object.memberships);
     converted.tempMotherTongue = filterField(object.mother_tongue);
 
-    String name = converted.tempName = filterField(object.name);
+    String name = filterField(object.name);
+    converted.setTempName(name);
     if (name != null) {
       Matcher matcher = simpleNamePattern.matcher(name);
       if (matcher.matches()) {
@@ -1235,10 +1237,10 @@ public class WomenWritersImporter extends DefaultImporter {
     }
 
     converted.tempPublishingLanguages = concatenate(object.publishing_languages);
-    converted.tempSpouse = filterField(object.spouse);
+    converted.setTempSpouse(filterField(object.spouse));
 
     String type = filterField(object.type);
-    if (converted.tempName != null && converted.tempName.startsWith("~")) {
+    if (converted.getTempName() != null && converted.getTempName().startsWith("~")) {
       converted.addType(Person.Type.ARCHETYPE);
       nArchetype++;
     } else if (type == null || type.equalsIgnoreCase("unknown")) {
@@ -1272,7 +1274,7 @@ public class WomenWritersImporter extends DefaultImporter {
     StringBuilder builder = new StringBuilder();
     if (items != null) {
       for (String item : items) {
-        appendTo(builder, filterField(item), "; ");
+        Text.appendTo(builder, filterField(item), "; ");
       }
     }
     return (builder.length() > 0) ? builder.toString() : null;

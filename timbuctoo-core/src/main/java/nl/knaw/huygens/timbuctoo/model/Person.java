@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
+import nl.knaw.huygens.timbuctoo.util.Text;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
@@ -81,7 +82,11 @@ public class Person extends DomainEntity {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
   public String getIndexedName() {
-    return defaultName().getFullName();
+    StringBuilder builder = new StringBuilder();
+    for (PersonName name : getNames()) {
+      Text.appendTo(builder, name.getFullName(), " ");
+    }
+    return builder.toString();
   }
 
   @JsonIgnore

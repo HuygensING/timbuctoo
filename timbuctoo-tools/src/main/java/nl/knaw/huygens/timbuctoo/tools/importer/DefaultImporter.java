@@ -135,7 +135,6 @@ public abstract class DefaultImporter {
     try {
       return storageManager.addDomainEntity(type, relation, change);
     } catch (DuplicateException e) {
-      System.out.println("Duplicate relation: " + relation);
       duplicateRelationCount++;
     } catch (Exception e) {
       System.out.println(line);
@@ -242,18 +241,6 @@ public abstract class DefaultImporter {
     }
     text = text.replaceAll("[ \\u00A0]+", " ");
     return StringUtils.stripToNull(text);
-  }
-
-  /**
-   * Conditionally appends a text to a string builder.
-   */
-  protected void appendTo(StringBuilder builder, String text, String separator) {
-    if (text != null && text.length() != 0) {
-      if (builder.length() != 0) {
-        builder.append(separator);
-      }
-      builder.append(text);
-    }
   }
 
 }
