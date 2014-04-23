@@ -347,15 +347,17 @@ public class WomenWritersImporter extends DefaultImporter {
 
   private Map<String, DocumentType> createDocumentTypeMap() {
     Map<String, DocumentType> map = Maps.newHashMap();
-    map.put("Article", DocumentType.ARTICLE);
-    map.put("Catalogue", DocumentType.CATALOGUE);
-    map.put("List", DocumentType.UNKNOWN);
-    map.put("Picture", DocumentType.PICTURE);
-    map.put("Publicity", DocumentType.PUBLICITY);
-    map.put("TBD", DocumentType.UNKNOWN);
-    map.put("To Be Done", DocumentType.UNKNOWN);
-    map.put("To be done", DocumentType.UNKNOWN);
-    map.put("Work", DocumentType.WORK);
+    map.put("anthology", DocumentType.ANTHOLOGY);
+    map.put("article", DocumentType.ARTICLE);
+    map.put("award", DocumentType.AWARD);
+    map.put("catalogue", DocumentType.CATALOGUE);
+    map.put("list", DocumentType.LIST);
+    map.put("picture", DocumentType.PICTURE);
+    map.put("publicity", DocumentType.PUBLICITY);
+    map.put("sheet music", DocumentType.SHEETMUSIC);
+    map.put("tbd", DocumentType.UNKNOWN);
+    map.put("theater script", DocumentType.THEATERSCRIPT);
+    map.put("to be done", DocumentType.UNKNOWN);
     map.put("work", DocumentType.WORK);
     return map;
   }
@@ -466,7 +468,7 @@ public class WomenWritersImporter extends DefaultImporter {
   }
 
   public DocumentType toDocumentType(String type) {
-    DocumentType documentType = (type != null) ? documentTypeMap.get(type) : null;
+    DocumentType documentType = (type != null) ? documentTypeMap.get(type.toLowerCase()) : null;
     return (documentType != null) ? documentType : DocumentType.UNKNOWN;
   }
 
