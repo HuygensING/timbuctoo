@@ -8,7 +8,6 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -21,7 +20,6 @@ import nl.knaw.huygens.facetedsearch.model.NoSuchFieldInIndexException;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -44,7 +42,6 @@ public class SolrIndexTest {
   private SolrInputDocumentCreator documentCreatorMock;
   private FacetedSearchLibrary facetedSearchLibraryMock;
   private SolrIndex instance;
-  private FacetedSearchResultConverter searchResultConverterMock;
 
   @Before
   public void setUp() {
@@ -53,9 +50,8 @@ public class SolrIndexTest {
     solrInputDocumentMock = mock(SolrInputDocument.class);
     documentCreatorMock = mock(SolrInputDocumentCreator.class);
     facetedSearchLibraryMock = mock(FacetedSearchLibrary.class);
-    searchResultConverterMock = mock(FacetedSearchResultConverter.class);
 
-    instance = new SolrIndex("indexName", documentCreatorMock, solrServerMock, facetedSearchLibraryMock, searchResultConverterMock);
+    instance = new SolrIndex("indexName", documentCreatorMock, solrServerMock, facetedSearchLibraryMock);
   }
 
   @Test
@@ -375,20 +371,17 @@ public class SolrIndexTest {
     // setup
     DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
     FacetedSearchResult facetedSearchResult = new FacetedSearchResult();
-    SearchResult searchResult = new SearchResult();
 
     // when
     when(facetedSearchLibraryMock.search(searchParameters)).thenReturn(facetedSearchResult);
-    when(searchResultConverterMock.convert(facetedSearchResult)).thenReturn(searchResult);
 
     // action
-    SearchResult actualSearchResult = instance.search(searchParameters);
+    FacetedSearchResult actualSearchResult = instance.search(searchParameters);
 
     // verify
     verify(facetedSearchLibraryMock).search(searchParameters);
-    verify(searchResultConverterMock).convert(facetedSearchResult);
 
-    assertThat(actualSearchResult, is(searchResult));
+    assertThat(actualSearchResult, is(facetedSearchResult));
   }
 
   @Test(expected = SearchException.class)
@@ -414,7 +407,6 @@ public class SolrIndexTest {
     } finally {
       // verify
       verify(facetedSearchLibraryMock).search(searchParameters);
-      verifyZeroInteractions(searchResultConverterMock);
     }
 
   }

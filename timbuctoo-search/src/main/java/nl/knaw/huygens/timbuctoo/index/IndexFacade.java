@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.index;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -26,12 +27,15 @@ public class IndexFacade implements SearchManager, IndexManager {
   private final TypeRegistry typeRegistry;
   private final StorageManager storageManager;
   private final SortableFieldFinder sortableFieldFinder;
+  private final FacetedSearchResultConverter facetedSearchResultConverter;
 
-  public IndexFacade(ScopeManager scopeManager, TypeRegistry typeRegistry, StorageManager storageManager, SortableFieldFinder sortableFieldFinder) {
+  public IndexFacade(ScopeManager scopeManager, TypeRegistry typeRegistry, StorageManager storageManager, SortableFieldFinder sortableFieldFinder,
+      FacetedSearchResultConverter facetedSearchResultConverter) {
     this.scopeManager = scopeManager; // TODO place functionality of ScopeManager in VREManager
     this.typeRegistry = typeRegistry;
     this.storageManager = storageManager;
     this.sortableFieldFinder = sortableFieldFinder;
+    this.facetedSearchResultConverter = facetedSearchResultConverter;
   }
 
   @Override
@@ -176,7 +180,9 @@ public class IndexFacade implements SearchManager, IndexManager {
   public <T extends FacetedSearchParameters<T>> SearchResult search(Scope scope, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException {
     Index index = scopeManager.getIndexFor(scope, type);
 
-    return index.search(searchParameters);
+    FacetedSearchResult facetedSearchResult = index.search(searchParameters);
+
+    return facetedSearchResultConverter.convert(typeRegistry.getINameForType(type), facetedSearchResult);
   }
 
   private static interface IndexChanger {

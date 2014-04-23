@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
@@ -47,6 +48,7 @@ public class IndexFacadeTest {
   private Class<SubModel> type = SubModel.class;
   private IndexStatus indexStatusMock;
   private SortableFieldFinder sortableFieldFinderMock;
+  private FacetedSearchResultConverter facetedSearchResultConverterMock;
 
   @Before
   public void setUp() {
@@ -54,9 +56,10 @@ public class IndexFacadeTest {
     storageManagerMock = mock(StorageManager.class);
     scopeManagerMock = mock(ScopeManager.class);
     typeRegistryMock = mock(TypeRegistry.class);
-    sortableFieldFinderMock = mock(SortableFieldFinder.class);
     doReturn(BASE_TYPE).when(typeRegistryMock).getBaseClass(type);
-    instance = new IndexFacade(scopeManagerMock, typeRegistryMock, storageManagerMock, sortableFieldFinderMock) {
+    sortableFieldFinderMock = mock(SortableFieldFinder.class);
+    facetedSearchResultConverterMock = mock(FacetedSearchResultConverter.class);
+    instance = new IndexFacade(scopeManagerMock, typeRegistryMock, storageManagerMock, sortableFieldFinderMock, facetedSearchResultConverterMock) {
       @Override
       protected IndexStatus creatIndexStatus() {
         return indexStatusMock;
@@ -514,15 +517,20 @@ public class IndexFacadeTest {
     Scope scopeMock = mock(Scope.class);
     DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
     SearchResult searchResult = new SearchResult();
+    FacetedSearchResult facetedSearchResult = new FacetedSearchResult();
+    String typeString = "typeString";
 
     // when
     when(scopeManagerMock.getIndexFor(scopeMock, BASE_TYPE)).thenReturn(indexMock);
-    when(indexMock.search(searchParameters)).thenReturn(searchResult);
+    when(indexMock.search(searchParameters)).thenReturn(facetedSearchResult);
+    when(typeRegistryMock.getINameForType(BASE_TYPE)).thenReturn(typeString);
+    when(facetedSearchResultConverterMock.convert(typeString, facetedSearchResult)).thenReturn(searchResult);
 
     SearchResult actualSearchResult = instance.search(scopeMock, BASE_TYPE, searchParameters);
 
     // verify
     verify(indexMock).search(searchParameters);
+    verify(facetedSearchResultConverterMock).convert(typeString, facetedSearchResult);
     assertThat(actualSearchResult, is(searchResult));
   }
 

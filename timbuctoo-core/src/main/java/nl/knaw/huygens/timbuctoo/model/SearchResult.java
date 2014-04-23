@@ -25,9 +25,10 @@ package nl.knaw.huygens.timbuctoo.model;
 import java.util.Date;
 import java.util.List;
 
+import nl.knaw.huygens.facetedsearch.model.Facet;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
-import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 
 @IDPrefix(SearchResult.ID_PREFIX)
 @EntityTypeName("search")
@@ -40,14 +41,14 @@ public class SearchResult extends SystemEntity implements Persistent {
 
   private List<String> ids;
   private String term;
-  private String sort;
+  private List<SortParameter> sort;
   private Date date;
   private String searchType;
-  private List<FacetCount> facets;
+  private List<Facet> facets;
 
   public SearchResult() {}
 
-  public SearchResult(List<String> ids, String type, String term, String sort, Date date) {
+  public SearchResult(List<String> ids, String type, String term, List<SortParameter> sort, Date date) {
     this.ids = ids;
     this.term = term;
     this.sort = sort;
@@ -76,11 +77,11 @@ public class SearchResult extends SystemEntity implements Persistent {
     this.term = term;
   }
 
-  public String getSort() {
+  public List<SortParameter> getSort() {
     return sort;
   }
 
-  public void setSort(String sort) {
+  public void setSort(List<SortParameter> sort) {
     this.sort = sort;
   }
 
@@ -100,11 +101,11 @@ public class SearchResult extends SystemEntity implements Persistent {
     searchType = type;
   }
 
-  public List<FacetCount> getFacets() {
+  public List<Facet> getFacets() {
     return facets;
   }
 
-  public void setFacets(List<FacetCount> facets) {
+  public void setFacets(List<Facet> facets) {
     this.facets = facets;
   }
 

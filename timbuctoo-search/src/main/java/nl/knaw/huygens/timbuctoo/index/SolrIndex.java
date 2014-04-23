@@ -10,7 +10,6 @@ import nl.knaw.huygens.facetedsearch.model.NoSuchFieldInIndexException;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -23,8 +22,7 @@ public class SolrIndex implements Index {
   private final SolrInputDocumentCreator solrDocumentCreator;
   private final AbstractSolrServer solrServer;
   private final String name;
-  private final FacetedSearchLibrary facetedSearchLibraryMock;
-  private final FacetedSearchResultConverter searchResultConverter;
+  private final FacetedSearchLibrary facetedSearchLibrary;
 
   static {
     COUNT_QUERY = new SolrQuery();
@@ -32,13 +30,11 @@ public class SolrIndex implements Index {
     COUNT_QUERY.setRows(0);
   }
 
-  public SolrIndex(String name, SolrInputDocumentCreator solrDocumentCreator, AbstractSolrServer solrServer, FacetedSearchLibrary facetedSearchLibraryMock,
-      FacetedSearchResultConverter searchResultConverter) {
+  public SolrIndex(String name, SolrInputDocumentCreator solrDocumentCreator, AbstractSolrServer solrServer, FacetedSearchLibrary facetedSearchLibrary) {
     this.name = name;
     this.solrDocumentCreator = solrDocumentCreator;
     this.solrServer = solrServer;
-    this.facetedSearchLibraryMock = facetedSearchLibraryMock;
-    this.searchResultConverter = searchResultConverter;
+    this.facetedSearchLibrary = facetedSearchLibrary;
   }
 
   @Override
@@ -143,17 +139,13 @@ public class SolrIndex implements Index {
   }
 
   @Override
-  public <T extends FacetedSearchParameters<T>> SearchResult search(FacetedSearchParameters<T> searchParameters) throws SearchException {
-    FacetedSearchResult facetedSearchResult = null;
+  public <T extends FacetedSearchParameters<T>> FacetedSearchResult search(FacetedSearchParameters<T> searchParameters) throws SearchException {
     try {
-      facetedSearchResult = facetedSearchLibraryMock.search(searchParameters);
+      return facetedSearchLibrary.search(searchParameters);
     } catch (NoSuchFieldInIndexException e) {
       throw new SearchException(e);
     } catch (FacetedSearchException e) {
       throw new SearchException(e);
     }
-
-    return searchResultConverter.convert(facetedSearchResult);
-
   }
 }

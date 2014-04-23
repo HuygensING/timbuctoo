@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.search;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.solr.FacetInfo;
 import nl.knaw.huygens.solr.FacetParameter;
 import nl.knaw.huygens.solr.SearchParameters;
@@ -90,10 +92,10 @@ public class OldSearchManager implements SearchManager {
       ids.add(document.getFieldValue("id").toString());
     }
 
-    SearchResult searchResult = new SearchResult(ids, typeRegistry.getINameForType(type), searchTerm, searchParameters.getSort(), new Date());
+    SearchResult searchResult = new SearchResult(ids, typeRegistry.getINameForType(type), searchTerm, new ArrayList<SortParameter>(), new Date());
 
     List<FacetCount> facets = getFacetCounts(response.getFacetFields(), facetInfoMap);
-    searchResult.setFacets(facets);
+    searchResult.setFacetCount(facets);
 
     return searchResult;
   }
