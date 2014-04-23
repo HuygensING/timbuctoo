@@ -13,6 +13,13 @@
 
   <dependencies>
     <!-- ## Main dependencies ## -->
+    <!-- Faceted search tools -->
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>facetedsearch-tools-model</artifactId>
+      <version>${faceted.search.tools.version}</version>
+    </dependency>
+    
     <!-- Apache validation -->
     <dependency>
       <groupId>javax.validation</groupId>
