@@ -64,7 +64,7 @@ public class OldSearchManagerTest {
   private static final String ID_FIELD_NAME = "id";
   private static final String TYPE_STRING = "person";
   private static final String SEARCH_TERM = "term";
-  private static final String EXPECTED_TERM = String.format("dynamic_t_name:%s", SEARCH_TERM);
+  private static final String EXPECTED_TERM = String.format("(dynamic_t_name:%s)", SEARCH_TERM);
 
   private Scope scope;
   private OldSearchManager instance;
@@ -113,7 +113,7 @@ public class OldSearchManagerTest {
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
 
-    String expectedTerm = "dynamic_t_name:*";
+    String expectedTerm = "*:*";
     String searchTerm = "*";
     testSearch(TYPE, ids, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm);
   }
@@ -124,7 +124,7 @@ public class OldSearchManagerTest {
     List<String> facetFieldNames = Lists.newArrayList("dynamic_s_birthDate");
     int numberOfFacetValues = 1;
 
-    String expectedTerm = "dynamic_t_name:(test 123)";
+    String expectedTerm = "(dynamic_t_name:(test 123))";
     String searchTerm = "test 123";
     testSearch(TYPE, ids, searchTerm, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, Lists.<FacetParameter> newArrayList(), expectedTerm);
   }
@@ -136,7 +136,7 @@ public class OldSearchManagerTest {
     int numberOfFacetValues = 1;
 
     List<String> fullTextSearchFields = Lists.newArrayList("dynamic_t_simple", "dynamic_t_simple1");
-    String expectedTerm = String.format("dynamic_t_simple1:%s dynamic_t_simple:%s", SEARCH_TERM, SEARCH_TERM);
+    String expectedTerm = String.format("(dynamic_t_simple1:%s dynamic_t_simple:%s)", SEARCH_TERM, SEARCH_TERM);
 
     testSearch(ClassWithMupltipleFullTestSearchFields.class, ids, SEARCH_TERM, "classwithmupltiplefulltestsearchfields", facetFieldNames, fullTextSearchFields, numberOfFacetValues,
         Lists.<FacetParameter> newArrayList(), expectedTerm);
@@ -158,7 +158,7 @@ public class OldSearchManagerTest {
 
     List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("dynamic_s_birthDate", "value"));
 
-    String expectedTerm = String.format("+dynamic_t_name:%s +dynamic_s_birthDate:value", SEARCH_TERM);
+    String expectedTerm = String.format("+(dynamic_t_name:%s) +dynamic_s_birthDate:value", SEARCH_TERM);
 
     testSearch(TYPE, ids, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
   }
@@ -171,7 +171,7 @@ public class OldSearchManagerTest {
 
     List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("dynamic_s_birthDate", "value", "value1"));
 
-    String expectedTerm = String.format("+dynamic_t_name:%s +dynamic_s_birthDate:(value value1)", SEARCH_TERM);
+    String expectedTerm = String.format("+(dynamic_t_name:%s) +dynamic_s_birthDate:(value value1)", SEARCH_TERM);
 
     testSearch(TYPE, ids, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
   }
@@ -184,7 +184,7 @@ public class OldSearchManagerTest {
 
     List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("dynamic_s_birthDate", "value"), createFacetParam("dynamic_s_deathDate", "values"));
 
-    String expectedTerm = String.format("+dynamic_t_name:%s +dynamic_s_birthDate:value +dynamic_s_deathDate:values", SEARCH_TERM);
+    String expectedTerm = String.format("+(dynamic_t_name:%s) +dynamic_s_birthDate:value +dynamic_s_deathDate:values", SEARCH_TERM);
 
     testSearch(TYPE, ids, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
   }
@@ -197,7 +197,7 @@ public class OldSearchManagerTest {
 
     List<FacetParameter> facetParameters = Lists.newArrayList(createFacetParam("dynamic_s_birthDate", "value", "value1"), createFacetParam("dynamic_s_deathDate", "value1", "value2"));
 
-    String expectedTerm = String.format("+dynamic_t_name:%s +dynamic_s_birthDate:(value value1) +dynamic_s_deathDate:(value1 value2)", SEARCH_TERM);
+    String expectedTerm = String.format("+(dynamic_t_name:%s) +dynamic_s_birthDate:(value value1) +dynamic_s_deathDate:(value1 value2)", SEARCH_TERM);
 
     testSearch(TYPE, ids, SEARCH_TERM, TYPE_STRING, facetFieldNames, FULL_TEXT_SEARCH_NAMES, numberOfFacetValues, facetParameters, expectedTerm);
   }

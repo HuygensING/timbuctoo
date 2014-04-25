@@ -41,6 +41,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -119,10 +120,16 @@ public class OldSearchManager implements SearchManager {
     boolean usesFacets = facetValues != null && !facetValues.isEmpty();
     StringBuilder builder = new StringBuilder();
     String prefix = "";
-    for (String field : fullTextSearchFields) {
-      builder.append(prefix).append(usesFacets ? "+" : "").append(field).append(":");
-      builder.append(formatTerm(searchParameters.getTerm()));
-      prefix = " ";
+    if ("*".equals(searchParameters.getTerm()) || StringUtils.isBlank(searchParameters.getTerm())) {
+      builder.append("*:*");
+    } else {
+      builder.append(usesFacets ? "+" : "").append("(");
+      for (String field : fullTextSearchFields) {
+        builder.append(prefix).append(field).append(":");
+        builder.append(formatTerm(searchParameters.getTerm()));
+        prefix = " ";
+      }
+      builder.append(")");
     }
     if (usesFacets) {
       for (FacetParameter facetParameter : facetValues) {
