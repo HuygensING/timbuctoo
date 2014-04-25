@@ -78,8 +78,6 @@ public class EBNMImporter extends DefaultImporter {
         repository.close();
       }
       LOG.info("Time used: {}", stopWatch);
-      // Close explicitly to terminate finalizer thread of Guice
-      System.exit(0);
     }
   }
 
