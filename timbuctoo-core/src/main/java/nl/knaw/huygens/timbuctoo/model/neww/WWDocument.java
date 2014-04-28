@@ -33,6 +33,7 @@ import com.google.common.collect.Lists;
 
 public class WWDocument extends Document {
 
+  private boolean source;
   private String notes;
   private List<String> topoi;
 
@@ -46,7 +47,16 @@ public class WWDocument extends Document {
   // ---------------------------------------------------------------------------
 
   public WWDocument() {
+    source = false;
     topoi = Lists.newArrayList();
+  }
+
+  public boolean isSource() {
+    return source;
+  }
+
+  public void setSource(boolean source) {
+    this.source = source;
   }
 
   public String getNotes() {

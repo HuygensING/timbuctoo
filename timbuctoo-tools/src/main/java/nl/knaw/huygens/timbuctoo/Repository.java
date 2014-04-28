@@ -22,10 +22,15 @@ package nl.knaw.huygens.timbuctoo;
  * #L%
  */
 
+import java.io.IOException;
+
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +65,10 @@ public class Repository {
 
   public IndexManager getIndexManager() {
     return indexManager;
+  }
+
+  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws IOException, ValidationException {
+    return storageManager.addDomainEntity(type, entity, change);
   }
 
   public void close() {

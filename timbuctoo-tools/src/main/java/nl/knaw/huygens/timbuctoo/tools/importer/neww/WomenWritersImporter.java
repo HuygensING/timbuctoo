@@ -106,6 +106,8 @@ public class WomenWritersImporter extends DefaultImporter {
   private final Map<String, Reference> references = Maps.newHashMap();
   /** Keys of invalid primitive entities */
   private final Set<String> invalids = Sets.newHashSet();
+  /** Special keywords */
+  private KeywordConcordance keywords;
   /** For deserializing JSON */
   private final ObjectMapper objectMapper;
   private final File inputDir;
@@ -132,10 +134,16 @@ public class WomenWritersImporter extends DefaultImporter {
     removeNonPersistentEntities(WWPerson.class);
     removeNonPersistentEntities(WWRelation.class);
 
+    printBoxedText("Import");
+
     importRelationTypes();
     setupRelationDefs();
 
-    printBoxedText("Import");
+    System.out.println(".. Keywords");
+    System.out.printf("Number = %6d%n%n", importKeywords());
+
+    keywords = new KeywordConcordance(repository, change);
+    keywords.handleFile(new File(inputDir, "neww-keywords.txt"), 0, false);
 
     System.out.println(".. Languages");
     System.out.printf("Number = %6d%n%n", importLanguages());
@@ -143,14 +151,12 @@ public class WomenWritersImporter extends DefaultImporter {
     System.out.println(".. Locations");
     System.out.printf("Number = %6d%n%n", importLocations());
 
-    System.out.println(".. Keywords");
-    System.out.printf("Number = %6d%n%n", importKeywords());
-
     System.out.println(".. Collectives");
     System.out.printf("Number = %6d%n%n", importCollectives());
 
     System.out.println(".. Documents");
-    System.out.printf("Number = %6d%n%n", importDocuments());
+    System.out.printf("Source documents = %6d%n%n", importSourceDocuments());
+    System.out.printf("Regular documents = %6d%n%n", importRegularDocuments());
 
     System.out.println(".. Persons");
     System.out.printf("Number = %6d%n%n", importPersons());
@@ -315,9 +321,55 @@ public class WomenWritersImporter extends DefaultImporter {
 
   // --- Documents -------------------------------------------------------------
 
+  private static final String JUNK_SOURCE = "Info in Reference and/or Provional notes.";
+
+  private int importSourceDocuments() throws Exception {
+    int initialSize = references.size();
+    Reference relationTypeRef = relationTypes.get("hasSourceCategory");
+    List<String> ignoredCategories = Lists.newArrayList("", "-", "TBD");
+
+    LineIterator iterator = getLineIterator("documents.json");
+    String line = "";
+    try {
+      while (iterator.hasNext()) {
+        line = preprocessJson(iterator.nextLine());
+        if (!line.isEmpty()) {
+          String json = preprocessDocumentJson(line);
+          XDocument object = objectMapper.readValue(json, XDocument.class);
+          if (object != null && object.source != null) {
+            String title = filterField(object.source.full_name);
+            String key = newKey("SourceDocument", title);
+            if (!references.containsKey(key) && !title.startsWith(JUNK_SOURCE)) {
+              WWDocument document = new WWDocument();
+              document.setSource(true);
+              document.setTitle(title);
+              document.setNotes(filterNotesField(object.source.notes));
+              String storedId = addDomainEntity(WWDocument.class, document, change);
+              Reference documentRef = new Reference(Document.class, storedId);
+              references.put(key, documentRef);
+              String category = StringUtils.trimToEmpty(object.source.type);
+              Reference keywordRef = keywords.lookup(category);
+              if (keywordRef != null) {
+                addRelation(WWRelation.class, relationTypeRef, documentRef, keywordRef, change, "");
+              } else if (!ignoredCategories.contains(category)) {
+                System.out.printf("Undefined source category [%s] for [%s]%n", category, title);
+              }
+            }
+          }
+        }
+      }
+    } catch (JsonMappingException e) {
+      System.out.println(line);
+      throw e;
+    } finally {
+      LineIterator.closeQuietly(iterator);
+    }
+    return references.size() - initialSize;
+  }
+
   private PublisherNormalizer publisherNormalizer;
 
-  private int importDocuments() throws Exception {
+  private int importRegularDocuments() throws Exception {
     int initialSize = references.size();
     documentTypeMap = createDocumentTypeMap();
     File file = new File(inputDir, "publishers.txt");
@@ -386,6 +438,14 @@ public class WomenWritersImporter extends DefaultImporter {
         String storedId = addDomainEntity(WWDocument.class, converted, change);
         Reference reference = storeReference(key, WWDocument.class, storedId);
         handlePublisher(extractPrints(object), converted.getDate(), reference);
+        if (object.source != null) {
+          String title = filterField(object.source.full_name);
+          Reference sourceDocRef = references.get(newKey("SourceDocument", title));
+          if (sourceDocRef != null) {
+            Reference relationTypeRef = relationTypes.get("hasDocumentSource");
+            addRelation(WWRelation.class, relationTypeRef, reference, sourceDocRef, change, "");
+          }
+        }
       }
     }
   }
@@ -436,14 +496,6 @@ public class WomenWritersImporter extends DefaultImporter {
     }
     if (selectFirstEdition(prints, date) != null) {
       converted.setEdition("1");
-    }
-
-    if (object.source != null) {
-      Text.appendTo(notesBuilder, "* Source", NEWLINE);
-      Text.appendTo(notesBuilder, filterField(object.source.type), NEWLINE + "Type: ");
-      Text.appendTo(notesBuilder, filterField(object.source.full_name), NEWLINE + "Full Name: ");
-      Text.appendTo(notesBuilder, filterField(object.source.short_name), NEWLINE + "Short Name: ");
-      Text.appendTo(notesBuilder, filterField(object.source.notes), NEWLINE + "Notes: ");
     }
 
     converted.setNotes(notesBuilder.toString());
