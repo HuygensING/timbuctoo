@@ -1109,6 +1109,7 @@ public class WomenWritersImporter extends DefaultImporter {
 
   private final Pattern simpleNamePattern = Pattern.compile("^(\\p{Lu}\\p{L}+), (\\p{Lu}\\p{L}+)$");
   private final Set<String> excludedNames = Sets.newHashSet("Comtesse", "Madame", "Madamoiselle", "Mejuffrouw", "Mevrouw", "Mme", "Mrs", "Queen", "Vrou");
+  private final Set<String> ignoredReligionValues = Sets.newHashSet("not relevant", "not yet checked", "not yet known", "unknown", "unkown");
 
   // maps line without id to stored id
   private final Map<String, String> lines = Maps.newHashMap();
@@ -1169,12 +1170,30 @@ public class WomenWritersImporter extends DefaultImporter {
           storedId = addDomainEntity(WWPerson.class, converted, change);
           lines.put(line, storedId);
         }
-        storeReference(key, WWPerson.class, storedId);
+        Reference personRef = storeReference(key, WWPerson.class, storedId);
+        handleXRelation("hasReligion", "religion", object.religion, ignoredReligionValues, personRef, object.name);
       }
     }
   }
 
-  // \p{Lu}
+  private void handleXRelation(String relationName, String keywordType, String[] items, Set<String> ignoredValues, Reference baseRef, String line) {
+    if (items != null && items.length != 0) {
+      Reference relationTypeRef = relationTypes.get(relationName);
+      for (String item : items) {
+        String value = filterField(item);
+        if (value != null) {
+          value = value.replaceAll("[•\\.,;]", "").trim();
+          Reference keywordRef = keywords.lookup(keywordType, value);
+          if (keywordRef != null) {
+            addRelation(WWRelation.class, relationTypeRef, baseRef, keywordRef, change, line);
+          } else if (!ignoredValues.contains(value.toLowerCase())) {
+            System.out.printf("Undefined %s [%s] for [%s]%n", keywordType, value, line);
+          }
+        }
+      }
+    }
+  }
+
   private WWPerson convert(String line, XPerson object) {
     String text;
     WWPerson converted = new WWPerson();
@@ -1274,12 +1293,7 @@ public class WomenWritersImporter extends DefaultImporter {
 
     converted.tempPseudonyms = concatenate(object.pseudonyms);
     converted.tempPsChildren = concatenate(object.ps_children);
-
-    if (object.religion != null) {
-      for (String item : object.religion) {
-        converted.addReligion(filterField(item));
-      }
-    }
+    converted.tempReligion = concatenate(object.religion);
 
     if (object.social_class != null) {
       for (String item : object.social_class) {

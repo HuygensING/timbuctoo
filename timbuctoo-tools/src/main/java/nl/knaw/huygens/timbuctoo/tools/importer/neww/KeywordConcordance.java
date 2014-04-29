@@ -54,14 +54,21 @@ public class KeywordConcordance extends CSVImporter {
 
   @Override
   protected void handleLine(String[] items) throws IOException, ValidationException {
-    if (items.length < 3) {
-      throw new ValidationException("Lines must have at least 3 items");
+    if (items.length < 2) {
+      throw new ValidationException("Lines must have at least 2 items");
     }
     WWKeyword keyword = new WWKeyword();
     keyword.setType(items[0]);
     keyword.setValue(items[1]);
     String storedId = repository.addDomainEntity(WWKeyword.class, keyword, change);
     Reference reference = new Reference(Keyword.class, storedId);
+
+    String defaultKey = createKey(items[0], items[1]);
+    if (map.containsKey(defaultKey)) {
+      throw new ValidationException("Duplicate key " + defaultKey);
+    }
+    map.put(defaultKey, reference);
+
     for (int index = 2; index < items.length; index++) {
       String key = createKey(items[0], items[index]);
       if (map.containsKey(key)) {
@@ -85,7 +92,7 @@ public class KeywordConcordance extends CSVImporter {
   }
 
   public String createKey(String type, String value) {
-    return String.format("%s#%s", type, value);
+    return String.format("%s#%s", type, value.toLowerCase());
   }
 
 }

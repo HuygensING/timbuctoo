@@ -47,7 +47,6 @@ public class WWPerson extends Person {
   private String notes;
   private String personalSituation;
   private List<String> professions;
-  private List<String> religions;
   private List<String> socialClasses;
 
   // --- temporary fields ------------------------------------------------------
@@ -67,6 +66,7 @@ public class WWPerson extends Person {
   public String tempPsChildren;
   public String tempPseudonyms;
   public String tempPublishingLanguages;
+  public String tempReligion;
   private String tempSpouse;
 
   // ---------------------------------------------------------------------------
@@ -76,7 +76,6 @@ public class WWPerson extends Person {
     financials = Lists.newArrayList();
     fsPseudonyms = Lists.newArrayList();
     professions = Lists.newArrayList();
-    religions = Lists.newArrayList();
     socialClasses = Lists.newArrayList();
     setChildren(null); // default
   }
@@ -207,20 +206,6 @@ public class WWPerson extends Person {
     }
   }
 
-  public List<String> getReligions() {
-    return religions;
-  }
-
-  public void setReligions(List<String> religions) {
-    this.religions = religions;
-  }
-
-  public void addReligion(String value) {
-    if (value != null) {
-      religions.add(value);
-    }
-  }
-
   public List<String> getSocialClasses() {
     return socialClasses;
   }
@@ -268,6 +253,12 @@ public class WWPerson extends Person {
   @IndexAnnotation(fieldName = "dynamic_s_collective", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getCollectives() {
     return getRelations("isMemberOf");
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_religion", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  public List<EntityRef> getReligions() {
+    return getRelations("hasReligion");
   }
 
   // ---------------------------------------------------------------------------
