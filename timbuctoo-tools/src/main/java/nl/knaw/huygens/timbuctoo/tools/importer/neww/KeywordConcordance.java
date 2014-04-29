@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 
-import com.google.common.collect.Maps;
-
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Keyword;
 import nl.knaw.huygens.timbuctoo.model.Reference;
@@ -36,8 +34,10 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
 
+import com.google.common.collect.Maps;
+
 /**
- * Imports keywords and make references available.
+ * Imports keywords and makes references available.
  */
 public class KeywordConcordance extends CSVImporter {
 
@@ -63,7 +63,7 @@ public class KeywordConcordance extends CSVImporter {
     String storedId = repository.addDomainEntity(WWKeyword.class, keyword, change);
     Reference reference = new Reference(Keyword.class, storedId);
     for (int index = 2; index < items.length; index++) {
-      String key = items[index];
+      String key = createKey(items[0], items[index]);
       if (map.containsKey(key)) {
         throw new ValidationException("Duplicate key " + key);
       }
@@ -78,6 +78,14 @@ public class KeywordConcordance extends CSVImporter {
 
   public Reference lookup(String key) {
     return map.get(key);
+  }
+
+  public Reference lookup(String type, String value) {
+    return map.get(createKey(type, value));
+  }
+
+  public String createKey(String type, String value) {
+    return String.format("%s#%s", type, value);
   }
 
 }

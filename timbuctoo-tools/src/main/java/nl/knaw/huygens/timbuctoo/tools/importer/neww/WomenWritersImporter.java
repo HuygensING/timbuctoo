@@ -322,6 +322,7 @@ public class WomenWritersImporter extends DefaultImporter {
   // --- Documents -------------------------------------------------------------
 
   private static final String JUNK_SOURCE = "Info in Reference and/or Provional notes.";
+  private static final String DOC_SOURCE_TYPE = "docSourceType";
 
   private int importSourceDocuments() throws Exception {
     int initialSize = references.size();
@@ -339,7 +340,7 @@ public class WomenWritersImporter extends DefaultImporter {
           if (object != null && object.source != null) {
             String title = filterField(object.source.full_name);
             String key = newKey("SourceDocument", title);
-            if (!references.containsKey(key) && !title.startsWith(JUNK_SOURCE)) {
+            if (title != null && !title.startsWith(JUNK_SOURCE) && !references.containsKey(key)) {
               WWDocument document = new WWDocument();
               document.setSource(true);
               document.setTitle(title);
@@ -348,7 +349,7 @@ public class WomenWritersImporter extends DefaultImporter {
               Reference documentRef = new Reference(Document.class, storedId);
               references.put(key, documentRef);
               String category = StringUtils.trimToEmpty(object.source.type);
-              Reference keywordRef = keywords.lookup(category);
+              Reference keywordRef = keywords.lookup(DOC_SOURCE_TYPE, category);
               if (keywordRef != null) {
                 addRelation(WWRelation.class, relationTypeRef, documentRef, keywordRef, change, "");
               } else if (!ignoredCategories.contains(category)) {
