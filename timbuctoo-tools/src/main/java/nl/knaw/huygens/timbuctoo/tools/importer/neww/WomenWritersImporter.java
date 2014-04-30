@@ -1109,7 +1109,7 @@ public class WomenWritersImporter extends DefaultImporter {
 
   private final Pattern simpleNamePattern = Pattern.compile("^(\\p{Lu}\\p{L}+), (\\p{Lu}\\p{L}+)$");
   private final Set<String> excludedNames = Sets.newHashSet("Comtesse", "Madame", "Madamoiselle", "Mejuffrouw", "Mevrouw", "Mme", "Mrs", "Queen", "Vrou");
-  private final Set<String> ignoredValues = Sets.newHashSet("not relevant", "not yet checked", "not yet known", "unknown", "unkown");
+  private final Set<String> ignoredValues = Sets.newHashSet("not relevant", "not yet checked", "not yet known", "seems impossible to know", "to be specified", "unknown", "unkown");
 
   // maps line without id to stored id
   private final Map<String, String> lines = Maps.newHashMap();
@@ -1171,23 +1171,30 @@ public class WomenWritersImporter extends DefaultImporter {
           lines.put(line, storedId);
         }
         Reference personRef = storeReference(key, WWPerson.class, storedId);
-        handleXRelation("hasEducation", "education", object.education, ignoredValues, personRef, object.old_id);
-        handleXRelation("hasFinancialSituation", "financialSituation", object.financials, ignoredValues, personRef, object.old_id);
-        handleXRelation("hasProfession", "profession", object.professions, ignoredValues, personRef, object.old_id);
-        handleXRelation("hasReligion", "religion", object.religion, ignoredValues, personRef, object.old_id);
-        handleXRelation("hasSocialClass", "socialClass", object.social_class, ignoredValues, personRef, object.old_id);
-        // TODO: converted.setMaritalStatus(filterField(object.marital_status));
+        handleXRelation(object.old_id, personRef, "hasEducation", "education", object.education);
+        handleXRelation(object.old_id, personRef, "hasFinancialSituation", "financialSituation", object.financials);
+        handleXRelation(object.old_id, personRef, "hasMaritalStatus", "maritalStatus", object.marital_status);
+        handleXRelation(object.old_id, personRef, "hasProfession", "profession", object.professions);
+        handleXRelation(object.old_id, personRef, "hasReligion", "religion", object.religion);
+        handleXRelation(object.old_id, personRef, "hasSocialClass", "socialClass", object.social_class);
       }
     }
   }
 
-  private void handleXRelation(String relationName, String keywordType, String[] items, Set<String> ignoredValues, Reference baseRef, int oldId) {
-    if (items != null && items.length != 0) {
+  private void handleXRelation(int oldId, Reference baseRef, String relationName, String keywordType, String... values) {
+    if (values != null && values.length != 0) {
+      Set<String> items = Sets.newHashSet(values);
+      if (items.contains("lady") && items.contains("in") && items.contains("waiting")) {
+        items.remove("lady");
+        items.remove("in");
+        items.remove("waiting");
+        items.add("lady-in-waiting");
+      }
       Reference relationTypeRef = relationTypes.get(relationName);
       for (String item : items) {
         String value = filterField(item);
         if (value != null) {
-          value = value.replaceAll("[•\\.,;]", "").trim();
+          value = value.replaceAll("[•*\\.,;]", "").trim();
           Reference keywordRef = keywords.lookup(keywordType, value);
           if (keywordRef != null) {
             addRelation(WWRelation.class, relationTypeRef, baseRef, keywordRef, change, "");
