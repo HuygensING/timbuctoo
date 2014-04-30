@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -36,8 +35,6 @@ import nl.knaw.huygens.timbuctoo.storage.ValidationException;
  * Relies on the storage manager for validation.
  */
 public class RelationTypeImporter extends CSVImporter {
-
-  private static final String REGULAR_NAME = FieldMapper.propertyName(RelationType.class, "regularName");
 
   private final StorageManager storageManager;
 
@@ -64,7 +61,7 @@ public class RelationTypeImporter extends CSVImporter {
     entity.setTargetTypeName(items[3].toLowerCase());
     entity.setReflexive(Boolean.parseBoolean(items[4]));
     entity.setSymmetric(Boolean.parseBoolean(items[5]));
-    if (storageManager.findEntity(RelationType.class, REGULAR_NAME, entity.getRegularName()) == null) {
+    if (storageManager.findEntity(RelationType.class, "regularName", entity.getRegularName()) == null) {
       storageManager.addSystemEntity(RelationType.class, entity);
     }
   }

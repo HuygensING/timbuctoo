@@ -56,7 +56,6 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent;
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
@@ -326,8 +325,7 @@ public class CobwwwebRsImporter extends DefaultImporter {
   private String updateExistingPerson(CWRSPerson entity) {
     String storedId = null;
     if (!Strings.isNullOrEmpty(entity.tempNewwId)) {
-      String key = FieldMapper.propertyName(WWPerson.class, "tempOldId");
-      WWPerson person = storageManager.findEntity(WWPerson.class, key, entity.tempNewwId);
+      WWPerson person = storageManager.findEntity(WWPerson.class, "tempOldId", entity.tempNewwId);
       if (person != null) {
         storedId = person.getId();
         entity.setId(storedId);
@@ -348,12 +346,12 @@ public class CobwwwebRsImporter extends DefaultImporter {
   }
 
   private void handleLanguages(CWRSPerson entity) {
-    for (String code : entity.tempLanguageCodes)  {
+    for (String code : entity.tempLanguageCodes) {
       Language language = getLanguage(code);
       if (language != null) {
         Reference typeRef = relationTypes.get("hasPersonLanguage");
         Reference sourceRef = new Reference(Person.class, entity.getId());
-        Reference targetRef =  new Reference(Language.class, language.getId());
+        Reference targetRef = new Reference(Language.class, language.getId());
         addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, "");
         log("Adding language %s --> %s%n", code, language.getName());
       }
@@ -582,8 +580,7 @@ public class CobwwwebRsImporter extends DefaultImporter {
   private String updateExistingDocument(CWRSDocument entity) {
     String storedId = null;
     if (!Strings.isNullOrEmpty(entity.tempNewwId)) {
-      String key = FieldMapper.propertyName(WWDocument.class, "tempOldId");
-      WWDocument document = storageManager.findEntity(WWDocument.class, key, entity.tempNewwId);
+      WWDocument document = storageManager.findEntity(WWDocument.class, "tempOldId", entity.tempNewwId);
       if (document != null) {
         storedId = document.getId();
         entity.setId(storedId);

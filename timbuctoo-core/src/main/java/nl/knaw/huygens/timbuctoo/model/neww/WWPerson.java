@@ -66,7 +66,6 @@ public class WWPerson extends Person {
   public String tempPsChildren;
   public String tempPseudonyms;
   public String tempPublishingLanguages;
-  public String tempReligion;
   private String tempSpouse;
 
   // ---------------------------------------------------------------------------

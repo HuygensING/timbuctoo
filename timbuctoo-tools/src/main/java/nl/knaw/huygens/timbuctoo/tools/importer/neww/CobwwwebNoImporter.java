@@ -52,7 +52,6 @@ import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
@@ -272,8 +271,7 @@ public class CobwwwebNoImporter extends DefaultImporter {
   private String updateExistingPerson(CWNOPerson entity) {
     String storedId = null;
     if (!Strings.isNullOrEmpty(entity.tempNewwId)) {
-      String key = FieldMapper.propertyName(WWPerson.class, "tempOldId");
-      WWPerson person = storageManager.findEntity(WWPerson.class, key, entity.tempNewwId);
+      WWPerson person = storageManager.findEntity(WWPerson.class, "tempOldId", entity.tempNewwId);
       if (person != null) {
         storedId = person.getId();
         entity.setId(storedId);
@@ -472,8 +470,7 @@ public class CobwwwebNoImporter extends DefaultImporter {
   private String updateExistingDocument(CWNODocument entity) {
     String storedId = null;
     if (!Strings.isNullOrEmpty(entity.tempNewwId)) {
-      String key = FieldMapper.propertyName(WWDocument.class, "tempOldId");
-      WWDocument document = storageManager.findEntity(WWDocument.class, key, entity.tempNewwId);
+      WWDocument document = storageManager.findEntity(WWDocument.class, "tempOldId", entity.tempNewwId);
       if (document != null) {
         storedId = document.getId();
         entity.setId(storedId);

@@ -210,9 +210,9 @@ public class StorageManager {
     return entity;
   }
 
-  public <T extends Entity> T findEntity(Class<T> type, String key, String value) {
+  public <T extends Entity> T findEntity(Class<T> type, String field, String value) {
     try {
-      return storage.findItemByKey(type, key, value);
+      return storage.findItemByProperty(type, field, value);
     } catch (IOException e) {
       LOG.error("Error while handling {}", type.getName());
       return null;

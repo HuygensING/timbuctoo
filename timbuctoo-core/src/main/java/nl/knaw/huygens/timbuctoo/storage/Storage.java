@@ -130,9 +130,9 @@ public interface Storage {
   <T extends Entity> long count(Class<T> type);
 
   /**
-   * Find an entity which has the specified key/value pair.
+   * Find an entity which has the specified property.
    */
-  <T extends Entity> T findItemByKey(Class<T> type, String key, String value) throws IOException;
+  <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws IOException;
 
   /**
    * Find an entity which has the non-null properties of the example object.

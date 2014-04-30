@@ -1046,7 +1046,7 @@ public class WomenWritersImporter extends DefaultImporter {
       invalids.add(key);
       return;
     }
-    Location location = storageManager.findEntity(Location.class, "^urn", urn);
+    Location location = storageManager.findEntity(Location.class, Location.URN, urn);
     if (location == null) {
       handleError("URN not found: %s", urn);
       return;
@@ -1171,12 +1171,12 @@ public class WomenWritersImporter extends DefaultImporter {
           lines.put(line, storedId);
         }
         Reference personRef = storeReference(key, WWPerson.class, storedId);
-        handleXRelation("hasReligion", "religion", object.religion, ignoredReligionValues, personRef, object.name);
+        handleXRelation("hasReligion", "religion", object.religion, ignoredReligionValues, personRef, object.old_id);
       }
     }
   }
 
-  private void handleXRelation(String relationName, String keywordType, String[] items, Set<String> ignoredValues, Reference baseRef, String line) {
+  private void handleXRelation(String relationName, String keywordType, String[] items, Set<String> ignoredValues, Reference baseRef, int oldId) {
     if (items != null && items.length != 0) {
       Reference relationTypeRef = relationTypes.get(relationName);
       for (String item : items) {
@@ -1185,9 +1185,9 @@ public class WomenWritersImporter extends DefaultImporter {
           value = value.replaceAll("[•\\.,;]", "").trim();
           Reference keywordRef = keywords.lookup(keywordType, value);
           if (keywordRef != null) {
-            addRelation(WWRelation.class, relationTypeRef, baseRef, keywordRef, change, line);
+            addRelation(WWRelation.class, relationTypeRef, baseRef, keywordRef, change, "");
           } else if (!ignoredValues.contains(value.toLowerCase())) {
-            System.out.printf("Undefined %s [%s] for [%s]%n", keywordType, value, line);
+            System.out.printf("[%05d] Undefined %s [%s]%n", oldId, keywordType, value);
           }
         }
       }
@@ -1293,7 +1293,6 @@ public class WomenWritersImporter extends DefaultImporter {
 
     converted.tempPseudonyms = concatenate(object.pseudonyms);
     converted.tempPsChildren = concatenate(object.ps_children);
-    converted.tempReligion = concatenate(object.religion);
 
     if (object.social_class != null) {
       for (String item : object.social_class) {

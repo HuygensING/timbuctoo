@@ -24,16 +24,18 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Maps;
-
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Maps;
+
 @IDPrefix("LOCA")
 public class Location extends DomainEntity {
+
+  public static final String URN = "^urn";
 
   // Container class, for entity reducer
   private static class Names {
@@ -49,7 +51,7 @@ public class Location extends DomainEntity {
   private Names names;
   private String latitude;
   private String longitude;
- 
+
   public Location() {
     names = new Names();
   }
@@ -75,12 +77,12 @@ public class Location extends DomainEntity {
     return builder.toString();
   }
 
-  @JsonProperty("^urn")
+  @JsonProperty(URN)
   public String getUrn() {
     return urn;
   }
 
-  @JsonProperty("^urn")
+  @JsonProperty(URN)
   public void setUrn(String urn) {
     this.urn = urn;
   }

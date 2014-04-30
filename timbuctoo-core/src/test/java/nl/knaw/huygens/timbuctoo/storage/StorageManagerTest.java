@@ -72,9 +72,9 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testFindEntityByKey() throws IOException {
-    manager.findEntity(TestSystemEntity.class, "key", "value");
-    verify(storage).findItemByKey(TestSystemEntity.class, "key", "value");
+  public void testFindEntityByProperty() throws IOException {
+    manager.findEntity(TestSystemEntity.class, "field", "value");
+    verify(storage).findItemByProperty(TestSystemEntity.class, "field", "value");
   }
 
   @Test
