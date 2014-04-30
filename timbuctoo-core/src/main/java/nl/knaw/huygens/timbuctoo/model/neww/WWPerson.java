@@ -37,17 +37,12 @@ public class WWPerson extends Person {
 
   private String bibliography;
   private String children;
-  private List<String> educations;
-  private List<String> financials;
   private List<String> fsPseudonyms;
   private String health;
   private String livedIn;
-  private String maritalStatus;
   private String nationality;
   private String notes;
   private String personalSituation;
-  private List<String> professions;
-  private List<String> socialClasses;
 
   // --- temporary fields ------------------------------------------------------
 
@@ -71,11 +66,7 @@ public class WWPerson extends Person {
   // ---------------------------------------------------------------------------
 
   public WWPerson() {
-    educations = Lists.newArrayList();
-    financials = Lists.newArrayList();
     fsPseudonyms = Lists.newArrayList();
-    professions = Lists.newArrayList();
-    socialClasses = Lists.newArrayList();
     setChildren(null); // default
   }
 
@@ -99,34 +90,6 @@ public class WWPerson extends Person {
 
   public void setChildren(String value) {
     children = Children.normalize(value);
-  }
-
-  public List<String> getEducations() {
-    return educations;
-  }
-
-  public void setEducations(List<String> educations) {
-    this.educations = educations;
-  }
-
-  public void addEducation(String value) {
-    if (value != null) {
-      educations.add(value);
-    }
-  }
-
-  public List<String> getFinancials() {
-    return financials;
-  }
-
-  public void setFinancials(List<String> financials) {
-    this.financials = financials;
-  }
-
-  public void addFinancial(String value) {
-    if (value != null) {
-      financials.add(value);
-    }
   }
 
   public List<String> getFsPseudonyms() {
@@ -159,14 +122,6 @@ public class WWPerson extends Person {
     this.livedIn = livedIn;
   }
 
-  public String getMaritalStatus() {
-    return maritalStatus;
-  }
-
-  public void setMaritalStatus(String maritalStatus) {
-    this.maritalStatus = maritalStatus;
-  }
-
   public String getNationality() {
     return nationality;
   }
@@ -189,34 +144,6 @@ public class WWPerson extends Person {
 
   public void setPersonalSituation(String personalSituation) {
     this.personalSituation = personalSituation;
-  }
-
-  public List<String> getProfessions() {
-    return professions;
-  }
-
-  public void setProfessions(List<String> professions) {
-    this.professions = professions;
-  }
-
-  public void addProfession(String value) {
-    if (value != null) {
-      professions.add(value);
-    }
-  }
-
-  public List<String> getSocialClasses() {
-    return socialClasses;
-  }
-
-  public void setSocialClasses(List<String> socialClasses) {
-    this.socialClasses = socialClasses;
-  }
-
-  public void addSocialClass(String value) {
-    if (value != null) {
-      socialClasses.add(value);
-    }
   }
 
   // Indexed for curation phase only

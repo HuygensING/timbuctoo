@@ -1109,7 +1109,7 @@ public class WomenWritersImporter extends DefaultImporter {
 
   private final Pattern simpleNamePattern = Pattern.compile("^(\\p{Lu}\\p{L}+), (\\p{Lu}\\p{L}+)$");
   private final Set<String> excludedNames = Sets.newHashSet("Comtesse", "Madame", "Madamoiselle", "Mejuffrouw", "Mevrouw", "Mme", "Mrs", "Queen", "Vrou");
-  private final Set<String> ignoredReligionValues = Sets.newHashSet("not relevant", "not yet checked", "not yet known", "unknown", "unkown");
+  private final Set<String> ignoredValues = Sets.newHashSet("not relevant", "not yet checked", "not yet known", "unknown", "unkown");
 
   // maps line without id to stored id
   private final Map<String, String> lines = Maps.newHashMap();
@@ -1171,7 +1171,12 @@ public class WomenWritersImporter extends DefaultImporter {
           lines.put(line, storedId);
         }
         Reference personRef = storeReference(key, WWPerson.class, storedId);
-        handleXRelation("hasReligion", "religion", object.religion, ignoredReligionValues, personRef, object.old_id);
+        handleXRelation("hasEducation", "education", object.education, ignoredValues, personRef, object.old_id);
+        handleXRelation("hasFinancialSituation", "financialSituation", object.financials, ignoredValues, personRef, object.old_id);
+        handleXRelation("hasProfession", "profession", object.professions, ignoredValues, personRef, object.old_id);
+        handleXRelation("hasReligion", "religion", object.religion, ignoredValues, personRef, object.old_id);
+        handleXRelation("hasSocialClass", "socialClass", object.social_class, ignoredValues, personRef, object.old_id);
+        // TODO: converted.setMaritalStatus(filterField(object.marital_status));
       }
     }
   }
@@ -1219,22 +1224,8 @@ public class WomenWritersImporter extends DefaultImporter {
     }
 
     converted.tempDeath = filterField(object.death);
-
-    if (object.education != null) {
-      for (String item : object.education) {
-        converted.addEducation(filterField(item));
-      }
-    }
-
     converted.tempFinancialSituation = filterField(object.financial_situation);
-
     verifyEmptyField(line, "financialSituation", object.financialSituation);
-
-    if (object.financials != null) {
-      for (String item : object.financials) {
-        converted.addFinancial(filterField(item));
-      }
-    }
 
     if (object.fs_pseudonyms != null) {
       for (String item : object.fs_pseudonyms) {
@@ -1259,7 +1250,6 @@ public class WomenWritersImporter extends DefaultImporter {
     converted.setHealth(filterField(object.health));
     converted.tempLanguages = concatenate(object.languages);
     converted.setLivedIn(filterField(object.lived_in));
-    converted.setMaritalStatus(filterField(object.marital_status));
     converted.tempMemberships = concatenate(object.memberships);
     converted.tempMotherTongue = filterField(object.mother_tongue);
 
@@ -1284,22 +1274,8 @@ public class WomenWritersImporter extends DefaultImporter {
 
     converted.tempPlaceOfBirth = concatenate(object.placeOfBirth);
     converted.tempDeathPlace = filterField(object.placeOfDeath);
-
-    if (object.professions != null) {
-      for (String item : object.professions) {
-        converted.addProfession(filterField(item));
-      }
-    }
-
     converted.tempPseudonyms = concatenate(object.pseudonyms);
     converted.tempPsChildren = concatenate(object.ps_children);
-
-    if (object.social_class != null) {
-      for (String item : object.social_class) {
-        converted.addSocialClass(filterField(item));
-      }
-    }
-
     converted.tempPublishingLanguages = concatenate(object.publishing_languages);
     converted.setTempSpouse(filterField(object.spouse));
 
