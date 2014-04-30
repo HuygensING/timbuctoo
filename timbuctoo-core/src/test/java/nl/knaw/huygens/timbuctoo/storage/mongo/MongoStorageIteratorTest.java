@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 /*
  * #%L
@@ -24,17 +24,19 @@ package nl.knaw.huygens.timbuctoo.storage;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import nl.knaw.huygens.timbuctoo.model.User;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 import org.junit.Before;
 import org.junit.Test;
 
-public class StorageIteratorTest {
+public class MongoStorageIteratorTest {
 
-  private StorageIterator<String> iterator;
+  private StorageIterator<User> iterator;
 
   @Before
   public void setupEmptyIterator() {
-    iterator = new EmptyStorageIterator<String>();
+    iterator = MongoStorageIterator.newInstance(User.class, null, null);
   }
 
   @Test

@@ -40,7 +40,6 @@ import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.EmptyStorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
@@ -213,7 +212,7 @@ public class MongoStorage implements Storage {
 
   private <T extends Entity> StorageIterator<T> findItems(Class<T> type, DBObject query) {
     DBCursor cursor = mongoDB.find(getDBCollection(type), query);
-    return (cursor != null) ? new MongoStorageIterator<T>(type, cursor, reducer) : new EmptyStorageIterator<T>();
+    return MongoStorageIterator.newInstance(type, cursor, reducer);
   }
 
   @Override
