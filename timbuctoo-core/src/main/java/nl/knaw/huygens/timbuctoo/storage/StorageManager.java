@@ -250,7 +250,7 @@ public class StorageManager {
   }
 
   public <T extends Entity> List<T> getAllByIds(Class<T> type, List<String> ids) {
-    return resolveIterator(storage.getAllByIds(type, ids), 0, ids.size());
+    return storage.getEntitiesByIds(type, ids).getSome(ids.size());
   }
 
   public <T extends DomainEntity> RevisionChanges<T> getVersions(Class<T> type, String id) {
@@ -277,14 +277,11 @@ public class StorageManager {
     if (limit == 0) {
       return Collections.<T> emptyList();
     }
-    return resolveIterator(storage.getAllByType(type), offset, limit);
+    return storage.getAllByType(type).skip(offset).getSome(limit);
   }
 
-  private <T extends Entity> List<T> resolveIterator(StorageIterator<T> iterator, int offset, int limit) {
-    if (offset > 0) {
-      iterator.skip(offset);
-    }
-    return iterator.getSome(limit);
+  public <T extends Entity> List<T> getEntitiesByProperty(Class<T> type, String field, String value) {
+    return storage.getEntitiesByProperty(type, field, value).getAll();
   }
 
   // --- relation types --------------------------------------------------------

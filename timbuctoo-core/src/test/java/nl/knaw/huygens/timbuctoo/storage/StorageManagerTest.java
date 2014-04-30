@@ -217,6 +217,7 @@ public class StorageManagerTest {
 
     @SuppressWarnings("unchecked")
     StorageIterator<BaseDomainEntity> iterator = mock(StorageIterator.class);
+    when(iterator.skip(anyInt())).thenReturn(iterator);
     when(iterator.getSome(anyInt())).thenReturn(limitedList);
 
     when(storage.getAllByType(BaseDomainEntity.class)).thenReturn(iterator);
@@ -240,7 +241,7 @@ public class StorageManagerTest {
     when(iterator.getSome(anyInt())).thenReturn(limitedList);
 
     ArrayList<String> ids = Lists.newArrayList("id1", "id2", "id3");
-    when(storage.getAllByIds(BaseDomainEntity.class, ids)).thenReturn(iterator);
+    when(storage.getEntitiesByIds(BaseDomainEntity.class, ids)).thenReturn(iterator);
 
     List<BaseDomainEntity> actualList = manager.getAllByIds(BaseDomainEntity.class, ids);
     verify(iterator).getSome(3);

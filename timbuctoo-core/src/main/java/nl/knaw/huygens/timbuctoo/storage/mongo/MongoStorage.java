@@ -43,6 +43,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EmptyStorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
+import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
@@ -210,12 +211,6 @@ public class MongoStorage implements Storage {
     return (item != null) ? reducer.reduceVariation(type, toJsonNode(item)) : null;
   }
 
-  private <T extends Entity> StorageIterator<T> getItems(Class<T> type, DBObject query) {
-    DBCursor cursor = getDBCollection(type).find(query);
-    return (cursor != null) ? new MongoStorageIterator<T>(type, cursor, reducer) : new EmptyStorageIterator<T>();
-  }
-
-  // Should be the replacement of getItems
   private <T extends Entity> StorageIterator<T> findItems(Class<T> type, DBObject query) {
     DBCursor cursor = mongoDB.find(getDBCollection(type), query);
     return (cursor != null) ? new MongoStorageIterator<T>(type, cursor, reducer) : new EmptyStorageIterator<T>();
@@ -243,13 +238,18 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Entity> StorageIterator<T> getAllByType(Class<T> type) {
-    DBObject query = queries.selectAll();
-    return getItems(type, query);
+    return findItems(type, queries.selectAll());
   }
 
   @Override
-  public <T extends Entity> StorageIterator<T> getAllByIds(Class<T> type, List<String> ids) {
+  public <T extends Entity> StorageIterator<T> getEntitiesByIds(Class<T> type, List<String> ids) {
     return findItems(type, DBQuery.in(Entity.ID, ids));
+  }
+
+  @Override
+  public <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value) {
+    String key = FieldMapper.propertyName(type, field);
+    return findItems(type, queries.selectByProperty(key, value));
   }
 
   @Override
@@ -445,8 +445,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Relation> StorageIterator<T> getRelationsByEntityId(Class<T> type, String id) {
-    DBObject query = queries.selectRelationsByEntityId(id);
-    return getItems(type, query);
+    return findItems(type, queries.selectRelationsByEntityId(id));
   }
 
   @Override

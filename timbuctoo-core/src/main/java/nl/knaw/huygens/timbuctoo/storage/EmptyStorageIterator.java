@@ -51,10 +51,17 @@ public class EmptyStorageIterator<T> implements StorageIterator<T> {
   }
 
   @Override
-  public void skip(int count) {}
+  public StorageIterator<T> skip(int count) {
+    return this;
+  }
 
   @Override
   public List<T> getSome(int limit) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<T> getAll() {
     return Collections.emptyList();
   }
 

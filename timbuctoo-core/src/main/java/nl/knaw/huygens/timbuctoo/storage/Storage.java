@@ -109,9 +109,20 @@ public interface Storage {
    */
   <T extends Entity> T getItem(Class<T> type, String id) throws IOException;
 
+  /**
+   * Retrieves entities by type.
+   */
   <T extends Entity> StorageIterator<T> getAllByType(Class<T> type);
 
-  <T extends Entity> StorageIterator<T> getAllByIds(Class<T> type, List<String> ids);
+  /**
+   * Retrieves entities by type and membership of id-list.
+   */
+  <T extends Entity> StorageIterator<T> getEntitiesByIds(Class<T> type, List<String> ids);
+
+  /**
+   * Retrieves entities by type and property.
+   */
+  <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value);
 
   /**
    * Returns the number of items in the collection corresponding with the specified type.

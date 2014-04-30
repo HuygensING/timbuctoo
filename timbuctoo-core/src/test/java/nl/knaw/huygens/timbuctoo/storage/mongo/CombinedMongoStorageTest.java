@@ -208,7 +208,7 @@ public class CombinedMongoStorageTest {
   @Test
   public void testGetAllByIds() {
     List<String> ids = Lists.newArrayList("TEST0000000001", "TEST0000000002", "TEST0000000003");
-    storage.getAllByIds(ProjectADomainEntity.class, ids);
+    storage.getEntitiesByIds(ProjectADomainEntity.class, ids);
 
     DBObject query = new BasicDBObject(Entity.ID, new BasicDBObject("$in", ids));
 

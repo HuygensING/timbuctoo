@@ -73,8 +73,9 @@ class MongoStorageIterator<T extends Entity> implements StorageIterator<T> {
   }
 
   @Override
-  public void skip(int count) {
+  public StorageIterator<T> skip(int count) {
     delegate.skip(count);
+    return this;
   }
 
   @SuppressWarnings("unchecked")
@@ -99,6 +100,11 @@ class MongoStorageIterator<T extends Entity> implements StorageIterator<T> {
     }
     close();
     return list;
+  }
+
+  @Override
+  public List<T> getAll() {
+    return getSome(Integer.MAX_VALUE);
   }
 
   @Override
