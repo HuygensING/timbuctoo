@@ -127,6 +127,7 @@ public class WomenWritersImporter extends DefaultImporter {
 
   public void importAll() throws Exception {
     printBoxedText("Initialization");
+    openImportLog("neww-log.txt");
 
     removeNonPersistentEntities(WWCollective.class);
     removeNonPersistentEntities(WWDocument.class);
@@ -184,6 +185,7 @@ public class WomenWritersImporter extends DefaultImporter {
 
     displayStatus();
     displayErrorSummary();
+    closeImportLog();
   }
 
   // --- Support ---------------------------------------------------------------
@@ -1109,7 +1111,7 @@ public class WomenWritersImporter extends DefaultImporter {
 
   private final Pattern simpleNamePattern = Pattern.compile("^(\\p{Lu}\\p{L}+), (\\p{Lu}\\p{L}+)$");
   private final Set<String> excludedNames = Sets.newHashSet("Comtesse", "Madame", "Madamoiselle", "Mejuffrouw", "Mevrouw", "Mme", "Mrs", "Queen", "Vrou");
-  private final Set<String> ignoredValues = Sets.newHashSet("not relevant", "not yet checked", "not yet known", "seems impossible to know", "to be specified", "unknown", "unkown");
+  private final Set<String> ignoredValues = Sets.newHashSet("not relevant", "not yet checked", "not yet checke", "not yet known", "seems impossible to know", "to be specified", "unknown", "unkown");
 
   // maps line without id to stored id
   private final Map<String, String> lines = Maps.newHashMap();
@@ -1184,8 +1186,9 @@ public class WomenWritersImporter extends DefaultImporter {
   private void handleXRelation(int oldId, Reference baseRef, String relationName, String keywordType, String... values) {
     if (values != null && values.length != 0) {
       Set<String> items = Sets.newHashSet(values);
-      if (items.contains("lady") && items.contains("in") && items.contains("waiting")) {
+      if (items.contains("waiting") && items.contains("in") && (items.contains("lady") || items.contains("Lady"))) {
         items.remove("lady");
+        items.remove("Lady");
         items.remove("in");
         items.remove("waiting");
         items.add("lady-in-waiting");
@@ -1195,11 +1198,20 @@ public class WomenWritersImporter extends DefaultImporter {
         String value = filterField(item);
         if (value != null) {
           value = value.replaceAll("[•*\\.,;]", "").trim();
+          if (keywordType.equals("profession") && value.toLowerCase().startsWith("translator from")) {
+            value = "translator";
+          }
+          if (keywordType.equals("profession") && value.toLowerCase().startsWith("writer of")) {
+            value = "writer";
+          }
+          if (keywordType.equals("profession") && value.toLowerCase().endsWith(" writer")) {
+            value = "writer";
+          }
           Reference keywordRef = keywords.lookup(keywordType, value);
           if (keywordRef != null) {
             addRelation(WWRelation.class, relationTypeRef, baseRef, keywordRef, change, "");
           } else if (!ignoredValues.contains(value.toLowerCase())) {
-            System.out.printf("[%05d] Undefined %s [%s]%n", oldId, keywordType, value);
+            log("[%05d] Undefined %s [%s]%n", oldId, keywordType, value);
           }
         }
       }

@@ -22,7 +22,12 @@ package nl.knaw.huygens.timbuctoo.tools.importer;
  * #L%
  */
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.Repository;
@@ -78,6 +83,32 @@ public abstract class DefaultImporter {
   protected void displayErrorSummary() {
     if (errors > 0) {
       System.out.printf("%n## Error count = %d%n", errors);
+    }
+  }
+
+  // --- Import log ------------------------------------------------------------
+
+  private Writer importLog;
+
+  protected void openImportLog(String fileName) throws IOException {
+    File file = new File(fileName);
+    FileOutputStream fos = new FileOutputStream(file);
+    OutputStreamWriter out = new OutputStreamWriter(fos, "UTF-8");
+    importLog = new BufferedWriter(out);
+  }
+
+  protected void closeImportLog() throws IOException {
+    if (importLog != null) {
+      importLog.close();
+    }
+  }
+
+  protected void log(String format, Object... args) {
+    String text = String.format(format, args);
+    try {
+      importLog.write(text);
+    } catch (IOException e) {
+      System.out.println(text);
     }
   }
 
