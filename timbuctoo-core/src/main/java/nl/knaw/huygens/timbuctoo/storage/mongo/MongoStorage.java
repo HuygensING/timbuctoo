@@ -194,6 +194,15 @@ public class MongoStorage implements Storage {
     }
   }
 
+  @VisibleForTesting
+  static <T extends Entity> StorageIterator<T> newStorageIterator(Class<T> type, DBCursor cursor, EntityReducer reducer) {
+    if (cursor == null) {
+      return new EmptyStorageIterator<T>();
+    } else {
+      return new MongoStorageIterator<T>(type, cursor, reducer);
+    }
+  }
+
   // --- generic storage layer -----------------------------------------
 
   private JsonNode getExisting(Class<? extends Entity> type, DBObject query) throws IOException {
@@ -212,7 +221,7 @@ public class MongoStorage implements Storage {
 
   private <T extends Entity> StorageIterator<T> findItems(Class<T> type, DBObject query) {
     DBCursor cursor = mongoDB.find(getDBCollection(type), query);
-    return MongoStorageIterator.newInstance(type, cursor, reducer);
+    return newStorageIterator(type, cursor, reducer);
   }
 
   @Override

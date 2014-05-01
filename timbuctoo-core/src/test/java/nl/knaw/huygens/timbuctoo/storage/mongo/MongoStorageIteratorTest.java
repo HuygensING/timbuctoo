@@ -36,7 +36,7 @@ public class MongoStorageIteratorTest {
 
   @Before
   public void setupEmptyIterator() {
-    iterator = MongoStorageIterator.newInstance(User.class, null, null);
+    iterator = MongoStorage.newStorageIterator(User.class, null, null);
   }
 
   @Test
