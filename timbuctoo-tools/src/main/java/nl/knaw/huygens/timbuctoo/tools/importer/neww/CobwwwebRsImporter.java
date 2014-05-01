@@ -22,12 +22,7 @@ package nl.knaw.huygens.timbuctoo.tools.importer.neww;
  * #L%
  */
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -112,7 +107,6 @@ public class CobwwwebRsImporter extends DefaultImporter {
   // -------------------------------------------------------------------
 
   private final Change change;
-  private Writer importLog;
   /** Reference to relation types. */
   private final Map<String, Reference> relationTypes = Maps.newHashMap();
   /** References of stored primitive entities. */
@@ -128,7 +122,7 @@ public class CobwwwebRsImporter extends DefaultImporter {
 
   public void importAll() throws Exception {
     try {
-      importLog = newWriter("cobwwweb-rs-log.txt");
+      openImportLog("cobwwweb-rs-log.txt");
       importRelationTypes();
       setupRelationTypeRefs();
       importPersons();
@@ -137,29 +131,11 @@ public class CobwwwebRsImporter extends DefaultImporter {
       displayStatus();
     } finally {
       displayErrorSummary();
-      if (importLog != null) {
-        importLog.close();
-      }
+      closeImportLog();
     }
   }
 
   // ---------------------------------------------------------------------------
-
-  private Writer newWriter(String fileName) throws IOException {
-    File file = new File(fileName);
-    FileOutputStream fos = new FileOutputStream(file);
-    OutputStreamWriter out = new OutputStreamWriter(fos, "UTF-8");
-    return new BufferedWriter(out);
-  }
-
-  private void log(String format, Object... args) {
-    String text = String.format(format, args);
-    try {
-      importLog.write(text);
-    } catch (IOException e) {
-      System.out.println(text);
-    }
-  }
 
   private void setupLanguageCache() {
     languages = CacheBuilder.newBuilder().build(new CacheLoader<String, Language>() {
