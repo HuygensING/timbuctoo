@@ -36,6 +36,7 @@ public class WWDocument extends Document {
   private boolean source;
   private String notes;
   private List<String> topoi;
+  private String englishTitle;
 
   // --- temporary fields ------------------------------------------------------
 
@@ -103,6 +104,14 @@ public class WWDocument extends Document {
   @IndexAnnotation(fieldName = "dynamic_s_origin", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getOrigins() {
     return getRelations("hasPublishLocation");
+  }
+
+  public String getEnglishTitle() {
+    return englishTitle;
+  }
+
+  public void setEnglishTitle(String englishTitle) {
+    this.englishTitle = englishTitle;
   }
 
 }
