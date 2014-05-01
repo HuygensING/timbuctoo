@@ -37,18 +37,12 @@ public class WWPerson extends Person {
 
   private String bibliography;
   private String children;
-  private List<String> educations;
-  private List<String> financials;
   private List<String> fsPseudonyms;
   private String health;
   private String livedIn;
-  private String maritalStatus;
   private String nationality;
   private String notes;
   private String personalSituation;
-  private List<String> professions;
-  private List<String> religions;
-  private List<String> socialClasses;
 
   // --- temporary fields ------------------------------------------------------
 
@@ -62,22 +56,17 @@ public class WWPerson extends Person {
   public String tempLanguages;
   public String tempMemberships; // as relation
   public String tempMotherTongue;
-  public String tempName;
+  private String tempName;
   public String tempPlaceOfBirth;
   public String tempPsChildren;
   public String tempPseudonyms;
   public String tempPublishingLanguages;
-  public String tempSpouse;
+  private String tempSpouse;
 
   // ---------------------------------------------------------------------------
 
   public WWPerson() {
-    educations = Lists.newArrayList();
-    financials = Lists.newArrayList();
     fsPseudonyms = Lists.newArrayList();
-    professions = Lists.newArrayList();
-    religions = Lists.newArrayList();
-    socialClasses = Lists.newArrayList();
     setChildren(null); // default
   }
 
@@ -87,7 +76,6 @@ public class WWPerson extends Person {
     return StringUtils.stripToEmpty(name).isEmpty() ? "[TEMP] " + tempName : name;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_bibliography", canBeEmpty = true)
   public String getBibliography() {
     return bibliography;
   }
@@ -104,36 +92,6 @@ public class WWPerson extends Person {
     children = Children.normalize(value);
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_educations", canBeEmpty = true)
-  public List<String> getEducations() {
-    return educations;
-  }
-
-  public void setEducations(List<String> educations) {
-    this.educations = educations;
-  }
-
-  public void addEducation(String value) {
-    if (value != null) {
-      educations.add(value);
-    }
-  }
-
-  @IndexAnnotation(fieldName = "dynamic_t_financials", canBeEmpty = true)
-  public List<String> getFinancials() {
-    return financials;
-  }
-
-  public void setFinancials(List<String> financials) {
-    this.financials = financials;
-  }
-
-  public void addFinancial(String value) {
-    if (value != null) {
-      financials.add(value);
-    }
-  }
-
   public List<String> getFsPseudonyms() {
     return fsPseudonyms;
   }
@@ -148,7 +106,6 @@ public class WWPerson extends Person {
     }
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_health", canBeEmpty = true)
   public String getHealth() {
     return health;
   }
@@ -165,16 +122,6 @@ public class WWPerson extends Person {
     this.livedIn = livedIn;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_maritalstatus", canBeEmpty = true)
-  public String getMaritalStatus() {
-    return maritalStatus;
-  }
-
-  public void setMaritalStatus(String maritalStatus) {
-    this.maritalStatus = maritalStatus;
-  }
-
-  @IndexAnnotation(fieldName = "dynamic_t_nationality", canBeEmpty = true)
   public String getNationality() {
     return nationality;
   }
@@ -183,7 +130,6 @@ public class WWPerson extends Person {
     this.nationality = nationality;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_notes", canBeEmpty = true)
   public String getNotes() {
     return notes;
   }
@@ -192,7 +138,6 @@ public class WWPerson extends Person {
     this.notes = notes;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_personalsituation", canBeEmpty = true)
   public String getPersonalSituation() {
     return personalSituation;
   }
@@ -201,48 +146,24 @@ public class WWPerson extends Person {
     this.personalSituation = personalSituation;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_professions", canBeEmpty = true)
-  public List<String> getProfessions() {
-    return professions;
+  // Indexed for curation phase only
+  @IndexAnnotation(fieldName = "dynamic_t_tempname", canBeEmpty = true)
+  public String getTempName() {
+    return tempName;
   }
 
-  public void setProfessions(List<String> professions) {
-    this.professions = professions;
+  public void setTempName(String tempName) {
+    this.tempName = tempName;
   }
 
-  public void addProfession(String value) {
-    if (value != null) {
-      professions.add(value);
-    }
+  // Indexed for curation phase only
+  @IndexAnnotation(fieldName = "dynamic_t_tempspouse", canBeEmpty = true)
+  public String getTempSpouse() {
+    return tempSpouse;
   }
 
-  public List<String> getReligions() {
-    return religions;
-  }
-
-  public void setReligions(List<String> religions) {
-    this.religions = religions;
-  }
-
-  public void addReligion(String value) {
-    if (value != null) {
-      religions.add(value);
-    }
-  }
-
-  @IndexAnnotation(fieldName = "dynamic_t_socialclasses", canBeEmpty = true)
-  public List<String> getSocialClasses() {
-    return socialClasses;
-  }
-
-  public void setSocialClasses(List<String> socialClasses) {
-    this.socialClasses = socialClasses;
-  }
-
-  public void addSocialClass(String value) {
-    if (value != null) {
-      socialClasses.add(value);
-    }
+  public void setTempSpouse(String tempSpouse) {
+    this.tempSpouse = tempSpouse;
   }
 
   // NOTE. Some relations are generic, but a project need not be interested
@@ -258,6 +179,12 @@ public class WWPerson extends Person {
   @IndexAnnotation(fieldName = "dynamic_s_collective", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<EntityRef> getCollectives() {
     return getRelations("isMemberOf");
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_religion", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  public List<EntityRef> getReligions() {
+    return getRelations("hasReligion");
   }
 
   // ---------------------------------------------------------------------------

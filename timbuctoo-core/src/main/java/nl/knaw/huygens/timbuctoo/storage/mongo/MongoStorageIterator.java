@@ -41,6 +41,14 @@ import com.mongodb.DBObject;
 
 class MongoStorageIterator<T extends Entity> implements StorageIterator<T> {
 
+  public static <U extends Entity> StorageIterator<U> newInstance(Class<U> type, DBCursor cursor, EntityReducer reducer) {
+    if (cursor == null) {
+      return new EmptyStorageIterator<U>();
+    } else {
+      return new MongoStorageIterator<U>(type, cursor, reducer);
+    }
+  }
+
   private final Class<T> type;
   private final DBCursor delegate;
   private final EntityReducer reducer;
@@ -73,8 +81,9 @@ class MongoStorageIterator<T extends Entity> implements StorageIterator<T> {
   }
 
   @Override
-  public void skip(int count) {
+  public StorageIterator<T> skip(int count) {
     delegate.skip(count);
+    return this;
   }
 
   @SuppressWarnings("unchecked")
@@ -99,6 +108,11 @@ class MongoStorageIterator<T extends Entity> implements StorageIterator<T> {
     }
     close();
     return list;
+  }
+
+  @Override
+  public List<T> getAll() {
+    return getSome(Integer.MAX_VALUE);
   }
 
   @Override

@@ -73,6 +73,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.sun.jersey.api.Responses;
 
@@ -110,11 +111,16 @@ public class DomainEntityResource extends ResourceBase {
   @JsonView(JsonViews.WebView.class)
   public List<? extends DomainEntity> getAllDocs( //
       @PathParam(ENTITY_PARAM) String entityName, //
+      @QueryParam("type") String typeValue, //
       @QueryParam("rows") @DefaultValue("200") int rows, //
       @QueryParam("start") @DefaultValue("0") int start //
   ) {
-    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
-    return storageManager.getAllLimited(type, start, rows);
+    Class<? extends DomainEntity> entityType = getEntityType(entityName, Status.NOT_FOUND);
+    if (Strings.isNullOrEmpty(typeValue)) {
+      return storageManager.getAllLimited(entityType, start, rows);
+    } else {
+      return storageManager.getEntitiesByProperty(entityType, "type", typeValue);
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -287,17 +293,17 @@ public class DomainEntityResource extends ResourceBase {
    */
   private void notifyChange(ActionType actionType, Class<? extends DomainEntity> type, String id) {
     switch (actionType) {
-      case ADD:
-      case MOD:
-        sendPersistMessage(actionType, type, id);
-        sendIndexMessage(actionType, type, id);
-        break;
-      case DEL:
-        sendIndexMessage(actionType, type, id);
-        break;
-      default:
-        LOG.error("Unexpected action {}", actionType);
-        break;
+    case ADD:
+    case MOD:
+      sendPersistMessage(actionType, type, id);
+      sendIndexMessage(actionType, type, id);
+      break;
+    case DEL:
+      sendIndexMessage(actionType, type, id);
+      break;
+    default:
+      LOG.error("Unexpected action {}", actionType);
+      break;
     }
   }
 

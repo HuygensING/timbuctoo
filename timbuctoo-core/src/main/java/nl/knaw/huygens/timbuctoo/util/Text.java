@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.util;
 
 /*
  * #%L
@@ -22,43 +22,22 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import java.util.Collections;
-import java.util.List;
+public class Text {
 
-/**
- * An iterator over an empty collection entities.
- */
-public class EmptyStorageIterator<T> implements StorageIterator<T> {
-
-  @Override
-  public boolean hasNext() {
-    return false;
+  /**
+   * Conditionally appends a text to a string builder.
+   */
+  public static void appendTo(StringBuilder builder, String text, String separator) {
+    if (text != null && text.length() > 0) {
+      if (builder.length() > 0) {
+        builder.append(separator);
+      }
+      builder.append(text);
+    }
   }
 
-  @Override
-  public T next() {
-    throw new IllegalStateException();
+  private Text() {
+    throw new AssertionError("Non-instantiable class");
   }
-
-  @Override
-  public void remove() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public int size() {
-    return 0;
-  }
-
-  @Override
-  public void skip(int count) {}
-
-  @Override
-  public List<T> getSome(int limit) {
-    return Collections.emptyList();
-  }
-
-  @Override
-  public void close() {}
 
 }

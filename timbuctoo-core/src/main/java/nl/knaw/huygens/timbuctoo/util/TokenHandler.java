@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.util;
 
 /*
  * #%L
@@ -22,35 +22,17 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+/**
+ * Performs an action for a specified token.
+ */
+public interface TokenHandler {
 
-import org.junit.Before;
-import org.junit.Test;
-
-public class StorageIteratorTest {
-
-  private StorageIterator<String> iterator;
-
-  @Before
-  public void setupEmptyIterator() {
-    iterator = new EmptyStorageIterator<String>();
-  }
-
-  @Test
-  public void testEmptyIteratorHasNext() {
-    assertFalse(iterator.hasNext());
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void testEmptyIteratorNext() {
-    iterator.next();
-  }
-
-  @Test
-  public void testEmptyIteratorSize() {
-    assertEquals(0, iterator.size());
-    assertEquals(0, iterator.getSome(1).size());
-  }
+  /**
+   * Handles the specified token.
+   * @param token the token to handle.
+   * @return <code>true</code> if processing is to be continued,
+   * <code>false</code> otherwise.
+   */
+  boolean handle(Token token);
 
 }

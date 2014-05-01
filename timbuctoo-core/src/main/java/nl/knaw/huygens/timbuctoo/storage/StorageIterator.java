@@ -37,14 +37,20 @@ public interface StorageIterator<T> extends Iterator<T> {
   int size();
 
   /**
-   * Skips the specified number of items.
+   * Skips the specified number of items;
+   * returns a reference to the iterators.
    */
-  void skip(int count);
+  StorageIterator<T> skip(int count);
 
   /**
    * Returns at most {@code limit} items and closes iterator.
    */
   List<T> getSome(int limit);
+
+  /**
+   * Returns all items and closes iterator.
+   */
+  List<T> getAll();
 
   /**
    * Closes this iterator, after which it cannot be used anymore.

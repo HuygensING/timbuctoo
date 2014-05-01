@@ -54,6 +54,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
+import nl.knaw.huygens.timbuctoo.util.Text;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
@@ -96,8 +97,6 @@ public class WomenWritersImporter extends DefaultImporter {
         repository.close();
       }
       LOG.info("Time used: {}", stopWatch);
-      // Close explicitly to terminate finalizer thread of Guice
-      System.exit(0);
     }
   }
 
@@ -107,6 +106,8 @@ public class WomenWritersImporter extends DefaultImporter {
   private final Map<String, Reference> references = Maps.newHashMap();
   /** Keys of invalid primitive entities */
   private final Set<String> invalids = Sets.newHashSet();
+  /** Special keywords */
+  private KeywordConcordance keywords;
   /** For deserializing JSON */
   private final ObjectMapper objectMapper;
   private final File inputDir;
@@ -133,10 +134,16 @@ public class WomenWritersImporter extends DefaultImporter {
     removeNonPersistentEntities(WWPerson.class);
     removeNonPersistentEntities(WWRelation.class);
 
+    printBoxedText("Import");
+
     importRelationTypes();
     setupRelationDefs();
 
-    printBoxedText("Import");
+    System.out.println(".. Keywords");
+    System.out.printf("Number = %6d%n%n", importKeywords());
+
+    keywords = new KeywordConcordance(repository, change);
+    keywords.handleFile(new File(inputDir, "neww-keywords.txt"), 0, false);
 
     System.out.println(".. Languages");
     System.out.printf("Number = %6d%n%n", importLanguages());
@@ -144,14 +151,12 @@ public class WomenWritersImporter extends DefaultImporter {
     System.out.println(".. Locations");
     System.out.printf("Number = %6d%n%n", importLocations());
 
-    System.out.println(".. Keywords");
-    System.out.printf("Number = %6d%n%n", importKeywords());
-
     System.out.println(".. Collectives");
     System.out.printf("Number = %6d%n%n", importCollectives());
 
     System.out.println(".. Documents");
-    System.out.printf("Number = %6d%n%n", importDocuments());
+    System.out.printf("Source documents = %6d%n%n", importSourceDocuments());
+    System.out.printf("Regular documents = %6d%n%n", importRegularDocuments());
 
     System.out.println(".. Persons");
     System.out.printf("Number = %6d%n%n", importPersons());
@@ -316,9 +321,56 @@ public class WomenWritersImporter extends DefaultImporter {
 
   // --- Documents -------------------------------------------------------------
 
+  private static final String JUNK_SOURCE = "Info in Reference and/or Provional notes.";
+  private static final String DOC_SOURCE_TYPE = "docSourceType";
+
+  private int importSourceDocuments() throws Exception {
+    int initialSize = references.size();
+    Reference relationTypeRef = relationTypes.get("hasSourceCategory");
+    List<String> ignoredCategories = Lists.newArrayList("", "-", "TBD");
+
+    LineIterator iterator = getLineIterator("documents.json");
+    String line = "";
+    try {
+      while (iterator.hasNext()) {
+        line = preprocessJson(iterator.nextLine());
+        if (!line.isEmpty()) {
+          String json = preprocessDocumentJson(line);
+          XDocument object = objectMapper.readValue(json, XDocument.class);
+          if (object != null && object.source != null) {
+            String title = filterField(object.source.full_name);
+            String key = newKey("SourceDocument", title);
+            if (title != null && !title.startsWith(JUNK_SOURCE) && !references.containsKey(key)) {
+              WWDocument document = new WWDocument();
+              document.setSource(true);
+              document.setTitle(title);
+              document.setNotes(filterNotesField(object.source.notes));
+              String storedId = addDomainEntity(WWDocument.class, document, change);
+              Reference documentRef = new Reference(Document.class, storedId);
+              references.put(key, documentRef);
+              String category = StringUtils.trimToEmpty(object.source.type);
+              Reference keywordRef = keywords.lookup(DOC_SOURCE_TYPE, category);
+              if (keywordRef != null) {
+                addRelation(WWRelation.class, relationTypeRef, documentRef, keywordRef, change, "");
+              } else if (!ignoredCategories.contains(category)) {
+                System.out.printf("Undefined source category [%s] for [%s]%n", category, title);
+              }
+            }
+          }
+        }
+      }
+    } catch (JsonMappingException e) {
+      System.out.println(line);
+      throw e;
+    } finally {
+      LineIterator.closeQuietly(iterator);
+    }
+    return references.size() - initialSize;
+  }
+
   private PublisherNormalizer publisherNormalizer;
 
-  private int importDocuments() throws Exception {
+  private int importRegularDocuments() throws Exception {
     int initialSize = references.size();
     documentTypeMap = createDocumentTypeMap();
     File file = new File(inputDir, "publishers.txt");
@@ -387,6 +439,14 @@ public class WomenWritersImporter extends DefaultImporter {
         String storedId = addDomainEntity(WWDocument.class, converted, change);
         Reference reference = storeReference(key, WWDocument.class, storedId);
         handlePublisher(extractPrints(object), converted.getDate(), reference);
+        if (object.source != null) {
+          String title = filterField(object.source.full_name);
+          Reference sourceDocRef = references.get(newKey("SourceDocument", title));
+          if (sourceDocRef != null) {
+            Reference relationTypeRef = relationTypes.get("hasDocumentSource");
+            addRelation(WWRelation.class, relationTypeRef, reference, sourceDocRef, change, "");
+          }
+        }
       }
     }
   }
@@ -425,26 +485,18 @@ public class WomenWritersImporter extends DefaultImporter {
     }
 
     StringBuilder notesBuilder = new StringBuilder();
-    appendTo(notesBuilder, filterNotesField(object.notes), "");
+    Text.appendTo(notesBuilder, filterNotesField(object.notes), "");
 
     List<XPrint> prints = extractPrints(object);
     for (XPrint print : prints) {
-      appendTo(notesBuilder, "* Print", NEWLINE);
-      appendTo(notesBuilder, print.edition, NEWLINE + "Edition: ");
-      appendTo(notesBuilder, print.publisher, NEWLINE + "Publisher: ");
-      appendTo(notesBuilder, print.location, NEWLINE + "Location: ");
-      appendTo(notesBuilder, print.year, NEWLINE + "Year: ");
+      Text.appendTo(notesBuilder, "* Print", NEWLINE);
+      Text.appendTo(notesBuilder, print.edition, NEWLINE + "Edition: ");
+      Text.appendTo(notesBuilder, print.publisher, NEWLINE + "Publisher: ");
+      Text.appendTo(notesBuilder, print.location, NEWLINE + "Location: ");
+      Text.appendTo(notesBuilder, print.year, NEWLINE + "Year: ");
     }
     if (selectFirstEdition(prints, date) != null) {
       converted.setEdition("1");
-    }
-
-    if (object.source != null) {
-      appendTo(notesBuilder, "* Source", NEWLINE);
-      appendTo(notesBuilder, filterField(object.source.type), NEWLINE + "Type: ");
-      appendTo(notesBuilder, filterField(object.source.full_name), NEWLINE + "Full Name: ");
-      appendTo(notesBuilder, filterField(object.source.short_name), NEWLINE + "Short Name: ");
-      appendTo(notesBuilder, filterField(object.source.notes), NEWLINE + "Notes: ");
     }
 
     converted.setNotes(notesBuilder.toString());
@@ -994,7 +1046,7 @@ public class WomenWritersImporter extends DefaultImporter {
       invalids.add(key);
       return;
     }
-    Location location = storageManager.findEntity(Location.class, "^urn", urn);
+    Location location = storageManager.findEntity(Location.class, Location.URN, urn);
     if (location == null) {
       handleError("URN not found: %s", urn);
       return;
@@ -1057,6 +1109,7 @@ public class WomenWritersImporter extends DefaultImporter {
 
   private final Pattern simpleNamePattern = Pattern.compile("^(\\p{Lu}\\p{L}+), (\\p{Lu}\\p{L}+)$");
   private final Set<String> excludedNames = Sets.newHashSet("Comtesse", "Madame", "Madamoiselle", "Mejuffrouw", "Mevrouw", "Mme", "Mrs", "Queen", "Vrou");
+  private final Set<String> ignoredValues = Sets.newHashSet("not relevant", "not yet checked", "not yet known", "seems impossible to know", "to be specified", "unknown", "unkown");
 
   // maps line without id to stored id
   private final Map<String, String> lines = Maps.newHashMap();
@@ -1117,12 +1170,42 @@ public class WomenWritersImporter extends DefaultImporter {
           storedId = addDomainEntity(WWPerson.class, converted, change);
           lines.put(line, storedId);
         }
-        storeReference(key, WWPerson.class, storedId);
+        Reference personRef = storeReference(key, WWPerson.class, storedId);
+        handleXRelation(object.old_id, personRef, "hasEducation", "education", object.education);
+        handleXRelation(object.old_id, personRef, "hasFinancialSituation", "financialSituation", object.financials);
+        handleXRelation(object.old_id, personRef, "hasMaritalStatus", "maritalStatus", object.marital_status);
+        handleXRelation(object.old_id, personRef, "hasProfession", "profession", object.professions);
+        handleXRelation(object.old_id, personRef, "hasReligion", "religion", object.religion);
+        handleXRelation(object.old_id, personRef, "hasSocialClass", "socialClass", object.social_class);
       }
     }
   }
 
-  // \p{Lu}
+  private void handleXRelation(int oldId, Reference baseRef, String relationName, String keywordType, String... values) {
+    if (values != null && values.length != 0) {
+      Set<String> items = Sets.newHashSet(values);
+      if (items.contains("lady") && items.contains("in") && items.contains("waiting")) {
+        items.remove("lady");
+        items.remove("in");
+        items.remove("waiting");
+        items.add("lady-in-waiting");
+      }
+      Reference relationTypeRef = relationTypes.get(relationName);
+      for (String item : items) {
+        String value = filterField(item);
+        if (value != null) {
+          value = value.replaceAll("[•*\\.,;]", "").trim();
+          Reference keywordRef = keywords.lookup(keywordType, value);
+          if (keywordRef != null) {
+            addRelation(WWRelation.class, relationTypeRef, baseRef, keywordRef, change, "");
+          } else if (!ignoredValues.contains(value.toLowerCase())) {
+            System.out.printf("[%05d] Undefined %s [%s]%n", oldId, keywordType, value);
+          }
+        }
+      }
+    }
+  }
+
   private WWPerson convert(String line, XPerson object) {
     String text;
     WWPerson converted = new WWPerson();
@@ -1148,22 +1231,8 @@ public class WomenWritersImporter extends DefaultImporter {
     }
 
     converted.tempDeath = filterField(object.death);
-
-    if (object.education != null) {
-      for (String item : object.education) {
-        converted.addEducation(filterField(item));
-      }
-    }
-
     converted.tempFinancialSituation = filterField(object.financial_situation);
-
     verifyEmptyField(line, "financialSituation", object.financialSituation);
-
-    if (object.financials != null) {
-      for (String item : object.financials) {
-        converted.addFinancial(filterField(item));
-      }
-    }
 
     if (object.fs_pseudonyms != null) {
       for (String item : object.fs_pseudonyms) {
@@ -1188,11 +1257,11 @@ public class WomenWritersImporter extends DefaultImporter {
     converted.setHealth(filterField(object.health));
     converted.tempLanguages = concatenate(object.languages);
     converted.setLivedIn(filterField(object.lived_in));
-    converted.setMaritalStatus(filterField(object.marital_status));
     converted.tempMemberships = concatenate(object.memberships);
     converted.tempMotherTongue = filterField(object.mother_tongue);
 
-    String name = converted.tempName = filterField(object.name);
+    String name = filterField(object.name);
+    converted.setTempName(name);
     if (name != null) {
       Matcher matcher = simpleNamePattern.matcher(name);
       if (matcher.matches()) {
@@ -1212,33 +1281,13 @@ public class WomenWritersImporter extends DefaultImporter {
 
     converted.tempPlaceOfBirth = concatenate(object.placeOfBirth);
     converted.tempDeathPlace = filterField(object.placeOfDeath);
-
-    if (object.professions != null) {
-      for (String item : object.professions) {
-        converted.addProfession(filterField(item));
-      }
-    }
-
     converted.tempPseudonyms = concatenate(object.pseudonyms);
     converted.tempPsChildren = concatenate(object.ps_children);
-
-    if (object.religion != null) {
-      for (String item : object.religion) {
-        converted.addReligion(filterField(item));
-      }
-    }
-
-    if (object.social_class != null) {
-      for (String item : object.social_class) {
-        converted.addSocialClass(filterField(item));
-      }
-    }
-
     converted.tempPublishingLanguages = concatenate(object.publishing_languages);
-    converted.tempSpouse = filterField(object.spouse);
+    converted.setTempSpouse(filterField(object.spouse));
 
     String type = filterField(object.type);
-    if (converted.tempName != null && converted.tempName.startsWith("~")) {
+    if (converted.getTempName() != null && converted.getTempName().startsWith("~")) {
       converted.addType(Person.Type.ARCHETYPE);
       nArchetype++;
     } else if (type == null || type.equalsIgnoreCase("unknown")) {
@@ -1272,7 +1321,7 @@ public class WomenWritersImporter extends DefaultImporter {
     StringBuilder builder = new StringBuilder();
     if (items != null) {
       for (String item : items) {
-        appendTo(builder, filterField(item), "; ");
+        Text.appendTo(builder, filterField(item), "; ");
       }
     }
     return (builder.length() > 0) ? builder.toString() : null;
