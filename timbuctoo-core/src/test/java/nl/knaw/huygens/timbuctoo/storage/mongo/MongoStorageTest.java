@@ -182,18 +182,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetAllByType() throws IOException {
-    Map<String, Object> map = createDefaultMap(0, null);
-    map.put("testValue1", "test");
-    DBObject dbObject = createDBObject(map);
-
-    DBCursor cursor = createDBCursorWithOneValue(dbObject);
-    when(anyCollection.find()).thenReturn(cursor);
-
-    storage.getAllByType(TestSystemEntity.class);
-  }
-
-  @Test
   public void testRemoveItem() throws IOException {
     storage.deleteSystemEntity(TestSystemEntity.class, DEFAULT_ID);
     // just verify that the underlying storage is called

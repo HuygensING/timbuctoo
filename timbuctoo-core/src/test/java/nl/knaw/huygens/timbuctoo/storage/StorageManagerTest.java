@@ -24,7 +24,6 @@ package nl.knaw.huygens.timbuctoo.storage;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -93,7 +92,7 @@ public class StorageManagerTest {
   @Test
   public void testGetEntities() {
     manager.getEntities(BaseDomainEntity.class);
-    verify(storage).getAllByType(BaseDomainEntity.class);
+    verify(storage).getEntities(BaseDomainEntity.class);
   }
 
   @Test
@@ -213,23 +212,18 @@ public class StorageManagerTest {
 
   @Test
   public void testGetAllLimited() {
-    List<BaseDomainEntity> limitedList = Lists.newArrayList(mock(BaseDomainEntity.class), mock(BaseDomainEntity.class), mock(BaseDomainEntity.class));
-
     @SuppressWarnings("unchecked")
     StorageIterator<BaseDomainEntity> iterator = mock(StorageIterator.class);
     when(iterator.skip(anyInt())).thenReturn(iterator);
-    when(iterator.getSome(anyInt())).thenReturn(limitedList);
+    when(storage.getEntities(BaseDomainEntity.class)).thenReturn(iterator);
 
-    when(storage.getAllByType(BaseDomainEntity.class)).thenReturn(iterator);
+    int offset = 3;
+    int limit = 7;
+    manager.getAllLimited(BaseDomainEntity.class, offset, limit);
 
-    List<BaseDomainEntity> actualList = manager.getAllLimited(BaseDomainEntity.class, 0, 3);
-    assertEquals(3, actualList.size());
-  }
-
-  @Test
-  public void testGetAllLimitedLimitIsZero() {
-    List<BaseDomainEntity> list = manager.getAllLimited(BaseDomainEntity.class, 3, 0);
-    assertTrue(list.isEmpty());
+    verify(storage).getEntities(BaseDomainEntity.class);
+    verify(iterator).skip(offset);
+    verify(iterator).getSome(limit);
   }
 
   @Test
