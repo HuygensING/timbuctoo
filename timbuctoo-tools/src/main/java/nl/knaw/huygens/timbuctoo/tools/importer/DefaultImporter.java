@@ -197,7 +197,7 @@ public abstract class DefaultImporter {
     Progress progress = new Progress();
     StorageIterator<T> iterator = null;
     try {
-      iterator = storageManager.getAll(type);
+      iterator = storageManager.getEntities(type);
       while (iterator.hasNext()) {
         progress.step();
         T entity = iterator.next();

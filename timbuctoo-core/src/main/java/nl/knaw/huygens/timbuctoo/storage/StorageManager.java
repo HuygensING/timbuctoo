@@ -245,7 +245,7 @@ public class StorageManager {
     }
   }
 
-  public <T extends Entity> StorageIterator<T> getAll(Class<T> type) {
+  public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) {
     return storage.getAllByType(type);
   }
 
@@ -326,9 +326,7 @@ public class StorageManager {
    */
   public Map<String, RelationType> getRelationTypeMap() {
     Map<String, RelationType> map = Maps.newHashMap();
-    StorageIterator<RelationType> iterator = getAll(RelationType.class);
-    while (iterator.hasNext()) {
-      RelationType type = iterator.next();
+    for (RelationType type : getEntities(RelationType.class).getAll()) {
       map.put(type.getRegularName(), type);
     }
     return map;

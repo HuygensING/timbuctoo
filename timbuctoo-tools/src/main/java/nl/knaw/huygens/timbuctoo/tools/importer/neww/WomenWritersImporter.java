@@ -50,7 +50,6 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
@@ -1402,9 +1401,7 @@ public class WomenWritersImporter extends DefaultImporter {
   private final Map<String, Reference> relationTypes = Maps.newHashMap();
 
   private void setupRelationDefs() {
-    StorageIterator<RelationType> iterator = storageManager.getAll(RelationType.class);
-    while (iterator.hasNext()) {
-      RelationType type = iterator.next();
+    for (RelationType type : storageManager.getEntities(RelationType.class).getAll()) {
       relationTypes.put(type.getRegularName(), new Reference(RelationType.class, type.getId()));
     }
   }
