@@ -37,7 +37,7 @@ public class RelationAnalyzer {
     final Repository repository = ToolsInjectionModule.createRepositoryInstance();
     try {
       Tokens tokens = new Tokens();
-      StorageIterator<Relation> iterator = repository.getStorageManager().getAll(Relation.class);
+      StorageIterator<Relation> iterator = repository.getStorageManager().getEntities(Relation.class);
       while (iterator.hasNext()) {
         Relation relation = iterator.next();
         tokens.increment(relation.getTypeId());

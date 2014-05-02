@@ -72,7 +72,7 @@ public class RelationTypeResourceTest {
     // when
     StorageIterator<RelationType> iterator = mock(StorageIterator.class);
     when(iterator.getAll()).thenReturn(types);
-    when(storageManager.getAll(RelationType.class)).thenReturn(iterator);
+    when(storageManager.getEntities(RelationType.class)).thenReturn(iterator);
 
     // action
     List<RelationType> returnedRelationTypes = resource.getRelationTypesForEntity(null);
@@ -92,7 +92,7 @@ public class RelationTypeResourceTest {
     // when
     StorageIterator<RelationType> iterator = mock(StorageIterator.class);
     when(iterator.getAll()).thenReturn(types);
-    when(storageManager.getAll(RelationType.class)).thenReturn(iterator);
+    when(storageManager.getEntities(RelationType.class)).thenReturn(iterator);
 
     setupGetTypeForInName(BaseDomainEntity.class);
     setupGetTypeForInName(SubADomainEntity.class);
@@ -119,7 +119,7 @@ public class RelationTypeResourceTest {
     // when
     StorageIterator<RelationType> iterator = mock(StorageIterator.class);
     when(iterator.getAll()).thenReturn(types);
-    when(storageManager.getAll(RelationType.class)).thenReturn(iterator);
+    when(storageManager.getEntities(RelationType.class)).thenReturn(iterator);
 
     setupGetTypeForInName(BaseDomainEntity.class);
     setupGetTypeForInName(SubADomainEntity.class);

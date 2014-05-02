@@ -91,8 +91,8 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testGetAll() {
-    manager.getAll(BaseDomainEntity.class);
+  public void testGetEntities() {
+    manager.getEntities(BaseDomainEntity.class);
     verify(storage).getAllByType(BaseDomainEntity.class);
   }
 

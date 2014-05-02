@@ -83,7 +83,7 @@ public class RelationTypeResource extends ResourceBase {
   protected List<RelationType> getRelationTypesForEntity(String iname) {
     boolean showAll = Strings.isNullOrEmpty(iname);
     List<RelationType> types = Lists.newArrayList();
-    for (RelationType type : storageManager.getAll(RelationType.class).getAll()) {
+    for (RelationType type : storageManager.getEntities(RelationType.class).getAll()) {
       if (showAll || isApplicable(iname, type)) {
         types.add(type);
       }
