@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import java.util.Iterator;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -33,17 +32,17 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.lang.StringUtils;
-
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
@@ -83,15 +82,16 @@ public class RelationTypeResource extends ResourceBase {
    * If {@code iname} is {@code null} or empty all relation types are returned.
    */
   protected List<RelationType> getRelationTypesForEntity(String iname) {
-    boolean shouldFilter = !StringUtils.isEmpty(iname);
+    boolean showAll = Strings.isNullOrEmpty(iname);
     List<RelationType> types = Lists.newArrayList();
-    Iterator<RelationType> iterator = storageManager.getAll(RelationType.class);
+    StorageIterator<RelationType> iterator = storageManager.getAll(RelationType.class);
     while (iterator.hasNext()) {
       RelationType type = iterator.next();
-      if (!shouldFilter || isApplicable(iname, type)) {
+      if (showAll || isApplicable(iname, type)) {
         types.add(type);
       }
     }
+    iterator.close();
     return types;
   }
 
