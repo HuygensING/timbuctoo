@@ -154,12 +154,12 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetAllByType() throws IOException {
+  public void testGetEntities() throws IOException {
     DBObject query = queries.selectAll();
     DBCursor cursor = createCursorWithoutValues();
     when(anyCollection.find(query)).thenReturn(cursor);
 
-    storage.getAllByType(ProjectADomainEntity.class);
+    storage.getEntities(ProjectADomainEntity.class);
     verify(anyCollection).find(query);
   }
 

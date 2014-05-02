@@ -245,7 +245,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Entity> StorageIterator<T> getAllByType(Class<T> type) {
+  public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) {
     return findItems(type, queries.selectAll());
   }
 

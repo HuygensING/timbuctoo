@@ -112,7 +112,7 @@ public interface Storage {
   /**
    * Retrieves entities by type.
    */
-  <T extends Entity> StorageIterator<T> getAllByType(Class<T> type);
+  <T extends Entity> StorageIterator<T> getEntities(Class<T> type);
 
   /**
    * Retrieves entities by type and membership of id-list.

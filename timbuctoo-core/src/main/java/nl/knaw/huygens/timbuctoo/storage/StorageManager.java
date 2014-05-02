@@ -246,7 +246,7 @@ public class StorageManager {
   }
 
   public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) {
-    return storage.getAllByType(type);
+    return storage.getEntities(type);
   }
 
   public <T extends Entity> List<T> getAllByIds(Class<T> type, List<String> ids) {
@@ -274,10 +274,7 @@ public class StorageManager {
   }
 
   public <T extends Entity> List<T> getAllLimited(Class<T> type, int offset, int limit) {
-    if (limit == 0) {
-      return Collections.<T> emptyList();
-    }
-    return storage.getAllByType(type).skip(offset).getSome(limit);
+    return storage.getEntities(type).skip(offset).getSome(limit);
   }
 
   public <T extends Entity> List<T> getEntitiesByProperty(Class<T> type, String field, String value) {
