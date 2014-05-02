@@ -38,7 +38,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import com.fasterxml.jackson.annotation.JsonView;
@@ -84,14 +83,11 @@ public class RelationTypeResource extends ResourceBase {
   protected List<RelationType> getRelationTypesForEntity(String iname) {
     boolean showAll = Strings.isNullOrEmpty(iname);
     List<RelationType> types = Lists.newArrayList();
-    StorageIterator<RelationType> iterator = storageManager.getAll(RelationType.class);
-    while (iterator.hasNext()) {
-      RelationType type = iterator.next();
+    for (RelationType type : storageManager.getAll(RelationType.class).getAll()) {
       if (showAll || isApplicable(iname, type)) {
         types.add(type);
       }
     }
-    iterator.close();
     return types;
   }
 

@@ -42,13 +42,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import org.junit.Before;
 import org.junit.Test;
 
-
-
-
-
-
-
-
 import test.model.BaseDomainEntity;
 import test.model.DomainEntityWithMiscTypes;
 import test.model.PrimitiveDomainEntity;
@@ -72,34 +65,33 @@ public class RelationTypeResourceTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testGetRelationTypeForEntityNoName() {
-    // mock
     List<RelationType> types = Lists.newArrayList(mock(RelationType.class), mock(RelationType.class));
-    List<Boolean> hasNext = Lists.newArrayList(true, true, false);
 
     // when
-    StorageIterator<RelationType> iterator = createStorageIterator(types, hasNext);
+    StorageIterator<RelationType> iterator = mock(StorageIterator.class);
+    when(iterator.getAll()).thenReturn(types);
     when(storageManager.getAll(RelationType.class)).thenReturn(iterator);
 
     // action
     List<RelationType> returnedRelationTypes = resource.getRelationTypesForEntity(null);
 
     // verify
-    verify(iterator).close();
     assertThat(returnedRelationTypes, contains(types.toArray(new RelationType[0])));
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testGetRelationTypeForEntityPrimitive() {
-    // when
     RelationType type1 = createRelationType(BaseDomainEntity.class, SubADomainEntity.class, false);
     RelationType type2 = createRelationType(DomainEntityWithMiscTypes.class, DomainEntity.class, false);
     RelationType type3 = createRelationType(DomainEntityWithMiscTypes.class, SubADomainEntity.class, false);
-
     List<RelationType> types = Lists.newArrayList(type1, type2, type3);
-    List<Boolean> hasNext = Lists.newArrayList(true, true, true, false);
 
-    StorageIterator<RelationType> iterator = createStorageIterator(types, hasNext);
+    // when
+    StorageIterator<RelationType> iterator = mock(StorageIterator.class);
+    when(iterator.getAll()).thenReturn(types);
     when(storageManager.getAll(RelationType.class)).thenReturn(iterator);
 
     setupGetTypeForInName(BaseDomainEntity.class);
@@ -111,7 +103,6 @@ public class RelationTypeResourceTest {
     List<RelationType> actualRelationTypes = resource.getRelationTypesForEntity(TypeNames.getInternalName(BaseDomainEntity.class));
 
     // verify
-    verify(iterator).close();
     assertThat(actualRelationTypes, contains(type1, type2));
   }
 
@@ -119,16 +110,15 @@ public class RelationTypeResourceTest {
   @SuppressWarnings("unchecked")
   public void testGetRelationTypeForEntityProjectSpecific() {
     // return all relations for the type and it's super classes except the ones that refer to a different project.
-    // when
     RelationType type1 = createRelationType(BaseDomainEntity.class, SubADomainEntity.class, false);
     RelationType type2 = createRelationType(SubBDomainEntity.class, DomainEntity.class, false);
     RelationType type3 = createRelationType(PrimitiveDomainEntity.class, DomainEntity.class, false);
     RelationType type4 = createRelationType(OtherADomainEntity.class, DomainEntity.class, false);
-
     List<RelationType> types = Lists.newArrayList(type1, type2, type3, type4);
-    List<Boolean> hasNext = Lists.newArrayList(true, true, true, true, false);
 
-    StorageIterator<RelationType> iterator = createStorageIterator(types, hasNext);
+    // when
+    StorageIterator<RelationType> iterator = mock(StorageIterator.class);
+    when(iterator.getAll()).thenReturn(types);
     when(storageManager.getAll(RelationType.class)).thenReturn(iterator);
 
     setupGetTypeForInName(BaseDomainEntity.class);
@@ -146,7 +136,6 @@ public class RelationTypeResourceTest {
     List<RelationType> actualRelationTypes = resource.getRelationTypesForEntity(TypeNames.getInternalName(SubADomainEntity.class));
 
     // verify
-    verify(iterator).close();
     verify(registry).isFromSameProject(SubADomainEntity.class, SubBDomainEntity.class);
     verify(registry).isFromSameProject(SubADomainEntity.class, OtherADomainEntity.class);
     assertThat(actualRelationTypes, contains(type1, type3, type4));
@@ -162,14 +151,6 @@ public class RelationTypeResourceTest {
 
   private void setupGetTypeForInName(Class<? extends DomainEntity> type) {
     doReturn(type).when(registry).getTypeForIName(TypeNames.getInternalName(type));
-  }
-
-  private StorageIterator<RelationType> createStorageIterator(List<RelationType> relationTypes, List<Boolean> hasNext) {
-    @SuppressWarnings("unchecked")
-    StorageIterator<RelationType> iterator = mock(StorageIterator.class);
-    when(iterator.next()).thenReturn(relationTypes.get(0), relationTypes.subList(1, relationTypes.size()).toArray(new RelationType[0]));
-    when(iterator.hasNext()).thenReturn(hasNext.get(0), hasNext.subList(1, hasNext.size()).toArray(new Boolean[0]));
-    return iterator;
   }
 
 }
