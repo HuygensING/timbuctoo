@@ -37,7 +37,6 @@ import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
-import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.cwno.CWNODocument;
 import nl.knaw.huygens.timbuctoo.model.cwno.CWNOPerson;
 import nl.knaw.huygens.timbuctoo.model.cwno.CWNORelation;
@@ -93,8 +92,6 @@ public class CobwwwebNoImporter extends DefaultImporter {
   // -------------------------------------------------------------------
 
   private final Change change;
-  /** Reference to relation types. */
-  private final Map<String, Reference> relationTypes = Maps.newHashMap();
   /** References of stored primitive entities */
   private final Map<String, Reference> references = Maps.newHashMap();
 
@@ -107,7 +104,7 @@ public class CobwwwebNoImporter extends DefaultImporter {
     try {
       openImportLog("cobwwweb-no-log.txt");
       importRelationTypes();
-      setupRelationTypeRefs();
+      setupRelationTypeDefs();
       importPersons();
       importDocuments();
       importRelations();
@@ -115,12 +112,6 @@ public class CobwwwebNoImporter extends DefaultImporter {
     } finally {
       displayErrorSummary();
       closeImportLog();
-    }
-  }
-
-  private void setupRelationTypeRefs() {
-    for (RelationType type : storageManager.getRelationTypeMap().values()) {
-      relationTypes.put(type.getRegularName(), new Reference(RelationType.class, type.getId()));
     }
   }
 

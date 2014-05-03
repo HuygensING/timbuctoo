@@ -38,7 +38,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
-import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.neww.WWCollective;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
 import nl.knaw.huygens.timbuctoo.model.neww.WWKeyword;
@@ -137,7 +136,7 @@ public class WomenWritersImporter extends DefaultImporter {
     printBoxedText("Import");
 
     importRelationTypes();
-    setupRelationDefs();
+    setupRelationTypeDefs();
 
     System.out.println(".. Keywords");
     System.out.printf("Number = %6d%n%n", importKeywords());
@@ -1397,14 +1396,6 @@ public class WomenWritersImporter extends DefaultImporter {
 
   private int missingRelationTypes = 0;
   private int unstoredRelations = 0;
-
-  private final Map<String, Reference> relationTypes = Maps.newHashMap();
-
-  private void setupRelationDefs() {
-    for (RelationType type : storageManager.getEntities(RelationType.class).getAll()) {
-      relationTypes.put(type.getRegularName(), new Reference(RelationType.class, type.getId()));
-    }
-  }
 
   private Reference getReference(String type, String id) {
     if (type == null || type.isEmpty()) {

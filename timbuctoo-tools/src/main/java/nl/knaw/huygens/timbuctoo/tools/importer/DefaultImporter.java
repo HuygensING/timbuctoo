@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -37,6 +38,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
@@ -48,6 +50,7 @@ import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 import org.apache.commons.lang.StringUtils;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 
 /**
  * Contains functionality needed in most importers.
@@ -149,6 +152,14 @@ public abstract class DefaultImporter {
 
   protected void importRelationTypes() throws IOException, ValidationException {
     new RelationTypeImporter(storageManager).importRelationTypes(RELATION_TYPE_DEFS);
+  }
+
+  protected final Map<String, Reference> relationTypes = Maps.newHashMap();
+
+  protected void setupRelationTypeDefs() {
+    for (RelationType type : storageManager.getEntities(RelationType.class).getAll()) {
+      relationTypes.put(type.getRegularName(), new Reference(RelationType.class, type.getId()));
+    }
   }
 
   private int duplicateRelationCount = 0;

@@ -40,7 +40,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
-import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.cwrs.CWRSDocument;
 import nl.knaw.huygens.timbuctoo.model.cwrs.CWRSPerson;
 import nl.knaw.huygens.timbuctoo.model.cwrs.CWRSRelation;
@@ -107,8 +106,6 @@ public class CobwwwebRsImporter extends DefaultImporter {
   // -------------------------------------------------------------------
 
   private final Change change;
-  /** Reference to relation types. */
-  private final Map<String, Reference> relationTypes = Maps.newHashMap();
   /** References of stored primitive entities. */
   private final Map<String, Reference> references = Maps.newHashMap();
   /** Used languages. */
@@ -124,7 +121,7 @@ public class CobwwwebRsImporter extends DefaultImporter {
     try {
       openImportLog("cobwwweb-rs-log.txt");
       importRelationTypes();
-      setupRelationTypeRefs();
+      setupRelationTypeDefs();
       importPersons();
       // importDocuments();
       // importRelations();
@@ -156,12 +153,6 @@ public class CobwwwebRsImporter extends DefaultImporter {
     } catch (ExecutionException e) {
       LOG.error("No language with code {}", code);
       return null;
-    }
-  }
-
-  private void setupRelationTypeRefs() {
-    for (RelationType type : storageManager.getRelationTypeMap().values()) {
-      relationTypes.put(type.getRegularName(), new Reference(RelationType.class, type.getId()));
     }
   }
 
