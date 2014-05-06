@@ -1182,36 +1182,37 @@ public class WomenWritersImporter extends DefaultImporter {
   }
 
   private void handleXRelation(int oldId, Reference baseRef, String relationName, String keywordType, String... values) {
-    if (values != null && values.length != 0) {
-      Set<String> items = Sets.newHashSet(values);
-      if (items.contains("waiting") && items.contains("in") && (items.contains("lady") || items.contains("Lady"))) {
-        items.remove("lady");
-        items.remove("Lady");
-        items.remove("in");
-        items.remove("waiting");
+    if (values == null) return;
+
+    Set<String> items = Sets.newHashSet();
+    for (String value : values) {
+      String text = filterField(value);
+      if (text == null) continue;
+      text = text.toLowerCase().replaceAll("[•*\\.\\?,;]", "").trim();
+      if (text.startsWith("married to")) {
+        items.add("married");
+      } else if (text.startsWith("translator from")) {
+        items.add("translator");
+      } else if (text.startsWith("writer of")) {
+        items.add("writer");
+      } else if (text.endsWith(" writer")) {
+        items.add("writer");
+      } else if (text.equals("lady") || text.equals("in") || text.equals("waiting")) {
         items.add("lady-in-waiting");
+      } else if (text.equals("social") || text.equals("cultural activist")) {
+        items.add("social-cultural activist");
+      } else if (text.length() > 0) {
+        items.add(text);
       }
-      Reference relationTypeRef = relationTypes.get(relationName);
-      for (String item : items) {
-        String value = filterField(item);
-        if (value != null) {
-          value = value.replaceAll("[•*\\.,;]", "").trim();
-          if (keywordType.equals("profession") && value.toLowerCase().startsWith("translator from")) {
-            value = "translator";
-          }
-          if (keywordType.equals("profession") && value.toLowerCase().startsWith("writer of")) {
-            value = "writer";
-          }
-          if (keywordType.equals("profession") && value.toLowerCase().endsWith(" writer")) {
-            value = "writer";
-          }
-          Reference keywordRef = keywords.lookup(keywordType, value);
-          if (keywordRef != null) {
-            addRelation(WWRelation.class, relationTypeRef, baseRef, keywordRef, change, "");
-          } else if (!ignoredValues.contains(value.toLowerCase())) {
-            log("[%05d] Undefined %s [%s]%n", oldId, keywordType, value);
-          }
-        }
+    } 
+
+    Reference relationTypeRef = relationTypes.get(relationName);
+    for (String item : items) {
+      Reference keywordRef = keywords.lookup(keywordType, item);
+      if (keywordRef != null) {
+        addRelation(WWRelation.class, relationTypeRef, baseRef, keywordRef, change, "");
+      } else if (!ignoredValues.contains(item)) {
+        log("[%05d] Undefined %s [%s]%n", oldId, keywordType, item);
       }
     }
   }
