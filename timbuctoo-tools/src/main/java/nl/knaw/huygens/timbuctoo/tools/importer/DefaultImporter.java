@@ -162,6 +162,14 @@ public abstract class DefaultImporter {
     }
   }
 
+  protected Reference getRelationTypeRef(String name, boolean required) {
+    Reference reference = relationTypes.get(name);
+    if (reference == null && required) {
+      throw new RuntimeException("Missing relation type " + name);
+    }
+    return reference;
+  }
+
   private int duplicateRelationCount = 0;
 
   protected int getDuplicateRelationCount() {

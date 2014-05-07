@@ -443,7 +443,7 @@ public class WomenWritersImporter extends DefaultImporter {
           String title = filterField(object.source.full_name);
           Reference sourceDocRef = references.get(newKey("SourceDocument", title));
           if (sourceDocRef != null) {
-            Reference relationTypeRef = relationTypes.get("hasDocumentSource");
+            Reference relationTypeRef = getRelationTypeRef("hasDocumentSource", true);
             addRelation(WWRelation.class, relationTypeRef, reference, sourceDocRef, change, "");
           }
         }
