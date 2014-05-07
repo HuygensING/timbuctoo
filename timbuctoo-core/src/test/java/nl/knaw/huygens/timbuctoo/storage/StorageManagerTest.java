@@ -34,7 +34,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -224,22 +223,6 @@ public class StorageManagerTest {
     verify(storage).getEntities(BaseDomainEntity.class);
     verify(iterator).skip(offset);
     verify(iterator).getSome(limit);
-  }
-
-  @Test
-  public void getAllByIds() {
-    List<BaseDomainEntity> limitedList = Lists.newArrayList(mock(BaseDomainEntity.class), mock(BaseDomainEntity.class), mock(BaseDomainEntity.class));
-
-    @SuppressWarnings("unchecked")
-    StorageIterator<BaseDomainEntity> iterator = mock(StorageIterator.class);
-    when(iterator.getSome(anyInt())).thenReturn(limitedList);
-
-    ArrayList<String> ids = Lists.newArrayList("id1", "id2", "id3");
-    when(storage.getEntitiesByIds(BaseDomainEntity.class, ids)).thenReturn(iterator);
-
-    List<BaseDomainEntity> actualList = manager.getAllByIds(BaseDomainEntity.class, ids);
-    verify(iterator).getSome(3);
-    assertEquals(3, actualList.size());
   }
 
   @Test
