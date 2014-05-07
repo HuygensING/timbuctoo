@@ -23,9 +23,9 @@ package nl.knaw.huygens.timbuctoo.model.dcar;
  */
 
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVE_KEYWORD;
-import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PARENT_ARCHIVE;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVE_PERSON;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVE_PLACE;
+import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PARENT_ARCHIVE;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_SIBLING_ARCHIVE;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.IS_CREATOR_OF;
 
@@ -237,7 +237,7 @@ public class DCARArchive extends Archive {
   }
 
   @JsonIgnore
-  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_sort_period", canBeEmpty = true, isFaceted = false, facetType = FacetType.PERIOD, isSortable = true),
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_k_period", canBeEmpty = true, isFaceted = false, facetType = FacetType.PERIOD, isSortable = true),
       @IndexAnnotation(fieldName = "dynamic_s_period", canBeEmpty = true, isFaceted = true, facetType = FacetType.PERIOD, isSortable = false) })
   public String getActivePeriod() {
     return PeriodHelper.createPeriod(beginDate, endDate);

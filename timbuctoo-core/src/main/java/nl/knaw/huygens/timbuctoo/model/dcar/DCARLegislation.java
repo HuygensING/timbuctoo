@@ -151,7 +151,7 @@ public class DCARLegislation extends Legislation {
     this.titleEng = title;
   }
 
-  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_sort_date", canBeEmpty = true, isFaceted = false, facetType = FacetType.DATE, isSortable = true),
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_k_date", canBeEmpty = true, isFaceted = false, facetType = FacetType.DATE, isSortable = true),
       @IndexAnnotation(fieldName = "dynamic_s_date", canBeEmpty = true, isFaceted = true, facetType = FacetType.DATE, isSortable = false) })
   public String getDate1() {
     return date1;
