@@ -145,7 +145,7 @@ public class DCARArchiver extends Archiver {
   }
 
   @JsonIgnore
-  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_sort_period", canBeEmpty = true, isFaceted = false, facetType = FacetType.PERIOD, isSortable = true),
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_k_period", canBeEmpty = true, isFaceted = false, facetType = FacetType.PERIOD, isSortable = true),
       @IndexAnnotation(fieldName = "dynamic_s_period", canBeEmpty = true, isFaceted = true, facetType = FacetType.PERIOD, isSortable = false) })
   public String getActivePeriod() {
     return PeriodHelper.createPeriod(beginDate, endDate);
