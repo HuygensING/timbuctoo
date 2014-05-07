@@ -186,10 +186,18 @@ public class SearchResource {
     int idsSize = ids.size();
     int lo = toRange(start, 0, idsSize);
     int hi = toRange(lo + rows, 0, idsSize);
-
     List<String> idsToGet = ids.subList(lo, hi);
-    @SuppressWarnings("unchecked")
-    List<DomainEntity> entities = (List<DomainEntity>) storageManager.getAllByIds(type, idsToGet);
+
+    // Retrieve entities one-by-one to retain ordering
+    List<DomainEntity> entities = Lists.newArrayList();
+    for (String id : idsToGet) {
+      DomainEntity entity = storageManager.getEntity(type, id);
+      if (entity != null) {
+        entities.add(entity);
+      } else {
+        LOG.error("Failed to retrieve {} - {}", type, id);
+      }
+    }
 
     Map<String, Object> returnValue = Maps.newHashMap();
     returnValue.put("term", result.getTerm());
