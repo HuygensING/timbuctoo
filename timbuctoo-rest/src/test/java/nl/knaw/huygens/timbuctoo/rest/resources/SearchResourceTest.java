@@ -315,9 +315,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     int startIndex = 0;
     int numberOfRows = 10;
-    int endIndex = startIndex + numberOfRows;
-    createSearchResultOf100Persons(idList, personList);
-    when(storageManager.getAllByIds(Person.class, idList.subList(startIndex, endIndex))).thenReturn(personList.subList(startIndex, endIndex));
+    createSearchResultOf100Persons(storageManager, idList, personList);
 
     List<FacetCount> facets = createFacets();
     setUpSearchResult(idList, storageManager, facets);
@@ -343,9 +341,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     int startIndex = 20;
     int numberOfRows = 20;
-    int endIndex = startIndex + numberOfRows;
-    createSearchResultOf100Persons(idList, personList);
-    when(storageManager.getAllByIds(Person.class, idList.subList(startIndex, endIndex))).thenReturn(personList.subList(startIndex, endIndex));
+    createSearchResultOf100Persons(storageManager, idList, personList);
 
     List<FacetCount> facets = createFacets();
 
@@ -377,9 +373,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     int startIndex = 10;
     int numberOfRows = 100;
-    int endIndex = 100;
-    createSearchResultOf100Persons(idList, personList);
-    when(storageManager.getAllByIds(Person.class, idList.subList(startIndex, endIndex))).thenReturn(personList.subList(startIndex, endIndex));
+    createSearchResultOf100Persons(storageManager, idList, personList);
 
     List<FacetCount> facets = createFacets();
 
@@ -502,15 +496,14 @@ public class SearchResourceTest extends WebServiceTestSetup {
     return facets;
   }
 
-  private void createSearchResultOf100Persons(final List<String> idList, final List<Person> personList) {
+  private void createSearchResultOf100Persons(StorageManager storageManager, final List<String> idList, final List<Person> personList) {
     for (int i = 0; i < 100; i++) {
       String personId = "" + i;
       Person person = new Person();
       person.setId(personId);
-
       personList.add(person);
-
       idList.add(personId);
+      when(storageManager.getEntity(Person.class, personId)).thenReturn(person);
     }
   }
 
