@@ -250,11 +250,6 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Entity> StorageIterator<T> getEntitiesByIds(Class<T> type, List<String> ids) {
-    return findItems(type, DBQuery.in(Entity.ID, ids));
-  }
-
-  @Override
   public <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value) {
     String key = FieldMapper.propertyName(type, field);
     return findItems(type, queries.selectByProperty(key, value));

@@ -249,10 +249,6 @@ public class StorageManager {
     return storage.getEntities(type);
   }
 
-  public <T extends Entity> List<T> getAllByIds(Class<T> type, List<String> ids) {
-    return storage.getEntitiesByIds(type, ids).getSome(ids.size());
-  }
-
   public <T extends DomainEntity> RevisionChanges<T> getVersions(Class<T> type, String id) {
     try {
       return storage.getAllRevisions(type, id);

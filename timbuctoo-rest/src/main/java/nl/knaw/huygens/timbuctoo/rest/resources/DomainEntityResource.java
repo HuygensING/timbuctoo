@@ -249,12 +249,9 @@ public class DomainEntityResource extends ResourceBase {
     // if you want to be able to put a pid on items without pid you have to have access to the base class.
     checkCollectionInScope(TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type)), vreId, Status.FORBIDDEN);
 
-    List<String> entityIds = storageManager.getAllIdsWithoutPIDOfType(type);
-
-    for (T entity : storageManager.getAllByIds(type, entityIds)) {
-      sendPersistMessage(ActionType.MOD, type, entity.getId());
+    for (String id : storageManager.getAllIdsWithoutPIDOfType(type)) {
+      sendPersistMessage(ActionType.MOD, type, id);
     }
-
   }
 
   @DELETE
