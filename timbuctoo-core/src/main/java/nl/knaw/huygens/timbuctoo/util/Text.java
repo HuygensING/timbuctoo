@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.util;
 
+import java.lang.Character.UnicodeBlock;
+
 /*
  * #%L
  * Timbuctoo core
@@ -34,6 +36,64 @@ public class Text {
       }
       builder.append(text);
     }
+  }
+
+  // --- Cyrillic --------------------------------------------------------------
+
+  public static boolean isCyrillicChar(char c) {
+    UnicodeBlock block = UnicodeBlock.of(c);
+    return (block == UnicodeBlock.CYRILLIC) || (block == UnicodeBlock.CYRILLIC_SUPPLEMENTARY);
+  }
+
+  public static boolean isCyrillicToken(String s) {
+    return isCyrillic(s, true);
+  }
+
+  public static boolean isCyrillicText(String s) {
+    return isCyrillic(s, false);
+  }
+
+  private static boolean isCyrillic(String s, boolean token) {
+    boolean result = false;
+    int length = (s == null) ? 0 : s.length();
+    for (int index = 0; index < length; index++) {
+      char c = s.charAt(index);
+      if (isCyrillicChar(c)) {
+        result = true;
+      } else if (token || Character.isLetter(c)) {
+        return false;
+      }
+    }
+    return result;
+  }
+
+  // --- Greek -----------------------------------------------------------------
+
+  public static boolean isGreekChar(char c) {
+    UnicodeBlock block = UnicodeBlock.of(c);
+    return (block == UnicodeBlock.GREEK) || (block == UnicodeBlock.GREEK_EXTENDED);
+  }
+
+  public static boolean isGreekToken(String s) {
+    return isGreek(s, true);
+  }
+
+  public static boolean isGreekText(String s) {
+    return isGreek(s, false);
+  }
+
+  private static boolean isGreek(String s, boolean token) {
+    boolean result = false;
+    int length = (s == null) ? 0 : s.length();
+    for (int index = 0; index < length; index++) {
+      char c = s.charAt(index);
+      if (isGreekChar(c)) {
+        result = true;
+      } else if (token || Character.isLetter(c)) {
+        return false;
+      }
+    }
+    return result;
   }
 
   private Text() {
