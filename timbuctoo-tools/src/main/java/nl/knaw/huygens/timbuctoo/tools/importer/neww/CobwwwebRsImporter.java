@@ -216,7 +216,7 @@ public class CobwwwebRsImporter extends DefaultImporter {
     public final List<String> ids = Lists.newArrayList();
 
     public void addId(String id) {
-      // somewhat inefficent, but we want to preserve ordering
+      // inefficent, but we want to preserve ordering
       if (ids.contains(id)) {
         log("## Duplicate entry %s%n", id);
       } else {
@@ -282,6 +282,7 @@ public class CobwwwebRsImporter extends DefaultImporter {
   private boolean accept(CWRSPerson entity) {
     List<PersonName> names = entity.getNames();
     if (names.size() == 1 && names.get(0).getFullName().equalsIgnoreCase("Anonymous")) {
+      log("Rejected anonymous person%n");
       // TODO register this one, in order to ignore relations
       return false;
     }
@@ -293,7 +294,9 @@ public class CobwwwebRsImporter extends DefaultImporter {
     String storedId = null;
     if (!Strings.isNullOrEmpty(entity.tempNewwId)) {
       WWPerson person = storageManager.findEntity(WWPerson.class, "tempOldId", entity.tempNewwId);
-      if (person != null) {
+      if (person == null) {
+        log("Failed to find person with old id %s%n", entity.tempNewwId);
+      } else {
         storedId = person.getId();
         entity.setId(storedId);
         entity.setRev(person.getRev());
@@ -315,12 +318,13 @@ public class CobwwwebRsImporter extends DefaultImporter {
   private void handleLanguages(CWRSPerson entity) {
     for (String code : entity.tempLanguageCodes) {
       Language language = getLanguage(code);
-      if (language != null) {
-        Reference typeRef = relationTypes.get("hasPersonLanguage");
+      if (language == null) {
+        log("Failed to retrieve language with code %s%n", code);
+      } else {
+        Reference typeRef = getRelationTypeRef("hasPersonLanguage", true);
         Reference sourceRef = new Reference(Person.class, entity.getId());
         Reference targetRef = new Reference(Language.class, language.getId());
         addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, "");
-        log("Adding language %s --> %s%n", code, language.getName());
       }
     }
   }
