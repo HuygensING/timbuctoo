@@ -212,10 +212,20 @@ public class HTMLGenerator extends JsonGeneratorDelegate {
     writeFieldValPost();
   }
 
+  private static final String PATH_PREFIX = "domain/";
+  
   private void writeFieldValue(String text) throws JsonGenerationException, IOException {
     writeFieldValPre();
-    writeRaw(text);
+    if (text.startsWith(PATH_PREFIX)) {
+      writeRaw(anchor(text.substring(PATH_PREFIX.length()), text));
+    } else {
+      writeRaw(text);
+    }
     writeFieldValPost();
+  }
+
+  private String anchor(String href, String label) {
+    return String.format("<a href=\"%s\">%s</a>", href, label);
   }
 
   private void writeFieldValPre() throws JsonGenerationException, IOException {
