@@ -29,8 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import javax.ws.rs.WebApplicationException;
-
+import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.filters.VREAuthorizationFilterFactory.VREAuthorizationResourceFilter;
 import nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
@@ -43,6 +42,7 @@ import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.spi.container.ContainerRequest;
 
 public class VREAuthorizationResourceFilterTest {
+
   private static final String VRE_ID = "testVRE";
   private VREAuthorizationResourceFilter instance;
   private VREManager vreManager;
@@ -70,30 +70,30 @@ public class VREAuthorizationResourceFilterTest {
     verify(vreManager, only()).doesVREExist(VRE_ID);
   }
 
-  @Test(expected = WebApplicationException.class)
+  @Test(expected = TimbuctooException.class)
   public void testFilterNoVREIdSent() {
     ContainerRequest request = setupRequestForDomainEntities(null);
 
     try {
       instance.filter(request);
-    } catch (WebApplicationException ex) {
-      assertEquals(Status.UNAUTHORIZED.getStatusCode(), ex.getResponse().getStatus());
+    } catch (TimbuctooException e) {
+      assertEquals(Status.UNAUTHORIZED.getStatusCode(), e.getResponse().getStatus());
       verifyZeroInteractions(vreManager);
-      throw ex;
+      throw e;
     }
   }
 
-  @Test(expected = WebApplicationException.class)
+  @Test(expected = TimbuctooException.class)
   public void testFilterUnknownVRE() {
     ContainerRequest request = setupRequestForDomainEntities(VRE_ID);
     setUpVREManager(VRE_ID, false);
 
     try {
       instance.filter(request);
-    } catch (WebApplicationException ex) {
-      assertEquals(Status.FORBIDDEN.getStatusCode(), ex.getResponse().getStatus());
+    } catch (TimbuctooException e) {
+      assertEquals(Status.FORBIDDEN.getStatusCode(), e.getResponse().getStatus());
       verify(vreManager, only()).doesVREExist(VRE_ID);
-      throw ex;
+      throw e;
     }
   }
 

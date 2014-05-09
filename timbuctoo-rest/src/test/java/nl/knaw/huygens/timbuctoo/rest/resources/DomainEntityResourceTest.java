@@ -249,7 +249,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -313,7 +312,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -333,7 +331,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -348,7 +345,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -364,7 +360,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -380,7 +375,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -391,7 +385,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -451,7 +444,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -466,7 +458,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -477,7 +468,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -517,10 +507,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = domainResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
 
-    assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
+    assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
     verify(getStorageManager(), times(0)).getEntity(DEFAULT_TYPE, DEFAULT_ID);
-
   }
 
   @Test
@@ -534,7 +523,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -549,7 +537,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -564,7 +551,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -573,7 +559,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER), getStorageManager());
-
   }
 
   // Security tests
@@ -607,7 +592,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -620,7 +604,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = domainResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).header(VRE_ID_KEY, VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -634,7 +617,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -647,7 +629,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = domainResource(PROJECTADOMAINENTITIES_RESOURCE).header(VRE_ID_KEY, VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -657,7 +638,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = domainResource(BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-
   }
 
   @Test
@@ -704,7 +684,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = doPutPIDRequest("basedomainentities");
 
-    assertEquals(Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
+    assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
 
     verifyZeroInteractions(getProducer(INDEX_PRODUCER), getProducer(PERSISTENCE_PRODUCER));
     verify(getStorageManager(), never()).getAllIdsWithoutPIDOfType(Mockito.<Class<? extends DomainEntity>> any());
@@ -736,7 +716,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     verifyZeroInteractions(getProducer(INDEX_PRODUCER), getProducer(PERSISTENCE_PRODUCER));
     verify(getStorageManager(), never()).getAllIdsWithoutPIDOfType(Mockito.<Class<? extends DomainEntity>> any());
-
   }
 
   @Test
@@ -751,7 +730,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     verifyZeroInteractions(getProducer(INDEX_PRODUCER), getProducer(PERSISTENCE_PRODUCER));
     verify(getStorageManager(), never()).getAllIdsWithoutPIDOfType(Mockito.<Class<? extends DomainEntity>> any());
-
   }
 
   private ClientResponse doPutPIDRequest(String collectionName) {
