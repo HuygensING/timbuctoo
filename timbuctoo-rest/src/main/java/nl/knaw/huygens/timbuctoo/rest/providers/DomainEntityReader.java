@@ -86,13 +86,11 @@ public class DomainEntityReader implements MessageBodyReader<Entity> {
 
     String entityType = uriInfo.getPathParameters().getFirst(DomainEntityResource.ENTITY_PARAM);
     if (entityType == null) {
-      LOG.error("Missing path parameter '{}'", DomainEntityResource.ENTITY_PARAM);
-      throw new TimbuctooException(Status.NOT_FOUND);
+      throw new TimbuctooException(Status.NOT_FOUND, "Missing path parameter");
     }
     Class<?> cls = typeRegistry.getTypeForXName(entityType);
     if (cls == null) {
-      LOG.error("Cannot convert '{}' to a document type", entityType);
-      throw new TimbuctooException(Status.NOT_FOUND);
+      throw new TimbuctooException(Status.NOT_FOUND, String.format("Unknown document type %s", entityType));
     }
 
     Entity doc = null;
@@ -104,16 +102,14 @@ public class DomainEntityReader implements MessageBodyReader<Entity> {
     }
 
     if (doc == null) {
-      LOG.error("Failed to convert JSON for document with entity type {}", entityType);
-      throw new TimbuctooException(Status.BAD_REQUEST);
+      throw new TimbuctooException(Status.BAD_REQUEST, String.format("Failed to convert entity type %s", entityType));
     }
 
     Set<ConstraintViolation<Entity>> validationErrors = validator.validate(doc);
 
-    //If we are posting a document we don't is some not null fields missing a value, these fields are possibly auto generated.
+    // If we are posting a document we don't is some not null fields missing a value, these fields are possibly auto generated.
     if (!validationErrors.isEmpty() && !"POST".equals(request.getMethod())) {
-      LOG.error("Validation error(s) for document with entity type {}", entityType);
-      throw new TimbuctooException(Status.BAD_REQUEST, validationErrors.toString());
+      throw new TimbuctooException(Status.BAD_REQUEST, String.format("Validation errors for type %s", entityType), validationErrors.toString());
     }
     return doc;
   }

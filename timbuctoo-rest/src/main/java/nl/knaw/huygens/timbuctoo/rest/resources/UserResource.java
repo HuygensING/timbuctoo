@@ -59,14 +59,11 @@ import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
 @Path(Paths.SYSTEM_PREFIX + "/" + Paths.USER_PATH)
 public class UserResource extends ResourceBase {
-  private static final Logger LOG = LoggerFactory.getLogger(UserResource.class);
 
   private static final String ID_REGEX = "/{id:" + User.ID_PREFIX + "\\d+}";
   private static final String VRE_AUTHORIZATION_COLLECTION_PATH = ID_REGEX + "/vreauthorizations";
@@ -119,8 +116,8 @@ public class UserResource extends ResourceBase {
   public Response put(@PathParam(ID_PARAM) String id, User user) throws IOException {
     try {
       storageManager.updateSystemEntity(User.class, user);
-    } catch (IOException ex) {
-      throw new TimbuctooException(Status.NOT_FOUND);
+    } catch (IOException e) {
+      throw new TimbuctooException(Status.NOT_FOUND, "User not found");
     }
 
     sendEmail(user);
@@ -151,9 +148,7 @@ public class UserResource extends ResourceBase {
   @RolesAllowed(ADMIN_ROLE)
   public Response delete(@PathParam(ID_PARAM) String id) throws IOException {
     User user = checkNotNull(storageManager.getEntity(User.class, id), Status.NOT_FOUND);
-
     storageManager.deleteSystemEntity(user);
-
     return Response.status(Status.NO_CONTENT).build();
   }
 
@@ -168,9 +163,7 @@ public class UserResource extends ResourceBase {
       @PathParam("vre") String vreId,//
       @HeaderParam(VRE_ID_KEY) String userVREId//
   ) {
-
     checkIfInScope(vreId, userVREId);
-
     return findVREAuthorization(userId, vreId);
   }
 
@@ -205,13 +198,9 @@ public class UserResource extends ResourceBase {
       @HeaderParam(VRE_ID_KEY) String userVREId,//
       VREAuthorization vreAuthorization//
   ) throws IOException {
-
     checkNotNull(vreAuthorization, Status.BAD_REQUEST);
-
     checkIfInScope(vreId, userVREId);
-
     findVREAuthorization(userId, vreId);
-
     storageManager.updateSystemEntity(VREAuthorization.class, vreAuthorization);
   }
 
@@ -223,11 +212,8 @@ public class UserResource extends ResourceBase {
       @PathParam("vre") String vreId,//
       @HeaderParam(VRE_ID_KEY) String userVREId//
   ) throws IOException {
-
     checkIfInScope(vreId, userVREId);
-
     VREAuthorization vreAuthorization = findVREAuthorization(userId, vreId);
-
     storageManager.deleteSystemEntity(vreAuthorization);
   }
 
@@ -240,8 +226,7 @@ public class UserResource extends ResourceBase {
    */
   private void checkIfInScope(String vreId, String userVREId) {
     if (!StringUtils.equals(vreId, userVREId)) {
-      LOG.info("VRE {} has no permission to edit VREAuthorizations of VRE {}.", userVREId, vreId);
-      throw new TimbuctooException(Status.FORBIDDEN);
+      throw new TimbuctooException(Status.FORBIDDEN, String.format("VRE %s has no permission to edit VREAuthorizations of VRE %s", userVREId, vreId));
     }
   }
 
@@ -253,7 +238,7 @@ public class UserResource extends ResourceBase {
     return checkNotNull(storageManager.findEntity(VREAuthorization.class, example), Status.NOT_FOUND);
   }
 
-  //Roles method
+  // Roles method
 
   @GET
   @Path("roles")

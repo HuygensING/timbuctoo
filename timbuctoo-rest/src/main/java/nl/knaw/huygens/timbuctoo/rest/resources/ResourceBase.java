@@ -37,7 +37,7 @@ public class ResourceBase {
    */
   protected <T> T checkNotNull(T reference, Status status) {
     if (reference == null) {
-      throw new TimbuctooException(status);
+      throw new TimbuctooException(status, "Null reference");
     }
     return reference;
   }
