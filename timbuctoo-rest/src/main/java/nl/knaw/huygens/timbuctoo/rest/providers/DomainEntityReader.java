@@ -90,7 +90,7 @@ public class DomainEntityReader implements MessageBodyReader<Entity> {
     }
     Class<?> cls = typeRegistry.getTypeForXName(entityType);
     if (cls == null) {
-      throw new TimbuctooException(Status.NOT_FOUND, String.format("Unknown document type %s", entityType));
+      throw new TimbuctooException(Status.NOT_FOUND, "Unknown entity type %s", entityType);
     }
 
     Entity doc = null;
@@ -102,14 +102,14 @@ public class DomainEntityReader implements MessageBodyReader<Entity> {
     }
 
     if (doc == null) {
-      throw new TimbuctooException(Status.BAD_REQUEST, String.format("Failed to convert entity type %s", entityType));
+      throw new TimbuctooException(Status.BAD_REQUEST, "Failed to convert entity type %s", entityType);
     }
 
     Set<ConstraintViolation<Entity>> validationErrors = validator.validate(doc);
 
     // If we are posting a document we don't is some not null fields missing a value, these fields are possibly auto generated.
     if (!validationErrors.isEmpty() && !"POST".equals(request.getMethod())) {
-      throw new TimbuctooException(Status.BAD_REQUEST, String.format("Validation errors for type %s", entityType), validationErrors.toString());
+      throw new TimbuctooException(Status.BAD_REQUEST, "Validation errors: %s", validationErrors);
     }
     return doc;
   }
