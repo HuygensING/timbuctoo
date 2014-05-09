@@ -46,7 +46,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -61,6 +60,7 @@ import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -75,7 +75,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
-import com.sun.jersey.api.Responses;
 
 /**
  * A REST resource for adressing collections of domain entities.
@@ -138,7 +137,7 @@ public class DomainEntityResource extends ResourceBase {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
     if (type != input.getClass()) {
-      throw new WebApplicationException(Status.BAD_REQUEST);
+      throw new TimbuctooException(Status.BAD_REQUEST);
     }
 
     checkCollectionInScope(type, vreId, Status.FORBIDDEN);
@@ -154,7 +153,7 @@ public class DomainEntityResource extends ResourceBase {
       id = updateTheDuplicateEntity(entityName, input, vreId, userId, e.getDuplicateId());
     } catch (ValidationException ex) {
       LOG.info("Non-valid entity", ex);
-      throw new WebApplicationException(Status.BAD_REQUEST);
+      throw new TimbuctooException(Status.BAD_REQUEST);
     }
     notifyChange(ActionType.ADD, type, id);
 
@@ -206,7 +205,7 @@ public class DomainEntityResource extends ResourceBase {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
     if (type != input.getClass()) {
-      throw new WebApplicationException(Status.BAD_REQUEST);
+      throw new TimbuctooException(Status.BAD_REQUEST);
     }
 
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
@@ -225,7 +224,7 @@ public class DomainEntityResource extends ResourceBase {
       }
     } catch (IOException e) {
       // TODO Handle two cases: 1)entity was already updated, 2) internal server error
-      throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
+      throw new TimbuctooException(Status.INTERNAL_SERVER_ERROR);
     }
 
     notifyChange(ActionType.MOD, type, id);
@@ -243,7 +242,7 @@ public class DomainEntityResource extends ResourceBase {
     Class<T> type = (Class<T>) getEntityType(entityName, Status.NOT_FOUND);
 
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
-      throw new WebApplicationException(Responses.METHOD_NOT_ALLOWED);
+      throw new TimbuctooException(Status.BAD_REQUEST);
     }
 
     // if you want to be able to put a pid on items without pid you have to have access to the base class.
@@ -265,8 +264,7 @@ public class DomainEntityResource extends ResourceBase {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
     if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
-
-      throw new WebApplicationException(Responses.METHOD_NOT_ALLOWED);
+      throw new TimbuctooException(Status.BAD_REQUEST);
     }
 
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
@@ -332,7 +330,7 @@ public class DomainEntityResource extends ResourceBase {
       return TypeRegistry.toDomainEntity(type);
     } else {
       LOG.error("'{}' is not a domain entity name", entityName);
-      throw new WebApplicationException(status);
+      throw new TimbuctooException(status);
     }
   }
 
@@ -343,7 +341,7 @@ public class DomainEntityResource extends ResourceBase {
   private void checkWritable(DomainEntity entity, Status status) {
     if (entity.getPid() == null) {
       LOG.info("Entity with id {} is not writeable", entity.getId());
-      throw new WebApplicationException(status);
+      throw new TimbuctooException(status);
     }
   }
 
@@ -355,7 +353,7 @@ public class DomainEntityResource extends ResourceBase {
   private <T extends DomainEntity> void checkCollectionInScope(Class<T> type, String vreId, Status status) {
     Scope scope = getScope(vreId);
     if (!scope.isTypeInScope(type)) {
-      throw new WebApplicationException(status);
+      throw new TimbuctooException(status);
     }
   }
 
@@ -368,7 +366,7 @@ public class DomainEntityResource extends ResourceBase {
   private <T extends DomainEntity> void checkItemInScope(Class<T> type, String id, String vreId, Status status) {
     Scope scope = getScope(vreId);
     if (!scope.inScope(type, id)) {
-      throw new WebApplicationException(status);
+      throw new TimbuctooException(status);
     }
   }
 

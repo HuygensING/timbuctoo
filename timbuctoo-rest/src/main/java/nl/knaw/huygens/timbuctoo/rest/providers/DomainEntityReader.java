@@ -31,12 +31,10 @@ import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.MessageBodyReader;
@@ -45,6 +43,7 @@ import javax.ws.rs.ext.Provider;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.resources.DomainEntityResource;
 
 import org.slf4j.Logger;
@@ -83,18 +82,17 @@ public class DomainEntityReader implements MessageBodyReader<Entity> {
 
   @Override
   @SuppressWarnings("unchecked")
-  public Entity readFrom(Class<Entity> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException,
-      WebApplicationException {
+  public Entity readFrom(Class<Entity> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException {
 
     String entityType = uriInfo.getPathParameters().getFirst(DomainEntityResource.ENTITY_PARAM);
     if (entityType == null) {
       LOG.error("Missing path parameter '{}'", DomainEntityResource.ENTITY_PARAM);
-      throw new WebApplicationException(Status.NOT_FOUND);
+      throw new TimbuctooException(Status.NOT_FOUND);
     }
     Class<?> cls = typeRegistry.getTypeForXName(entityType);
     if (cls == null) {
       LOG.error("Cannot convert '{}' to a document type", entityType);
-      throw new WebApplicationException(Status.NOT_FOUND);
+      throw new TimbuctooException(Status.NOT_FOUND);
     }
 
     Entity doc = null;
@@ -107,7 +105,7 @@ public class DomainEntityReader implements MessageBodyReader<Entity> {
 
     if (doc == null) {
       LOG.error("Failed to convert JSON for document with entity type {}", entityType);
-      throw new WebApplicationException(Status.BAD_REQUEST);
+      throw new TimbuctooException(Status.BAD_REQUEST);
     }
 
     Set<ConstraintViolation<Entity>> validationErrors = validator.validate(doc);
@@ -115,7 +113,7 @@ public class DomainEntityReader implements MessageBodyReader<Entity> {
     //If we are posting a document we don't is some not null fields missing a value, these fields are possibly auto generated.
     if (!validationErrors.isEmpty() && !"POST".equals(request.getMethod())) {
       LOG.error("Validation error(s) for document with entity type {}", entityType);
-      throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity(validationErrors).type(MediaType.APPLICATION_JSON_TYPE).build());
+      throw new TimbuctooException(Status.BAD_REQUEST, validationErrors.toString());
     }
     return doc;
   }

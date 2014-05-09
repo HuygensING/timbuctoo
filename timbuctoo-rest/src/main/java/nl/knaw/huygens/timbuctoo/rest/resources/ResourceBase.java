@@ -22,8 +22,9 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
+
+import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 
 /**
  * Base class for Timbuctoo resources.
@@ -31,12 +32,12 @@ import javax.ws.rs.core.Response.Status;
 public class ResourceBase {
 
   /**
-   * Checks the specified reference and throws a {@code WebApplicationException}
+   * Checks the specified reference and throws a {@code TimbuctooException}
    * with the specified status if the reference is {@code null}.
    */
   protected <T> T checkNotNull(T reference, Status status) {
     if (reference == null) {
-      throw new WebApplicationException(status);
+      throw new TimbuctooException(status);
     }
     return reference;
   }

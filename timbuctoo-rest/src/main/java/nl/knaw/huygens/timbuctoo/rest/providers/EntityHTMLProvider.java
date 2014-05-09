@@ -28,7 +28,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
@@ -66,8 +65,7 @@ public class EntityHTMLProvider implements MessageBodyWriter<Entity> {
   }
 
   @Override
-  public void writeTo(Entity doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException,
-      WebApplicationException {
+  public void writeTo(Entity doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException {
     helper.writeHeader(out, doc.getDisplayName());
 
     JsonGenerator jgen = helper.getGenerator(out);

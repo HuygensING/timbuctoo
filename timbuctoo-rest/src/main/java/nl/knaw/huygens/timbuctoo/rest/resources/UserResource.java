@@ -45,7 +45,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -54,6 +53,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
+import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.security.UserRoles;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -120,7 +120,7 @@ public class UserResource extends ResourceBase {
     try {
       storageManager.updateSystemEntity(User.class, user);
     } catch (IOException ex) {
-      throw new WebApplicationException(Status.NOT_FOUND);
+      throw new TimbuctooException(Status.NOT_FOUND);
     }
 
     sendEmail(user);
@@ -236,12 +236,12 @@ public class UserResource extends ResourceBase {
    * is allowed to access the {@code VREAuthorization} of the VRE of {@code vreId}.
    * @param vreId the id of the VRE the user want to access {@code VREAuthorization} of.
    * @param userVREId the id of the VRE the user is currently logged in to.
-   * @throws a {@link WebApplicationException} with a {@code FORBIDDEN} status.
+   * @throws a {@link TimbuctooException} with a {@code FORBIDDEN} status.
    */
   private void checkIfInScope(String vreId, String userVREId) {
     if (!StringUtils.equals(vreId, userVREId)) {
       LOG.info("VRE {} has no permission to edit VREAuthorizations of VRE {}.", userVREId, vreId);
-      throw new WebApplicationException(Status.FORBIDDEN);
+      throw new TimbuctooException(Status.FORBIDDEN);
     }
   }
 

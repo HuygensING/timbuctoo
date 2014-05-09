@@ -31,7 +31,6 @@ import java.lang.reflect.WildcardType;
 import java.util.List;
 
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
@@ -95,7 +94,7 @@ public class EntityListHTMLProvider implements MessageBodyWriter<List<? extends 
 
   @Override
   public void writeTo(List<? extends Entity> docs, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out)
-      throws IOException, WebApplicationException {
+      throws IOException {
     helper.writeHeader(out, getTitle(docs));
 
     JsonGenerator jgen = helper.getGenerator(out);

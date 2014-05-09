@@ -22,11 +22,11 @@ package nl.knaw.huygens.timbuctoo.rest.filters;
  * #L%
  */
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
 import nl.knaw.huygens.security.client.filters.AbstractRolesAllowedResourceFilterFactory;
 import nl.knaw.huygens.security.client.filters.BypassFilter;
+import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -73,16 +73,17 @@ public class VREAuthorizationFilterFactory extends AbstractRolesAllowedResourceF
     @Override
     public ContainerRequest filter(ContainerRequest request) {
 
-      // Get the VRE.
+      // Get the VRE
       String vreId = request.getHeaderValue(CustomHeaders.VRE_ID_KEY);
       if (vreId == null) {
-        LOG.error("No VRE id was send with the request.");
-        throw new WebApplicationException(Status.UNAUTHORIZED);
+        LOG.error("Missing VRE id");
+        throw new TimbuctooException(Status.UNAUTHORIZED, "Missing VRE id");
       }
 
       if (!vreManager.doesVREExist(vreId)) {
-        LOG.error("VRE with id {} is not known.", vreId);
-        throw new WebApplicationException(Status.FORBIDDEN);
+        String message =  String.format("Unknown VRE id %s", vreId);
+        LOG.error(message);
+        throw new TimbuctooException(Status.FORBIDDEN, message);
       }
 
       return request;

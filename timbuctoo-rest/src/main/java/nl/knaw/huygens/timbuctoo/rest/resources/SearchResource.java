@@ -36,7 +36,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -51,6 +50,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
@@ -103,7 +103,7 @@ public class SearchResource {
 
     if (vre == null) {
       LOG.error("POST - no such VRE: {}", vreId);
-      throw new WebApplicationException(Response.Status.NOT_FOUND);
+      throw new TimbuctooException(Response.Status.NOT_FOUND);
     }
 
     Scope scope = vre.getScope();
@@ -113,27 +113,27 @@ public class SearchResource {
     String typeString = searchParams.getTypeString();
     if (Strings.isNullOrEmpty(typeString)) {
       LOG.error("POST - no 'typeString' specified");
-      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+      throw new TimbuctooException(Response.Status.BAD_REQUEST);
     }
     Class<? extends Entity> type = registry.getTypeForIName(typeString);
     if (type == null) {
       LOG.error("POST - no such type: {}", typeString);
-      throw new WebApplicationException(Response.Status.NOT_FOUND);
+      throw new TimbuctooException(Response.Status.NOT_FOUND);
     }
     if (!TypeRegistry.isDomainEntity(type)) {
       LOG.error("POST - not a domain entity type: {}", typeString);
-      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+      throw new TimbuctooException(Response.Status.BAD_REQUEST);
     }
 
     if (!scope.isTypeInScope(TypeRegistry.toDomainEntity(type))) {
       LOG.error("POST - not a domain entity type: {}", typeString);
-      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+      throw new TimbuctooException(Response.Status.BAD_REQUEST);
     }
 
     String q = searchParams.getTerm();
     if (Strings.isNullOrEmpty(q)) {
       LOG.error("POST - no 'q' specified");
-      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+      throw new TimbuctooException(Response.Status.BAD_REQUEST);
     }
 
     // Process
@@ -144,10 +144,10 @@ public class SearchResource {
       return Response.created(new URI(queryId)).build();
     } catch (NoSuchFacetException e) {
       LOG.warn("POST - no such facet: {}", e.getMessage());
-      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+      throw new TimbuctooException(Response.Status.BAD_REQUEST);
     } catch (Exception e) {
       LOG.warn("POST - {}", e.getMessage());
-      throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+      throw new TimbuctooException(Response.Status.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -167,18 +167,18 @@ public class SearchResource {
     SearchResult result = storageManager.getEntity(SearchResult.class, queryId);
     if (result == null) {
       LOG.error("GET - no results for id '{}'", queryId);
-      throw new WebApplicationException(Response.Status.NOT_FOUND);
+      throw new TimbuctooException(Response.Status.NOT_FOUND);
     }
 
     // Process
     Class<? extends Entity> entityType = registry.getTypeForIName(result.getSearchType());
     if (entityType == null) {
       LOG.error("GET - no entity type for '{}'", result.getSearchType());
-      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+      throw new TimbuctooException(Response.Status.BAD_REQUEST);
     }
     if (!TypeRegistry.isDomainEntity(entityType)) {
       LOG.error("GET - not a domain entity type '{}'", result.getSearchType());
-      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+      throw new TimbuctooException(Response.Status.BAD_REQUEST);
     }
     Class<? extends DomainEntity> type = TypeRegistry.toDomainEntity(entityType);
 
