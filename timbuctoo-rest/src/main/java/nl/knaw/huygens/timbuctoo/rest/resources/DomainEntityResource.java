@@ -66,7 +66,6 @@ import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
-import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.slf4j.Logger;
@@ -137,7 +136,7 @@ public class DomainEntityResource extends ResourceBase {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
     if (type != input.getClass()) {
-      throw new TimbuctooException(Status.BAD_REQUEST);
+      throw new TimbuctooException(Status.BAD_REQUEST, String.format("Type %s does not match input",  type));
     }
 
     checkCollectionInScope(type, vreId, Status.FORBIDDEN);
@@ -151,9 +150,8 @@ public class DomainEntityResource extends ResourceBase {
       // TODO find a better solution
       LOG.info("Duplicate entity {} with id {}", entityName, e.getDuplicateId());
       id = updateTheDuplicateEntity(entityName, input, vreId, userId, e.getDuplicateId());
-    } catch (ValidationException ex) {
-      LOG.info("Non-valid entity", ex);
-      throw new TimbuctooException(Status.BAD_REQUEST);
+    } catch (ValidationException e) {
+      throw new TimbuctooException(Status.BAD_REQUEST, "Invalid entity", e.getMessage());
     }
     notifyChange(ActionType.ADD, type, id);
 
@@ -202,21 +200,18 @@ public class DomainEntityResource extends ResourceBase {
       @HeaderParam(VRE_ID_KEY) String vreId,//
       @QueryParam(USER_ID_KEY) String userId//
   ) throws IOException {
-    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
+    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     if (type != input.getClass()) {
-      throw new TimbuctooException(Status.BAD_REQUEST);
+      throw new TimbuctooException(Status.BAD_REQUEST, String.format("Type %s does not match input",  type));
     }
 
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
-
     checkItemInScope(type, id, vreId, Status.FORBIDDEN);
-
     checkWritable(entity, Status.FORBIDDEN);
 
-    Change change = new Change(userId, vreId);
-
     try {
+      Change change = new Change(userId, vreId);
       if (TypeRegistry.isPrimitiveDomainEntity(type)) {
         storageManager.updatePrimitiveDomainEntity((Class<T>) type, (T) input, change);
       } else {
@@ -224,7 +219,7 @@ public class DomainEntityResource extends ResourceBase {
       }
     } catch (IOException e) {
       // TODO Handle two cases: 1)entity was already updated, 2) internal server error
-      throw new TimbuctooException(Status.INTERNAL_SERVER_ERROR);
+      throw new TimbuctooException(Status.INTERNAL_SERVER_ERROR, e.getMessage());
     }
 
     notifyChange(ActionType.MOD, type, id);
@@ -242,7 +237,7 @@ public class DomainEntityResource extends ResourceBase {
     Class<T> type = (Class<T>) getEntityType(entityName, Status.NOT_FOUND);
 
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
-      throw new TimbuctooException(Status.BAD_REQUEST);
+      throw new TimbuctooException(Status.BAD_REQUEST, String.format("Not a primitive domain entity: %s",  type));
     }
 
     // if you want to be able to put a pid on items without pid you have to have access to the base class.
@@ -264,7 +259,7 @@ public class DomainEntityResource extends ResourceBase {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
     if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
-      throw new TimbuctooException(Status.BAD_REQUEST);
+      throw new TimbuctooException(Status.BAD_REQUEST, String.format("Not a primitive domain entity: %s", entityName));
     }
 
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
@@ -329,8 +324,7 @@ public class DomainEntityResource extends ResourceBase {
     if (type != null && TypeRegistry.isDomainEntity(type)) {
       return TypeRegistry.toDomainEntity(type);
     } else {
-      LOG.error("'{}' is not a domain entity name", entityName);
-      throw new TimbuctooException(status);
+      throw new TimbuctooException(status, String.format("Not a domain entity: %s", entityName));
     }
   }
 
@@ -340,8 +334,7 @@ public class DomainEntityResource extends ResourceBase {
    */
   private void checkWritable(DomainEntity entity, Status status) {
     if (entity.getPid() == null) {
-      LOG.info("Entity with id {} is not writeable", entity.getId());
-      throw new TimbuctooException(status);
+      throw new TimbuctooException(status, String.format("Entity %s is read-only (no PID)", entity.getId()));
     }
   }
 
@@ -353,7 +346,7 @@ public class DomainEntityResource extends ResourceBase {
   private <T extends DomainEntity> void checkCollectionInScope(Class<T> type, String vreId, Status status) {
     Scope scope = getScope(vreId);
     if (!scope.isTypeInScope(type)) {
-      throw new TimbuctooException(status);
+      throw new TimbuctooException(status, String.format("Type %s not in scope %s", type, vreId));
     }
   }
 
@@ -366,13 +359,12 @@ public class DomainEntityResource extends ResourceBase {
   private <T extends DomainEntity> void checkItemInScope(Class<T> type, String id, String vreId, Status status) {
     Scope scope = getScope(vreId);
     if (!scope.inScope(type, id)) {
-      throw new TimbuctooException(status);
+      throw new TimbuctooException(status, String.format("Entity %s %s not in scope %s", type, id, vreId));
     }
   }
 
   private Scope getScope(String vreId) {
-    VRE vre = vreManager.getVREById(vreId);
-    return vre.getScope();
+    return vreManager.getVREById(vreId).getScope();
   }
 
 }

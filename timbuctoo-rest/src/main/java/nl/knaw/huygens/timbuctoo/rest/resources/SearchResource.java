@@ -97,43 +97,32 @@ public class SearchResource {
   @APIDesc("Searches the Solr index")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response post(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
-    LOG.info("VRE: {}", vreId);
-
     VRE vre = Strings.isNullOrEmpty(vreId) ? vreManager.getDefaultVRE() : vreManager.getVREById(vreId);
-
     if (vre == null) {
-      LOG.error("POST - no such VRE: {}", vreId);
-      throw new TimbuctooException(Response.Status.NOT_FOUND);
+      throw new TimbuctooException(Response.Status.NOT_FOUND, String.format("No such VRE: %s", vreId));
     }
 
     Scope scope = vre.getScope();
 
-    LOG.info("scope: {}", scope);
-
     String typeString = searchParams.getTypeString();
     if (Strings.isNullOrEmpty(typeString)) {
-      LOG.error("POST - no 'typeString' specified");
-      throw new TimbuctooException(Response.Status.BAD_REQUEST);
+      throw new TimbuctooException(Response.Status.BAD_REQUEST, "No typeString specified");
     }
     Class<? extends Entity> type = registry.getTypeForIName(typeString);
     if (type == null) {
-      LOG.error("POST - no such type: {}", typeString);
-      throw new TimbuctooException(Response.Status.NOT_FOUND);
+      throw new TimbuctooException(Response.Status.NOT_FOUND, String.format("No such type: %s", typeString));
     }
     if (!TypeRegistry.isDomainEntity(type)) {
-      LOG.error("POST - not a domain entity type: {}", typeString);
-      throw new TimbuctooException(Response.Status.BAD_REQUEST);
+      throw new TimbuctooException(Response.Status.BAD_REQUEST, String.format("Not a domain entity type: %s", typeString));
     }
 
     if (!scope.isTypeInScope(TypeRegistry.toDomainEntity(type))) {
-      LOG.error("POST - not a domain entity type: {}", typeString);
-      throw new TimbuctooException(Response.Status.BAD_REQUEST);
+      throw new TimbuctooException(Response.Status.BAD_REQUEST, String.format("Type not in scope: %s", typeString));
     }
 
     String q = searchParams.getTerm();
     if (Strings.isNullOrEmpty(q)) {
-      LOG.error("POST - no 'q' specified");
-      throw new TimbuctooException(Response.Status.BAD_REQUEST);
+      throw new TimbuctooException(Response.Status.BAD_REQUEST, "No 'q' parameter specified");
     }
 
     // Process
@@ -143,11 +132,9 @@ public class SearchResource {
       String queryId = result.getId();
       return Response.created(new URI(queryId)).build();
     } catch (NoSuchFacetException e) {
-      LOG.warn("POST - no such facet: {}", e.getMessage());
-      throw new TimbuctooException(Response.Status.BAD_REQUEST);
+      throw new TimbuctooException(Response.Status.BAD_REQUEST, String.format("No such facet: %s", e.getMessage()));
     } catch (Exception e) {
-      LOG.warn("POST - {}", e.getMessage());
-      throw new TimbuctooException(Response.Status.INTERNAL_SERVER_ERROR);
+      throw new TimbuctooException(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
     }
   }
 
@@ -166,19 +153,16 @@ public class SearchResource {
     // Retrieve result
     SearchResult result = storageManager.getEntity(SearchResult.class, queryId);
     if (result == null) {
-      LOG.error("GET - no results for id '{}'", queryId);
-      throw new TimbuctooException(Response.Status.NOT_FOUND);
+      throw new TimbuctooException(Response.Status.NOT_FOUND, String.format("No results for %s",  queryId));
     }
 
     // Process
     Class<? extends Entity> entityType = registry.getTypeForIName(result.getSearchType());
     if (entityType == null) {
-      LOG.error("GET - no entity type for '{}'", result.getSearchType());
-      throw new TimbuctooException(Response.Status.BAD_REQUEST);
+      throw new TimbuctooException(Response.Status.BAD_REQUEST, String.format("No entity type for %s",  result.getSearchType()));
     }
     if (!TypeRegistry.isDomainEntity(entityType)) {
-      LOG.error("GET - not a domain entity type '{}'", result.getSearchType());
-      throw new TimbuctooException(Response.Status.BAD_REQUEST);
+      throw new TimbuctooException(Response.Status.BAD_REQUEST, String.format("Not a domain entity type: %s", entityType));
     }
     Class<? extends DomainEntity> type = TypeRegistry.toDomainEntity(entityType);
 

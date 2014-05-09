@@ -30,9 +30,6 @@ import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.Inject;
 import com.sun.jersey.api.model.AbstractMethod;
 import com.sun.jersey.spi.container.ContainerRequest;
@@ -63,7 +60,7 @@ public class VREAuthorizationFilterFactory extends AbstractRolesAllowedResourceF
    * This class filters the requests to see if a VRE id is attached to the request, and if the id is valid.
    */
   protected static class VREAuthorizationResourceFilter implements ResourceFilter, ContainerRequestFilter {
-    private static final Logger LOG = LoggerFactory.getLogger(VREAuthorizationResourceFilter.class);
+
     private final VREManager vreManager;
 
     public VREAuthorizationResourceFilter(VREManager vreManager) {
@@ -76,14 +73,11 @@ public class VREAuthorizationFilterFactory extends AbstractRolesAllowedResourceF
       // Get the VRE
       String vreId = request.getHeaderValue(CustomHeaders.VRE_ID_KEY);
       if (vreId == null) {
-        LOG.error("Missing VRE id");
         throw new TimbuctooException(Status.UNAUTHORIZED, "Missing VRE id");
       }
 
       if (!vreManager.doesVREExist(vreId)) {
-        String message =  String.format("Unknown VRE id %s", vreId);
-        LOG.error(message);
-        throw new TimbuctooException(Status.FORBIDDEN, message);
+        throw new TimbuctooException(Status.FORBIDDEN, String.format("Unknown VRE id %s", vreId));
       }
 
       return request;
