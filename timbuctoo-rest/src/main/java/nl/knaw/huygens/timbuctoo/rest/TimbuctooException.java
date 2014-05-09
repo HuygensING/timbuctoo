@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rest;
 
+import java.util.IllegalFormatException;
+
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -13,32 +15,31 @@ public class TimbuctooException extends WebApplicationException {
 
   private static final long serialVersionUID = 1L;
 
+  public TimbuctooException(Status status, String format, Object... args) {
+    super(response(status, format, args));
+  }
+
   public TimbuctooException(Status status) {
-    this(status, "", "");
+    super(response(status, ""));
   }
 
-  public TimbuctooException(Status status, String message) {
-    this(status, message, "");
-  }
-
-  public TimbuctooException(Status status, String message, String moreInfo) {
-    super(response(status, message, moreInfo));
-  }
-
-  private static Response response(Status status, String message, String moreInfo) {
-    Error error = new Error(status, message, moreInfo);
+  private static Response response(Status status, String format, Object... args) {
+    Error error = new Error(status, format, args);
     return Response.status(status).entity(error).type(MediaType.APPLICATION_JSON).build();
   }
 
   public static class Error {
     private final int statusCode;
-    private final String message;
-    private final String moreInfo;
+    private String message;
 
-    public Error(Status status, String message, String info) {
+    public Error(Status status, String format, Object... args) {
       statusCode = status.getStatusCode();
-      this.message = message;
-      this.moreInfo = info;
+      try {
+        message = String.format(format, args);
+      } catch (IllegalFormatException e) {
+        // best effort...
+        message = format;
+      }
     }
 
     public int getStatusCode() {
@@ -47,10 +48,6 @@ public class TimbuctooException extends WebApplicationException {
 
     public String getMessage() {
       return message;
-    }
-
-    public String getMoreInfo() {
-      return moreInfo;
     }
   }
 

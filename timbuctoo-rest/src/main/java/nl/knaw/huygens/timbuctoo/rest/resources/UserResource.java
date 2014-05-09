@@ -117,7 +117,7 @@ public class UserResource extends ResourceBase {
     try {
       storageManager.updateSystemEntity(User.class, user);
     } catch (IOException e) {
-      throw new TimbuctooException(Status.NOT_FOUND, "User not found");
+      throw new TimbuctooException(Status.NOT_FOUND, "User %s not found", id);
     }
 
     sendEmail(user);
@@ -226,7 +226,7 @@ public class UserResource extends ResourceBase {
    */
   private void checkIfInScope(String vreId, String userVREId) {
     if (!StringUtils.equals(vreId, userVREId)) {
-      throw new TimbuctooException(Status.FORBIDDEN, String.format("VRE %s has no permission to edit VREAuthorizations of VRE %s", userVREId, vreId));
+      throw new TimbuctooException(Status.FORBIDDEN, "VRE %s has no permission to edit VREAuthorizations of VRE %s", userVREId, vreId);
     }
   }
 

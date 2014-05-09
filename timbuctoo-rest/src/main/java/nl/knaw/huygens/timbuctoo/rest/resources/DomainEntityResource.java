@@ -136,7 +136,7 @@ public class DomainEntityResource extends ResourceBase {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
     if (type != input.getClass()) {
-      throw new TimbuctooException(Status.BAD_REQUEST, String.format("Type %s does not match input",  type));
+      throw new TimbuctooException(Status.BAD_REQUEST, "Type %s does not match input",  type);
     }
 
     checkCollectionInScope(type, vreId, Status.FORBIDDEN);
@@ -151,7 +151,7 @@ public class DomainEntityResource extends ResourceBase {
       LOG.info("Duplicate entity {} with id {}", entityName, e.getDuplicateId());
       id = updateTheDuplicateEntity(entityName, input, vreId, userId, e.getDuplicateId());
     } catch (ValidationException e) {
-      throw new TimbuctooException(Status.BAD_REQUEST, "Invalid entity", e.getMessage());
+      throw new TimbuctooException(Status.BAD_REQUEST, "Invalid entity; %s", e.getMessage());
     }
     notifyChange(ActionType.ADD, type, id);
 
@@ -203,7 +203,7 @@ public class DomainEntityResource extends ResourceBase {
 
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     if (type != input.getClass()) {
-      throw new TimbuctooException(Status.BAD_REQUEST, String.format("Type %s does not match input",  type));
+      throw new TimbuctooException(Status.BAD_REQUEST, "Type %s does not match input",  type);
     }
 
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
@@ -237,7 +237,7 @@ public class DomainEntityResource extends ResourceBase {
     Class<T> type = (Class<T>) getEntityType(entityName, Status.NOT_FOUND);
 
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
-      throw new TimbuctooException(Status.BAD_REQUEST, String.format("Not a primitive domain entity: %s",  type));
+      throw new TimbuctooException(Status.BAD_REQUEST, "Not a primitive domain entity: %s",  type);
     }
 
     // if you want to be able to put a pid on items without pid you have to have access to the base class.
@@ -259,7 +259,7 @@ public class DomainEntityResource extends ResourceBase {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
     if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
-      throw new TimbuctooException(Status.BAD_REQUEST, String.format("Not a primitive domain entity: %s", entityName));
+      throw new TimbuctooException(Status.BAD_REQUEST, "Not a primitive domain entity: %s", entityName);
     }
 
     DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
@@ -324,7 +324,7 @@ public class DomainEntityResource extends ResourceBase {
     if (type != null && TypeRegistry.isDomainEntity(type)) {
       return TypeRegistry.toDomainEntity(type);
     } else {
-      throw new TimbuctooException(status, String.format("Not a domain entity: %s", entityName));
+      throw new TimbuctooException(status, "Not a domain entity: %s", entityName);
     }
   }
 
@@ -334,7 +334,7 @@ public class DomainEntityResource extends ResourceBase {
    */
   private void checkWritable(DomainEntity entity, Status status) {
     if (entity.getPid() == null) {
-      throw new TimbuctooException(status, String.format("Entity %s is read-only (no PID)", entity.getId()));
+      throw new TimbuctooException(status, "Entity %s is read-only (no PID)", entity.getId());
     }
   }
 
@@ -346,7 +346,7 @@ public class DomainEntityResource extends ResourceBase {
   private <T extends DomainEntity> void checkCollectionInScope(Class<T> type, String vreId, Status status) {
     Scope scope = getScope(vreId);
     if (!scope.isTypeInScope(type)) {
-      throw new TimbuctooException(status, String.format("Type %s not in scope %s", type, vreId));
+      throw new TimbuctooException(status, "Type %s not in scope %s", type, vreId);
     }
   }
 
@@ -359,7 +359,7 @@ public class DomainEntityResource extends ResourceBase {
   private <T extends DomainEntity> void checkItemInScope(Class<T> type, String id, String vreId, Status status) {
     Scope scope = getScope(vreId);
     if (!scope.inScope(type, id)) {
-      throw new TimbuctooException(status, String.format("Entity %s %s not in scope %s", type, id, vreId));
+      throw new TimbuctooException(status, "Entity %s %s not in scope %s", type, id, vreId);
     }
   }
 

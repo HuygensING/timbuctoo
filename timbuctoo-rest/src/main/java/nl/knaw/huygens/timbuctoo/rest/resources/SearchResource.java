@@ -99,7 +99,7 @@ public class SearchResource {
   public Response post(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
     VRE vre = Strings.isNullOrEmpty(vreId) ? vreManager.getDefaultVRE() : vreManager.getVREById(vreId);
     if (vre == null) {
-      throw new TimbuctooException(Response.Status.NOT_FOUND, String.format("No such VRE: %s", vreId));
+      throw new TimbuctooException(Response.Status.NOT_FOUND, "No such VRE: %s", vreId);
     }
 
     Scope scope = vre.getScope();
@@ -110,14 +110,14 @@ public class SearchResource {
     }
     Class<? extends Entity> type = registry.getTypeForIName(typeString);
     if (type == null) {
-      throw new TimbuctooException(Response.Status.NOT_FOUND, String.format("No such type: %s", typeString));
+      throw new TimbuctooException(Response.Status.NOT_FOUND, "No such type: %s", typeString);
     }
     if (!TypeRegistry.isDomainEntity(type)) {
-      throw new TimbuctooException(Response.Status.BAD_REQUEST, String.format("Not a domain entity type: %s", typeString));
+      throw new TimbuctooException(Response.Status.BAD_REQUEST, "Not a domain entity type: %s", typeString);
     }
 
     if (!scope.isTypeInScope(TypeRegistry.toDomainEntity(type))) {
-      throw new TimbuctooException(Response.Status.BAD_REQUEST, String.format("Type not in scope: %s", typeString));
+      throw new TimbuctooException(Response.Status.BAD_REQUEST, "Type not in scope: %s", typeString);
     }
 
     String q = searchParams.getTerm();
@@ -132,9 +132,9 @@ public class SearchResource {
       String queryId = result.getId();
       return Response.created(new URI(queryId)).build();
     } catch (NoSuchFacetException e) {
-      throw new TimbuctooException(Response.Status.BAD_REQUEST, String.format("No such facet: %s", e.getMessage()));
+      throw new TimbuctooException(Response.Status.BAD_REQUEST, "No such facet: %s", e.getMessage());
     } catch (Exception e) {
-      throw new TimbuctooException(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+      throw new TimbuctooException(Response.Status.INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
     }
   }
 
@@ -153,16 +153,16 @@ public class SearchResource {
     // Retrieve result
     SearchResult result = storageManager.getEntity(SearchResult.class, queryId);
     if (result == null) {
-      throw new TimbuctooException(Response.Status.NOT_FOUND, String.format("No results for %s",  queryId));
+      throw new TimbuctooException(Response.Status.NOT_FOUND, "Missing entity: SearchResult %s",  queryId);
     }
 
     // Process
     Class<? extends Entity> entityType = registry.getTypeForIName(result.getSearchType());
     if (entityType == null) {
-      throw new TimbuctooException(Response.Status.BAD_REQUEST, String.format("No entity type for %s",  result.getSearchType()));
+      throw new TimbuctooException(Response.Status.BAD_REQUEST, "No entity type for %s",  result.getSearchType());
     }
     if (!TypeRegistry.isDomainEntity(entityType)) {
-      throw new TimbuctooException(Response.Status.BAD_REQUEST, String.format("Not a domain entity type: %s", entityType));
+      throw new TimbuctooException(Response.Status.BAD_REQUEST, "Not a domain entity type: %s", entityType);
     }
     Class<? extends DomainEntity> type = TypeRegistry.toDomainEntity(entityType);
 
