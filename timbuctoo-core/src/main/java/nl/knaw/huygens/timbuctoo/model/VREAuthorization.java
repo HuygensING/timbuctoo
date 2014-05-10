@@ -30,16 +30,21 @@ import com.google.common.base.Objects;
 
 @IDPrefix("VREA")
 public class VREAuthorization extends SystemEntity {
+
   private String userId;
   private String vreId;
   private List<String> roles;
 
-  public List<String> getRoles() {
-    return roles;
+  public VREAuthorization() {}
+
+  public VREAuthorization(String userId, String vreId) {
+    setUserId(userId);
+    setVreId(vreId);
   }
 
-  public void setRoles(List<String> roles) {
-    this.roles = roles;
+  @Override
+  public String getDisplayName() {
+    return null;
   }
 
   public String getUserId() {
@@ -58,10 +63,12 @@ public class VREAuthorization extends SystemEntity {
     this.vreId = vreId;
   }
 
-  @Override
-  public String getDisplayName() {
-    // TODO Auto-generated method stub
-    return null;
+  public List<String> getRoles() {
+    return roles;
+  }
+
+  public void setRoles(List<String> roles) {
+    this.roles = roles;
   }
 
   @Override
@@ -79,4 +86,5 @@ public class VREAuthorization extends SystemEntity {
   public int hashCode() {
     return Objects.hashCode(vreId, userId);
   }
+
 }

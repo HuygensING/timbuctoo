@@ -41,6 +41,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Response.Status;
 
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
@@ -70,7 +71,7 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
 @Path("search")
-public class SearchResource {
+public class SearchResource extends ResourceBase {
 
   private static final Logger LOG = LoggerFactory.getLogger(SearchResource.class);
 
@@ -152,9 +153,7 @@ public class SearchResource {
 
     // Retrieve result
     SearchResult result = storageManager.getEntity(SearchResult.class, queryId);
-    if (result == null) {
-      throw new TimbuctooException(Response.Status.NOT_FOUND, "Missing entity: SearchResult %s",  queryId);
-    }
+    checkNotNull(result, Status.NOT_FOUND, "No SearchResult with id %s",  queryId);
 
     // Process
     Class<? extends Entity> entityType = registry.getTypeForIName(result.getSearchType());

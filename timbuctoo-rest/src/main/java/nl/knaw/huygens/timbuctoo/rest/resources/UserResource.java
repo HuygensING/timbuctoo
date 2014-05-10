@@ -91,7 +91,9 @@ public class UserResource extends ResourceBase {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
   public User get(@PathParam(ID_PARAM) String id) {
-    return checkNotNull(storageManager.getEntity(User.class, id), Status.NOT_FOUND);
+    User user = storageManager.getEntity(User.class, id);
+    checkNotNull(user, Status.NOT_FOUND, "No User with id %s", id);
+    return user;
   }
 
   @GET
@@ -100,12 +102,12 @@ public class UserResource extends ResourceBase {
   @RolesAllowed({ ADMIN_ROLE, USER_ROLE, UNVERIFIED_USER_ROLE })
   public User getMyUserData(@QueryParam(USER_ID_KEY) String id, @QueryParam("VRE_ID") String vreId) {
     User user = storageManager.getEntity(User.class, id);
-    VREAuthorization example = new VREAuthorization();
-    example.setUserId(id);
-    example.setVreId(vreId);
-    VREAuthorization vreAuthorization = storageManager.findEntity(VREAuthorization.class, example);
-    user.setVreAuthorization(vreAuthorization);
+    checkNotNull(user, Status.NOT_FOUND, "No User with id %s", id);
 
+    VREAuthorization example = new VREAuthorization(id, vreId);
+    VREAuthorization authorization = storageManager.findEntity(VREAuthorization.class, example);
+
+    user.setVreAuthorization(authorization);
     return user;
   }
 
@@ -147,12 +149,13 @@ public class UserResource extends ResourceBase {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
   public Response delete(@PathParam(ID_PARAM) String id) throws IOException {
-    User user = checkNotNull(storageManager.getEntity(User.class, id), Status.NOT_FOUND);
+    User user = storageManager.getEntity(User.class, id);
+    checkNotNull(user, Status.NOT_FOUND, "No User with id %s", id);
     storageManager.deleteSystemEntity(user);
     return Response.status(Status.NO_CONTENT).build();
   }
 
-  //VREAuthorization resources
+  // VREAuthorization
 
   @GET
   @Path(VRE_AUTHORIZATION_PATH)
@@ -174,15 +177,14 @@ public class UserResource extends ResourceBase {
   public Response postVREAuthorization(//
       @PathParam("id") String userId,//
       @HeaderParam(VRE_ID_KEY) String userVREId,//
-      VREAuthorization vreAuthorization//
+      VREAuthorization authorization//
   ) throws URISyntaxException, IOException, ValidationException {
 
-    checkNotNull(vreAuthorization, Status.BAD_REQUEST);
+    checkNotNull(authorization, Status.BAD_REQUEST, "Missing VREAuthorization");
+    checkIfInScope(authorization.getVreId(), userVREId);
 
-    checkIfInScope(vreAuthorization.getVreId(), userVREId);
-
-    String vreId = vreAuthorization.getVreId();
-    storageManager.addSystemEntity(VREAuthorization.class, vreAuthorization);
+    String vreId = authorization.getVreId();
+    storageManager.addSystemEntity(VREAuthorization.class, authorization);
 
     return Response.created(new URI(vreId)).build();
   }
@@ -196,12 +198,13 @@ public class UserResource extends ResourceBase {
       @PathParam("id") String userId,//
       @PathParam("vre") String vreId,//
       @HeaderParam(VRE_ID_KEY) String userVREId,//
-      VREAuthorization vreAuthorization//
+      VREAuthorization authorization//
   ) throws IOException {
-    checkNotNull(vreAuthorization, Status.BAD_REQUEST);
+
+    checkNotNull(authorization, Status.BAD_REQUEST, "Missing VREAuthorization");
     checkIfInScope(vreId, userVREId);
     findVREAuthorization(userId, vreId);
-    storageManager.updateSystemEntity(VREAuthorization.class, vreAuthorization);
+    storageManager.updateSystemEntity(VREAuthorization.class, authorization);
   }
 
   @DELETE
@@ -213,8 +216,8 @@ public class UserResource extends ResourceBase {
       @HeaderParam(VRE_ID_KEY) String userVREId//
   ) throws IOException {
     checkIfInScope(vreId, userVREId);
-    VREAuthorization vreAuthorization = findVREAuthorization(userId, vreId);
-    storageManager.deleteSystemEntity(vreAuthorization);
+    VREAuthorization authorization = findVREAuthorization(userId, vreId);
+    storageManager.deleteSystemEntity(authorization);
   }
 
   /**
@@ -231,14 +234,13 @@ public class UserResource extends ResourceBase {
   }
 
   private VREAuthorization findVREAuthorization(String userId, String vreId) {
-    VREAuthorization example = new VREAuthorization();
-    example.setUserId(userId);
-    example.setVreId(vreId);
-
-    return checkNotNull(storageManager.findEntity(VREAuthorization.class, example), Status.NOT_FOUND);
+    VREAuthorization example = new VREAuthorization(userId, vreId);
+    VREAuthorization authorization = storageManager.findEntity(VREAuthorization.class, example);
+    checkNotNull(authorization, Status.NOT_FOUND, "Missing VREAuthorization for userId %s and vreId %s", userId, vreId);
+    return authorization;
   }
 
-  // Roles method
+  // Roles
 
   @GET
   @Path("roles")

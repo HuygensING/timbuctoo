@@ -181,9 +181,13 @@ public class DomainEntityResource extends ResourceBase {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
     if (revision == null) {
-      return checkNotNull(storageManager.getEntityWithRelations(type, id), Status.NOT_FOUND);
+      DomainEntity entity = storageManager.getEntityWithRelations(type, id);
+      checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
+      return entity;
     } else {
-      return checkNotNull(storageManager.getRevisionWithRelations(type, id, revision), Status.NOT_FOUND);
+      DomainEntity entity = storageManager.getRevisionWithRelations(type, id, revision);
+      checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s and revision %s", type.getSimpleName(), id, revision);
+      return entity;
     }
   }
 
@@ -206,7 +210,8 @@ public class DomainEntityResource extends ResourceBase {
       throw new TimbuctooException(Status.BAD_REQUEST, "Type %s does not match input",  type);
     }
 
-    DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
+    DomainEntity entity = storageManager.getEntity(type, id);
+    checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
     checkItemInScope(type, id, vreId, Status.FORBIDDEN);
     checkWritable(entity, Status.FORBIDDEN);
 
@@ -219,7 +224,7 @@ public class DomainEntityResource extends ResourceBase {
       }
     } catch (IOException e) {
       // TODO Handle two cases: 1)entity was already updated, 2) internal server error
-      throw new TimbuctooException(Status.INTERNAL_SERVER_ERROR, e.getMessage());
+      throw new TimbuctooException(Status.INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
     }
 
     notifyChange(ActionType.MOD, type, id);
@@ -262,9 +267,9 @@ public class DomainEntityResource extends ResourceBase {
       throw new TimbuctooException(Status.BAD_REQUEST, "Not a primitive domain entity: %s", entityName);
     }
 
-    DomainEntity entity = checkNotNull(storageManager.getEntity(type, id), Status.NOT_FOUND);
+    DomainEntity entity = storageManager.getEntity(type, id);
+    checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
     checkWritable(entity, Status.FORBIDDEN);
-
     checkItemInScope(type, id, vreId, Status.FORBIDDEN);
 
     storageManager.deleteDomainEntity(entity);

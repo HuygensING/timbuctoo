@@ -77,7 +77,7 @@ public class VREAuthorizationFilterFactory extends AbstractRolesAllowedResourceF
       }
 
       if (!vreManager.doesVREExist(vreId)) {
-        throw new TimbuctooException(Status.FORBIDDEN, "Unknown VRE id %s", vreId);
+        throw new TimbuctooException(Status.FORBIDDEN, "No VRE with id %s", vreId);
       }
 
       return request;

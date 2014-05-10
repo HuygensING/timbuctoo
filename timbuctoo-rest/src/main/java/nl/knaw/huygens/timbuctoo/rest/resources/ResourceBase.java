@@ -32,14 +32,13 @@ import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 public class ResourceBase {
 
   /**
-   * Checks the specified reference and throws a {@code TimbuctooException}
-   * with the specified status if the reference is {@code null}.
+   * Checks the specified reference
+   * and throws a {@code TimbuctooException} if the reference is {@code null}.
    */
-  protected <T> T checkNotNull(T reference, Status status) {
+  protected <T> void checkNotNull(T reference, Status status, String errorMessageTemplate, Object... errorMessageArgs) {
     if (reference == null) {
-      throw new TimbuctooException(status, "Null reference");
+      throw new TimbuctooException(status, errorMessageTemplate, errorMessageArgs);
     }
-    return reference;
   }
 
 }
