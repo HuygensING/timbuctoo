@@ -72,7 +72,9 @@ public class RelationTypeResource extends ResourceBase {
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
   public RelationType getRelationType(@PathParam(ID_PARAM) String id) {
-    return checkNotNull(storageManager.getEntity(RelationType.class, id), Status.NOT_FOUND);
+    RelationType entity = storageManager.getEntity(RelationType.class, id);
+    checkNotNull(entity, Status.NOT_FOUND, "No RelationType with id %s", id);
+    return entity;
   }
 
   /**

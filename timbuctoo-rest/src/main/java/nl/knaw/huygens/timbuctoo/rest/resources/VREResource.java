@@ -63,7 +63,8 @@ public class VREResource extends ResourceBase {
   @Produces({ MediaType.APPLICATION_JSON })
   @APIDesc("Provides info about the specified VRE.")
   public VREInfo getVREInfo(@PathParam("id") String vreId) {
-    VRE vre = checkNotNull(vreManager.getVREById(vreId), Status.NOT_FOUND);
+    VRE vre = vreManager.getVREById(vreId);
+    checkNotNull(vre, Status.NOT_FOUND, "No VRE with id %s", vreId);
     Map<String, RelationType> map = storageManager.getRelationTypeMap();
 
     VREInfo info = new VREInfo();
