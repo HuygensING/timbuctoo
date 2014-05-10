@@ -32,13 +32,21 @@ import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 public class ResourceBase {
 
   /**
+   * Checks the specified condition
+   * and throws a {@code TimbuctooException} if the condition is {@code false}.
+   */
+  protected void checkCondition(boolean condition, Status status, String errorMessageTemplate, Object... errorMessageArgs) {
+    if (!condition) {
+      throw new TimbuctooException(status, errorMessageTemplate, errorMessageArgs);
+    }
+  }
+
+  /**
    * Checks the specified reference
    * and throws a {@code TimbuctooException} if the reference is {@code null}.
    */
   protected <T> void checkNotNull(T reference, Status status, String errorMessageTemplate, Object... errorMessageArgs) {
-    if (reference == null) {
-      throw new TimbuctooException(status, errorMessageTemplate, errorMessageArgs);
-    }
+    checkCondition(reference != null, status, errorMessageTemplate, errorMessageArgs);
   }
 
 }

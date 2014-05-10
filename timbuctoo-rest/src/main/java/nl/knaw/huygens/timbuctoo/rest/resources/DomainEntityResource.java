@@ -133,12 +133,9 @@ public class DomainEntityResource extends ResourceBase {
       @HeaderParam(VRE_ID_KEY) String vreId, //
       @QueryParam(USER_ID_KEY) String userId//
   ) throws IOException, URISyntaxException {
+
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
-
-    if (type != input.getClass()) {
-      throw new TimbuctooException(Status.BAD_REQUEST, "Type %s does not match input",  type);
-    }
-
+    checkCondition(type == input.getClass(), Status.BAD_REQUEST, "Type %s does not match input",  type.getSimpleName());
     checkCollectionInScope(type, vreId, Status.FORBIDDEN);
 
     Change change = new Change(userId, vreId);
@@ -206,14 +203,12 @@ public class DomainEntityResource extends ResourceBase {
   ) throws IOException {
 
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
-    if (type != input.getClass()) {
-      throw new TimbuctooException(Status.BAD_REQUEST, "Type %s does not match input",  type);
-    }
+    checkCondition(type == input.getClass(), Status.BAD_REQUEST, "Type %s does not match input",  type.getSimpleName());
 
     DomainEntity entity = storageManager.getEntity(type, id);
     checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
     checkItemInScope(type, id, vreId, Status.FORBIDDEN);
-    checkWritable(entity, Status.FORBIDDEN);
+    checkNotNull(entity.getPid(), Status.FORBIDDEN, "%s with id %s is read-only (no PID)", type.getSimpleName(), id);
 
     try {
       Change change = new Change(userId, vreId);
@@ -238,11 +233,12 @@ public class DomainEntityResource extends ResourceBase {
   public <T extends DomainEntity> void putPIDs(//
       @PathParam(ENTITY_PARAM) String entityName,//
       @HeaderParam(VRE_ID_KEY) String vreId) throws IOException {
+
     @SuppressWarnings("unchecked")
     Class<T> type = (Class<T>) getEntityType(entityName, Status.NOT_FOUND);
 
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
-      throw new TimbuctooException(Status.BAD_REQUEST, "Not a primitive domain entity: %s",  type);
+      throw new TimbuctooException(Status.BAD_REQUEST, "Illegal PUT for primitive domain entity %s",  type.getSimpleName());
     }
 
     // if you want to be able to put a pid on items without pid you have to have access to the base class.
@@ -261,16 +257,16 @@ public class DomainEntityResource extends ResourceBase {
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id, //
       @HeaderParam(VRE_ID_KEY) String vreId) throws IOException {
-    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
+    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
       throw new TimbuctooException(Status.BAD_REQUEST, "Not a primitive domain entity: %s", entityName);
     }
 
     DomainEntity entity = storageManager.getEntity(type, id);
     checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
-    checkWritable(entity, Status.FORBIDDEN);
     checkItemInScope(type, id, vreId, Status.FORBIDDEN);
+    checkNotNull(entity.getPid(), Status.FORBIDDEN, "%s with id %s is read-only (no PID)", type.getSimpleName(), id);
 
     storageManager.deleteDomainEntity(entity);
     notifyChange(ActionType.DEL, type, id);
@@ -330,16 +326,6 @@ public class DomainEntityResource extends ResourceBase {
       return TypeRegistry.toDomainEntity(type);
     } else {
       throw new TimbuctooException(status, "Not a domain entity: %s", entityName);
-    }
-  }
-
-  /**
-   * Domain entities without a persistent identifier are not writable.
-   * They are only available to check batch-imported data.
-   */
-  private void checkWritable(DomainEntity entity, Status status) {
-    if (entity.getPid() == null) {
-      throw new TimbuctooException(status, "Entity %s is read-only (no PID)", entity.getId());
     }
   }
 
