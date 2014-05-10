@@ -49,8 +49,7 @@ public class SitemapResource {
   @GET
   @Produces({ MediaType.TEXT_HTML })
   @APIDesc("Generates a structured sitemap.")
-  public Sitemap getSitemap(@Context
-  Application app) {
+  public Sitemap getSitemap(@Context Application app) {
     return new Sitemap(app, registry);
   }
 
