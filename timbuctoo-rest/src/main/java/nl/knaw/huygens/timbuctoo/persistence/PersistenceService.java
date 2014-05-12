@@ -27,11 +27,10 @@ import java.io.IOException;
 import javax.jms.JMSException;
 
 import nl.knaw.huygens.persistence.PersistenceException;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.ConsumerService;
-import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import org.slf4j.Logger;
@@ -55,7 +54,6 @@ public class PersistenceService extends ConsumerService implements Runnable {
 
   @Override
   protected void executeAction(Action action) {
-
     switch (action.getActionType()) {
     case ADD:
     case MOD:
@@ -68,55 +66,48 @@ public class PersistenceService extends ConsumerService implements Runnable {
       LOG.warn("Unexpected action {}", action);
       break;
     }
-
   }
 
   private void setPID(Action action) {
-    Class<? extends Entity> type = action.getType();
+    Class<? extends DomainEntity> type = action.getType();
     String id = action.getId();
-    String pid = null;
 
-    if (!TypeRegistry.isDomainEntity(type)) {
-      LOG.error("Not a domain entitiy: {}", type.getSimpleName());
+    DomainEntity entity = storageManager.getEntity(type, id);
+    if (entity == null) {
+      LOG.error("No {} with id {}", type, id);
       return;
     }
+    int revision = entity.getRev();
 
-    int revision = getRevision(type, id);
-
+    String pid = null;
     try {
       pid = persistenceWrapper.persistObject(type, id, revision);
-    } catch (PersistenceException ex) {
+    } catch (PersistenceException e) {
       LOG.error("Creating a PID for {} with id {} went wrong.", type, id);
-      LOG.debug("Exception", ex);
+      LOG.debug("Exception", e);
       return;
     }
 
     try {
       // The only way to show the PIDs as a URI is to save them as a URI.
-      storageManager.setPID(TypeRegistry.toDomainEntity(type), id, persistenceWrapper.getPersistentURL(pid));
-    } catch (IllegalStateException ex) {
+      storageManager.setPID(type, id, persistenceWrapper.getPersistentURL(pid));
+    } catch (IllegalStateException e) {
       deletePID(pid);
       LOG.error("{} with id {} already has a PID", type, id);
-    } catch (IOException ex) {
+    } catch (IOException e) {
       deletePID(pid);
       LOG.error("Persisting {} with id {} went wrong", type, id);
-      LOG.debug("Exception", ex);
+      LOG.debug("Exception", e);
     }
   }
 
   private void deletePID(String pid) {
     try {
       persistenceWrapper.deletePersistentId(pid);
-    } catch (PersistenceException pe) {
+    } catch (PersistenceException e) {
       LOG.error("Deleting PID {} went wrong.", pid);
-      LOG.debug("Exception", pe);
+      LOG.debug("Exception", e);
     }
-  }
-
-  private <T extends Entity> int getRevision(Class<T> type, String id) {
-    T instance = storageManager.getEntity(type, id);
-
-    return instance.getRev();
   }
 
   @Override
