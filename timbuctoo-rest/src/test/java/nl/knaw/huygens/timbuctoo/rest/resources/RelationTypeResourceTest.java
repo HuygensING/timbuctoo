@@ -150,7 +150,7 @@ public class RelationTypeResourceTest {
   }
 
   private void setupGetTypeForInName(Class<? extends DomainEntity> type) {
-    doReturn(type).when(registry).getDomainTypeForIName(TypeNames.getInternalName(type));
+    doReturn(type).when(registry).getDomainEntityType(TypeNames.getInternalName(type));
   }
 
 }

@@ -77,7 +77,7 @@ public class ActiveMQConsumer implements Consumer {
   }
 
   private Class<? extends DomainEntity> getType(String typeString) throws JMSException {
-    Class<? extends DomainEntity> type = typeRegistry.getDomainTypeForIName(typeString);
+    Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
     if (type == null) {
       throw new JMSException("Unknown type: " + typeString);
     }

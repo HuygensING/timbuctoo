@@ -112,7 +112,7 @@ public class RelationTypeResource extends ResourceBase {
   }
 
   private Class<? extends DomainEntity> convertToType(String iname) {
-    return "domainentity".equals(iname) ? DomainEntity.class : registry.getDomainTypeForIName(iname);
+    return "domainentity".equals(iname) ? DomainEntity.class : registry.getDomainEntityType(iname);
   }
 
   private boolean isCompatible(Class<? extends DomainEntity> requestType, Class<? extends DomainEntity> typeFromRelation) {

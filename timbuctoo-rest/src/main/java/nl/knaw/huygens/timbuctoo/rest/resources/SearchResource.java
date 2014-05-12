@@ -98,10 +98,9 @@ public class SearchResource extends ResourceBase {
   @APIDesc("Searches the Solr index")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response post(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
+
     VRE vre = Strings.isNullOrEmpty(vreId) ? vreManager.getDefaultVRE() : vreManager.getVREById(vreId);
-    if (vre == null) {
-      throw new TimbuctooException(Response.Status.NOT_FOUND, "No such VRE: %s", vreId);
-    }
+    checkNotNull(vre, Status.NOT_FOUND, "No VRE with id %s", vreId);
 
     Scope scope = vre.getScope();
 
@@ -109,8 +108,8 @@ public class SearchResource extends ResourceBase {
     if (Strings.isNullOrEmpty(typeString)) {
       throw new TimbuctooException(Response.Status.BAD_REQUEST, "No typeString specified");
     }
-    Class<? extends DomainEntity> type = registry.getDomainTypeForIName(typeString);
-    checkNotNull(type, Status.BAD_REQUEST,"No domain entity type for %s",  typeString);
+    Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
+    checkNotNull(type, Status.BAD_REQUEST, "No domain entity type for %s", typeString);
 
     if (!scope.isTypeInScope(type)) {
       throw new TimbuctooException(Response.Status.BAD_REQUEST, "Type not in scope: %s", typeString);
@@ -151,8 +150,8 @@ public class SearchResource extends ResourceBase {
     checkNotNull(result, Status.NOT_FOUND, "No SearchResult with id %s",  queryId);
 
     // Process
-    Class<? extends DomainEntity> type = registry.getDomainTypeForIName(result.getSearchType());
-    checkNotNull(type, Status.BAD_REQUEST,"No domain entity type for %s",  result.getSearchType());
+    Class<? extends DomainEntity> type = registry.getDomainEntityType(result.getSearchType());
+    checkNotNull(type, Status.BAD_REQUEST, "No domain entity type for %s", result.getSearchType());
 
     List<String> ids = result.getIds() != null ? result.getIds() : Lists.<String> newArrayList();
     int idsSize = ids.size();
