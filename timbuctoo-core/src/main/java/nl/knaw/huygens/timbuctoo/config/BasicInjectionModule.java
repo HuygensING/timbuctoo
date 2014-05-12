@@ -37,7 +37,7 @@ public class BasicInjectionModule extends AbstractModule {
     this.config = config;
     registry = TypeRegistry.getInstance();
     registry.init(config.getSetting("model-packages"));
-    new ConfigValidator(config, registry).validate();
+    new ConfigValidator(config).validate();
   }
 
   @Override
