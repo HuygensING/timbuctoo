@@ -25,7 +25,7 @@ package nl.knaw.huygens.timbuctoo.persistence;
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.config.Paths;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.apache.commons.lang.StringUtils;
@@ -42,17 +42,15 @@ public class PersistenceWrapper {
 
   private final PersistenceManager manager;
   private final String baseUrl;
-  private final TypeRegistry typeRegistry;
   private static final Logger LOG = LoggerFactory.getLogger(PersistenceWrapper.class);
 
   @Inject
-  public PersistenceWrapper(@Named("public_url") String baseUrl, PersistenceManager persistenceManager, TypeRegistry typeRegistry) {
+  public PersistenceWrapper(@Named("public_url") String baseUrl, PersistenceManager persistenceManager) {
     LOG.info("base url: {}", baseUrl);
     Preconditions.checkArgument(!StringUtils.isEmpty(baseUrl), "baseUrl cannot be empty");
     this.baseUrl = CharMatcher.is('/').trimTrailingFrom(baseUrl);
     this.manager = persistenceManager;
     Preconditions.checkNotNull(this.manager);
-    this.typeRegistry = typeRegistry;
   }
 
   public String persistURL(String url) throws PersistenceException {
@@ -83,11 +81,12 @@ public class PersistenceWrapper {
   }
 
   private String createURL(Class<? extends Entity> type, String id) {
-    String collection = typeRegistry.getXNameForType(type);
+    String collection = TypeNames.getExternalName(type);
     return Joiner.on('/').join(baseUrl, Paths.DOMAIN_PREFIX, collection, id);
   }
 
   private String createURL(Class<? extends Entity> type, String id, int revision) {
     return createURL(type, id) + "?rev=" + revision;
   }
+
 }

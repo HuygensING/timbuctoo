@@ -47,6 +47,7 @@ import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -222,8 +223,8 @@ public class SearchResource extends ResourceBase {
   }
 
   private List<EntityRef> createEntityRefs(Class<? extends DomainEntity> type, List<DomainEntity> entities) {
-    String itype = registry.getINameForType(type);
-    String xtype = registry.getXNameForType(type);
+    String itype = TypeNames.getInternalName(type);
+    String xtype = TypeNames.getExternalName(type);
     List<EntityRef> list = Lists.newArrayListWithCapacity(entities.size());
     for (DomainEntity entity : entities) {
       list.add(new EntityRef(itype, xtype, entity.getId(), entity.getDisplayName()));

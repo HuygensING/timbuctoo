@@ -27,6 +27,7 @@ import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toDomainEntity;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -77,7 +78,7 @@ public class OldIndexManager implements IndexManager {
   private void registerCores() {
     for (Scope scope : scopes) {
       for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
-        String collection = registry.getINameForType(type);
+        String collection = TypeNames.getInternalName(type);
         String coreName = getCoreName(scope, collection);
         server.addCore(collection, coreName);
       }
@@ -85,7 +86,7 @@ public class OldIndexManager implements IndexManager {
   }
 
   private <T extends DomainEntity> String getCoreName(Scope scope, Class<T> type) {
-    return getCoreName(scope, registry.getINameForType(type));
+    return getCoreName(scope, TypeNames.getInternalName(type));
   }
 
   private String getCoreName(Scope scope, String collection) {

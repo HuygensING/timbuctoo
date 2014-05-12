@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  */
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
@@ -56,7 +57,7 @@ public class EntityIds {
       @Override
       public String load(Class<? extends Entity> type) {
         Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
-        return typeRegistry.getINameForType(baseType);
+        return TypeNames.getInternalName(baseType);
       }
     });
   }

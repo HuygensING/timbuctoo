@@ -32,7 +32,7 @@ import nl.knaw.huygens.solr.FacetInfo;
 import nl.knaw.huygens.solr.FacetParameter;
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.solr.SolrUtils;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
@@ -59,15 +59,13 @@ public class OldSearchManager implements SearchManager {
   private final IndexManager server;
   private final FacetFinder facetFinder;
   private final AbstractFieldFinder fullTextSearchFieldFinder;
-  private final TypeRegistry typeRegistry;
   private final SortableFieldFinder sortableFieldFinder;
 
   @Inject
-  public OldSearchManager(TypeRegistry registry, IndexManager server) {
+  public OldSearchManager(IndexManager server) {
     this.server = server;
     this.facetFinder = new FacetFinder();
     this.fullTextSearchFieldFinder = new FullTextSearchFieldFinder();
-    this.typeRegistry = registry;
     this.sortableFieldFinder = new SortableFieldFinder();
   }
 
@@ -90,7 +88,7 @@ public class OldSearchManager implements SearchManager {
       ids.add(document.getFieldValue("id").toString());
     }
 
-    SearchResult searchResult = new SearchResult(ids, typeRegistry.getINameForType(type), searchTerm, searchParameters.getSort(), new Date());
+    SearchResult searchResult = new SearchResult(ids, TypeNames.getInternalName(type), searchTerm, searchParameters.getSort(), new Date());
 
     List<FacetCount> facets = getFacetCounts(response.getFacetFields(), facetInfoMap);
     searchResult.setFacets(facets);

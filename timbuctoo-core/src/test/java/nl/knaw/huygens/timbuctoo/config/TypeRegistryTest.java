@@ -98,21 +98,9 @@ public class TypeRegistryTest {
   }
 
   @Test
-  public void testGetINameForType() {
-    registry.init(MODEL_PACKAGE);
-    assertEquals("basedomainentity", registry.getINameForType(BaseDomainEntity.class));
-  }
-
-  @Test
   public void testGetINameForRole() {
     registry.init(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
     assertEquals("projectatestrole", registry.getINameForRole(ProjectATestRole.class));
-  }
-
-  @Test
-  public void testGetXNameForType() {
-    registry.init(MODEL_PACKAGE);
-    assertEquals("basedomainentitys", registry.getXNameForType(BaseDomainEntity.class));
   }
 
   @Test
@@ -131,13 +119,6 @@ public class TypeRegistryTest {
   public void testGetBaseClassOfNull() {
     registry.init("");
     assertEquals(null, registry.getBaseClass(null));
-  }
-
-  @Test
-  public void testGetCollectionIdForARegisteredClass() {
-    registry.init(MODEL_PACKAGE);
-    Class<? extends Entity> baseType = registry.getBaseClass(BaseDomainEntity.class);
-    assertEquals("basedomainentity", registry.getINameForType(baseType));
   }
 
   @Test
