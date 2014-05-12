@@ -30,12 +30,10 @@ import java.io.File;
 public class ConfigValidator {
 
   private final Configuration config;
-  private final TypeRegistry registry;
   private boolean error;
 
-  public ConfigValidator(Configuration config, TypeRegistry registry) {
+  public ConfigValidator(Configuration config) {
     this.config = config;
-    this.registry = registry;
   }
 
   public void validate() {
@@ -45,15 +43,6 @@ public class ConfigValidator {
 
     if (error) {
       throw new RuntimeException("Configuration error(s)");
-    }
-  }
-
-  void validateDocTypes(String configKey) {
-    for (String type : config.getSettings(configKey)) {
-      if (registry.getTypeForIName(type) == null) {
-        System.err.printf("Configuration key '%s': '%s' is not an entity type%n", configKey, type);
-        error = true;
-      }
     }
   }
 
