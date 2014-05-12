@@ -122,7 +122,7 @@ public class SearchResource extends ResourceBase {
 
     // Process
     try {
-      SearchResult result = searchManager.search(scope, TypeRegistry.toDomainEntity(type), searchParams);
+      SearchResult result = searchManager.search(scope, type, searchParams);
       storageManager.addSystemEntity(SearchResult.class, result);
       String queryId = result.getId();
       return Response.created(new URI(queryId)).build();

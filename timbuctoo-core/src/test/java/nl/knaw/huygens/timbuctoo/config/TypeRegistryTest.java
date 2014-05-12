@@ -154,16 +154,6 @@ public class TypeRegistryTest {
   }
 
   @Test(expected = ClassCastException.class)
-  public void testToEntityFails() {
-    TypeRegistry.toEntity(NotAnEntity.class);
-  }
-
-  @Test
-  public void testToEntitySucceeds() {
-    assertTrue(TypeRegistry.isEntity(TypeRegistry.toEntity(ASystemEntity.class)));
-  }
-
-  @Test(expected = ClassCastException.class)
   public void testToSystemEntityFails() {
     TypeRegistry.toSystemEntity(ADomainEntity.class);
   }
