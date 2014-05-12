@@ -77,28 +77,22 @@ public class TypeRegistryTest {
   public void testRecursivePackageSpecification() {
     String iname = TypeNames.getInternalName(ProjectADomainEntity.class);
     registry.init(MODEL_PACKAGE);
-    assertNull(registry.getDomainTypeForIName(iname));
+    assertNull(registry.getDomainEntityType(iname));
     registry.init(MODEL_PACKAGE + ".*");
-    assertEquals(ProjectADomainEntity.class, registry.getDomainTypeForIName(iname));
+    assertEquals(ProjectADomainEntity.class, registry.getDomainEntityType(iname));
   }
 
   @Test
   public void testGetTypeForIName() {
     registry.init(MODEL_PACKAGE);
-    assertEquals(BaseDomainEntity.class, registry.getDomainTypeForIName("basedomainentity"));
-    assertEquals(VTestSystemEntity.class, registry.getSystemTypeForIName("vtestsystementity"));
+    assertEquals(BaseDomainEntity.class, registry.getDomainEntityType("basedomainentity"));
+    assertEquals(VTestSystemEntity.class, registry.getSystemEntityType("vtestsystementity"));
   }
 
   @Test
   public void testGetTypeForXName() {
     registry.init(MODEL_PACKAGE);
     assertEquals(BaseDomainEntity.class, registry.getTypeForXName("basedomainentitys"));
-  }
-
-  @Test
-  public void testGetINameForRole() {
-    registry.init(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertEquals("projectatestrole", registry.getINameForRole(ProjectATestRole.class));
   }
 
   @Test

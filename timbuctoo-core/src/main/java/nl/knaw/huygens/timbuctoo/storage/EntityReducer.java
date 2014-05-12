@@ -101,7 +101,7 @@ public class EntityReducer {
       Set<String> prefixes = getPrefixes(tree);
       for (JsonNode node : ImmutableList.copyOf(variations.elements())) {
         String variation = node.textValue();
-        Class<? extends DomainEntity> varType = typeRegistry.getDomainTypeForIName(variation);
+        Class<? extends DomainEntity> varType = typeRegistry.getDomainEntityType(variation);
         if (varType != null && type.isAssignableFrom(varType)) {
           T entity = type.cast(reduceObject(tree, prefixes, varType, varType, Entity.class));
           entities.add(entity);

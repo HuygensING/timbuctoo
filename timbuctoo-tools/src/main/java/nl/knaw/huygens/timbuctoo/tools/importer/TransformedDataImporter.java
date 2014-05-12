@@ -70,7 +70,7 @@ public class TransformedDataImporter extends DefaultImporter {
 
     for (File jsonFile : jsonFiles) {
       String className = jsonFile.getName().substring(0, jsonFile.getName().indexOf('.'));
-      Class<? extends DomainEntity> type = repository.getTypeRegistry().getDomainTypeForIName(className);
+      Class<? extends DomainEntity> type = repository.getTypeRegistry().getDomainEntityType(className);
 
       if (type != null) {
         removeNonPersistentEntities(TypeRegistry.toDomainEntity(type));
