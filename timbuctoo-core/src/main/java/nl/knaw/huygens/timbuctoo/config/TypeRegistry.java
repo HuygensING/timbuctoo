@@ -143,13 +143,10 @@ public class TypeRegistry {
       Class<?> type = info.load();
       if (isEntity(type) && !shouldNotRegister(type)) {
         if (BusinessRules.isValidSystemEntity(type)) {
-          Class<? extends SystemEntity> entityType = toSystemEntity(type);
-          systemEntities.add(entityType);
-          registerEntity(entityType);
+          registerSystemEntity(toSystemEntity(type));
         } else if (BusinessRules.isValidDomainEntity(type)) {
           Class<? extends DomainEntity> entityType = toDomainEntity(type);
-          domainEntities.add(entityType);
-          registerEntity(entityType);
+          registerDomainEntity(entityType);
           if (!Relation.class.isAssignableFrom(entityType)) {
             allowedRoles.put(entityType, roles);
           }
@@ -185,7 +182,19 @@ public class TypeRegistry {
 
   // ---------------------------------------------------------------------------
 
-  private <T extends Entity> void registerEntity(Class<T> type) {
+  private <T extends SystemEntity> void registerSystemEntity(Class<T> type) {
+    systemEntities.add(type);
+
+    String iname = TypeNames.getInternalName(type);
+    if (iname2type.containsKey(iname)) {
+      throw new IllegalStateException("Duplicate internal type name " + iname);
+    }
+    iname2type.put(iname, type);
+  }
+
+  private <T extends DomainEntity> void registerDomainEntity(Class<T> type) {
+    domainEntities.add(type);
+
     String iname = TypeNames.getInternalName(type);
     if (iname2type.containsKey(iname)) {
       throw new IllegalStateException("Duplicate internal type name " + iname);

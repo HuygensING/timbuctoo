@@ -93,8 +93,6 @@ public class TypeRegistryTest {
   public void testGetTypeForXName() {
     registry.init(MODEL_PACKAGE);
     assertEquals(BaseDomainEntity.class, registry.getTypeForXName("basedomainentitys"));
-    // Has @EntityTypeName annotation:
-    assertEquals(VTestSystemEntity.class, registry.getTypeForXName("mysystementity"));
   }
 
   @Test
