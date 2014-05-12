@@ -94,7 +94,8 @@ public class TypeRegistry {
   private final Set<Class<? extends SystemEntity>> systemEntities = Sets.newTreeSet(new ClassComparator());
   private final Set<Class<? extends DomainEntity>> domainEntities = Sets.newTreeSet(new ClassComparator());
 
-  private final Map<String, Class<? extends Entity>> iname2type = Maps.newHashMap();
+  private final Map<String, Class<? extends SystemEntity>> iname2systemtype = Maps.newHashMap();
+  private final Map<String, Class<? extends DomainEntity>> iname2domaintype = Maps.newHashMap();
 
   private final Map<String, Class<? extends Entity>> xname2type = Maps.newHashMap();
 
@@ -121,7 +122,8 @@ public class TypeRegistry {
    * Clears all entries.
    */
   private void clear() {
-    iname2type.clear();
+    iname2systemtype.clear();
+    iname2domaintype.clear();
     xname2type.clear();
     iname2xname.clear();
     role2iname.clear();
@@ -186,20 +188,20 @@ public class TypeRegistry {
     systemEntities.add(type);
 
     String iname = TypeNames.getInternalName(type);
-    if (iname2type.containsKey(iname)) {
+    if (iname2systemtype.containsKey(iname)) {
       throw new IllegalStateException("Duplicate internal type name " + iname);
     }
-    iname2type.put(iname, type);
+    iname2systemtype.put(iname, type);
   }
 
   private <T extends DomainEntity> void registerDomainEntity(Class<T> type) {
     domainEntities.add(type);
 
     String iname = TypeNames.getInternalName(type);
-    if (iname2type.containsKey(iname)) {
+    if (iname2domaintype.containsKey(iname)) {
       throw new IllegalStateException("Duplicate internal type name " + iname);
     }
-    iname2type.put(iname, type);
+    iname2domaintype.put(iname, type);
 
     String xname = TypeNames.getExternalName(type);
     if (xname2type.containsKey(xname)) {
@@ -259,8 +261,16 @@ public class TypeRegistry {
    * Returns the entity type token for the specified internal type name,
    * or {@code null} if there is no such token.
    */
-  public Class<? extends Entity> getTypeForIName(String iname) {
-    return iname2type.get(iname);
+  public Class<? extends SystemEntity> getSystemTypeForIName(String iname) {
+    return iname2systemtype.get(iname);
+  }
+
+  /**
+   * Returns the entity type token for the specified internal type name,
+   * or {@code null} if there is no such token.
+   */
+  public Class<? extends DomainEntity> getDomainTypeForIName(String iname) {
+    return iname2domaintype.get(iname);
   }
 
   /**
@@ -268,7 +278,7 @@ public class TypeRegistry {
    * with a primitive domain entity type, {@code false} otherwise.
    */
   public boolean mapsToPrimitiveDomainEntity(String iname) {
-    return isPrimitiveDomainEntity(iname2type.get(iname));
+    return isPrimitiveDomainEntity(iname2domaintype.get(iname));
   }
 
   /**

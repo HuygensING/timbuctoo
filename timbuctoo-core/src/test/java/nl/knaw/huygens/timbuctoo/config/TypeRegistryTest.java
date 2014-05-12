@@ -77,16 +77,16 @@ public class TypeRegistryTest {
   public void testRecursivePackageSpecification() {
     String iname = TypeNames.getInternalName(ProjectADomainEntity.class);
     registry.init(MODEL_PACKAGE);
-    assertNull(registry.getTypeForIName(iname));
+    assertNull(registry.getDomainTypeForIName(iname));
     registry.init(MODEL_PACKAGE + ".*");
-    assertEquals(ProjectADomainEntity.class, registry.getTypeForIName(iname));
+    assertEquals(ProjectADomainEntity.class, registry.getDomainTypeForIName(iname));
   }
 
   @Test
   public void testGetTypeForIName() {
     registry.init(MODEL_PACKAGE);
-    assertEquals(BaseDomainEntity.class, registry.getTypeForIName("basedomainentity"));
-    assertEquals(VTestSystemEntity.class, registry.getTypeForIName("vtestsystementity"));
+    assertEquals(BaseDomainEntity.class, registry.getDomainTypeForIName("basedomainentity"));
+    assertEquals(VTestSystemEntity.class, registry.getSystemTypeForIName("vtestsystementity"));
   }
 
   @Test
@@ -117,24 +117,6 @@ public class TypeRegistryTest {
   public void testGetBaseClassOfNull() {
     registry.init("");
     assertEquals(null, registry.getBaseClass(null));
-  }
-
-  @Test
-  public void testRegisterPackageDontRegisterClass() {
-    registry.init(MODEL_PACKAGE);
-    assertNull(registry.getTypeForIName("donotregistertests"));
-  }
-
-  @Test
-  public void testRegisterPackageNonDocument() {
-    registry.init(MODEL_PACKAGE);
-    assertNull(registry.getTypeForIName("nonDoc"));
-  }
-
-  @Test
-  public void testRegisterPackageSubPackage() {
-    registry.init(MODEL_PACKAGE);
-    assertNull(registry.getTypeForIName("testdoc"));
   }
 
   // --- tests of static utilities -------------------------------------

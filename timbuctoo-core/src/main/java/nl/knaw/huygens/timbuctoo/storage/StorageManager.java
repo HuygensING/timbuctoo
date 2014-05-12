@@ -366,7 +366,7 @@ public class StorageManager {
   // Map to a domain entity in the package from which an entity is requested
   private EntityRef getEntityRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws IOException {
     String iname = reference.getType();
-    Class<? extends DomainEntity> type = TypeRegistry.toDomainEntity(registry.getTypeForIName(iname));
+    Class<? extends DomainEntity> type = registry.getDomainTypeForIName(iname);
     type = mapper.map(type);
     iname = TypeNames.getInternalName(type);
     String xname = registry.getXNameForIName(iname);
