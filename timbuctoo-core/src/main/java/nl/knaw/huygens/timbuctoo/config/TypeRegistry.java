@@ -42,6 +42,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -342,21 +343,10 @@ public class TypeRegistry {
   }
 
   /**
-   * Forces the typecast of the specified class to an entity type token.
-   */
-  public static <T extends Entity> Class<T> toEntity(Class<?> cls) throws ClassCastException {
-    if (isEntity(cls)) {
-      @SuppressWarnings("unchecked")
-      Class<T> result = (Class<T>) cls;
-      return result;
-    }
-    throw new ClassCastException(cls.getName() + " is not an entity");
-  }
-
-  /**
    * Forces the typecast of the specified class to a system entity type token.
    */
-  public static <T extends SystemEntity> Class<T> toSystemEntity(Class<?> cls) throws ClassCastException {
+  @VisibleForTesting
+  static <T extends SystemEntity> Class<T> toSystemEntity(Class<?> cls) throws ClassCastException {
     if (isSystemEntity(cls)) {
       @SuppressWarnings("unchecked")
       Class<T> result = (Class<T>) cls;
@@ -387,10 +377,12 @@ public class TypeRegistry {
     return (superType == DomainEntity.class) ? type : superType;
   }
 
-  @SuppressWarnings("unchecked")
-  public static <T extends Role> Class<T> toRole(Class<?> type) {
+  @VisibleForTesting
+  static <T extends Role> Class<T> toRole(Class<?> type) {
     if (isRole(type)) {
-      return (Class<T>) type;
+      @SuppressWarnings("unchecked")
+      Class<T> result = (Class<T>) type;
+      return result;
     }
     throw new ClassCastException(type.getName() + " is not a role");
   }

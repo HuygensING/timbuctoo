@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -73,8 +72,8 @@ public class TransformedDataImporter extends DefaultImporter {
       Class<? extends DomainEntity> type = repository.getTypeRegistry().getDomainEntityType(className);
 
       if (type != null) {
-        removeNonPersistentEntities(TypeRegistry.toDomainEntity(type));
-        save(TypeRegistry.toDomainEntity(type), jsonFile, change);
+        removeNonPersistentEntities(type);
+        save(type, jsonFile, change);
       } else {
         LOG.error("{} is not a DomainEntity", className);
       }
