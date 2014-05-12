@@ -34,7 +34,6 @@ import java.util.List;
 
 import nl.knaw.huygens.solr.FacetParameter;
 import nl.knaw.huygens.solr.SearchParameters;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount.Option;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
@@ -72,16 +71,13 @@ public class OldSearchManagerTest {
   private Scope scope;
   private OldSearchManager instance;
   private IndexManager indexManager;
-  private TypeRegistry typeRegistry;
 
   @Before
   public void setUp() {
     scope = mock(Scope.class);
     when(scope.getId()).thenReturn("scope");
     indexManager = mock(IndexManager.class);
-    typeRegistry = TypeRegistry.getInstance();
-    typeRegistry.init(Person.class.getPackage().getName() + " " + DCARPerson.class.getPackage().getName() + " " + ClassWithMupltipleFullTestSearchFields.class.getPackage().getName());
-    instance = new OldSearchManager(typeRegistry, indexManager);
+    instance = new OldSearchManager(indexManager);
   }
 
   @Test

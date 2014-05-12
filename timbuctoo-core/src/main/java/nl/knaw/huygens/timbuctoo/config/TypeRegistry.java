@@ -98,10 +98,8 @@ public class TypeRegistry {
   private final Set<Class<? extends SystemEntity>> systemEntities = Sets.newTreeSet(new ClassComparator());
   private final Set<Class<? extends DomainEntity>> domainEntities = Sets.newTreeSet(new ClassComparator());
 
-  private final Map<Class<? extends Entity>, String> type2iname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> iname2type = Maps.newHashMap();
 
-  private final Map<Class<? extends Entity>, String> type2xname = Maps.newHashMap();
   private final Map<String, Class<? extends Entity>> xname2type = Maps.newHashMap();
 
   private final Map<String, String> iname2xname = Maps.newHashMap();
@@ -127,9 +125,7 @@ public class TypeRegistry {
    * Clears all entries.
    */
   private void clear() {
-    type2iname.clear();
     iname2type.clear();
-    type2xname.clear();
     xname2type.clear();
     iname2xname.clear();
     role2iname.clear();
@@ -199,14 +195,12 @@ public class TypeRegistry {
       throw new IllegalStateException("Duplicate internal type name " + iname);
     }
     iname2type.put(iname, type);
-    type2iname.put(type, iname);
 
     String xname = TypeNames.getExternalName(type);
     if (xname2type.containsKey(xname)) {
       throw new IllegalStateException("Duplicate internal type name " + xname);
     }
     xname2type.put(xname, type);
-    type2xname.put(type, xname);
 
     iname2xname.put(iname, xname);
   }
@@ -256,14 +250,6 @@ public class TypeRegistry {
   }
 
   /**
-   * Returns the internal type name for the specified type token,
-   * or {@code null} if there is no such name.
-   */
-  public String getINameForType(Class<? extends Entity> type) {
-    return type2iname.get(type);
-  }
-
-  /**
    * Returns the internal type name for the specified role type token,
    * or {@code null} if there is no such name.
    */
@@ -293,14 +279,6 @@ public class TypeRegistry {
    */
   public Class<? extends Role> getRoleForIName(String iname) {
     return iname2role.get(iname);
-  }
-
-  /**
-   * Returns the external type name for the specified type token,
-   * or {@code null} if there is no such name.
-   */
-  public String getXNameForType(Class<? extends Entity> type) {
-    return type2xname.get(type);
   }
 
   /**

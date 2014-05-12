@@ -82,7 +82,7 @@ public class ActiveMQBroker implements Broker {
 
   private Producer newProducer(String name, String queue) throws JMSException {
     ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(url);
-    return new ActiveMQProducer(factory, queue, name, typeRegistry);
+    return new ActiveMQProducer(factory, queue, name);
   }
 
   @Override
