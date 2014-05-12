@@ -68,8 +68,8 @@ public class RelationReferenceValidatorTest {
   }
 
   private void setupTypeRegistry() {
-    doReturn(sourceType).when(typeRegistryMock).getTypeForIName(sourceTypeString);
-    doReturn(targetType).when(typeRegistryMock).getTypeForIName(targetTypeString);
+    doReturn(sourceType).when(typeRegistryMock).getDomainTypeForIName(sourceTypeString);
+    doReturn(targetType).when(typeRegistryMock).getDomainTypeForIName(targetTypeString);
   }
 
   @Test
@@ -83,9 +83,9 @@ public class RelationReferenceValidatorTest {
 
     // verify
     InOrder inOrder = Mockito.inOrder(typeRegistryMock, storage);
-    inOrder.verify(typeRegistryMock).getTypeForIName(sourceTypeString);
+    inOrder.verify(typeRegistryMock).getDomainTypeForIName(sourceTypeString);
     inOrder.verify(storage).getEntity(sourceType, sourceId);
-    inOrder.verify(typeRegistryMock).getTypeForIName(targetTypeString);
+    inOrder.verify(typeRegistryMock).getDomainTypeForIName(targetTypeString);
     inOrder.verify(storage).getEntity(targetType, targetId);
   }
 

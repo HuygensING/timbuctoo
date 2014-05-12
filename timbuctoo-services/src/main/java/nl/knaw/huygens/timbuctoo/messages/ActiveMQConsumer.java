@@ -32,7 +32,6 @@ import javax.jms.Session;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,14 +77,11 @@ public class ActiveMQConsumer implements Consumer {
   }
 
   private Class<? extends DomainEntity> getType(String typeString) throws JMSException {
-    Class<? extends Entity> type = typeRegistry.getTypeForIName(typeString);
+    Class<? extends DomainEntity> type = typeRegistry.getDomainTypeForIName(typeString);
     if (type == null) {
       throw new JMSException("Unknown type: " + typeString);
-    } else if (!TypeRegistry.isDomainEntity(type)) {
-      throw new JMSException("Not a domain type: " + typeString);
-    } else {
-      return TypeRegistry.toDomainEntity(type);
     }
+    return type;
   }
 
   @Override

@@ -50,7 +50,6 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
@@ -110,15 +109,10 @@ public class SearchResource extends ResourceBase {
     if (Strings.isNullOrEmpty(typeString)) {
       throw new TimbuctooException(Response.Status.BAD_REQUEST, "No typeString specified");
     }
-    Class<? extends Entity> type = registry.getTypeForIName(typeString);
-    if (type == null) {
-      throw new TimbuctooException(Response.Status.NOT_FOUND, "No such type: %s", typeString);
-    }
-    if (!TypeRegistry.isDomainEntity(type)) {
-      throw new TimbuctooException(Response.Status.BAD_REQUEST, "Not a domain entity type: %s", typeString);
-    }
+    Class<? extends DomainEntity> type = registry.getDomainTypeForIName(typeString);
+    checkNotNull(type, Status.BAD_REQUEST,"No domain entity type for %s",  typeString);
 
-    if (!scope.isTypeInScope(TypeRegistry.toDomainEntity(type))) {
+    if (!scope.isTypeInScope(type)) {
       throw new TimbuctooException(Response.Status.BAD_REQUEST, "Type not in scope: %s", typeString);
     }
 
@@ -157,14 +151,8 @@ public class SearchResource extends ResourceBase {
     checkNotNull(result, Status.NOT_FOUND, "No SearchResult with id %s",  queryId);
 
     // Process
-    Class<? extends Entity> entityType = registry.getTypeForIName(result.getSearchType());
-    if (entityType == null) {
-      throw new TimbuctooException(Response.Status.BAD_REQUEST, "No entity type for %s",  result.getSearchType());
-    }
-    if (!TypeRegistry.isDomainEntity(entityType)) {
-      throw new TimbuctooException(Response.Status.BAD_REQUEST, "Not a domain entity type: %s", entityType);
-    }
-    Class<? extends DomainEntity> type = TypeRegistry.toDomainEntity(entityType);
+    Class<? extends DomainEntity> type = registry.getDomainTypeForIName(result.getSearchType());
+    checkNotNull(type, Status.BAD_REQUEST,"No domain entity type for %s",  result.getSearchType());
 
     List<String> ids = result.getIds() != null ? result.getIds() : Lists.<String> newArrayList();
     int idsSize = ids.size();

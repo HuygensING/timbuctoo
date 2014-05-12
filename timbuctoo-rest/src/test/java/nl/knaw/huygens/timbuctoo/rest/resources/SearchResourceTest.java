@@ -167,7 +167,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
-    assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
+    assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
 
   @Test

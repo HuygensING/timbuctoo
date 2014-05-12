@@ -60,7 +60,10 @@ public class TimbuctooTypeIdResolver implements TypeIdResolver {
   @Override
   public JavaType typeFromId(String id) {
     Preconditions.checkState(typeRegistry != null, "Type registry not initialized");
-    Class<?> token = typeRegistry.getTypeForIName(id);
+    Class<?> token = typeRegistry.getSystemTypeForIName(id);
+    if (token == null) {
+      token = typeRegistry.getDomainTypeForIName(id);
+    }
     if (token == null) {
       token = typeRegistry.getRoleForIName(id);
     }

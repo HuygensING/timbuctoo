@@ -35,7 +35,6 @@ import javax.ws.rs.core.Response.Status;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -94,9 +93,9 @@ public class RelationTypeResource extends ResourceBase {
   }
 
   protected boolean isApplicable(String iname, RelationType type) {
-    Class<? extends DomainEntity> requestType = TypeRegistry.toDomainEntity(convertToType(iname));
-    Class<? extends DomainEntity> sourceType = TypeRegistry.toDomainEntity(convertToType(type.getSourceTypeName()));
-    Class<? extends DomainEntity> targetType = TypeRegistry.toDomainEntity(convertToType(type.getTargetTypeName()));
+    Class<? extends DomainEntity> requestType = convertToType(iname);
+    Class<? extends DomainEntity> sourceType = convertToType(type.getSourceTypeName());
+    Class<? extends DomainEntity> targetType = convertToType(type.getTargetTypeName());
 
     // iname is assignable from source or target of relation
     boolean isAssignable = isAssignable(sourceType, requestType) || isAssignable(targetType, requestType);
@@ -112,8 +111,8 @@ public class RelationTypeResource extends ResourceBase {
     return isPrimitiveCompatible || isCompatibleForProjectType;
   }
 
-  private Class<? extends Entity> convertToType(String iname) {
-    return "domainentity".equals(iname) ? DomainEntity.class : registry.getTypeForIName(iname);
+  private Class<? extends DomainEntity> convertToType(String iname) {
+    return "domainentity".equals(iname) ? DomainEntity.class : registry.getDomainTypeForIName(iname);
   }
 
   private boolean isCompatible(Class<? extends DomainEntity> requestType, Class<? extends DomainEntity> typeFromRelation) {
