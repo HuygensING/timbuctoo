@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -67,17 +66,14 @@ import com.google.common.reflect.ClassPath.ClassInfo;
  *
  * <p>The use of classes as type tokens is connected to type erasure
  * of Java generics. In addition to type tokens we use two string
- * representations of entity types:
- * - internal names, which are used, for instance, for indicating
+ * representations of entity types:<ul>
+ * <li>internal names, which are used, for instance, for indicating
  * entity types in JSON (so as to hide implementation details),
- * for Solr core names, and for Mongo collection names.
- * - external names, which are used in the REST API for indicating
- * entity collections.
- * Internal names are simply detailed a rule: the lower case form
- * of the simple class name (the last part of the fully qualified
- * class name). External names are determined as the plural of the
- * internal name (constructed by appending an 's' to the internal
- * name) or a name supplied in a class annotation.</p>
+ * for Solr core names, and for Mongo collection names.</li>
+ * <li>external names, which are used in the REST API for indicating
+ * entity collections.</li>
+ * </ul>
+ * The conversion is implemented in class {@code TypeNames}.
  */
 public class TypeRegistry {
 
@@ -240,13 +236,6 @@ public class TypeRegistry {
           return isPrimitiveDomainEntity(type);
         }
       }));
-  }
-
-  /**
-   * Returns the internal type names.
-   */
-  public Set<String> getTypeStrings() {
-    return ImmutableSortedSet.copyOf(iname2type.keySet());
   }
 
   /**

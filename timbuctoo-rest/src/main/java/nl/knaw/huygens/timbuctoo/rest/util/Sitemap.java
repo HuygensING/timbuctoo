@@ -26,7 +26,9 @@ import java.util.List;
 
 import javax.ws.rs.core.Application;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.resources.DomainEntityResource;
 import nl.knaw.huygens.timbuctoo.rest.util.JAXUtils.API;
 
@@ -44,9 +46,10 @@ public class Sitemap {
     for (Class<?> cls : application.getClasses()) {
       List<API> apis = JAXUtils.generateAPIs(cls);
       if (cls == DomainEntityResource.class) {
-        for (String type : registry.getTypeStrings()) {
+        for (Class<? extends DomainEntity> type : registry.getDomainEntityTypes()) {
+          String name = TypeNames.getExternalName(type);
           for (API api : apis) {
-            availableAPIList.add(api.modifyPath(ENTITY_REGEXP, type));
+            availableAPIList.add(api.modifyPath(ENTITY_REGEXP, name));
           }
         }
       } else {
