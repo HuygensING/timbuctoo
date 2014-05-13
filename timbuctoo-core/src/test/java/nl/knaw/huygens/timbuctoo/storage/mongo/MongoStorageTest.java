@@ -37,6 +37,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
 
 import org.junit.AfterClass;
@@ -132,7 +133,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.findItem(TestSystemEntity.class, example);
   }
 
-  @Test(expected = MongoException.class)
+  @Test(expected = StorageException.class)
   public void testMongoException() throws IOException {
     TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID, "test");
 

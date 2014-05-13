@@ -25,7 +25,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 
-import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Date;
@@ -45,6 +44,7 @@ import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 import org.apache.commons.lang.StringUtils;
@@ -184,14 +184,14 @@ public class MongoStorage implements Storage {
   }
 
   @SuppressWarnings("unchecked")
-  private JsonNode toJsonNode(DBObject object) throws IOException {
+  private JsonNode toJsonNode(DBObject object) throws StorageException {
     if (object instanceof JacksonDBObject) {
       return (((JacksonDBObject<JsonNode>) object).getObject());
     } else if (object instanceof DBJsonNode) {
       return ((DBJsonNode) object).getDelegate();
     } else {
       LOG.error("Failed to convert {}", object.getClass());
-      throw new IOException("Unknown DBObject type");
+      throw new StorageException("Unknown DBObject type");
     }
   }
 
@@ -206,21 +206,21 @@ public class MongoStorage implements Storage {
 
   // --- generic storage layer -----------------------------------------
 
-  private JsonNode getExisting(Class<? extends Entity> type, DBObject query) throws IOException {
+  private JsonNode getExisting(Class<? extends Entity> type, DBObject query) throws StorageException {
     DBObject dbObject = getDBCollection(type).findOne(query);
     if (dbObject == null) {
       LOG.error("No match for query {}", query);
-      throw new IOException("No match");
+      throw new StorageException("No match");
     }
     return toJsonNode(dbObject);
   }
 
-  private <T extends Entity> T getItem(Class<T> type, DBObject query) throws IOException {
+  private <T extends Entity> T getItem(Class<T> type, DBObject query) throws StorageException {
     DBObject item = getDBCollection(type).findOne(query);
     return (item != null) ? reducer.reduceVariation(type, toJsonNode(item)) : null;
   }
 
-  private <T extends Entity> StorageIterator<T> findItems(Class<T> type, DBObject query) {
+  private <T extends Entity> StorageIterator<T> findItems(Class<T> type, DBObject query) throws StorageException {
     DBCursor cursor = mongoDB.find(getDBCollection(type), query);
     return newStorageIterator(type, cursor, reducer);
   }
@@ -234,30 +234,30 @@ public class MongoStorage implements Storage {
   // --- entities ------------------------------------------------------
 
   @Override
-  public <T extends Entity> boolean entityExists(Class<T> type, String id) throws IOException {
+  public <T extends Entity> boolean entityExists(Class<T> type, String id) throws StorageException {
     // TODO improve implementation
     return getItem(type, id) != null;
   }
 
   @Override
-  public <T extends Entity> T getItem(Class<T> type, String id) throws IOException {
+  public <T extends Entity> T getItem(Class<T> type, String id) throws StorageException {
     DBObject query = queries.selectById(id);
     return getItem(type, query);
   }
 
   @Override
-  public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) {
+  public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) throws StorageException {
     return findItems(type, queries.selectAll());
   }
 
   @Override
-  public <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value) {
+  public <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value) throws StorageException {
     String key = FieldMapper.propertyName(type, field);
     return findItems(type, queries.selectByProperty(key, value));
   }
 
   @Override
-  public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException {
+  public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
     Change change = Change.newInternalInstance();
     String id = entityIds.getNextId(type);
 
@@ -273,7 +273,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws IOException {
+  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     String id = entityIds.getNextId(type);
 
     entity.setId(id);
@@ -294,7 +294,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws IOException {
+  public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
     Change change = Change.newInternalInstance();
     String id = entity.getId();
     int revision = entity.getRev();
@@ -313,7 +313,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws IOException {
+  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     String id = entity.getId();
     int revision = entity.getRev();
     DBObject query = queries.selectByIdAndRevision(id, revision);
@@ -333,7 +333,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws IOException {
+  public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws StorageException {
     DBObject query = queries.selectById(id);
 
     JsonNode tree = getExisting(type, query);
@@ -353,7 +353,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws IOException {
+  public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws StorageException {
     DBObject query = queries.selectById(id);
 
     JsonNode tree = getExisting(type, query);
@@ -372,7 +372,7 @@ public class MongoStorage implements Storage {
     addVersion(type, id, tree);
   }
 
-  private <T extends Entity> void addVersion(Class<T> type, String id, JsonNode tree) throws IOException {
+  private <T extends Entity> void addVersion(Class<T> type, String id, JsonNode tree) throws StorageException {
     DBCollection collection = getVersionCollection(type);
     DBObject query = queries.selectById(id);
 
@@ -393,36 +393,36 @@ public class MongoStorage implements Storage {
   // --- system entities -----------------------------------------------
 
   @Override
-  public <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws IOException {
+  public <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws StorageException {
     String key = FieldMapper.propertyName(type, field);
     return getItem(type, queries.selectByProperty(key, value));
   }
 
   @Override
-  public <T extends Entity> T findItem(Class<T> type, T example) throws IOException {
+  public <T extends Entity> T findItem(Class<T> type, T example) throws StorageException {
     DBObject query = queries.selectByProperties(type, example);
     return getItem(type, query);
   }
 
   @Override
-  public <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws IOException {
+  public <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws StorageException {
     return mongoDB.remove(getDBCollection(type), queries.selectById(id));
   }
 
   @Override
-  public <T extends SystemEntity> int deleteAll(Class<T> type) throws IOException {
+  public <T extends SystemEntity> int deleteAll(Class<T> type) throws StorageException {
     return mongoDB.remove(getDBCollection(type), queries.selectAll());
   }
 
   @Override
-  public <T extends SystemEntity> int deleteByDate(Class<T> type, String dateField, Date dateValue) throws IOException {
+  public <T extends SystemEntity> int deleteByDate(Class<T> type, String dateField, Date dateValue) throws StorageException {
     return mongoDB.remove(getDBCollection(type), queries.selectByDate(type, dateField, dateValue));
   }
 
   // --- domain entities -----------------------------------------------
 
   @Override
-  public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws IOException {
+  public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException {
     DBObject query = queries.selectById(id);
     DBObject item = getDBCollection(type).findOne(query);
     if (item != null) {
@@ -433,14 +433,14 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends DomainEntity> MongoChanges<T> getAllRevisions(Class<T> type, String id) throws IOException {
+  public <T extends DomainEntity> MongoChanges<T> getAllRevisions(Class<T> type, String id) throws StorageException {
     DBObject query = queries.selectById(id);
     DBObject item = getVersionCollection(type).findOne(query);
     return (item != null) ? reducer.reduceAllRevisions(type, toJsonNode(item)) : null;
   }
 
   @Override
-  public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revision) throws IOException {
+  public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revision) throws StorageException {
     DBObject query = queries.selectById(id);
     DBObject projection = queries.getRevisionProjection(revision);
     DBObject dbObject = getVersionCollection(type).findOne(query, projection);
@@ -448,12 +448,12 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Relation> StorageIterator<T> getRelationsByEntityId(Class<T> type, String id) {
+  public <T extends Relation> StorageIterator<T> getRelationsByEntityId(Class<T> type, String id) throws StorageException {
     return findItems(type, queries.selectRelationsByEntityId(id));
   }
 
   @Override
-  public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
+  public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws StorageException {
     List<String> list = Lists.newArrayList();
 
     try {
@@ -469,14 +469,14 @@ public class MongoStorage implements Storage {
 
     } catch (MongoException e) {
       LOG.error("Error while retrieving objects without pid of type {}", type.getSimpleName());
-      throw new IOException(e);
+      throw new StorageException(e);
     }
 
     return list;
   }
 
   @Override
-  public List<String> getRelationIds(List<String> ids) throws IOException {
+  public List<String> getRelationIds(List<String> ids) throws StorageException {
     List<String> relationIds = Lists.newArrayList();
 
     try {
@@ -489,21 +489,21 @@ public class MongoStorage implements Storage {
       }
     } catch (MongoException e) {
       LOG.error("Error while retrieving relation id's of {}", ids);
-      throw new IOException(e);
+      throw new StorageException(e);
     }
 
     return relationIds;
   }
 
   @Override
-  public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws IOException {
+  public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException {
     try {
       DBObject query = DBQuery.in("_id", ids);
       query.put(DomainEntity.PID, null);
       getDBCollection(type).remove(query);
     } catch (MongoException e) {
       LOG.error("Error while removing entities of type {}", type.getSimpleName());
-      throw new IOException(e);
+      throw new StorageException(e);
     }
   }
 
