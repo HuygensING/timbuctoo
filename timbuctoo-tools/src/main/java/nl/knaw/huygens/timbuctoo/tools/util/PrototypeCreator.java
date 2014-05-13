@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.tools.util;
  * #L%
  */
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -30,10 +29,13 @@ import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
+import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,30 +43,35 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.google.common.reflect.ClassPath;
-import com.google.common.reflect.ClassPath.ClassInfo;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 public class PrototypeCreator {
+
   private static final Logger LOG = LoggerFactory.getLogger(PrototypeCreator.class);
 
-  public static void main(String[] args) throws IOException, ClassNotFoundException, ClassCastException, InstantiationException, IllegalAccessException {
+  public static void main(String[] args) throws Exception {
+    Configuration config = new Configuration("config.xml");
+    Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
+    TypeRegistry registry = injector.getInstance(TypeRegistry.class);
 
-    new PrototypeCreator().createProtoTypes();
+    new PrototypeCreator(registry).createProtoTypes();
   }
 
-  public void createProtoTypes() throws IOException, ClassNotFoundException, ClassCastException, InstantiationException, IllegalAccessException {
-    ClassPath classPath = ClassPath.from(this.getClass().getClassLoader());
+  private final TypeRegistry registry;
 
-    for (ClassInfo info : classPath.getTopLevelClassesRecursive("nl.knaw.huygens.timbuctoo.model")) {
-      Class<?> type = Class.forName(info.getName());
-      if (TypeRegistry.isDomainEntity(type) && !Modifier.isAbstract(type.getModifiers())) {
-        LOG.info("DomainEntity found {}", info.getName());
+  public PrototypeCreator(TypeRegistry registry) {
+    this.registry = registry;
+  }
 
-        try {
-          LOG.info("instance: \n{}", new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValueAsString(createInstance(TypeRegistry.toDomainEntity(type))));
-        } catch (JsonProcessingException e) {
-          e.printStackTrace();
-        }
+  public void createProtoTypes() throws Exception {
+    ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    for (Class<? extends DomainEntity> type : registry.getDomainEntityTypes()) {
+      LOG.info("DomainEntity found {}", type.getSimpleName());
+      try {
+        LOG.info("instance: \n{}", mapper.writeValueAsString(createInstance(type)));
+      } catch (JsonProcessingException e) {
+        e.printStackTrace();
       }
     }
   }
@@ -91,7 +98,6 @@ public class PrototypeCreator {
     }
 
     return instance;
-
   }
 
   private <T> void setValue(Field field, T instance) throws IllegalArgumentException, IllegalAccessException {
@@ -135,16 +141,15 @@ public class PrototypeCreator {
       LOG.error("illegal access exception for type {}", type.getSimpleName());
     }
 
-    LOG.warn("returning null for {} of type {}", name, type.getSimpleName());
+    LOG.debug("Returning null for {} of type {}", name, type.getSimpleName());
     return null;
-
   }
 
   private PersonName createName() {
     PersonName personName = new PersonName();
     personName.addNameComponent(Type.FORENAME, "forename");
     personName.addNameComponent(Type.SURNAME, "surname");
-
     return personName;
   }
+
 }
