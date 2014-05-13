@@ -144,7 +144,7 @@ public class OldIndexManager implements IndexManager {
     try {
       for (Scope scope : scopes) {
         if (!ids.isEmpty()) {
-          String coreName = getCoreName(scope, toDomainEntity(registry.getBaseClass(type)));
+          String coreName = getCoreName(scope, TypeRegistry.toBaseDomainEntity(type));
           // It is needed to check if the core exists. If it does not exist an exception will be thrown.
           if (server.coreExits(coreName)) {
             server.deleteById(coreName, ids);
@@ -168,7 +168,7 @@ public class OldIndexManager implements IndexManager {
   @Override
   public <T extends DomainEntity> QueryResponse search(Scope scope, Class<T> type, SolrQuery query) throws IndexException {
     try {
-      String coreName = getCoreName(scope, toDomainEntity(registry.getBaseClass(type)));
+      String coreName = getCoreName(scope, TypeRegistry.toBaseDomainEntity(type));
       return server.search(coreName, query);
     } catch (Exception e) {
       throw new IndexException("Failed to search", e);

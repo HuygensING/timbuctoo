@@ -33,6 +33,7 @@ import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -123,7 +124,7 @@ public class CobwwwebNoImporter extends DefaultImporter {
   }
 
   private Reference storeReference(String key, Class<? extends DomainEntity> type, String id) {
-    Reference reference = newDomainEntityReference(type, id);
+    Reference reference = new Reference(TypeRegistry.toBaseDomainEntity(type), id);
     if (references.put(key, reference) != null) {
       log("Duplicate key '%s'%n", key);
       System.exit(-1);
