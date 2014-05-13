@@ -243,7 +243,7 @@ public class CobwwwebNoImporter extends DefaultImporter {
         storedId = person.getId();
         entity.setId(storedId);
         entity.setRev(person.getRev());
-        updateDomainEntity(CWNOPerson.class, entity, change);
+        updateProjectDomainEntity(CWNOPerson.class, entity, change);
         log("Updated person with id %s%n", storedId);
       }
     }
@@ -254,7 +254,7 @@ public class CobwwwebNoImporter extends DefaultImporter {
   private String createNewPerson(CWNOPerson entity) {
     String storedId = addDomainEntity(CWNOPerson.class, entity, change);
     WWPerson person = storageManager.getEntity(WWPerson.class, storedId);
-    updateDomainEntity(WWPerson.class, person, change);
+    updateProjectDomainEntity(WWPerson.class, person, change);
     return storedId;
   }
 
@@ -442,7 +442,7 @@ public class CobwwwebNoImporter extends DefaultImporter {
         storedId = document.getId();
         entity.setId(storedId);
         entity.setRev(document.getRev());
-        updateDomainEntity(CWNODocument.class, entity, change);
+        updateProjectDomainEntity(CWNODocument.class, entity, change);
         log("Updated document with id %s%n", storedId);
       }
     }
@@ -453,7 +453,7 @@ public class CobwwwebNoImporter extends DefaultImporter {
   private String createNewDocument(CWNODocument entity) {
     String storedId = addDomainEntity(CWNODocument.class, entity, change);
     WWDocument document = storageManager.getEntity(WWDocument.class, storedId);
-    updateDomainEntity(WWDocument.class, document, change);
+    updateProjectDomainEntity(WWDocument.class, document, change);
     return storedId;
   }
 

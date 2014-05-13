@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -126,12 +127,16 @@ public abstract class DefaultImporter {
     }
   }
 
-  protected <T extends DomainEntity> T updateDomainEntity(Class<T> type, T entity, Change change) {
+  protected <T extends DomainEntity> T updateProjectDomainEntity(Class<T> type, T entity, Change change) {
+    if (TypeRegistry.isPrimitiveDomainEntity(type)) {
+      handleError("Unexpected update of primitive domain entity %s", type.getSimpleName());
+      return null;
+    }
     try {
-      storageManager.updateProjectDomainEntity(type, entity, change);
+      storageManager.updateDomainEntity(type, entity, change);
       return entity;
     } catch (IOException e) {
-      handleError("Failed to modify %s; %s", entity.getDisplayName(), e.getMessage());
+      handleError("Failed to update %s; %s", entity.getDisplayName(), e.getMessage());
       return null;
     }
   }

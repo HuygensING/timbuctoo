@@ -816,7 +816,7 @@ public class WomenWritersImporter extends DefaultImporter {
               System.out.printf("%-30s%-8s%-30s%s%n", name, language.getCode(), language.getName(), flag);
               language.setCore(true);
               // TODO prevent multiple updates for same language
-              updateDomainEntity(WWLanguage.class, language, change);
+              updateProjectDomainEntity(WWLanguage.class, language, change);
               String key = newKey("Language", object.tempid);
               storeReference(key, WWLanguage.class, language.getId());
             }
@@ -1059,7 +1059,7 @@ public class WomenWritersImporter extends DefaultImporter {
     converted.setNames(location.getNames());
     converted.setLatitude(location.getLatitude());
     converted.setLongitude(location.getLongitude());
-    updateDomainEntity(WWLocation.class, converted, change);
+    updateProjectDomainEntity(WWLocation.class, converted, change);
     storeReference(key, WWLocation.class, location.getId());
   }
 

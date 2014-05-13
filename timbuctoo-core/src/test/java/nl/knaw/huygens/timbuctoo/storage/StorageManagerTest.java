@@ -132,27 +132,15 @@ public class StorageManagerTest {
   @Test
   public void testUpdatePrimitiveDomainEntity() throws IOException {
     BaseDomainEntity entity = new BaseDomainEntity("id");
-    manager.updatePrimitiveDomainEntity(BaseDomainEntity.class, entity, change);
+    manager.updateDomainEntity(BaseDomainEntity.class, entity, change);
     verify(storage).updateDomainEntity(BaseDomainEntity.class, entity, change);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testUpdatePrimitiveDomainEntityWithWrongType() throws IOException {
-    ProjectADomainEntity entity = new ProjectADomainEntity("id");
-    manager.updatePrimitiveDomainEntity(ProjectADomainEntity.class, entity, change);
   }
 
   @Test
   public void testUpdateProjectDomainEntity() throws IOException {
     ProjectADomainEntity entity = new ProjectADomainEntity("id");
-    manager.updateProjectDomainEntity(ProjectADomainEntity.class, entity, change);
+    manager.updateDomainEntity(ProjectADomainEntity.class, entity, change);
     verify(storage).updateDomainEntity(ProjectADomainEntity.class, entity, change);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testUpdateProjectDomainEntityWithWrongType() throws IOException {
-    BaseDomainEntity entity = new BaseDomainEntity("id");
-    manager.updateProjectDomainEntity(BaseDomainEntity.class, entity, change);
   }
 
   @Test
