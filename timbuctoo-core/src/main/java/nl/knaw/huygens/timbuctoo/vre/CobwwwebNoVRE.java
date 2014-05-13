@@ -25,14 +25,7 @@ package nl.knaw.huygens.timbuctoo.vre;
 import java.io.IOException;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
-
 public class CobwwwebNoVRE extends AbstractVRE {
-
-  private static final List<String> RECEPTION_NAMES = ImmutableList.of("containedInAnthology", "hasAdaptation", "hasBiography", "hasEdition", "hasObituary", "hasPlagiarismBy", "hasPreface",
-      "hasSequel", "hasTranslation", "isAnnotatedIn", "isCensoredBy", "isCopiedBy", "isDedicatedPersonOf", "isIntertextualOf", "isParodiedBy", "isPersonAwarded", "isPersonCommentedOnIn",
-      "isPersonListedOn", "isPersonMentionedIn", "isPersonQuotedIn", "isPersonReferencedIn", "isWorkAwarded", "isWorkCommentedOnIn", "isWorkListedOn", "isWorkMentionedIn", "isWorkQuotedIn",
-      "isWorkReferencedIn");
 
   @Override
   protected Scope createScope() throws IOException {
@@ -56,7 +49,7 @@ public class CobwwwebNoVRE extends AbstractVRE {
 
   @Override
   public List<String> getReceptionNames() {
-    return RECEPTION_NAMES;
+    return WomenWritersVRE.RECEPTION_NAMES;
   }
 
 }
