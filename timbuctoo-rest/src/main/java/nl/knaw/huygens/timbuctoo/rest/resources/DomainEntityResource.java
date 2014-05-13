@@ -28,7 +28,6 @@ import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -62,7 +61,9 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
@@ -131,7 +132,7 @@ public class DomainEntityResource extends ResourceBase {
       @Context UriInfo uriInfo, //
       @HeaderParam(VRE_ID_KEY) String vreId, //
       @QueryParam(USER_ID_KEY) String userId//
-  ) throws IOException, URISyntaxException {
+  ) throws StorageException, URISyntaxException {
 
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     checkCondition(type == input.getClass(), Status.BAD_REQUEST, "Type %s does not match input", type.getSimpleName());
@@ -154,7 +155,7 @@ public class DomainEntityResource extends ResourceBase {
     return Response.created(new URI(id)).build();
   }
 
-  private String updateTheDuplicateEntity(String entityName, DomainEntity input, String vreId, String userId, String id) throws IOException {
+  private String updateTheDuplicateEntity(String entityName, DomainEntity input, String vreId, String userId, String id) throws StorageException {
     Class<? extends DomainEntity> entityType = getEntityType(entityName, Status.NOT_FOUND);
     DomainEntity duplicatEnity = storageManager.getEntity(entityType, id);
 
@@ -199,7 +200,7 @@ public class DomainEntityResource extends ResourceBase {
       DomainEntity input, //
       @HeaderParam(VRE_ID_KEY) String vreId,//
       @QueryParam(USER_ID_KEY) String userId//
-  ) throws IOException {
+  ) {
 
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     checkCondition(type == input.getClass(), Status.BAD_REQUEST, "Type %s does not match input", type.getSimpleName());
@@ -212,8 +213,9 @@ public class DomainEntityResource extends ResourceBase {
     try {
       Change change = new Change(userId, vreId);
       storageManager.updateDomainEntity((Class<T>) type, (T) input, change);
-    } catch (IOException e) {
-      // TODO Handle two cases: 1) entity was already updated, 2) internal server error
+    } catch (UpdateException e) {
+      throw new TimbuctooException(Status.CONFLICT, "Entity %s with id %s already updated", type.getSimpleName(), id);
+    } catch (StorageException e) {
       throw new TimbuctooException(Status.INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
     }
 
@@ -227,7 +229,7 @@ public class DomainEntityResource extends ResourceBase {
   @JsonView(JsonViews.WebView.class)
   public void putPIDs(//
       @PathParam(ENTITY_PARAM) String entityName,//
-      @HeaderParam(VRE_ID_KEY) String vreId) throws IOException {
+      @HeaderParam(VRE_ID_KEY) String vreId) throws StorageException {
 
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
@@ -250,7 +252,7 @@ public class DomainEntityResource extends ResourceBase {
   public Response delete( //
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id, //
-      @HeaderParam(VRE_ID_KEY) String vreId) throws IOException {
+      @HeaderParam(VRE_ID_KEY) String vreId) throws StorageException {
 
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     if (!TypeRegistry.isPrimitiveDomainEntity(type)) {

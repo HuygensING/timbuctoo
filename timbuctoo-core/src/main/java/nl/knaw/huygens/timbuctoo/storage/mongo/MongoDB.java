@@ -84,7 +84,7 @@ public class MongoDB {
   /**
    * Updates a document in the database.
    */
-  public void update(DBCollection collection, DBObject query, DBObject document) throws StorageException {
+  public void update(DBCollection collection, DBObject query, DBObject document) throws UpdateException, StorageException {
     try {
       WriteResult writeResult = collection.update(query, document);
       if (writeResult.getN() == 0) {

@@ -46,6 +46,7 @@ import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.apache.commons.lang.StringUtils;
 import org.mongojack.DBQuery;
@@ -294,7 +295,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
+  public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws UpdateException, StorageException {
     Change change = Change.newInternalInstance();
     String id = entity.getId();
     int revision = entity.getRev();
@@ -313,7 +314,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
+  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws UpdateException, StorageException {
     String id = entity.getId();
     int revision = entity.getRev();
     DBObject query = queries.selectByIdAndRevision(id, revision);

@@ -32,12 +32,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
@@ -108,7 +108,7 @@ public class CombinedMongoStorageTest {
   // -------------------------------------------------------------------
 
   @Test
-  public void testAddSystemEntity() throws IOException {
+  public void testAddSystemEntity() throws Exception {
     String generatedId = "X" + DEFAULT_ID;
     TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
 
@@ -121,7 +121,7 @@ public class CombinedMongoStorageTest {
   }
 
   @Test
-  public void testAddDomainEntity() throws IOException {
+  public void testAddDomainEntity() throws Exception {
     String generatedId = "X" + DEFAULT_ID;
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
 
@@ -132,15 +132,15 @@ public class CombinedMongoStorageTest {
     verify(mongoDB).insert(any(DBCollection.class), any(String.class), any(DBObject.class));
   }
 
-  @Test(expected = IOException.class)
-  public void testUpdateSystemEntityNonExistent() throws IOException {
+  @Test(expected = StorageException.class)
+  public void testUpdateSystemEntityNonExistent() throws Exception {
     TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
 
     storage.updateSystemEntity(TestSystemEntity.class, entity);
   }
 
   @Test
-  public void testUpdateDomainEntity() throws IOException {
+  public void testUpdateDomainEntity() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
 
     JsonNode jsonNode = mapper.createObjectNode();
@@ -152,15 +152,15 @@ public class CombinedMongoStorageTest {
     verify(mongoDB).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
   }
 
-  @Test(expected = IOException.class)
-  public void testUpdateDomainEntityForMissingEntity() throws IOException {
+  @Test(expected = StorageException.class)
+  public void testUpdateDomainEntityForMissingEntity() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
 
     storage.updateDomainEntity(ProjectADomainEntity.class, entity, new Change());
   }
 
   @Test
-  public void testDeleteDomainEntity() throws IOException {
+  public void testDeleteDomainEntity() throws Exception {
     DBObject dbObject = createTestConcreteDocDBObject(DEFAULT_ID, "test");
     when(anyCollection.findOne(new BasicDBObject("_id", DEFAULT_ID))).thenReturn(dbObject);
 
@@ -170,13 +170,13 @@ public class CombinedMongoStorageTest {
     verify(mongoDB).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
   }
 
-  @Test(expected = IOException.class)
-  public void testDeleteItemNonExistent() throws IOException {
+  @Test(expected = StorageException.class)
+  public void testDeleteItemNonExistent() throws Exception {
     storage.deleteDomainEntity(BaseDomainEntity.class, DEFAULT_ID, null);
   }
 
   @Test
-  public void testSetPID() throws IOException {
+  public void testSetPID() throws Exception {
     String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
 
     JsonNode jsonNode = mapper.createObjectNode();
@@ -189,7 +189,7 @@ public class CombinedMongoStorageTest {
   }
 
   @Test(expected = IllegalStateException.class)
-  public void testSetPIDObjectAllreadyHasAPID() throws IOException {
+  public void testSetPIDObjectAllreadyHasAPID() throws Exception {
     String pid = "3c08c345-c80d-44e2-a377-029259b662b9";
 
     DBObject dbObject = createDomainEnityJsonNode(pid);
