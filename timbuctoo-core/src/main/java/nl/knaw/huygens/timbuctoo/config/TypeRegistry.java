@@ -98,7 +98,7 @@ public class TypeRegistry {
   private final Map<String, Class<? extends SystemEntity>> iname2SystemType = Maps.newHashMap();
   private final Map<String, Class<? extends DomainEntity>> iname2DomainType = Maps.newHashMap();
 
-  private final Map<String, Class<? extends Entity>> xname2type = Maps.newHashMap();
+  private final Map<String, Class<? extends DomainEntity>> xname2type = Maps.newHashMap();
 
   private final Map<String, String> iname2xname = Maps.newHashMap();
 
@@ -243,11 +243,11 @@ public class TypeRegistry {
    */
   public List<Class<? extends DomainEntity>> getPrimitiveDomainEntityTypes() {
     return Lists.newArrayList(Iterables.filter(domainEntities, new Predicate<Class<?>>() {
-        @Override
-        public boolean apply(Class<?> type) {
-          return isPrimitiveDomainEntity(type);
-        }
-      }));
+      @Override
+      public boolean apply(Class<?> type) {
+        return isPrimitiveDomainEntity(type);
+      }
+    }));
   }
 
   /**
@@ -286,7 +286,7 @@ public class TypeRegistry {
    * Returns the type token for the specified external type name,
    * or {@code null} if there is no such token.
    */
-  public Class<? extends Entity> getTypeForXName(String xName) {
+  public Class<? extends DomainEntity> getTypeForXName(String xName) {
     return xname2type.get(xName);
   }
 
