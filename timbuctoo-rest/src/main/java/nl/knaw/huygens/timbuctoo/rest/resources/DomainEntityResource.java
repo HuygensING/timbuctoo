@@ -58,7 +58,6 @@ import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
@@ -135,7 +134,7 @@ public class DomainEntityResource extends ResourceBase {
   ) throws IOException, URISyntaxException {
 
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
-    checkCondition(type == input.getClass(), Status.BAD_REQUEST, "Type %s does not match input",  type.getSimpleName());
+    checkCondition(type == input.getClass(), Status.BAD_REQUEST, "Type %s does not match input", type.getSimpleName());
     checkCollectionInScope(type, vreId, Status.FORBIDDEN);
 
     Change change = new Change(userId, vreId);
@@ -203,7 +202,7 @@ public class DomainEntityResource extends ResourceBase {
   ) throws IOException {
 
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
-    checkCondition(type == input.getClass(), Status.BAD_REQUEST, "Type %s does not match input",  type.getSimpleName());
+    checkCondition(type == input.getClass(), Status.BAD_REQUEST, "Type %s does not match input", type.getSimpleName());
 
     DomainEntity entity = storageManager.getEntity(type, id);
     checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
@@ -230,15 +229,14 @@ public class DomainEntityResource extends ResourceBase {
   @RolesAllowed(ADMIN_ROLE)
   @Consumes(MediaType.APPLICATION_JSON)
   @JsonView(JsonViews.WebView.class)
-  public <T extends DomainEntity> void putPIDs(//
+  public void putPIDs(//
       @PathParam(ENTITY_PARAM) String entityName,//
       @HeaderParam(VRE_ID_KEY) String vreId) throws IOException {
 
-    @SuppressWarnings("unchecked")
-    Class<T> type = (Class<T>) getEntityType(entityName, Status.NOT_FOUND);
+    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
-      throw new TimbuctooException(Status.BAD_REQUEST, "Illegal PUT for primitive domain entity %s",  type.getSimpleName());
+      throw new TimbuctooException(Status.BAD_REQUEST, "Illegal PUT for primitive domain entity %s", type.getSimpleName());
     }
 
     // if you want to be able to put a pid on items without pid you have to have access to the base class.
@@ -321,12 +319,9 @@ public class DomainEntityResource extends ResourceBase {
   // --- Conversion and Validation -------------------------------------
 
   private Class<? extends DomainEntity> getEntityType(String entityName, Status status) {
-    Class<? extends Entity> type = typeRegistry.getTypeForXName(entityName);
-    if (type != null && TypeRegistry.isDomainEntity(type)) {
-      return TypeRegistry.toDomainEntity(type);
-    } else {
-      throw new TimbuctooException(status, "Not a domain entity: %s", entityName);
-    }
+    Class<? extends DomainEntity> type = typeRegistry.getTypeForXName(entityName);
+    checkNotNull(type, status, "Not a domain entity: %s", entityName);
+    return type;
   }
 
   /**
