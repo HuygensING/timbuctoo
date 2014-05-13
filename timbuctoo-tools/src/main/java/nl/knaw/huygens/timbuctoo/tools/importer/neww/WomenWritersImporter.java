@@ -31,6 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.Document.DocumentType;
@@ -194,7 +195,7 @@ public class WomenWritersImporter extends DefaultImporter {
   }
 
   private Reference storeReference(String key, Class<? extends DomainEntity> type, String id) {
-    Reference reference = newDomainEntityReference(type, id);
+    Reference reference = new Reference(TypeRegistry.toBaseDomainEntity(type), id);
     references.put(key, reference);
     return reference;
   }
@@ -1204,7 +1205,7 @@ public class WomenWritersImporter extends DefaultImporter {
       } else if (text.length() > 0) {
         items.add(text);
       }
-    } 
+    }
 
     Reference relationTypeRef = relationTypes.get(relationName);
     for (String item : items) {

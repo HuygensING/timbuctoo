@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
@@ -121,20 +120,9 @@ public abstract class AbstractScope implements Scope {
   private Set<Class<? extends DomainEntity>> buildBaseTypes() {
     Builder<Class<? extends DomainEntity>> builder = newBuilder();
     for (Class<? extends DomainEntity> type : allTypes) {
-      builder.add(getBaseType(type));
+      builder.add(TypeRegistry.toBaseDomainEntity(type));
     }
     return builder.build();
-  }
-
-  /**
-   * Returns the primitive type for the specified domain entity type,
-   * defined as the entity immediately below {@code DomainEntity} in
-   * the class hierarchy.
-   */
-  private Class<? extends DomainEntity> getBaseType(Class<? extends DomainEntity> type) {
-    checkArgument(type != null && type != DomainEntity.class);
-    Class<? extends DomainEntity> superType = TypeRegistry.toDomainEntity(type.getSuperclass());
-    return (superType == DomainEntity.class) ? type : getBaseType(superType);
   }
 
 }

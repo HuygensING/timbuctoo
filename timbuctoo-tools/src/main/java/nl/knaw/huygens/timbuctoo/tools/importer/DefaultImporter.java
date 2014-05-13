@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -134,14 +133,6 @@ public abstract class DefaultImporter {
     } catch (IOException e) {
       handleError("Failed to modify %s; %s", entity.getDisplayName(), e.getMessage());
       return null;
-    }
-  }
-
-  protected Reference newDomainEntityReference(Class<? extends DomainEntity> type, String id) {
-    if (TypeRegistry.isPrimitiveDomainEntity(type)) {
-      return new Reference(type, id);
-    } else {
-      return new Reference(TypeRegistry.toDomainEntity(type.getSuperclass()), id);
     }
   }
 
