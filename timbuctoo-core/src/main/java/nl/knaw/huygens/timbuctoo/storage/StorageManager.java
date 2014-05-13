@@ -24,7 +24,6 @@ package nl.knaw.huygens.timbuctoo.storage;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -105,13 +104,13 @@ public class StorageManager {
 
   // --- add entities ----------------------------------------------------------
 
-  public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException, ValidationException {
+  public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException, ValidationException {
     entity.normalize(registry, this);
     entity.validateForAdd(registry, this);
     return storage.addSystemEntity(type, entity);
   }
 
-  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws IOException, ValidationException {
+  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException, ValidationException {
     entity.normalize(registry, this);
     entity.validateForAdd(registry, this);
     return storage.addDomainEntity(type, entity, change);
@@ -119,31 +118,31 @@ public class StorageManager {
 
   // --- update entities -------------------------------------------------------
 
-  public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws IOException {
+  public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
     entity.normalize(registry, this);
     storage.updateSystemEntity(type, entity);
   }
 
-  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws IOException {
+  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     entity.normalize(registry, this);
     storage.updateDomainEntity(type, entity, change);
   }
 
-  public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws IOException {
+  public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws StorageException {
     storage.setPID(type, id, pid);
   }
 
   // --- delete entities -------------------------------------------------------
 
-  public <T extends SystemEntity> int deleteSystemEntities(Class<T> type) throws IOException {
+  public <T extends SystemEntity> int deleteSystemEntities(Class<T> type) throws StorageException {
     return storage.deleteAll(type);
   }
 
-  public <T extends SystemEntity> void deleteSystemEntity(T entity) throws IOException {
+  public <T extends SystemEntity> void deleteSystemEntity(T entity) throws StorageException {
     storage.deleteSystemEntity(entity.getClass(), entity.getId());
   }
 
-  public <T extends DomainEntity> void deleteDomainEntity(T entity) throws IOException {
+  public <T extends DomainEntity> void deleteDomainEntity(T entity) throws StorageException {
     storage.deleteDomainEntity(entity.getClass(), entity.getId(), entity.getModified());
   }
 
@@ -155,17 +154,17 @@ public class StorageManager {
    * @param <T> extends {@code DomainEntity}, because system entities have no persistent identifiers.
    * @param type the type all of the objects should removed permanently from
    * @param ids the id's to remove permanently
-   * @throws IOException when the storage layer throws an exception it will be forwarded
+   * @throws StorageException when the storage layer throws an exception it will be forwarded
    */
-  public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws IOException {
+  public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException {
     storage.deleteNonPersistent(type, ids);
   }
 
-  public int deleteAllSearchResults() throws IOException {
+  public int deleteAllSearchResults() throws StorageException {
     return storage.deleteAll(SearchResult.class);
   }
 
-  public int deleteSearchResultsBefore(Date date) throws IOException {
+  public int deleteSearchResultsBefore(Date date) throws StorageException {
     return storage.deleteByDate(SearchResult.class, SearchResult.DATE_FIELD, date);
   }
 
@@ -174,7 +173,7 @@ public class StorageManager {
   public <T extends Entity> T getEntity(Class<T> type, String id) {
     try {
       return storage.getItem(type, id);
-    } catch (IOException e) {
+    } catch (StorageException e) {
       LOG.error("Error in getEntity({}.class, {}): " + e.getMessage(), type.getSimpleName(), id);
       return null;
     }
@@ -185,7 +184,7 @@ public class StorageManager {
     try {
       entity = storage.getItem(type, id);
       addRelationsTo(entity, DEFAULT_RELATION_LIMIT);
-    } catch (IOException e) {
+    } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
     }
     return entity;
@@ -196,7 +195,7 @@ public class StorageManager {
     try {
       entity = storage.getRevision(type, id, revision);
       addRelationsTo(entity, DEFAULT_RELATION_LIMIT);
-    } catch (IOException e) {
+    } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
     }
     return entity;
@@ -205,7 +204,7 @@ public class StorageManager {
   public <T extends Entity> T findEntity(Class<T> type, String field, String value) {
     try {
       return storage.findItemByProperty(type, field, value);
-    } catch (IOException e) {
+    } catch (StorageException e) {
       LOG.error("Error while handling {}", type.getName());
       return null;
     }
@@ -218,7 +217,7 @@ public class StorageManager {
   public <T extends Entity> T findEntity(Class<T> type, T example) {
     try {
       return storage.findItem(type, example);
-    } catch (IOException e) {
+    } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), example.getId());
       return null;
     }
@@ -231,7 +230,7 @@ public class StorageManager {
         addRelationsTo(variation, DEFAULT_RELATION_LIMIT);
       }
       return variations;
-    } catch (IOException e) {
+    } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
       return Collections.emptyList();
     }
@@ -240,7 +239,7 @@ public class StorageManager {
   public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) {
     try {
       return storage.getEntities(type);
-    } catch (IOException e) {
+    } catch (StorageException e) {
       // TODO handle properly
       return null;
     }
@@ -249,7 +248,7 @@ public class StorageManager {
   public <T extends DomainEntity> RevisionChanges<T> getVersions(Class<T> type, String id) {
     try {
       return storage.getAllRevisions(type, id);
-    } catch (IOException e) {
+    } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
       return null;
     }
@@ -260,16 +259,16 @@ public class StorageManager {
    * 
    * @param type the type of the id's that should be retrieved
    * @return a list with all the ids.
-   * @throws IOException when the storage layer throws an exception it will be forwarded.
+   * @throws StorageException when the storage layer throws an exception it will be forwarded.
    */
-  public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException {
+  public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws StorageException {
     return storage.getAllIdsWithoutPIDOfType(type);
   }
 
   public <T extends Entity> List<T> getAllLimited(Class<T> type, int offset, int limit) {
     try {
       return storage.getEntities(type).skip(offset).getSome(limit);
-    } catch (IOException e) {
+    } catch (StorageException e) {
       // TODO handle properly
       return null;
     }
@@ -278,7 +277,7 @@ public class StorageManager {
   public <T extends Entity> List<T> getEntitiesByProperty(Class<T> type, String field, String value) {
     try {
       return storage.getEntitiesByProperty(type, field, value).getAll();
-    } catch (IOException e) {
+    } catch (StorageException e) {
       // TODO handle properly
       return null;
     }
@@ -291,11 +290,11 @@ public class StorageManager {
   private void setupRelationTypeCache() {
     relationTypeCache = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<String, RelationType>() {
       @Override
-      public RelationType load(String id) throws IOException {
+      public RelationType load(String id) throws StorageException {
         // Not allowed to return null
         RelationType relationType = storage.getItem(RelationType.class, id);
         if (relationType == null) {
-          throw new IOException("item does not exist");
+          throw new StorageException("item does not exist");
         }
         return relationType;
       }
@@ -338,7 +337,7 @@ public class StorageManager {
    * Returns the id's of the relations, connected to the entities with the input id's.
    * The input id's can be the source id as well as the target id of the Relation. 
    */
-  public List<String> getRelationIds(List<String> ids) throws IOException {
+  public List<String> getRelationIds(List<String> ids) throws StorageException {
     return storage.getRelationIds(ids);
   }
 
@@ -348,7 +347,7 @@ public class StorageManager {
    * NOTE We retrieve relations where the entity is source or target with one query;
    * handling them separately would cause complications with reflexive relations.
    */
-  private <T extends DomainEntity> void addRelationsTo(T entity, int limit) throws IOException {
+  private <T extends DomainEntity> void addRelationsTo(T entity, int limit) throws StorageException {
     if (entity != null && limit > 0) {
       String entityId = entity.getId();
       Class<? extends DomainEntity> entityType = entity.getClass();
@@ -372,7 +371,7 @@ public class StorageManager {
 
   // Relations are defined between primitive domain entities
   // Map to a domain entity in the package from which an entity is requested
-  private EntityRef getEntityRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws IOException {
+  private EntityRef getEntityRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws StorageException {
     String iname = reference.getType();
     Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
     type = mapper.map(type);
