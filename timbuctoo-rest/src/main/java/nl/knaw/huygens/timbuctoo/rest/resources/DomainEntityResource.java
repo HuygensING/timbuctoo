@@ -211,13 +211,9 @@ public class DomainEntityResource extends ResourceBase {
 
     try {
       Change change = new Change(userId, vreId);
-      if (TypeRegistry.isPrimitiveDomainEntity(type)) {
-        storageManager.updatePrimitiveDomainEntity((Class<T>) type, (T) input, change);
-      } else {
-        storageManager.updateProjectDomainEntity((Class<T>) type, (T) input, change);
-      }
+      storageManager.updateDomainEntity((Class<T>) type, (T) input, change);
     } catch (IOException e) {
-      // TODO Handle two cases: 1)entity was already updated, 2) internal server error
+      // TODO Handle two cases: 1) entity was already updated, 2) internal server error
       throw new TimbuctooException(Status.INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
     }
 

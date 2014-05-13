@@ -22,28 +22,26 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import java.io.IOException;
-
 /**
- * Signals failure of a storage operation.
+ * Signals failure of an update because an entity changed.
  */
-public class StorageException extends IOException {
+public class UpdateException extends StorageException {
 
   private static final long serialVersionUID = 1L;
 
-  public StorageException() {
+  public UpdateException() {
     super();
   }
 
-  public StorageException(String message) {
+  public UpdateException(String message) {
     super(message);
   }
 
-  public StorageException(Throwable cause) {
+  public UpdateException(Throwable cause) {
     super(cause);
   }
 
-  public StorageException(String message, Throwable cause) {
+  public UpdateException(String message, Throwable cause) {
     super(message, cause);
   }
 

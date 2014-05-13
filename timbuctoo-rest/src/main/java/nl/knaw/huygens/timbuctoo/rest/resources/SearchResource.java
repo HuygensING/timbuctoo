@@ -39,9 +39,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.core.Response.Status;
 
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
@@ -147,7 +147,7 @@ public class SearchResource extends ResourceBase {
 
     // Retrieve result
     SearchResult result = storageManager.getEntity(SearchResult.class, queryId);
-    checkNotNull(result, Status.NOT_FOUND, "No SearchResult with id %s",  queryId);
+    checkNotNull(result, Status.NOT_FOUND, "No SearchResult with id %s", queryId);
 
     // Process
     Class<? extends DomainEntity> type = registry.getDomainEntityType(result.getSearchType());

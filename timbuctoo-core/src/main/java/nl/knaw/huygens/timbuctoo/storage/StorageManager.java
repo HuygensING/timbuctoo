@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
@@ -125,14 +124,7 @@ public class StorageManager {
     storage.updateSystemEntity(type, entity);
   }
 
-  public <T extends DomainEntity> void updatePrimitiveDomainEntity(Class<T> type, T entity, Change change) throws IOException {
-    checkArgument(TypeRegistry.isPrimitiveDomainEntity(type), "%s must be a primitive domain entity", type.getSimpleName());
-    entity.normalize(registry, this);
-    storage.updateDomainEntity(type, entity, change);
-  }
-
-  public <T extends DomainEntity> void updateProjectDomainEntity(Class<T> type, T entity, Change change) throws IOException {
-    checkArgument(!TypeRegistry.isPrimitiveDomainEntity(type), "%s must be a project domain entity", type.getSimpleName());
+  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws IOException {
     entity.normalize(registry, this);
     storage.updateDomainEntity(type, entity, change);
   }

@@ -301,7 +301,7 @@ public class CobwwwebRsImporter extends DefaultImporter {
         storedId = person.getId();
         entity.setId(storedId);
         entity.setRev(person.getRev());
-        updateDomainEntity(CWRSPerson.class, entity, change);
+        updateProjectDomainEntity(CWRSPerson.class, entity, change);
         log("Updated person with id %s%n", storedId);
       }
     }
@@ -312,7 +312,7 @@ public class CobwwwebRsImporter extends DefaultImporter {
   private String createNewPerson(CWRSPerson entity) {
     String storedId = addDomainEntity(CWRSPerson.class, entity, change);
     WWPerson person = storageManager.getEntity(WWPerson.class, storedId);
-    updateDomainEntity(WWPerson.class, person, change);
+    updateProjectDomainEntity(WWPerson.class, person, change);
     return storedId;
   }
 
@@ -557,7 +557,7 @@ public class CobwwwebRsImporter extends DefaultImporter {
         storedId = document.getId();
         entity.setId(storedId);
         entity.setRev(document.getRev());
-        updateDomainEntity(CWRSDocument.class, entity, change);
+        updateProjectDomainEntity(CWRSDocument.class, entity, change);
         log("Updated document with id %s%n", storedId);
       }
     }
@@ -568,7 +568,7 @@ public class CobwwwebRsImporter extends DefaultImporter {
   private String createNewDocument(CWRSDocument entity) {
     String storedId = addDomainEntity(CWRSDocument.class, entity, change);
     WWDocument document = storageManager.getEntity(WWDocument.class, storedId);
-    updateDomainEntity(WWDocument.class, document, change);
+    updateProjectDomainEntity(WWDocument.class, document, change);
     return storedId;
   }
 
