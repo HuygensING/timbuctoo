@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -47,12 +46,12 @@ public interface Storage {
   /**
    * Adds the specified system entity to the storage; returns its assigned id.
    */
-  <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws IOException;
+  <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException;
 
   /**
    * Adds the specified domain entity to the storage; returns its assigned id.
    */
-  <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws IOException;
+  <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException;
 
   // --- update entities -----------------------------------------------
 
@@ -60,64 +59,64 @@ public interface Storage {
    * Updates the specified system entity in the storage.
    * The id and the revision of the entity must match with the stored entity.
    */
-  <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws IOException;
+  <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException;
 
   /**
    * Updates the specified doamin entity in the storage.
    * The id and the revision of the entity must match with the stored entity.
    */
-  <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws IOException;
+  <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException;
 
-  <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws IOException;
+  <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws StorageException;
 
   // --- delete entities -----------------------------------------------
 
   /**
    * Deletes the spcified system entity.
    */
-  <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws IOException;
+  <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws StorageException;
 
   /**
    * Deletes all system entities with the specified type.
    * @return The number of entities removed.
    */
-  <T extends SystemEntity> int deleteAll(Class<T> type) throws IOException;
+  <T extends SystemEntity> int deleteAll(Class<T> type) throws StorageException;
 
   /**
    * Deletes system entities that have a value of the specified date field
    * that is older than the specified date.
    * @return The number of entities removed.
    */
-  <T extends SystemEntity> int deleteByDate(Class<T> type, String dateField, Date dateValue) throws IOException;
+  <T extends SystemEntity> int deleteByDate(Class<T> type, String dateField, Date dateValue) throws StorageException;
 
-  <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws IOException;
+  <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws StorageException;
 
   /**
    * Deletes non-persistent domain entities with the specified type and id's..
    */
-  <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws IOException;
+  <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException;
 
   // -------------------------------------------------------------------
 
   /**
    * Returns {@code true} if the specified entity exists, {@code false} otherwise.
    */
-  <T extends Entity> boolean entityExists(Class<T> type, String id) throws IOException;
+  <T extends Entity> boolean entityExists(Class<T> type, String id) throws StorageException;
 
   /**
    * Retrieves the specified entity, or {@code null} if no such entity exists.
    */
-  <T extends Entity> T getItem(Class<T> type, String id) throws IOException;
+  <T extends Entity> T getItem(Class<T> type, String id) throws StorageException;
 
   /**
    * Retrieves entities by type.
    */
-  <T extends Entity> StorageIterator<T> getEntities(Class<T> type);
+  <T extends Entity> StorageIterator<T> getEntities(Class<T> type) throws StorageException;
 
   /**
    * Retrieves entities by type and property.
    */
-  <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value);
+  <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value) throws StorageException;
 
   /**
    * Returns the number of items in the collection corresponding with the specified type.
@@ -127,23 +126,23 @@ public interface Storage {
   /**
    * Find an entity which has the specified property.
    */
-  <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws IOException;
+  <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws StorageException;
 
   /**
    * Find an entity which has the non-null properties of the example object.
    */
-  <T extends Entity> T findItem(Class<T> type, T example) throws IOException;
+  <T extends Entity> T findItem(Class<T> type, T example) throws StorageException;
 
-  <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws IOException;
+  <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException;
 
-  <T extends DomainEntity> T getRevision(Class<T> type, String id, int revisionId) throws IOException;
+  <T extends DomainEntity> T getRevision(Class<T> type, String id, int revisionId) throws StorageException;
 
-  <T extends DomainEntity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws IOException;
+  <T extends DomainEntity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws StorageException;
 
   /**
    * Returns an iterator for all relations of the specified entity id.
    */
-  <T extends Relation> StorageIterator<T> getRelationsByEntityId(Class<T> type, String id);
+  <T extends Relation> StorageIterator<T> getRelationsByEntityId(Class<T> type, String id) throws StorageException;
 
   /**
   * Returns the id's of the domain entities of the specified type, that are not persisted.
@@ -154,7 +153,7 @@ public interface Storage {
   * {@code XyzPerson} of an existing entity has been added, this method
   * will not retrieve the id of that entity.
   */
-  <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws IOException;
+  <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws StorageException;
 
   /**
    * Returns the id's of all relations involving the entities with the specified id's,
@@ -162,8 +161,8 @@ public interface Storage {
    * 
    * @param ids a list of id's to find the relations for
    * @return a list of id's of the corresponding relations
-   * @throws IOException wrapped exception around the database exceptions
+   * @throws StorageException wrapped exception around the database exceptions
    */
-  List<String> getRelationIds(List<String> ids) throws IOException;
+  List<String> getRelationIds(List<String> ids) throws StorageException;
 
 }

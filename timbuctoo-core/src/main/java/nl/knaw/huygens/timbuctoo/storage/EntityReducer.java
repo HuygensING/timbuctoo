@@ -24,7 +24,6 @@ package nl.knaw.huygens.timbuctoo.storage;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.List;
@@ -36,15 +35,14 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoChanges;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -75,7 +73,7 @@ public class EntityReducer {
     fieldMapper = new FieldMapper();
   }
 
-  public <T extends Entity> T reduceVariation(Class<T> type, JsonNode tree) throws IOException {
+  public <T extends Entity> T reduceVariation(Class<T> type, JsonNode tree) throws StorageException {
     checkNotNull(tree);
     if (TypeRegistry.isSystemEntity(type)) {
       return reduceObject(tree, null, type, type, Entity.class);
@@ -91,7 +89,7 @@ public class EntityReducer {
   // in which case reduceAllVariations shouldn't be part of the reducer, or it is
   // the inducer/reducer, in which case adding maintaining the variation list
   // should be part of the inducer and not of MongoStorage.
-  public <T extends Entity> List<T> reduceAllVariations(Class<T> type, JsonNode tree) throws IOException {
+  public <T extends Entity> List<T> reduceAllVariations(Class<T> type, JsonNode tree) throws StorageException {
     checkNotNull(tree);
 
     List<T> entities = Lists.newArrayList();
@@ -114,7 +112,7 @@ public class EntityReducer {
     return entities;
   }
 
-  public <T extends Entity> MongoChanges<T> reduceAllRevisions(Class<T> type, JsonNode tree) throws IOException {
+  public <T extends Entity> MongoChanges<T> reduceAllRevisions(Class<T> type, JsonNode tree) throws StorageException {
     checkNotNull(tree);
 
     ArrayNode versionsNode = (ArrayNode) tree.get("versions");
@@ -238,7 +236,7 @@ public class EntityReducer {
     }
   }
 
-  private <T> Object convertJsonNodeToValue(Class<T> fieldType, JsonNode node) throws IOException {
+  private <T> Object convertJsonNodeToValue(Class<T> fieldType, JsonNode node) throws StorageException {
     if (node.isArray()) {
       return createCollection(node);
     } else if (fieldType == Integer.class || fieldType == int.class) {
@@ -262,8 +260,12 @@ public class EntityReducer {
     }
   }
 
-  private Object createCollection(JsonNode value) throws IOException, JsonParseException, JsonMappingException {
-    return jsonMapper.readValue(value.toString(), new TypeReference<List<? extends Object>>() {});
+  private Object createCollection(JsonNode value) throws StorageException {
+    try {
+      return jsonMapper.readValue(value.toString(), new TypeReference<List<? extends Object>>() {});
+    } catch (Exception e) {
+      throw new StorageException(e);
+    }
   }
 
 }

@@ -22,7 +22,8 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
-import java.io.IOException;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
+import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 
 /**
@@ -67,34 +69,51 @@ public class MongoDB {
   /**
    * Inserts a document into the database.
    */
-  public void insert(DBCollection collection, String id, DBObject document) throws IOException {
-    collection.insert(document);
-    if (collection.find(new BasicDBObject("_id", id)) == null) {
-      LOG.error("Failed to insert ({}, {})", collection.getName(), id);
-      throw new IOException("Insert failed");
+  public void insert(DBCollection collection, String id, DBObject document) throws StorageException {
+    try {
+      collection.insert(document);
+      if (collection.find(new BasicDBObject("_id", id)) == null) {
+        LOG.error("Failed to insert ({}, {})", collection.getName(), id);
+        throw new StorageException("Insert failed");
+      }
+    } catch (MongoException e) {
+      throw new StorageException(e);
     }
   }
 
   /**
    * Updates a document in the database.
    */
-  public void update(DBCollection collection, DBObject query, DBObject document) throws IOException {
-    WriteResult writeResult = collection.update(query, document);
-    if (writeResult.getN() == 0) {
-      LOG.error("Failed to update {}", query);
-      throw new IOException("Update failed");
+  public void update(DBCollection collection, DBObject query, DBObject document) throws StorageException {
+    try {
+      WriteResult writeResult = collection.update(query, document);
+      if (writeResult.getN() == 0) {
+        LOG.error("Failed to update {}", query);
+        throw new UpdateException("Update failed");
+      }
+    } catch (MongoException e) {
+      throw new StorageException(e);
     }
   }
 
   /**
    * Removes documents from the database.
    */
-  public int remove(DBCollection collection, DBObject query) throws IOException {
-    WriteResult result = collection.remove(query);
-    return (result != null) ? result.getN() : 0;
+  public int remove(DBCollection collection, DBObject query) throws StorageException {
+    try {
+      WriteResult result = collection.remove(query);
+      return (result != null) ? result.getN() : 0;
+    } catch (MongoException e) {
+      throw new StorageException(e);
+    }
   }
 
-  public DBCursor find(DBCollection collection, DBObject query) {
-    return collection.find(query);
+  public DBCursor find(DBCollection collection, DBObject query) throws StorageException {
+    try {
+      return collection.find(query);
+    } catch (MongoException e) {
+      throw new StorageException(e);
+    }
   }
+
 }

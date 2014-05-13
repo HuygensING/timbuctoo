@@ -238,7 +238,12 @@ public class StorageManager {
   }
 
   public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) {
-    return storage.getEntities(type);
+    try {
+      return storage.getEntities(type);
+    } catch (IOException e) {
+      // TODO handle properly
+      return null;
+    }
   }
 
   public <T extends DomainEntity> RevisionChanges<T> getVersions(Class<T> type, String id) {
@@ -262,11 +267,21 @@ public class StorageManager {
   }
 
   public <T extends Entity> List<T> getAllLimited(Class<T> type, int offset, int limit) {
-    return storage.getEntities(type).skip(offset).getSome(limit);
+    try {
+      return storage.getEntities(type).skip(offset).getSome(limit);
+    } catch (IOException e) {
+      // TODO handle properly
+      return null;
+    }
   }
 
   public <T extends Entity> List<T> getEntitiesByProperty(Class<T> type, String field, String value) {
-    return storage.getEntitiesByProperty(type, field, value).getAll();
+    try {
+      return storage.getEntitiesByProperty(type, field, value).getAll();
+    } catch (IOException e) {
+      // TODO handle properly
+      return null;
+    }
   }
 
   // --- relation types --------------------------------------------------------
