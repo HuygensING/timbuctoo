@@ -22,7 +22,6 @@ package nl.knaw.huygens.solr;
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Map;
 

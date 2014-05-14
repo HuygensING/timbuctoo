@@ -43,6 +43,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
@@ -50,6 +51,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
@@ -60,6 +62,7 @@ import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,28 +100,23 @@ public class SearchResource extends ResourceBase {
   @POST
   @APIDesc("Searches the Solr index")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response post(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
+  public Response regularSearchPost(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
 
     VRE vre = Strings.isNullOrEmpty(vreId) ? vreManager.getDefaultVRE() : vreManager.getVREById(vreId);
     checkNotNull(vre, Status.NOT_FOUND, "No VRE with id %s", vreId);
 
     Scope scope = vre.getScope();
 
-    String typeString = searchParams.getTypeString();
-    if (Strings.isNullOrEmpty(typeString)) {
-      throw new TimbuctooException(Response.Status.BAD_REQUEST, "No typeString specified");
-    }
+    String typeString = StringUtils.trimToNull(searchParams.getTypeString());
+    checkNotNull(typeString, Status.BAD_REQUEST, "No 'typeString' parameter specified");
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, Status.BAD_REQUEST, "No domain entity type for %s", typeString);
-
     if (!scope.isTypeInScope(type)) {
       throw new TimbuctooException(Response.Status.BAD_REQUEST, "Type not in scope: %s", typeString);
     }
 
-    String q = searchParams.getTerm();
-    if (Strings.isNullOrEmpty(q)) {
-      throw new TimbuctooException(Response.Status.BAD_REQUEST, "No 'q' parameter specified");
-    }
+    String q = StringUtils.trimToNull(searchParams.getTerm());
+    checkNotNull(q, Status.BAD_REQUEST, "No 'q' parameter specified");
 
     // Process
     try {
@@ -137,7 +135,7 @@ public class SearchResource extends ResourceBase {
   @APIDesc("Returns (paged) search results")
   @Produces({ MediaType.APPLICATION_JSON })
   @JsonView(JsonViews.WebView.class)
-  public Response get( //
+  public Response regularSearchGet( //
       @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") final int start, //
       @QueryParam("rows") @DefaultValue("10") final int rows, //
@@ -215,6 +213,126 @@ public class SearchResource extends ResourceBase {
     }
     return list;
   }
+
+  // ---------------------------------------------------------------------------
+
+  @POST
+  @Path("/relations")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response relationSearchPost(@HeaderParam("VRE_ID") String vreId, RelationSearchParameters params) {
+
+    // Validate input
+    VRE vre = Strings.isNullOrEmpty(vreId) ? vreManager.getDefaultVRE() : vreManager.getVREById(vreId);
+    checkNotNull(vre, Status.NOT_FOUND, "No VRE with id %s", vreId);
+
+    Scope scope = vre.getScope();
+
+    String typeString = StringUtils.trimToNull(params.getTypeString());
+    checkNotNull(typeString, Status.BAD_REQUEST, "No 'typeString' parameter specified");
+    Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
+    checkNotNull(type, Status.BAD_REQUEST, "No domain entity type for %s", typeString);
+    checkCondition(Relation.class.isAssignableFrom(type), Status.BAD_REQUEST, "Not a relation type: %s", typeString);
+    @SuppressWarnings("unchecked")
+    Class<? extends Relation> relationType = (Class<? extends Relation>) type;
+    if (!scope.isTypeInScope(type)) {
+      throw new TimbuctooException(Response.Status.BAD_REQUEST, "Type not in scope: %s", typeString);
+    }
+
+    String sourceSearchId = StringUtils.trimToNull(params.getSourceSearchId());
+    checkNotNull(sourceSearchId, Status.BAD_REQUEST, "No 'sourceSearchId' specified");
+    SearchResult sourceSearchResult = storageManager.getEntity(SearchResult.class, sourceSearchId);
+    checkNotNull(sourceSearchResult, Status.BAD_REQUEST, "No SearchResult with id %s", sourceSearchId);
+    List<String> sourceIds = sourceSearchResult.getIds();
+
+    String targetSearchId = StringUtils.trimToNull(params.getTargetSearchId());
+    checkNotNull(targetSearchId, Status.BAD_REQUEST, "No 'targetSearchId' specified");
+    SearchResult targetSearchResult = storageManager.getEntity(SearchResult.class, targetSearchId);
+    checkNotNull(targetSearchResult, Status.BAD_REQUEST, "No SearchResult with id %s", targetSearchId);
+    List<String> targetIds = targetSearchResult.getIds();
+
+    List<String> relationTypeIds = params.getRelationTypeIds();
+    checkCondition(relationTypeIds.size() > 0, Status.BAD_REQUEST, "No 'relationTypeIds' specified");
+    for (String id : relationTypeIds) {
+      checkNotNull(storageManager.getRelationType(id), Status.BAD_REQUEST, "No RelationType with id %s", id);
+    }
+
+    // Process
+    try {
+      SearchResult result = new SearchResult();
+      result.setRelationSearch(true);
+      result.setSearchType(typeString);
+      result.setSourceIds(sourceIds);
+      result.setTargetIds(targetIds);
+      result.setRelationTypeIds(relationTypeIds);
+      result.setIds(storageManager.findRelations(relationType, sourceIds, targetIds, relationTypeIds));
+      String queryId = storageManager.addSystemEntity(SearchResult.class, result);
+      return Response.created(new URI(queryId)).build();
+    } catch (Exception e) {
+      throw new TimbuctooException(Response.Status.INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
+    }
+  }
+
+  @GET
+  @Path("/relations/{id: " + SearchResult.ID_PREFIX + "\\d+}")
+  @Produces({ MediaType.APPLICATION_JSON })
+  @JsonView(JsonViews.WebView.class)
+  public Response relationSearchGet( //
+      @PathParam("id") String queryId, //
+      @QueryParam("start") @DefaultValue("0") final int start, //
+      @QueryParam("rows") @DefaultValue("10") final int rows, //
+      @Context UriInfo uriInfo//
+  ) {
+
+    // Retrieve result
+    SearchResult result = storageManager.getEntity(SearchResult.class, queryId);
+    checkNotNull(result, Status.NOT_FOUND, "No SearchResult with id %s", queryId);
+
+    // Process
+    String typeString = result.getSearchType();
+    Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
+    checkNotNull(type, Status.BAD_REQUEST, "No domain entity type for %s", typeString);
+    checkCondition(Relation.class.isAssignableFrom(type), Status.BAD_REQUEST, "Not a relation type: %s", typeString);
+
+    List<String> ids = result.getIds() != null ? result.getIds() : Lists.<String> newArrayList();
+    int idsSize = ids.size();
+    int lo = toRange(start, 0, idsSize);
+    int hi = toRange(lo + rows, 0, idsSize);
+    List<String> idsToGet = ids.subList(lo, hi);
+
+    // Retrieve entities one-by-one to retain ordering
+    List<DomainEntity> entities = Lists.newArrayList();
+    for (String id : idsToGet) {
+      DomainEntity entity = storageManager.getEntity(type, id);
+      if (entity != null) {
+        entities.add(entity);
+      } else {
+        LOG.error("Failed to retrieve {} - {}", type, id);
+      }
+    }
+
+    Map<String, Object> returnValue = Maps.newHashMap();
+    returnValue.put("numFound", idsSize);
+    returnValue.put("ids", idsToGet);
+    returnValue.put("refs", createEntityRefs(type, entities));
+    returnValue.put("results", entities); // we willen meer info terugsturen
+    returnValue.put("start", lo);
+    returnValue.put("rows", idsToGet.size());
+
+    if (start > 0) {
+      int prevStart = Math.max(start - rows, 0);
+      URI prev = createHATEOASURI(prevStart, rows, uriInfo, queryId);
+      returnValue.put("_prev", prev);
+    }
+
+    if (hi < idsSize) {
+      URI next = createHATEOASURI(start + rows, rows, uriInfo, queryId);
+      returnValue.put("_next", next);
+    }
+
+    return Response.ok(returnValue).build();
+  }
+
+  // ---------------------------------------------------------------------------
 
   public static class EntityRef {
     private final String type;
