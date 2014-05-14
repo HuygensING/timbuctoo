@@ -79,12 +79,12 @@ public class SearchResourceTest extends WebServiceTestSetup {
   private VREManager vreManager;
 
   @Before
-  public void setUpSortableFields() {
+  public void setupSortableFields() {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
     when(searchManager.findSortableFields(Matchers.<Class<? extends DomainEntity>> any())).thenReturn(SORTABLE_FIELDS);
   }
 
-  public void setUpPublicUrl(String url) {
+  public void setupPublicUrl(String url) {
     when(injector.getInstance(Configuration.class).getSetting("public_url")).thenReturn(url);
   }
 
@@ -105,7 +105,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
     } else {
       when(vreManager.getVREById(anyString())).thenReturn(null);
     }
-
   }
 
   private WebResource.Builder getResourceBuilder() {
@@ -115,7 +114,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostSuccess() throws Exception {
     setUpVREManager(true, true);
-    SearchResult searchResult = createPostSearchResult();
+    SearchResult searchResult = mock(SearchResult.class);;
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
@@ -137,7 +136,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostSuccessWithoutSort() throws Exception {
     SearchParameters searchParameters = createSearchParameters(TYPE_STRING, null, TERM);
-    SearchResult searchResult = createPostSearchResult();
+    SearchResult searchResult = mock(SearchResult.class);
 
     setUpVREManager(true, true);
     setupSearchManager(searchResult);
@@ -209,7 +208,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostVREIdNull() throws Exception {
     SearchParameters searchParameters = createSearchParameters(TYPE_STRING, null, TERM);
-    SearchResult searchResult = createPostSearchResult();
+    SearchResult searchResult = mock(SearchResult.class);
 
     setUpVREManager(true, true);
     setupSearchManager(searchResult);
@@ -295,7 +294,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostStorageManagerThrowsAnException() throws Exception {
     setUpVREManager(true, true);
-    SearchResult searchResult = createPostSearchResult();
+    SearchResult searchResult = mock(SearchResult.class);
     setupSearchManager(searchResult);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -324,8 +323,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     setUpSearchResult(idList, storageManager, facets);
 
     WebResource resource = super.resource();
-
-    setUpPublicUrl(resource.getURI().toString());
+    setupPublicUrl(resource.getURI().toString());
 
     String nextUri = String.format("%ssearch/%s?start=10&rows=10", resource.getURI(), ID);
     int returnedRows = 10;
@@ -356,7 +354,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     queryParameters.add("rows", "20");
 
     WebResource resource = super.resource();
-    setUpPublicUrl(resource.getURI().toString());
+    setupPublicUrl(resource.getURI().toString());
 
     String prevUri = String.format("%ssearch/%s?start=0&rows=20", resource.getURI(), ID);
     String nextUri = String.format("%ssearch/%s?start=40&rows=20", resource.getURI(), ID);
@@ -389,7 +387,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     queryParameters.add("rows", "100");
 
     WebResource resource = super.resource();
-    setUpPublicUrl(resource.getURI().toString());
+    setupPublicUrl(resource.getURI().toString());
 
     String prevUri = String.format("%ssearch/%s?start=0&rows=100", resource.getURI(), ID);
     int returnedRows = 90;
@@ -453,12 +451,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
   private void setupSearchManager(SearchResult searchResult) throws Exception {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
     when(searchManager.search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class))).thenReturn(searchResult);
-  }
-
-  private SearchResult createPostSearchResult() {
-    SearchResult searchResult = mock(SearchResult.class);
-    when(searchResult.getId()).thenReturn(ID);
-    return searchResult;
   }
 
   private SearchParameters createSearchParameters(String typeString, String sort, String term) {
