@@ -45,7 +45,6 @@ import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 
 import org.apache.commons.lang.StringUtils;
@@ -147,7 +146,7 @@ public abstract class DefaultImporter {
   /** File with {@code RelationType} definitions; must be present on classpath. */
   private static final String RELATION_TYPE_DEFS = "relationtype-defs.txt";
 
-  protected void importRelationTypes() throws IOException, ValidationException {
+  protected void importRelationTypes() throws Exception {
     new RelationTypeImporter(storageManager).importRelationTypes(RELATION_TYPE_DEFS);
   }
 
