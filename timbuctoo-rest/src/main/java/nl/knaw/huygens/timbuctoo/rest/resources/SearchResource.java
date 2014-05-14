@@ -40,11 +40,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParameters;
@@ -105,7 +103,7 @@ public class SearchResource extends ResourceBase {
   @POST
   @APIDesc("Searches the Solr index")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response regularSearchPost(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
+  public Response regularPost(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
 
     VRE vre = Strings.isNullOrEmpty(vreId) ? vreManager.getDefaultVRE() : vreManager.getVREById(vreId);
     checkNotNull(vre, NOT_FOUND, "No VRE with id %s", vreId);
@@ -116,9 +114,7 @@ public class SearchResource extends ResourceBase {
     checkNotNull(typeString, BAD_REQUEST, "No 'typeString' parameter specified");
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
-    if (!scope.isTypeInScope(type)) {
-      throw new TimbuctooException(BAD_REQUEST, "Type not in scope: %s", typeString);
-    }
+    checkCondition(scope.isTypeInScope(type), BAD_REQUEST, "Type not in scope: %s", typeString);
 
     String q = StringUtils.trimToNull(searchParams.getTerm());
     checkNotNull(q, BAD_REQUEST, "No 'q' parameter specified");
@@ -140,11 +136,10 @@ public class SearchResource extends ResourceBase {
   @APIDesc("Returns (paged) search results")
   @Produces({ MediaType.APPLICATION_JSON })
   @JsonView(JsonViews.WebView.class)
-  public Response regularSearchGet( //
+  public Response regularGet( //
       @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") final int start, //
-      @QueryParam("rows") @DefaultValue("10") final int rows, //
-      @Context UriInfo uriInfo//
+      @QueryParam("rows") @DefaultValue("10") final int rows
   ) {
 
     // Retrieve result
@@ -162,16 +157,7 @@ public class SearchResource extends ResourceBase {
     int hi = toRange(lo + rows, 0, idsSize);
     List<String> idsToGet = ids.subList(lo, hi);
 
-    // Retrieve entities one-by-one to retain ordering
-    List<DomainEntity> entities = Lists.newArrayList();
-    for (String id : idsToGet) {
-      DomainEntity entity = storageManager.getEntity(type, id);
-      if (entity != null) {
-        entities.add(entity);
-      } else {
-        LOG.error("Failed to retrieve {} - {}", type, id);
-      }
-    }
+    List<DomainEntity> entities = retrieveEntities(type, idsToGet);
 
     Map<String, Object> returnValue = Maps.newHashMap();
     returnValue.put("term", result.getTerm());
@@ -186,19 +172,33 @@ public class SearchResource extends ResourceBase {
 
     if (start > 0) {
       int prevStart = Math.max(start - rows, 0);
-      URI prev = createHATEOASURI(prevStart, rows, uriInfo, queryId);
+      URI prev = createHATEOASURI(prevStart, rows, queryId);
       returnValue.put("_prev", prev);
     }
 
     if (hi < idsSize) {
-      URI next = createHATEOASURI(start + rows, rows, uriInfo, queryId);
+      URI next = createHATEOASURI(start + rows, rows, queryId);
       returnValue.put("_next", next);
     }
 
     return Response.ok(returnValue).build();
   }
 
-  private URI createHATEOASURI(final int start, final int rows, UriInfo uriInfo, String queryId) {
+  private List<DomainEntity> retrieveEntities(Class<? extends DomainEntity> type, List<String> ids) {
+    // Retrieve entities one-by-one to retain ordering
+    List<DomainEntity> entities = Lists.newArrayList();
+    for (String id : ids) {
+      DomainEntity entity = storageManager.getEntity(type, id);
+      if (entity != null) {
+        entities.add(entity);
+      } else {
+        LOG.error("Failed to retrieve {} - {}", type, id);
+      }
+    }
+    return entities;
+  }
+
+  private URI createHATEOASURI(final int start, final int rows, String queryId) {
     UriBuilder builder = UriBuilder.fromUri(config.getSetting("public_url"));
     builder.path("search");
     builder.path(queryId);
@@ -223,9 +223,8 @@ public class SearchResource extends ResourceBase {
   @POST
   @Path("/relations")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response relationSearchPost(@HeaderParam("VRE_ID") String vreId, RelationSearchParameters params) {
+  public Response relationPost(@HeaderParam("VRE_ID") String vreId, RelationSearchParameters params) {
 
-    // Validate input
     VRE vre = Strings.isNullOrEmpty(vreId) ? vreManager.getDefaultVRE() : vreManager.getVREById(vreId);
     checkNotNull(vre, NOT_FOUND, "No VRE with id %s", vreId);
 
@@ -238,9 +237,7 @@ public class SearchResource extends ResourceBase {
     checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
     @SuppressWarnings("unchecked")
     Class<? extends Relation> relationType = (Class<? extends Relation>) type;
-    if (!scope.isTypeInScope(type)) {
-      throw new TimbuctooException(BAD_REQUEST, "Type not in scope: %s", typeString);
-    }
+    checkCondition(scope.isTypeInScope(type), BAD_REQUEST, "Type not in scope: %s", typeString);
 
     String sourceSearchId = StringUtils.trimToNull(params.getSourceSearchId());
     checkNotNull(sourceSearchId, BAD_REQUEST, "No 'sourceSearchId' specified");
@@ -280,11 +277,10 @@ public class SearchResource extends ResourceBase {
   @Path("/relations/{id: " + SearchResult.ID_PREFIX + "\\d+}")
   @Produces({ MediaType.APPLICATION_JSON })
   @JsonView(JsonViews.WebView.class)
-  public Response relationSearchGet( //
+  public Response relationGet( //
       @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") final int start, //
-      @QueryParam("rows") @DefaultValue("10") final int rows, //
-      @Context UriInfo uriInfo//
+      @QueryParam("rows") @DefaultValue("10") final int rows
   ) {
 
     // Retrieve result
@@ -303,16 +299,7 @@ public class SearchResource extends ResourceBase {
     int hi = toRange(lo + rows, 0, idsSize);
     List<String> idsToGet = ids.subList(lo, hi);
 
-    // Retrieve entities one-by-one to retain ordering
-    List<DomainEntity> entities = Lists.newArrayList();
-    for (String id : idsToGet) {
-      DomainEntity entity = storageManager.getEntity(type, id);
-      if (entity != null) {
-        entities.add(entity);
-      } else {
-        LOG.error("Failed to retrieve {} - {}", type, id);
-      }
-    }
+    List<DomainEntity> entities = retrieveEntities(type, idsToGet);
 
     Map<String, Object> returnValue = Maps.newHashMap();
     returnValue.put("numFound", idsSize);
@@ -324,12 +311,12 @@ public class SearchResource extends ResourceBase {
 
     if (start > 0) {
       int prevStart = Math.max(start - rows, 0);
-      URI prev = createHATEOASURI(prevStart, rows, uriInfo, queryId);
+      URI prev = createHATEOASURI(prevStart, rows, queryId);
       returnValue.put("_prev", prev);
     }
 
     if (hi < idsSize) {
-      URI next = createHATEOASURI(start + rows, rows, uriInfo, queryId);
+      URI next = createHATEOASURI(start + rows, rows, queryId);
       returnValue.put("_next", next);
     }
 
