@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.model.Keyword;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.neww.WWKeyword;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
 
@@ -57,24 +58,28 @@ public class KeywordConcordance extends CSVImporter {
     if (items.length < 2) {
       throw new ValidationException("Lines must have at least 2 items");
     }
-    WWKeyword keyword = new WWKeyword();
-    keyword.setType(items[0]);
-    keyword.setValue(items[1]);
-    String storedId = repository.addDomainEntity(WWKeyword.class, keyword, change);
-    Reference reference = new Reference(Keyword.class, storedId);
+    try {
+      WWKeyword keyword = new WWKeyword();
+      keyword.setType(items[0]);
+      keyword.setValue(items[1]);
+      String storedId = repository.addDomainEntity(WWKeyword.class, keyword, change);
+      Reference reference = new Reference(Keyword.class, storedId);
 
-    String defaultKey = createKey(items[0], items[1]);
-    if (map.containsKey(defaultKey)) {
-      throw new ValidationException("Duplicate key " + defaultKey);
-    }
-    map.put(defaultKey, reference);
-
-    for (int index = 2; index < items.length; index++) {
-      String key = createKey(items[0], items[index]);
-      if (map.containsKey(key)) {
-        throw new ValidationException("Duplicate key " + key);
+      String defaultKey = createKey(items[0], items[1]);
+      if (map.containsKey(defaultKey)) {
+        throw new ValidationException("Duplicate key " + defaultKey);
       }
-      map.put(key, reference);
+      map.put(defaultKey, reference);
+
+      for (int index = 2; index < items.length; index++) {
+        String key = createKey(items[0], items[index]);
+        if (map.containsKey(key)) {
+          throw new ValidationException("Duplicate key " + key);
+        }
+        map.put(key, reference);
+      }
+    } catch (StorageException e) {
+      throw new IOException(e);
     }
   }
 

@@ -23,12 +23,12 @@ package nl.knaw.huygens.timbuctoo.tools.importer;
  */
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,16 +46,20 @@ public class GenericJsonFileWriter extends GenericDataHandler {
   }
 
   @Override
-  protected <T extends DomainEntity> void save(Class<T> type, List<T> objects, Change change) throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    //Make sure the type is added to the json.
-    mapper.enableDefaultTyping(DefaultTyping.JAVA_LANG_OBJECT, As.PROPERTY);
+  protected <T extends DomainEntity> void save(Class<T> type, List<T> objects, Change change) throws StorageException {
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      //Make sure the type is added to the json.
+      mapper.enableDefaultTyping(DefaultTyping.JAVA_LANG_OBJECT, As.PROPERTY);
 
-    File file = new File(testDataDir + TypeNames.getInternalName(type) + ".json");
-    System.out.println("file: " + file.getAbsolutePath());
+      File file = new File(testDataDir + TypeNames.getInternalName(type) + ".json");
+      System.out.println("file: " + file.getAbsolutePath());
 
-    // toArray is needed to make use of the TimbuctooTypeIdResolver
-    mapper.writeValue(file, objects.toArray(new DomainEntity[0]));
+      // toArray is needed to make use of the TimbuctooTypeIdResolver
+      mapper.writeValue(file, objects.toArray(new DomainEntity[0]));
+    } catch (Exception e) {
+      throw new StorageException(e);
+    }
   }
 
 }

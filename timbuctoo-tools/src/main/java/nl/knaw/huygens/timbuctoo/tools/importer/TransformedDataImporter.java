@@ -24,22 +24,17 @@ package nl.knaw.huygens.timbuctoo.tools.importer;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -53,7 +48,7 @@ public class TransformedDataImporter extends DefaultImporter {
 
   public static void main(String[] args) throws Exception {
     String dataPath = args.length > 0 ? args[0] : "src/main/resources/testdata";
- 
+
     Repository repository = ToolsInjectionModule.createRepositoryInstance();
     new TransformedDataImporter(repository).importData(dataPath);
   }
@@ -62,7 +57,7 @@ public class TransformedDataImporter extends DefaultImporter {
     super(repository);
   }
 
-  protected void importData(String dataPath) throws IOException, IndexException, JsonParseException, JsonMappingException, ClassCastException, ValidationException {
+  protected void importData(String dataPath) throws Exception {
     Change change = new Change("timbuctoo", "timbuctoo");
 
     File[] jsonFiles = getJsonFiles(dataPath);
@@ -93,7 +88,7 @@ public class TransformedDataImporter extends DefaultImporter {
     return jsonFiles;
   }
 
-  public <T extends DomainEntity> void save(Class<T> type, File jsonFile, Change change) throws JsonParseException, JsonMappingException, IOException, IndexException, ValidationException {
+  public <T extends DomainEntity> void save(Class<T> type, File jsonFile, Change change) throws Exception {
     LOG.info("Saving for type {}", type);
     List<T> entities = new ObjectMapper().readValue(jsonFile, new TypeReference<List<? extends DomainEntity>>() {});
     for (T entity : entities) {

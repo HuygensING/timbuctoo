@@ -28,7 +28,6 @@ import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -55,6 +54,7 @@ import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.security.UserRoles;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -115,10 +115,10 @@ public class UserResource extends ResourceBase {
   @Path(ID_REGEX)
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
-  public Response put(@PathParam(ID_PARAM) String id, User user) throws IOException {
+  public Response put(@PathParam(ID_PARAM) String id, User user) {
     try {
       storageManager.updateSystemEntity(User.class, user);
-    } catch (IOException e) {
+    } catch (StorageException e) {
       throw new TimbuctooException(Status.NOT_FOUND, "User %s not found", id);
     }
 
@@ -148,7 +148,7 @@ public class UserResource extends ResourceBase {
   @Path(ID_REGEX)
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
-  public Response delete(@PathParam(ID_PARAM) String id) throws IOException {
+  public Response delete(@PathParam(ID_PARAM) String id) throws StorageException {
     User user = storageManager.getEntity(User.class, id);
     checkNotNull(user, Status.NOT_FOUND, "No User with id %s", id);
     storageManager.deleteSystemEntity(user);
@@ -178,7 +178,7 @@ public class UserResource extends ResourceBase {
       @PathParam("id") String userId,//
       @HeaderParam(VRE_ID_KEY) String userVREId,//
       VREAuthorization authorization//
-  ) throws URISyntaxException, IOException, ValidationException {
+  ) throws URISyntaxException, StorageException, ValidationException {
 
     checkNotNull(authorization, Status.BAD_REQUEST, "Missing VREAuthorization");
     checkIfInScope(authorization.getVreId(), userVREId);
@@ -199,7 +199,7 @@ public class UserResource extends ResourceBase {
       @PathParam("vre") String vreId,//
       @HeaderParam(VRE_ID_KEY) String userVREId,//
       VREAuthorization authorization//
-  ) throws IOException {
+  ) throws StorageException {
 
     checkNotNull(authorization, Status.BAD_REQUEST, "Missing VREAuthorization");
     checkIfInScope(vreId, userVREId);
@@ -214,7 +214,7 @@ public class UserResource extends ResourceBase {
       @PathParam(ID_PARAM) String userId,// 
       @PathParam("vre") String vreId,//
       @HeaderParam(VRE_ID_KEY) String userVREId//
-  ) throws IOException {
+  ) throws StorageException {
     checkIfInScope(vreId, userVREId);
     VREAuthorization authorization = findVREAuthorization(userId, vreId);
     storageManager.deleteSystemEntity(authorization);

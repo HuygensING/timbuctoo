@@ -37,7 +37,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +47,7 @@ import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.security.UserRoles;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import org.junit.Before;
@@ -265,9 +265,9 @@ public class UserResourceTest extends WebServiceTestSetup {
     doAnswer(new Answer<Object>() {
 
       @Override
-      public Object answer(InvocationOnMock invocation) throws IOException {
-        // only if the document version does not exist an IOException is thrown.
-        throw new IOException();
+      public Object answer(InvocationOnMock invocation) throws StorageException {
+        // only if the document version does not exist an StorageException is thrown.
+        throw new StorageException();
       }
     }).when(storageManager).updateSystemEntity(any(Class.class), any(User.class));
 

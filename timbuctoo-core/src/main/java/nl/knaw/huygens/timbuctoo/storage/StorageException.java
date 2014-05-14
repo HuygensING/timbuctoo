@@ -22,12 +22,10 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import java.io.IOException;
-
 /**
  * Signals failure of a storage operation.
  */
-public class StorageException extends IOException {
+public class StorageException extends Exception {
 
   private static final long serialVersionUID = 1L;
 

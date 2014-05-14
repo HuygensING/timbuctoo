@@ -22,11 +22,11 @@ package nl.knaw.huygens.timbuctoo.tools.importer;
  * #L%
  */
 
-import java.io.IOException;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.util.Progress;
@@ -43,7 +43,7 @@ public class GenericImporter extends GenericDataHandler {
   }
 
   @Override
-  protected <T extends DomainEntity> void save(Class<T> type, List<T> objects, Change change) throws IOException, ValidationException {
+  protected <T extends DomainEntity> void save(Class<T> type, List<T> objects, Change change) throws StorageException, ValidationException {
     Progress progress = new Progress();
     for (T object : objects) {
       progress.step();

@@ -42,6 +42,7 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -135,7 +136,7 @@ public abstract class DefaultImporter {
     try {
       storageManager.updateDomainEntity(type, entity, change);
       return entity;
-    } catch (IOException e) {
+    } catch (StorageException e) {
       handleError("Failed to update %s; %s", entity.getDisplayName(), e.getMessage());
       return null;
     }
@@ -194,7 +195,7 @@ public abstract class DefaultImporter {
   /**
    * Deletes the non persisted entity's of {@code type} and it's relations from the storage and the index.
    */
-  protected void removeNonPersistentEntities(Class<? extends DomainEntity> type) throws IOException, IndexException {
+  protected void removeNonPersistentEntities(Class<? extends DomainEntity> type) throws StorageException, IndexException {
     List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
     storageManager.deleteNonPersistent(type, ids);
     indexManager.deleteEntities(type, ids);

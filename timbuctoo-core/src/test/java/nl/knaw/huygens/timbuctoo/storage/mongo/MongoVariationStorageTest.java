@@ -32,7 +32,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
@@ -122,7 +121,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   // -------------------------------------------------------------------
 
   @Test
-  public void testGetItem() throws IOException {
+  public void testGetItem() throws Exception {
     String name = "getItem";
     BaseDomainEntity expected = new BaseDomainEntity(DEFAULT_ID);
     expected.name = name;
@@ -136,14 +135,14 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetItemNonExistent() throws StorageException, IOException {
+  public void testGetItemNonExistent() throws Exception {
     assertNull(storage.getItem(BaseDomainEntity.class, "TCD000000001"));
   }
 
   @Test
   // Reported as failure [#1919] with expected value 5
   // But by using createCursorWithoutValues you obviously get 0
-  public void testGetAllVariationsWithoutRelations() throws IOException {
+  public void testGetAllVariationsWithoutRelations() throws Exception {
     DBObject value = createGeneralTestDocDBObject(DEFAULT_ID, "subType", "test");
     when(anyCollection.findOne(any(DBObject.class))).thenReturn(value);
 
@@ -154,7 +153,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetEntities() throws IOException {
+  public void testGetEntities() throws Exception {
     DBObject query = queries.selectAll();
     DBCursor cursor = createCursorWithoutValues();
     when(anyCollection.find(query)).thenReturn(cursor);
@@ -164,13 +163,13 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetAllRevisions() throws IOException {
+  public void testGetAllRevisions() throws Exception {
     storage.getAllRevisions(BaseDomainEntity.class, DEFAULT_ID);
     verify(anyCollection).findOne(new BasicDBObject("_id", DEFAULT_ID));
   }
 
   @Test
-  public void testGetRevision() throws IOException {
+  public void testGetRevision() throws Exception {
     int revisionId = 0;
     storage.getRevision(ProjectADomainEntity.class, DEFAULT_ID, revisionId);
 
@@ -181,7 +180,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetAllIdsWithoutPIDOfType() throws IOException {
+  public void testGetAllIdsWithoutPIDOfType() throws Exception {
     String collection = TypeNames.getInternalName(BaseDomainEntity.class);
     DBObject query = queries.selectVariation(collection);
     query.putAll(DBQuery.notExists(DomainEntity.PID));
@@ -201,7 +200,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetAllIdsWithoutPIDOfTypeMultipleFound() throws IOException {
+  public void testGetAllIdsWithoutPIDOfTypeMultipleFound() throws Exception {
     String collection = TypeNames.getInternalName(BaseDomainEntity.class);
     DBObject query = queries.selectVariation(collection);
     query.putAll(DBQuery.notExists(DomainEntity.PID));
@@ -230,7 +229,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetAllIdsWithoutPIDOfTypeNoneFound() throws IOException {
+  public void testGetAllIdsWithoutPIDOfTypeNoneFound() throws Exception {
     String collection = TypeNames.getInternalName(BaseDomainEntity.class);
     DBObject query = queries.selectVariation(collection);
     query.putAll(DBQuery.notExists(DomainEntity.PID));
@@ -246,8 +245,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     verify(db).getCollection(collection);
   }
 
-  @Test(expected = IOException.class)
-  public void testGetAllIdsWithoutPIDFindThrowsException() throws IOException {
+  @Test(expected = StorageException.class)
+  public void testGetAllIdsWithoutPIDFindThrowsException() throws Exception {
     String collection = TypeNames.getInternalName(BaseDomainEntity.class);
     DBObject query = queries.selectVariation(collection);
     query.putAll(DBQuery.notExists(DomainEntity.PID));
@@ -257,8 +256,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
   }
 
-  @Test(expected = IOException.class)
-  public void testGetAllIdsWithoutPIDCursorNextThrowsException() throws IOException {
+  @Test(expected = StorageException.class)
+  public void testGetAllIdsWithoutPIDCursorNextThrowsException() throws Exception {
     String collection = TypeNames.getInternalName(BaseDomainEntity.class);
     DBObject query = queries.selectVariation(collection);
     query.putAll(DBQuery.notExists(DomainEntity.PID));
@@ -272,8 +271,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
   }
 
-  @Test(expected = IOException.class)
-  public void testGetAllIdsWithoutPIDCursorHasNextThrowsException() throws IOException {
+  @Test(expected = StorageException.class)
+  public void testGetAllIdsWithoutPIDCursorHasNextThrowsException() throws Exception {
     String collection = TypeNames.getInternalName(BaseDomainEntity.class);
     DBObject query = queries.selectVariation(collection);
     query.putAll(DBQuery.notExists(DomainEntity.PID));
@@ -287,7 +286,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetRelationIds() throws IOException {
+  public void testGetRelationIds() throws Exception {
     List<String> inputIds = Lists.newArrayList(DEFAULT_ID, "TCD000000002", "TCD000000003");
 
     DBObject query = createRelatedToQuery(inputIds);
@@ -318,16 +317,16 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     }
   }
 
-  @Test(expected = IOException.class)
-  public void testGetRelationFindThrowsException() throws IOException {
+  @Test(expected = StorageException.class)
+  public void testGetRelationFindThrowsException() throws Exception {
     List<String> inputIds = Lists.newArrayList(DEFAULT_ID, "TCD000000002", "TCD000000003");
     doThrow(MongoException.class).when(anyCollection).find(any(DBObject.class), any(DBObject.class));
 
     storage.getRelationIds(inputIds);
   }
 
-  @Test(expected = IOException.class)
-  public void testGetRelationCursorNextThrowsException() throws IOException {
+  @Test(expected = StorageException.class)
+  public void testGetRelationCursorNextThrowsException() throws Exception {
     List<String> inputIds = Lists.newArrayList(DEFAULT_ID, "TCD000000002", "TCD000000003");
 
     DBObject query = createRelatedToQuery(inputIds);
@@ -342,8 +341,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   }
 
-  @Test(expected = IOException.class)
-  public void testGetRelationCursorHasNextThrowsException() throws IOException {
+  @Test(expected = StorageException.class)
+  public void testGetRelationCursorHasNextThrowsException() throws Exception {
     List<String> inputIds = Lists.newArrayList(DEFAULT_ID, "TCD000000002", "TCD000000003");
 
     DBObject query = createRelatedToQuery(inputIds);
@@ -366,7 +365,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testRemovePermanently() throws IOException {
+  public void testRemovePermanently() throws Exception {
     List<String> ids = Lists.newArrayList("TCD000000001", "TCD000000003", "TCD000000005");
     DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
     query.put(DomainEntity.PID, null);
@@ -377,8 +376,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     verify(db).getCollection(TypeNames.getInternalName(BaseDomainEntity.class));
   }
 
-  @Test(expected = IOException.class)
-  public void testRemovePemanentlyDBThrowsException() throws IOException {
+  @Test(expected = StorageException.class)
+  public void testRemovePemanentlyDBThrowsException() throws Exception {
     List<String> ids = Lists.newArrayList("TCD000000001", "TCD000000003", "TCD000000005");
     DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
     query.put(DomainEntity.PID, null);
