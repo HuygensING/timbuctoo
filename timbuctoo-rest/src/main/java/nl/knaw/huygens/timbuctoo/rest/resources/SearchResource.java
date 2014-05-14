@@ -22,6 +22,10 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +43,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
@@ -57,7 +60,9 @@ import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
@@ -103,30 +108,30 @@ public class SearchResource extends ResourceBase {
   public Response regularSearchPost(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
 
     VRE vre = Strings.isNullOrEmpty(vreId) ? vreManager.getDefaultVRE() : vreManager.getVREById(vreId);
-    checkNotNull(vre, Status.NOT_FOUND, "No VRE with id %s", vreId);
+    checkNotNull(vre, NOT_FOUND, "No VRE with id %s", vreId);
 
     Scope scope = vre.getScope();
 
     String typeString = StringUtils.trimToNull(searchParams.getTypeString());
-    checkNotNull(typeString, Status.BAD_REQUEST, "No 'typeString' parameter specified");
+    checkNotNull(typeString, BAD_REQUEST, "No 'typeString' parameter specified");
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
-    checkNotNull(type, Status.BAD_REQUEST, "No domain entity type for %s", typeString);
+    checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
     if (!scope.isTypeInScope(type)) {
-      throw new TimbuctooException(Response.Status.BAD_REQUEST, "Type not in scope: %s", typeString);
+      throw new TimbuctooException(BAD_REQUEST, "Type not in scope: %s", typeString);
     }
 
     String q = StringUtils.trimToNull(searchParams.getTerm());
-    checkNotNull(q, Status.BAD_REQUEST, "No 'q' parameter specified");
+    checkNotNull(q, BAD_REQUEST, "No 'q' parameter specified");
 
     // Process
     try {
       SearchResult result = searchManager.search(scope, type, searchParams);
-      String queryId = storageManager.addSystemEntity(SearchResult.class, result);
+      String queryId = putSearchResult(result);
       return Response.created(new URI(queryId)).build();
     } catch (NoSuchFacetException e) {
-      throw new TimbuctooException(Response.Status.BAD_REQUEST, "No such facet: %s", e.getMessage());
+      throw new TimbuctooException(BAD_REQUEST, "No such facet: %s", e.getMessage());
     } catch (Exception e) {
-      throw new TimbuctooException(Response.Status.INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
+      throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
     }
   }
 
@@ -143,12 +148,13 @@ public class SearchResource extends ResourceBase {
   ) {
 
     // Retrieve result
-    SearchResult result = storageManager.getEntity(SearchResult.class, queryId);
-    checkNotNull(result, Status.NOT_FOUND, "No SearchResult with id %s", queryId);
+    SearchResult result = getSearchResult(queryId);
+    checkNotNull(result, NOT_FOUND, "No SearchResult with id %s", queryId);
 
     // Process
-    Class<? extends DomainEntity> type = registry.getDomainEntityType(result.getSearchType());
-    checkNotNull(type, Status.BAD_REQUEST, "No domain entity type for %s", result.getSearchType());
+    String typeString = result.getSearchType();
+    Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
+    checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
     List<String> ids = result.getIds() != null ? result.getIds() : Lists.<String> newArrayList();
     int idsSize = ids.size();
@@ -204,14 +210,12 @@ public class SearchResource extends ResourceBase {
     return Math.min(Math.max(value, minValue), maxValue);
   }
 
-  private List<EntityRef> createEntityRefs(Class<? extends DomainEntity> type, List<DomainEntity> entities) {
-    String itype = TypeNames.getInternalName(type);
-    String xtype = TypeNames.getExternalName(type);
-    List<EntityRef> list = Lists.newArrayListWithCapacity(entities.size());
-    for (DomainEntity entity : entities) {
-      list.add(new EntityRef(itype, xtype, entity.getId(), entity.getDisplayName()));
-    }
-    return list;
+  private SearchResult getSearchResult(String id) {
+    return storageManager.getEntity(SearchResult.class, id);
+  }
+
+  private String putSearchResult(SearchResult result) throws StorageException, ValidationException {
+    return storageManager.addSystemEntity(SearchResult.class, result);
   }
 
   // ---------------------------------------------------------------------------
@@ -223,37 +227,37 @@ public class SearchResource extends ResourceBase {
 
     // Validate input
     VRE vre = Strings.isNullOrEmpty(vreId) ? vreManager.getDefaultVRE() : vreManager.getVREById(vreId);
-    checkNotNull(vre, Status.NOT_FOUND, "No VRE with id %s", vreId);
+    checkNotNull(vre, NOT_FOUND, "No VRE with id %s", vreId);
 
     Scope scope = vre.getScope();
 
     String typeString = StringUtils.trimToNull(params.getTypeString());
-    checkNotNull(typeString, Status.BAD_REQUEST, "No 'typeString' parameter specified");
+    checkNotNull(typeString, BAD_REQUEST, "No 'typeString' parameter specified");
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
-    checkNotNull(type, Status.BAD_REQUEST, "No domain entity type for %s", typeString);
-    checkCondition(Relation.class.isAssignableFrom(type), Status.BAD_REQUEST, "Not a relation type: %s", typeString);
+    checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
+    checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
     @SuppressWarnings("unchecked")
     Class<? extends Relation> relationType = (Class<? extends Relation>) type;
     if (!scope.isTypeInScope(type)) {
-      throw new TimbuctooException(Response.Status.BAD_REQUEST, "Type not in scope: %s", typeString);
+      throw new TimbuctooException(BAD_REQUEST, "Type not in scope: %s", typeString);
     }
 
     String sourceSearchId = StringUtils.trimToNull(params.getSourceSearchId());
-    checkNotNull(sourceSearchId, Status.BAD_REQUEST, "No 'sourceSearchId' specified");
-    SearchResult sourceSearchResult = storageManager.getEntity(SearchResult.class, sourceSearchId);
-    checkNotNull(sourceSearchResult, Status.BAD_REQUEST, "No SearchResult with id %s", sourceSearchId);
+    checkNotNull(sourceSearchId, BAD_REQUEST, "No 'sourceSearchId' specified");
+    SearchResult sourceSearchResult = getSearchResult(sourceSearchId);
+    checkNotNull(sourceSearchResult, BAD_REQUEST, "No SearchResult with id %s", sourceSearchId);
     List<String> sourceIds = sourceSearchResult.getIds();
 
     String targetSearchId = StringUtils.trimToNull(params.getTargetSearchId());
-    checkNotNull(targetSearchId, Status.BAD_REQUEST, "No 'targetSearchId' specified");
-    SearchResult targetSearchResult = storageManager.getEntity(SearchResult.class, targetSearchId);
-    checkNotNull(targetSearchResult, Status.BAD_REQUEST, "No SearchResult with id %s", targetSearchId);
+    checkNotNull(targetSearchId, BAD_REQUEST, "No 'targetSearchId' specified");
+    SearchResult targetSearchResult = getSearchResult(targetSearchId);
+    checkNotNull(targetSearchResult, BAD_REQUEST, "No SearchResult with id %s", targetSearchId);
     List<String> targetIds = targetSearchResult.getIds();
 
     List<String> relationTypeIds = params.getRelationTypeIds();
-    checkCondition(relationTypeIds.size() > 0, Status.BAD_REQUEST, "No 'relationTypeIds' specified");
+    checkCondition(relationTypeIds.size() > 0, BAD_REQUEST, "No 'relationTypeIds' specified");
     for (String id : relationTypeIds) {
-      checkNotNull(storageManager.getRelationType(id), Status.BAD_REQUEST, "No RelationType with id %s", id);
+      checkNotNull(storageManager.getRelationType(id), BAD_REQUEST, "No RelationType with id %s", id);
     }
 
     // Process
@@ -265,10 +269,10 @@ public class SearchResource extends ResourceBase {
       result.setTargetIds(targetIds);
       result.setRelationTypeIds(relationTypeIds);
       result.setIds(storageManager.findRelations(relationType, sourceIds, targetIds, relationTypeIds));
-      String queryId = storageManager.addSystemEntity(SearchResult.class, result);
+      String queryId = putSearchResult(result);
       return Response.created(new URI(queryId)).build();
     } catch (Exception e) {
-      throw new TimbuctooException(Response.Status.INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
+      throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
     }
   }
 
@@ -284,14 +288,14 @@ public class SearchResource extends ResourceBase {
   ) {
 
     // Retrieve result
-    SearchResult result = storageManager.getEntity(SearchResult.class, queryId);
-    checkNotNull(result, Status.NOT_FOUND, "No SearchResult with id %s", queryId);
+    SearchResult result = getSearchResult(queryId);
+    checkNotNull(result, NOT_FOUND, "No SearchResult with id %s", queryId);
 
     // Process
     String typeString = result.getSearchType();
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
-    checkNotNull(type, Status.BAD_REQUEST, "No domain entity type for %s", typeString);
-    checkCondition(Relation.class.isAssignableFrom(type), Status.BAD_REQUEST, "Not a relation type: %s", typeString);
+    checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
+    checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
 
     List<String> ids = result.getIds() != null ? result.getIds() : Lists.<String> newArrayList();
     int idsSize = ids.size();
@@ -333,6 +337,16 @@ public class SearchResource extends ResourceBase {
   }
 
   // ---------------------------------------------------------------------------
+
+  private List<EntityRef> createEntityRefs(Class<? extends DomainEntity> type, List<DomainEntity> entities) {
+    String itype = TypeNames.getInternalName(type);
+    String xtype = TypeNames.getExternalName(type);
+    List<EntityRef> list = Lists.newArrayListWithCapacity(entities.size());
+    for (DomainEntity entity : entities) {
+      list.add(new EntityRef(itype, xtype, entity.getId(), entity.getDisplayName()));
+    }
+    return list;
+  }
 
   public static class EntityRef {
     private final String type;
