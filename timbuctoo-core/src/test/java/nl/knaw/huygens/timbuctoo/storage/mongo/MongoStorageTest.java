@@ -30,7 +30,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.Map;
@@ -81,7 +80,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testFindItemOneSearchProperty() throws IOException {
+  public void testFindItemOneSearchProperty() throws Exception {
     String name = "doc1";
     TestSystemEntity example = new TestSystemEntity();
     example.setName(name);
@@ -99,7 +98,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testFindItemMultipleSearchProperties() throws IOException {
+  public void testFindItemMultipleSearchProperties() throws Exception {
     TestSystemEntity example = new TestSystemEntity();
     String name = "doc2";
     example.setName(name);
@@ -121,7 +120,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testFindItemUnknownCollection() throws IOException {
+  public void testFindItemUnknownCollection() throws Exception {
     TestSystemEntity example = new TestSystemEntity();
     example.setName("nonExisting");
 
@@ -134,7 +133,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test(expected = StorageException.class)
-  public void testMongoException() throws IOException {
+  public void testMongoException() throws Exception {
     TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID, "test");
 
     doThrow(MongoException.class).when(anyCollection).insert(any(DBObject.class));
@@ -143,7 +142,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetItem() throws IOException {
+  public void testGetItem() throws Exception {
     TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
     entity.setTestValue1("test");
 
@@ -160,7 +159,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetItemCreatedWithoutId() throws IOException {
+  public void testGetItemCreatedWithoutId() throws Exception {
     Map<String, Object> map = createDefaultMap(0, null);
     map.put("testValue1", "test");
     DBObject dbObject = createDBObject(map);
@@ -173,7 +172,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testGetItemNonExistent() throws IOException {
+  public void testGetItemNonExistent() throws Exception {
     DBCursor cursor = createCursorWithoutValues();
 
     DBObject query = queries.selectById(DEFAULT_ID);
@@ -183,7 +182,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testRemoveItem() throws IOException {
+  public void testRemoveItem() throws Exception {
     storage.deleteSystemEntity(TestSystemEntity.class, DEFAULT_ID);
     // just verify that the underlying storage is called
     // whether that call is successful or not is irrelevant
@@ -191,7 +190,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void testRemoveAll() throws IOException {
+  public void testRemoveAll() throws Exception {
     WriteResult writeResult = mock(WriteResult.class);
     when(writeResult.getN()).thenReturn(3);
 

@@ -24,12 +24,10 @@ package nl.knaw.huygens.timbuctoo.security;
 
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
-
-import java.io.IOException;
-
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -52,7 +50,7 @@ public class DefaultVREAuthorizationHandler implements VREAuthorizationHandler {
   private final StorageManager storageManager;
 
   @Inject
-  public DefaultVREAuthorizationHandler(MailSender mailSender, StorageManager storageManager){
+  public DefaultVREAuthorizationHandler(MailSender mailSender, StorageManager storageManager) {
     this.mailSender = mailSender;
     this.storageManager = storageManager;
   }
@@ -74,7 +72,7 @@ public class DefaultVREAuthorizationHandler implements VREAuthorizationHandler {
     return authorization;
   }
 
-  private VREAuthorization createVreAuthorization(String userId, String vreId) throws IOException, ValidationException {
+  private VREAuthorization createVreAuthorization(String userId, String vreId) throws StorageException, ValidationException {
     VREAuthorization authorization = new VREAuthorization();
     authorization.setUserId(userId);
     authorization.setVreId(vreId);

@@ -24,12 +24,12 @@ package nl.knaw.huygens.timbuctoo.tools.other;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.IOException;
 import java.util.Date;
 
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.util.UTCUtils;
@@ -110,7 +110,7 @@ public class SearchResultTool {
         System.out.printf("Search results removed   : %5d%n", n);
         displayStatus(false);
       }
-    } catch (IOException e) {
+    } catch (StorageException e) {
       System.out.printf("Error: %s%n", e.getMessage());
     } finally {
       storageManager.close();

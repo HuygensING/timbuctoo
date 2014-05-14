@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 
 import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -61,8 +62,12 @@ public class RelationTypeImporter extends CSVImporter {
     entity.setTargetTypeName(items[3].toLowerCase());
     entity.setReflexive(Boolean.parseBoolean(items[4]));
     entity.setSymmetric(Boolean.parseBoolean(items[5]));
-    if (storageManager.findEntity(RelationType.class, "regularName", entity.getRegularName()) == null) {
-      storageManager.addSystemEntity(RelationType.class, entity);
+    try {
+      if (storageManager.findEntity(RelationType.class, "regularName", entity.getRegularName()) == null) {
+        storageManager.addSystemEntity(RelationType.class, entity);
+      }
+    } catch (StorageException e) {
+      throw new IOException(e);
     }
   }
 

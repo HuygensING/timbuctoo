@@ -22,13 +22,13 @@ package nl.knaw.huygens.timbuctoo.tools.importer.base;
  * #L%
  */
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
@@ -113,7 +113,7 @@ public class LanguageImporter extends CSVImporter {
       storageManager.addDomainEntity(BaseLanguage.class, language, change);
     } catch (MongoException.DuplicateKey e) {
       displayError("Duplicate key", items);
-    } catch (IOException e) {
+    } catch (StorageException e) {
       displayError(e.getMessage(), items);
     }
   }

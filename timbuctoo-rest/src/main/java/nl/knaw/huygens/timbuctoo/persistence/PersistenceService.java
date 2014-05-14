@@ -22,8 +22,6 @@ package nl.knaw.huygens.timbuctoo.persistence;
  * #L%
  */
 
-import java.io.IOException;
-
 import javax.jms.JMSException;
 
 import nl.knaw.huygens.persistence.PersistenceException;
@@ -31,6 +29,7 @@ import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.ConsumerService;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import org.slf4j.Logger;
@@ -94,7 +93,7 @@ public class PersistenceService extends ConsumerService implements Runnable {
     } catch (IllegalStateException e) {
       deletePID(pid);
       LOG.error("{} with id {} already has a PID", type, id);
-    } catch (IOException e) {
+    } catch (StorageException e) {
       deletePID(pid);
       LOG.error("Persisting {} with id {} went wrong", type, id);
       LOG.debug("Exception", e);

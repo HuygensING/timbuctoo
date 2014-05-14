@@ -22,13 +22,13 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
-import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 import org.mongojack.internal.stream.JacksonDBObject;
@@ -61,7 +61,7 @@ class MongoStorageIterator<T extends Entity> implements StorageIterator<T> {
     } catch (NoSuchElementException e) {
       close();
       throw e;
-    } catch (IOException e) {
+    } catch (StorageException e) {
       e.printStackTrace();
       return null;
     }
@@ -93,7 +93,7 @@ class MongoStorageIterator<T extends Entity> implements StorageIterator<T> {
 
       try {
         list.add((T) reducer.reduceVariation((Class<? extends DomainEntity>) type, toJsonNode(next)));
-      } catch (IOException e) {
+      } catch (StorageException e) {
         e.printStackTrace();
         list.add(null);
       }
@@ -132,13 +132,13 @@ class MongoStorageIterator<T extends Entity> implements StorageIterator<T> {
   }
 
   @SuppressWarnings("unchecked")
-  private JsonNode toJsonNode(DBObject object) throws IOException {
+  private JsonNode toJsonNode(DBObject object) throws StorageException {
     if (object instanceof JacksonDBObject) {
       return (((JacksonDBObject<JsonNode>) object).getObject());
     } else if (object instanceof DBJsonNode) {
       return ((DBJsonNode) object).getDelegate();
     } else {
-      throw new IOException("Unknown DBObject type");
+      throw new StorageException("Unknown DBObject type");
     }
   }
 
