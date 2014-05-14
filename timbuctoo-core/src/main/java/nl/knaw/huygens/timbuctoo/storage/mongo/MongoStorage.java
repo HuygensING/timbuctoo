@@ -497,6 +497,21 @@ public class MongoStorage implements Storage {
   }
 
   @Override
+  public <T extends Relation> List<String> findRelations(Class<T> type, List<String> sourceIds, List<String> targetIds, List<String> relationTypeIds) throws StorageException {
+    DBObject query = DBQuery.and(DBQuery.in("^sourceId", sourceIds), DBQuery.in("^targetId", targetIds), DBQuery.in("^typeId", relationTypeIds));
+    StorageIterator<T> iterator = findItems(type, query);
+
+    List<String> relationIds = Lists.newArrayList();
+    while (iterator.hasNext()) {
+      T relation = iterator.next();
+      if (relation.isAccepted()) {
+        relationIds.add(relation.getId());
+      }
+    }
+    return relationIds;
+  }
+
+  @Override
   public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException {
     try {
       DBObject query = DBQuery.in("_id", ids);
