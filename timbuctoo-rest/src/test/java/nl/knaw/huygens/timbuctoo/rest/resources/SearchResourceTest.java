@@ -116,6 +116,10 @@ public class SearchResourceTest extends WebServiceTestSetup {
   public void testPostSuccess() throws Exception {
     setUpVREManager(true, true);
     SearchResult searchResult = createPostSearchResult();
+
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    when(storageManager.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
+
     setupSearchManager(searchResult);
     SearchParameters searchParameters = createSearchParameters(TYPE_STRING, ID, TERM);
 
@@ -127,31 +131,28 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
     assertEquals(expected, actual);
 
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
-    verify(storageManager).addSystemEntity(SearchResult.class, searchResult);
-
     verify(vreManager).getVREById(anyString());
   }
 
   @Test
   public void testPostSuccessWithoutSort() throws Exception {
-    setUpVREManager(true, true);
-    SearchResult searchResult = createPostSearchResult();
-    setupSearchManager(searchResult);
     SearchParameters searchParameters = createSearchParameters(TYPE_STRING, null, TERM);
+    SearchResult searchResult = createPostSearchResult();
+
+    setUpVREManager(true, true);
+    setupSearchManager(searchResult);
+
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    when(storageManager.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
 
     WebResource resource = super.resource();
     String expected = String.format("%ssearch/%s", resource.getURI().toString(), ID);
     ClientResponse response = resource.path("search").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, searchParameters);
     String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
-    verify(storageManager).addSystemEntity(SearchResult.class, searchResult);
-
-    verify(vreManager).getVREById(anyString());
-
     assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
     assertEquals(expected, actual);
+    verify(vreManager).getVREById(anyString());
   }
 
   @Test
@@ -207,20 +208,20 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostVREIdNull() throws Exception {
-    setUpVREManager(true, true);
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
-
+    SearchParameters searchParameters = createSearchParameters(TYPE_STRING, null, TERM);
     SearchResult searchResult = createPostSearchResult();
+
+    setUpVREManager(true, true);
     setupSearchManager(searchResult);
 
-    SearchParameters searchParameters = createSearchParameters(TYPE_STRING, null, TERM);
+    StorageManager storageManager = injector.getInstance(StorageManager.class);
+    when(storageManager.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
 
     WebResource resource = super.resource();
     String expected = String.format("%ssearch/%s", resource.getURI().toString(), ID);
     ClientResponse response = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, searchParameters);
     String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
-    verify(storageManager).addSystemEntity(SearchResult.class, searchResult);
     verify(vreManager).getDefaultVRE();
 
     assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());

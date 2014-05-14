@@ -123,8 +123,7 @@ public class SearchResource extends ResourceBase {
     // Process
     try {
       SearchResult result = searchManager.search(scope, type, searchParams);
-      storageManager.addSystemEntity(SearchResult.class, result);
-      String queryId = result.getId();
+      String queryId = storageManager.addSystemEntity(SearchResult.class, result);
       return Response.created(new URI(queryId)).build();
     } catch (NoSuchFacetException e) {
       throw new TimbuctooException(Response.Status.BAD_REQUEST, "No such facet: %s", e.getMessage());
@@ -180,8 +179,6 @@ public class SearchResource extends ResourceBase {
     returnValue.put("start", lo);
     returnValue.put("rows", idsToGet.size());
     returnValue.put("sortableFields", searchManager.findSortableFields(type));
-
-    LOG.debug("path: {}", uriInfo.getAbsolutePath());
 
     if (start > 0) {
       int prevStart = Math.max(start - rows, 0);
