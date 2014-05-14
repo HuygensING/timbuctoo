@@ -38,16 +38,24 @@ public class SearchResult extends SystemEntity implements Persistent {
 
   public static final String DATE_FIELD = "date";
 
+  private boolean relationSearch;
+  private List<String> sourceIds;
+  private List<String> targetIds;
+  private List<String> relationTypeIds;
+
+  private String searchType;
   private List<String> ids;
   private String term;
   private String sort;
   private Date date;
-  private String searchType;
   private List<FacetCount> facets;
 
-  public SearchResult() {}
+  public SearchResult() {
+    relationSearch = false;
+  }
 
   public SearchResult(List<String> ids, String type, String term, String sort, Date date) {
+    relationSearch = false;
     this.ids = ids;
     this.term = term;
     this.sort = sort;
@@ -58,6 +66,50 @@ public class SearchResult extends SystemEntity implements Persistent {
   @Override
   public String getDisplayName() {
     return "Search " + getId();
+  }
+
+  // -- relation search --------------------------------------------------------
+
+  public boolean isRelationSearch() {
+    return relationSearch;
+  }
+
+  public void setRelationSearch(boolean relationSearch) {
+    this.relationSearch = relationSearch;
+  }
+
+  public List<String> getSourceIds() {
+    return sourceIds;
+  }
+
+  public void setSourceIds(List<String> ids) {
+    sourceIds = ids;
+  }
+
+  public List<String> getTargetIds() {
+    return targetIds;
+  }
+
+  public void setTargetIds(List<String> ids) {
+    targetIds = ids;
+  }
+
+  public List<String> getRelationTypeIds() {
+    return relationTypeIds;
+  }
+
+  public void setRelationTypeIds(List<String> ids) {
+    relationTypeIds = ids;
+  }
+
+  // ---------------------------------------------------------------------------
+
+  public String getSearchType() {
+    return searchType;
+  }
+
+  public void setSearchType(String type) {
+    searchType = type;
   }
 
   public List<String> getIds() {
@@ -90,14 +142,6 @@ public class SearchResult extends SystemEntity implements Persistent {
 
   public void setDate(Date date) {
     this.date = date;
-  }
-
-  public String getSearchType() {
-    return searchType;
-  }
-
-  public void setSearchType(String type) {
-    searchType = type;
   }
 
   public List<FacetCount> getFacets() {
