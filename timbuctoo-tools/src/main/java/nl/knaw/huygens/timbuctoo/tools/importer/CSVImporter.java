@@ -26,13 +26,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
-
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -63,18 +60,18 @@ public abstract class CSVImporter {
     this(out, SEPARATOR_CHAR, QUOTE_CHAR, LINES_TO_SKIP);
   }
 
-  public void handleFile(File file, int itemsPerLine, boolean verbose) throws IOException, ValidationException {
+  public void handleFile(File file, int itemsPerLine, boolean verbose) throws Exception {
     if (!file.canRead()) {
       throw new FileNotFoundException("Missing CSV file " + file.getName());
     }
     handleFile(new FileInputStream(file), itemsPerLine, verbose);
   }
 
-  public void handleFile(String filename, int itemsPerLine, boolean verbose) throws IOException, ValidationException {
+  public void handleFile(String filename, int itemsPerLine, boolean verbose) throws Exception {
     handleFile(new FileInputStream(filename), itemsPerLine, verbose);
   }
 
-  public void handleFile(InputStream stream, int itemsPerLine, boolean verbose) throws IOException, ValidationException {
+  public void handleFile(InputStream stream, int itemsPerLine, boolean verbose) throws Exception {
     initialize();
     CSVReader reader = null;
     try {
@@ -105,9 +102,8 @@ public abstract class CSVImporter {
 
   /**
    * Handles a parsed input line.
-   * @throws ValidationException 
    */
-  protected abstract void handleLine(String[] items) throws IOException, ValidationException;
+  protected abstract void handleLine(String[] items) throws Exception;
 
   /**
    * Performa actions after file has been handled.

@@ -23,14 +23,12 @@ package nl.knaw.huygens.timbuctoo.tools.importer.neww;
  */
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 
-import com.google.common.collect.Maps;
-
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
+
+import com.google.common.collect.Maps;
 
 public class RelationTypeConcordance extends CSVImporter {
 
@@ -48,7 +46,7 @@ public class RelationTypeConcordance extends CSVImporter {
 
   private final Map<String, Mapping> map = Maps.newHashMap();
 
-  public RelationTypeConcordance(File file) throws IOException, ValidationException {
+  public RelationTypeConcordance(File file) throws Exception {
     super(new PrintWriter(System.err), ';', '"', 4);
     if (file != null) {
       handleFile(file, 6, false);
@@ -76,7 +74,7 @@ public class RelationTypeConcordance extends CSVImporter {
   private String createKey(String name, String leftType, String rightType) {
     return String.format("%s#%s#%s", name, leftType, rightType);
   }
-  
+
   private boolean isInverse(String text) {
     return text.equalsIgnoreCase("inverse");
   }

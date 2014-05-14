@@ -22,14 +22,11 @@ package nl.knaw.huygens.timbuctoo.tools.importer;
  * #L%
  */
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 /**
  * Imports all relation types.
@@ -48,13 +45,13 @@ public class RelationTypeImporter extends CSVImporter {
    * Reads {@code RelationType} definitions from the specified file which must
    * be present on the classpath.
    */
-  public void importRelationTypes(String fileName) throws IOException, ValidationException {
+  public void importRelationTypes(String fileName) throws Exception {
     InputStream stream = StorageManager.class.getClassLoader().getResourceAsStream(fileName);
     handleFile(stream, 6, false);
   }
 
   @Override
-  protected void handleLine(String[] items) throws IOException, ValidationException {
+  protected void handleLine(String[] items) throws Exception {
     RelationType entity = new RelationType();
     entity.setRegularName(items[0]);
     entity.setInverseName(items[1]);
@@ -62,12 +59,8 @@ public class RelationTypeImporter extends CSVImporter {
     entity.setTargetTypeName(items[3].toLowerCase());
     entity.setReflexive(Boolean.parseBoolean(items[4]));
     entity.setSymmetric(Boolean.parseBoolean(items[5]));
-    try {
-      if (storageManager.findEntity(RelationType.class, "regularName", entity.getRegularName()) == null) {
-        storageManager.addSystemEntity(RelationType.class, entity);
-      }
-    } catch (StorageException e) {
-      throw new IOException(e);
+    if (storageManager.findEntity(RelationType.class, "regularName", entity.getRegularName()) == null) {
+      storageManager.addSystemEntity(RelationType.class, entity);
     }
   }
 

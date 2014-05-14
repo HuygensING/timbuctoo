@@ -23,16 +23,14 @@ package nl.knaw.huygens.timbuctoo.tools.importer.neww;
  */
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
+
+import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.google.common.collect.Maps;
-
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
 
 /**
  * Normalizes names of publishers.
@@ -41,7 +39,7 @@ public class PublisherNormalizer extends CSVImporter {
 
   private final Map<String, String> map = Maps.newHashMap();
 
-  public PublisherNormalizer(File file) throws IOException, ValidationException {
+  public PublisherNormalizer(File file) throws Exception {
     super(new PrintWriter(System.err));
     if (file != null) {
       handleFile(file, 2, false);
@@ -109,4 +107,3 @@ public class PublisherNormalizer extends CSVImporter {
   }
 
 }
-

@@ -23,14 +23,12 @@ package nl.knaw.huygens.timbuctoo.tools.importer.neww;
  */
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 
-import com.google.common.collect.Maps;
-
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
+
+import com.google.common.collect.Maps;
 
 /**
  * Normalizes names of locations.
@@ -39,7 +37,7 @@ public class LocationConcordance extends CSVImporter {
 
   private final Map<String, String> map = Maps.newHashMap();
 
-  public LocationConcordance(File file) throws IOException, ValidationException {
+  public LocationConcordance(File file) throws Exception {
     super(new PrintWriter(System.err));
     if (file != null) {
       handleFile(file, 2, false);
