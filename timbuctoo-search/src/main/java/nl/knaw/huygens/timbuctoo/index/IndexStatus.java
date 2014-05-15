@@ -45,10 +45,10 @@ public class IndexStatus {
   }
 
   public void addCount(Scope scope, Class<? extends DomainEntity> type, long count) {
-    List<KV<Long>> list = counts.get(scope.getId());
+    List<KV<Long>> list = counts.get(scope.getScopeId());
     if (list == null) {
       list = Lists.newArrayList();
-      counts.put(scope.getId(), list);
+      counts.put(scope.getScopeId(), list);
     }
     list.add(new KV<Long>(type.getSimpleName(), count));
   }

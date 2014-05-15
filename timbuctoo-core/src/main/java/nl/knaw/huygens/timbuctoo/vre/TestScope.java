@@ -31,12 +31,12 @@ public class TestScope extends AbstractScope {
   }
 
   @Override
-  public String getId() {
+  public String getScopeId() {
     return "test";
   }
 
   @Override
-  public String getName() {
+  public String getScopeName() {
     return "Test Scope";
   }
 }

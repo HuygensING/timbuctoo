@@ -34,12 +34,12 @@ public class BaseScope extends AbstractScope {
   }
 
   @Override
-  public String getId() {
+  public String getScopeId() {
     return "base";
   }
 
   @Override
-  public String getName() {
+  public String getScopeName() {
     return "Base Scope";
   }
 

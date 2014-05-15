@@ -31,12 +31,12 @@ public class DutchCaribbeanScope extends AbstractScope {
   }
 
   @Override
-  public String getId() {
+  public String getScopeId() {
     return "dcar";
   }
 
   @Override
-  public String getName() {
+  public String getScopeName() {
     return "Dutch Caribbean Scope";
   }
 

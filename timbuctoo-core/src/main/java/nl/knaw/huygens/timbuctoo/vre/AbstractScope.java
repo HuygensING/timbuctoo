@@ -101,7 +101,7 @@ public abstract class AbstractScope implements Scope {
   }
 
   @Override
-  public <T extends DomainEntity> boolean isTypeInScope(Class<T> type) {
+  public <T extends DomainEntity> boolean inScope(Class<T> type) {
     return allTypes.contains(type);
   }
 

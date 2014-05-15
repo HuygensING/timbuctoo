@@ -31,12 +31,12 @@ public class DWCScope extends AbstractScope {
   }
 
   @Override
-  public String getId() {
+  public String getScopeId() {
     return "dwc";
   }
 
   @Override
-  public String getName() {
+  public String getScopeName() {
     return "DWC";
   }
 
