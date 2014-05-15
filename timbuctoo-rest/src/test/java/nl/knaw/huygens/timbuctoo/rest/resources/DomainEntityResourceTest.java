@@ -59,6 +59,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.rest.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
+import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -198,7 +199,10 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
 
     setUpUserWithRoles(USER_ID, Lists.newArrayList(userRole), VRE_ID);
-    setUpVREManager(VRE_ID, true);
+
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+    
     setUpScopeForEntity(type, DEFAULT_ID, VRE_ID, true);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
@@ -218,7 +222,10 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
 
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
-    setUpVREManager(VRE_ID, true);
+
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+
     setUpScopeForEntity(type, DEFAULT_ID, VRE_ID, false);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
@@ -238,7 +245,10 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
 
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
-    setUpVREManager(VRE_ID, true);
+
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+
     setUpScopeForEntity(type, DEFAULT_ID, VRE_ID, true);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
@@ -255,7 +265,10 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @SuppressWarnings("unchecked")
   public void testPutDocInvalidDocument() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
-    setUpVREManager(VRE_ID, true);
+
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+
     setUpScopeForEntity(ProjectADomainEntity.class, DEFAULT_ID, VRE_ID, true);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
@@ -319,7 +332,10 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
 
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
-    setUpVREManager(VRE_ID, true);
+
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+
     setUpScopeForEntity(type, DEFAULT_ID, VRE_ID, true);
 
     String id = "NULL000000000001";
@@ -337,7 +353,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutDocNonExistingType() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
 
-    setUpVREManager(VRE_ID, true);
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
 
@@ -351,7 +368,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutDocWrongType() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
 
-    setUpVREManager(VRE_ID, true);
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+
     setUpScopeForEntity(OtherDomainEntity.class, DEFAULT_ID, VRE_ID, true);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
@@ -366,7 +385,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutOnSuperClass() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
 
-    setUpVREManager(VRE_ID, true);
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+
     setUpScopeForEntity(OtherDomainEntity.class, DEFAULT_ID, VRE_ID, true);
 
     BaseDomainEntity entity = new BaseDomainEntity(DEFAULT_ID);
@@ -424,7 +445,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPostCollectionNotInScope() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
 
-    setUpVREManager(VRE_ID, true);
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+
     setUpScopeForCollection(DEFAULT_TYPE, VRE_ID, false);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
@@ -453,7 +476,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostWrongType() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
-    setUpVREManager(VRE_ID, true);
+
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
     whenJsonProviderReadFromThenReturn(entity);
@@ -487,7 +512,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   private void testDelete(String userRole) throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(userRole), VRE_ID);
 
-    setUpVREManager(VRE_ID, true);
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+
     setUpScopeForEntity(BASE_TYPE, DEFAULT_ID, VRE_ID, true);
 
     BaseDomainEntity entity = new BaseDomainEntity(DEFAULT_ID);
@@ -505,7 +532,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testDeleteProjectSpecificType() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
 
-    setUpVREManager(VRE_ID, true);
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+
     setUpScopeForEntity(DEFAULT_TYPE, DEFAULT_ID, VRE_ID, true);
 
     ClientResponse response = domainResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
@@ -533,7 +562,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testDeleteDocumentDoesNotExist() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
 
-    setUpVREManager(VRE_ID, true);
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
 
     when(getStorageManager().getEntity(BASE_TYPE, DEFAULT_ID)).thenReturn(null);
 
@@ -547,7 +577,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testDeleteTypeDoesNotExist() throws Exception {
     setUpUserWithRoles(USER_ID, null, VRE_ID);
 
-    setUpVREManager(VRE_ID, true);
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
 
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
 
@@ -660,8 +691,16 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutPID() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
 
-    setUpVREManager(VRE_ID, true);
-    setUpScopeForCollection(BaseDomainEntity.class, VRE_ID, true);
+    Scope scope = mock(Scope.class);
+    when(scope.inScope(BaseDomainEntity.class)).thenReturn(true);
+
+    VRE vre = mock(VRE.class);
+    when(vre.getScope()).thenReturn(scope);
+    when(vre.inScope(BaseDomainEntity.class)).thenReturn(true);
+
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+    when(vreManager.getVREById(VRE_ID)).thenReturn(vre);
 
     Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
     String id1 = "ID1";
@@ -683,8 +722,16 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutPIDOnBaseEntity() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
 
-    setUpVREManager(VRE_ID, true);
-    setUpScopeForCollection(BaseDomainEntity.class, VRE_ID, true);
+    Scope scope = mock(Scope.class);
+    when(scope.inScope(BaseDomainEntity.class)).thenReturn(true);
+
+    VRE vre = mock(VRE.class);
+    when(vre.getScope()).thenReturn(scope);
+    when(vre.inScope(BaseDomainEntity.class)).thenReturn(true);
+
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+    when(vreManager.getVREById(VRE_ID)).thenReturn(vre);
 
     ClientResponse response = doPutPIDRequest("basedomainentities");
 
@@ -697,8 +744,17 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testPutPIDBaseClassNotInScope() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
-    setUpVREManager(VRE_ID, true);
-    setUpScopeForCollection(BaseDomainEntity.class, VRE_ID, false);
+
+    Scope scope = mock(Scope.class);
+    when(scope.inScope(BaseDomainEntity.class)).thenReturn(false);
+
+    VRE vre = mock(VRE.class);
+    when(vre.getScope()).thenReturn(scope);
+    when(vre.inScope(BaseDomainEntity.class)).thenReturn(false);
+
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+    when(vreManager.getVREById(VRE_ID)).thenReturn(vre);
 
     ClientResponse response = doPutPIDRequest(PROJECTADOMAINENTITIES_RESOURCE);
 
@@ -712,7 +768,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutPIDTypeDoesNotExist() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
 
-    setUpVREManager(VRE_ID, true);
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
 
     ClientResponse response = doPutPIDRequest("unknowntypes");
 
@@ -726,7 +783,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutPIDUserNotAllowed() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
 
-    setUpVREManager(VRE_ID, true);
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
 
     ClientResponse response = doPutPIDRequest("unknowntypes");
 
