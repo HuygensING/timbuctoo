@@ -31,6 +31,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -58,6 +59,8 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.rest.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -397,8 +400,12 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   private void testPost(String userRole) throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(userRole), VRE_ID);
 
-    setUpVREManager(VRE_ID, true);
-    setUpScopeForCollection(DEFAULT_TYPE, VRE_ID, true);
+    VRE vre = mock(VRE.class);
+    when(vre.inScope(DEFAULT_TYPE)).thenReturn(true);
+
+    VREManager vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+    when(vreManager.getVREById(VRE_ID)).thenReturn(vre);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
     when(getStorageManager().addDomainEntity(Matchers.<Class<ProjectADomainEntity>> any(), any(ProjectADomainEntity.class), any(Change.class))).thenReturn(DEFAULT_ID);

@@ -22,6 +22,9 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
@@ -66,6 +69,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.slf4j.Logger;
@@ -134,9 +138,12 @@ public class DomainEntityResource extends ResourceBase {
       @QueryParam(USER_ID_KEY) String userId//
   ) throws StorageException, URISyntaxException {
 
-    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
-    checkCondition(type == input.getClass(), Status.BAD_REQUEST, "Type %s does not match input", type.getSimpleName());
-    checkCollectionInScope(type, vreId, Status.FORBIDDEN);
+    Class<? extends DomainEntity> type = getEntityType(entityName, NOT_FOUND);
+    checkCondition(type == input.getClass(), BAD_REQUEST, "Type %s does not match input", type.getSimpleName());
+
+    VRE vre = vreManager.getVREById(vreId);
+    checkNotNull(vre, NOT_FOUND, "No VRE with id %s", vreId);
+    checkCondition(vre.inScope(type), FORBIDDEN, "Type %s not in scope %s", type, vreId);
 
     Change change = new Change(userId, vreId);
 
@@ -148,7 +155,7 @@ public class DomainEntityResource extends ResourceBase {
       LOG.info("Duplicate entity {} with id {}", entityName, e.getDuplicateId());
       id = updateTheDuplicateEntity(entityName, input, vreId, userId, e.getDuplicateId());
     } catch (ValidationException e) {
-      throw new TimbuctooException(Status.BAD_REQUEST, "Invalid entity; %s", e.getMessage());
+      throw new TimbuctooException(BAD_REQUEST, "Invalid entity; %s", e.getMessage());
     }
     notifyChange(ActionType.ADD, type, id);
 
@@ -203,12 +210,12 @@ public class DomainEntityResource extends ResourceBase {
   ) {
 
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
-    checkCondition(type == input.getClass(), Status.BAD_REQUEST, "Type %s does not match input", type.getSimpleName());
+    checkCondition(type == input.getClass(), BAD_REQUEST, "Type %s does not match input", type.getSimpleName());
 
     DomainEntity entity = storageManager.getEntity(type, id);
     checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
-    checkItemInScope(type, id, vreId, Status.FORBIDDEN);
-    checkNotNull(entity.getPid(), Status.FORBIDDEN, "%s with id %s is read-only (no PID)", type.getSimpleName(), id);
+    checkItemInScope(type, id, vreId, FORBIDDEN);
+    checkNotNull(entity.getPid(), FORBIDDEN, "%s with id %s is read-only (no PID)", type.getSimpleName(), id);
 
     try {
       Change change = new Change(userId, vreId);
@@ -234,11 +241,11 @@ public class DomainEntityResource extends ResourceBase {
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
 
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
-      throw new TimbuctooException(Status.BAD_REQUEST, "Illegal PUT for primitive domain entity %s", type.getSimpleName());
+      throw new TimbuctooException(BAD_REQUEST, "Illegal PUT for primitive domain entity %s", type.getSimpleName());
     }
 
     // if you want to be able to put a pid on items without pid you have to have access to the base class.
-    checkCollectionInScope(TypeRegistry.toBaseDomainEntity(type), vreId, Status.FORBIDDEN);
+    checkCollectionInScope(TypeRegistry.toBaseDomainEntity(type), vreId, FORBIDDEN);
 
     for (String id : storageManager.getAllIdsWithoutPIDOfType(type)) {
       sendPersistMessage(ActionType.MOD, type, id);
@@ -256,13 +263,13 @@ public class DomainEntityResource extends ResourceBase {
 
     Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
     if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
-      throw new TimbuctooException(Status.BAD_REQUEST, "Not a primitive domain entity: %s", entityName);
+      throw new TimbuctooException(BAD_REQUEST, "Not a primitive domain entity: %s", entityName);
     }
 
     DomainEntity entity = storageManager.getEntity(type, id);
     checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
-    checkItemInScope(type, id, vreId, Status.FORBIDDEN);
-    checkNotNull(entity.getPid(), Status.FORBIDDEN, "%s with id %s is read-only (no PID)", type.getSimpleName(), id);
+    checkItemInScope(type, id, vreId, FORBIDDEN);
+    checkNotNull(entity.getPid(), FORBIDDEN, "%s with id %s is read-only (no PID)", type.getSimpleName(), id);
 
     storageManager.deleteDomainEntity(entity);
     notifyChange(ActionType.DEL, type, id);
