@@ -261,7 +261,7 @@ public class StorageManager {
    * @return a list with all the ids.
    * @throws StorageException when the storage layer throws an exception it will be forwarded.
    */
-  public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws StorageException {
+  public <T extends DomainEntity> List<String> getAllIdsWithoutPID(Class<T> type) throws StorageException {
     return storage.getAllIdsWithoutPIDOfType(type);
   }
 

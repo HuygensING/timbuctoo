@@ -195,7 +195,7 @@ public abstract class DefaultImporter {
    * Deletes the non persisted entity's of {@code type} and it's relations from the storage and the index.
    */
   protected void removeNonPersistentEntities(Class<? extends DomainEntity> type) throws StorageException, IndexException {
-    List<String> ids = storageManager.getAllIdsWithoutPIDOfType(type);
+    List<String> ids = storageManager.getAllIdsWithoutPID(type);
     storageManager.deleteNonPersistent(type, ids);
     indexManager.deleteEntities(type, ids);
 

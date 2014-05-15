@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
@@ -184,11 +185,11 @@ public class DomainEntityResource extends ResourceBase {
 
     if (revision == null) {
       DomainEntity entity = storageManager.getEntityWithRelations(type, id);
-      checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
+      checkNotNull(entity, NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
       return entity;
     } else {
       DomainEntity entity = storageManager.getRevisionWithRelations(type, id, revision);
-      checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s and revision %s", type.getSimpleName(), id, revision);
+      checkNotNull(entity, NOT_FOUND, "No %s with id %s and revision %s", type.getSimpleName(), id, revision);
       return entity;
     }
   }
@@ -211,23 +212,21 @@ public class DomainEntityResource extends ResourceBase {
     checkCondition(type == input.getClass(), BAD_REQUEST, "Type %s does not match input", type.getSimpleName());
 
     DomainEntity entity = storageManager.getEntity(type, id);
-    checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
+    checkNotNull(entity, NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
+    checkNotNull(entity.getPid(), FORBIDDEN, "%s with id %s is read-only (no PID)", type.getSimpleName(), id);
 
     VRE vre = getValidVRE(vreId);
     checkCondition(vre.inScope(type, id), FORBIDDEN, "Entity %s %s not in scope %s", type, id, vreId);
 
-    checkNotNull(entity.getPid(), FORBIDDEN, "%s with id %s is read-only (no PID)", type.getSimpleName(), id);
-
     try {
       Change change = new Change(userId, vreId);
       storageManager.updateDomainEntity((Class<T>) type, (T) input, change);
+      notifyChange(ActionType.MOD, type, id);
     } catch (UpdateException e) {
       throw new TimbuctooException(Status.CONFLICT, "Entity %s with id %s already updated", type.getSimpleName(), id);
     } catch (StorageException e) {
-      throw new TimbuctooException(Status.INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
+      throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
     }
-
-    notifyChange(ActionType.MOD, type, id);
   }
 
   @PUT
@@ -237,22 +236,24 @@ public class DomainEntityResource extends ResourceBase {
   @JsonView(JsonViews.WebView.class)
   public void putPIDs(//
       @PathParam(ENTITY_PARAM) String entityName,//
-      @HeaderParam(VRE_ID_KEY) String vreId) throws StorageException {
+      @HeaderParam(VRE_ID_KEY) String vreId) {
 
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
-
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
       throw new TimbuctooException(BAD_REQUEST, "Illegal PUT for primitive domain entity %s", type.getSimpleName());
     }
 
-    VRE vre = getValidVRE(vreId);
-
     // to put a pid you must have access to the base class
+    VRE vre = getValidVRE(vreId);
     Class<? extends DomainEntity> base = TypeRegistry.toBaseDomainEntity(type);
     checkCondition(vre.inScope(base), FORBIDDEN, "Type %s not in scope %s", base, vreId);
 
-    for (String id : storageManager.getAllIdsWithoutPIDOfType(type)) {
-      sendPersistMessage(ActionType.MOD, type, id);
+    try {
+      for (String id : storageManager.getAllIdsWithoutPID(type)) {
+        sendPersistMessage(ActionType.MOD, type, id);
+      }
+    } catch (StorageException e) {
+      throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
     }
   }
 
@@ -263,7 +264,7 @@ public class DomainEntityResource extends ResourceBase {
   public Response delete( //
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id, //
-      @HeaderParam(VRE_ID_KEY) String vreId) throws StorageException {
+      @HeaderParam(VRE_ID_KEY) String vreId) {
 
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
     if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
@@ -271,17 +272,19 @@ public class DomainEntityResource extends ResourceBase {
     }
 
     DomainEntity entity = storageManager.getEntity(type, id);
-    checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
+    checkNotNull(entity, NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
+    checkNotNull(entity.getPid(), FORBIDDEN, "%s with id %s is read-only (no PID)", type, id);
 
     VRE vre = getValidVRE(vreId);
-    checkCondition(vre.inScope(type, id), FORBIDDEN, "Entity %s %s not in scope %s", type, id, vreId);
+    checkCondition(vre.inScope(type, id), FORBIDDEN, "%s with id %s not in scope %s", type, id, vreId);
 
-    checkNotNull(entity.getPid(), FORBIDDEN, "%s with id %s is read-only (no PID)", type.getSimpleName(), id);
-
-    storageManager.deleteDomainEntity(entity);
-    notifyChange(ActionType.DEL, type, id);
-
-    return Response.status(Status.NO_CONTENT).build();
+    try {
+      storageManager.deleteDomainEntity(entity);
+      notifyChange(ActionType.DEL, type, id);
+      return Response.status(Status.NO_CONTENT).build();
+    } catch (StorageException e) {
+      throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
+    }
   }
 
   // --- Message handling ----------------------------------------------
