@@ -252,7 +252,7 @@ public class SearchResource extends ResourceBase {
     List<String> targetIds = targetSearchResult.getIds();
 
     List<String> relationTypeIds = params.getRelationTypeIds();
-    checkCondition(relationTypeIds.size() > 0, BAD_REQUEST, "No 'relationTypeIds' specified");
+    checkNotNull(relationTypeIds, BAD_REQUEST, "No 'relationTypeIds' specified");
     for (String id : relationTypeIds) {
       checkNotNull(storageManager.getRelationType(id), BAD_REQUEST, "No RelationType with id %s", id);
     }
