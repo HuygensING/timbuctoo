@@ -35,9 +35,4 @@ public class WomenWritersScope extends AbstractScope {
     return "neww";
   }
 
-  @Override
-  public String getScopeName() {
-    return "Women Writers Scope";
-  }
-
 }

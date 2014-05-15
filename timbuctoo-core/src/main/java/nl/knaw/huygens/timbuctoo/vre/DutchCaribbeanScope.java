@@ -35,9 +35,4 @@ public class DutchCaribbeanScope extends AbstractScope {
     return "dcar";
   }
 
-  @Override
-  public String getScopeName() {
-    return "Dutch Caribbean Scope";
-  }
-
 }

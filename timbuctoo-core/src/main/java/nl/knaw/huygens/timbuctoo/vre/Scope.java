@@ -38,11 +38,6 @@ public interface Scope {
   String getScopeId();
 
   /**
-   * Returns the name of this scope.
-   */
-  String getScopeName();
-
-  /**
    * Returns primitive domain entity types in this scope.
    */
   Set<Class<? extends DomainEntity>> getBaseEntityTypes();

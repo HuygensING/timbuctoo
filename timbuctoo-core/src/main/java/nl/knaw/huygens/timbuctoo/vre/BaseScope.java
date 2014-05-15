@@ -38,9 +38,4 @@ public class BaseScope extends AbstractScope {
     return "base";
   }
 
-  @Override
-  public String getScopeName() {
-    return "Base Scope";
-  }
-
 }

@@ -35,8 +35,4 @@ public class TestScope extends AbstractScope {
     return "test";
   }
 
-  @Override
-  public String getScopeName() {
-    return "Test Scope";
-  }
 }
