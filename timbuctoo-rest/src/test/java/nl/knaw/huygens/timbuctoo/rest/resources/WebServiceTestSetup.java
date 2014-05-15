@@ -189,7 +189,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     setupScope(vreId, scope);
   }
 
-  private void setupScope(String vreId, Scope scope) {
+  protected void setupScope(String vreId, Scope scope) {
     VRE vre = mock(VRE.class);
     when(vre.getScope()).thenReturn(scope);
 
