@@ -53,14 +53,6 @@ public class PrimitivesScopeTest {
   }
 
   @Test
-  public void testAllEntityTypes() {
-    assertTrue(scope.getAllEntityTypes().contains(Person.class));
-    assertTrue(scope.getAllEntityTypes().contains(Place.class));
-    assertFalse(scope.getAllEntityTypes().contains(User.class));
-    assertFalse(scope.getAllEntityTypes().contains(DCARPerson.class));
-  }
-
-  @Test
   public void testTypeAndIdInScope() {
     assertTrue(scope.inScope(Person.class, "id"));
     assertTrue(scope.inScope(Place.class, "id"));
@@ -75,7 +67,7 @@ public class PrimitivesScopeTest {
   }
 
   @Test
-  public void testIsTypeInScope() {
+  public void testTypeInScope() {
     assertTrue(scope.inScope(Person.class));
     assertTrue(scope.inScope(Place.class));
     assertFalse(scope.inScope(DCARPerson.class));

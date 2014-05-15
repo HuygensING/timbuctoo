@@ -25,6 +25,9 @@ package nl.knaw.huygens.timbuctoo.vre;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,11 +50,6 @@ public abstract class AbstractVRE implements VRE {
   protected abstract Scope createScope() throws IOException;
 
   @Override
-  public Scope getScope() {
-    return scope;
-  }
-
-  @Override
   public String getDomainEntityPrefix() {
     return "";
   }
@@ -59,6 +57,36 @@ public abstract class AbstractVRE implements VRE {
   @Override
   public List<String> getReceptionNames() {
     return Collections.emptyList();
+  }
+
+  @Override
+  public Scope getScope() {
+    return scope;
+  }
+
+  @Override
+  public String getScopeId() {
+    return scope.getScopeId();
+  }
+
+  @Override
+  public Set<Class<? extends DomainEntity>> getBaseEntityTypes() {
+    return scope.getBaseEntityTypes();
+  }
+
+  @Override
+  public <T extends DomainEntity> boolean inScope(Class<T> type) {
+    return scope.inScope(type);
+  }
+
+  @Override
+  public <T extends DomainEntity> boolean inScope(Class<T> type, String id) {
+    return scope.inScope(type, id);
+  }
+
+  @Override
+  public <T extends DomainEntity> boolean inScope(T entity) {
+    return scope.inScope(entity);
   }
 
 }
