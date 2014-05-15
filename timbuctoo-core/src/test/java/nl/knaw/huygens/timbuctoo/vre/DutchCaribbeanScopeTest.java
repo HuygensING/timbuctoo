@@ -53,14 +53,6 @@ public class DutchCaribbeanScopeTest {
   }
 
   @Test
-  public void testAllEntityTypes() {
-    assertFalse(scope.getAllEntityTypes().contains(Person.class));
-    assertFalse(scope.getAllEntityTypes().contains(Place.class));
-    assertFalse(scope.getAllEntityTypes().contains(User.class));
-    assertTrue(scope.getAllEntityTypes().contains(DCARPerson.class));
-  }
-
-  @Test
   public void testTypeAndIdInScope() {
     assertFalse(scope.inScope(Person.class, "id"));
     assertFalse(scope.inScope(Place.class, "id"));
@@ -68,7 +60,7 @@ public class DutchCaribbeanScopeTest {
   }
 
   @Test
-  public void testInstanceInScopeBy() {
+  public void testInstanceInScope() {
     assertFalse(scope.inScope(new Person()));
     assertFalse(scope.inScope(new Place()));
     assertTrue(scope.inScope(new DCARPerson()));

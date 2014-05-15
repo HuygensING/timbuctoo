@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Defines a Virtual Research Environment.
  */
-public interface VRE {
+public interface VRE extends Scope {
 
   /**
    * Returns the unique name of this VRE.
@@ -40,12 +40,6 @@ public interface VRE {
   String getDescription();
 
   /**
-   * Returns the {@code Scope} of this VRE.
-   * Currently a {@codeVRE} has one {@code Scope}.
-   */
-  Scope getScope();
-
-  /**
    * Returns the prefix for domain entities to derive their internal name
    * from the internal name of the primitive domain entities.
    * NOTE. This solution can be made more general.
@@ -56,5 +50,11 @@ public interface VRE {
    * Returns names of relation types that are considered to be receptions.
    */
   List<String> getReceptionNames();
+
+  /**
+   * Returns the {@code Scope} of this VRE.
+   * Currently a {@codeVRE} has one {@code Scope}.
+   */
+  Scope getScope();
 
 }

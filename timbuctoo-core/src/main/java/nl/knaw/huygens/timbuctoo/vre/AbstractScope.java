@@ -40,8 +40,8 @@ public abstract class AbstractScope implements Scope {
   private ClassPath classPath;
   private Builder<Class<? extends DomainEntity>> builder;
 
-  private Set<Class<? extends DomainEntity>> baseTypes;
   private Set<Class<? extends DomainEntity>> allTypes;
+  private Set<Class<? extends DomainEntity>> baseTypes;
 
   public AbstractScope() throws IOException {
     classPath = ClassPath.from(AbstractScope.class.getClassLoader());
@@ -61,12 +61,6 @@ public abstract class AbstractScope implements Scope {
   public final Set<Class<? extends DomainEntity>> getBaseEntityTypes() {
     checkState(builder == null);
     return baseTypes;
-  }
-
-  @Override
-  public final Set<Class<? extends DomainEntity>> getAllEntityTypes() {
-    checkState(builder == null);
-    return allTypes;
   }
 
   /**
