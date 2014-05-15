@@ -59,7 +59,6 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.rest.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
-import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -691,11 +690,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutPID() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
 
-    Scope scope = mock(Scope.class);
-    when(scope.inScope(BaseDomainEntity.class)).thenReturn(true);
-
     VRE vre = mock(VRE.class);
-    when(vre.getScope()).thenReturn(scope);
     when(vre.inScope(BaseDomainEntity.class)).thenReturn(true);
 
     VREManager vreManager = injector.getInstance(VREManager.class);
@@ -722,11 +717,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutPIDOnBaseEntity() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
 
-    Scope scope = mock(Scope.class);
-    when(scope.inScope(BaseDomainEntity.class)).thenReturn(true);
-
     VRE vre = mock(VRE.class);
-    when(vre.getScope()).thenReturn(scope);
     when(vre.inScope(BaseDomainEntity.class)).thenReturn(true);
 
     VREManager vreManager = injector.getInstance(VREManager.class);
@@ -745,11 +736,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutPIDBaseClassNotInScope() throws Exception {
     setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
 
-    Scope scope = mock(Scope.class);
-    when(scope.inScope(BaseDomainEntity.class)).thenReturn(false);
-
     VRE vre = mock(VRE.class);
-    when(vre.getScope()).thenReturn(scope);
     when(vre.inScope(BaseDomainEntity.class)).thenReturn(false);
 
     VREManager vreManager = injector.getInstance(VREManager.class);

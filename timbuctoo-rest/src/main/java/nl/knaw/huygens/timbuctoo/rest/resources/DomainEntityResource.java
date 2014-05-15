@@ -244,8 +244,12 @@ public class DomainEntityResource extends ResourceBase {
       throw new TimbuctooException(BAD_REQUEST, "Illegal PUT for primitive domain entity %s", type.getSimpleName());
     }
 
-    // if you want to be able to put a pid on items without pid you have to have access to the base class.
-    checkCollectionInScope(TypeRegistry.toBaseDomainEntity(type), vreId, FORBIDDEN);
+    VRE vre = vreManager.getVREById(vreId);
+    checkNotNull(vre, NOT_FOUND, "No VRE with id %s", vreId);
+
+    // to put a pid you must have access to the base class
+    Class<? extends DomainEntity> base = TypeRegistry.toBaseDomainEntity(type);
+    checkCondition(vre.inScope(base), FORBIDDEN, "Type %s not in scope %s", base, vreId);
 
     for (String id : storageManager.getAllIdsWithoutPIDOfType(type)) {
       sendPersistMessage(ActionType.MOD, type, id);
@@ -327,18 +331,6 @@ public class DomainEntityResource extends ResourceBase {
     Class<? extends DomainEntity> type = typeRegistry.getTypeForXName(entityName);
     checkNotNull(type, status, "No domain entity collection %s", entityName);
     return type;
-  }
-
-  /**
-   * Helper method to check if the type is in the scope of the VRE.
-   * @param type the type to check.
-   * @param vreId the id of the VRE.
-   */
-  private <T extends DomainEntity> void checkCollectionInScope(Class<T> type, String vreId, Status status) {
-    Scope scope = getScope(vreId);
-    if (!scope.inScope(type)) {
-      throw new TimbuctooException(status, "Type %s not in scope %s", type, vreId);
-    }
   }
 
   /**
