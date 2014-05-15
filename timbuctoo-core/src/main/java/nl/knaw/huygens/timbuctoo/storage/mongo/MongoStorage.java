@@ -498,7 +498,8 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Relation> List<String> findRelations(Class<T> type, List<String> sourceIds, List<String> targetIds, List<String> relationTypeIds) throws StorageException {
-    DBObject query = DBQuery.and(DBQuery.in("^sourceId", sourceIds), DBQuery.in("^targetId", targetIds), DBQuery.in("^typeId", relationTypeIds));
+    // for now we simply ignore relation type id's
+    DBObject query = DBQuery.and(DBQuery.in("^sourceId", sourceIds), DBQuery.in("^targetId", targetIds));
     StorageIterator<T> iterator = findItems(type, query);
 
     List<String> relationIds = Lists.newArrayList();
