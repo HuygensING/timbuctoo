@@ -79,7 +79,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetAllUsers() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
 
     setUpVREManager(VRE_ID, true);
 
@@ -94,7 +94,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetAllUsersNonFound() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     List<User> expectedList = Lists.newArrayList();
@@ -108,7 +108,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetAllUsersNotInRole() {
-    setUpUserWithRoles(USER_ID, null, VRE_ID);
+    setupUserWithRoles(USER_ID, null, VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     ClientResponse response = resource.header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
@@ -125,7 +125,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetUserAsAdmin() {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     User expected = createUser(USER_ID, "test", "test");
@@ -140,7 +140,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetUserNotFound() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -152,7 +152,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetMyUserDataAsAdmin() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     User expected = createUser(USER_ID, "test", "test");
@@ -167,7 +167,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetMyUserDataAsUser() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
+    setupUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     User expected = createUser(USER_ID, "test", "test");
@@ -182,7 +182,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetMyUserDataAsNewUser() throws Exception {
-    setUpUser(USER_ID);
+    setupUser(USER_ID);
     setUpVREManager(VRE_ID, true);
 
     MailSender mailSender = injector.getInstance(MailSender.class);
@@ -220,7 +220,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetUserAsUser() {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
 
     ClientResponse response = resource.path(USER_ID).header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
     assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
@@ -236,7 +236,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutUser() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     MailSender sender = injector.getInstance(MailSender.class);
 
@@ -257,7 +257,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   @SuppressWarnings("unchecked")
   @Test
   public void testPutUserUserNotFound() throws Exception {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     User user = createUser(USER_ID, "firstName", "lastName");
@@ -277,7 +277,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutUserNotInRole() {
-    setUpUserWithRoles(USER_ID, null, VRE_ID);
+    setupUserWithRoles(USER_ID, null, VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     User user = createUser(USER_ID, "firstName", "lastName");
@@ -303,7 +303,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteUser() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     User expected = createUser(USER_ID, "test", "test");
@@ -316,7 +316,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteUserUserNotFound() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
@@ -328,7 +328,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteUserNotInRole() {
-    setUpUserWithRoles(USER_ID, null, VRE_ID);
+    setupUserWithRoles(USER_ID, null, VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     User expected = createUser(USER_ID, "test", "test");
@@ -352,7 +352,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetVREAuthorizationAsAdmin() {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization expected = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
@@ -368,7 +368,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetVREAuthorizationAsUser() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
+    setupUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
     StorageManager storageManager = getStorageManager();
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
 
@@ -391,7 +391,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetVREAuthorizationNotFound() {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
@@ -407,7 +407,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetVREAuthorizationNotInScope() {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), OTHER_VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), OTHER_VRE_ID);
     setUpVREManager(OTHER_VRE_ID, true);
 
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
@@ -421,7 +421,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostVREAuthorizationAsAdmin() throws Exception {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
     StorageManager storageManager = getStorageManager();
@@ -437,7 +437,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostVREAuthorizationAsUser() throws Exception {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
 
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
 
@@ -461,7 +461,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostVREAuthorizationVREAuthorizationIsNull() throws Exception {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization vreAuthorization = null;
     StorageManager storageManager = getStorageManager();
@@ -475,7 +475,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostVREAuthorizationNotInScope() throws Exception {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), OTHER_VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), OTHER_VRE_ID);
     setUpVREManager(OTHER_VRE_ID, true);
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
     StorageManager storageManager = getStorageManager();
@@ -489,7 +489,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutVREAuthorizationAsAdmin() throws Exception {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
@@ -506,7 +506,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutVREAuthorizationAsUser() throws Exception {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
@@ -538,7 +538,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutVREAuthorizationVREAuthorizationIsNull() throws Exception {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization vreAuthorization = null;
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
@@ -554,7 +554,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutVREAuthorizationNotFound() throws Exception {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
@@ -570,7 +570,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutVREAuthorizationNotInScope() throws Exception {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), OTHER_VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), OTHER_VRE_ID);
     setUpVREManager(OTHER_VRE_ID, true);
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
@@ -587,7 +587,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteVREAuthorizationAsAdmin() throws Exception {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
     VREAuthorization vreAuthorization = createVREAuthorization(USER_ID, VRE_ID, Lists.newArrayList(USER_ROLE));
@@ -604,7 +604,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteAuthorizationAsUser() throws Exception {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
 
@@ -634,7 +634,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteAuthorizationNotFound() throws Exception {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
     StorageManager storageManager = getStorageManager();
@@ -650,7 +650,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteVREAuthorizationNotInScope() throws Exception {
-    setUpUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), OTHER_VRE_ID);
+    setupUserWithRoles(OTHER_USER_ID, Lists.newArrayList(ADMIN_ROLE), OTHER_VRE_ID);
     setUpVREManager(OTHER_VRE_ID, true);
     VREAuthorization example = createVREAuthorization(USER_ID, VRE_ID);
 
@@ -665,7 +665,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetRolesAsAdmin() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
+    setupUserWithRoles(USER_ID, Lists.newArrayList(ADMIN_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     ClientResponse response = resource.path("roles").header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
@@ -677,7 +677,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetRolesAsUser() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
+    setupUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
     setUpVREManager(VRE_ID, true);
 
     ClientResponse response = resource.path("roles").header(AUTHORIZATION_KEY, DEFAULT_AUTHORIZATION).header(VRE_ID_KEY, VRE_ID).get(ClientResponse.class);

@@ -35,7 +35,7 @@ public class SiteMapResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetSitemap() {
-    setUpUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
+    setupUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
     ClientResponse response = resource().path(Paths.SYSTEM_PREFIX).path("api").header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
     assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
   }
