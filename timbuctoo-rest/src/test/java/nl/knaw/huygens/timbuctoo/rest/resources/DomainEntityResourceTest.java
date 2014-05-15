@@ -195,19 +195,19 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   private void testPut(String userRole) throws Exception {
-    Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
-
     setupUserWithRoles(USER_ID, Lists.newArrayList(userRole), VRE_ID);
+        
+    VRE vre = mock(VRE.class);
+    when(vre.inScope(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(true);
 
     VREManager vreManager = injector.getInstance(VREManager.class);
     when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
-    
-    setUpScopeForEntity(type, DEFAULT_ID, VRE_ID, true);
+    when(vreManager.getVREById(VRE_ID)).thenReturn(vre);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
 
-    when(getStorageManager().getEntity(type, DEFAULT_ID)).thenReturn(entity);
+    when(getStorageManager().getEntity(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
     ClientResponse response = domainResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", "bearer 12333322abef")
         .header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, entity);
