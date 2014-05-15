@@ -38,9 +38,4 @@ public class PrimitivesScope extends AbstractScope {
     return "prim";
   }
 
-  @Override
-  public String getScopeName() {
-    return "Primitives Scope";
-  }
-
 }

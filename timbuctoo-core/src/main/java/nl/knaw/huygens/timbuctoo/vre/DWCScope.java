@@ -35,9 +35,4 @@ public class DWCScope extends AbstractScope {
     return "dwc";
   }
 
-  @Override
-  public String getScopeName() {
-    return "DWC";
-  }
-
 }

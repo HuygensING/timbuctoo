@@ -35,9 +35,4 @@ public class CobwwwebNoScope extends AbstractScope {
     return "cwno";
   }
 
-  @Override
-  public String getScopeName() {
-    return "COBWWWEB-Norway Scope";
-  }
-
 }
