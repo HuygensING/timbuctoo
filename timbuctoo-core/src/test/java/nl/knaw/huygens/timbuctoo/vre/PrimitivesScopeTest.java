@@ -76,9 +76,9 @@ public class PrimitivesScopeTest {
 
   @Test
   public void testIsTypeInScope() {
-    assertTrue(scope.isTypeInScope(Person.class));
-    assertTrue(scope.isTypeInScope(Place.class));
-    assertFalse(scope.isTypeInScope(DCARPerson.class));
+    assertTrue(scope.inScope(Person.class));
+    assertTrue(scope.inScope(Place.class));
+    assertFalse(scope.inScope(DCARPerson.class));
   }
 
 }

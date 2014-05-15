@@ -114,7 +114,7 @@ public class SearchResource extends ResourceBase {
     checkNotNull(typeString, BAD_REQUEST, "No 'typeString' parameter specified");
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
-    checkCondition(scope.isTypeInScope(type), BAD_REQUEST, "Type not in scope: %s", typeString);
+    checkCondition(scope.inScope(type), BAD_REQUEST, "Type not in scope: %s", typeString);
 
     String q = StringUtils.trimToNull(searchParams.getTerm());
     checkNotNull(q, BAD_REQUEST, "No 'q' parameter specified");
@@ -237,7 +237,7 @@ public class SearchResource extends ResourceBase {
     checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
     @SuppressWarnings("unchecked")
     Class<? extends Relation> relationType = (Class<? extends Relation>) type;
-    checkCondition(scope.isTypeInScope(type), BAD_REQUEST, "Type not in scope: %s", typeString);
+    checkCondition(scope.inScope(type), BAD_REQUEST, "Type not in scope: %s", typeString);
 
     String sourceSearchId = StringUtils.trimToNull(params.getSourceSearchId());
     checkNotNull(sourceSearchId, BAD_REQUEST, "No 'sourceSearchId' specified");

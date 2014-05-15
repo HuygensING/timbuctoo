@@ -31,12 +31,12 @@ public class CobwwwebNoScope extends AbstractScope {
   }
 
   @Override
-  public String getId() {
+  public String getScopeId() {
     return "cwno";
   }
 
   @Override
-  public String getName() {
+  public String getScopeName() {
     return "COBWWWEB-Norway Scope";
   }
 

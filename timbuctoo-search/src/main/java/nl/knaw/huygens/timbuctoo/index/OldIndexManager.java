@@ -90,7 +90,7 @@ public class OldIndexManager implements IndexManager {
   }
 
   private String getCoreName(Scope scope, String collection) {
-    return String.format("%s.%s", scope.getId(), collection);
+    return String.format("%s.%s", scope.getScopeId(), collection);
   }
 
   @Override

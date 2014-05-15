@@ -184,7 +184,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
 
   protected void setUpScopeForCollection(Class<? extends DomainEntity> collectionType, String vreId, boolean isInScope) {
     Scope scope = mock(Scope.class);
-    when(scope.isTypeInScope(collectionType)).thenReturn(isInScope);
+    when(scope.inScope(collectionType)).thenReturn(isInScope);
 
     setupScope(vreId, scope);
   }

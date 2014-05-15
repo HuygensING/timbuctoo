@@ -72,7 +72,7 @@ public class OldSearchManagerTest {
   @Before
   public void setUp() {
     scope = mock(Scope.class);
-    when(scope.getId()).thenReturn("scope");
+    when(scope.getScopeId()).thenReturn("scope");
     indexManager = mock(IndexManager.class);
     instance = new OldSearchManager(indexManager);
   }

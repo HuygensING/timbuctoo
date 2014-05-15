@@ -329,7 +329,7 @@ public class DomainEntityResource extends ResourceBase {
    */
   private <T extends DomainEntity> void checkCollectionInScope(Class<T> type, String vreId, Status status) {
     Scope scope = getScope(vreId);
-    if (!scope.isTypeInScope(type)) {
+    if (!scope.inScope(type)) {
       throw new TimbuctooException(status, "Type %s not in scope %s", type, vreId);
     }
   }

@@ -31,12 +31,12 @@ public class WomenWritersScope extends AbstractScope {
   }
 
   @Override
-  public String getId() {
+  public String getScopeId() {
     return "neww";
   }
 
   @Override
-  public String getName() {
+  public String getScopeName() {
     return "Women Writers Scope";
   }
 

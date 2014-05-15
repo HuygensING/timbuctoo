@@ -92,8 +92,8 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     if (isVREKnown) {
       Scope scope = mock(Scope.class);
-      when(scope.getId()).thenReturn(SCOPE_ID);
-      when(scope.isTypeInScope(Mockito.<Class<? extends DomainEntity>> any())).thenReturn(isTypeInScope);
+      when(scope.getScopeId()).thenReturn(SCOPE_ID);
+      when(scope.inScope(Mockito.<Class<? extends DomainEntity>> any())).thenReturn(isTypeInScope);
 
       VRE vre = mock(VRE.class);
       when(vre.getScope()).thenReturn(scope);

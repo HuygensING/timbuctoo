@@ -34,12 +34,12 @@ public interface Scope {
   /**
    * Returns the unique id of this scope.
    */
-  String getId();
+  String getScopeId();
 
   /**
    * Returns the name of this scope.
    */
-  String getName();
+  String getScopeName();
 
   /**
    * Returns primitive domain entity types in this scope.
@@ -68,6 +68,6 @@ public interface Scope {
    * @param type the type to check if it is in scope.
    * @return {@code true} if the type is in scope {@code false} if not.
    */
-  <T extends DomainEntity> boolean isTypeInScope(Class<T> type);
+  <T extends DomainEntity> boolean inScope(Class<T> type);
 
 }
