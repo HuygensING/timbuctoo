@@ -68,7 +68,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -214,7 +213,11 @@ public class DomainEntityResource extends ResourceBase {
 
     DomainEntity entity = storageManager.getEntity(type, id);
     checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
-    checkItemInScope(type, id, vreId, FORBIDDEN);
+
+    VRE vre = vreManager.getVREById(vreId);
+    checkNotNull(vre, NOT_FOUND, "No VRE with id %s", vreId);
+    checkCondition(vre.getScope().inScope(type, id), FORBIDDEN, "Entity %s %s not in scope %s", type, id, vreId);
+
     checkNotNull(entity.getPid(), FORBIDDEN, "%s with id %s is read-only (no PID)", type.getSimpleName(), id);
 
     try {
@@ -272,7 +275,11 @@ public class DomainEntityResource extends ResourceBase {
 
     DomainEntity entity = storageManager.getEntity(type, id);
     checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
-    checkItemInScope(type, id, vreId, FORBIDDEN);
+
+    VRE vre = vreManager.getVREById(vreId);
+    checkNotNull(vre, NOT_FOUND, "No VRE with id %s", vreId);
+    checkCondition(vre.inScope(type, id), FORBIDDEN, "Entity %s %s not in scope %s", type, id, vreId);
+
     checkNotNull(entity.getPid(), FORBIDDEN, "%s with id %s is read-only (no PID)", type.getSimpleName(), id);
 
     storageManager.deleteDomainEntity(entity);
@@ -331,23 +338,6 @@ public class DomainEntityResource extends ResourceBase {
     Class<? extends DomainEntity> type = typeRegistry.getTypeForXName(entityName);
     checkNotNull(type, status, "No domain entity collection %s", entityName);
     return type;
-  }
-
-  /**
-   * Helper method to check if the item is in the scope of the VRE. 
-   * @param type the type of the item to check.
-   * @param id the id of the item to check.
-   * @param vreId the id of the VRE.
-   */
-  private <T extends DomainEntity> void checkItemInScope(Class<T> type, String id, String vreId, Status status) {
-    Scope scope = getScope(vreId);
-    if (!scope.inScope(type, id)) {
-      throw new TimbuctooException(status, "Entity %s %s not in scope %s", type, id, vreId);
-    }
-  }
-
-  private Scope getScope(String vreId) {
-    return vreManager.getVREById(vreId).getScope();
   }
 
 }
