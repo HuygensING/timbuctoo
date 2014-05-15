@@ -116,7 +116,7 @@ public class DomainEntityResource extends ResourceBase {
       @QueryParam("rows") @DefaultValue("200") int rows, //
       @QueryParam("start") @DefaultValue("0") int start //
   ) {
-    Class<? extends DomainEntity> entityType = getEntityType(entityName, Status.NOT_FOUND);
+    Class<? extends DomainEntity> entityType = getValidEntityType(entityName);
     if (Strings.isNullOrEmpty(typeValue)) {
       return storageManager.getAllLimited(entityType, start, rows);
     } else {
@@ -137,11 +137,10 @@ public class DomainEntityResource extends ResourceBase {
       @QueryParam(USER_ID_KEY) String userId//
   ) throws StorageException, URISyntaxException {
 
-    Class<? extends DomainEntity> type = getEntityType(entityName, NOT_FOUND);
+    Class<? extends DomainEntity> type = getValidEntityType(entityName);
     checkCondition(type == input.getClass(), BAD_REQUEST, "Type %s does not match input", type.getSimpleName());
 
-    VRE vre = vreManager.getVREById(vreId);
-    checkNotNull(vre, NOT_FOUND, "No VRE with id %s", vreId);
+    VRE vre = getValidVRE(vreId);
     checkCondition(vre.inScope(type), FORBIDDEN, "Type %s not in scope %s", type, vreId);
 
     Change change = new Change(userId, vreId);
@@ -162,7 +161,7 @@ public class DomainEntityResource extends ResourceBase {
   }
 
   private String updateTheDuplicateEntity(String entityName, DomainEntity input, String vreId, String userId, String id) throws StorageException {
-    Class<? extends DomainEntity> entityType = getEntityType(entityName, Status.NOT_FOUND);
+    Class<? extends DomainEntity> entityType = getValidEntityType(entityName);
     DomainEntity duplicatEnity = storageManager.getEntity(entityType, id);
 
     input.setRev(duplicatEnity.getRev());
@@ -181,7 +180,7 @@ public class DomainEntityResource extends ResourceBase {
       @PathParam(ID_PARAM) String id, //
       @QueryParam(REVISION_KEY) Integer revision//
   ) {
-    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
+    Class<? extends DomainEntity> type = getValidEntityType(entityName);
 
     if (revision == null) {
       DomainEntity entity = storageManager.getEntityWithRelations(type, id);
@@ -208,15 +207,14 @@ public class DomainEntityResource extends ResourceBase {
       @QueryParam(USER_ID_KEY) String userId//
   ) {
 
-    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
+    Class<? extends DomainEntity> type = getValidEntityType(entityName);
     checkCondition(type == input.getClass(), BAD_REQUEST, "Type %s does not match input", type.getSimpleName());
 
     DomainEntity entity = storageManager.getEntity(type, id);
     checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
 
-    VRE vre = vreManager.getVREById(vreId);
-    checkNotNull(vre, NOT_FOUND, "No VRE with id %s", vreId);
-    checkCondition(vre.getScope().inScope(type, id), FORBIDDEN, "Entity %s %s not in scope %s", type, id, vreId);
+    VRE vre = getValidVRE(vreId);
+    checkCondition(vre.inScope(type, id), FORBIDDEN, "Entity %s %s not in scope %s", type, id, vreId);
 
     checkNotNull(entity.getPid(), FORBIDDEN, "%s with id %s is read-only (no PID)", type.getSimpleName(), id);
 
@@ -241,14 +239,13 @@ public class DomainEntityResource extends ResourceBase {
       @PathParam(ENTITY_PARAM) String entityName,//
       @HeaderParam(VRE_ID_KEY) String vreId) throws StorageException {
 
-    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
+    Class<? extends DomainEntity> type = getValidEntityType(entityName);
 
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
       throw new TimbuctooException(BAD_REQUEST, "Illegal PUT for primitive domain entity %s", type.getSimpleName());
     }
 
-    VRE vre = vreManager.getVREById(vreId);
-    checkNotNull(vre, NOT_FOUND, "No VRE with id %s", vreId);
+    VRE vre = getValidVRE(vreId);
 
     // to put a pid you must have access to the base class
     Class<? extends DomainEntity> base = TypeRegistry.toBaseDomainEntity(type);
@@ -268,7 +265,7 @@ public class DomainEntityResource extends ResourceBase {
       @PathParam(ID_PARAM) String id, //
       @HeaderParam(VRE_ID_KEY) String vreId) throws StorageException {
 
-    Class<? extends DomainEntity> type = getEntityType(entityName, Status.NOT_FOUND);
+    Class<? extends DomainEntity> type = getValidEntityType(entityName);
     if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
       throw new TimbuctooException(BAD_REQUEST, "Not a primitive domain entity: %s", entityName);
     }
@@ -276,8 +273,7 @@ public class DomainEntityResource extends ResourceBase {
     DomainEntity entity = storageManager.getEntity(type, id);
     checkNotNull(entity, Status.NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
 
-    VRE vre = vreManager.getVREById(vreId);
-    checkNotNull(vre, NOT_FOUND, "No VRE with id %s", vreId);
+    VRE vre = getValidVRE(vreId);
     checkCondition(vre.inScope(type, id), FORBIDDEN, "Entity %s %s not in scope %s", type, id, vreId);
 
     checkNotNull(entity.getPid(), FORBIDDEN, "%s with id %s is read-only (no PID)", type.getSimpleName(), id);
@@ -332,12 +328,18 @@ public class DomainEntityResource extends ResourceBase {
     }
   }
 
-  // --- Conversion and Validation -------------------------------------
+  // ---------------------------------------------------------------------------
 
-  private Class<? extends DomainEntity> getEntityType(String entityName, Status status) {
-    Class<? extends DomainEntity> type = typeRegistry.getTypeForXName(entityName);
-    checkNotNull(type, status, "No domain entity collection %s", entityName);
+  private Class<? extends DomainEntity> getValidEntityType(String name) {
+    Class<? extends DomainEntity> type = typeRegistry.getTypeForXName(name);
+    checkNotNull(type, NOT_FOUND, "No domain entity collection %s", name);
     return type;
+  }
+
+  private VRE getValidVRE(String id) {
+    VRE vre = vreManager.getVREById(id);
+    checkNotNull(vre, NOT_FOUND, "No VRE with id %s", id);
+    return vre;
   }
 
 }
