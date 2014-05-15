@@ -184,8 +184,8 @@ public class StorageManagerTest {
   }
 
   @Test
-  public void testGetAllIdsWithoutPIDOfType() throws Exception {
-    manager.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
+  public void testGetAllIdsWithoutPID() throws Exception {
+    manager.getAllIdsWithoutPID(BaseDomainEntity.class);
     verify(storage).getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
   }
 
