@@ -43,6 +43,7 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
 import nl.knaw.huygens.timbuctoo.search.model.ClassWithMupltipleFullTestSearchFields;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -65,6 +66,7 @@ public class OldSearchManagerTest {
   private static final String SEARCH_TERM = "term";
   private static final String EXPECTED_TERM = String.format("(dynamic_t_name:%s)", SEARCH_TERM);
 
+  private VRE vre;
   private Scope scope;
   private OldSearchManager instance;
   private IndexManager indexManager;
@@ -73,6 +75,8 @@ public class OldSearchManagerTest {
   public void setUp() {
     scope = mock(Scope.class);
     when(scope.getScopeId()).thenReturn("scope");
+    vre = mock(VRE.class);
+    when(vre.getScope()).thenReturn(scope);
     indexManager = mock(IndexManager.class);
     instance = new OldSearchManager(indexManager);
   }
@@ -212,7 +216,7 @@ public class OldSearchManagerTest {
     List<FacetCount> facets = createFacetCountList(facetNames, numberOfFacetValues);
     SearchResult expected = createExpectedResult(typeString, ids, expectedTerm, facets);
 
-    SearchResult actual = instance.search(scope, type, searchParameters);
+    SearchResult actual = instance.search(vre, type, searchParameters);
     verifySearchResult(expected, actual);
   }
 
@@ -223,7 +227,7 @@ public class OldSearchManagerTest {
     searchParameters.setTypeString(TYPE_STRING);
     searchParameters.setFacetValues(Lists.newArrayList(new FacetParameter().setName("unknown")));
 
-    instance.search(scope, Person.class, searchParameters);
+    instance.search(vre, Person.class, searchParameters);
   }
 
   private void verifySearchResult(SearchResult expected, SearchResult actual) {

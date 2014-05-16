@@ -50,7 +50,6 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -162,7 +161,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     verify(vreManager).getVREById(anyString());
     verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
-    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
+    verify(searchManager, never()).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
@@ -179,7 +178,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     verify(vreManager).getVREById(anyString());
     verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
-    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
+    verify(searchManager, never()).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
@@ -196,7 +195,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     verify(vreManager).getVREById(anyString());
     verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
-    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
+    verify(searchManager, never()).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
@@ -234,7 +233,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse clientResponse = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
-    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
+    verify(searchManager, never()).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     assertEquals(ClientResponse.Status.NOT_FOUND, clientResponse.getClientResponseStatus());
   }
@@ -250,7 +249,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse clientResponse = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, searchParameters);
 
     verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
-    verify(searchManager, never()).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
+    verify(searchManager, never()).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, clientResponse.getClientResponseStatus());
   }
@@ -259,7 +258,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   public void testPostUnknownFacets() throws Exception {
     setUpVREManager(true, true);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    doThrow(NoSuchFacetException.class).when(searchManager).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
+    doThrow(NoSuchFacetException.class).when(searchManager).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
@@ -275,7 +274,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   public void testPostSearchManagerThrowsAnException() throws Exception {
     setUpVREManager(true, true);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    doThrow(Exception.class).when(searchManager).search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
+    doThrow(Exception.class).when(searchManager).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     StorageManager storageManager = injector.getInstance(StorageManager.class);
 
@@ -443,7 +442,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   private void setupSearchManager(SearchResult searchResult) throws Exception {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
-    when(searchManager.search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class))).thenReturn(searchResult);
+    when(searchManager.search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class))).thenReturn(searchResult);
   }
 
   private SearchParameters createSearchParameters(String typeString, String sort, String term) {

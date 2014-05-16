@@ -33,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.apache.solr.client.solrj.SolrQuery;
@@ -71,7 +72,10 @@ public class OldIndexManager implements IndexManager {
     this.registry = registry;
     this.server = server;
     this.storageManager = storageManager;
-    scopes = vreManager.getAllScopes();
+    scopes = Lists.newLinkedList();
+    for (VRE vre : vreManager.getAllVREs()) {
+      scopes.add(vre.getScope());
+    }
     registerCores();
   }
 
