@@ -35,7 +35,7 @@ import com.google.common.collect.ImmutableSortedSet.Builder;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
 
-public abstract class AbstractScope implements Scope {
+public class PackageScope implements Scope {
 
   private ClassPath classPath;
   private Builder<Class<? extends DomainEntity>> builder;
@@ -43,15 +43,15 @@ public abstract class AbstractScope implements Scope {
   private Set<Class<? extends DomainEntity>> allTypes;
   private Set<Class<? extends DomainEntity>> baseTypes;
 
-  public AbstractScope() throws IOException {
-    classPath = ClassPath.from(AbstractScope.class.getClassLoader());
+  public PackageScope() throws IOException {
+    classPath = ClassPath.from(PackageScope.class.getClassLoader());
     builder = newBuilder();
   }
 
   /**
    * Convenience constructor that creates a scope for a single package.
    */
-  public AbstractScope(String packageName) throws IOException {
+  public PackageScope(String packageName) throws IOException {
     this();
     addPackage(packageName);
     buildTypes();

@@ -28,7 +28,12 @@ public class DWCVRE extends AbstractVRE {
 
   @Override
   protected Scope createScope() throws IOException {
-    return new DWCScope();
+    return new PackageScope("timbuctoo.model.dwcbia");
+  }
+
+  @Override
+  public String getScopeId() {
+    return "dwc";
   }
 
   @Override

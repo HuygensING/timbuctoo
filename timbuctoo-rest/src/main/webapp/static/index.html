@@ -45,7 +45,7 @@
 <h3><a href="static/search.html">Search</a> the repository.</h3>
 
 <hr/>
-<p><em>Powered by Timbuctoo 2.2.0</em></p>
+<p><em>Powered by Timbuctoo 2.3.0</em></p>
 
 
 <script>
@@ -78,7 +78,7 @@
 
         html = '';
         $.each(data.indexStatus.counts, function (scope, items) {
-          html += '<td class="column"><h3>Indexed scope \'' + scope + '\'</h3>';
+          html += '<td class="column"><h3>Index of VRE \'' + scope + '\'</h3>';
         	html += '<table><tr><th>Type</th><th>Count</th></tr>';
         	$.each(items, function (i, item) {
             html += '<tr><td class="name">' + item.key + '</td><td class="number">' + item.value + '</td></tr>';

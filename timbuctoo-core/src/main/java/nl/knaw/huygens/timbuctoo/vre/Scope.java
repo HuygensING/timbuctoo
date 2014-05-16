@@ -32,11 +32,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 public interface Scope {
 
   /**
-   * Returns the unique id of this scope.
-   */
-  String getScopeId();
-
-  /**
    * Returns primitive domain entity types in this scope.
    */
   Set<Class<? extends DomainEntity>> getBaseEntityTypes();

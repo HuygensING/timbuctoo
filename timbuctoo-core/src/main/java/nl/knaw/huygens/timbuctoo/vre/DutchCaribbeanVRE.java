@@ -28,7 +28,12 @@ public class DutchCaribbeanVRE extends AbstractVRE {
 
   @Override
   protected Scope createScope() throws IOException {
-    return new DutchCaribbeanScope();
+    return new PackageScope("timbuctoo.model.dcar");
+  }
+
+  @Override
+  public String getScopeId() {
+    return "dcar";
   }
 
   @Override

@@ -35,42 +35,35 @@ import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class PrimitivesScopeTest {
+public class DutchCaribbeanVRETest {
 
-  private static Scope scope;
+  private static VRE vre;
 
   @BeforeClass
-  public static void setupScope() throws IOException {
-    scope = new PrimitivesScope();
+  public static void setupVRE() throws IOException {
+    vre = new DutchCaribbeanVRE();
   }
 
   @Test
   public void testBaseEntityTypes() {
-    assertTrue(scope.getBaseEntityTypes().contains(Person.class));
-    assertTrue(scope.getBaseEntityTypes().contains(Place.class));
-    assertFalse(scope.getBaseEntityTypes().contains(User.class));
-    assertFalse(scope.getBaseEntityTypes().contains(DCARPerson.class));
+    assertTrue(vre.getBaseEntityTypes().contains(Person.class));
+    assertFalse(vre.getBaseEntityTypes().contains(Place.class));
+    assertFalse(vre.getBaseEntityTypes().contains(User.class));
+    assertFalse(vre.getBaseEntityTypes().contains(DCARPerson.class));
   }
 
   @Test
   public void testTypeAndIdInScope() {
-    assertTrue(scope.inScope(Person.class, "id"));
-    assertTrue(scope.inScope(Place.class, "id"));
-    assertFalse(scope.inScope(DCARPerson.class, "id"));
+    assertFalse(vre.inScope(Person.class, "id"));
+    assertFalse(vre.inScope(Place.class, "id"));
+    assertTrue(vre.inScope(DCARPerson.class, "id"));
   }
 
   @Test
   public void testInstanceInScope() {
-    assertTrue(scope.inScope(new Person()));
-    assertTrue(scope.inScope(new Place()));
-    assertFalse(scope.inScope(new DCARPerson()));
-  }
-
-  @Test
-  public void testTypeInScope() {
-    assertTrue(scope.inScope(Person.class));
-    assertTrue(scope.inScope(Place.class));
-    assertFalse(scope.inScope(DCARPerson.class));
+    assertFalse(vre.inScope(new Person()));
+    assertFalse(vre.inScope(new Place()));
+    assertTrue(vre.inScope(new DCARPerson()));
   }
 
 }

@@ -31,17 +31,22 @@ public class BaseVRE extends AbstractVRE {
 
   @Override
   protected Scope createScope() throws IOException {
-    return new BaseScope();
+    return new PackageScope("timbuctoo.model.base");
   }
 
   @Override
-  public String getDescription() {
-    return "VRE for base domain entities.";
+  public String getScopeId() {
+    return "base";
   }
 
   @Override
   public String getName() {
     return "Base";
+  }
+
+  @Override
+  public String getDescription() {
+    return "VRE for base domain entities.";
   }
 
 }

@@ -36,7 +36,12 @@ public class WomenWritersVRE extends AbstractVRE {
 
   @Override
   protected Scope createScope() throws IOException {
-    return new WomenWritersScope();
+    return new PackageScope("timbuctoo.model.neww");
+  }
+
+  @Override
+  public String getScopeId() {
+    return "neww";
   }
 
   @Override
