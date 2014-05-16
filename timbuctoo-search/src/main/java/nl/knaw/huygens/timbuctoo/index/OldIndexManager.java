@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.index;
 
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toDomainEntity;
 
+import java.util.Collection;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
@@ -31,7 +32,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -61,7 +61,7 @@ public class OldIndexManager implements IndexManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(OldIndexManager.class);
 
-  private final List<Scope> scopes;
+  private final Collection<VRE> vres;
   private final TypeRegistry registry;
   private final LocalSolrServer server;
   private final StorageManager storageManager;
@@ -71,29 +71,26 @@ public class OldIndexManager implements IndexManager {
     this.registry = registry;
     this.server = server;
     this.storageManager = storageManager;
-    scopes = Lists.newLinkedList();
-    for (VRE vre : vreManager.getAllVREs()) {
-      scopes.add(vre.getScope());
-    }
+    vres = vreManager.getAllVREs();
     registerCores();
   }
 
   private void registerCores() {
-    for (Scope scope : scopes) {
-      for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
+    for (VRE vre : vres) {
+      for (Class<? extends DomainEntity> type : vre.getBaseEntityTypes()) {
         String collection = TypeNames.getInternalName(type);
-        String coreName = getCoreName(scope, collection);
+        String coreName = getCoreName(vre, collection);
         server.addCore(collection, coreName);
       }
     }
   }
 
-  private <T extends DomainEntity> String getCoreName(Scope scope, Class<T> type) {
-    return getCoreName(scope, TypeNames.getInternalName(type));
+  private <T extends DomainEntity> String getCoreName(VRE vre, Class<T> type) {
+    return getCoreName(vre, TypeNames.getInternalName(type));
   }
 
-  private String getCoreName(Scope scope, String collection) {
-    return String.format("%s.%s", scope.getScopeId(), collection);
+  private String getCoreName(VRE vre, String collection) {
+    return String.format("%s.%s", vre.getScopeId(), collection);
   }
 
   @Override
@@ -110,10 +107,10 @@ public class OldIndexManager implements IndexManager {
   private <T extends DomainEntity> void addBaseEntity(Class<T> type, String id) throws IndexException {
     try {
       List<T> variations = storageManager.getAllVariations(type, id);
-      for (Scope scope : scopes) {
-        List<T> filtered = filter(variations, scope);
+      for (VRE vre : vres) {
+        List<T> filtered = filter(variations, vre);
         if (!filtered.isEmpty()) {
-          server.add(getCoreName(scope, type), getSolrInputDocument(filtered));
+          server.add(getCoreName(vre, type), getSolrInputDocument(filtered));
         }
       }
     } catch (Exception e) {
@@ -129,8 +126,8 @@ public class OldIndexManager implements IndexManager {
   private <T extends DomainEntity> void deleteBaseEntity(Class<T> type, String id) throws IndexException {
     // No need to check for being in scope: it doesn't harm to remove an item that's not there
     try {
-      for (Scope scope : scopes) {
-        String coreName = getCoreName(scope, type);
+      for (VRE vre : vres) {
+        String coreName = getCoreName(vre, type);
         server.deleteById(coreName, id);
       }
     } catch (Exception e) {
@@ -146,9 +143,9 @@ public class OldIndexManager implements IndexManager {
     }
 
     try {
-      for (Scope scope : scopes) {
+      for (VRE vre : vres) {
         if (!ids.isEmpty()) {
-          String coreName = getCoreName(scope, TypeRegistry.toBaseDomainEntity(type));
+          String coreName = getCoreName(vre, TypeRegistry.toBaseDomainEntity(type));
           // It is needed to check if the core exists. If it does not exist an exception will be thrown.
           if (server.coreExits(coreName)) {
             server.deleteById(coreName, ids);
@@ -170,9 +167,9 @@ public class OldIndexManager implements IndexManager {
   }
 
   @Override
-  public <T extends DomainEntity> QueryResponse search(Scope scope, Class<T> type, SolrQuery query) throws IndexException {
+  public <T extends DomainEntity> QueryResponse search(VRE vre, Class<T> type, SolrQuery query) throws IndexException {
     try {
-      String coreName = getCoreName(scope, TypeRegistry.toBaseDomainEntity(type));
+      String coreName = getCoreName(vre, TypeRegistry.toBaseDomainEntity(type));
       return server.search(coreName, query);
     } catch (Exception e) {
       throw new IndexException("Failed to search", e);
@@ -184,10 +181,10 @@ public class OldIndexManager implements IndexManager {
     IndexStatus status = new IndexStatus();
     try {
       SolrQuery query = new SolrQuery("*:*").setRows(0); // no data
-      for (Scope scope : scopes) {
-        for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
-          long count = search(scope, type, query).getResults().getNumFound();
-          status.addCount(scope, type, count);
+      for (VRE vre : vres) {
+        for (Class<? extends DomainEntity> type : vre.getBaseEntityTypes()) {
+          long count = search(vre, type, query).getResults().getNumFound();
+          status.addCount(vre, type, count);
         }
       }
     } catch (Exception e) {
@@ -232,13 +229,14 @@ public class OldIndexManager implements IndexManager {
   }
 
   // TODO filter with predicate
-  private <T extends DomainEntity> List<T> filter(List<T> entities, Scope scope) {
+  private <T extends DomainEntity> List<T> filter(List<T> entities, VRE vre) {
     List<T> list = Lists.newArrayList();
     for (T entity : entities) {
-      if (scope.inScope(entity)) {
+      if (vre.inScope(entity)) {
         list.add(entity);
       }
     }
     return list;
   }
+
 }
