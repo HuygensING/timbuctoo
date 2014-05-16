@@ -26,7 +26,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.vre.Scope;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -45,7 +45,7 @@ public interface IndexManager {
 
   void deleteAllEntities() throws IndexException;
 
-  <T extends DomainEntity> QueryResponse search(Scope scope, Class<T> type, SolrQuery query) throws IndexException;
+  <T extends DomainEntity> QueryResponse search(VRE vre, Class<T> type, SolrQuery query) throws IndexException;
 
   IndexStatus getStatus();
 

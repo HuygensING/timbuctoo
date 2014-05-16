@@ -27,7 +27,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.util.KV;
-import nl.knaw.huygens.timbuctoo.vre.Scope;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -44,11 +44,11 @@ public class IndexStatus {
     return counts;
   }
 
-  public void addCount(Scope scope, Class<? extends DomainEntity> type, long count) {
-    List<KV<Long>> list = counts.get(scope.getScopeId());
+  public void addCount(VRE vre, Class<? extends DomainEntity> type, long count) {
+    List<KV<Long>> list = counts.get(vre.getScopeId());
     if (list == null) {
       list = Lists.newArrayList();
-      counts.put(scope.getScopeId(), list);
+      counts.put(vre.getScopeId(), list);
     }
     list.add(new KV<Long>(type.getSimpleName(), count));
   }
@@ -57,7 +57,7 @@ public class IndexStatus {
   public String toString() {
     StringBuilder builder = new StringBuilder();
     for (String key : counts.keySet()) {
-      builder.append("Indexed scope '").append(key).append("'\n");
+      builder.append("Indexed VRE '").append(key).append("'\n");
       for (KV<Long> kv : counts.get(key)) {
         builder.append(String.format("- %-20s %6d\n", kv.getKey(), kv.getValue()));
       }

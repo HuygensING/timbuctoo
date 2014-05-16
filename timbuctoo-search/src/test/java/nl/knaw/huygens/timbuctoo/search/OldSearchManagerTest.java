@@ -42,7 +42,6 @@ import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
 import nl.knaw.huygens.timbuctoo.search.model.ClassWithMupltipleFullTestSearchFields;
-import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.apache.solr.client.solrj.SolrQuery;
@@ -67,16 +66,12 @@ public class OldSearchManagerTest {
   private static final String EXPECTED_TERM = String.format("(dynamic_t_name:%s)", SEARCH_TERM);
 
   private VRE vre;
-  private Scope scope;
   private OldSearchManager instance;
   private IndexManager indexManager;
 
   @Before
   public void setUp() {
-    scope = mock(Scope.class);
-    when(scope.getScopeId()).thenReturn("scope");
     vre = mock(VRE.class);
-    when(vre.getScope()).thenReturn(scope);
     indexManager = mock(IndexManager.class);
     instance = new OldSearchManager(indexManager);
   }
@@ -300,7 +295,7 @@ public class OldSearchManagerTest {
     QueryResponse response = mock(QueryResponse.class);
     when(response.getResults()).thenReturn(docs);
     when(response.getFacetFields()).thenReturn(facetFields);
-    when(indexManager.search(any(Scope.class), Matchers.<Class<? extends DomainEntity>> any(), any(SolrQuery.class))).thenReturn(response);
+    when(indexManager.search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SolrQuery.class))).thenReturn(response);
   }
 
   private SolrDocumentList createSolrDocumentList(List<String> ids) {
