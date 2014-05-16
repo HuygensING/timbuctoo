@@ -61,7 +61,6 @@ import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.vre.Scope;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -108,20 +107,18 @@ public class SearchResource extends ResourceBase {
     VRE vre = Strings.isNullOrEmpty(vreId) ? vreManager.getDefaultVRE() : vreManager.getVREById(vreId);
     checkNotNull(vre, NOT_FOUND, "No VRE with id %s", vreId);
 
-    Scope scope = vre.getScope();
-
     String typeString = StringUtils.trimToNull(searchParams.getTypeString());
     checkNotNull(typeString, BAD_REQUEST, "No 'typeString' parameter specified");
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
-    checkCondition(scope.inScope(type), BAD_REQUEST, "Type not in scope: %s", typeString);
+    checkCondition(vre.inScope(type), BAD_REQUEST, "Type not in scope: %s", typeString);
 
     String q = StringUtils.trimToNull(searchParams.getTerm());
     checkNotNull(q, BAD_REQUEST, "No 'q' parameter specified");
 
     // Process
     try {
-      SearchResult result = searchManager.search(scope, type, searchParams);
+      SearchResult result = searchManager.search(vre.getScope(), type, searchParams);
       String queryId = putSearchResult(result);
       return Response.created(new URI(queryId)).build();
     } catch (NoSuchFacetException e) {
@@ -228,8 +225,6 @@ public class SearchResource extends ResourceBase {
     VRE vre = Strings.isNullOrEmpty(vreId) ? vreManager.getDefaultVRE() : vreManager.getVREById(vreId);
     checkNotNull(vre, NOT_FOUND, "No VRE with id %s", vreId);
 
-    Scope scope = vre.getScope();
-
     String typeString = StringUtils.trimToNull(params.getTypeString());
     checkNotNull(typeString, BAD_REQUEST, "No 'typeString' parameter specified");
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
@@ -237,7 +232,7 @@ public class SearchResource extends ResourceBase {
     checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
     @SuppressWarnings("unchecked")
     Class<? extends Relation> relationType = (Class<? extends Relation>) type;
-    checkCondition(scope.inScope(type), BAD_REQUEST, "Type not in scope: %s", typeString);
+    checkCondition(vre.inScope(type), BAD_REQUEST, "Type not in scope: %s", typeString);
 
     String sourceSearchId = StringUtils.trimToNull(params.getSourceSearchId());
     checkNotNull(sourceSearchId, BAD_REQUEST, "No 'sourceSearchId' specified");

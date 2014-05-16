@@ -92,13 +92,10 @@ public class SearchResourceTest extends WebServiceTestSetup {
     vreManager = injector.getInstance(VREManager.class);
 
     if (isVREKnown) {
-      Scope scope = mock(Scope.class);
-      when(scope.getScopeId()).thenReturn(SCOPE_ID);
-      when(scope.inScope(Mockito.<Class<? extends DomainEntity>> any())).thenReturn(isTypeInScope);
-
       VRE vre = mock(VRE.class);
-      when(vre.getScope()).thenReturn(scope);
       when(vre.getName()).thenReturn(VRE_ID);
+      when(vre.getScopeId()).thenReturn(SCOPE_ID);
+      when(vre.inScope(Mockito.<Class<? extends DomainEntity>> any())).thenReturn(isTypeInScope);
 
       when(vreManager.getVREById(anyString())).thenReturn(vre);
       when(vreManager.getDefaultVRE()).thenReturn(vre);
