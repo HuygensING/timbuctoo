@@ -43,6 +43,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.vre.Scope;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -78,7 +79,8 @@ public class OldSearchManager implements SearchManager {
   }
 
   @Override
-  public SearchResult search(Scope scope, Class<? extends DomainEntity> type, SearchParameters searchParameters) throws IndexException, NoSuchFacetException {
+  public SearchResult search(VRE vre, Class<? extends DomainEntity> type, SearchParameters searchParameters) throws IndexException, NoSuchFacetException {
+    Scope scope = vre.getScope();
     Map<String, FacetInfo> facetInfoMap = facetFinder.findFacets(type);
     Set<String> fullTextSearchFields = fullTextSearchFieldFinder.findFields(type);
     String searchTerm = createSearchTerm(type, searchParameters, facetInfoMap.keySet(), fullTextSearchFields);

@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Singleton;
 
@@ -81,14 +80,6 @@ public class VREManager {
 
   public Collection<VRE> getAllVREs() {
     return vreMap.values();
-  }
-
-  public List<Scope> getAllScopes() {
-    List<Scope> scopes = Lists.newLinkedList();
-    for (VRE vre : getAllVREs()) {
-      scopes.add(vre.getScope());
-    }
-    return scopes;
   }
 
 }
