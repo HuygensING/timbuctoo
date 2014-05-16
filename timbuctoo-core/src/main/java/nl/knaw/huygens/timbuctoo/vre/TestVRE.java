@@ -28,7 +28,12 @@ public class TestVRE extends AbstractVRE {
 
   @Override
   protected Scope createScope() throws IOException {
-    return new TestScope();
+    return new PackageScope("timbuctoo.model.test");
+  }
+
+  @Override
+  public String getScopeId() {
+    return "test";
   }
 
   @Override

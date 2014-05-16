@@ -33,7 +33,12 @@ public class PrimitivesVRE extends AbstractVRE {
 
   @Override
   protected Scope createScope() throws IOException {
-    return new PrimitivesScope();
+    return new PackageScope("timbuctoo.model");
+  }
+
+  @Override
+  public String getScopeId() {
+    return "prim";
   }
 
   @Override

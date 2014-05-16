@@ -30,6 +30,11 @@ import java.util.List;
 public interface VRE extends Scope {
 
   /**
+   * Returns the unique id of this VRE.
+   */
+  String getScopeId();
+
+  /**
    * Returns the unique name of this VRE.
    */
   String getName();

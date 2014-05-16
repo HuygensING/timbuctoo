@@ -29,7 +29,12 @@ public class CobwwwebNoVRE extends AbstractVRE {
 
   @Override
   protected Scope createScope() throws IOException {
-    return new CobwwwebNoScope();
+    return new PackageScope("timbuctoo.model.cwno");
+  }
+
+  @Override
+  public String getScopeId() {
+    return "cwno";
   }
 
   @Override

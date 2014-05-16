@@ -65,11 +65,6 @@ public abstract class AbstractVRE implements VRE {
   }
 
   @Override
-  public String getScopeId() {
-    return scope.getScopeId();
-  }
-
-  @Override
   public Set<Class<? extends DomainEntity>> getBaseEntityTypes() {
     return scope.getBaseEntityTypes();
   }
