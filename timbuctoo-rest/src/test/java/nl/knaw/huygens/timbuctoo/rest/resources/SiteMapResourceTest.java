@@ -28,14 +28,13 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 
 import org.junit.Test;
 
-import com.google.common.collect.Lists;
 import com.sun.jersey.api.client.ClientResponse;
 
 public class SiteMapResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetSitemap() {
-    setupUserWithRoles(USER_ID, Lists.newArrayList(USER_ROLE), VRE_ID);
+    setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
     ClientResponse response = resource().path(Paths.SYSTEM_PREFIX).path("api").header("Authorization", "bearer 12333322abef").get(ClientResponse.class);
     assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
   }

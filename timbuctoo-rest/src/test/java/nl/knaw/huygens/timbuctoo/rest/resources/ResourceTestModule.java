@@ -110,23 +110,23 @@ class ResourceTestModule extends JerseyServletModule {
 
   @Provides
   public StorageManager providesStorageManager() {
-    return this.storageManager;
+    return storageManager;
   }
 
   @Provides
   public TypeRegistry providesDocumentTypeRegister() {
-    return this.typeRegistry;
+    return typeRegistry;
   }
 
   @Singleton
   @Provides
   public JacksonJsonProvider providesJsonProvider() {
-    return this.jsonProvider;
+    return jsonProvider;
   }
 
   @Provides
   public MailSender providesMailSender() {
-    return this.mailSender;
+    return mailSender;
   }
 
   @Provides
@@ -144,7 +144,7 @@ class ResourceTestModule extends JerseyServletModule {
   @Provides
   @Singleton
   Validator provideValidator() {
-    return this.validator;
+    return validator;
   }
 
   @Provides
@@ -186,32 +186,33 @@ class ResourceTestModule extends JerseyServletModule {
   @Provides
   @Singleton
   public Broker provideBroker() {
-    return this.broker;
+    return broker;
   }
 
   @Provides
   @Singleton
   @Named("indexProducer")
   public Producer provideIndexProducer() {
-    return this.indexProducer;
+    return indexProducer;
   }
 
   @Provides
   @Singleton
   @Named("persistenceProducer")
   public Producer providePersistenceProducer() {
-    return this.persistenceProducer;
+    return persistenceProducer;
   }
 
   @Singleton
   @Provides
   public VREManager provideVreManager() {
-    return this.vreManager;
+    return vreManager;
   }
 
   @Singleton
   @Provides
   public VREAuthorizationHandler provideVreAuthorizationHandler() {
-    return new DefaultVREAuthorizationHandler(this.mailSender, this.storageManager);
+    return new DefaultVREAuthorizationHandler(storageManager, mailSender);
   }
+
 }

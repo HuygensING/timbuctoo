@@ -43,13 +43,10 @@ public class ExampleVREAuthorizationHandler implements VREAuthorizationHandler {
   }
 
   @Override
-  public VREAuthorization getVREAuthorization(User user, String vreId) {
+  public VREAuthorization getVREAuthorization(String vreId, User user) {
     String persistentId = user.getPersistentId();
 
-    VREAuthorization example = new VREAuthorization();
-    example.setUserId(user.getId());
-    example.setVreId(vreId);
-
+    VREAuthorization example = new VREAuthorization(vreId, user.getId());
     VREAuthorization vreAuthorization = storageManager.findEntity(VREAuthorization.class, example);
 
     if (vreAuthorization == null) {
@@ -65,7 +62,6 @@ public class ExampleVREAuthorizationHandler implements VREAuthorizationHandler {
       } catch (Exception e) {
         LOG.error("Creating VREAuthorization for user {} and VRE {} throws exception {}", user.getCommonName(), vreId, e);
       }
-
     }
 
     return vreAuthorization;

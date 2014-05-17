@@ -27,32 +27,28 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 
 @IDPrefix("VREA")
 public class VREAuthorization extends SystemEntity {
 
-  private String userId;
   private String vreId;
+  private String userId;
   private List<String> roles;
 
   public VREAuthorization() {}
 
-  public VREAuthorization(String userId, String vreId) {
-    setUserId(userId);
+  public VREAuthorization(String vreId, String userId, String... roles) {
     setVreId(vreId);
+    setUserId(userId);
+    if (roles != null) {
+      setRoles(Lists.newArrayList(roles));
+    }
   }
 
   @Override
   public String getDisplayName() {
     return null;
-  }
-
-  public String getUserId() {
-    return userId;
-  }
-
-  public void setUserId(String userId) {
-    this.userId = userId;
   }
 
   public String getVreId() {
@@ -61,6 +57,14 @@ public class VREAuthorization extends SystemEntity {
 
   public void setVreId(String vreId) {
     this.vreId = vreId;
+  }
+
+  public String getUserId() {
+    return userId;
+  }
+
+  public void setUserId(String userId) {
+    this.userId = userId;
   }
 
   public List<String> getRoles() {
