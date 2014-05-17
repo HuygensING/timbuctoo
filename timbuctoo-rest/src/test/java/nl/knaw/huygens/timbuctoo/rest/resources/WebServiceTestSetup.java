@@ -112,6 +112,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   protected void setupUserWithRoles(String vreId, String userId, String... roles) {
     User user = new User();
     user.setId(userId);
+    when(storageManager.getEntity(User.class, USER_ID)).thenReturn(user);
     when(storageManager.findEntity(User.class, user)).thenReturn(user);
 
     VREAuthorization example = new VREAuthorization(vreId, userId);
