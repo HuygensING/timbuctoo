@@ -104,7 +104,7 @@ public class UserResource extends ResourceBase {
     User user = storageManager.getEntity(User.class, id);
     checkNotNull(user, Status.NOT_FOUND, "No User with id %s", id);
 
-    VREAuthorization example = new VREAuthorization(id, vreId);
+    VREAuthorization example = new VREAuthorization(vreId, id);
     VREAuthorization authorization = storageManager.findEntity(VREAuthorization.class, example);
 
     user.setVreAuthorization(authorization);
@@ -167,7 +167,7 @@ public class UserResource extends ResourceBase {
       @HeaderParam(VRE_ID_KEY) String userVREId//
   ) {
     checkIfInScope(vreId, userVREId);
-    return findVREAuthorization(userId, vreId);
+    return findVREAuthorization(vreId, userId);
   }
 
   @POST
@@ -203,7 +203,7 @@ public class UserResource extends ResourceBase {
 
     checkNotNull(authorization, Status.BAD_REQUEST, "Missing VREAuthorization");
     checkIfInScope(vreId, userVREId);
-    findVREAuthorization(userId, vreId);
+    findVREAuthorization(vreId, userId);
     storageManager.updateSystemEntity(VREAuthorization.class, authorization);
   }
 
@@ -216,7 +216,7 @@ public class UserResource extends ResourceBase {
       @HeaderParam(VRE_ID_KEY) String userVREId//
   ) throws StorageException {
     checkIfInScope(vreId, userVREId);
-    VREAuthorization authorization = findVREAuthorization(userId, vreId);
+    VREAuthorization authorization = findVREAuthorization(vreId, userId);
     storageManager.deleteSystemEntity(authorization);
   }
 
@@ -233,8 +233,8 @@ public class UserResource extends ResourceBase {
     }
   }
 
-  private VREAuthorization findVREAuthorization(String userId, String vreId) {
-    VREAuthorization example = new VREAuthorization(userId, vreId);
+  private VREAuthorization findVREAuthorization(String vreId, String userId) {
+    VREAuthorization example = new VREAuthorization(vreId, userId);
     VREAuthorization authorization = storageManager.findEntity(VREAuthorization.class, example);
     checkNotNull(authorization, Status.NOT_FOUND, "Missing VREAuthorization for userId %s and vreId %s", userId, vreId);
     return authorization;

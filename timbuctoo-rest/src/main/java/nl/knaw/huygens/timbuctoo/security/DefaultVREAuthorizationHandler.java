@@ -35,7 +35,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 /**
@@ -46,77 +45,61 @@ public class DefaultVREAuthorizationHandler implements VREAuthorizationHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(DefaultVREAuthorizationHandler.class);
 
-  private final MailSender mailSender;
   private final StorageManager storageManager;
+  private final MailSender mailSender;
 
   @Inject
-  public DefaultVREAuthorizationHandler(MailSender mailSender, StorageManager storageManager) {
-    this.mailSender = mailSender;
+  public DefaultVREAuthorizationHandler(StorageManager storageManager, MailSender mailSender) {
     this.storageManager = storageManager;
+    this.mailSender = mailSender;
   }
 
   @Override
-  public VREAuthorization getVREAuthorization(User user, String vreId) {
+  public VREAuthorization getVREAuthorization(String vreId, User user) {
     String userId = user.getId();
-    VREAuthorization authorization = findVreAuthorization(userId, vreId);
+    VREAuthorization authorization = findVreAuthorization(vreId, userId);
 
     if (authorization == null) {
       // VRE does not know about the user
       try {
-        authorization = createVreAuthorization(userId, vreId);
+        authorization = createVreAuthorization(vreId, userId);
       } catch (Exception e) {
         LOG.error("Creation of VREAuthorization for user {} and vre {} failed", userId, vreId);
       }
-      sendEmail(user, vreId);
+      sendEmail(vreId, user);
     }
     return authorization;
   }
 
-  private VREAuthorization createVreAuthorization(String userId, String vreId) throws StorageException, ValidationException {
-    VREAuthorization authorization = new VREAuthorization();
-    authorization.setUserId(userId);
-    authorization.setVreId(vreId);
-    authorization.setRoles(Lists.newArrayList(UNVERIFIED_USER_ROLE));
-
+  private VREAuthorization createVreAuthorization(String vreId, String userId) throws StorageException, ValidationException {
+    VREAuthorization authorization = new VREAuthorization(vreId, userId, UNVERIFIED_USER_ROLE);
     authorization.setId(storageManager.addSystemEntity(VREAuthorization.class, authorization));
-
     return authorization;
   }
 
-  private VREAuthorization findVreAuthorization(String userId, String vreId) {
-    VREAuthorization example = new VREAuthorization();
-    example.setVreId(vreId);
-    example.setUserId(userId);
-
+  private VREAuthorization findVreAuthorization(String vreId, String userId) {
+    VREAuthorization example = new VREAuthorization(vreId, userId);
     return storageManager.findEntity(VREAuthorization.class, example);
   }
 
   /**
-   * sends an email to the admin of the VRE the new user is trying to use. 
-   * @param user
-   * @param vreId 
+   * Sends an email to the admin of the VRE the new user is trying to use. 
    */
-  private void sendEmail(User user, String vreId) {
+  private void sendEmail(String vreId, User user) {
     User admin = getFirstAdminOfVRE(vreId);
-
-    StringBuilder contentbuilder = new StringBuilder("Beste admin,\n");
-    contentbuilder.append(user.getDisplayName());
-    contentbuilder.append(" heeft interesse getoond voor je VRE.\n");
-    contentbuilder.append("Met vriendelijke groet,\n");
-    contentbuilder.append("De datarepository");
-
     if (admin != null && !StringUtils.isBlank(admin.getEmail())) {
-      mailSender.sendMail(admin.getEmail(), "Nieuwe gebruiker", contentbuilder.toString());
+      StringBuilder builder = new StringBuilder("Beste admin,\n");
+      builder.append(user.getDisplayName());
+      builder.append(" heeft interesse getoond voor je VRE.\n");
+      builder.append("Met vriendelijke groet,\n");
+      builder.append("Timbuctoo");
+      mailSender.sendMail(admin.getEmail(), "Nieuwe gebruiker", builder.toString());
     }
   }
 
   private User getFirstAdminOfVRE(String vreId) {
-    VREAuthorization example = new VREAuthorization();
-    example.setRoles(Lists.newArrayList(ADMIN_ROLE));
-    example.setVreId(vreId);
-
+    VREAuthorization example = new VREAuthorization(vreId, null, ADMIN_ROLE);
     VREAuthorization authorization = storageManager.findEntity(VREAuthorization.class, example);
-
     return authorization != null ? storageManager.getEntity(User.class, authorization.getUserId()) : null;
   }
 

@@ -80,7 +80,7 @@ public class UserResourceFilterFactory implements ResourceFilterFactory {
         request.getQueryParameters().putSingle(USER_ID_KEY, userId);
         request.getQueryParameters().putSingle(VRE_ID_KEY, vreId);
 
-        VREAuthorization vreAuthorization = vreAuthorizationHandler.getVREAuthorization(user, vreId);
+        VREAuthorization vreAuthorization = vreAuthorizationHandler.getVREAuthorization(vreId, user);
 
         user.setVreAuthorization(vreAuthorization);
       }
