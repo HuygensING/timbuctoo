@@ -56,10 +56,4 @@ public interface VRE extends Scope {
    */
   List<String> getReceptionNames();
 
-  /**
-   * Returns the {@code Scope} of this VRE.
-   * Currently a {@codeVRE} has one {@code Scope}.
-   */
-  Scope getScope();
-
 }

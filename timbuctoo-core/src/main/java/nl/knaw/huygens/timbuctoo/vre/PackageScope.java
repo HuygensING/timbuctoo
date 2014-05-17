@@ -37,7 +37,7 @@ import com.google.common.collect.Lists;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
 
-public class PackageScope implements Scope {
+class PackageScope implements Scope {
 
   private ClassPath classPath;
   private Builder<Class<? extends DomainEntity>> builder;
