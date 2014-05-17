@@ -112,7 +112,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
     setUpVREManager(true, true);
     SearchResult searchResult = mock(SearchResult.class);;
 
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
 
     setupSearchManager(searchResult);
@@ -137,7 +136,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
     setUpVREManager(true, true);
     setupSearchManager(searchResult);
 
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
 
     WebResource resource = super.resource();
@@ -153,7 +151,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostTypeUnknown() throws Exception {
     setUpVREManager(true, true);
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
     SearchParameters searchParameters = createSearchParameters("unknownType", null, TERM);
@@ -170,7 +167,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostTypeStringNull() throws Exception {
     setUpVREManager(true, true);
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
     SearchParameters searchParameters = createSearchParameters(null, null, TERM);
@@ -187,7 +183,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostTypeOutOfScope() throws Exception {
     setUpVREManager(false, true);
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
     SearchParameters searchParameters = createSearchParameters(TYPE_STRING, null, TERM);
@@ -209,7 +204,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
     setUpVREManager(true, true);
     setupSearchManager(searchResult);
 
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
 
     WebResource resource = super.resource();
@@ -226,7 +220,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostVREUnknown() throws Exception {
     setUpVREManager(true, false);
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
     SearchParameters searchParameters = createSearchParameters(TYPE_STRING, null, TERM);
@@ -242,7 +235,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
   @Test
   public void testPostQueryStringNull() throws Exception {
     setUpVREManager(true, true);
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
 
     SearchParameters searchParameters = createSearchParameters(TYPE_STRING, null, null);
@@ -261,8 +253,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
     SearchManager searchManager = injector.getInstance(SearchManager.class);
     doThrow(NoSuchFacetException.class).when(searchManager).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
-
     SearchParameters searchParameters = createSearchParameters(TYPE_STRING, null, TERM);
 
     ClientResponse clientResponse = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, searchParameters);
@@ -276,8 +266,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
     setUpVREManager(true, true);
     SearchManager searchManager = injector.getInstance(SearchManager.class);
     doThrow(Exception.class).when(searchManager).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
-
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
 
     SearchParameters searchParameters = createSearchParameters(TYPE_STRING, null, TERM);
 
@@ -293,7 +281,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
     SearchResult searchResult = mock(SearchResult.class);
     setupSearchManager(searchResult);
 
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
     doThrow(IOException.class).when(storageManager).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
 
     SearchParameters searchParameters = createSearchParameters(TYPE_STRING, null, TERM);
@@ -309,7 +296,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
   public void testGetSuccess() {
     List<String> idList = Lists.newArrayList();
     List<Person> personList = Lists.newArrayList();
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
 
     int startIndex = 0;
     int numberOfRows = 10;
@@ -335,7 +321,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
   public void testGetSuccessWithStartAndRows() {
     List<String> idList = Lists.newArrayList();
     List<Person> personList = Lists.newArrayList();
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
 
     int startIndex = 20;
     int numberOfRows = 20;
@@ -368,7 +353,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
   public void testGetSuccessWithStartAndRowsMoreThanMax() {
     List<String> idList = Lists.newArrayList();
     List<Person> personList = Lists.newArrayList();
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
 
     int startIndex = 10;
     int numberOfRows = 100;
@@ -397,8 +381,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetNoResults() {
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
-
     setUpSearchResult(null, storageManager, Lists.<FacetCount> newArrayList());
 
     Map<String, Object> expected = createExpectedResult(Lists.<String> newArrayList(), Lists.<Person> newArrayList(), Lists.<FacetCount> newArrayList(), 0, 0, SORTABLE_FIELDS, 0, null, null);
@@ -419,7 +401,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetUnknownId() {
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(SearchResult.class, ID)).thenReturn(null);
 
     WebResource resource = super.resource();
@@ -435,7 +416,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
     String unknownType = "unknown";
     searchResult.setSearchType(unknownType);
 
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
     when(storageManager.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
 
     WebResource resource = super.resource();

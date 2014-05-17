@@ -27,7 +27,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.security.Principal;
-import java.util.List;
 
 import nl.knaw.huygens.security.client.AuthorizationHandler;
 import nl.knaw.huygens.security.client.UnauthorizedException;
@@ -68,6 +67,10 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   protected static final String USER_ID = "USER000000001";
   protected static final String VRE_ID = "vreID";
   protected static Injector injector;
+
+  // Needed practically always
+  protected StorageManager storageManager;
+
   private static ResourceTestModule resourceTestModule;
 
   public WebServiceTestSetup() {
@@ -79,6 +82,11 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     initLogger();
     resourceTestModule = new ResourceTestModule();
     injector = Guice.createInjector(resourceTestModule);
+  }
+
+  @Before
+  public void setupRepository() {
+    storageManager = injector.getInstance(StorageManager.class);
   }
 
   /**
@@ -102,21 +110,13 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   }
 
   protected void setupUserWithRoles(String vreId, String userId, String... roles) {
-    StorageManager storageManager = setupUser(userId);
+    User user = new User();
+    user.setId(userId);
+    when(storageManager.findEntity(User.class, user)).thenReturn(user);
 
     VREAuthorization example = new VREAuthorization(vreId, userId);
     VREAuthorization authorization = new VREAuthorization(vreId, userId, roles);
-
     when(storageManager.findEntity(VREAuthorization.class, example)).thenReturn(authorization);
-  }
-
-  protected StorageManager setupUser(String userId) {
-    StorageManager storageManager = injector.getInstance(StorageManager.class);
-    User user = new User();
-    user.setId(userId);
-
-    when(storageManager.findEntity(User.class, user)).thenReturn(user);
-    return storageManager;
   }
 
   @After
@@ -138,10 +138,6 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     webAppDescriptor.getInitParams().put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, LoggingFilter.class.getName());
 
     return webAppDescriptor;
-  }
-
-  protected StorageManager getStorageManager() {
-    return injector.getInstance(StorageManager.class);
   }
 
   protected JacksonJsonProvider getJsonProvider() {
