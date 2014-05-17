@@ -29,7 +29,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 /**
  * Defines a subset of the data in the repository.
  */
-public interface Scope {
+interface Scope {
 
   /**
    * Returns primitive domain entity types in this scope.
