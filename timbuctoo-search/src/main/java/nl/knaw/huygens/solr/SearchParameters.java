@@ -76,8 +76,9 @@ public class SearchParameters {
     return typeString;
   }
 
-  public void setTypeString(String typeString) {
+  public SearchParameters setTypeString(String typeString) {
     this.typeString = typeString;
+    return this;
   }
 
   @JsonIgnore
