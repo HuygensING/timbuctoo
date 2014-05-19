@@ -41,8 +41,7 @@ public class EntityMapperTest {
 
   @BeforeClass
   public static void setup() {
-    TypeRegistry registry = TypeRegistry.getInstance();
-    registry.init("timbuctoo.model.*");
+    TypeRegistry registry = TypeRegistry.getInstance().init("timbuctoo.model.*");
     mappers = new EntityMappers(registry.getDomainEntityTypes());
   }
 

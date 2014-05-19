@@ -109,7 +109,7 @@ public class TypeRegistry {
 
   private TypeRegistry() {}
 
-  public void init(String packageNames) {
+  public TypeRegistry init(String packageNames) {
     checkArgument(packageNames != null, "'packageNames' must not be null");
 
     clear();
@@ -117,6 +117,7 @@ public class TypeRegistry {
     for (String packageName : StringUtils.split(packageNames)) {
       registerPackage(classPath, packageName.replaceFirst("^timbuctoo", "nl.knaw.huygens.timbuctoo"));
     }
+    return this;
   }
 
   /**

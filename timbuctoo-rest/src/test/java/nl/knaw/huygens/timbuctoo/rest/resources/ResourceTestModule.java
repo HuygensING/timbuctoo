@@ -78,8 +78,7 @@ class ResourceTestModule extends JerseyServletModule {
 
   public ResourceTestModule() {
     config = mock(Configuration.class);
-    typeRegistry = TypeRegistry.getInstance();
-    typeRegistry.init(PACKAGES);
+    typeRegistry = TypeRegistry.getInstance().init(PACKAGES);
     storageManager = mock(StorageManager.class);
     jsonProvider = mock(JacksonJsonProvider.class);
     validator = mock(Validator.class);
