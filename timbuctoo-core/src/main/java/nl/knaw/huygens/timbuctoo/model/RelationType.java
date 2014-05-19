@@ -80,12 +80,20 @@ public class RelationType extends SystemEntity {
     return sourceTypeName;
   }
 
+  public boolean hasSourceTypeName(String name) {
+    return sourceTypeName.equals(name);
+  }
+
   public void setSourceTypeName(String name) {
     sourceTypeName = name;
   }
 
   public String getTargetTypeName() {
     return targetTypeName;
+  }
+
+  public boolean hasTargetTypeName(String name) {
+    return targetTypeName.equals(name);
   }
 
   public void setTargetTypeName(String name) {

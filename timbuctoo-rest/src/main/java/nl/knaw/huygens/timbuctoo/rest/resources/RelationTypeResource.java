@@ -33,6 +33,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -40,7 +41,10 @@ import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
@@ -63,7 +67,7 @@ public class RelationTypeResource extends ResourceBase {
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
   public List<RelationType> getRelationTypes(@QueryParam("iname") String name) {
-    return getRelationTypesForEntity(name);
+    return getAvailableRelationTypes(name);
   }
 
   @GET
@@ -81,53 +85,22 @@ public class RelationTypeResource extends ResourceBase {
    * can participate, either as "source" or as "target".
    * If {@code iname} is {@code null} or empty all relation types are returned.
    */
-  protected List<RelationType> getRelationTypesForEntity(String iname) {
-    boolean showAll = Strings.isNullOrEmpty(iname);
-    List<RelationType> types = Lists.newArrayList();
-    for (RelationType type : storageManager.getEntities(RelationType.class).getAll()) {
-      if (showAll || isApplicable(iname, type)) {
-        types.add(type);
-      }
-    }
-    return types;
+  @VisibleForTesting
+  List<RelationType> getAvailableRelationTypes(String iname) {
+    final String name = Strings.isNullOrEmpty(iname) ? null : mapName(iname);
+    Predicate<RelationType> predicate = new Predicate<RelationType>() {
+      @Override
+      public boolean apply(RelationType entity) {
+        return name == null || entity.hasSourceTypeName(name) || entity.hasTargetTypeName(name);
+      }};
+    List<RelationType> entities = storageManager.getEntities(RelationType.class).getAll();
+    return Lists.newArrayList(Iterables.filter(entities, predicate));
   }
 
-  protected boolean isApplicable(String iname, RelationType type) {
-    Class<? extends DomainEntity> requestType = convertToType(iname);
-    Class<? extends DomainEntity> sourceType = convertToType(type.getSourceTypeName());
-    Class<? extends DomainEntity> targetType = convertToType(type.getTargetTypeName());
-
-    // iname is assignable from source or target of relation
-    boolean isAssignable = isAssignable(sourceType, requestType) || isAssignable(targetType, requestType);
-
-    boolean isSourceCompatible = isCompatible(requestType, sourceType);
-    boolean isTargetCompatible = isCompatible(requestType, targetType);
-
-    boolean isRequestTypePrimitive = TypeRegistry.isPrimitiveDomainEntity(requestType);
-
-    boolean isPrimitiveCompatible = isRequestTypePrimitive && isAssignable && (isSourceCompatible || isTargetCompatible);
-    boolean isCompatibleForProjectType = isAssignable && isSourceCompatible && isTargetCompatible;
-
-    return isPrimitiveCompatible || isCompatibleForProjectType;
-  }
-
-  private Class<? extends DomainEntity> convertToType(String iname) {
-    return "domainentity".equals(iname) ? DomainEntity.class : registry.getDomainEntityType(iname);
-  }
-
-  private boolean isCompatible(Class<? extends DomainEntity> requestType, Class<? extends DomainEntity> typeFromRelation) {
-    return registry.isFromSameProject(requestType, typeFromRelation) || //
-      TypeRegistry.isPrimitiveDomainEntity(requestType) || // 
-      TypeRegistry.isPrimitiveDomainEntity(typeFromRelation) || //
-      DomainEntity.class.equals(requestType) || //
-      DomainEntity.class.equals(typeFromRelation);
-  }
-  /**
-   * Convenience method for deciding assignability of an entity to another entity,
-   * given the internal names of the target entity type and the source entity type.
-   */
-  private boolean isAssignable(Class<? extends DomainEntity> targetType, Class<? extends DomainEntity> sourceType) {
-    return targetType != null && sourceType != null && targetType.isAssignableFrom(sourceType);
+  private String mapName(String iname) {
+    Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
+    checkNotNull(type, Status.BAD_REQUEST, "No DomainEntity with internal name %s", iname);
+    return TypeNames.getInternalName(TypeRegistry.toBaseDomainEntity(type));
   }
 
 }

@@ -109,7 +109,8 @@ public class TypeRegistry {
 
   private TypeRegistry() {}
 
-  public TypeRegistry init(String packageNames) {
+  // This is a shared resource, so changes must be synchronized
+  public synchronized TypeRegistry init(String packageNames) {
     checkArgument(packageNames != null, "'packageNames' must not be null");
 
     clear();

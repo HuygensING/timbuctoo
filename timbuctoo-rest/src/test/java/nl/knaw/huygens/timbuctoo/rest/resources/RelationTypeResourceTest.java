@@ -22,135 +22,106 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.model.util.RelationTypeBuilder;
+import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
+import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import test.model.AnotherPrimitiveDomainEntity;
 import test.model.BaseDomainEntity;
-import test.model.DomainEntityWithMiscTypes;
 import test.model.PrimitiveDomainEntity;
-import test.model.projecta.OtherADomainEntity;
-import test.model.projecta.SubADomainEntity;
-import test.model.projectb.SubBDomainEntity;
 
 import com.google.common.collect.Lists;
 
 public class RelationTypeResourceTest {
 
-  private TypeRegistry registry;
+  private static TypeRegistry registry;
+
   private StorageManager storageManager;
   private RelationTypeResource resource;
 
+  @BeforeClass
+  public static void setupRegistry() {
+    registry = TypeRegistry.getInstance().init("test.model.*");
+  }
+
+  @AfterClass
+  public static void clearRegistry() {
+    registry = null;
+  }
+
   @Before
   public void setup() {
-    registry = mock(TypeRegistry.class);
     storageManager = mock(StorageManager.class);
     resource = new RelationTypeResource(registry, storageManager);
   }
 
   @Test
-  @SuppressWarnings("unchecked")
-  public void testGetRelationTypeForEntityNoName() {
+  public void testGetAvailableRelationTypesWithNoName() {
     List<RelationType> types = Lists.newArrayList(mock(RelationType.class), mock(RelationType.class));
 
-    // when
-    StorageIterator<RelationType> iterator = mock(StorageIterator.class);
+    @SuppressWarnings("unchecked")
+	StorageIterator<RelationType> iterator = mock(StorageIterator.class);
     when(iterator.getAll()).thenReturn(types);
     when(storageManager.getEntities(RelationType.class)).thenReturn(iterator);
 
-    // action
-    List<RelationType> returnedRelationTypes = resource.getRelationTypesForEntity(null);
+    List<RelationType> result = resource.getAvailableRelationTypes(null);
 
-    // verify
-    assertThat(returnedRelationTypes, contains(types.toArray(new RelationType[0])));
+    Assert.assertEquals(2, result.size());
+  }
+
+  @Test(expected = TimbuctooException.class)
+  public void testGetAvailableRelationTypesWithInvalidName() {
+    resource.getAvailableRelationTypes("invalid");
   }
 
   @Test
-  @SuppressWarnings("unchecked")
-  public void testGetRelationTypeForEntityPrimitive() {
-    RelationType type1 = createRelationType(BaseDomainEntity.class, SubADomainEntity.class, false);
-    RelationType type2 = createRelationType(DomainEntityWithMiscTypes.class, DomainEntity.class, false);
-    RelationType type3 = createRelationType(DomainEntityWithMiscTypes.class, SubADomainEntity.class, false);
+  public void testGetAvailableRelationTypesForPrimitive() throws ValidationException {
+    getAvailableRelationTypesWithName("basedomainentity");
+  }
+
+  @Test
+  public void testGetAvailableRelationTypesForProject() throws ValidationException {
+    getAvailableRelationTypesWithName("subadomainentity");
+  }
+  
+  private void getAvailableRelationTypesWithName(String iname) throws ValidationException {
+    RelationType type1 = createRelationType(BaseDomainEntity.class, PrimitiveDomainEntity.class);
+    RelationType type2 = createRelationType(BaseDomainEntity.class, AnotherPrimitiveDomainEntity.class);
+    RelationType type3 = createRelationType(PrimitiveDomainEntity.class, AnotherPrimitiveDomainEntity.class);
     List<RelationType> types = Lists.newArrayList(type1, type2, type3);
 
-    // when
-    StorageIterator<RelationType> iterator = mock(StorageIterator.class);
+    @SuppressWarnings("unchecked")
+	StorageIterator<RelationType> iterator = mock(StorageIterator.class);
     when(iterator.getAll()).thenReturn(types);
     when(storageManager.getEntities(RelationType.class)).thenReturn(iterator);
 
-    setupGetTypeForInName(BaseDomainEntity.class);
-    setupGetTypeForInName(SubADomainEntity.class);
-    setupGetTypeForInName(DomainEntityWithMiscTypes.class);
-    setupGetTypeForInName(DomainEntity.class);
+    List<RelationType> result = resource.getAvailableRelationTypes(iname);
 
-    // action
-    List<RelationType> actualRelationTypes = resource.getRelationTypesForEntity(TypeNames.getInternalName(BaseDomainEntity.class));
-
-    // verify
-    assertThat(actualRelationTypes, contains(type1, type2));
+    Assert.assertTrue(result.contains(type1));
+    Assert.assertTrue(result.contains(type2));
+    Assert.assertFalse(result.contains(type3));
   }
 
-  @Test
-  @SuppressWarnings("unchecked")
-  public void testGetRelationTypeForEntityProjectSpecific() {
-    // return all relations for the type and it's super classes except the ones that refer to a different project.
-    RelationType type1 = createRelationType(BaseDomainEntity.class, SubADomainEntity.class, false);
-    RelationType type2 = createRelationType(SubBDomainEntity.class, DomainEntity.class, false);
-    RelationType type3 = createRelationType(PrimitiveDomainEntity.class, DomainEntity.class, false);
-    RelationType type4 = createRelationType(OtherADomainEntity.class, DomainEntity.class, false);
-    List<RelationType> types = Lists.newArrayList(type1, type2, type3, type4);
-
-    // when
-    StorageIterator<RelationType> iterator = mock(StorageIterator.class);
-    when(iterator.getAll()).thenReturn(types);
-    when(storageManager.getEntities(RelationType.class)).thenReturn(iterator);
-
-    setupGetTypeForInName(BaseDomainEntity.class);
-    setupGetTypeForInName(SubADomainEntity.class);
-    setupGetTypeForInName(PrimitiveDomainEntity.class);
-    setupGetTypeForInName(DomainEntity.class);
-    setupGetTypeForInName(SubBDomainEntity.class);
-    setupGetTypeForInName(OtherADomainEntity.class);
-
-    when(registry.isFromSameProject(any(Class.class), any(Class.class))).thenReturn(false);
-    when(registry.isFromSameProject(SubADomainEntity.class, OtherADomainEntity.class)).thenReturn(true);
-    when(registry.isFromSameProject(SubADomainEntity.class, SubADomainEntity.class)).thenReturn(true);
-
-    // action
-    List<RelationType> actualRelationTypes = resource.getRelationTypesForEntity(TypeNames.getInternalName(SubADomainEntity.class));
-
-    // verify
-    verify(registry).isFromSameProject(SubADomainEntity.class, SubBDomainEntity.class);
-    verify(registry).isFromSameProject(SubADomainEntity.class, OtherADomainEntity.class);
-    assertThat(actualRelationTypes, contains(type1, type3, type4));
-  }
-
-  private RelationType createRelationType(Class<? extends DomainEntity> sourceClass, Class<? extends DomainEntity> targetClass, boolean symmetric) {
-    RelationType relationType = new RelationType();
-    relationType.setSourceTypeName(TypeNames.getInternalName(sourceClass));
-    relationType.setTargetTypeName(TypeNames.getInternalName(targetClass));
-    relationType.setSymmetric(symmetric);
-    return relationType;
-  }
-
-  private void setupGetTypeForInName(Class<? extends DomainEntity> type) {
-    doReturn(type).when(registry).getDomainEntityType(TypeNames.getInternalName(type));
+  private RelationType createRelationType(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) throws ValidationException {
+    RelationType entity = RelationTypeBuilder.newInstance().withSourceType(sourceType).withTargetType(targetType).build();
+    entity.validateForAdd(registry, storageManager);
+    return entity;
   }
 
 }
