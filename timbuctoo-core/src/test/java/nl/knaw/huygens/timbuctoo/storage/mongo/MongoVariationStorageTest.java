@@ -68,8 +68,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @BeforeClass
   public static void setupRegistry() {
-    registry = TypeRegistry.getInstance();
-    registry.init("timbuctoo.model timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
+    registry = TypeRegistry.getInstance().init("timbuctoo.model timbuctoo.variation.model.*");
   }
 
   @AfterClass

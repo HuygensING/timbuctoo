@@ -59,8 +59,7 @@ public class HTMLGeneratorTest {
 
   @BeforeClass
   public static void setupRegistry() {
-    registry = TypeRegistry.getInstance();
-    registry.init("timbuctoo.rest.model timbuctoo.rest.model.projecta timbuctoo.rest.model.projectb");
+    registry = TypeRegistry.getInstance().init("timbuctoo.rest.model.*");
   }
 
   @AfterClass

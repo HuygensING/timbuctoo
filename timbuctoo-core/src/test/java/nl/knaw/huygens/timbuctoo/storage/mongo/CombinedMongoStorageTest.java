@@ -70,8 +70,7 @@ public class CombinedMongoStorageTest {
 
   @BeforeClass
   public static void setupTypeRegistry() {
-    registry = TypeRegistry.getInstance();
-    registry.init("timbuctoo.model timbuctoo.variation.model timbuctoo.variation.model.projecta timbuctoo.variation.model.projectb");
+    registry = TypeRegistry.getInstance().init("timbuctoo.model timbuctoo.variation.model.*");
   }
 
   @AfterClass
