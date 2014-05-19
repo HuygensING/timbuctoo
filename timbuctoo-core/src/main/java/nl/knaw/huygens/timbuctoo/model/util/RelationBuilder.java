@@ -30,7 +30,7 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 */
 public class RelationBuilder<T extends Relation> {
 
-  public static <T extends Relation> RelationBuilder<T> createRelation(Class<T> type) {
+  public static <T extends Relation> RelationBuilder<T> newInstance(Class<T> type) {
     return new RelationBuilder<T>(type);
   }
 

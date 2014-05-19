@@ -1,4 +1,4 @@
-package test.util;
+package nl.knaw.huygens.timbuctoo.model.util;
 
 /*
  * #%L
@@ -22,27 +22,38 @@ package test.util;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 
 public class RelationTypeBuilder {
+
   private String targetTypeName;
   private String sourceTypeName;
 
-  private RelationTypeBuilder() {
+  private RelationTypeBuilder() {}
 
-  }
-
-  public static RelationTypeBuilder createRelationType() {
+  public static RelationTypeBuilder newInstance() {
     return new RelationTypeBuilder();
   }
 
-  public RelationTypeBuilder withSourceTypeName(String sourceTypeName) {
-    this.sourceTypeName = sourceTypeName;
+  public RelationTypeBuilder withSourceType(Class<? extends DomainEntity> type) {
+    sourceTypeName = TypeNames.getInternalName(type);
     return this;
   }
 
-  public RelationTypeBuilder withTargetTypeName(String targetTypeName) {
-    this.targetTypeName = targetTypeName;
+  public RelationTypeBuilder withSourceTypeName(String typeName) {
+    sourceTypeName = typeName;
+    return this;
+  }
+
+  public RelationTypeBuilder withTargetType(Class<? extends DomainEntity> type) {
+    targetTypeName = TypeNames.getInternalName(type);
+    return this;
+  }
+
+  public RelationTypeBuilder withTargetTypeName(String typeName) {
+    targetTypeName = typeName;
     return this;
   }
 

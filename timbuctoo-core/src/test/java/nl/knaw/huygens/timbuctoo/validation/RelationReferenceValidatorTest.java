@@ -57,7 +57,7 @@ public class RelationReferenceValidatorTest {
     storage = mock(StorageManager.class);
     validator = new RelationReferenceValidator(typeRegistryMock, storage);
 
-    relation = RelationBuilder.createRelation(Relation.class) //
+    relation = RelationBuilder.newInstance(Relation.class) //
         .withSourceId(sourceId) //
         .withSourceType(sourceTypeString) //
         .withTargetId(targetId) //
