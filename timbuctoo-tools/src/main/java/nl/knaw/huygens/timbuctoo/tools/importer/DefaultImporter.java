@@ -173,7 +173,7 @@ public abstract class DefaultImporter {
   }
 
   protected <T extends Relation> String addRelation(Class<T> type, Reference relType, Reference source, Reference target, Change change, String line) {
-    T relation = RelationBuilder.createRelation(type) //
+    T relation = RelationBuilder.newInstance(type) //
         .withRelationTypeRef(relType) //
         .withSourceRef(source) //
         .withTargetRef(target) //

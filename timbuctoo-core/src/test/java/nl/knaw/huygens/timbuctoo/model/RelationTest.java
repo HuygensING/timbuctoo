@@ -27,12 +27,12 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static test.util.RelationTypeBuilder.createRelationType;
 
 import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
+import nl.knaw.huygens.timbuctoo.model.util.RelationTypeBuilder;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -45,7 +45,7 @@ public class RelationTest {
 
   @Test
   public void testConfomsRelationTypeRelationConforms() {
-    Relation relation = RelationBuilder.createRelation(Relation.class) //
+    Relation relation = RelationBuilder.newInstance(Relation.class) //
         .withSourceType(sourceType) //
         .withTargeType(targetType) //
         .build();
@@ -54,7 +54,7 @@ public class RelationTest {
   }
 
   private void testConformsRelationType(Relation relation, boolean conform) {
-    RelationType relationType = createRelationType() //
+    RelationType relationType = RelationTypeBuilder.newInstance() //
         .withSourceTypeName(sourceType) //
         .withTargetTypeName(targetType) //
         .build();
@@ -64,7 +64,7 @@ public class RelationTest {
 
   @Test
   public void testConfomsRelationTypeSourceTypeDifferent() {
-    Relation relation = RelationBuilder.createRelation(Relation.class) //
+    Relation relation = RelationBuilder.newInstance(Relation.class) //
         .withSourceType("differentSourceType") //
         .withTargeType(targetType) //
         .build();
@@ -74,7 +74,7 @@ public class RelationTest {
 
   @Test
   public void testConfomsRelationTypeSourceTypeNull() {
-    Relation relation = RelationBuilder.createRelation(Relation.class) //
+    Relation relation = RelationBuilder.newInstance(Relation.class) //
         .withSourceType(null) //
         .withTargeType(targetType) //
         .build();
@@ -84,7 +84,7 @@ public class RelationTest {
 
   @Test
   public void testConfomsRelationTypeTargetTypeDifferent() {
-    Relation relation = RelationBuilder.createRelation(Relation.class) //
+    Relation relation = RelationBuilder.newInstance(Relation.class) //
         .withSourceType(sourceType) //
         .withTargeType("differentTargetType") //
         .build();
@@ -94,7 +94,7 @@ public class RelationTest {
 
   @Test
   public void testConfomsRelationTypeTargetTypeNull() {
-    Relation relation = RelationBuilder.createRelation(Relation.class) //
+    Relation relation = RelationBuilder.newInstance(Relation.class) //
         .withSourceType(sourceType) //
         .withTargeType(null) //
         .build();
