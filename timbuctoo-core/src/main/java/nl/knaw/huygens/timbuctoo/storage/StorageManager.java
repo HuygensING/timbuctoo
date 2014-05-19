@@ -240,8 +240,8 @@ public class StorageManager {
     try {
       return storage.getEntities(type);
     } catch (StorageException e) {
-      // TODO handle properly
-      return null;
+      LOG.error("Failed to retrieve entities of type {}", type);
+      return new EmptyStorageIterator<T>();
     }
   }
 

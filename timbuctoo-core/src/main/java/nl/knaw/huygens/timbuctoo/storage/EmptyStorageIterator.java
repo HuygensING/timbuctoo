@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.mongo;
+package nl.knaw.huygens.timbuctoo.storage;
 
 /*
  * #%L
@@ -25,12 +25,10 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 import java.util.Collections;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-
 /**
  * An iterator over an empty entity collection.
  */
-class EmptyStorageIterator<T> implements StorageIterator<T> {
+public class EmptyStorageIterator<T> implements StorageIterator<T> {
 
   @Override
   public boolean hasNext() {
