@@ -32,7 +32,6 @@ import nl.knaw.huygens.security.client.AuthorizationHandler;
 import nl.knaw.huygens.security.client.UnauthorizedException;
 import nl.knaw.huygens.security.client.filters.SecurityResourceFilterFactory;
 import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
-import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.rest.config.ServletInjectionModelHelper;
@@ -50,7 +49,6 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.container.filter.LoggingFilter;
 import com.sun.jersey.api.container.filter.RolesAllowedResourceFilterFactory;
 import com.sun.jersey.api.core.PackagesResourceConfig;
@@ -66,6 +64,8 @@ public abstract class WebServiceTestSetup extends JerseyTest {
 
   protected static final String USER_ID = "USER000000001";
   protected static final String VRE_ID = "vreID";
+  protected static final String AUTHORIZATION = "bearer 12333322abef";
+
   protected static Injector injector;
 
   // Needed practically always
@@ -143,14 +143,6 @@ public abstract class WebServiceTestSetup extends JerseyTest {
 
   protected JacksonJsonProvider getJsonProvider() {
     return injector.getInstance(JacksonJsonProvider.class);
-  }
-
-  protected WebResource domainResource(String... pathElements) {
-    WebResource resource = resource().path(Paths.DOMAIN_PREFIX);
-    for (String pathElement : pathElements) {
-      resource = resource.path(pathElement);
-    }
-    return resource;
   }
 
   protected void makeVREAvailable(VRE vre, String vreId) {
