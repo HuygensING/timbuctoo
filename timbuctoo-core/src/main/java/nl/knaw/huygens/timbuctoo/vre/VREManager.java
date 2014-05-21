@@ -47,6 +47,7 @@ public class VREManager {
         new DWCVRE(), //
         new WomenWritersVRE(), //
         new CobwwwebNoVRE(), //
+        new CobwwwebRsVRE(), //
         new TestVRE());
 
     for (VRE vre : vreList) {

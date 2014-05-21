@@ -41,9 +41,11 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
+import nl.knaw.huygens.timbuctoo.model.cwrs.CWRSCollective;
 import nl.knaw.huygens.timbuctoo.model.cwrs.CWRSDocument;
 import nl.knaw.huygens.timbuctoo.model.cwrs.CWRSPerson;
 import nl.knaw.huygens.timbuctoo.model.cwrs.CWRSRelation;
+import nl.knaw.huygens.timbuctoo.model.neww.WWCollective;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
 import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -123,10 +125,11 @@ public class CobwwwebRsImporter extends DefaultImporter {
       openImportLog("cobwwweb-rs-log.txt");
       importRelationTypes();
       setupRelationTypeDefs();
-      importPersons();
-      // importDocuments();
-      // importRelations();
-      displayStatus();
+      importCollectives();
+      //importPersons();
+      //importDocuments();
+      //importRelations();
+      //displayStatus();
     } finally {
       displayErrorSummary();
       closeImportLog();
@@ -245,6 +248,106 @@ public class CobwwwebRsImporter extends DefaultImporter {
       String id = context.closeLayer().trim();
       context.addId(id);
       return Traversal.NEXT;
+    }
+  }
+
+  // --- collectives -----------------------------------------------------------
+
+  private void importCollectives() throws Exception {
+    String xml = getResource(URL, "cooperations");
+    List<String> collectiveIds = parseIdResource(xml, "cooperationId");
+    log("Retrieved %d id's.%n", collectiveIds.size());
+
+    for (String id : collectiveIds) {
+      xml = getResource(id);
+      System.out.println(xml);
+      CWRSCollective entity = parseCollectiveResource(xml, id);
+      if (accept(entity)) {
+        String storedId = updateExistingCollective(entity);
+        if (storedId == null) {
+          storedId = createNewCollective(entity);
+        }
+        storeReference(id, CWRSCollective.class, storedId);
+
+        indexManager.addEntity(CWRSCollective.class, storedId);
+        indexManager.updateEntity(WWCollective.class, storedId);
+      }
+    }
+  }
+
+  private CWRSCollective parseCollectiveResource(String xml, String id) {
+    nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
+    CollectiveContext context = new CollectiveContext(xml, id);
+    document.accept(new CollectiveVisitor(context));
+    return context.entity;
+  }
+
+  private boolean accept(CWRSCollective entity) {
+    return false;
+  }
+
+  private String updateExistingCollective(CWRSCollective entity) {
+    String storedId = null;
+    return storedId;
+  }
+
+  // Save as CWRSPerson, add WWPerson variation
+  private String createNewCollective(CWRSCollective entity) {
+    return null;
+  }
+
+  private class CollectiveContext extends XmlContext {
+    public String xml;
+    public String id;
+    public CWRSCollective entity = new CWRSCollective();
+
+    public CollectiveContext(String xml, String id) {
+      this.xml = xml;
+      this.id = id;
+    }
+
+    public void error(String format, Object... args) {
+      log("[%s] %s%n", id, String.format(format, args));
+    }
+  }
+
+  private class CollectiveVisitor extends DelegatingVisitor<CollectiveContext> {
+    public CollectiveVisitor(CollectiveContext context) {
+      super(context);
+      setDefaultElementHandler(new DefaultXollectiveHandler());
+      addElementHandler(new CollectiveIdHandler(), "cooperationId");
+      addElementHandler(new CollectiveTypeHandler(), "type");
+      // other elements: names, reference, location
+    }
+  }
+
+  private class DefaultXollectiveHandler extends DefaultElementHandler<CollectiveContext> {
+    private final Set<String> ignoredNames = Sets.newHashSet("cooperation");
+
+    @Override
+    public Traversal enterElement(Element element, CollectiveContext context) {
+      String name = element.getName();
+      if (!ignoredNames.contains(name)) {
+        context.error("Unexpected element: %s%n%s", name, context.xml);
+      }
+      return Traversal.NEXT;
+    }
+  }
+
+  private class CollectiveIdHandler extends CaptureHandler<CollectiveContext> {
+    @Override
+    public void handleContent(String text, CollectiveContext context) {
+      if (!context.id.equals(text)) {
+        context.error("ID mismatch: %s", text);
+      }
+    }
+  }
+
+  private class CollectiveTypeHandler extends CaptureHandler<CollectiveContext> {
+    @Override
+    public void handleContent(String text, CollectiveContext context) {
+      context.error("Unknown type: %s", text);
+      // Types: Library, Publishing House
     }
   }
 
@@ -536,6 +639,9 @@ public class CobwwwebRsImporter extends DefaultImporter {
         storedId = createNewDocument(entity);
       }
       storeReference(id, CWRSDocument.class, storedId);
+
+      handleLanguages(entity);
+
       indexManager.addEntity(CWRSDocument.class, storedId);
       indexManager.updateEntity(WWDocument.class, storedId);
     }
@@ -572,6 +678,20 @@ public class CobwwwebRsImporter extends DefaultImporter {
     return storedId;
   }
 
+  private void handleLanguages(CWRSDocument entity) {
+    for (String code : entity.tempLanguages) {
+      Language language = getLanguage(code);
+      if (language == null) {
+        log("Failed to retrieve language with code %s%n", code);
+      } else {
+        Reference typeRef = getRelationTypeRef("hasWorkLanguage", true);
+        Reference sourceRef = new Reference(Document.class, entity.getId());
+        Reference targetRef = new Reference(Language.class, language.getId());
+        addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, "");
+      }
+    }
+  }
+
   private class DocumentContext extends XmlContext {
     public String id;
     public CWRSDocument document = new CWRSDocument();
@@ -589,14 +709,13 @@ public class CobwwwebRsImporter extends DefaultImporter {
     public DocumentVisitor(DocumentContext context) {
       super(context);
       setDefaultElementHandler(new DefaultDocumentHandler());
-      addElementHandler(new DocumentIdHandler(), "documentId");
-      addElementHandler(new DocumentTypeHandler(), "type");
-      addElementHandler(new DocumentTitleHandler(), "title");
-      addElementHandler(new DocumentDescriptionHandler(), "description");
-      addElementHandler(new DocumentDateHandler(), "date");
+      addElementHandler(new DocumentIdHandler(), "documentId"); // OK
+      addElementHandler(new DocumentTypeHandler(), "type"); // OK
+      addElementHandler(new DocumentTitleHandler(), "title"); // OK
+      addElementHandler(new DocumentDescriptionHandler(), "description"); // OK
+      addElementHandler(new DocumentDateHandler(), "date"); // OK
       addElementHandler(new DocumentLanguageHandler(), "language");
-      addElementHandler(new DocumentLinkHandler(), "Reference");
-      addElementHandler(new DocumentNotesHandler(), "notes");
+      addElementHandler(new DocumentLinkHandler(), "reference");
     }
   }
 
@@ -625,11 +744,13 @@ public class CobwwwebRsImporter extends DefaultImporter {
   private class DocumentTypeHandler extends CaptureHandler<DocumentContext> {
     @Override
     public void handleContent(String text, DocumentContext context) {
-      if (text.equalsIgnoreCase(Document.DocumentType.WORK.name())) {
-        context.document.setDocumentType(Document.DocumentType.WORK);
-      } else {
-        context.error("Unknown type: %s", text);
+      for (Document.DocumentType type : Document.DocumentType.values()) {
+        if (text.equalsIgnoreCase(type.name())) {
+          context.document.setDocumentType(type);
+          return;
+        }
       }
+      context.error("Unknown document type: %s", text);
     }
   }
 
@@ -655,13 +776,6 @@ public class CobwwwebRsImporter extends DefaultImporter {
     }
   }
 
-  private class DocumentNotesHandler extends CaptureHandler<DocumentContext> {
-    @Override
-    public void handleContent(String text, DocumentContext context) {
-      context.document.setNotes(text);
-    }
-  }
-
   private class DocumentLanguageHandler extends CaptureHandler<DocumentContext> {
     @Override
     public void handleContent(String text, DocumentContext context) {
@@ -674,6 +788,7 @@ public class CobwwwebRsImporter extends DefaultImporter {
 
     @Override
     public void handleContent(String text, DocumentContext context) {
+      log("Reference: %s%n", text);
       if (text.startsWith(NEWW_URL)) {
         log("Reference to NEWW: %s%n", text);
         context.document.tempNewwId = text.substring(NEWW_URL.length());
@@ -690,9 +805,14 @@ public class CobwwwebRsImporter extends DefaultImporter {
     List<String> relationIds = parseIdResource(xml, "relationId");
     log("Retrieved %d id's.%n", relationIds.size());
 
+    int i = 0;
     for (String id : relationIds) {
-      xml = getResource(URL, "relation", id);
-      parseRelationResource(xml, id);
+      i++;
+      if (i > 1500) {
+        xml = getResource(id);
+        System.out.println(xml);
+        parseRelationResource(xml, id);
+      }
     }
   }
 
@@ -777,6 +897,14 @@ public class CobwwwebRsImporter extends DefaultImporter {
         context.relationTypeName = "isCreatedBy";
       } else if (text.equalsIgnoreCase("pseudonym")) {
         context.relationTypeName = "isPseudonymOf";
+      } else if (text.equalsIgnoreCase("published by")) {
+        context.relationTypeName = "isPublishedBy";
+      } else if (text.equalsIgnoreCase("created by")) {
+        context.relationTypeName = "isCreatedBy";
+      } else if (text.equalsIgnoreCase("translated by")) {
+        context.relationTypeName = "<<translated by>>";
+      } else if (text.equalsIgnoreCase("comments on")) {
+        context.relationTypeName = "<<comments on>>";
       } else {
         context.error("Unexpected relation type: '%s'", text);
         System.exit(0);
