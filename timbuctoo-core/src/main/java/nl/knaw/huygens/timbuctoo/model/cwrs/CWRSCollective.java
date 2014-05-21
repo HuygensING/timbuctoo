@@ -22,17 +22,8 @@ package nl.knaw.huygens.timbuctoo.model.cwrs;
  * #L%
  */
 
-import java.util.List;
+import nl.knaw.huygens.timbuctoo.model.Collective;
 
-import nl.knaw.huygens.timbuctoo.model.Document;
-
-import com.google.common.collect.Lists;
-
-public class CWRSDocument extends Document {
-
-  // --- temporary fields ------------------------------------------------------
-
-  public String tempNewwId;
-  public List<String> tempLanguages = Lists.newArrayList();
+public class CWRSCollective extends Collective {
 
 }

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.model.cwrs;
+package nl.knaw.huygens.timbuctoo.vre;
 
 /*
  * #%L
@@ -22,17 +22,39 @@ package nl.knaw.huygens.timbuctoo.model.cwrs;
  * #L%
  */
 
+import java.io.IOException;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.model.Document;
+public class CobwwwebRsVRE extends AbstractVRE {
 
-import com.google.common.collect.Lists;
+  @Override
+  protected Scope createScope() throws IOException {
+    return new PackageScope("timbuctoo.model.cwrs");
+  }
 
-public class CWRSDocument extends Document {
+  @Override
+  public String getScopeId() {
+    return "cwrs";
+  }
 
-  // --- temporary fields ------------------------------------------------------
+  @Override
+  public String getName() {
+    return "CobwwwebRs";
+  }
 
-  public String tempNewwId;
-  public List<String> tempLanguages = Lists.newArrayList();
+  @Override
+  public String getDescription() {
+    return "VRE for the 'COBWWWEB-Serbia' subproject.";
+  }
+
+  @Override
+  public String getDomainEntityPrefix() {
+    return "cwrs";
+  }
+
+  @Override
+  public List<String> getReceptionNames() {
+    return WomenWritersVRE.RECEPTION_NAMES;
+  }
 
 }
