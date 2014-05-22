@@ -36,6 +36,7 @@ import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Language;
@@ -55,6 +56,9 @@ import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
+import nl.knaw.huygens.timbuctoo.util.DisplayTokenHandler;
+import nl.knaw.huygens.timbuctoo.util.Text;
+import nl.knaw.huygens.timbuctoo.util.Tokens;
 
 import org.restlet.data.MediaType;
 import org.restlet.resource.ClientResource;
@@ -126,10 +130,10 @@ public class CobwwwebRsImporter extends DefaultImporter {
       importRelationTypes();
       setupRelationTypeDefs();
       importCollectives();
-      //importPersons();
-      //importDocuments();
-      //importRelations();
-      //displayStatus();
+      importPersons();
+      importDocuments();
+      importRelations();
+      displayStatus();
     } finally {
       displayErrorSummary();
       closeImportLog();
@@ -260,19 +264,19 @@ public class CobwwwebRsImporter extends DefaultImporter {
 
     for (String id : collectiveIds) {
       xml = getResource(id);
-      System.out.println(xml);
       CWRSCollective entity = parseCollectiveResource(xml, id);
       if (accept(entity)) {
-        String storedId = updateExistingCollective(entity);
-        if (storedId == null) {
-          storedId = createNewCollective(entity);
-        }
+        String storedId = createNewCollective(entity);
         storeReference(id, CWRSCollective.class, storedId);
 
         indexManager.addEntity(CWRSCollective.class, storedId);
         indexManager.updateEntity(WWCollective.class, storedId);
       }
     }
+    System.out.println("Locations");
+    locationTokens.handleSortedByText(new DisplayTokenHandler());
+    System.out.println("Names");
+    nameTokens.handleSortedByText(new DisplayTokenHandler());
   }
 
   private CWRSCollective parseCollectiveResource(String xml, String id) {
@@ -283,17 +287,14 @@ public class CobwwwebRsImporter extends DefaultImporter {
   }
 
   private boolean accept(CWRSCollective entity) {
-    return false;
+    return true;
   }
 
-  private String updateExistingCollective(CWRSCollective entity) {
-    String storedId = null;
-    return storedId;
-  }
-
-  // Save as CWRSPerson, add WWPerson variation
   private String createNewCollective(CWRSCollective entity) {
-    return null;
+    String storedId = addDomainEntity(CWRSCollective.class, entity, change);
+    WWCollective collective = storageManager.getEntity(WWCollective.class, storedId);
+    updateProjectDomainEntity(WWCollective.class, collective, change);
+    return storedId;
   }
 
   private class CollectiveContext extends XmlContext {
@@ -314,14 +315,16 @@ public class CobwwwebRsImporter extends DefaultImporter {
   private class CollectiveVisitor extends DelegatingVisitor<CollectiveContext> {
     public CollectiveVisitor(CollectiveContext context) {
       super(context);
-      setDefaultElementHandler(new DefaultXollectiveHandler());
+      setDefaultElementHandler(new DefaultCollectiveHandler());
       addElementHandler(new CollectiveIdHandler(), "cooperationId");
       addElementHandler(new CollectiveTypeHandler(), "type");
-      // other elements: names, reference, location
+      addElementHandler(new CollectiveNamesHandler(), "names");
+      addElementHandler(new CollectiveLocationHandler(), "location");
+      addElementHandler(new CollectiveLinkHandler(), "reference");
     }
   }
 
-  private class DefaultXollectiveHandler extends DefaultElementHandler<CollectiveContext> {
+  private class DefaultCollectiveHandler extends DefaultElementHandler<CollectiveContext> {
     private final Set<String> ignoredNames = Sets.newHashSet("cooperation");
 
     @Override
@@ -344,10 +347,54 @@ public class CobwwwebRsImporter extends DefaultImporter {
   }
 
   private class CollectiveTypeHandler extends CaptureHandler<CollectiveContext> {
+
     @Override
     public void handleContent(String text, CollectiveContext context) {
-      context.error("Unknown type: %s", text);
-      // Types: Library, Publishing House
+      if (text.equals("Publishing House")) {
+        text = "PUBLISHER";
+      }
+      String normalized = Collective.Type.normalize(text);
+      if (normalized.equals(Collective.Type.UNKNOWN)) {
+        context.error("Unknown type: %s", text);
+      }
+      context.entity.setType(normalized);
+    }
+  }
+
+  private class CollectiveLinkHandler extends CaptureHandler<CollectiveContext> {
+    // Collectives do not occur as collection in the old Women Writers database.
+    // So references, if any, must be treated as simple links.
+
+    @Override
+    public void handleContent(String text, CollectiveContext context) {
+      log("Reference to: %s%n", text);
+      context.entity.addLink(new Link(text));
+    }
+  }
+
+  private final Tokens locationTokens = new Tokens();
+
+  private class CollectiveLocationHandler extends CaptureHandler<CollectiveContext> {
+
+    @Override
+    public void handleContent(String text, CollectiveContext context) {
+      context.entity.tempLocation = text;
+      locationTokens.increment(text);
+    }
+  }
+
+  private final Tokens nameTokens = new Tokens();
+
+  private class CollectiveNamesHandler extends CaptureHandler<CollectiveContext> {
+
+    @Override
+    public void handleContent(String text, CollectiveContext context) {
+      // TODO model name variants for collectives
+      context.entity.tempNames.add(text);
+      if (Strings.isNullOrEmpty(context.entity.getName()) || Text.isCyrillicText(text)) {
+        context.entity.setName(text);
+      }
+      nameTokens.increment(text);
     }
   }
 
@@ -805,14 +852,9 @@ public class CobwwwebRsImporter extends DefaultImporter {
     List<String> relationIds = parseIdResource(xml, "relationId");
     log("Retrieved %d id's.%n", relationIds.size());
 
-    int i = 0;
     for (String id : relationIds) {
-      i++;
-      if (i > 1500) {
-        xml = getResource(id);
-        System.out.println(xml);
-        parseRelationResource(xml, id);
-      }
+      xml = getResource(id);
+      parseRelationResource(xml, id);
     }
   }
 
@@ -820,13 +862,20 @@ public class CobwwwebRsImporter extends DefaultImporter {
     nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
     RelationContext context = new RelationContext(id);
     document.accept(new RelationVisitor(context));
+
+    // Resolve ambiguous reception type
+    if ("isWorkCommentedOnIn".equals(context.relationTypeName) && context.targetId.contains("/person/")) {
+      context.relationTypeName = "isPersonCommentedOnIn";
+    }
+
     Reference typeRef = relationTypes.get(context.relationTypeName);
     Reference sourceRef = references.get(context.sourceId);
     Reference targetRef = references.get(context.targetId);
+    // suppose that type is ambiguous, line <<vomments on>> How do we resolve?
     if (typeRef != null && sourceRef != null && targetRef != null) {
       addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, xml);
     } else {
-      System.err.printf("Error in %s: %s --> %s%n", context.relationTypeName, context.sourceId, context.targetId);
+      log("Null reference in %s: %s --> %s%n", context.relationTypeName, context.sourceId, context.targetId);
     }
   }
 
@@ -904,7 +953,9 @@ public class CobwwwebRsImporter extends DefaultImporter {
       } else if (text.equalsIgnoreCase("translated by")) {
         context.relationTypeName = "<<translated by>>";
       } else if (text.equalsIgnoreCase("comments on")) {
-        context.relationTypeName = "<<comments on>>";
+        context.relationTypeName = "isWorkCommentedOnIn"; // ambiguous...
+      } else if (text.equalsIgnoreCase("pseudonim of")) {
+        context.relationTypeName = "isPseudonymOf";
       } else {
         context.error("Unexpected relation type: '%s'", text);
         System.exit(0);

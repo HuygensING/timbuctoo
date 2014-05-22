@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.model.cwrs;
+package nl.knaw.huygens.timbuctoo.util;
 
 /*
  * #%L
@@ -22,17 +22,12 @@ package nl.knaw.huygens.timbuctoo.model.cwrs;
  * #L%
  */
 
-import java.util.List;
+public class DisplayTokenHandler implements TokenHandler {
 
-import nl.knaw.huygens.timbuctoo.model.Collective;
-
-import com.google.common.collect.Lists;
-
-public class CWRSCollective extends Collective {
-
-  // --- temporary fields ------------------------------------------------------
-
-  public String tempLocation;
-  public List<String> tempNames = Lists.newArrayList();
+  @Override
+  public boolean handle(Token token) {
+    System.out.printf("%05d - %s%n", token.getCount(), token.getText());
+    return true;
+  }
 
 }
