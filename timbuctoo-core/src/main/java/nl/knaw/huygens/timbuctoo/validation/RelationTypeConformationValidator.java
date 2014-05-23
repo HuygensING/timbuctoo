@@ -44,11 +44,14 @@ class RelationTypeConformationValidator implements Validator<Relation> {
 
     RelationType relationType = storage.getRelationType(relationTypeId);
     if (relationType == null) {
-      throw new ValidationException("RelationType with id " + relationTypeId + " does not exist");
+      throw new ValidationException("No RelationType with id " + relationTypeId);
     }
 
-    if (!entity.conformsToRelationType(relationType)) {
-      throw new ValidationException("Relation is not conform the RelationType with id " + relationTypeId);
+    if (!relationType.hasSourceTypeName(entity.getSourceType())) {
+      throw new ValidationException("SourceType of Relation does not match RelationType with id " + relationTypeId);
+    }
+    if (!relationType.hasTargetTypeName(entity.getTargetType())) {
+      throw new ValidationException("TargetType of Relation does not match RelationType with id " + relationTypeId);
     }
   }
 

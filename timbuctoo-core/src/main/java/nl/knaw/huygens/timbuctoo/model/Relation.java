@@ -243,9 +243,4 @@ public class Relation extends DomainEntity {
       .toString();
   }
 
-  public boolean conformsToRelationType(RelationType relationType) {
-    return Objects.equal(relationType.getSourceTypeName(), sourceType) //
-        && Objects.equal(relationType.getTargetTypeName(), targetType);
-  }
-
 }
