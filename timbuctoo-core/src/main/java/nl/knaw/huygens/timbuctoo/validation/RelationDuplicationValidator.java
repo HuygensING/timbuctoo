@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.validation;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -36,14 +37,14 @@ class RelationDuplicationValidator implements Validator<Relation> {
   }
 
   @Override
-  public void validate(Relation entity) throws ValidationException {
-    Relation example = new Relation();
-    example.setSourceId(entity.getSourceId());
-    example.setTargetId(entity.getTargetId());
-    example.setTypeId(entity.getTypeId());
-    Relation stored = storage.findEntity(Relation.class, example);
-    if (stored != null) {
-      throw new DuplicateException(stored.getId());
+  public void validate(Relation relation) throws ValidationException {
+    try {
+      Relation entity = storage.findRelation(Relation.class, relation);
+      if (entity != null) {
+        throw new DuplicateException(entity.getId());
+      }
+    } catch (StorageException e) {
+      throw new ValidationException("Error while validating", e);
     }
   }
 

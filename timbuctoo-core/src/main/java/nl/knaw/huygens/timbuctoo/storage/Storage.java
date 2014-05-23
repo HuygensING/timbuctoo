@@ -139,6 +139,8 @@ public interface Storage {
 
   <T extends DomainEntity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws StorageException;
 
+  <T extends Relation> T findRelation(Class<T> type, String sourceId, String targetId, String relationTypeId) throws StorageException;
+
   /**
    * Returns the id's of the relations that satisfy the following requirements:<Ul>
    * <li>the source id occurs in the {@code sourceIds} list;</li>

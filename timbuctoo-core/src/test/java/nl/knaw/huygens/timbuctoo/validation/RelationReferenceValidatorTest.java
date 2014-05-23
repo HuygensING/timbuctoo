@@ -61,7 +61,7 @@ public class RelationReferenceValidatorTest {
         .withSourceId(sourceId) //
         .withSourceType(sourceTypeString) //
         .withTargetId(targetId) //
-        .withTargeType(targetTypeString) //
+        .withTargetType(targetTypeString) //
         .build();
 
     setupTypeRegistry();

@@ -334,6 +334,14 @@ public class StorageManager {
   // --- relations -------------------------------------------------------------
 
   /**
+   * Returns a relation instance with source, target and relation type id's as in the specified relation.
+   * Returns null if either of these id's is null, or if no such relation is present in the store.
+   */
+  public <T extends Relation> T findRelation(Class<T> type, T relation) throws StorageException {
+    return storage.findRelation(type, relation.getSourceId(), relation.getTargetId(), relation.getTypeId());
+  }
+
+  /**
    * Returns the id's of the relations that satisfy the following requirements:<Ul>
    * <li>the source id occurs in the {@code sourceIds} list;</li>
    * <li>the target id occurs in the {@code targetIds} list;</li>
