@@ -27,7 +27,7 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
-public class RelationReferenceValidator implements Validator<Relation> {
+class RelationReferenceValidator implements Validator<Relation> {
 
   private final TypeRegistry registry;
   private final StorageManager storage;

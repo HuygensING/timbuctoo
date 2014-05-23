@@ -30,7 +30,7 @@ import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 /**
  * Checks if the relation conforms to the type.
  */
-public class RelationTypeConformationValidator implements Validator<Relation> {
+class RelationTypeConformationValidator implements Validator<Relation> {
 
   private final StorageManager storage;
 
