@@ -36,6 +36,7 @@ public class RelationBuilder<T extends Relation> {
 
   protected final Class<T> type;
 
+  protected String id;
   protected String typeType;
   protected String typeId;
   protected String sourceType;
@@ -45,6 +46,11 @@ public class RelationBuilder<T extends Relation> {
 
   protected RelationBuilder(Class<T> type) {
     this.type = type;
+  }
+
+  public RelationBuilder<T> withId(String id) {
+    this.id = id;
+    return this;
   }
 
   public RelationBuilder<T> withRelationTypeRef(Reference ref) {
@@ -85,7 +91,7 @@ public class RelationBuilder<T extends Relation> {
     return this;
   }
 
-  public RelationBuilder<T> withTargeType(String type) {
+  public RelationBuilder<T> withTargetType(String type) {
     targetType = type;
     return this;
   }
@@ -97,6 +103,7 @@ public class RelationBuilder<T extends Relation> {
 
   public T build() {
     T relation = newInstance();
+    relation.setId(id);
     relation.setTypeId(typeId);
     relation.setTypeType(typeType);
     relation.setSourceId(sourceId);

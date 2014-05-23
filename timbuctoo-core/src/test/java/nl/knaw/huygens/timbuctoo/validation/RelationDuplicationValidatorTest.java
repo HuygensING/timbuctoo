@@ -22,19 +22,17 @@ package nl.knaw.huygens.timbuctoo.validation;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.model.util.RelationBuilder.newInstance;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
-import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.validation.RelationDuplicationValidator;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,64 +40,37 @@ public class RelationDuplicationValidatorTest {
 
   private StorageManager storage;
   private RelationDuplicationValidator validator;
-  private String firstId = "Id00001";
-  private String secondId = "Id00002";
-  private String typeId = "typeId";
+  private Relation relation;
 
   @Before
-  public void setUp() {
+  public void setup() {
     storage = mock(StorageManager.class);
     validator = new RelationDuplicationValidator(storage);
+    relation = newInstance(Relation.class).withSourceId("id1").withTargetId("id2").withRelationTypeId("id3").build();
   }
 
   @Test
-  public void testValidateNewValidItem() throws IOException, ValidationException {
-    Relation example = createRelation(firstId, secondId, typeId);
+  public void testValidateNewValidItem() throws Exception {
+    when(storage.findRelation(Relation.class, relation)).thenReturn(null);
 
-    Relation entityToValidate = createRelation(firstId, secondId, typeId);
-    entityToValidate.setSourceType("sourceType");
-    entityToValidate.setTargetType("targetType");
-    entityToValidate.setTypeType("typeType");
+    validator.validate(relation);
 
-    // action
-    validator.validate(entityToValidate);
-
-    // verify
-    verify(storage).findEntity(Relation.class, example);
+    verify(storage).findRelation(Relation.class, relation);
   }
 
   @Test(expected = DuplicateException.class)
-  public void testValidateItemExists() throws IOException, ValidationException {
-    Relation example = createRelation(firstId, secondId, typeId);
-    Relation entityToValidate = createRelation(firstId, secondId, typeId);
-    entityToValidate.setSourceType("sourceType");
-    entityToValidate.setTargetType("targetType");
-    entityToValidate.setTypeType("typeType");
-
-    Relation itemFound = createRelation(firstId, secondId, typeId);
-    itemFound.setSourceType("sourceType");
-    itemFound.setTargetType("targetType");
-    itemFound.setTypeType("typeType");
-
-    //when
-    when(storage.findEntity(Relation.class, example)).thenReturn(itemFound);
+  public void testValidateItemExists() throws Exception {
+    Relation stored = newInstance(Relation.class).withId("storedId").build();
+    when(storage.findRelation(Relation.class, relation)).thenReturn(stored);
 
     try {
-      // action
-      validator.validate(itemFound);
+      validator.validate(relation);
+    } catch (DuplicateException e) {
+      Assert.assertEquals("storedId", e.getDuplicateId());
+      throw e;
     } finally {
-      // verify
-      verify(storage).findEntity(Relation.class, example);
-      verifyNoMoreInteractions(storage);
+      verify(storage).findRelation(Relation.class, relation);
     }
-  }
-
-  private Relation createRelation(String sourceId, String targetId, String typeId) {
-    Relation example = new Relation();
-    example.setSourceId(sourceId);
-    example.setTargetId(targetId);
-    example.setTypeId(typeId);
-    return example;
   }
 
 }
