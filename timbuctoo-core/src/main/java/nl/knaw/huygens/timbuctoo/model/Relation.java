@@ -26,11 +26,7 @@ import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.validation.RelationDuplicationValidator;
-import nl.knaw.huygens.timbuctoo.validation.RelationReferenceValidator;
-import nl.knaw.huygens.timbuctoo.validation.RelationTypeConformationValidator;
-
-import org.apache.commons.lang.StringUtils;
+import nl.knaw.huygens.timbuctoo.validation.RelationValidator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -214,12 +210,7 @@ public class Relation extends DomainEntity {
   @Override
   public void validateForAdd(TypeRegistry registry, StorageManager storage) throws ValidationException {
     super.validateForAdd(registry, storage);
-    if (StringUtils.isBlank(sourceId) || StringUtils.isBlank(targetId)) {
-      throw new ValidationException("Undefined type id(s)");
-    }
-    new RelationTypeConformationValidator(storage).validate(this);
-    new RelationReferenceValidator(registry, storage).validate(this);
-    new RelationDuplicationValidator(storage).validate(this);
+    new RelationValidator(registry, storage).validate(this);
   }
 
   @Override
