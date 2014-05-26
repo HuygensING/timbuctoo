@@ -58,7 +58,7 @@ public class LocationConcordance extends CSVImporter {
   };
 
   public String lookup(String text) {
-    return map.get(text);
+    return (text != null) ? map.get(text) : null;
   }
 
 }

@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.tools.importer.neww;
  * #L%
  */
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Language;
+import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.cwrs.CWRSCollective;
@@ -55,29 +57,24 @@ import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
-import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 import nl.knaw.huygens.timbuctoo.util.DisplayTokenHandler;
 import nl.knaw.huygens.timbuctoo.util.Text;
 import nl.knaw.huygens.timbuctoo.util.Tokens;
 
-import org.restlet.data.MediaType;
-import org.restlet.resource.ClientResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
- * Importer for Servian COBWWWEB data.
+ * Importer for Serbian COBWWWEB data.
  * Assumes the presence of New European Women Writers data,
  * because COBWWWEB records are linked to that data.
  * 
@@ -86,7 +83,7 @@ import com.google.common.collect.Sets;
  * "Hungary" --> "co:hun"
  * "Republic of Ragusa" --> "se:dubrovnik.hrv" (1358-1808)
  */
-public class CobwwwebRsImporter extends DefaultImporter {
+public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private static final Logger LOG = LoggerFactory.getLogger(CobwwwebRsImporter.class);
 
@@ -96,10 +93,13 @@ public class CobwwwebRsImporter extends DefaultImporter {
   public static void main(String[] args) throws Exception {
     Stopwatch stopWatch = Stopwatch.createStarted();
 
+    // Handle commandline arguments
+    String directory = (args.length > 0) ? args[0] : "../../timbuctoo-testdata/src/main/resources/neww/";
+
     Repository repository = null;
     try {
       repository = ToolsInjectionModule.createRepositoryInstance();
-      new CobwwwebRsImporter(repository).importAll();
+      new CobwwwebRsImporter(repository, directory).importAll();
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
@@ -117,11 +117,20 @@ public class CobwwwebRsImporter extends DefaultImporter {
   private final Map<String, Reference> references = Maps.newHashMap();
   /** Used languages. */
   private LoadingCache<String, Language> languages;
+  private LocationConcordance locations;
 
-  public CobwwwebRsImporter(Repository repository) {
+  public CobwwwebRsImporter(Repository repository, String inputDirName) throws Exception {
     super(repository);
     change = new Change("importer", "cwrs");
     setupLanguageCache();
+
+    File inputDir = new File(inputDirName);
+    if (inputDir.isDirectory()) {
+      System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());
+    } else {
+      System.out.printf("%n.. Not a directory: %s%n", inputDir.getAbsolutePath());
+    }
+    locations = new LocationConcordance(new File(inputDir, "neww-locations.txt"));
   }
 
   public void importAll() throws Exception {
@@ -130,9 +139,11 @@ public class CobwwwebRsImporter extends DefaultImporter {
       importRelationTypes();
       setupRelationTypeDefs();
       importCollectives();
+      if ("x".isEmpty()) {
       importPersons();
       importDocuments();
       importRelations();
+      }
       displayStatus();
     } finally {
       displayErrorSummary();
@@ -164,13 +175,6 @@ public class CobwwwebRsImporter extends DefaultImporter {
     }
   }
 
-  private String getResource(String... parts) throws Exception {
-    String url = Joiner.on("/").join(parts);
-    log("-- %s%n", url);
-    ClientResource resource = new ClientResource(url);
-    return resource.get(MediaType.APPLICATION_XML).getText();
-  }
-
   private Reference storeReference(String key, Class<? extends DomainEntity> type, String id) {
     Reference reference = new Reference(TypeRegistry.toBaseDomainEntity(type), id);
     if (references.put(key, reference) != null) {
@@ -180,101 +184,25 @@ public class CobwwwebRsImporter extends DefaultImporter {
     return reference;
   }
 
-  /**
-   * TEI element handler that captures and filters the content of the element.
-   */
-  private static abstract class CaptureHandler<T extends XmlContext> implements ElementHandler<T> {
-    @Override
-    public Traversal enterElement(Element element, T context) {
-      context.openLayer();
-      return Traversal.NEXT;
-    }
-
-    @Override
-    public Traversal leaveElement(Element element, T context) {
-      String text = context.closeLayer().trim();
-      if (!text.isEmpty()) {
-        handleContent(filterField(text), context);
-      }
-      return Traversal.NEXT;
-    }
-
-    private String filterField(String text) {
-      if (text.contains("\\")) {
-        text = text.replaceAll("\\\\r", " ");
-        text = text.replaceAll("\\\\n", " ");
-      }
-      text = text.replaceAll("[\\s\\u00A0]+", " ");
-      return text.trim();
-    }
-
-    protected abstract void handleContent(String text, T context);
-  }
-
-  // ---------------------------------------------------------------------------
-
-  private List<String> parseIdResource(String xml, String idElementName) {
-    nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
-    IdContext context = new IdContext();
-    document.accept(new IdVisitor(context, idElementName));
-    return context.ids;
-  }
-
-  private class IdContext extends XmlContext {
-    public final List<String> ids = Lists.newArrayList();
-
-    public void addId(String id) {
-      // inefficent, but we want to preserve ordering
-      if (ids.contains(id)) {
-        log("## Duplicate entry %s%n", id);
-      } else {
-        ids.add(id);
-      }
-    }
-  }
-
-  private class IdVisitor extends DelegatingVisitor<IdContext> {
-    public IdVisitor(IdContext context, String idElementName) {
-      super(context);
-      addElementHandler(new IdHandler(), idElementName);
-    }
-  }
-
-  private class IdHandler extends DefaultElementHandler<IdContext> {
-    @Override
-    public Traversal enterElement(Element element, IdContext context) {
-      context.openLayer();
-      return Traversal.NEXT;
-    }
-
-    @Override
-    public Traversal leaveElement(Element element, IdContext context) {
-      String id = context.closeLayer().trim();
-      context.addId(id);
-      return Traversal.NEXT;
-    }
-  }
-
   // --- collectives -----------------------------------------------------------
 
   private void importCollectives() throws Exception {
     String xml = getResource(URL, "cooperations");
-    List<String> collectiveIds = parseIdResource(xml, "cooperationId");
-    log("Retrieved %d id's.%n", collectiveIds.size());
+    List<String> ids = parseIdResource(xml, "cooperationId");
+    log("Retrieved %d id's.%n", ids.size());
 
-    for (String id : collectiveIds) {
+    for (String id : ids) {
       xml = getResource(id);
       CWRSCollective entity = parseCollectiveResource(xml, id);
       if (accept(entity)) {
         String storedId = createNewCollective(entity);
-        storeReference(id, CWRSCollective.class, storedId);
+
+        handleCollectiveLocation(entity);
 
         indexManager.addEntity(CWRSCollective.class, storedId);
         indexManager.updateEntity(WWCollective.class, storedId);
       }
     }
-    System.out.println("Locations");
-    locationTokens.handleSortedByText(new DisplayTokenHandler());
     System.out.println("Names");
     nameTokens.handleSortedByText(new DisplayTokenHandler());
   }
@@ -295,6 +223,22 @@ public class CobwwwebRsImporter extends DefaultImporter {
     WWCollective collective = storageManager.getEntity(WWCollective.class, storedId);
     updateProjectDomainEntity(WWCollective.class, collective, change);
     return storedId;
+  }
+
+  private void handleCollectiveLocation(CWRSCollective entity) {
+    String name = entity.tempLocation;
+    String urn = locations.lookup(name);
+    if (urn != null) {
+      Location location = storageManager.findEntity(Location.class, Location.URN, urn);
+      if (location != null) {
+        Reference typeRef = getRelationTypeRef("hasLocation", true);
+        Reference sourceRef = new Reference(Collective.class, entity.getId());
+        Reference targetRef = new Reference(Location.class, location.getId());
+        addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, "");
+      }
+    } else if (name != null) {
+      log("Unknown location [%s]%n", name);
+    }
   }
 
   private class CollectiveContext extends XmlContext {
@@ -331,7 +275,7 @@ public class CobwwwebRsImporter extends DefaultImporter {
     public Traversal enterElement(Element element, CollectiveContext context) {
       String name = element.getName();
       if (!ignoredNames.contains(name)) {
-        context.error("Unexpected element: %s%n%s", name, context.xml);
+        context.error("Unexpected element: %s%nxml: %s", name, context.xml);
       }
       return Traversal.NEXT;
     }
@@ -363,23 +307,20 @@ public class CobwwwebRsImporter extends DefaultImporter {
 
   private class CollectiveLinkHandler extends CaptureHandler<CollectiveContext> {
     // Collectives do not occur as collection in the old Women Writers database.
-    // So references, if any, must be treated as simple links.
+    // So references, if any, can be treated as simple links.
 
     @Override
     public void handleContent(String text, CollectiveContext context) {
-      log("Reference to: %s%n", text);
       context.entity.addLink(new Link(text));
     }
   }
 
-  private final Tokens locationTokens = new Tokens();
 
   private class CollectiveLocationHandler extends CaptureHandler<CollectiveContext> {
 
     @Override
     public void handleContent(String text, CollectiveContext context) {
       context.entity.tempLocation = text;
-      locationTokens.increment(text);
     }
   }
 
