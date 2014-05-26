@@ -44,7 +44,7 @@ class RelationReferenceValidator implements Validator<Relation> {
   }
 
   private void validateEntityExists(String iname, String id) throws ValidationException {
-    if (storage.getEntity(registry.getDomainEntityType(iname), id) == null) {
+    if (!storage.entityExists(registry.getDomainEntityType(iname), id)) {
       throw new ValidationException("Entity [%s,%s] does not exist", iname, id);
     }
   }
