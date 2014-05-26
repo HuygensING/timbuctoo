@@ -170,11 +170,20 @@ public class StorageManager {
 
   // ---------------------------------------------------------------------------
 
+  public <T extends Entity> boolean entityExists(Class<T> type, String id) {
+    try {
+      return storage.entityExists(type, id);
+    } catch (StorageException e) {
+      LOG.error("Error in entityExists({}, {}): {}", type.getSimpleName(), id, e.getMessage());
+      return false;
+    }
+  }
+
   public <T extends Entity> T getEntity(Class<T> type, String id) {
     try {
       return storage.getItem(type, id);
     } catch (StorageException e) {
-      LOG.error("Error in getEntity({}.class, {}): " + e.getMessage(), type.getSimpleName(), id);
+      LOG.error("Error in getEntity({}, {}): {}", type.getSimpleName(), id, e.getMessage());
       return null;
     }
   }

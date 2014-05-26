@@ -33,21 +33,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
 /**
- * A relation between domain entities.
- *
- * (This resembles an RDF statement.)
- * 
- * N.B. Relations are indexed by {@code RelationIndexer),
- * which does not require index annotations.
- * 
- * There is a conceptual problem to solve.
- * Suppose we have a relation between an ATLArchive and an ATLArchiver.
- * What types do we use? Those types or the primitive types?
- * When indexing, this problem comes back to use straightaway:
- * If we want to store the displayname (which we do), it depends on
- * the type specified which value we retrieve from the database
- * (it's a different variation we retrieve), so "just" indexing is
- * too simple a concept: we need an index for a VRE.
+ * A relation between primitive domain entities.
  */
 @IDPrefix("RELA")
 public class Relation extends DomainEntity {
