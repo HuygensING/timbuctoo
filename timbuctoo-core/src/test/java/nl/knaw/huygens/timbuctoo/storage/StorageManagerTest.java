@@ -63,6 +63,12 @@ public class StorageManagerTest {
   }
 
   @Test
+  public void testEntityExists() throws Exception {
+    manager.entityExists(BaseDomainEntity.class, "id");
+    verify(storage).entityExists(BaseDomainEntity.class, "id");
+  }
+
+  @Test
   public void testGetEntity() throws Exception {
     manager.getEntity(BaseDomainEntity.class, "id");
     verify(storage).getItem(BaseDomainEntity.class, "id");

@@ -116,4 +116,33 @@ public class MongoDB {
     }
   }
 
+  /**
+   * Returns {@code true} if the specified collection contains an item
+   * that satisfies the specified query, {@code false} otherwise.
+   */
+  public boolean exist(DBCollection collection, DBObject query) throws StorageException {
+    DBCursor cursor = null;
+    try {
+      cursor = collection.find(query);
+      return cursor.hasNext();
+    } catch (MongoException e) {
+      throw new StorageException(e);
+    } finally {
+      closeCursor(cursor);
+    }
+  }
+
+  /**
+   * Closes the specified cursor.
+   */
+  public void closeCursor(DBCursor cursor) throws StorageException {
+    if (cursor != null) {
+      try {
+        cursor.close();
+      } catch (MongoException e) {
+        throw new StorageException(e);
+      }
+    }
+  }
+
 }

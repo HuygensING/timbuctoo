@@ -237,8 +237,8 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Entity> boolean entityExists(Class<T> type, String id) throws StorageException {
-    // TODO improve implementation
-    return getItem(type, id) != null;
+    DBObject query = queries.selectById(id);
+    return mongoDB.exist(getDBCollection(type), query);
   }
 
   @Override
