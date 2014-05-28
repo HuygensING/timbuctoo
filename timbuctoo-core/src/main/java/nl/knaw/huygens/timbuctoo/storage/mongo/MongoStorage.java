@@ -397,7 +397,8 @@ public class MongoStorage implements Storage {
   @Override
   public <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws StorageException {
     String key = FieldMapper.propertyName(type, field);
-    return getItem(type, queries.selectByProperty(key, value));
+    DBObject query = queries.selectByProperty(key, value);
+    return getItem(type, query);
   }
 
   @Override
@@ -408,17 +409,20 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws StorageException {
-    return mongoDB.remove(getDBCollection(type), queries.selectById(id));
+    DBObject query = queries.selectById(id);
+    return mongoDB.remove(getDBCollection(type), query);
   }
 
   @Override
-  public <T extends SystemEntity> int deleteAll(Class<T> type) throws StorageException {
-    return mongoDB.remove(getDBCollection(type), queries.selectAll());
+  public <T extends SystemEntity> int deleteSystemEntities(Class<T> type) throws StorageException {
+    DBObject query = queries.selectAll();
+    return mongoDB.remove(getDBCollection(type), query);
   }
 
   @Override
   public <T extends SystemEntity> int deleteByDate(Class<T> type, String dateField, Date dateValue) throws StorageException {
-    return mongoDB.remove(getDBCollection(type), queries.selectByDate(type, dateField, dateValue));
+    DBObject query = queries.selectByDate(type, dateField, dateValue);
+    return mongoDB.remove(getDBCollection(type), query);
   }
 
   // --- domain entities -----------------------------------------------
@@ -528,14 +532,10 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException {
-    try {
-      DBObject query = DBQuery.in("_id", ids);
-      query.put(DomainEntity.PID, null);
-      getDBCollection(type).remove(query);
-    } catch (MongoException e) {
-      LOG.error("Error while removing entities of type {}", type.getSimpleName());
-      throw new StorageException(e);
-    }
+    // TODO get query from MongoQueries
+    DBObject query = DBQuery.in("_id", ids);
+    query.put(DomainEntity.PID, null);
+    mongoDB.remove(getDBCollection(type), query);
   }
 
 }

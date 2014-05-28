@@ -134,10 +134,6 @@ public class StorageManager {
 
   // --- delete entities -------------------------------------------------------
 
-  public <T extends SystemEntity> int deleteSystemEntities(Class<T> type) throws StorageException {
-    return storage.deleteAll(type);
-  }
-
   public <T extends SystemEntity> void deleteSystemEntity(T entity) throws StorageException {
     storage.deleteSystemEntity(entity.getClass(), entity.getId());
   }
@@ -161,7 +157,7 @@ public class StorageManager {
   }
 
   public int deleteAllSearchResults() throws StorageException {
-    return storage.deleteAll(SearchResult.class);
+    return storage.deleteSystemEntities(SearchResult.class);
   }
 
   public int deleteSearchResultsBefore(Date date) throws StorageException {
