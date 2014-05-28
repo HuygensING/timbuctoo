@@ -229,8 +229,12 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Entity> long count(Class<T> type) {
-    Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
-    return getDBCollection(baseType).count();
+    try {
+      Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
+      return mongoDB.count(getDBCollection(baseType));
+    } catch (StorageException e) {
+      return 0;
+    }
   }
 
   // --- entities ------------------------------------------------------
@@ -249,13 +253,15 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) throws StorageException {
-    return findItems(type, queries.selectAll());
+    DBObject query = queries.selectAll();
+    return findItems(type, query);
   }
 
   @Override
   public <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value) throws StorageException {
     String key = FieldMapper.propertyName(type, field);
-    return findItems(type, queries.selectByProperty(key, value));
+    DBObject query = queries.selectByProperty(key, value);
+    return findItems(type, query);
   }
 
   @Override
@@ -430,7 +436,7 @@ public class MongoStorage implements Storage {
   @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException {
     DBObject query = queries.selectById(id);
-    DBObject item = getDBCollection(type).findOne(query);
+    DBObject item = mongoDB.findOne(getDBCollection(type), query);
     if (item != null) {
       return reducer.reduceAllVariations(type, toJsonNode(item));
     } else {
@@ -441,7 +447,7 @@ public class MongoStorage implements Storage {
   @Override
   public <T extends DomainEntity> MongoChanges<T> getAllRevisions(Class<T> type, String id) throws StorageException {
     DBObject query = queries.selectById(id);
-    DBObject item = getVersionCollection(type).findOne(query);
+    DBObject item = mongoDB.findOne(getVersionCollection(type), query);
     return (item != null) ? reducer.reduceAllRevisions(type, toJsonNode(item)) : null;
   }
 
@@ -532,9 +538,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException {
-    // TODO get query from MongoQueries
-    DBObject query = DBQuery.in("_id", ids);
-    query.put(DomainEntity.PID, null);
+    DBObject query = queries.selectNonPersistent(ids);
     mongoDB.remove(getDBCollection(type), query);
   }
 
