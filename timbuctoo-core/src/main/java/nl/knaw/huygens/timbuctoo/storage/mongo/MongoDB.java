@@ -59,11 +59,32 @@ public class MongoDB {
   }
 
   /**
+   * Closes the specified cursor.
+   */
+  public void closeCursor(DBCursor cursor) throws StorageException {
+    if (cursor != null) {
+      try {
+        cursor.close();
+      } catch (MongoException e) {
+        throw new StorageException(e);
+      }
+    }
+  }
+
+  /**
    * Gets a collection with the specified name.
    * If the collection does not exist, a new one is created.
    */
   public DBCollection getCollection(String name) {
     return db.getCollection(name);
+  }
+
+  public long count(DBCollection collection) throws StorageException {
+    try {
+      return collection.count();
+    } catch (MongoException e) {
+      throw new StorageException(e);
+    }
   }
 
   /**
@@ -96,21 +117,17 @@ public class MongoDB {
     }
   }
 
-  /**
-   * Removes documents from the database.
-   */
-  public int remove(DBCollection collection, DBObject query) throws StorageException {
+  public DBCursor find(DBCollection collection, DBObject query) throws StorageException {
     try {
-      WriteResult result = collection.remove(query);
-      return (result != null) ? result.getN() : 0;
+      return collection.find(query);
     } catch (MongoException e) {
       throw new StorageException(e);
     }
   }
 
-  public DBCursor find(DBCollection collection, DBObject query) throws StorageException {
+  public DBObject findOne(DBCollection collection, DBObject query) throws StorageException {
     try {
-      return collection.find(query);
+      return collection.findOne(query);
     } catch (MongoException e) {
       throw new StorageException(e);
     }
@@ -133,15 +150,14 @@ public class MongoDB {
   }
 
   /**
-   * Closes the specified cursor.
+   * Removes documents from the database.
    */
-  public void closeCursor(DBCursor cursor) throws StorageException {
-    if (cursor != null) {
-      try {
-        cursor.close();
-      } catch (MongoException e) {
-        throw new StorageException(e);
-      }
+  public int remove(DBCollection collection, DBObject query) throws StorageException {
+    try {
+      WriteResult result = collection.remove(query);
+      return (result != null) ? result.getN() : 0;
+    } catch (MongoException e) {
+      throw new StorageException(e);
     }
   }
 

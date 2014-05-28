@@ -26,6 +26,7 @@ import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
 
 import java.lang.reflect.Field;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.mongojack.DBQuery;
@@ -97,6 +98,16 @@ public class MongoQueries {
 
   public DBObject selectVariation(String name) {
     return new BasicDBObject(DomainEntity.VARIATIONS, name);
+  }
+
+  /**
+   * Returns a query for selecting non-persistent entities
+   * with an id that occurs in the specified id list.
+   */
+  public DBObject selectNonPersistent(List<String> ids) {
+    DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
+    query.put(DomainEntity.PID, null);
+    return query;
   }
 
   /**

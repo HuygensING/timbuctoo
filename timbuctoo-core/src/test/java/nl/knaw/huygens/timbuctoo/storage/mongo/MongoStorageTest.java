@@ -28,7 +28,6 @@ import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
 
@@ -37,7 +36,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
-import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 public class MongoStorageTest extends MongoStorageTestBase {
@@ -107,8 +105,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     storage.deleteNonPersistent(BaseDomainEntity.class, ids);
 
-    DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
-    query.put(DomainEntity.PID, null);
+    DBObject query = queries.selectNonPersistent(ids);
     verify(mongoDB).remove(anyCollection, query);
   }
 
@@ -175,8 +172,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.getAllVariations(BaseDomainEntity.class, DEFAULT_ID);
 
     DBObject query = queries.selectById(DEFAULT_ID);
-    // TODO verify MongoDB once it implements findOne()
-    verify(anyCollection).findOne(query);
+    verify(mongoDB).findOne(anyCollection, query);
     // TODO verify call to EntityReducer, in two separate tests, depending on number of results
   }
 
@@ -200,8 +196,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.getAllRevisions(BaseDomainEntity.class, DEFAULT_ID);
 
     DBObject query = queries.selectById(DEFAULT_ID);
-    // TODO verify MongoDB once it implements findOne()
-    verify(anyCollection).findOne(query);
+    verify(mongoDB).findOne(anyCollection, query);
     // TODO verify call to EntityReducer
   }
 

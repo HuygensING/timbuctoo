@@ -1,0 +1,154 @@
+package nl.knaw.huygens.timbuctoo.storage.mongo;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+
+import org.hamcrest.Description;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.internal.matchers.TypeSafeMatcher;
+import org.junit.rules.ExpectedException;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.Mongo;
+import com.mongodb.MongoException;
+
+public class MongoDBTest {
+
+  private static final boolean THROW_EXCEPTION = true;
+  private static final boolean NO_EXCEPTION = false;
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
+  /**
+   * Verfies the cause of a storage exception.
+   */
+  private static class CauseMatcher extends TypeSafeMatcher<Exception> {
+    @Override
+    public void describeTo(Description description) {
+      description.appendText("StorageException with throwable");
+	}
+
+    @Override
+    public boolean matchesSafely(Exception item) {
+      Throwable cause = item.getCause();
+      return cause != null && cause.getClass() == MongoException.class;
+    }
+  }
+
+  private Mongo mongo;
+  private DB db;
+  private MongoDB mongoDB;
+  private DBCollection dbCollection;
+
+  private void setupMongo(boolean throwException) {
+    mongo = mock(Mongo.class);
+    db = mock(DB.class);
+    mongoDB = new MongoDB(mongo, db);
+    dbCollection = mock(DBCollection.class);
+
+    if (throwException) {
+      thrown.expect(StorageException.class);
+      thrown.expect(new CauseMatcher());
+      doThrow(MongoException.class).when(dbCollection).count();
+      doThrow(MongoException.class).when(dbCollection).find(any(DBObject.class));
+      doThrow(MongoException.class).when(dbCollection).findOne(any(DBObject.class));
+      doThrow(MongoException.class).when(dbCollection).remove(any(DBObject.class));
+    }
+  }
+
+  // count
+
+  @Test
+  public void testCountNoException() throws StorageException {
+    testCount(NO_EXCEPTION);
+  }
+
+  @Test
+  public void testCountThrowException() throws StorageException {
+    testCount(THROW_EXCEPTION);
+  }
+
+  private void testCount(boolean throwException) throws StorageException {
+    setupMongo(throwException);
+    try {
+      mongoDB.count(dbCollection);
+    } finally {
+      verify(dbCollection).count();
+    }
+  }
+
+  // find
+
+  @Test
+  public void testFindNoException() throws StorageException {
+    testFind(NO_EXCEPTION);
+  }
+
+  @Test
+  public void testFindThrowsException() throws StorageException {
+    testFindOne(THROW_EXCEPTION);
+  }
+
+  public void testFind(boolean throwException) throws StorageException {
+    setupMongo(throwException);
+    DBObject query = new BasicDBObject();
+    try {
+      mongoDB.find(dbCollection, query);
+    } finally {
+      verify(dbCollection).find(query);
+    }
+  }
+
+  // findOne
+
+  @Test
+  public void testFindOneNoException() throws StorageException {
+    testFindOne(NO_EXCEPTION);
+  }
+
+  @Test
+  public void testFindOneThrowsException() throws StorageException {
+    testFindOne(THROW_EXCEPTION);
+  }
+
+  public void testFindOne(boolean throwException) throws StorageException {
+    setupMongo(throwException);
+    DBObject query = new BasicDBObject();
+    try {
+      mongoDB.findOne(dbCollection, query);
+    } finally {
+      verify(dbCollection).findOne(query);
+    }
+  }
+
+  // remove
+
+  @Test
+  public void testRemoveNoException() throws StorageException {
+    testRemove(NO_EXCEPTION);
+  }
+
+  @Test
+  public void testRemoveThrowsException() throws StorageException {
+    testRemove(THROW_EXCEPTION);
+  }
+
+  private void testRemove(boolean throwException) throws StorageException {
+    setupMongo(throwException);
+    DBObject query = new BasicDBObject();
+    try {
+      mongoDB.remove(dbCollection, query);
+    } finally {
+      verify(dbCollection).remove(query);
+    }
+  }
+
+}
