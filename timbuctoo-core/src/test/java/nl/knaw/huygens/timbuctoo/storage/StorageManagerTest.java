@@ -166,7 +166,7 @@ public class StorageManagerTest {
   @Test
   public void testDeleteAllSearchResults() throws Exception {
     manager.deleteAllSearchResults();
-    verify(storage).deleteAll(SearchResult.class);
+    verify(storage).deleteSystemEntities(SearchResult.class);
   }
 
   @Test

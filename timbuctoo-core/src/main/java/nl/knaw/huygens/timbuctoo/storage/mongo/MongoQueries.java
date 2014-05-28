@@ -70,8 +70,7 @@ public class MongoQueries {
    * @return the projection.
    */
   public DBObject getRevisionProjection(int revision) {
-    DBObject query = new BasicDBObject("versions", new BasicDBObject("$elemMatch", new BasicDBObject("^rev", revision)));
-    return query;
+    return new BasicDBObject("versions", new BasicDBObject("$elemMatch", new BasicDBObject("^rev", revision)));
   }
 
   public DBObject selectByProperty(String key, Object value) {

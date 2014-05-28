@@ -22,9 +22,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -41,8 +38,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
-import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -59,12 +54,7 @@ import com.mongodb.MongoException;
 
 public class MongoVariationStorageTest extends MongoStorageTestBase {
 
-  private static final String DEFAULT_ID = "TCD000000001";
-
   private static TypeRegistry registry;
-
-  private MongoStorage storage;
-  private DBObject returnIdField;
 
   @BeforeClass
   public static void setupRegistry() {
@@ -76,36 +66,20 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     registry = null;
   }
 
+  // ---------------------------------------------------------------------------
+
+  private MongoStorage storage;
+  private DBObject returnIdField;
+
   @Override
   protected void setupStorage() throws UnknownHostException, MongoException {
     storage = new MongoStorage(registry, mongo, db, entityIds);
     returnIdField = new BasicDBObject("_id", 1);
   }
 
-  private DBObject createTestConcreteDocDBObject(String id, String name) {
-    Map<String, Object> map = createDefaultMap(id);
-    map.put(propertyName(TestConcreteDoc.class, "name"), name);
-    return createDBJsonNode(map);
-  }
-
-  private DBObject createGeneralTestDocDBObject(String id, String name, String generalTestDocValue) {
-    Map<String, Object> map = createDefaultMap(id);
-    map.put(propertyName(TestConcreteDoc.class, "name"), name);
-    map.put(propertyName(BaseDomainEntity.class, "generalTestDocValue"), generalTestDocValue);
-    return createDBJsonNode(map);
-  }
-
   private Map<String, Object> createSimpleMap(String id, Object value) {
     Map<String, Object> map = Maps.newHashMap();
     map.put(id, value);
-    return map;
-  }
-
-  private Map<String, Object> createDefaultMap(String id) {
-    Map<String, Object> map = Maps.newHashMap();
-    map.put("_id", id);
-    map.put("^rev", 0);
-    map.put(DomainEntity.DELETED, false);
     return map;
   }
 
@@ -117,66 +91,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     return new DBJsonNode(mapper.valueToTree(map));
   }
 
-  // -------------------------------------------------------------------
-
-  @Test
-  public void testGetItem() throws Exception {
-    String name = "getItem";
-    BaseDomainEntity expected = new BaseDomainEntity(DEFAULT_ID);
-    expected.name = name;
-
-    DBObject dbObject = createTestConcreteDocDBObject(DEFAULT_ID, name);
-
-    DBObject query = queries.selectById(DEFAULT_ID);
-    when(anyCollection.findOne(query)).thenReturn(dbObject);
-
-    assertEquals(DEFAULT_ID, storage.getItem(BaseDomainEntity.class, DEFAULT_ID).getId());
-  }
-
-  @Test
-  public void testGetItemNonExistent() throws Exception {
-    assertNull(storage.getItem(BaseDomainEntity.class, "TCD000000001"));
-  }
-
-  @Test
-  // Reported as failure [#1919] with expected value 5
-  // But by using createCursorWithoutValues you obviously get 0
-  public void testGetAllVariationsWithoutRelations() throws Exception {
-    DBObject value = createGeneralTestDocDBObject(DEFAULT_ID, "subType", "test");
-    when(anyCollection.findOne(any(DBObject.class))).thenReturn(value);
-
-    DBCursor cursor = createCursorWithoutValues();
-    when(anyCollection.find(any(DBObject.class))).thenReturn(cursor);
-
-    assertEquals(0, storage.getAllVariations(BaseDomainEntity.class, DEFAULT_ID).size());
-  }
-
-  @Test
-  public void testGetEntities() throws Exception {
-    DBObject query = queries.selectAll();
-    DBCursor cursor = createCursorWithoutValues();
-    when(anyCollection.find(query)).thenReturn(cursor);
-
-    storage.getEntities(ProjectADomainEntity.class);
-    verify(anyCollection).find(query);
-  }
-
-  @Test
-  public void testGetAllRevisions() throws Exception {
-    storage.getAllRevisions(BaseDomainEntity.class, DEFAULT_ID);
-    verify(anyCollection).findOne(new BasicDBObject("_id", DEFAULT_ID));
-  }
-
-  @Test
-  public void testGetRevision() throws Exception {
-    int revisionId = 0;
-    storage.getRevision(ProjectADomainEntity.class, DEFAULT_ID, revisionId);
-
-    DBObject query = queries.selectById(DEFAULT_ID);
-    DBObject projection = queries.getRevisionProjection(revisionId);
-
-    verify(anyCollection).findOne(query, projection);
-  }
+  // ---------------------------------------------------------------------------
 
   @Test
   public void testGetAllIdsWithoutPIDOfType() throws Exception {
@@ -361,28 +276,6 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBObject targetIdIn = new BasicDBObject("^targetId", inCollection);
     DBObject query = new BasicDBObject("$or", Lists.newArrayList(sourceIdIn, targetIdIn));
     return query;
-  }
-
-  @Test
-  public void testRemovePermanently() throws Exception {
-    List<String> ids = Lists.newArrayList("TCD000000001", "TCD000000003", "TCD000000005");
-    DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
-    query.put(DomainEntity.PID, null);
-
-    storage.deleteNonPersistent(BaseDomainEntity.class, ids);
-
-    verify(anyCollection).remove(query);
-    verify(db).getCollection(TypeNames.getInternalName(BaseDomainEntity.class));
-  }
-
-  @Test(expected = StorageException.class)
-  public void testRemovePemanentlyDBThrowsException() throws Exception {
-    List<String> ids = Lists.newArrayList("TCD000000001", "TCD000000003", "TCD000000005");
-    DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
-    query.put(DomainEntity.PID, null);
-    doThrow(MongoException.class).when(anyCollection).remove(query);
-
-    storage.deleteNonPersistent(BaseDomainEntity.class, ids);
   }
 
 }

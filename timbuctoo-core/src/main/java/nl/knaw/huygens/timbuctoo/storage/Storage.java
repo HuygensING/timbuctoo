@@ -80,7 +80,7 @@ public interface Storage {
    * Deletes all system entities with the specified type.
    * @return The number of entities removed.
    */
-  <T extends SystemEntity> int deleteAll(Class<T> type) throws StorageException;
+  <T extends SystemEntity> int deleteSystemEntities(Class<T> type) throws StorageException;
 
   /**
    * Deletes system entities that have a value of the specified date field
