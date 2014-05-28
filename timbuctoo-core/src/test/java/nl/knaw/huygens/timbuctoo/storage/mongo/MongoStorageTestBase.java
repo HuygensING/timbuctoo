@@ -44,8 +44,11 @@ import com.mongodb.MongoException;
 
 public abstract class MongoStorageTestBase {
 
-  protected Mongo mongo;
-  protected DB db;
+  public static final String DEFAULT_ID = "TSTD000000000001";
+
+  protected Mongo mongo; // TODO eliminate
+  protected DB db; // TODO eliminate
+  protected MongoDB mongoDB;
   protected DBCollection anyCollection;
   protected EntityIds entityIds;
   protected MongoQueries queries;
@@ -54,11 +57,13 @@ public abstract class MongoStorageTestBase {
   public void setUp() throws UnknownHostException, MongoException {
     mongo = mock(Mongo.class);
     db = mock(DB.class);
+    mongoDB = mock(MongoDB.class);
     anyCollection = mock(DBCollection.class);
     entityIds = mock(EntityIds.class);
     queries = new MongoQueries();
 
     when(db.getCollection(anyString())).thenReturn(anyCollection);
+    when(mongoDB.getCollection(anyString())).thenReturn(anyCollection);
 
     setupStorage();
   }
