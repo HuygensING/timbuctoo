@@ -69,6 +69,11 @@ public class TestSystemEntity extends SystemEntity {
     this.name = name;
   }
 
+  public TestSystemEntity withName(String name) {
+    this.name = name;
+    return this;
+  }
+
   public String getTestValue1() {
     return testValue1;
   }
