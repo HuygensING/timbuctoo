@@ -46,10 +46,11 @@ public class RelationReferenceValidatorTest {
     doReturn(TargetType.class).when(registry).getDomainEntityType("targetType");
 
     StorageManager storage = mock(StorageManager.class);
+    when(storage.getTypeRegistry()).thenReturn(registry);
     when(storage.entityExists(SourceType.class, "sourceId")).thenReturn(sourceExists);
     when(storage.entityExists(TargetType.class, "targetId")).thenReturn(targetExists);
 
-    validator = new RelationReferenceValidator(registry, storage);
+    validator = new RelationReferenceValidator(storage);
 
     relation = RelationBuilder.newInstance(Relation.class) //
         .withSourceId("sourceId") //

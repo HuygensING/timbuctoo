@@ -109,7 +109,7 @@ public class StorageManagerTest {
   public void testAddSystemEntity() throws Exception {
     TestSystemEntity entity = mock(TestSystemEntity.class);
     manager.addSystemEntity(TestSystemEntity.class, entity);
-    verify(entity).validateForAdd(registry, manager);
+    verify(entity).validateForAdd(manager);
     verify(storage).addSystemEntity(TestSystemEntity.class, entity);
   }
 
@@ -123,14 +123,14 @@ public class StorageManagerTest {
   public void testAddDerivedDomainEntity() throws Exception {
     ProjectADomainEntity entity = mock(ProjectADomainEntity.class);
     manager.addDomainEntity(ProjectADomainEntity.class, entity, change);
-    verify(entity).validateForAdd(registry, manager);
+    verify(entity).validateForAdd(manager);
     verify(storage).addDomainEntity(ProjectADomainEntity.class, entity, change);
   }
 
   @Test(expected = ValidationException.class)
   public void testAddInvalidDerivedDomainEntity() throws Exception {
     ProjectADomainEntity entity = mock(ProjectADomainEntity.class);
-    doThrow(ValidationException.class).when(entity).validateForAdd(registry, manager);
+    doThrow(ValidationException.class).when(entity).validateForAdd(manager);
     manager.addDomainEntity(ProjectADomainEntity.class, entity, change);
   }
 

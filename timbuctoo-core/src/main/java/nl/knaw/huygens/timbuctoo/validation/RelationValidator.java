@@ -22,25 +22,22 @@ package nl.knaw.huygens.timbuctoo.validation;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 public class RelationValidator implements Validator<Relation> {
 
-  private final TypeRegistry registry;
   private final StorageManager storage;
 
-  public RelationValidator(TypeRegistry registry, StorageManager storage) {
-    this.registry = registry;
+  public RelationValidator(StorageManager storage) {
     this.storage = storage;
   }
 
   @Override
   public void validate(Relation entity) throws ValidationException {
     new RelationTypeConformationValidator(storage).validate(entity);
-    new RelationReferenceValidator(registry, storage).validate(entity);
+    new RelationReferenceValidator(storage).validate(entity);
     new RelationDuplicationValidator(storage).validate(entity);
   }
 

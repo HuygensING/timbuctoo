@@ -68,6 +68,7 @@ public class RelationTypeResourceTest {
   @Before
   public void setup() {
     storageManager = mock(StorageManager.class);
+    when(storageManager.getTypeRegistry()).thenReturn(registry);
     resource = new RelationTypeResource(registry, storageManager);
   }
 
@@ -120,7 +121,7 @@ public class RelationTypeResourceTest {
 
   private RelationType createRelationType(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) throws ValidationException {
     RelationType entity = RelationTypeBuilder.newInstance().withSourceType(sourceType).withTargetType(targetType).build();
-    entity.validateForAdd(registry, storageManager);
+    entity.validateForAdd(storageManager);
     return entity;
   }
 
