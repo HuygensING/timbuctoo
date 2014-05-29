@@ -24,7 +24,6 @@ package nl.knaw.huygens.timbuctoo;
 
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

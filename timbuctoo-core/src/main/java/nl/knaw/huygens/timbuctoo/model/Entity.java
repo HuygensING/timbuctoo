@@ -25,11 +25,11 @@ package nl.knaw.huygens.timbuctoo.model;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TimbuctooTypeIdResolver;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

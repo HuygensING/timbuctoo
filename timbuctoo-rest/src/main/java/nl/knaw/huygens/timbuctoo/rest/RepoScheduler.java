@@ -28,7 +28,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
 
 import java.util.Date;
 
-import nl.knaw.huygens.timbuctoo.storage.Repository;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import org.quartz.Job;

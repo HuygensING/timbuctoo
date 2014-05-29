@@ -24,8 +24,8 @@ package nl.knaw.huygens.timbuctoo.index;
 
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;

@@ -48,13 +48,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.security.UserRoles;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 

@@ -27,11 +27,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.rest.util.Status;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 
 import com.google.inject.Inject;
 

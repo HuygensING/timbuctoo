@@ -65,7 +65,7 @@ public class TransformedDataImporter extends DefaultImporter {
 
     for (File jsonFile : jsonFiles) {
       String className = jsonFile.getName().substring(0, jsonFile.getName().indexOf('.'));
-      Class<? extends DomainEntity> type = storageManager.getTypeRegistry().getDomainEntityType(className);
+      Class<? extends DomainEntity> type = repository.getTypeRegistry().getDomainEntityType(className);
 
       if (type != null) {
         removeNonPersistentEntities(type);
@@ -75,7 +75,7 @@ public class TransformedDataImporter extends DefaultImporter {
       }
     }
 
-    storageManager.close();
+    repository.close();
     try {
       indexManager.close();
     } catch (IndexException e) {
@@ -98,7 +98,7 @@ public class TransformedDataImporter extends DefaultImporter {
     LOG.info("Saving for type {}", type);
     List<T> entities = new ObjectMapper().readValue(jsonFile, new TypeReference<List<? extends DomainEntity>>() {});
     for (T entity : entities) {
-      String id = storageManager.addDomainEntity(type, entity, change);
+      String id = repository.addDomainEntity(type, entity, change);
       indexManager.addEntity(type, id);
     }
   }

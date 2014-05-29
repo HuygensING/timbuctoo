@@ -27,11 +27,11 @@ import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toDomainEntity;
 import java.util.Collection;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 

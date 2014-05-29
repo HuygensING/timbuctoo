@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo;
 
 /*
  * #%L
@@ -38,6 +38,10 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
@@ -47,7 +51,7 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-public class StorageManagerTest {
+public class RepositoryTest {
 
   private TypeRegistry registry;
   private Storage storage;

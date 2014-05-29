@@ -46,6 +46,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParameters;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.Paths;
@@ -58,7 +59,6 @@ import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;

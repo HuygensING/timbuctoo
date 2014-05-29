@@ -42,6 +42,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
 import nl.knaw.huygens.solr.SearchParameters;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -49,7 +50,6 @@ import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 

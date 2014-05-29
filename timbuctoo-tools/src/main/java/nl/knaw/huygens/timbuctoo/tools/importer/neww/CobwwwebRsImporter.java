@@ -157,7 +157,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     languages = CacheBuilder.newBuilder().build(new CacheLoader<String, Language>() {
       @Override
       public Language load(String code) throws IOException {
-        Language language = storageManager.getLanguageByCode(Language.class, code);
+        Language language = repository.getLanguageByCode(Language.class, code);
         if (language == null) {
           throw new IOException(code);
         }
@@ -220,7 +220,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private String createNewCollective(CWRSCollective entity) {
     String storedId = addDomainEntity(CWRSCollective.class, entity, change);
-    WWCollective collective = storageManager.getEntity(WWCollective.class, storedId);
+    WWCollective collective = repository.getEntity(WWCollective.class, storedId);
     updateProjectDomainEntity(WWCollective.class, collective, change);
     return storedId;
   }
@@ -229,7 +229,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     String name = entity.tempLocation;
     String urn = locations.lookup(name);
     if (urn != null) {
-      Location location = storageManager.findEntity(Location.class, Location.URN, urn);
+      Location location = repository.findEntity(Location.class, Location.URN, urn);
       if (location != null) {
         Reference typeRef = getRelationTypeRef("hasLocation", true);
         Reference sourceRef = new Reference(Collective.class, entity.getId());
@@ -385,7 +385,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   private String updateExistingPerson(CWRSPerson entity) {
     String storedId = null;
     if (!Strings.isNullOrEmpty(entity.tempNewwId)) {
-      WWPerson person = storageManager.findEntity(WWPerson.class, "tempOldId", entity.tempNewwId);
+      WWPerson person = repository.findEntity(WWPerson.class, "tempOldId", entity.tempNewwId);
       if (person == null) {
         log("Failed to find person with old id %s%n", entity.tempNewwId);
       } else {
@@ -402,7 +402,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   // Save as CWRSPerson, add WWPerson variation
   private String createNewPerson(CWRSPerson entity) {
     String storedId = addDomainEntity(CWRSPerson.class, entity, change);
-    WWPerson person = storageManager.getEntity(WWPerson.class, storedId);
+    WWPerson person = repository.getEntity(WWPerson.class, storedId);
     updateProjectDomainEntity(WWPerson.class, person, change);
     return storedId;
   }
@@ -646,7 +646,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   private String updateExistingDocument(CWRSDocument entity) {
     String storedId = null;
     if (!Strings.isNullOrEmpty(entity.tempNewwId)) {
-      WWDocument document = storageManager.findEntity(WWDocument.class, "tempOldId", entity.tempNewwId);
+      WWDocument document = repository.findEntity(WWDocument.class, "tempOldId", entity.tempNewwId);
       if (document != null) {
         storedId = document.getId();
         entity.setId(storedId);
@@ -661,7 +661,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   // Save as CWRSDocument, add WWDocument variation
   private String createNewDocument(CWRSDocument entity) {
     String storedId = addDomainEntity(CWRSDocument.class, entity, change);
-    WWDocument document = storageManager.getEntity(WWDocument.class, storedId);
+    WWDocument document = repository.getEntity(WWDocument.class, storedId);
     updateProjectDomainEntity(WWDocument.class, document, change);
     return storedId;
   }

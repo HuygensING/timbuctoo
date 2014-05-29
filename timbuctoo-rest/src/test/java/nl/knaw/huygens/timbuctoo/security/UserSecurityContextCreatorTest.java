@@ -36,8 +36,8 @@ import java.security.Principal;
 
 import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 
 import org.junit.After;
 import org.junit.Before;

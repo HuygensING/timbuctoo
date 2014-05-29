@@ -25,8 +25,8 @@ package nl.knaw.huygens.timbuctoo.tools.importer;
 import java.io.InputStream;
 import java.io.PrintWriter;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 
 /**
  * Imports all relation types.

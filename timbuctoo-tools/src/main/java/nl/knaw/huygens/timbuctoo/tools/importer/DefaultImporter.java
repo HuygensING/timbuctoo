@@ -31,6 +31,7 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
@@ -44,7 +45,6 @@ import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 
 import org.apache.commons.lang.StringUtils;
@@ -57,11 +57,11 @@ import com.google.common.collect.Maps;
  */
 public abstract class DefaultImporter {
 
-  protected final Repository storageManager;
+  protected final Repository repository;
   protected final IndexManager indexManager;
 
   public DefaultImporter(XRepository xrepository) {
-    storageManager = xrepository.getStorageManager();
+    repository = xrepository.getStorageManager();
     indexManager = xrepository.getIndexManager();
   }
 
@@ -117,7 +117,7 @@ public abstract class DefaultImporter {
 
   protected <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) {
     try {
-      storageManager.addDomainEntity(type, entity, change);
+      repository.addDomainEntity(type, entity, change);
       return entity.getId();
     } catch (Exception e) {
       handleError("Failed to add %s; %s", entity.getDisplayName(), e.getMessage());
@@ -131,7 +131,7 @@ public abstract class DefaultImporter {
       return null;
     }
     try {
-      storageManager.updateDomainEntity(type, entity, change);
+      repository.updateDomainEntity(type, entity, change);
       return entity;
     } catch (StorageException e) {
       handleError("Failed to update %s; %s", entity.getDisplayName(), e.getMessage());
@@ -145,13 +145,13 @@ public abstract class DefaultImporter {
   private static final String RELATION_TYPE_DEFS = "relationtype-defs.txt";
 
   protected void importRelationTypes() throws Exception {
-    new RelationTypeImporter(storageManager).importRelationTypes(RELATION_TYPE_DEFS);
+    new RelationTypeImporter(repository).importRelationTypes(RELATION_TYPE_DEFS);
   }
 
   protected final Map<String, Reference> relationTypes = Maps.newHashMap();
 
   protected void setupRelationTypeDefs() {
-    for (RelationType type : storageManager.getEntities(RelationType.class).getAll()) {
+    for (RelationType type : repository.getEntities(RelationType.class).getAll()) {
       relationTypes.put(type.getRegularName(), new Reference(RelationType.class, type.getId()));
     }
   }
@@ -177,7 +177,7 @@ public abstract class DefaultImporter {
         .withTargetRef(target) //
         .build();
     try {
-      return storageManager.addDomainEntity(type, relation, change);
+      return repository.addDomainEntity(type, relation, change);
     } catch (DuplicateException e) {
       duplicateRelationCount++;
     } catch (Exception e) {
@@ -193,12 +193,12 @@ public abstract class DefaultImporter {
    * Deletes the non persisted entity's of {@code type} and it's relations from the storage and the index.
    */
   protected void removeNonPersistentEntities(Class<? extends DomainEntity> type) throws StorageException, IndexException {
-    List<String> ids = storageManager.getAllIdsWithoutPID(type);
-    storageManager.deleteNonPersistent(type, ids);
+    List<String> ids = repository.getAllIdsWithoutPID(type);
+    repository.deleteNonPersistent(type, ids);
     indexManager.deleteEntities(type, ids);
 
-    List<String> relationIds = storageManager.getRelationIds(ids);
-    storageManager.deleteNonPersistent(Relation.class, relationIds);
+    List<String> relationIds = repository.getRelationIds(ids);
+    repository.deleteNonPersistent(Relation.class, relationIds);
     indexManager.deleteEntities(Relation.class, ids);
   }
 
@@ -210,7 +210,7 @@ public abstract class DefaultImporter {
     Progress progress = new Progress();
     StorageIterator<T> iterator = null;
     try {
-      iterator = storageManager.getEntities(type);
+      iterator = repository.getEntities(type);
       while (iterator.hasNext()) {
         progress.step();
         T entity = iterator.next();
@@ -233,7 +233,7 @@ public abstract class DefaultImporter {
     indexManager.commitAll();
 
     System.out.println();
-    System.out.println(storageManager.getStatus());
+    System.out.println(repository.getStatus());
     System.out.println(indexManager.getStatus());
   }
 

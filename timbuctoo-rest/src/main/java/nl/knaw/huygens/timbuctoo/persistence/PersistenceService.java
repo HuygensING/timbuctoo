@@ -25,11 +25,11 @@ package nl.knaw.huygens.timbuctoo.persistence;
 import javax.jms.JMSException;
 
 import nl.knaw.huygens.persistence.PersistenceException;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.ConsumerService;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import org.slf4j.Logger;

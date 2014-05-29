@@ -26,8 +26,8 @@ import javax.ws.rs.core.SecurityContext;
 
 import nl.knaw.huygens.security.client.SecurityContextCreator;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -211,7 +211,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   // --- relations -----------------------------------------------------
 
   private void setupRelationTypes() {
-    Map<String, RelationType> map = storageManager.getRelationTypeMap();
+    Map<String, RelationType> map = repository.getRelationTypeMap();
     isCreatorRef = retrieveRelationType(map, IS_CREATOR_OF.regular);
     hasArchiveKeywordRef = retrieveRelationType(map, HAS_ARCHIVE_KEYWORD.regular);
     hasArchiverKeywordRef = retrieveRelationType(map, HAS_ARCHIVER_KEYWORD.regular);

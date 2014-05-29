@@ -24,10 +24,10 @@ package nl.knaw.huygens.timbuctoo.security;
 
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 

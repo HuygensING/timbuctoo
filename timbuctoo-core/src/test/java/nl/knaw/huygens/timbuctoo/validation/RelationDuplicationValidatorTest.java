@@ -23,14 +23,12 @@ package nl.knaw.huygens.timbuctoo.validation;
  */
 
 import static nl.knaw.huygens.timbuctoo.model.util.RelationBuilder.newInstance;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 
 import org.junit.Assert;
 import org.junit.Before;

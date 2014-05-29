@@ -22,8 +22,8 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 public abstract class SystemEntity extends Entity {
