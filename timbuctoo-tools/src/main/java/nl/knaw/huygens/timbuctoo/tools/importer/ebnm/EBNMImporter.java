@@ -66,15 +66,14 @@ public class EBNMImporter extends DefaultImporter {
     // Handle commandline arguments
     String importDirName = (args.length > 0) ? args[0] : "../../codl_data/data/";
 
-    XRepository xrepository = null;
+    EBNMImporter importer = null;
     try {
-      xrepository = ToolsInjectionModule.createRepositoryInstance();
-      new EBNMImporter(xrepository, importDirName).importAll();
-    } catch (Exception e) {
-      e.printStackTrace();
+      XRepository instance = ToolsInjectionModule.createRepositoryInstance();
+      importer = new EBNMImporter(instance, importDirName);
+      importer.importAll();
     } finally {
-      if (xrepository != null) {
-        xrepository.close();
+      if (importer != null) {
+        importer.close();
       }
       LOG.info("Time used: {}", stopWatch);
     }

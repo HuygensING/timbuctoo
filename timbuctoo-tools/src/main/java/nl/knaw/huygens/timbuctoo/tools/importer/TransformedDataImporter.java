@@ -50,8 +50,10 @@ public class TransformedDataImporter extends DefaultImporter {
   public static void main(String[] args) throws Exception {
     String dataPath = args.length > 0 ? args[0] : "src/main/resources/testdata";
 
-    XRepository repository = ToolsInjectionModule.createRepositoryInstance();
-    new TransformedDataImporter(repository).importData(dataPath);
+    XRepository instance = ToolsInjectionModule.createRepositoryInstance();
+    TransformedDataImporter importer = new TransformedDataImporter(instance);
+    importer.importData(dataPath);
+    importer.close();
   }
 
   public TransformedDataImporter(XRepository repository) {

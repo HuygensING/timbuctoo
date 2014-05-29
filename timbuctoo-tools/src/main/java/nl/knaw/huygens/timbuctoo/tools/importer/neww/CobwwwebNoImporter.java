@@ -71,15 +71,14 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
   public static void main(String[] args) throws Exception {
     Stopwatch stopWatch = Stopwatch.createStarted();
 
-    XRepository repository = null;
+    CobwwwebNoImporter importer = null;
     try {
-      repository = ToolsInjectionModule.createRepositoryInstance();
-      new CobwwwebNoImporter(repository).importAll();
-    } catch (Exception e) {
-      e.printStackTrace();
+      XRepository instance = ToolsInjectionModule.createRepositoryInstance();
+      importer = new CobwwwebNoImporter(instance);
+      importer.importAll();
     } finally {
-      if (repository != null) {
-        repository.close();
+      if (importer != null) {
+        importer.close();
       }
       LOG.info("Time used: {}", stopWatch);
     }

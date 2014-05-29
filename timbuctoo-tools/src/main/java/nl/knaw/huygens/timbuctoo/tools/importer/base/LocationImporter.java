@@ -71,14 +71,14 @@ public class LocationImporter extends DefaultImporter {
   }
 
   private BaseLocation convert(Place place) {
-    BaseLocation converted = new BaseLocation();
-    converted.setDefLang(place.defLang);
-    converted.setNames(place.names);
-    converted.setLatitude(place.latitude);
-    converted.setLongitude(place.longitude);
-    converted.setUrn(place.urn);
-    converted.setNotes(place.notes);
-    return converted;
+    BaseLocation location = new BaseLocation();
+    location.setDefLang(place.defLang);
+    location.setNames(place.names);
+    location.setLatitude(place.latitude);
+    location.setLongitude(place.longitude);
+    location.setUrn(place.urn);
+    location.setNotes(place.notes);
+    return location;
   }
 
   public static class Place {

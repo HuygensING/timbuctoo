@@ -88,15 +88,14 @@ public class DutchCaribbeanImporter extends DefaultImporter {
     // Handle commandline arguments
     String importDirName = (args.length > 0) ? args[0] : "../../AtlantischeGids/work/";
 
-    XRepository repository = null;
+    DutchCaribbeanImporter importer = null;
     try {
-      repository = ToolsInjectionModule.createRepositoryInstance();
-      new DutchCaribbeanImporter(repository, importDirName).importAll();
-    } catch (Exception e) {
-      e.printStackTrace();
+      XRepository instance = ToolsInjectionModule.createRepositoryInstance();
+      importer = new DutchCaribbeanImporter(instance, importDirName);
+      importer.importAll();
     } finally {
-      if (repository != null) {
-        repository.close();
+      if (importer != null) {
+        importer.close();
       }
       LOG.info("Time used: {}", stopWatch);
     }

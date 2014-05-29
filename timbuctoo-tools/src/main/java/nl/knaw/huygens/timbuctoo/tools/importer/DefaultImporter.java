@@ -48,7 +48,10 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
@@ -57,12 +60,26 @@ import com.google.common.collect.Maps;
  */
 public abstract class DefaultImporter {
 
+  private static final Logger LOG = LoggerFactory.getLogger(DefaultImporter.class);
+
   protected final Repository repository;
   protected final IndexManager indexManager;
 
-  public DefaultImporter(XRepository xrepository) {
-    repository = xrepository.getStorageManager();
-    indexManager = xrepository.getIndexManager();
+  public DefaultImporter(XRepository instance) {
+    repository = Preconditions.checkNotNull(instance.getRepository());
+    indexManager = Preconditions.checkNotNull(instance.getIndexManager());
+  }
+
+  /**
+   * Closes the resources used by the importer.
+   */
+  public void close() {
+    repository.close();
+    try {
+      indexManager.close();
+    } catch (IndexException e) {
+      LOG.error("Error while closing index: {}", e.getMessage());
+    }
   }
 
   // --- Error handling --------------------------------------------------------

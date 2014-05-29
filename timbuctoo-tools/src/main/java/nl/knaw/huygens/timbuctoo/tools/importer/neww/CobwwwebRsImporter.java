@@ -96,15 +96,14 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     // Handle commandline arguments
     String directory = (args.length > 0) ? args[0] : "../../timbuctoo-testdata/src/main/resources/neww/";
 
-    XRepository repository = null;
+    CobwwwebRsImporter importer = null;
     try {
-      repository = ToolsInjectionModule.createRepositoryInstance();
-      new CobwwwebRsImporter(repository, directory).importAll();
-    } catch (Exception e) {
-      e.printStackTrace();
+      XRepository instance = ToolsInjectionModule.createRepositoryInstance();
+      importer = new CobwwwebRsImporter(instance, directory);
+      importer.importAll();
     } finally {
-      if (repository != null) {
-        repository.close();
+      if (importer != null) {
+        importer.close();
       }
       LOG.info("Time used: {}", stopWatch);
     }
