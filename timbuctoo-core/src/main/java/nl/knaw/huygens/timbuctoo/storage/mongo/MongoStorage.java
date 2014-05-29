@@ -25,13 +25,11 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 
-import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -63,14 +61,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.mongodb.Mongo;
 import com.mongodb.MongoException;
-import com.mongodb.MongoOptions;
-import com.mongodb.ServerAddress;
 
 public class MongoStorage implements Storage {
 
@@ -88,29 +82,13 @@ public class MongoStorage implements Storage {
   private TreeDecoderFactory treeDecoderFactory;
 
   @Inject
-  public MongoStorage(Configuration config, TypeRegistry registry, EntityInducer inducer, EntityReducer reducer) throws UnknownHostException, MongoException {
-    typeRegistry = registry;
+  public MongoStorage(TypeRegistry registry, MongoDB mongoDB, EntityInducer inducer, EntityReducer reducer) {
+    this.typeRegistry = registry;
+    this.mongoDB = mongoDB;
     this.inducer = inducer;
     this.reducer = reducer;
-    MongoOptions options = new MongoOptions();
-    options.safe = true;
 
-    String host = config.getSetting("database.host", "localhost");
-    int port = config.getIntSetting("database.port", 27017);
-    Mongo mongo = new Mongo(new ServerAddress(host, port), options);
-
-    String dbName = config.getSetting("database.name");
-    DB db = mongo.getDB(dbName);
-
-    String user = config.getSetting("database.user");
-    if (!user.isEmpty()) {
-      String password = config.getSetting("database.password");
-      db.authenticate(user, password.toCharArray());
-    }
-
-    mongoDB = new MongoDB(mongo, db);
-    entityIds = new EntityIds(db, typeRegistry);
-
+    entityIds = new EntityIds(mongoDB, typeRegistry);
     initialize();
     ensureIndexes();
   }
