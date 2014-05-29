@@ -49,6 +49,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.inject.Inject;
 
 /**
  * This is the complementary class of {@link EntityInducer}.
@@ -67,6 +68,7 @@ public class EntityReducer {
   private final ObjectMapper jsonMapper;
   private final FieldMapper fieldMapper;
 
+  @Inject
   public EntityReducer(TypeRegistry registry) {
     typeRegistry = registry;
     jsonMapper = new ObjectMapper();

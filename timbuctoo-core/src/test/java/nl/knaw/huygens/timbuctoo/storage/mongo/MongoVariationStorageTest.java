@@ -36,6 +36,8 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
+import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 
@@ -73,7 +75,9 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Override
   protected void setupStorage() throws UnknownHostException, MongoException {
-    storage = new MongoStorage(registry, mongo, db, entityIds);
+    EntityInducer inducer = new EntityInducer();
+    EntityReducer reducer = new EntityReducer(registry);
+    storage = new MongoStorage(registry, new MongoDB(mongo, db), entityIds, inducer, reducer);
     returnIdField = new BasicDBObject("_id", 1);
   }
 

@@ -28,6 +28,8 @@ import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
+import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
 
@@ -58,7 +60,9 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Override
   protected void setupStorage() {
-    storage = new MongoStorage(registry, mongoDB, entityIds);
+    EntityInducer inducer = new EntityInducer();
+    EntityReducer reducer = new EntityReducer(registry);
+    storage = new MongoStorage(registry, mongoDB, entityIds, inducer, reducer);
   }
 
   // ---------------------------------------------------------------------------

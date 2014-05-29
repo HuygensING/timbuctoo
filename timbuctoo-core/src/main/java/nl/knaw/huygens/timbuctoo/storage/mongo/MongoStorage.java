@@ -79,17 +79,19 @@ public class MongoStorage implements Storage {
   private final TypeRegistry typeRegistry;
   private final MongoDB mongoDB;
   private final EntityIds entityIds;
+  private final EntityInducer inducer;
+  private final EntityReducer reducer;
 
   private MongoQueries queries;
   private ObjectMapper objectMapper;
   private TreeEncoderFactory treeEncoderFactory;
   private TreeDecoderFactory treeDecoderFactory;
-  private EntityInducer inducer;
-  private EntityReducer reducer;
 
   @Inject
-  public MongoStorage(TypeRegistry registry, Configuration config) throws UnknownHostException, MongoException {
+  public MongoStorage(Configuration config, TypeRegistry registry, EntityInducer inducer, EntityReducer reducer) throws UnknownHostException, MongoException {
     typeRegistry = registry;
+    this.inducer = inducer;
+    this.reducer = reducer;
     MongoOptions options = new MongoOptions();
     options.safe = true;
 
@@ -114,19 +116,12 @@ public class MongoStorage implements Storage {
   }
 
   @VisibleForTesting
-  MongoStorage(TypeRegistry registry, Mongo mongo, DB db, EntityIds entityIds) {
-    this.typeRegistry = registry;
-    this.mongoDB = new MongoDB(mongo, db);
-    this.entityIds = entityIds;
-
-    initialize();
-  }
-
-  @VisibleForTesting
-  MongoStorage(TypeRegistry registry, MongoDB mongoDB, EntityIds entityIds) {
+  MongoStorage(TypeRegistry registry, MongoDB mongoDB, EntityIds entityIds, EntityInducer inducer, EntityReducer reducer) {
     this.typeRegistry = registry;
     this.mongoDB = mongoDB;
     this.entityIds = entityIds;
+    this.inducer = inducer;
+    this.reducer = reducer;
 
     initialize();
   }
@@ -136,8 +131,6 @@ public class MongoStorage implements Storage {
     objectMapper = new ObjectMapper();
     treeEncoderFactory = new TreeEncoderFactory(objectMapper);
     treeDecoderFactory = new TreeDecoderFactory();
-    inducer = new EntityInducer();
-    reducer = new EntityReducer(typeRegistry);
   }
 
   private void ensureIndexes() {
