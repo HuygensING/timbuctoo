@@ -69,30 +69,28 @@ public class BaseImporter extends DefaultImporter {
 
     Change change = new Change(USER_ID, VRE_ID);
 
-    XRepository repository = null;
+    BaseImporter importer = null;
     try {
-      repository = ToolsInjectionModule.createRepositoryInstance();
+      XRepository instance = ToolsInjectionModule.createRepositoryInstance();
 
       // Get rid of existing stuff
-      BaseImporter baseImporter = new BaseImporter(repository);
-      baseImporter.removeNonPersistentEntities(BaseLanguage.class);
-      baseImporter.removeNonPersistentEntities(BaseLocation.class);
+      importer = new BaseImporter(instance);
+      importer.removeNonPersistentEntities(BaseLanguage.class);
+      importer.removeNonPersistentEntities(BaseLocation.class);
 
-      baseImporter.printBoxedText("Import languages");
-      new LanguageImporter(repository.getStorageManager(), change).handleFile(languageFile, 0, false);
+      importer.printBoxedText("Import languages");
+      new LanguageImporter(instance.getRepository(), change).handleFile(languageFile, 0, false);
 
-      baseImporter.printBoxedText("Import locations");
-      new LocationImporter(repository, change).handleFile(locationFile);
+      importer.printBoxedText("Import locations");
+      new LocationImporter(instance, change).handleFile(locationFile);
 
-      baseImporter.printBoxedText("Indexing");
-      baseImporter.indexEntities(BaseLanguage.class);
-      baseImporter.indexEntities(BaseLocation.class);
+      importer.printBoxedText("Indexing");
+      importer.indexEntities(BaseLanguage.class);
+      importer.indexEntities(BaseLocation.class);
 
-    } catch (Exception e) {
-      e.printStackTrace();
     } finally {
-      if (repository != null) {
-        repository.close();
+      if (importer != null) {
+        importer.close();
       }
       LOG.info("Time used: {}", stopWatch);
     }

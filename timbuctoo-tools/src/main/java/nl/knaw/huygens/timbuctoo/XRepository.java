@@ -22,21 +22,11 @@ package nl.knaw.huygens.timbuctoo;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
-/**
- * "Extended" repository, work in progress.
- * The index manager will be integrated with VRE's.
- */
 public class XRepository {
-
-  private static final Logger LOG = LoggerFactory.getLogger(XRepository.class);
 
   private final Repository repository;
   private final IndexManager indexManager;
@@ -47,21 +37,12 @@ public class XRepository {
     this.indexManager = indexManager;
   }
 
-  public Repository getStorageManager() {
+  public Repository getRepository() {
     return repository;
   }
 
   public IndexManager getIndexManager() {
     return indexManager;
-  }
-
-  public void close() {
-    repository.close();
-    try {
-      indexManager.close();
-    } catch (IndexException e) {
-      LOG.error("Error while closing index: {}", e.getMessage());
-    }
   }
 
 }

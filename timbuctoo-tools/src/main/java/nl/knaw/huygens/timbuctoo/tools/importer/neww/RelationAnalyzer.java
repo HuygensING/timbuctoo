@@ -22,7 +22,7 @@ package nl.knaw.huygens.timbuctoo.tools.importer.neww;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.XRepository;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -34,10 +34,10 @@ import nl.knaw.huygens.timbuctoo.util.Tokens;
 public class RelationAnalyzer {
 
   public static void main(String[] args) throws Exception {
-    final XRepository repository = ToolsInjectionModule.createRepositoryInstance();
+    final Repository repository = ToolsInjectionModule.createRepositoryInstance().getRepository();
     try {
       Tokens tokens = new Tokens();
-      StorageIterator<Relation> iterator = repository.getStorageManager().getEntities(Relation.class);
+      StorageIterator<Relation> iterator = repository.getEntities(Relation.class);
       while (iterator.hasNext()) {
         Relation relation = iterator.next();
         tokens.increment(relation.getTypeId());
@@ -47,17 +47,16 @@ public class RelationAnalyzer {
         @Override
         public boolean handle(Token token) {
           String id = token.getText();
-          RelationType type = repository.getStorageManager().getRelationType(id);
+          RelationType type = repository.getRelationType(id);
           System.out.printf("%s %-25s %6d%n", id, type.getRegularName(), token.getCount());
           return true;
         }
       });
-    } catch (Exception e) {
-      e.printStackTrace();
     } finally {
       if (repository != null) {
         repository.close();
       }
+      // TODO close index manager, if it's not used...
     }
   }
 
