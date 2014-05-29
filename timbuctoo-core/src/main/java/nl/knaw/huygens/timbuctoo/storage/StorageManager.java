@@ -85,8 +85,6 @@ public class StorageManager {
     storage.close();
   }
 
-  // ---------------------------------------------------------------------------
-
   public StorageStatus getStatus() {
     StorageStatus status = new StorageStatus();
     for (Class<? extends SystemEntity> type : registry.getSystemEntityTypes()) {
@@ -102,29 +100,33 @@ public class StorageManager {
     return new KV<Long>(type.getSimpleName(), storage.count(type));
   }
 
+  public TypeRegistry getTypeRegistry() {
+    return registry;
+  }
+
   // --- add entities ----------------------------------------------------------
 
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException, ValidationException {
-    entity.normalize(registry, this);
-    entity.validateForAdd(registry, this);
+    entity.normalize(this);
+    entity.validateForAdd(this);
     return storage.addSystemEntity(type, entity);
   }
 
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException, ValidationException {
-    entity.normalize(registry, this);
-    entity.validateForAdd(registry, this);
+    entity.normalize(this);
+    entity.validateForAdd(this);
     return storage.addDomainEntity(type, entity, change);
   }
 
   // --- update entities -------------------------------------------------------
 
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
-    entity.normalize(registry, this);
+    entity.normalize(this);
     storage.updateSystemEntity(type, entity);
   }
 
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    entity.normalize(registry, this);
+    entity.normalize(this);
     storage.updateDomainEntity(type, entity, change);
   }
 

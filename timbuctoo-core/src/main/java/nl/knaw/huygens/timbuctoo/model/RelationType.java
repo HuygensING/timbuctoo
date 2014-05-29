@@ -117,8 +117,9 @@ public class RelationType extends SystemEntity {
   }
 
   @Override
-  public void validateForAdd(TypeRegistry registry, StorageManager storage) throws ValidationException {
-    super.validateForAdd(registry, storage);
+  public void validateForAdd(StorageManager storage) throws ValidationException {
+    super.validateForAdd(storage);
+    TypeRegistry registry = storage.getTypeRegistry();
     if (!registry.mapsToPrimitiveDomainEntity(sourceTypeName)) {
       throw new ValidationException("Not a primitive domain entity:" + sourceTypeName);
     }

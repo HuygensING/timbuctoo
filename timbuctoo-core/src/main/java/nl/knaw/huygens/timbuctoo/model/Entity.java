@@ -27,7 +27,6 @@ import javax.validation.constraints.Pattern;
 
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TimbuctooTypeIdResolver;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageManager;
@@ -108,13 +107,13 @@ public abstract class Entity {
   /**
    * Normalize this entity; should be called before validation.
    */
-  public void normalize(TypeRegistry registry, StorageManager storage) {
+  public void normalize(StorageManager storage) {
   }
 
   /**
    * Validation targeted at dependencies between entities.
    */
-  public void validateForAdd(TypeRegistry registry, StorageManager storage) throws ValidationException {
+  public void validateForAdd(StorageManager storage) throws ValidationException {
   }
 
 }
