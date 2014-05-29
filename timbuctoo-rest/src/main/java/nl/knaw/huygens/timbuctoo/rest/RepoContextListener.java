@@ -34,7 +34,7 @@ import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceService;
 import nl.knaw.huygens.timbuctoo.rest.config.RESTInjectionModule;
 import nl.knaw.huygens.timbuctoo.rest.config.ServletInjectionModule;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.util.TimeUtils;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -127,9 +127,9 @@ public class RepoContextListener extends GuiceServletContextListener {
       indexServiceThread = null;
     }
     if (injector != null) {
-      StorageManager storageManager = injector.getInstance(StorageManager.class);
-      if (storageManager != null) {
-        storageManager.close();
+      Repository repository = injector.getInstance(Repository.class);
+      if (repository != null) {
+        repository.close();
       }
       injector = null;
     }

@@ -30,16 +30,16 @@ import com.google.inject.Inject;
 
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 
 public class ExampleVREAuthorizationHandler implements VREAuthorizationHandler {
   private static final Logger LOG = LoggerFactory.getLogger(ExampleVREAuthorizationHandler.class);
 
-  private final StorageManager storageManager;
+  private final Repository repository;
 
   @Inject
-  public ExampleVREAuthorizationHandler(StorageManager storageManager) {
-    this.storageManager = storageManager;
+  public ExampleVREAuthorizationHandler(Repository repository) {
+    this.repository = repository;
   }
 
   @Override
@@ -47,7 +47,7 @@ public class ExampleVREAuthorizationHandler implements VREAuthorizationHandler {
     String persistentId = user.getPersistentId();
 
     VREAuthorization example = new VREAuthorization(vreId, user.getId());
-    VREAuthorization vreAuthorization = storageManager.findEntity(VREAuthorization.class, example);
+    VREAuthorization vreAuthorization = repository.findEntity(VREAuthorization.class, example);
 
     if (vreAuthorization == null) {
       vreAuthorization = example;
@@ -58,7 +58,7 @@ public class ExampleVREAuthorizationHandler implements VREAuthorizationHandler {
       }
 
       try {
-        vreAuthorization.setId(storageManager.addSystemEntity(VREAuthorization.class, vreAuthorization));
+        vreAuthorization.setId(repository.addSystemEntity(VREAuthorization.class, vreAuthorization));
       } catch (Exception e) {
         LOG.error("Creating VREAuthorization for user {} and VRE {} throws exception {}", user.getCommonName(), vreId, e);
       }

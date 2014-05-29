@@ -23,7 +23,7 @@ package nl.knaw.huygens.timbuctoo.model;
  */
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.validation.RelationValidator;
 
@@ -180,10 +180,10 @@ public class Relation extends DomainEntity {
   }
 
   @Override
-  public void normalize(StorageManager storage) {
+  public void normalize(Repository repository) {
     // Make sure symmetric relations are stored in canonical order
     if (typeId != null & sourceId != null && targetId != null) {
-      RelationType relationType = storage.getRelationType(typeId);
+      RelationType relationType = repository.getRelationType(typeId);
       if (relationType != null && relationType.isSymmetric() && sourceId.compareTo(targetId) > 0) {
         String temp = sourceId;
         sourceId = targetId;
@@ -193,7 +193,7 @@ public class Relation extends DomainEntity {
   }
 
   @Override
-  public void validateForAdd(StorageManager storage) throws ValidationException {
+  public void validateForAdd(Repository storage) throws ValidationException {
     super.validateForAdd(storage);
     new RelationValidator(storage).validate(this);
   }

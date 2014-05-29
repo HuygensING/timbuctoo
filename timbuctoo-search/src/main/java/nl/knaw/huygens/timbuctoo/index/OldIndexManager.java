@@ -31,7 +31,7 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -64,13 +64,13 @@ public class OldIndexManager implements IndexManager {
   private final Collection<VRE> vres;
   private final TypeRegistry registry;
   private final LocalSolrServer server;
-  private final StorageManager storageManager;
+  private final Repository repository;
 
   @Inject
-  public OldIndexManager(Configuration config, TypeRegistry registry, LocalSolrServer server, StorageManager storageManager, VREManager vreManager) {
+  public OldIndexManager(Configuration config, TypeRegistry registry, LocalSolrServer server, Repository repository, VREManager vreManager) {
     this.registry = registry;
     this.server = server;
-    this.storageManager = storageManager;
+    this.repository = repository;
     vres = vreManager.getAllVREs();
     registerCores();
   }
@@ -106,7 +106,7 @@ public class OldIndexManager implements IndexManager {
 
   private <T extends DomainEntity> void addBaseEntity(Class<T> type, String id) throws IndexException {
     try {
-      List<T> variations = storageManager.getAllVariations(type, id);
+      List<T> variations = repository.getAllVariations(type, id);
       for (VRE vre : vres) {
         List<T> filtered = filter(variations, vre);
         if (!filtered.isEmpty()) {

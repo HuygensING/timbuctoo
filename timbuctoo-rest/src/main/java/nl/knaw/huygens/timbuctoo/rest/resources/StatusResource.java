@@ -31,19 +31,19 @@ import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.rest.util.Status;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 
 import com.google.inject.Inject;
 
 @Path(Paths.SYSTEM_PREFIX + "/status")
 public class StatusResource {
 
-  private final StorageManager storageManager;
+  private final Repository repository;
   private final IndexManager indexManager;
 
   @Inject
-  public StatusResource(StorageManager storageManager, IndexManager indexManager) {
-    this.storageManager = storageManager;
+  public StatusResource(Repository repository, IndexManager indexManager) {
+    this.repository = repository;
     this.indexManager = indexManager;
   }
 
@@ -52,7 +52,7 @@ public class StatusResource {
   @APIDesc("Returns the status of the webapp.")
   public Status getStatus() {
     Status status = new Status();
-    status.setStorageStatus(storageManager.getStatus());
+    status.setStorageStatus(repository.getStatus());
     status.setIndexStatus(indexManager.getStatus());
     return status;
   }

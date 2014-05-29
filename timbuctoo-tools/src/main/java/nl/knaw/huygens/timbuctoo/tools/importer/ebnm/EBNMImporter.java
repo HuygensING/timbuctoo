@@ -37,7 +37,7 @@ import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMTekst;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMTekstdrager;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMWatermerk;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 import nl.knaw.huygens.timbuctoo.tools.importer.RelationTypeImporter;
@@ -109,9 +109,9 @@ public class EBNMImporter extends DefaultImporter {
   // File with {@code RelationType} definitions; must be present on classpath.
   private static final String RELATION_TYPE_DEFS = "relationtype-defs-codl.txt";
 
-  private void setup(StorageManager storageManager) {
+  private void setup(Repository repository) {
     try {
-      new RelationTypeImporter(storageManager).importRelationTypes(RELATION_TYPE_DEFS);
+      new RelationTypeImporter(repository).importRelationTypes(RELATION_TYPE_DEFS);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

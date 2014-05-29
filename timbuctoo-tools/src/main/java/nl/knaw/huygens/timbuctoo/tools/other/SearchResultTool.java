@@ -31,7 +31,7 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.tools.util.UTCUtils;
 
 import org.apache.commons.cli.CommandLine;
@@ -88,24 +88,24 @@ public class SearchResultTool {
 
   // -------------------------------------------------------------------
 
-  private final StorageManager storageManager;
+  private final Repository repository;
 
   public SearchResultTool() throws ConfigurationException {
     Configuration config = new Configuration("config.xml");
     Injector injector = Guice.createInjector(new BasicInjectionModule(config));
-    storageManager = injector.getInstance(StorageManager.class);
+    repository = injector.getInstance(Repository.class);
   }
 
   private void execute(boolean verbose, boolean delete, Date date) {
-    checkNotNull(storageManager);
+    checkNotNull(repository);
     try {
       displayStatus(verbose);
       if (delete) {
         int n;
         if (date != null) {
-          n = storageManager.deleteSearchResultsBefore(date);
+          n = repository.deleteSearchResultsBefore(date);
         } else {
-          n = storageManager.deleteAllSearchResults();
+          n = repository.deleteAllSearchResults();
         }
         System.out.printf("Search results removed   : %5d%n", n);
         displayStatus(false);
@@ -113,12 +113,12 @@ public class SearchResultTool {
     } catch (StorageException e) {
       System.out.printf("Error: %s%n", e.getMessage());
     } finally {
-      storageManager.close();
+      repository.close();
     }
   }
 
   private void displayStatus(boolean verbose) {
-    StorageIterator<SearchResult> iterator = storageManager.getEntities(SearchResult.class);
+    StorageIterator<SearchResult> iterator = repository.getEntities(SearchResult.class);
     System.out.printf("Search results in storage: %5d%n", iterator.size());
     while (verbose && iterator.hasNext()) {
       SearchResult result = iterator.next();

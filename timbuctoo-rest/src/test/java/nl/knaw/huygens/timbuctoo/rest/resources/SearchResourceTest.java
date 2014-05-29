@@ -49,7 +49,7 @@ import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -121,7 +121,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     SearchParameters params = new SearchParameters().setTypeString(TYPE_STRING).setSort(ID).setTerm(TERM);
     SearchResult searchResult = mock(SearchResult.class);;
     setSearchResult(searchResult);
-    when(storageManager.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
+    when(repository.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
 
     WebResource resource = super.resource();
     String expected = String.format("%ssearch/%s", resource.getURI().toString(), ID);
@@ -140,7 +140,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     SearchParameters params = new SearchParameters().setTypeString(TYPE_STRING).setTerm(TERM);
     SearchResult searchResult = mock(SearchResult.class);
     setSearchResult(searchResult);
-    when(storageManager.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
+    when(repository.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
 
     WebResource resource = super.resource();
     String expected = String.format("%ssearch/%s", resource.getURI().toString(), ID);
@@ -162,7 +162,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
     verify(vreManager).getVREById(anyString());
-    verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(repository, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
   }
 
@@ -176,7 +176,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
     verify(vreManager).getVREById(anyString());
-    verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(repository, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
   }
 
@@ -190,7 +190,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
     verify(vreManager).getVREById(anyString());
-    verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(repository, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
   }
 
@@ -201,7 +201,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     SearchParameters params = new SearchParameters().setTypeString(TYPE_STRING).setTerm(TERM);
     SearchResult searchResult = mock(SearchResult.class);
     setSearchResult(searchResult);
-    when(storageManager.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
+    when(repository.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
 
     WebResource resource = super.resource();
     String expected = String.format("%ssearch/%s", resource.getURI().toString(), ID);
@@ -222,7 +222,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
 
     assertEquals(Status.NOT_FOUND, response.getClientResponseStatus());
-    verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(repository, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
   }
 
@@ -235,7 +235,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
 
     assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
-    verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(repository, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
   }
 
@@ -249,7 +249,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
 
     assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
-    verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(repository, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
   }
 
   @Test
@@ -262,7 +262,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
 
     assertEquals(Status.INTERNAL_SERVER_ERROR, response.getClientResponseStatus());
-    verify(storageManager, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(repository, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
   }
 
   @Test
@@ -272,7 +272,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     SearchParameters params = new SearchParameters().setTypeString(TYPE_STRING).setTerm(TERM);
     SearchResult searchResult = mock(SearchResult.class);
     setSearchResult(searchResult);
-    doThrow(IOException.class).when(storageManager).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    doThrow(IOException.class).when(repository).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
 
     ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
 
@@ -288,10 +288,10 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     int startIndex = 0;
     int numberOfRows = 10;
-    createSearchResultOf100Persons(storageManager, idList, personList);
+    createSearchResultOf100Persons(repository, idList, personList);
 
     List<FacetCount> facets = createFacets();
-    setUpSearchResult(idList, storageManager, facets);
+    setUpSearchResult(idList, repository, facets);
 
     WebResource resource = super.resource();
     setupPublicUrl(resource.getURI().toString());
@@ -313,11 +313,11 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     int startIndex = 20;
     int numberOfRows = 20;
-    createSearchResultOf100Persons(storageManager, idList, personList);
+    createSearchResultOf100Persons(repository, idList, personList);
 
     List<FacetCount> facets = createFacets();
 
-    setUpSearchResult(idList, storageManager, facets);
+    setUpSearchResult(idList, repository, facets);
 
     MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
     queryParameters.add("start", "20");
@@ -345,11 +345,11 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     int startIndex = 10;
     int numberOfRows = 100;
-    createSearchResultOf100Persons(storageManager, idList, personList);
+    createSearchResultOf100Persons(repository, idList, personList);
 
     List<FacetCount> facets = createFacets();
 
-    setUpSearchResult(idList, storageManager, facets);
+    setUpSearchResult(idList, repository, facets);
 
     MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
     queryParameters.add("start", "10");
@@ -370,7 +370,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetNoResults() {
-    setUpSearchResult(null, storageManager, Lists.<FacetCount> newArrayList());
+    setUpSearchResult(null, repository, Lists.<FacetCount> newArrayList());
 
     Map<String, Object> expected = createExpectedResult(Lists.<String> newArrayList(), Lists.<Person> newArrayList(), Lists.<FacetCount> newArrayList(), 0, 0, SORTABLE_FIELDS, 0, null, null);
 
@@ -390,7 +390,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetUnknownId() {
-    when(storageManager.getEntity(SearchResult.class, ID)).thenReturn(null);
+    when(repository.getEntity(SearchResult.class, ID)).thenReturn(null);
 
     WebResource resource = super.resource();
     ClientResponse response = resource.path("search").path(ID).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
@@ -405,7 +405,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     String unknownType = "unknown";
     searchResult.setSearchType(unknownType);
 
-    when(storageManager.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
+    when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
 
     WebResource resource = super.resource();
     ClientResponse response = resource.path("search").path(ID).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
@@ -445,25 +445,25 @@ public class SearchResourceTest extends WebServiceTestSetup {
     return facets;
   }
 
-  private void createSearchResultOf100Persons(StorageManager storageManager, final List<String> idList, final List<Person> personList) {
+  private void createSearchResultOf100Persons(Repository repository, final List<String> idList, final List<Person> personList) {
     for (int i = 0; i < 100; i++) {
       String personId = "" + i;
       Person person = new Person();
       person.setId(personId);
       personList.add(person);
       idList.add(personId);
-      when(storageManager.getEntity(Person.class, personId)).thenReturn(person);
+      when(repository.getEntity(Person.class, personId)).thenReturn(person);
     }
   }
 
-  private void setUpSearchResult(List<String> idList, StorageManager storageManager, List<FacetCount> facets) {
+  private void setUpSearchResult(List<String> idList, Repository repository, List<FacetCount> facets) {
     SearchResult result = mock(SearchResult.class);
     when(result.getTerm()).thenReturn(TERM);
     when(result.getId()).thenReturn(ID);
     when(result.getSearchType()).thenReturn("person");
     when(result.getIds()).thenReturn(idList);
     //    when(result.getFacets()).thenReturn(facets);
-    when(storageManager.getEntity(SearchResult.class, ID)).thenReturn(result);
+    when(repository.getEntity(SearchResult.class, ID)).thenReturn(result);
   }
 
   @SuppressWarnings("unchecked")

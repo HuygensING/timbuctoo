@@ -28,8 +28,8 @@ import static org.quartz.TriggerBuilder.newTrigger;
 
 import java.util.Date;
 
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import org.quartz.Job;
 import org.quartz.JobDetail;
@@ -103,8 +103,8 @@ public class RepoScheduler {
       try {
         long ttl = context.getMergedJobDataMap().getLongValue("ttl");
         Date date = new Date(System.currentTimeMillis() - ttl);
-        StorageManager manager = RepoScheduler.injector.getInstance(StorageManager.class);
-        int n = manager.deleteSearchResultsBefore(date);
+        Repository repository = RepoScheduler.injector.getInstance(Repository.class);
+        int n = repository.deleteSearchResultsBefore(date);
         LOG.info("Removed {} search results", n);
       } catch (StorageException e) {
         LOG.error("Failed to remove search results");

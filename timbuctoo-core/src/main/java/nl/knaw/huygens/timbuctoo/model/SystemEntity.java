@@ -23,13 +23,13 @@ package nl.knaw.huygens.timbuctoo.model;
  */
 
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 public abstract class SystemEntity extends Entity {
 
   @Override
-  public void validateForAdd(StorageManager storage) throws ValidationException {
+  public void validateForAdd(Repository repository) throws ValidationException {
     if (!BusinessRules.allowSystemEntityAdd(getClass())) {
       throw new ValidationException("Not allowed to add " + getClass());
     }

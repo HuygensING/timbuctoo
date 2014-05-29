@@ -26,8 +26,8 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 
@@ -36,10 +36,10 @@ import nl.knaw.huygens.timbuctoo.tools.util.Progress;
  */
 public class GenericImporter extends GenericDataHandler {
 
-  protected final StorageManager storageManager;
+  protected final Repository repository;
 
-  public GenericImporter(StorageManager storageManager) {
-    this.storageManager = storageManager;
+  public GenericImporter(Repository repository) {
+    this.repository = repository;
   }
 
   @Override
@@ -47,7 +47,7 @@ public class GenericImporter extends GenericDataHandler {
     Progress progress = new Progress();
     for (T object : objects) {
       progress.step();
-      storageManager.addDomainEntity(type, object, change);
+      repository.addDomainEntity(type, object, change);
     }
     progress.done();
   }

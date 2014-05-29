@@ -22,14 +22,9 @@ package nl.knaw.huygens.timbuctoo;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,35 +39,25 @@ public class XRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(XRepository.class);
 
-  private final TypeRegistry typeRegistry;
-  private final StorageManager storageManager;
+  private final Repository repository;
   private final IndexManager indexManager;
 
   @Inject
-  public XRepository(StorageManager storageManager, IndexManager indexManager) {
-    this.typeRegistry = storageManager.getTypeRegistry();
-    this.storageManager = storageManager;
+  public XRepository(Repository repository, IndexManager indexManager) {
+    this.repository = repository;
     this.indexManager = indexManager;
   }
 
-  public TypeRegistry getTypeRegistry() {
-    return typeRegistry;
-  }
-
-  public StorageManager getStorageManager() {
-    return storageManager;
+  public Repository getStorageManager() {
+    return repository;
   }
 
   public IndexManager getIndexManager() {
     return indexManager;
   }
 
-  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException, ValidationException {
-    return storageManager.addDomainEntity(type, entity, change);
-  }
-
   public void close() {
-    storageManager.close();
+    repository.close();
     try {
       indexManager.close();
     } catch (IndexException e) {

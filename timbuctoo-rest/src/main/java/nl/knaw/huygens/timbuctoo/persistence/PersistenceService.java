@@ -29,8 +29,8 @@ import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.ConsumerService;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,13 +42,13 @@ public class PersistenceService extends ConsumerService implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(PersistenceService.class);
 
   private final PersistenceWrapper persistenceWrapper;
-  private final StorageManager storageManager;
+  private final Repository repository;
 
   @Inject
-  public PersistenceService(Broker broker, PersistenceWrapper persistenceWrapper, StorageManager storageManager) throws JMSException {
+  public PersistenceService(Broker broker, PersistenceWrapper persistenceWrapper, Repository repository) throws JMSException {
     super(broker, Broker.PERSIST_QUEUE, "PersistenceService");
     this.persistenceWrapper = persistenceWrapper;
-    this.storageManager = storageManager;
+    this.repository = repository;
   }
 
   @Override
@@ -71,7 +71,7 @@ public class PersistenceService extends ConsumerService implements Runnable {
     Class<? extends DomainEntity> type = action.getType();
     String id = action.getId();
 
-    DomainEntity entity = storageManager.getEntity(type, id);
+    DomainEntity entity = repository.getEntity(type, id);
     if (entity == null) {
       LOG.error("No {} with id {}", type, id);
       return;
@@ -89,7 +89,7 @@ public class PersistenceService extends ConsumerService implements Runnable {
 
     try {
       // The only way to show the PIDs as a URI is to save them as a URI.
-      storageManager.setPID(type, id, persistenceWrapper.getPersistentURL(pid));
+      repository.setPID(type, id, persistenceWrapper.getPersistentURL(pid));
     } catch (IllegalStateException e) {
       deletePID(pid);
       LOG.error("{} with id {} already has a PID", type, id);

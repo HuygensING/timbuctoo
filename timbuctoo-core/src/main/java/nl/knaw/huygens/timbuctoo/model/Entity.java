@@ -29,7 +29,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TimbuctooTypeIdResolver;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -107,13 +107,13 @@ public abstract class Entity {
   /**
    * Normalize this entity; should be called before validation.
    */
-  public void normalize(StorageManager storage) {
+  public void normalize(Repository repository) {
   }
 
   /**
    * Validation targeted at dependencies between entities.
    */
-  public void validateForAdd(StorageManager storage) throws ValidationException {
+  public void validateForAdd(Repository repository) throws ValidationException {
   }
 
 }

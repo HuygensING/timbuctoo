@@ -24,15 +24,15 @@ package nl.knaw.huygens.timbuctoo.validation;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 class RelationReferenceValidator implements Validator<Relation> {
 
-  private final StorageManager storage;
+  private final Repository repository;
 
-  public RelationReferenceValidator(StorageManager storage) {
-    this.storage = storage;
+  public RelationReferenceValidator(Repository repository) {
+    this.repository = repository;
   }
 
   @Override
@@ -42,8 +42,8 @@ class RelationReferenceValidator implements Validator<Relation> {
   }
 
   private void validateEntityExists(String iname, String id) throws ValidationException {
-    TypeRegistry registry = storage.getTypeRegistry();
-    if (!storage.entityExists(registry.getDomainEntityType(iname), id)) {
+    TypeRegistry registry = repository.getTypeRegistry();
+    if (!repository.entityExists(registry.getDomainEntityType(iname), id)) {
       throw new ValidationException("Entity [%s,%s] does not exist", iname, id);
     }
   }
