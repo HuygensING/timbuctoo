@@ -218,7 +218,7 @@ public class MongoStorage implements Storage {
   }
 
   private <T extends Entity> T getItem(Class<T> type, DBObject query) throws StorageException {
-    DBObject item = getDBCollection(type).findOne(query);
+    DBObject item = mongoDB.findOne(getDBCollection(type), query);
     return (item != null) ? reducer.reduceVariation(type, toJsonNode(item)) : null;
   }
 

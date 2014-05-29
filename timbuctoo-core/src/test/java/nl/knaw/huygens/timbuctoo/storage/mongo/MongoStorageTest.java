@@ -70,7 +70,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.deleteSystemEntity(TestSystemEntity.class, DEFAULT_ID);
 
     DBObject query =  queries.selectById(DEFAULT_ID);
-    verify(mongoDB).remove(anyCollection, query);
+    verify(mongoDB).remove(dbCollection, query);
   }
 
   // deleteSystemEntities
@@ -80,7 +80,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.deleteSystemEntities(TestSystemEntity.class);
 
     DBObject query = queries.selectAll();
-    verify(mongoDB).remove(anyCollection, query);
+    verify(mongoDB).remove(dbCollection, query);
   }
 
   // deleteByDate
@@ -92,7 +92,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.deleteByDate(TestSystemEntity.class, "date", date);
 
     DBObject query = queries.selectByDate(TestSystemEntity.class, "date", date);
-    verify(mongoDB).remove(anyCollection, query);
+    verify(mongoDB).remove(dbCollection, query);
   }
 
   // deleteDomainEntity
@@ -106,7 +106,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.deleteNonPersistent(BaseDomainEntity.class, ids);
 
     DBObject query = queries.selectNonPersistent(ids);
-    verify(mongoDB).remove(anyCollection, query);
+    verify(mongoDB).remove(dbCollection, query);
   }
 
   // entityExists
@@ -118,8 +118,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.getItem(TestSystemEntity.class, DEFAULT_ID);
 
     DBObject query = queries.selectById(DEFAULT_ID);
-    // TODO verify MongoDB once it implements findOne()
-    verify(anyCollection).findOne(query);
+    verify(mongoDB).findOne(dbCollection, query);
     // TODO verify call to EntityReducer
   }
 
@@ -128,8 +127,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.getItem(BaseDomainEntity.class, DEFAULT_ID);
 
     DBObject query = queries.selectById(DEFAULT_ID);
-    // TODO verify MongoDB once it implements findOne()
-    verify(anyCollection).findOne(query);
+    verify(mongoDB).findOne(dbCollection, query);
     // TODO verify call to EntityReducer
   }
 
@@ -140,7 +138,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.getEntities(TestSystemEntity.class);
 
     DBObject query = queries.selectAll();
-    verify(mongoDB).find(anyCollection, query);
+    verify(mongoDB).find(dbCollection, query);
   }
 
   @Test
@@ -148,7 +146,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.getEntities(BaseDomainEntity.class);
 
     DBObject query = queries.selectAll();
-    verify(mongoDB).find(anyCollection, query);
+    verify(mongoDB).find(dbCollection, query);
   }
 
   // findItem
@@ -160,8 +158,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.findItem(TestSystemEntity.class, example);
 
     DBObject query = queries.selectByProperty(TestSystemEntity.class, "name", "doc1");
-    // TODO verify MongoDB once it implements findOne()
-    verify(anyCollection).findOne(query);
+    verify(mongoDB).findOne(dbCollection, query);
     // TODO verify call to EntityReducer
   }
 
@@ -172,7 +169,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.getAllVariations(BaseDomainEntity.class, DEFAULT_ID);
 
     DBObject query = queries.selectById(DEFAULT_ID);
-    verify(mongoDB).findOne(anyCollection, query);
+    verify(mongoDB).findOne(dbCollection, query);
     // TODO verify call to EntityReducer, in two separate tests, depending on number of results
   }
 
@@ -186,7 +183,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     DBObject query = queries.selectById(DEFAULT_ID);
     DBObject projection = queries.getRevisionProjection(revision);
-    verify(anyCollection).findOne(query, projection);
+    verify(dbCollection).findOne(query, projection);
   }
 
   // getAllRevisions
@@ -196,7 +193,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.getAllRevisions(BaseDomainEntity.class, DEFAULT_ID);
 
     DBObject query = queries.selectById(DEFAULT_ID);
-    verify(mongoDB).findOne(anyCollection, query);
+    verify(mongoDB).findOne(dbCollection, query);
     // TODO verify call to EntityReducer
   }
 
