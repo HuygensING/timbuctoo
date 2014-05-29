@@ -103,13 +103,13 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBObject dbObject = createDBJsonNode(createSimpleMap("_id", id1));
 
     DBCursor cursor = createDBCursorWithOneValue(dbObject);
-    when(anyCollection.find(query, returnIdField)).thenReturn(cursor);
+    when(dbCollection.find(query, returnIdField)).thenReturn(cursor);
 
     List<String> ids = storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
 
     assertTrue(ids.contains(id1));
 
-    verify(anyCollection).find(query, returnIdField);
+    verify(dbCollection).find(query, returnIdField);
     verify(db).getCollection(collection);
   }
 
@@ -130,7 +130,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     when(cursor.next()).thenReturn(dbObject1, dbObject2, dbObject3);
     when(cursor.hasNext()).thenReturn(true, true, true, false);
 
-    when(anyCollection.find(query, returnIdField)).thenReturn(cursor);
+    when(dbCollection.find(query, returnIdField)).thenReturn(cursor);
 
     List<String> ids = storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
 
@@ -138,7 +138,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     assertTrue(ids.contains(id2));
     assertTrue(ids.contains(id3));
 
-    verify(anyCollection).find(query, returnIdField);
+    verify(dbCollection).find(query, returnIdField);
     verify(db).getCollection(collection);
   }
 
@@ -149,13 +149,13 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     query.putAll(DBQuery.notExists(DomainEntity.PID));
 
     DBCursor cursor = createCursorWithoutValues();
-    when(anyCollection.find(query, returnIdField)).thenReturn(cursor);
+    when(dbCollection.find(query, returnIdField)).thenReturn(cursor);
 
     List<String> ids = storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
 
     assertTrue(ids.isEmpty());
 
-    verify(anyCollection).find(query, returnIdField);
+    verify(dbCollection).find(query, returnIdField);
     verify(db).getCollection(collection);
   }
 
@@ -165,7 +165,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBObject query = queries.selectVariation(collection);
     query.putAll(DBQuery.notExists(DomainEntity.PID));
 
-    doThrow(MongoException.class).when(anyCollection).find(query, returnIdField);
+    doThrow(MongoException.class).when(dbCollection).find(query, returnIdField);
 
     storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
   }
@@ -180,7 +180,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     when(cursor.hasNext()).thenReturn(true);
     doThrow(MongoException.class).when(cursor).next();
 
-    when(anyCollection.find(query, returnIdField)).thenReturn(cursor);
+    when(dbCollection.find(query, returnIdField)).thenReturn(cursor);
 
     storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
   }
@@ -194,7 +194,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBCursor cursor = mock(DBCursor.class);
     doThrow(MongoException.class).when(cursor).hasNext();
 
-    when(anyCollection.find(query, returnIdField)).thenReturn(cursor);
+    when(dbCollection.find(query, returnIdField)).thenReturn(cursor);
 
     storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
   }
@@ -217,7 +217,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     when(cursor.next()).thenReturn(dbObject1, dbObject2, dbObject3);
     when(cursor.hasNext()).thenReturn(true, true, true, false);
 
-    when(anyCollection.find(query, returnIdField)).thenReturn(cursor);
+    when(dbCollection.find(query, returnIdField)).thenReturn(cursor);
 
     try {
       List<String> relationsIds = storage.getRelationIds(inputIds);
@@ -226,7 +226,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
       assertTrue(relationsIds.contains(relationId2));
       assertTrue(relationsIds.contains(relationId3));
     } finally {
-      verify(anyCollection).find(query, returnIdField);
+      verify(dbCollection).find(query, returnIdField);
       verify(db).getCollection("relation");
     }
   }
@@ -234,7 +234,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   @Test(expected = StorageException.class)
   public void testGetRelationFindThrowsException() throws Exception {
     List<String> inputIds = Lists.newArrayList(DEFAULT_ID, "TCD000000002", "TCD000000003");
-    doThrow(MongoException.class).when(anyCollection).find(any(DBObject.class), any(DBObject.class));
+    doThrow(MongoException.class).when(dbCollection).find(any(DBObject.class), any(DBObject.class));
 
     storage.getRelationIds(inputIds);
   }
@@ -249,7 +249,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     when(cursor.hasNext()).thenReturn(true);
     doThrow(MongoException.class).when(cursor).next();
 
-    when(anyCollection.find(query, returnIdField)).thenReturn(cursor);
+    when(dbCollection.find(query, returnIdField)).thenReturn(cursor);
 
     storage.getRelationIds(inputIds);
 
@@ -264,7 +264,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBCursor cursor = mock(DBCursor.class);
     doThrow(MongoException.class).when(cursor).hasNext();
 
-    when(anyCollection.find(query, returnIdField)).thenReturn(cursor);
+    when(dbCollection.find(query, returnIdField)).thenReturn(cursor);
 
     storage.getRelationIds(inputIds);
   }

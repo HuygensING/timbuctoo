@@ -49,7 +49,7 @@ public abstract class MongoStorageTestBase {
   protected Mongo mongo; // TODO eliminate
   protected DB db; // TODO eliminate
   protected MongoDB mongoDB;
-  protected DBCollection anyCollection;
+  protected DBCollection dbCollection;
   protected EntityIds entityIds;
   protected MongoQueries queries;
 
@@ -58,12 +58,12 @@ public abstract class MongoStorageTestBase {
     mongo = mock(Mongo.class);
     db = mock(DB.class);
     mongoDB = mock(MongoDB.class);
-    anyCollection = mock(DBCollection.class);
+    dbCollection = mock(DBCollection.class);
     entityIds = mock(EntityIds.class);
     queries = new MongoQueries();
 
-    when(db.getCollection(anyString())).thenReturn(anyCollection);
-    when(mongoDB.getCollection(anyString())).thenReturn(anyCollection);
+    when(db.getCollection(anyString())).thenReturn(dbCollection);
+    when(mongoDB.getCollection(anyString())).thenReturn(dbCollection);
 
     setupStorage();
   }
