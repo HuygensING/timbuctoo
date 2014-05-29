@@ -37,6 +37,8 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
+import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
@@ -83,7 +85,9 @@ public class CombinedMongoStorageTest {
     mongoDB = mock(MongoDB.class);
     anyCollection = mock(DBCollection.class);
     entityIds = mock(EntityIds.class);
-    storage = new MongoStorage(registry, mongoDB, entityIds);
+    EntityInducer inducer = new EntityInducer();
+    EntityReducer reducer = new EntityReducer(registry);
+    storage = new MongoStorage(registry, mongoDB, entityIds, inducer, reducer);
 
     mapper = new ObjectMapper();
 

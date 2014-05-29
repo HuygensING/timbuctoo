@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.inject.Inject;
 
 public class EntityInducer {
 
@@ -49,6 +50,7 @@ public class EntityInducer {
   private final FieldMapper fieldMapper;
   private final ObjectMapper jsonMapper;
 
+  @Inject
   public EntityInducer() {
     fieldMapper = new FieldMapper();
     jsonMapper = new ObjectMapper();
