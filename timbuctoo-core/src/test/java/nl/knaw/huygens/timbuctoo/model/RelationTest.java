@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.junit.Test;
@@ -58,7 +58,7 @@ public class RelationTest {
   }
 
   private Relation getNormalizedRelation(String sourceId, String targetId, boolean symmetric) {
-    StorageManager storage = mock(StorageManager.class);
+    Repository repository = mock(Repository.class);
 
     Relation relation = new Relation();
     relation.setTypeId("typeId");
@@ -67,9 +67,9 @@ public class RelationTest {
 
     RelationType relationType = new RelationType();
     relationType.setSymmetric(symmetric);
-    when(storage.getRelationType("typeId")).thenReturn(relationType);
+    when(repository.getRelationType("typeId")).thenReturn(relationType);
 
-    relation.normalize(storage);
+    relation.normalize(repository);
     return relation;
   }
 

@@ -58,9 +58,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
-public class StorageManager {
+public class Repository {
 
-  private static final Logger LOG = LoggerFactory.getLogger(StorageManager.class);
+  private static final Logger LOG = LoggerFactory.getLogger(Repository.class);
 
   /** Maximum number of relations added to an entity. */
   private static final int DEFAULT_RELATION_LIMIT = 100;
@@ -70,7 +70,7 @@ public class StorageManager {
   private final EntityMappers entityMappers;
 
   @Inject
-  public StorageManager(TypeRegistry registry, Storage storage) {
+  public Repository(TypeRegistry registry, Storage storage) {
     this.registry = registry;
     this.storage = storage;
     entityMappers = new EntityMappers(registry.getDomainEntityTypes());

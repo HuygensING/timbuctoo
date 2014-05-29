@@ -37,7 +37,7 @@ import java.security.Principal;
 import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
 import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 
 import org.junit.After;
 import org.junit.Before;
@@ -48,18 +48,19 @@ public class UserSecurityContextCreatorTest {
 
   private static final String USER_ID = "test123";
   private static final String DISPLAY_NAME = "displayName";
+
   private UserSecurityContextCreator instance;
-  private StorageManager storageManager;
+  private Repository repository;
 
   @Before
   public void setUp() {
-    storageManager = mock(StorageManager.class);
-    instance = new UserSecurityContextCreator(storageManager);
+    repository = mock(Repository.class);
+    instance = new UserSecurityContextCreator(repository);
   }
 
   @After
   public void tearDown() {
-    reset(storageManager);
+    reset(repository);
   }
 
   @Test
@@ -71,12 +72,12 @@ public class UserSecurityContextCreatorTest {
 
     SecurityInformation securityInformation = createSecurityInformation(DISPLAY_NAME, USER_ID);
 
-    when(storageManager.findEntity(User.class, example)).thenReturn(user);
+    when(repository.findEntity(User.class, example)).thenReturn(user);
 
     instance.createSecurityContext(securityInformation);
 
-    verify(storageManager, only()).findEntity(User.class, example);
-    verify(storageManager, never()).addSystemEntity(Matchers.<Class<User>> any(), any(User.class));
+    verify(repository, only()).findEntity(User.class, example);
+    verify(repository, never()).addSystemEntity(Matchers.<Class<User>> any(), any(User.class));
   }
 
   protected User createUser(String displayName, String userId) {
@@ -104,12 +105,12 @@ public class UserSecurityContextCreatorTest {
     User example = new User();
     example.setPersistentId(USER_ID);
 
-    when(storageManager.findEntity(Matchers.<Class<User>> any(), any(User.class))).thenReturn(null, user);
+    when(repository.findEntity(Matchers.<Class<User>> any(), any(User.class))).thenReturn(null, user);
 
     instance.createSecurityContext(securityInformation);
 
-    verify(storageManager, times(2)).findEntity(Matchers.<Class<User>> any(), any(User.class));
-    verify(storageManager, times(1)).addSystemEntity(Matchers.<Class<User>> any(), any(User.class));
+    verify(repository, times(2)).findEntity(Matchers.<Class<User>> any(), any(User.class));
+    verify(repository, times(1)).addSystemEntity(Matchers.<Class<User>> any(), any(User.class));
   }
 
   @Test

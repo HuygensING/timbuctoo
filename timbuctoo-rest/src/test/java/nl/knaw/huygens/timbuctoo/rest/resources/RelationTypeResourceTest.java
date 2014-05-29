@@ -32,8 +32,8 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.RelationTypeBuilder;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.junit.AfterClass;
@@ -52,7 +52,7 @@ public class RelationTypeResourceTest {
 
   private static TypeRegistry registry;
 
-  private StorageManager storageManager;
+  private Repository repository;
   private RelationTypeResource resource;
 
   @BeforeClass
@@ -67,9 +67,9 @@ public class RelationTypeResourceTest {
 
   @Before
   public void setup() {
-    storageManager = mock(StorageManager.class);
-    when(storageManager.getTypeRegistry()).thenReturn(registry);
-    resource = new RelationTypeResource(registry, storageManager);
+    repository = mock(Repository.class);
+    when(repository.getTypeRegistry()).thenReturn(registry);
+    resource = new RelationTypeResource(registry, repository);
   }
 
   @Test
@@ -79,7 +79,7 @@ public class RelationTypeResourceTest {
     @SuppressWarnings("unchecked")
 	StorageIterator<RelationType> iterator = mock(StorageIterator.class);
     when(iterator.getAll()).thenReturn(types);
-    when(storageManager.getEntities(RelationType.class)).thenReturn(iterator);
+    when(repository.getEntities(RelationType.class)).thenReturn(iterator);
 
     List<RelationType> result = resource.getAvailableRelationTypes(null);
 
@@ -110,7 +110,7 @@ public class RelationTypeResourceTest {
     @SuppressWarnings("unchecked")
 	StorageIterator<RelationType> iterator = mock(StorageIterator.class);
     when(iterator.getAll()).thenReturn(types);
-    when(storageManager.getEntities(RelationType.class)).thenReturn(iterator);
+    when(repository.getEntities(RelationType.class)).thenReturn(iterator);
 
     List<RelationType> result = resource.getAvailableRelationTypes(iname);
 
@@ -121,7 +121,7 @@ public class RelationTypeResourceTest {
 
   private RelationType createRelationType(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) throws ValidationException {
     RelationType entity = RelationTypeBuilder.newInstance().withSourceType(sourceType).withTargetType(targetType).build();
-    entity.validateForAdd(storageManager);
+    entity.validateForAdd(repository);
     return entity;
   }
 

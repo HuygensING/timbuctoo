@@ -27,7 +27,7 @@ import javax.ws.rs.core.SecurityContext;
 import nl.knaw.huygens.security.client.SecurityContextCreator;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
 import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,11 +38,11 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
 
   private static final Logger LOG = LoggerFactory.getLogger(UserSecurityContextCreator.class);
 
-  private final StorageManager storageManager;
+  private final Repository repository;
 
   @Inject
-  public UserSecurityContextCreator(StorageManager storageManager) {
-    this.storageManager = storageManager;
+  public UserSecurityContextCreator(Repository repository) {
+    this.repository = repository;
   }
 
   @Override
@@ -79,7 +79,7 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
     user.setOrganisation(securityInformation.getOrganization());
 
     try {
-      storageManager.addSystemEntity(User.class, user);
+      repository.addSystemEntity(User.class, user);
     } catch (Exception e) {
       LOG.error(e.getMessage());
     }
@@ -91,7 +91,7 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
 
   private User findUser(final User example) {
 
-    return storageManager.findEntity(User.class, example);
+    return repository.findEntity(User.class, example);
   }
 
 }

@@ -25,11 +25,10 @@ package nl.knaw.huygens.timbuctoo.tools.importer.base;
 import java.io.PrintWriter;
 import java.util.Set;
 
-import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
 
@@ -57,7 +56,7 @@ public class LanguageImporter extends CSVImporter {
   private static final char QUOTE_CHAR = '"';
   private static final int LINES_TO_SKIP = 1;
 
-  private final StorageManager storageManager;
+  private final Repository repository;
   private final Change change;
 
   /** Core languages: 10 West-European, Latin, classic Greek. */
@@ -66,9 +65,9 @@ public class LanguageImporter extends CSVImporter {
   private int totalCount;
   private int coreCount;
 
-  public LanguageImporter(XRepository repository, Change change) {
+  public LanguageImporter(Repository repository, Change change) {
     super(new PrintWriter(System.err), SEPERATOR_CHAR, QUOTE_CHAR, LINES_TO_SKIP);
-    storageManager = repository.getStorageManager();
+    this.repository = repository;
     this.change = change;
   }
 
@@ -110,7 +109,7 @@ public class LanguageImporter extends CSVImporter {
     language.setName(items[6]);
 
     try {
-      storageManager.addDomainEntity(BaseLanguage.class, language, change);
+      repository.addDomainEntity(BaseLanguage.class, language, change);
     } catch (MongoException.DuplicateKey e) {
       displayError("Duplicate key", items);
     } catch (StorageException e) {

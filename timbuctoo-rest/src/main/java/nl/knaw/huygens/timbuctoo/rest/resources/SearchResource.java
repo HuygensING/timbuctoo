@@ -58,8 +58,8 @@ import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
@@ -83,7 +83,7 @@ public class SearchResource extends ResourceBase {
   @Inject
   private TypeRegistry registry;
   @Inject
-  private StorageManager storageManager;
+  private Repository repository;
   @Inject
   private SearchManager searchManager;
   @Inject
@@ -185,7 +185,7 @@ public class SearchResource extends ResourceBase {
     // Retrieve entities one-by-one to retain ordering
     List<DomainEntity> entities = Lists.newArrayList();
     for (String id : ids) {
-      DomainEntity entity = storageManager.getEntity(type, id);
+      DomainEntity entity = repository.getEntity(type, id);
       if (entity != null) {
         entities.add(entity);
       } else {
@@ -208,11 +208,11 @@ public class SearchResource extends ResourceBase {
   }
 
   private SearchResult getSearchResult(String id) {
-    return storageManager.getEntity(SearchResult.class, id);
+    return repository.getEntity(SearchResult.class, id);
   }
 
   private String putSearchResult(SearchResult result) throws StorageException, ValidationException {
-    return storageManager.addSystemEntity(SearchResult.class, result);
+    return repository.addSystemEntity(SearchResult.class, result);
   }
 
   // ---------------------------------------------------------------------------
@@ -249,7 +249,7 @@ public class SearchResource extends ResourceBase {
     List<String> relationTypeIds = params.getRelationTypeIds();
     checkNotNull(relationTypeIds, BAD_REQUEST, "No 'relationTypeIds' specified");
     for (String id : relationTypeIds) {
-      checkNotNull(storageManager.getRelationType(id), BAD_REQUEST, "No RelationType with id %s", id);
+      checkNotNull(repository.getRelationType(id), BAD_REQUEST, "No RelationType with id %s", id);
     }
 
     // Process
@@ -260,7 +260,7 @@ public class SearchResource extends ResourceBase {
       result.setSourceIds(sourceIds);
       result.setTargetIds(targetIds);
       result.setRelationTypeIds(relationTypeIds);
-      result.setIds(storageManager.findRelations(relationType, sourceIds, targetIds, relationTypeIds));
+      result.setIds(repository.findRelations(relationType, sourceIds, targetIds, relationTypeIds));
       String queryId = putSearchResult(result);
       return Response.created(new URI(queryId)).build();
     } catch (Exception e) {

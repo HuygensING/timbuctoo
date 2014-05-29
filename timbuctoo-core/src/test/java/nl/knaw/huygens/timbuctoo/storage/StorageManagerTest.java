@@ -51,107 +51,107 @@ public class StorageManagerTest {
 
   private TypeRegistry registry;
   private Storage storage;
-  private StorageManager manager;
+  private Repository repository;
   private Change change;
 
   @Before
   public void setup() {
     registry = mock(TypeRegistry.class);
     storage = mock(Storage.class);
-    manager = new StorageManager(registry, storage);
+    repository = new Repository(registry, storage);
     change = new Change("userId", "vreId");
   }
 
   @Test
   public void testEntityExists() throws Exception {
-    manager.entityExists(BaseDomainEntity.class, "id");
+    repository.entityExists(BaseDomainEntity.class, "id");
     verify(storage).entityExists(BaseDomainEntity.class, "id");
   }
 
   @Test
   public void testGetEntity() throws Exception {
-    manager.getEntity(BaseDomainEntity.class, "id");
+    repository.getEntity(BaseDomainEntity.class, "id");
     verify(storage).getItem(BaseDomainEntity.class, "id");
   }
 
   @Test
   public void testFindEntityByProperty() throws Exception {
-    manager.findEntity(TestSystemEntity.class, "field", "value");
+    repository.findEntity(TestSystemEntity.class, "field", "value");
     verify(storage).findItemByProperty(TestSystemEntity.class, "field", "value");
   }
 
   @Test
   public void testFindEntity() throws Exception {
     TestSystemEntity entity = new TestSystemEntity();
-    manager.findEntity(TestSystemEntity.class, entity);
+    repository.findEntity(TestSystemEntity.class, entity);
     verify(storage).findItem(TestSystemEntity.class, entity);
   }
 
   @Test
   public void testGetAllVariations() throws Exception {
-    manager.getAllVariations(BaseDomainEntity.class, "id");
+    repository.getAllVariations(BaseDomainEntity.class, "id");
     verify(storage).getAllVariations(BaseDomainEntity.class, "id");
   }
 
   @Test
   public void testGetEntities() throws Exception {
-    manager.getEntities(BaseDomainEntity.class);
+    repository.getEntities(BaseDomainEntity.class);
     verify(storage).getEntities(BaseDomainEntity.class);
   }
 
   @Test
   public void testGetVersions() throws Exception {
-    manager.getVersions(BaseDomainEntity.class, "id");
+    repository.getVersions(BaseDomainEntity.class, "id");
     verify(storage).getAllRevisions(BaseDomainEntity.class, "id");
   }
 
   @Test
   public void testAddSystemEntity() throws Exception {
     TestSystemEntity entity = mock(TestSystemEntity.class);
-    manager.addSystemEntity(TestSystemEntity.class, entity);
-    verify(entity).validateForAdd(manager);
+    repository.addSystemEntity(TestSystemEntity.class, entity);
+    verify(entity).validateForAdd(repository);
     verify(storage).addSystemEntity(TestSystemEntity.class, entity);
   }
 
   @Test(expected = ValidationException.class)
   public void testAddPrimitiveDomainEntity() throws Exception {
     BaseDomainEntity entity = new BaseDomainEntity();
-    manager.addDomainEntity(BaseDomainEntity.class, entity, change);
+    repository.addDomainEntity(BaseDomainEntity.class, entity, change);
   }
 
   @Test
   public void testAddDerivedDomainEntity() throws Exception {
     ProjectADomainEntity entity = mock(ProjectADomainEntity.class);
-    manager.addDomainEntity(ProjectADomainEntity.class, entity, change);
-    verify(entity).validateForAdd(manager);
+    repository.addDomainEntity(ProjectADomainEntity.class, entity, change);
+    verify(entity).validateForAdd(repository);
     verify(storage).addDomainEntity(ProjectADomainEntity.class, entity, change);
   }
 
   @Test(expected = ValidationException.class)
   public void testAddInvalidDerivedDomainEntity() throws Exception {
     ProjectADomainEntity entity = mock(ProjectADomainEntity.class);
-    doThrow(ValidationException.class).when(entity).validateForAdd(manager);
-    manager.addDomainEntity(ProjectADomainEntity.class, entity, change);
+    doThrow(ValidationException.class).when(entity).validateForAdd(repository);
+    repository.addDomainEntity(ProjectADomainEntity.class, entity, change);
   }
 
   @Test
   public void testUpdatePrimitiveDomainEntity() throws Exception {
     BaseDomainEntity entity = new BaseDomainEntity("id");
-    manager.updateDomainEntity(BaseDomainEntity.class, entity, change);
+    repository.updateDomainEntity(BaseDomainEntity.class, entity, change);
     verify(storage).updateDomainEntity(BaseDomainEntity.class, entity, change);
   }
 
   @Test
   public void testUpdateProjectDomainEntity() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity("id");
-    manager.updateDomainEntity(ProjectADomainEntity.class, entity, change);
+    repository.updateDomainEntity(ProjectADomainEntity.class, entity, change);
     verify(storage).updateDomainEntity(ProjectADomainEntity.class, entity, change);
   }
 
   @Test
   public void testDeleteSystemEntity() throws Exception {
     TestSystemEntity entity = new TestSystemEntity("id");
-    manager.deleteSystemEntity(entity);
+    repository.deleteSystemEntity(entity);
     verify(storage).deleteSystemEntity(TestSystemEntity.class, "id");
   }
 
@@ -159,39 +159,39 @@ public class StorageManagerTest {
   public void testDeleteDomainEntity() throws Exception {
     BaseDomainEntity entity = new BaseDomainEntity("id");
     entity.setModified(change);
-    manager.deleteDomainEntity(entity);
+    repository.deleteDomainEntity(entity);
     verify(storage).deleteDomainEntity(BaseDomainEntity.class, "id", change);
   }
 
   @Test
   public void testDeleteAllSearchResults() throws Exception {
-    manager.deleteAllSearchResults();
+    repository.deleteAllSearchResults();
     verify(storage).deleteSystemEntities(SearchResult.class);
   }
 
   @Test
   public void testDeleteSearchResultsBefore() throws Exception {
     Date date = new Date();
-    manager.deleteSearchResultsBefore(date);
+    repository.deleteSearchResultsBefore(date);
     verify(storage).deleteByDate(SearchResult.class, "date", date);
   }
 
   @Test
   public void testSetPID() throws Exception {
-    manager.setPID(BaseDomainEntity.class, "id", "pid");
+    repository.setPID(BaseDomainEntity.class, "id", "pid");
     verify(storage).setPID(BaseDomainEntity.class, "id", "pid");
   }
 
   @Test
   public void testDeleteNonPersistent() throws Exception {
     ArrayList<String> ids = Lists.newArrayList("id1", "id2", "id3");
-    manager.deleteNonPersistent(BaseDomainEntity.class, ids);
+    repository.deleteNonPersistent(BaseDomainEntity.class, ids);
     verify(storage).deleteNonPersistent(BaseDomainEntity.class, ids);
   }
 
   @Test
   public void testGetAllIdsWithoutPID() throws Exception {
-    manager.getAllIdsWithoutPID(BaseDomainEntity.class);
+    repository.getAllIdsWithoutPID(BaseDomainEntity.class);
     verify(storage).getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
   }
 
@@ -211,7 +211,7 @@ public class StorageManagerTest {
 
     int offset = 3;
     int limit = 7;
-    manager.getAllLimited(BaseDomainEntity.class, offset, limit);
+    repository.getAllLimited(BaseDomainEntity.class, offset, limit);
 
     verify(storage).getEntities(BaseDomainEntity.class);
     verify(iterator).skip(offset);
@@ -222,7 +222,7 @@ public class StorageManagerTest {
   public void testGetRelationTypeWhenExceptionOccurs() throws Exception {
     String id = "id";
     when(storage.getItem(RelationType.class, id)).thenThrow(new StorageException());
-    assertNull(manager.getRelationType(id));
+    assertNull(repository.getRelationType(id));
     verify(storage, times(1)).getItem(RelationType.class, id);
   }
 
@@ -230,7 +230,7 @@ public class StorageManagerTest {
   public void testGetRelationTypeWhenItemIsUnknown() throws Exception {
     String id = "id";
     when(storage.getItem(RelationType.class, id)).thenReturn(null);
-    assertNull(manager.getRelationType(id));
+    assertNull(repository.getRelationType(id));
     verify(storage, times(1)).getItem(RelationType.class, id);
   }
 
@@ -239,7 +239,7 @@ public class StorageManagerTest {
     String id = "id";
     RelationType type = new RelationType();
     when(storage.getItem(RelationType.class, id)).thenReturn(type);
-    assertEquals(type, manager.getRelationType(id));
+    assertEquals(type, repository.getRelationType(id));
     verify(storage, times(1)).getItem(RelationType.class, id);
   }
 
@@ -248,8 +248,8 @@ public class StorageManagerTest {
     String id = "id";
     RelationType type = new RelationType();
     when(storage.getItem(RelationType.class, id)).thenReturn(type);
-    manager.getRelationType(id);
-    assertEquals(type, manager.getRelationType(id));
+    repository.getRelationType(id);
+    assertEquals(type, repository.getRelationType(id));
     verify(storage, times(1)).getItem(RelationType.class, id);
   }
 

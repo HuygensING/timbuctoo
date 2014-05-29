@@ -24,7 +24,7 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -117,9 +117,9 @@ public class RelationType extends SystemEntity {
   }
 
   @Override
-  public void validateForAdd(StorageManager storage) throws ValidationException {
-    super.validateForAdd(storage);
-    TypeRegistry registry = storage.getTypeRegistry();
+  public void validateForAdd(Repository repository) throws ValidationException {
+    super.validateForAdd(repository);
+    TypeRegistry registry = repository.getTypeRegistry();
     if (!registry.mapsToPrimitiveDomainEntity(sourceTypeName)) {
       throw new ValidationException("Not a primitive domain entity:" + sourceTypeName);
     }

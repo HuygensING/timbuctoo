@@ -34,8 +34,8 @@ import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +50,7 @@ public class PersistenceServiceTest {
 
   private PersistenceService instance;
   private PersistenceWrapper persistenceWrapper;
-  private StorageManager storageManager;
+  private Repository repository;
 
   @Before
   public void setUp() throws Exception {
@@ -60,36 +60,36 @@ public class PersistenceServiceTest {
     when(persistenceWrapper.persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION)).thenReturn(DEFAULT_PID);
     when(persistenceWrapper.getPersistentURL(anyString())).thenReturn(DEFAULT_PID_URL);
 
-    storageManager = mock(StorageManager.class);
+    repository = mock(Repository.class);
 
     ProjectADomainEntity entity = new ProjectADomainEntity();
     entity.setId(DEFAULT_ID);
     entity.setRev(DEFAULT_REVISION);
 
-    when(storageManager.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
 
-    instance = new PersistenceService(broker, persistenceWrapper, storageManager);
+    instance = new PersistenceService(broker, persistenceWrapper, repository);
   }
 
   @Test
   public void testExecuteActionADD() throws Exception {
     testExecute(ActionType.ADD);
 
-    verify(storageManager).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository).getEntity(DEFAULT_TYPE, DEFAULT_ID);
     verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION);
     verify(persistenceWrapper).getPersistentURL(DEFAULT_PID);
-    verify(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
+    verify(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
   }
 
   @Test
   public void testExecuteActionADDAlreadyHasAPID() throws Exception {
-    doThrow(IllegalStateException.class).when(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
+    doThrow(IllegalStateException.class).when(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
     testExecute(ActionType.ADD);
 
-    verify(storageManager).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository).getEntity(DEFAULT_TYPE, DEFAULT_ID);
     verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION);
     verify(persistenceWrapper).getPersistentURL(DEFAULT_PID);
-    verify(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
+    verify(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
     verify(persistenceWrapper).deletePersistentId(DEFAULT_PID);
   }
 
@@ -99,19 +99,19 @@ public class PersistenceServiceTest {
 
     testExecute(ActionType.ADD);
 
-    verify(storageManager, only()).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository, only()).getEntity(DEFAULT_TYPE, DEFAULT_ID);
     verify(persistenceWrapper, only()).persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION);
   }
 
   @Test
   public void testExecuteActionADDSettingPIDWentWrong() throws Exception {
-    doThrow(StorageException.class).when(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
+    doThrow(StorageException.class).when(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
     testExecute(ActionType.ADD);
 
-    verify(storageManager).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository).getEntity(DEFAULT_TYPE, DEFAULT_ID);
     verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION);
     verify(persistenceWrapper).getPersistentURL(DEFAULT_PID);
-    verify(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
+    verify(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
     verify(persistenceWrapper).deletePersistentId(DEFAULT_PID);
   }
 
@@ -119,20 +119,20 @@ public class PersistenceServiceTest {
   public void testExecuteActionMOD() throws Exception {
     testExecute(ActionType.MOD);
 
-    verify(storageManager).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository).getEntity(DEFAULT_TYPE, DEFAULT_ID);
     verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION);
     verify(persistenceWrapper).getPersistentURL(DEFAULT_PID);
-    verify(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
+    verify(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
   }
 
   @Test
   public void testExecuteActionMODAlreadyHasAPID() throws Exception {
-    doThrow(IllegalStateException.class).when(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
+    doThrow(IllegalStateException.class).when(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
     testExecute(ActionType.MOD);
 
-    verify(storageManager).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository).getEntity(DEFAULT_TYPE, DEFAULT_ID);
     verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION);
-    verify(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
+    verify(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
     verify(persistenceWrapper).deletePersistentId(DEFAULT_PID);
   }
 
@@ -142,18 +142,18 @@ public class PersistenceServiceTest {
 
     testExecute(ActionType.MOD);
 
-    verify(storageManager, only()).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository, only()).getEntity(DEFAULT_TYPE, DEFAULT_ID);
     verify(persistenceWrapper, only()).persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION);
   }
 
   @Test
   public void testExecuteActionMODSettingPIDWentWrong() throws Exception {
-    doThrow(StorageException.class).when(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
+    doThrow(StorageException.class).when(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
     testExecute(ActionType.MOD);
 
-    verify(storageManager).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository).getEntity(DEFAULT_TYPE, DEFAULT_ID);
     verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION);
-    verify(storageManager).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
+    verify(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
     verify(persistenceWrapper).deletePersistentId(DEFAULT_PID);
   }
 
@@ -161,14 +161,14 @@ public class PersistenceServiceTest {
   public void testExecuteActionDEL() throws Exception {
     testExecute(ActionType.DEL);
 
-    verifyZeroInteractions(storageManager, persistenceWrapper);
+    verifyZeroInteractions(repository, persistenceWrapper);
   }
 
   @Test
   public void testExecuteActionDefault() throws Exception {
     testExecute(ActionType.END);
 
-    verifyZeroInteractions(storageManager, persistenceWrapper);
+    verifyZeroInteractions(repository, persistenceWrapper);
   }
 
   private void testExecute(ActionType actionType) throws Exception {

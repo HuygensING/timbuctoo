@@ -34,8 +34,8 @@ import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPerson;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.tools.importer.GenericImporter;
 import nl.knaw.huygens.timbuctoo.tools.other.MongoAdmin;
 
@@ -59,17 +59,17 @@ public class BulkImporter {
     MongoAdmin admin = new MongoAdmin(config);
     admin.dropDatabase();
 
-    StorageManager storageManager = null;
+    Repository repository = null;
     IndexManager indexManager = null;
 
     try {
 
-      storageManager = injector.getInstance(StorageManager.class);
+      repository = injector.getInstance(Repository.class);
 
       indexManager = injector.getInstance(IndexManager.class);
       indexManager.deleteAllEntities();
 
-      GenericImporter importer = new GenericImporter(storageManager);
+      GenericImporter importer = new GenericImporter(repository);
 
       long start = System.currentTimeMillis();
 
@@ -102,8 +102,8 @@ public class BulkImporter {
       System.out.println("-------------------------");
       System.out.println();
 
-      indexEntities(storageManager, indexManager, DWCPlace.class);
-      indexEntities(storageManager, indexManager, DWCPerson.class);
+      indexEntities(repository, indexManager, DWCPlace.class);
+      indexEntities(repository, indexManager, DWCPerson.class);
       //indexEntities(storageManager, indexManager, RAACivilServant.class);
 
       long time = (System.currentTimeMillis() - start) / 1000;
@@ -114,13 +114,13 @@ public class BulkImporter {
       if (indexManager != null) {
         indexManager.close();
       }
-      if (storageManager != null) {
-        storageManager.close();
+      if (repository != null) {
+        repository.close();
       }
     }
   }
 
-  private static <T extends DomainEntity> void indexEntities(StorageManager storageManager, IndexManager indexManager, Class<T> type) throws IndexException {
+  private static <T extends DomainEntity> void indexEntities(Repository storageManager, IndexManager indexManager, Class<T> type) throws IndexException {
     System.out.println(".. " + type.getSimpleName());
     StorageIterator<T> iterator = null;
     try {

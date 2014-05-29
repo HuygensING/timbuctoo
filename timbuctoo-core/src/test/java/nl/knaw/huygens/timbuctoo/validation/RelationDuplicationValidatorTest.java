@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,30 +38,30 @@ import org.junit.Test;
 
 public class RelationDuplicationValidatorTest {
 
-  private StorageManager storage;
+  private Repository repository;
   private RelationDuplicationValidator validator;
   private Relation relation;
 
   @Before
   public void setup() {
-    storage = mock(StorageManager.class);
-    validator = new RelationDuplicationValidator(storage);
+    repository = mock(Repository.class);
+    validator = new RelationDuplicationValidator(repository);
     relation = newInstance(Relation.class).withSourceId("id1").withTargetId("id2").withRelationTypeId("id3").build();
   }
 
   @Test
   public void testValidateNewValidItem() throws Exception {
-    when(storage.findRelation(Relation.class, relation)).thenReturn(null);
+    when(repository.findRelation(Relation.class, relation)).thenReturn(null);
 
     validator.validate(relation);
 
-    verify(storage).findRelation(Relation.class, relation);
+    verify(repository).findRelation(Relation.class, relation);
   }
 
   @Test(expected = DuplicateException.class)
   public void testValidateItemExists() throws Exception {
     Relation stored = newInstance(Relation.class).withId("storedId").build();
-    when(storage.findRelation(Relation.class, relation)).thenReturn(stored);
+    when(repository.findRelation(Relation.class, relation)).thenReturn(stored);
 
     try {
       validator.validate(relation);
@@ -69,7 +69,7 @@ public class RelationDuplicationValidatorTest {
       Assert.assertEquals("storedId", e.getDuplicateId());
       throw e;
     } finally {
-      verify(storage).findRelation(Relation.class, relation);
+      verify(repository).findRelation(Relation.class, relation);
     }
   }
 

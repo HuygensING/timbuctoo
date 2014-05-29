@@ -38,7 +38,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.annotations.VisibleForTesting;
@@ -55,12 +55,12 @@ public class RelationTypeResource extends ResourceBase {
   private static final String ID_PATH = "/{id: " + RelationType.ID_PREFIX + "\\d+}";
 
   private final TypeRegistry registry;
-  private final StorageManager storageManager;
+  private final Repository repository;
 
   @Inject
-  public RelationTypeResource(TypeRegistry registry, StorageManager storageManager) {
+  public RelationTypeResource(TypeRegistry registry, Repository repository) {
     this.registry = registry;
-    this.storageManager = storageManager;
+    this.repository = repository;
   }
 
   @GET
@@ -75,7 +75,7 @@ public class RelationTypeResource extends ResourceBase {
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @JsonView(JsonViews.WebView.class)
   public RelationType getRelationType(@PathParam(ID_PARAM) String id) {
-    RelationType entity = storageManager.getEntity(RelationType.class, id);
+    RelationType entity = repository.getEntity(RelationType.class, id);
     checkNotNull(entity, Status.NOT_FOUND, "No RelationType with id %s", id);
     return entity;
   }
@@ -93,7 +93,7 @@ public class RelationTypeResource extends ResourceBase {
       public boolean apply(RelationType entity) {
         return name == null || entity.hasSourceTypeName(name) || entity.hasTargetTypeName(name);
       }};
-    List<RelationType> entities = storageManager.getEntities(RelationType.class).getAll();
+    List<RelationType> entities = repository.getEntities(RelationType.class).getAll();
     return Lists.newArrayList(Iterables.filter(entities, predicate));
   }
 

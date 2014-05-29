@@ -142,7 +142,7 @@ public class WomenWritersImporter extends DefaultImporter {
     System.out.println(".. Keywords");
     System.out.printf("Number = %6d%n%n", importKeywords());
 
-    keywords = new KeywordConcordance(repository, change);
+    keywords = new KeywordConcordance(storageManager, change);
     keywords.handleFile(new File(inputDir, "neww-keywords.txt"), 0, false);
 
     System.out.println(".. Languages");

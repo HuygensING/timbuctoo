@@ -44,7 +44,7 @@ import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 
 import org.apache.commons.lang.StringUtils;
@@ -57,14 +57,12 @@ import com.google.common.collect.Maps;
  */
 public abstract class DefaultImporter {
 
-  protected final XRepository repository;
-  protected final StorageManager storageManager;
+  protected final Repository storageManager;
   protected final IndexManager indexManager;
 
-  public DefaultImporter(XRepository repository) {
-    this.repository = repository;
-    storageManager = repository.getStorageManager();
-    indexManager = repository.getIndexManager();
+  public DefaultImporter(XRepository xrepository) {
+    storageManager = xrepository.getStorageManager();
+    indexManager = xrepository.getIndexManager();
   }
 
   // --- Error handling --------------------------------------------------------

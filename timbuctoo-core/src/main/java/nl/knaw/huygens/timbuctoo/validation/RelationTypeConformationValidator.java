@@ -24,7 +24,7 @@ package nl.knaw.huygens.timbuctoo.validation;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 /**
@@ -32,17 +32,17 @@ import nl.knaw.huygens.timbuctoo.storage.ValidationException;
  */
 class RelationTypeConformationValidator implements Validator<Relation> {
 
-  private final StorageManager storage;
+  private final Repository repository;
 
-  public RelationTypeConformationValidator(StorageManager storage) {
-    this.storage = storage;
+  public RelationTypeConformationValidator(Repository repository) {
+    this.repository = repository;
   }
 
   @Override
   public void validate(Relation entity) throws ValidationException {
     String relationTypeId = entity.getTypeId();
 
-    RelationType relationType = storage.getRelationType(relationTypeId);
+    RelationType relationType = repository.getRelationType(relationTypeId);
     if (relationType == null) {
       throw new ValidationException("No RelationType with id " + relationTypeId);
     }

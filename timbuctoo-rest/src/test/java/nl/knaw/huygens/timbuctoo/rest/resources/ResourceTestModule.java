@@ -39,7 +39,7 @@ import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
@@ -63,7 +63,7 @@ class ResourceTestModule extends JerseyServletModule {
   //All the classes are instance variables because we need to be able to reset them after each test.
   private Configuration config;
   private TypeRegistry typeRegistry;
-  private StorageManager storageManager;
+  private Repository repository;
   private JacksonJsonProvider jsonProvider;
   private Validator validator;
   private MailSender mailSender;
@@ -79,12 +79,12 @@ class ResourceTestModule extends JerseyServletModule {
   public ResourceTestModule() {
     config = mock(Configuration.class);
     typeRegistry = TypeRegistry.getInstance().init(PACKAGES);
-    storageManager = mock(StorageManager.class);
+    repository = mock(Repository.class);
     jsonProvider = mock(JacksonJsonProvider.class);
     validator = mock(Validator.class);
     mailSender = mock(MailSender.class);
     searchManager = mock(SearchManager.class);
-    securityContextCreator = new UserSecurityContextCreator(storageManager);
+    securityContextCreator = new UserSecurityContextCreator(repository);
     authorizationHandler = mock(AuthorizationHandler.class);
     broker = mock(Broker.class);
     indexProducer = mock(Producer.class);
@@ -98,7 +98,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(config, storageManager, jsonProvider, validator, mailSender, searchManager, authorizationHandler, broker, indexProducer, persistenceProducer, vreManager, indexManager);
+    reset(config, repository, jsonProvider, validator, mailSender, searchManager, authorizationHandler, broker, indexProducer, persistenceProducer, vreManager, indexManager);
   }
 
   @Override
@@ -108,8 +108,8 @@ class ResourceTestModule extends JerseyServletModule {
   }
 
   @Provides
-  public StorageManager providesStorageManager() {
-    return storageManager;
+  public Repository providesStorageManager() {
+    return repository;
   }
 
   @Provides
@@ -211,7 +211,7 @@ class ResourceTestModule extends JerseyServletModule {
   @Singleton
   @Provides
   public VREAuthorizationHandler provideVreAuthorizationHandler() {
-    return new DefaultVREAuthorizationHandler(storageManager, mailSender);
+    return new DefaultVREAuthorizationHandler(repository, mailSender);
   }
 
 }

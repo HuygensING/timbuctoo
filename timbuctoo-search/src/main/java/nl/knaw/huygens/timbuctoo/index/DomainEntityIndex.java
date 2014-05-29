@@ -25,7 +25,7 @@ package nl.knaw.huygens.timbuctoo.index;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -58,27 +58,20 @@ class DomainEntityIndex<T extends DomainEntity> implements EntityIndex<T> {
   /**
    * Creates a new {@code DomainEntityIndex} instance.
    */
-  public static <U extends DomainEntity> DomainEntityIndex<U> newInstance(StorageManager storageManager, LocalSolrServer server, String core) {
-    return new DomainEntityIndex<U>(storageManager, server, core);
+  public static <U extends DomainEntity> DomainEntityIndex<U> newInstance(Repository repository, LocalSolrServer server, String core) {
+    return new DomainEntityIndex<U>(repository, server, core);
   }
 
-  private final StorageManager storageManager;
+  private final Repository repository;
   private final LocalSolrServer solrServer;
   private final String core;
   private final ModelIterator modelIterator;
 
   /**
    * Creates an indexer for a primitive domain entity.
-   * 
-   * @param storageManager
-   *          the storage manager for retrieving data
-   * @param server
-   *          the SolrServer to use for indexing
-   * @param core
-   *          the Solr core
    */
-  private DomainEntityIndex(StorageManager storageManager, LocalSolrServer server, String core) {
-    this.storageManager = storageManager;
+  private DomainEntityIndex(Repository repository, LocalSolrServer server, String core) {
+    this.repository = repository;
     this.solrServer = server;
     this.core = core;
     modelIterator = new ModelIterator();
@@ -90,7 +83,7 @@ class DomainEntityIndex<T extends DomainEntity> implements EntityIndex<T> {
   @Override
   public void add(Class<T> type, String id) throws IndexException {
     try {
-      List<T> variations = storageManager.getAllVariations(type, id);
+      List<T> variations = repository.getAllVariations(type, id);
       if (!variations.isEmpty()) {
         solrServer.add(core, getSolrInputDocument(variations));
       }
@@ -106,7 +99,7 @@ class DomainEntityIndex<T extends DomainEntity> implements EntityIndex<T> {
   @Override
   public void modify(Class<T> type, String id) throws IndexException {
     try {
-      List<T> variations = storageManager.getAllVariations(type, id);
+      List<T> variations = repository.getAllVariations(type, id);
       if (!variations.isEmpty()) {
         solrServer.add(core, getSolrInputDocument(variations));
       }

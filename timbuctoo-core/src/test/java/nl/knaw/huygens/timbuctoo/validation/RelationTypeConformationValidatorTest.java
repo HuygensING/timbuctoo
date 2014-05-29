@@ -30,7 +30,7 @@ import java.io.IOException;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.MockRelationBuilder;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.junit.Before;
@@ -41,7 +41,7 @@ public class RelationTypeConformationValidatorTest {
   private String relationTypeId = "relationTypeId";
   private Relation relationMock;
   private RelationType relationType;
-  private StorageManager storage;
+  private Repository repository;
   private RelationTypeConformationValidator validator;
 
   @Before
@@ -53,13 +53,13 @@ public class RelationTypeConformationValidatorTest {
     relationType = new RelationType();
     relationType.setSourceTypeName("sourceType");
     relationType.setTargetTypeName("targetType");
-    storage = mock(StorageManager.class);
-    validator = new RelationTypeConformationValidator(storage);
+    repository = mock(Repository.class);
+    validator = new RelationTypeConformationValidator(repository);
   }
 
   @Test
   public void testValidate() throws IOException, ValidationException {
-    when(storage.getRelationType(relationTypeId)).thenReturn(relationType);
+    when(repository.getRelationType(relationTypeId)).thenReturn(relationType);
     when(relationMock.getSourceType()).thenReturn("sourceType");
     when(relationMock.getTargetType()).thenReturn("targetType");
 
@@ -68,7 +68,7 @@ public class RelationTypeConformationValidatorTest {
 
   @Test(expected = ValidationException.class)
   public void testValidateRelationTypeDoesNotExist() throws IOException, ValidationException {
-    when(storage.getRelationType(relationTypeId)).thenReturn(null);
+    when(repository.getRelationType(relationTypeId)).thenReturn(null);
     when(relationMock.getSourceType()).thenReturn("targetType");
     when(relationMock.getTargetType()).thenReturn("sourceType");
 

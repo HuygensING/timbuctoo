@@ -79,7 +79,7 @@ public class BaseImporter extends DefaultImporter {
       baseImporter.removeNonPersistentEntities(BaseLocation.class);
 
       baseImporter.printBoxedText("Import languages");
-      new LanguageImporter(repository, change).handleFile(languageFile, 0, false);
+      new LanguageImporter(repository.getStorageManager(), change).handleFile(languageFile, 0, false);
 
       baseImporter.printBoxedText("Import locations");
       new LocationImporter(repository, change).handleFile(locationFile);

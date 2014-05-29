@@ -27,6 +27,7 @@ import java.io.FileFilter;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.XRepository;
+import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
@@ -64,7 +65,7 @@ public class TransformedDataImporter extends DefaultImporter {
 
     for (File jsonFile : jsonFiles) {
       String className = jsonFile.getName().substring(0, jsonFile.getName().indexOf('.'));
-      Class<? extends DomainEntity> type = repository.getTypeRegistry().getDomainEntityType(className);
+      Class<? extends DomainEntity> type = storageManager.getTypeRegistry().getDomainEntityType(className);
 
       if (type != null) {
         removeNonPersistentEntities(type);
@@ -74,7 +75,12 @@ public class TransformedDataImporter extends DefaultImporter {
       }
     }
 
-    repository.close();
+    storageManager.close();
+    try {
+      indexManager.close();
+    } catch (IndexException e) {
+      LOG.error("Error while closing index: {}", e.getMessage());
+    }
   }
 
   protected File[] getJsonFiles(String dataPath) {

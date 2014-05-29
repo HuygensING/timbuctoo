@@ -113,7 +113,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetDocExisting() {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
-    when(storageManager.getEntityWithRelations(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityWithRelations(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(entity);
 
     ProjectADomainEntity actualDoc = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).get(ProjectADomainEntity.class);
     assertNotNull(actualDoc);
@@ -124,41 +124,41 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testGetDocWithRevision() {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     int revision = 1;
-    when(storageManager.getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision)).thenReturn(entity);
+    when(repository.getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision)).thenReturn(entity);
 
     ProjectADomainEntity actualDoc = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).queryParam(REVISION_KEY, "1").get(ProjectADomainEntity.class);
     assertNotNull(actualDoc);
     assertEquals(entity.getId(), actualDoc.getId());
-    verify(storageManager).getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision);
+    verify(repository).getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision);
   }
 
   @Test
   public void testGetDocWithRevisionTwo() {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     int revision = 2;
-    when(storageManager.getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision)).thenReturn(entity);
+    when(repository.getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision)).thenReturn(entity);
 
     ProjectADomainEntity actualDoc = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).queryParam(REVISION_KEY, "2").get(ProjectADomainEntity.class);
     assertNotNull(actualDoc);
     assertEquals(entity.getId(), actualDoc.getId());
-    verify(storageManager).getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision);
+    verify(repository).getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision);
   }
 
   @Test
   public void testGetDocWithRevisionZero() {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     int revision = 0;
-    when(storageManager.getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision)).thenReturn(entity);
+    when(repository.getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision)).thenReturn(entity);
 
     ProjectADomainEntity actualDoc = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).queryParam(REVISION_KEY, "0").get(ProjectADomainEntity.class);
     assertNotNull(actualDoc);
     assertEquals(entity.getId(), actualDoc.getId());
-    verify(storageManager).getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision);
+    verify(repository).getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision);
   }
 
   @Test
   public void testGetDocNonExistingInstance() {
-    when(storageManager.getEntity(ProjectADomainEntity.class, "TST0000000001")).thenReturn(null);
+    when(repository.getEntity(ProjectADomainEntity.class, "TST0000000001")).thenReturn(null);
 
     ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, "TST0000000001").get(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
@@ -176,7 +176,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     expectedList.add(new ProjectADomainEntity("TST0000000001"));
     expectedList.add(new ProjectADomainEntity("TST0000000002"));
     expectedList.add(new ProjectADomainEntity("TST0000000003"));
-    when(storageManager.getAllLimited(ProjectADomainEntity.class, 0, 200)).thenReturn(expectedList);
+    when(repository.getAllLimited(ProjectADomainEntity.class, 0, 200)).thenReturn(expectedList);
 
     GenericType<List<ProjectADomainEntity>> genericType = new GenericType<List<ProjectADomainEntity>>() {};
     List<ProjectADomainEntity> actualList = createResource(PROJECTADOMAINENTITIES_RESOURCE).get(genericType);
@@ -186,7 +186,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetAllDocsNonFound() {
     List<ProjectADomainEntity> expectedList = Lists.newArrayList();
-    when(storageManager.getAllLimited(ProjectADomainEntity.class, 0, 200)).thenReturn(expectedList);
+    when(repository.getAllLimited(ProjectADomainEntity.class, 0, 200)).thenReturn(expectedList);
 
     GenericType<List<ProjectADomainEntity>> genericType = new GenericType<List<ProjectADomainEntity>>() {};
     List<ProjectADomainEntity> actualList = createResource(PROJECTADOMAINENTITIES_RESOURCE).get(genericType);
@@ -213,7 +213,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
 
-    when(storageManager.getEntity(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntity(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
     ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
@@ -233,7 +233,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
 
-    when(storageManager.getEntity(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntity(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
     ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
@@ -251,7 +251,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     makeVREAvailable(vre, VRE_ID);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
-    when(storageManager.getEntity(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntity(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
@@ -420,7 +420,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     makeVREAvailable(vre, VRE_ID);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
-    when(storageManager.addDomainEntity(Matchers.<Class<ProjectADomainEntity>> any(), any(ProjectADomainEntity.class), any(Change.class))).thenReturn(DEFAULT_ID);
+    when(repository.addDomainEntity(Matchers.<Class<ProjectADomainEntity>> any(), any(ProjectADomainEntity.class), any(Change.class))).thenReturn(DEFAULT_ID);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
@@ -441,7 +441,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     makeVREAvailable(vre, VRE_ID);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
-    when(storageManager.addDomainEntity(Matchers.<Class<ProjectADomainEntity>> any(), any(ProjectADomainEntity.class), any(Change.class))).thenReturn(DEFAULT_ID);
+    when(repository.addDomainEntity(Matchers.<Class<ProjectADomainEntity>> any(), any(ProjectADomainEntity.class), any(Change.class))).thenReturn(DEFAULT_ID);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
@@ -508,7 +508,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     BaseDomainEntity entity = new BaseDomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
-    when(storageManager.getEntity(BASE_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntity(BASE_TYPE, DEFAULT_ID)).thenReturn(entity);
 
     ClientResponse response = createResource(BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
@@ -530,7 +530,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
-    verify(storageManager, times(0)).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository, times(0)).getEntity(DEFAULT_TYPE, DEFAULT_ID);
   }
 
   @Test
@@ -538,7 +538,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
     BaseDomainEntity entity = new BaseDomainEntity(DEFAULT_ID);
-    when(storageManager.getEntity(BaseDomainEntity.class, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntity(BaseDomainEntity.class, DEFAULT_ID)).thenReturn(entity);
 
     ClientResponse response = createResource(BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
@@ -553,7 +553,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     VREManager vreManager = injector.getInstance(VREManager.class);
     when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
 
-    when(storageManager.getEntity(BASE_TYPE, DEFAULT_ID)).thenReturn(null);
+    when(repository.getEntity(BASE_TYPE, DEFAULT_ID)).thenReturn(null);
 
     ClientResponse response = createResource(BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
@@ -579,7 +579,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = createResource(BASEADOMAINENTITIES_RESOURCE).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
-    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER), storageManager);
+    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER), repository);
   }
 
   // Security tests
@@ -587,7 +587,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetDocNotLoggedIn() {
     ProjectADomainEntity expectedDoc = new ProjectADomainEntity(DEFAULT_ID);
-    when(storageManager.getEntityWithRelations(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(expectedDoc);
+    when(repository.getEntityWithRelations(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(expectedDoc);
 
     ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
@@ -596,7 +596,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetDocEmptyAuthorizationKey() {
     ProjectADomainEntity expectedDoc = new ProjectADomainEntity(DEFAULT_ID);
-    when(storageManager.getEntityWithRelations(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(expectedDoc);
+    when(repository.getEntityWithRelations(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(expectedDoc);
 
     ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
@@ -686,7 +686,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     String id2 = "ID2";
     String id3 = "ID3";
 
-    when(storageManager.getAllIdsWithoutPID(type)).thenReturn(Lists.newArrayList(id1, id2, id3));
+    when(repository.getAllIdsWithoutPID(type)).thenReturn(Lists.newArrayList(id1, id2, id3));
 
     ClientResponse response = doPutPIDRequest(PROJECTADOMAINENTITIES_RESOURCE);
 
@@ -710,7 +710,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
 
     verifyZeroInteractions(getProducer(INDEX_PRODUCER), getProducer(PERSISTENCE_PRODUCER));
-    verify(storageManager, never()).getAllIdsWithoutPID(Mockito.<Class<? extends DomainEntity>> any());
+    verify(repository, never()).getAllIdsWithoutPID(Mockito.<Class<? extends DomainEntity>> any());
   }
 
   @Test
@@ -726,7 +726,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
 
     verifyZeroInteractions(getProducer(INDEX_PRODUCER), getProducer(PERSISTENCE_PRODUCER));
-    verify(storageManager, never()).getAllIdsWithoutPID(Mockito.<Class<? extends DomainEntity>> any());
+    verify(repository, never()).getAllIdsWithoutPID(Mockito.<Class<? extends DomainEntity>> any());
   }
 
   @Test
@@ -741,7 +741,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     assertEquals(Status.NOT_FOUND, response.getClientResponseStatus());
 
     verifyZeroInteractions(getProducer(INDEX_PRODUCER), getProducer(PERSISTENCE_PRODUCER));
-    verify(storageManager, never()).getAllIdsWithoutPID(Mockito.<Class<? extends DomainEntity>> any());
+    verify(repository, never()).getAllIdsWithoutPID(Mockito.<Class<? extends DomainEntity>> any());
   }
 
   @Test
@@ -756,7 +756,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
 
     verifyZeroInteractions(getProducer(INDEX_PRODUCER), getProducer(PERSISTENCE_PRODUCER));
-    verify(storageManager, never()).getAllIdsWithoutPID(Mockito.<Class<? extends DomainEntity>> any());
+    verify(repository, never()).getAllIdsWithoutPID(Mockito.<Class<? extends DomainEntity>> any());
   }
 
   private ClientResponse doPutPIDRequest(String collectionName) {

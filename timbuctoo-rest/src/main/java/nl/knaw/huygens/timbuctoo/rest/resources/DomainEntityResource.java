@@ -65,8 +65,8 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -94,14 +94,14 @@ public class DomainEntityResource extends ResourceBase {
   private static final String PID_PATH = "/pid";
 
   private final TypeRegistry typeRegistry;
-  private final StorageManager storageManager;
+  private final Repository repository;
   private final Broker broker;
   private final VREManager vreManager;
 
   @Inject
-  public DomainEntityResource(TypeRegistry registry, StorageManager storageManager, Broker broker, VREManager vreManager) {
+  public DomainEntityResource(TypeRegistry registry, Repository repository, Broker broker, VREManager vreManager) {
     this.typeRegistry = registry;
-    this.storageManager = storageManager;
+    this.repository = repository;
     this.broker = broker;
     this.vreManager = vreManager;
   }
@@ -119,9 +119,9 @@ public class DomainEntityResource extends ResourceBase {
   ) {
     Class<? extends DomainEntity> entityType = getValidEntityType(entityName);
     if (Strings.isNullOrEmpty(typeValue)) {
-      return storageManager.getAllLimited(entityType, start, rows);
+      return repository.getAllLimited(entityType, start, rows);
     } else {
-      return storageManager.getEntitiesByProperty(entityType, "type", typeValue);
+      return repository.getEntitiesByProperty(entityType, "type", typeValue);
     }
   }
 
@@ -148,7 +148,7 @@ public class DomainEntityResource extends ResourceBase {
 
     String id = null;
     try {
-      id = storageManager.addDomainEntity((Class<T>) type, (T) input, change);
+      id = repository.addDomainEntity((Class<T>) type, (T) input, change);
     } catch (DuplicateException e) {
       // TODO find a better solution
       LOG.info("Duplicate entity {} with id {}", entityName, e.getDuplicateId());
@@ -163,7 +163,7 @@ public class DomainEntityResource extends ResourceBase {
 
   private String updateTheDuplicateEntity(String entityName, DomainEntity input, String vreId, String userId, String id) throws StorageException {
     Class<? extends DomainEntity> entityType = getValidEntityType(entityName);
-    DomainEntity duplicatEnity = storageManager.getEntity(entityType, id);
+    DomainEntity duplicatEnity = repository.getEntity(entityType, id);
 
     input.setRev(duplicatEnity.getRev());
     input.setId(id);
@@ -184,11 +184,11 @@ public class DomainEntityResource extends ResourceBase {
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
 
     if (revision == null) {
-      DomainEntity entity = storageManager.getEntityWithRelations(type, id);
+      DomainEntity entity = repository.getEntityWithRelations(type, id);
       checkNotNull(entity, NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
       return entity;
     } else {
-      DomainEntity entity = storageManager.getRevisionWithRelations(type, id, revision);
+      DomainEntity entity = repository.getRevisionWithRelations(type, id, revision);
       checkNotNull(entity, NOT_FOUND, "No %s with id %s and revision %s", type.getSimpleName(), id, revision);
       return entity;
     }
@@ -211,7 +211,7 @@ public class DomainEntityResource extends ResourceBase {
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
     checkCondition(type == input.getClass(), BAD_REQUEST, "Type %s does not match input", type.getSimpleName());
 
-    DomainEntity entity = storageManager.getEntity(type, id);
+    DomainEntity entity = repository.getEntity(type, id);
     checkNotNull(entity, NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
     checkNotNull(entity.getPid(), FORBIDDEN, "%s with id %s is read-only (no PID)", type.getSimpleName(), id);
 
@@ -220,7 +220,7 @@ public class DomainEntityResource extends ResourceBase {
 
     try {
       Change change = new Change(userId, vreId);
-      storageManager.updateDomainEntity((Class<T>) type, (T) input, change);
+      repository.updateDomainEntity((Class<T>) type, (T) input, change);
       notifyChange(ActionType.MOD, type, id);
     } catch (UpdateException e) {
       throw new TimbuctooException(Status.CONFLICT, "Entity %s with id %s already updated", type.getSimpleName(), id);
@@ -249,7 +249,7 @@ public class DomainEntityResource extends ResourceBase {
     checkCondition(vre.inScope(base), FORBIDDEN, "Type %s not in scope %s", base, vreId);
 
     try {
-      for (String id : storageManager.getAllIdsWithoutPID(type)) {
+      for (String id : repository.getAllIdsWithoutPID(type)) {
         sendPersistMessage(ActionType.MOD, type, id);
       }
     } catch (StorageException e) {
@@ -271,7 +271,7 @@ public class DomainEntityResource extends ResourceBase {
       throw new TimbuctooException(BAD_REQUEST, "Not a primitive domain entity: %s", entityName);
     }
 
-    DomainEntity entity = storageManager.getEntity(type, id);
+    DomainEntity entity = repository.getEntity(type, id);
     checkNotNull(entity, NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
     checkNotNull(entity.getPid(), FORBIDDEN, "%s with id %s is read-only (no PID)", type, id);
 
@@ -279,7 +279,7 @@ public class DomainEntityResource extends ResourceBase {
     checkCondition(vre.inScope(type, id), FORBIDDEN, "%s with id %s not in scope %s", type, id, vreId);
 
     try {
-      storageManager.deleteDomainEntity(entity);
+      repository.deleteDomainEntity(entity);
       notifyChange(ActionType.DEL, type, id);
       return Response.status(Status.NO_CONTENT).build();
     } catch (StorageException e) {

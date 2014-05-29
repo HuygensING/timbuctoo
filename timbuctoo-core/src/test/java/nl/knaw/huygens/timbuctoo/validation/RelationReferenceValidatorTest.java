@@ -30,7 +30,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
+import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.junit.Test;
@@ -45,12 +45,12 @@ public class RelationReferenceValidatorTest {
     doReturn(SourceType.class).when(registry).getDomainEntityType("sourceType");
     doReturn(TargetType.class).when(registry).getDomainEntityType("targetType");
 
-    StorageManager storage = mock(StorageManager.class);
-    when(storage.getTypeRegistry()).thenReturn(registry);
-    when(storage.entityExists(SourceType.class, "sourceId")).thenReturn(sourceExists);
-    when(storage.entityExists(TargetType.class, "targetId")).thenReturn(targetExists);
+    Repository repository = mock(Repository.class);
+    when(repository.getTypeRegistry()).thenReturn(registry);
+    when(repository.entityExists(SourceType.class, "sourceId")).thenReturn(sourceExists);
+    when(repository.entityExists(TargetType.class, "targetId")).thenReturn(targetExists);
 
-    validator = new RelationReferenceValidator(storage);
+    validator = new RelationReferenceValidator(repository);
 
     relation = RelationBuilder.newInstance(Relation.class) //
         .withSourceId("sourceId") //
