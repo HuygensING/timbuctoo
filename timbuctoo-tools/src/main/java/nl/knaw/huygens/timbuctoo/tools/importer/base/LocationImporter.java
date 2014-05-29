@@ -25,7 +25,7 @@ package nl.knaw.huygens.timbuctoo.tools.importer.base;
 import java.io.File;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
@@ -45,7 +45,7 @@ public class LocationImporter extends DefaultImporter {
   private final Change change;
   private final ObjectMapper objectMapper;
 
-  public LocationImporter(Repository repository, Change change) {
+  public LocationImporter(XRepository repository, Change change) {
     super(repository);
     this.change = change;
     objectMapper = new ObjectMapper();

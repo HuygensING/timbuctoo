@@ -37,19 +37,20 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 
 /**
- * Starting point for modeling the repository as such.
+ * "Extended" repository, work in progress.
+ * The index manager will be integrated with VRE's.
  */
-public class Repository {
+public class XRepository {
 
-  private static final Logger LOG = LoggerFactory.getLogger(Repository.class);
+  private static final Logger LOG = LoggerFactory.getLogger(XRepository.class);
 
   private final TypeRegistry typeRegistry;
   private final StorageManager storageManager;
   private final IndexManager indexManager;
 
   @Inject
-  public Repository(TypeRegistry typeRegistry, StorageManager storageManager, IndexManager indexManager) {
-    this.typeRegistry = typeRegistry;
+  public XRepository(StorageManager storageManager, IndexManager indexManager) {
+    this.typeRegistry = storageManager.getTypeRegistry();
     this.storageManager = storageManager;
     this.indexManager = indexManager;
   }

@@ -32,7 +32,7 @@ import nl.knaw.huygens.tei.ElementHandler;
 import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
-import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -71,7 +71,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
   public static void main(String[] args) throws Exception {
     Stopwatch stopWatch = Stopwatch.createStarted();
 
-    Repository repository = null;
+    XRepository repository = null;
     try {
       repository = ToolsInjectionModule.createRepositoryInstance();
       new CobwwwebNoImporter(repository).importAll();
@@ -91,7 +91,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
   /** References of stored primitive entities */
   private final Map<String, Reference> references = Maps.newHashMap();
 
-  public CobwwwebNoImporter(Repository repository) {
+  public CobwwwebNoImporter(XRepository repository) {
     super(repository);
     change = new Change("importer", "cwno");
   }

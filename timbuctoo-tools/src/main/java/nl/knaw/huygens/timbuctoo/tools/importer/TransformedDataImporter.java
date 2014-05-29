@@ -26,7 +26,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
@@ -49,11 +49,11 @@ public class TransformedDataImporter extends DefaultImporter {
   public static void main(String[] args) throws Exception {
     String dataPath = args.length > 0 ? args[0] : "src/main/resources/testdata";
 
-    Repository repository = ToolsInjectionModule.createRepositoryInstance();
+    XRepository repository = ToolsInjectionModule.createRepositoryInstance();
     new TransformedDataImporter(repository).importData(dataPath);
   }
 
-  public TransformedDataImporter(Repository repository) {
+  public TransformedDataImporter(XRepository repository) {
     super(repository);
   }
 

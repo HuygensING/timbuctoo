@@ -26,7 +26,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.apache.commons.configuration.ConfigurationException;
 
-import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
@@ -40,10 +40,10 @@ public class ToolsInjectionModule extends BasicInjectionModule {
   /**
    * Creates a configured repository instance.
    */
-  public static Repository createRepositoryInstance() throws ConfigurationException {
+  public static XRepository createRepositoryInstance() throws ConfigurationException {
     Configuration config = new Configuration("config.xml");
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
-    return injector.getInstance(Repository.class);
+    return injector.getInstance(XRepository.class);
   }
 
   public ToolsInjectionModule(Configuration config) {

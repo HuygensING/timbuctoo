@@ -25,7 +25,7 @@ package nl.knaw.huygens.timbuctoo.tools.importer.ebnm;
 import java.io.File;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMDocumentatie;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMLexicon;
@@ -67,7 +67,7 @@ public class EBNMImporter extends DefaultImporter {
     // Handle commandline arguments
     String importDirName = (args.length > 0) ? args[0] : "../../codl_data/data/";
 
-    Repository repository = null;
+    XRepository repository = null;
     try {
       repository = ToolsInjectionModule.createRepositoryInstance();
       new EBNMImporter(repository, importDirName).importAll();
@@ -97,7 +97,7 @@ public class EBNMImporter extends DefaultImporter {
   private final Map<String, Reference> signalementcodeRefMap = Maps.newHashMap();
   private final Map<String, Reference> watermerkRefMap = Maps.newHashMap();
 
-  public EBNMImporter(Repository repository, String inputDirName) {
+  public EBNMImporter(XRepository repository, String inputDirName) {
     super(repository);
     objectMapper = new ObjectMapper();
     inputDir = new File(inputDirName);

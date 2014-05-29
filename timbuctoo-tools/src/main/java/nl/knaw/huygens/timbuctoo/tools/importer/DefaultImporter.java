@@ -31,7 +31,7 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
@@ -57,11 +57,11 @@ import com.google.common.collect.Maps;
  */
 public abstract class DefaultImporter {
 
-  protected final Repository repository;
+  protected final XRepository repository;
   protected final StorageManager storageManager;
   protected final IndexManager indexManager;
 
-  public DefaultImporter(Repository repository) {
+  public DefaultImporter(XRepository repository) {
     this.repository = repository;
     storageManager = repository.getStorageManager();
     indexManager = repository.getIndexManager();

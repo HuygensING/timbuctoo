@@ -40,7 +40,7 @@ import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.IS_CREATOR_OF;
 import java.io.File;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.model.Archive;
 import nl.knaw.huygens.timbuctoo.model.Archiver;
 import nl.knaw.huygens.timbuctoo.model.Keyword;
@@ -88,7 +88,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
     // Handle commandline arguments
     String importDirName = (args.length > 0) ? args[0] : "../../AtlantischeGids/work/";
 
-    Repository repository = null;
+    XRepository repository = null;
     try {
       repository = ToolsInjectionModule.createRepositoryInstance();
       new DutchCaribbeanImporter(repository, importDirName).importAll();
@@ -130,7 +130,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private Reference hasSiblingArchive;
   private Reference hasSiblingArchiver;
 
-  public DutchCaribbeanImporter(Repository repository, String inputDirName) {
+  public DutchCaribbeanImporter(XRepository repository, String inputDirName) {
     super(repository);
     change = new Change("importer", "dcar");
     objectMapper = new ObjectMapper();
