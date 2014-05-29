@@ -29,6 +29,7 @@ import javax.validation.Validator;
 
 import nl.knaw.huygens.security.client.AuthorizationHandler;
 import nl.knaw.huygens.security.client.SecurityContextCreator;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
@@ -39,7 +40,6 @@ import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;

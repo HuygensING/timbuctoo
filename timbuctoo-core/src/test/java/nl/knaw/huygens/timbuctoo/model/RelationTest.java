@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
-import nl.knaw.huygens.timbuctoo.storage.Repository;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.junit.Test;

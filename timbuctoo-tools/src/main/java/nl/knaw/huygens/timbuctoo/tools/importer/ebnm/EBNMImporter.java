@@ -37,7 +37,6 @@ import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMTekst;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMTekstdrager;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMWatermerk;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 import nl.knaw.huygens.timbuctoo.tools.importer.RelationTypeImporter;
@@ -67,15 +66,15 @@ public class EBNMImporter extends DefaultImporter {
     // Handle commandline arguments
     String importDirName = (args.length > 0) ? args[0] : "../../codl_data/data/";
 
-    XRepository repository = null;
+    XRepository xrepository = null;
     try {
-      repository = ToolsInjectionModule.createRepositoryInstance();
-      new EBNMImporter(repository, importDirName).importAll();
+      xrepository = ToolsInjectionModule.createRepositoryInstance();
+      new EBNMImporter(xrepository, importDirName).importAll();
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
-      if (repository != null) {
-        repository.close();
+      if (xrepository != null) {
+        xrepository.close();
       }
       LOG.info("Time used: {}", stopWatch);
     }
@@ -103,13 +102,13 @@ public class EBNMImporter extends DefaultImporter {
     inputDir = new File(inputDirName);
     System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());
     change = new Change("importer", "ebnm");
-    setup(storageManager);
+    setupRelationTypes();
   }
 
   // File with {@code RelationType} definitions; must be present on classpath.
   private static final String RELATION_TYPE_DEFS = "relationtype-defs-codl.txt";
 
-  private void setup(Repository repository) {
+  private void setupRelationTypes() {
     try {
       new RelationTypeImporter(repository).importRelationTypes(RELATION_TYPE_DEFS);
     } catch (Exception e) {

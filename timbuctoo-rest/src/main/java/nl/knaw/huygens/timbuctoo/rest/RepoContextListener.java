@@ -28,13 +28,13 @@ import java.util.concurrent.Executors;
 import javax.jms.JMSException;
 import javax.servlet.ServletContextEvent;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.index.IndexService;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceService;
 import nl.knaw.huygens.timbuctoo.rest.config.RESTInjectionModule;
 import nl.knaw.huygens.timbuctoo.rest.config.ServletInjectionModule;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.util.TimeUtils;
 
 import org.apache.commons.configuration.ConfigurationException;

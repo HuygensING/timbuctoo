@@ -151,7 +151,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
   private String updateExistingPerson(CWNOPerson entity) {
     String storedId = null;
     if (!Strings.isNullOrEmpty(entity.tempNewwId)) {
-      WWPerson person = storageManager.findEntity(WWPerson.class, "tempOldId", entity.tempNewwId);
+      WWPerson person = repository.findEntity(WWPerson.class, "tempOldId", entity.tempNewwId);
       if (person != null) {
         storedId = person.getId();
         entity.setId(storedId);
@@ -166,7 +166,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
   // Save as CWNOPerson, add WWPerson variation
   private String createNewPerson(CWNOPerson entity) {
     String storedId = addDomainEntity(CWNOPerson.class, entity, change);
-    WWPerson person = storageManager.getEntity(WWPerson.class, storedId);
+    WWPerson person = repository.getEntity(WWPerson.class, storedId);
     updateProjectDomainEntity(WWPerson.class, person, change);
     return storedId;
   }
@@ -350,7 +350,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
   private String updateExistingDocument(CWNODocument entity) {
     String storedId = null;
     if (!Strings.isNullOrEmpty(entity.tempNewwId)) {
-      WWDocument document = storageManager.findEntity(WWDocument.class, "tempOldId", entity.tempNewwId);
+      WWDocument document = repository.findEntity(WWDocument.class, "tempOldId", entity.tempNewwId);
       if (document != null) {
         storedId = document.getId();
         entity.setId(storedId);
@@ -365,7 +365,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
   // Save as CWNODocument, add WWDocument variation
   private String createNewDocument(CWNODocument entity) {
     String storedId = addDomainEntity(CWNODocument.class, entity, change);
-    WWDocument document = storageManager.getEntity(WWDocument.class, storedId);
+    WWDocument document = repository.getEntity(WWDocument.class, storedId);
     updateProjectDomainEntity(WWDocument.class, document, change);
     return storedId;
   }

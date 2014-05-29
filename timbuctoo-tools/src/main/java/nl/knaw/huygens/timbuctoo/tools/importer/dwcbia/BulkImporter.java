@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.tools.importer.dwcbia;
 
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
@@ -34,7 +35,6 @@ import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPerson;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCPlace;
 import nl.knaw.huygens.timbuctoo.model.dwcbia.DWCScientist;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.tools.importer.GenericImporter;
 import nl.knaw.huygens.timbuctoo.tools.other.MongoAdmin;

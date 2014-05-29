@@ -142,7 +142,7 @@ public class WomenWritersImporter extends DefaultImporter {
     System.out.println(".. Keywords");
     System.out.printf("Number = %6d%n%n", importKeywords());
 
-    keywords = new KeywordConcordance(storageManager, change);
+    keywords = new KeywordConcordance(repository, change);
     keywords.handleFile(new File(inputDir, "neww-keywords.txt"), 0, false);
 
     System.out.println(".. Languages");
@@ -808,7 +808,7 @@ public class WomenWritersImporter extends DefaultImporter {
           } else {
             String code = mapName(map, name);
             // Get WWLanguage instance with values of primitive entity Language
-            WWLanguage language = storageManager.getLanguageByCode(WWLanguage.class, code);
+            WWLanguage language = repository.getLanguageByCode(WWLanguage.class, code);
             if (language == null) {
               verifyNonEmptyField(line, "name", null);
             } else {
@@ -1047,7 +1047,7 @@ public class WomenWritersImporter extends DefaultImporter {
       invalids.add(key);
       return;
     }
-    Location location = storageManager.findEntity(Location.class, Location.URN, urn);
+    Location location = repository.findEntity(Location.class, Location.URN, urn);
     if (location == null) {
       handleError("URN not found: %s", urn);
       return;

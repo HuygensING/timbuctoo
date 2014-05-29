@@ -28,9 +28,9 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 
 public class ExampleVREAuthorizationHandler implements VREAuthorizationHandler {
   private static final Logger LOG = LoggerFactory.getLogger(ExampleVREAuthorizationHandler.class);

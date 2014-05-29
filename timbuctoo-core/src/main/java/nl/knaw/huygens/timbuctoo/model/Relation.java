@@ -22,8 +22,8 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.validation.RelationValidator;
 

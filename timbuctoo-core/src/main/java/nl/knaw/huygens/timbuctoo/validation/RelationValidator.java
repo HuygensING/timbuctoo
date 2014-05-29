@@ -22,8 +22,8 @@ package nl.knaw.huygens.timbuctoo.validation;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 public class RelationValidator implements Validator<Relation> {

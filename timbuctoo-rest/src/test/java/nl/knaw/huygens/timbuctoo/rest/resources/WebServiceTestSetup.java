@@ -32,12 +32,12 @@ import nl.knaw.huygens.security.client.AuthorizationHandler;
 import nl.knaw.huygens.security.client.UnauthorizedException;
 import nl.knaw.huygens.security.client.filters.SecurityResourceFilterFactory;
 import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.rest.config.ServletInjectionModelHelper;
 import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
 import nl.knaw.huygens.timbuctoo.rest.filters.VREAuthorizationFilterFactory;
-import nl.knaw.huygens.timbuctoo.storage.Repository;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
