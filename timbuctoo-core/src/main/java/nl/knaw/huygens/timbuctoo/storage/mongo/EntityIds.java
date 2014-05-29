@@ -34,7 +34,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
+import com.mongodb.DBCollection;
 
 /**
  * A collection with id's for stored entities.
@@ -50,9 +50,10 @@ public class EntityIds {
   // A cache to avoid repeated inspection of entity classes
   private final LoadingCache<Class<? extends Entity>, String> counterIdCache;
 
-  public EntityIds(DB db, TypeRegistry registry) {
+  public EntityIds(MongoDB mongoDB, TypeRegistry registry) {
     typeRegistry = registry;
-    counters = JacksonDBCollection.wrap(db.getCollection(ID_COLLECTION_NAME), Counter.class, String.class);
+    DBCollection collection = mongoDB.getCollection(ID_COLLECTION_NAME);
+    counters = JacksonDBCollection.wrap(collection, Counter.class, String.class);
     counterIdCache = CacheBuilder.newBuilder().build(new CacheLoader<Class<? extends Entity>, String>() {
       @Override
       public String load(Class<? extends Entity> type) {

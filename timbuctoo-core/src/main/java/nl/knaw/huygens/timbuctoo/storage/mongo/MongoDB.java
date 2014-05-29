@@ -22,12 +22,16 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
+import java.net.UnknownHostException;
+
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -35,6 +39,8 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
+import com.mongodb.MongoOptions;
+import com.mongodb.ServerAddress;
 import com.mongodb.WriteResult;
 
 /**
@@ -46,6 +52,25 @@ public class MongoDB {
 
   private final Mongo mongo;
   private final DB db;
+
+  @Inject
+  public MongoDB(Configuration config) throws UnknownHostException {
+    MongoOptions options = new MongoOptions();
+    options.safe = true;
+
+    String host = config.getSetting("database.host", "localhost");
+    int port = config.getIntSetting("database.port", 27017);
+    mongo = new Mongo(new ServerAddress(host, port), options);
+
+    String dbName = config.getSetting("database.name");
+    db = mongo.getDB(dbName);
+
+    String user = config.getSetting("database.user");
+    if (!user.isEmpty()) {
+    String password = config.getSetting("database.password");
+    db.authenticate(user, password.toCharArray());
+    }
+  }
 
   public MongoDB(Mongo mongo, DB db) {
     this.mongo = mongo;
