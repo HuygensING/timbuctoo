@@ -14,13 +14,13 @@ import nl.knaw.huygens.tei.ElementHandler;
 import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
-import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
 
 public class CobwwwebImporter extends DefaultImporter {
 
-  public CobwwwebImporter(Repository repository) {
+  public CobwwwebImporter(XRepository repository) {
     super(repository);
   }
 

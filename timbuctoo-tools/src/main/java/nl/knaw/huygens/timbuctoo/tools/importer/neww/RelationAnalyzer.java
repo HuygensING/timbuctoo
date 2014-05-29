@@ -22,7 +22,7 @@ package nl.knaw.huygens.timbuctoo.tools.importer.neww;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -34,7 +34,7 @@ import nl.knaw.huygens.timbuctoo.util.Tokens;
 public class RelationAnalyzer {
 
   public static void main(String[] args) throws Exception {
-    final Repository repository = ToolsInjectionModule.createRepositoryInstance();
+    final XRepository repository = ToolsInjectionModule.createRepositoryInstance();
     try {
       Tokens tokens = new Tokens();
       StorageIterator<Relation> iterator = repository.getStorageManager().getEntities(Relation.class);

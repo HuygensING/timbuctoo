@@ -24,7 +24,7 @@ package nl.knaw.huygens.timbuctoo.tools.importer.base;
 
 import java.io.File;
 
-import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -69,7 +69,7 @@ public class BaseImporter extends DefaultImporter {
 
     Change change = new Change(USER_ID, VRE_ID);
 
-    Repository repository = null;
+    XRepository repository = null;
     try {
       repository = ToolsInjectionModule.createRepositoryInstance();
 
@@ -98,7 +98,7 @@ public class BaseImporter extends DefaultImporter {
     }
   }
 
-  public BaseImporter(Repository repository) {
+  public BaseImporter(XRepository repository) {
     super(repository);
   }
 

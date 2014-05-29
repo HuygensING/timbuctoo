@@ -35,7 +35,7 @@ import nl.knaw.huygens.tei.ElementHandler;
 import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
-import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document;
@@ -96,7 +96,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     // Handle commandline arguments
     String directory = (args.length > 0) ? args[0] : "../../timbuctoo-testdata/src/main/resources/neww/";
 
-    Repository repository = null;
+    XRepository repository = null;
     try {
       repository = ToolsInjectionModule.createRepositoryInstance();
       new CobwwwebRsImporter(repository, directory).importAll();
@@ -119,7 +119,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   private LoadingCache<String, Language> languages;
   private LocationConcordance locations;
 
-  public CobwwwebRsImporter(Repository repository, String inputDirName) throws Exception {
+  public CobwwwebRsImporter(XRepository repository, String inputDirName) throws Exception {
     super(repository);
     change = new Change("importer", "cwrs");
     setupLanguageCache();

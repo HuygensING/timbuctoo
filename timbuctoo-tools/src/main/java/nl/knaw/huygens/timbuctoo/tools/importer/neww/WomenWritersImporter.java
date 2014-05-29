@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document;
@@ -85,7 +85,7 @@ public class WomenWritersImporter extends DefaultImporter {
     // Handle commandline arguments
     String directory = (args.length > 0) ? args[0] : "../../timbuctoo-testdata/src/main/resources/neww/";
 
-    Repository repository = null;
+    XRepository repository = null;
     try {
       repository = ToolsInjectionModule.createRepositoryInstance();
       new WomenWritersImporter(repository, directory).importAll();
@@ -112,7 +112,7 @@ public class WomenWritersImporter extends DefaultImporter {
   private final File inputDir;
   private final Change change;
 
-  public WomenWritersImporter(Repository repository, String inputDirName) {
+  public WomenWritersImporter(XRepository repository, String inputDirName) {
     super(repository);
     objectMapper = new ObjectMapper();
     inputDir = new File(inputDirName);
