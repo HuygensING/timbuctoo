@@ -31,7 +31,9 @@ import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -46,6 +48,7 @@ import com.mongodb.WriteResult;
 /**
  * Encapsulates the Mongo database.
  */
+@Singleton
 public class MongoDB {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoDB.class);
@@ -72,7 +75,8 @@ public class MongoDB {
     }
   }
 
-  public MongoDB(Mongo mongo, DB db) {
+  @VisibleForTesting
+  MongoDB(Mongo mongo, DB db) {
     this.mongo = mongo;
     this.db = db;
   }

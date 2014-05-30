@@ -33,6 +33,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 
@@ -40,6 +42,7 @@ import com.mongodb.DBCollection;
  * A collection with id's for stored entities.
  * Each primitive entity collection has its series of increasing id's.
  */
+@Singleton
 public class EntityIds {
 
   private static final String ID_COLLECTION_NAME = "counters";
@@ -50,6 +53,7 @@ public class EntityIds {
   // A cache to avoid repeated inspection of entity classes
   private final LoadingCache<Class<? extends Entity>, String> counterIdCache;
 
+  @Inject
   public EntityIds(MongoDB mongoDB, TypeRegistry registry) {
     typeRegistry = registry;
     DBCollection collection = mongoDB.getCollection(ID_COLLECTION_NAME);

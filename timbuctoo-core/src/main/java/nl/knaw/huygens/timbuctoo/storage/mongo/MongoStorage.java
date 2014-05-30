@@ -69,40 +69,24 @@ public class MongoStorage implements Storage {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoStorage.class);
 
-  private final TypeRegistry typeRegistry;
+  private final TypeRegistry registry;
   private final MongoDB mongoDB;
   private final EntityIds entityIds;
   private final EntityInducer inducer;
   private final EntityReducer reducer;
-
-  private MongoQueries queries;
-  private ObjectMapper objectMapper;
-  private TreeEncoderFactory treeEncoderFactory;
-  private TreeDecoderFactory treeDecoderFactory;
+  private final MongoQueries queries;
+  private final ObjectMapper objectMapper;
+  private final TreeEncoderFactory treeEncoderFactory;
+  private final TreeDecoderFactory treeDecoderFactory;
 
   @Inject
-  public MongoStorage(TypeRegistry registry, MongoDB mongoDB, EntityInducer inducer, EntityReducer reducer) {
-    this.typeRegistry = registry;
-    this.mongoDB = mongoDB;
-    this.inducer = inducer;
-    this.reducer = reducer;
-
-    entityIds = new EntityIds(mongoDB, typeRegistry);
-    initialize();
-  }
-
-  @VisibleForTesting
-  MongoStorage(TypeRegistry registry, MongoDB mongoDB, EntityIds entityIds, EntityInducer inducer, EntityReducer reducer) {
-    this.typeRegistry = registry;
+  public MongoStorage(TypeRegistry registry, MongoDB mongoDB, EntityIds entityIds, EntityInducer inducer, EntityReducer reducer) {
+    this.registry = registry;
     this.mongoDB = mongoDB;
     this.entityIds = entityIds;
     this.inducer = inducer;
     this.reducer = reducer;
 
-    initialize();
-  }
-
-  private void initialize() {
     queries = new MongoQueries();
     objectMapper = new ObjectMapper();
     treeEncoderFactory = new TreeEncoderFactory(objectMapper);
@@ -130,7 +114,7 @@ public class MongoStorage implements Storage {
   private <T extends Entity> DBCollection getDBCollection(Class<T> type) {
     DBCollection collection = collectionCache.get(type);
     if (collection == null) {
-      Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
+      Class<? extends Entity> baseType = registry.getBaseClass(type);
       String collectionName = getInternalName(baseType);
       collection = mongoDB.getCollection(collectionName);
       collection.setDBDecoderFactory(treeDecoderFactory);
@@ -141,7 +125,7 @@ public class MongoStorage implements Storage {
   }
 
   private <T extends Entity> DBCollection getVersionCollection(Class<T> type) {
-    Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
+    Class<? extends Entity> baseType = registry.getBaseClass(type);
     String collectionName = getInternalName(baseType) + "_versions";
     DBCollection collection = mongoDB.getCollection(collectionName);
     collection.setDBDecoderFactory(treeDecoderFactory);
@@ -198,7 +182,7 @@ public class MongoStorage implements Storage {
   @Override
   public <T extends Entity> long count(Class<T> type) {
     try {
-      Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
+      Class<? extends Entity> baseType = registry.getBaseClass(type);
       return mongoDB.count(getDBCollection(baseType));
     } catch (StorageException e) {
       return 0;
@@ -260,7 +244,7 @@ public class MongoStorage implements Storage {
     entity.setPid(null);
     entity.setDeleted(false);
     entity.setVariations(null); // make sure the list is empty
-    entity.addVariation(typeRegistry.getBaseClass(type));
+    entity.addVariation(registry.getBaseClass(type));
     entity.addVariation(type);
 
     JsonNode tree = inducer.induceDomainEntity(type, entity);
