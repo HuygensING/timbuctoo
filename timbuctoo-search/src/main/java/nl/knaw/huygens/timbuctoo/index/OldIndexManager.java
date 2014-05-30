@@ -62,13 +62,11 @@ public class OldIndexManager implements IndexManager {
   private static final Logger LOG = LoggerFactory.getLogger(OldIndexManager.class);
 
   private final Collection<VRE> vres;
-  private final TypeRegistry registry;
   private final LocalSolrServer server;
   private final Repository repository;
 
   @Inject
-  public OldIndexManager(Configuration config, TypeRegistry registry, LocalSolrServer server, Repository repository, VREManager vreManager) {
-    this.registry = registry;
+  public OldIndexManager(Configuration config, LocalSolrServer server, Repository repository, VREManager vreManager) {
     this.server = server;
     this.repository = repository;
     vres = vreManager.getAllVREs();
@@ -95,13 +93,13 @@ public class OldIndexManager implements IndexManager {
 
   @Override
   public <T extends DomainEntity> void addEntity(Class<T> type, String id) throws IndexException {
-    addBaseEntity(toDomainEntity(registry.getBaseClass(type)), id);
+    addBaseEntity(toDomainEntity(TypeRegistry.getBaseClass(type)), id);
   }
 
   @Override
   public <T extends DomainEntity> void updateEntity(Class<T> type, String id) throws IndexException {
     // For Solr "add" and "update" are the same thing
-    addBaseEntity(toDomainEntity(registry.getBaseClass(type)), id);
+    addBaseEntity(toDomainEntity(TypeRegistry.getBaseClass(type)), id);
   }
 
   private <T extends DomainEntity> void addBaseEntity(Class<T> type, String id) throws IndexException {
@@ -120,7 +118,7 @@ public class OldIndexManager implements IndexManager {
 
   @Override
   public <T extends DomainEntity> void deleteEntity(Class<T> type, String id) throws IndexException {
-    deleteBaseEntity(toDomainEntity(registry.getBaseClass(type)), id);
+    deleteBaseEntity(toDomainEntity(TypeRegistry.getBaseClass(type)), id);
   }
 
   private <T extends DomainEntity> void deleteBaseEntity(Class<T> type, String id) throws IndexException {

@@ -300,16 +300,6 @@ public class TypeRegistry {
     return iname2xname.get(iname);
   }
 
-  @SuppressWarnings("unchecked")
-  public Class<? extends Entity> getBaseClass(Class<? extends Entity> type) {
-    Class<? extends Entity> lastType = type;
-    while (type != null && !Modifier.isAbstract(type.getModifiers())) {
-      lastType = type;
-      type = (Class<? extends Entity>) type.getSuperclass();
-    }
-    return lastType;
-  }
-
   /**
    * Returns the types of the roles that may be assigned to an entity.
    */
@@ -377,6 +367,17 @@ public class TypeRegistry {
     @SuppressWarnings("unchecked")
     Class<? extends DomainEntity> superType = (Class<? extends DomainEntity>) type.getSuperclass();
     return (superType == DomainEntity.class) ? type : superType;
+  }
+
+  // TODO refactor, see toBaseDomainEntity
+  @SuppressWarnings("unchecked")
+  public static Class<? extends Entity> getBaseClass(Class<? extends Entity> type) {
+    Class<? extends Entity> lastType = type;
+    while (type != null && !Modifier.isAbstract(type.getModifiers())) {
+      lastType = type;
+      type = (Class<? extends Entity>) type.getSuperclass();
+    }
+    return lastType;
   }
 
   @VisibleForTesting
