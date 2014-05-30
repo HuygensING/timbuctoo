@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
+import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
 
 import java.util.Collections;
 import java.util.Date;
@@ -34,14 +35,12 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EmptyStorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -90,7 +89,6 @@ public class MongoStorage implements Storage {
 
     entityIds = new EntityIds(mongoDB, typeRegistry);
     initialize();
-    ensureIndexes();
   }
 
   @VisibleForTesting
@@ -111,14 +109,13 @@ public class MongoStorage implements Storage {
     treeDecoderFactory = new TreeDecoderFactory();
   }
 
-  private void ensureIndexes() {
-    DBCollection collection = getDBCollection(Relation.class);
-    collection.ensureIndex(new BasicDBObject("^sourceId", 1));
-    collection.ensureIndex(new BasicDBObject("^targetId", 1));
-    collection.ensureIndex(new BasicDBObject("^sourceId", 1).append("^targetId", 1));
-
-    collection = getDBCollection(Language.class);
-    collection.ensureIndex(new BasicDBObject(Language.CODE, 1), new BasicDBObject("unique", true));
+  @Override
+  public void ensureIndex(boolean unique, Class<? extends Entity> type, String... fields) throws StorageException {
+    DBObject keys = new BasicDBObject();
+    for (String field : fields) {
+      keys.put(propertyName(type, field), 1);
+    }
+    mongoDB.ensureIndex(getDBCollection(type), keys, new BasicDBObject("unique", unique));
   }
 
   @Override
@@ -230,7 +227,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value) throws StorageException {
-    String key = FieldMapper.propertyName(type, field);
+    String key = propertyName(type, field);
     DBObject query = queries.selectByProperty(key, value);
     return findItems(type, query);
   }
@@ -373,7 +370,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws StorageException {
-    String key = FieldMapper.propertyName(type, field);
+    String key = propertyName(type, field);
     DBObject query = queries.selectByProperty(key, value);
     return getItem(type, query);
   }

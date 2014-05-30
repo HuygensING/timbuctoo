@@ -36,6 +36,8 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
  */
 public interface Storage {
 
+  void ensureIndex(boolean unique, Class<? extends Entity> type, String... fields) throws StorageException;
+
   /**
    * Closes the underlying storage.
    */

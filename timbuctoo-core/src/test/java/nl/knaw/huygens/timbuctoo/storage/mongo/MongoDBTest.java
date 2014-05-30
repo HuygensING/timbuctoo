@@ -28,7 +28,7 @@ public class MongoDBTest {
   public ExpectedException thrown = ExpectedException.none();
 
   /**
-   * Verfies the cause of a storage exception.
+   * Verifies the cause of a storage exception.
    */
   private static class CauseMatcher extends TypeSafeMatcher<Exception> {
     @Override
@@ -58,6 +58,7 @@ public class MongoDBTest {
       thrown.expect(StorageException.class);
       thrown.expect(new CauseMatcher());
       doThrow(MongoException.class).when(dbCollection).count();
+      doThrow(MongoException.class).when(dbCollection).ensureIndex(any(DBObject.class), any(DBObject.class));
       doThrow(MongoException.class).when(dbCollection).find(any(DBObject.class));
       doThrow(MongoException.class).when(dbCollection).findOne(any(DBObject.class));
       doThrow(MongoException.class).when(dbCollection).remove(any(DBObject.class));
@@ -82,6 +83,29 @@ public class MongoDBTest {
       mongoDB.count(dbCollection);
     } finally {
       verify(dbCollection).count();
+    }
+  }
+
+  // ensureIndex
+
+  @Test
+  public void testEnsureIndexNoException() throws StorageException {
+    testEnsureIndex(NO_EXCEPTION);
+  }
+
+  @Test
+  public void testEnsureIndexThrowsException() throws StorageException {
+    testEnsureIndex(THROW_EXCEPTION);
+  }
+
+  public void testEnsureIndex(boolean throwException) throws StorageException {
+    setupMongo(throwException);
+    DBObject keys = new BasicDBObject();
+    DBObject options = new BasicDBObject();
+    try {
+      mongoDB.ensureIndex(dbCollection, keys, options);
+    } finally {
+      verify(dbCollection).ensureIndex(keys, options);
     }
   }
 
