@@ -75,10 +75,6 @@ public class MongoQueries {
     return new BasicDBObject("versions", new BasicDBObject("$elemMatch", new BasicDBObject("^rev", revision)));
   }
 
-  public DBObject selectByProperty(String key, Object value) {
-    return new BasicDBObject(key, value);
-  }
-
   public DBObject selectByProperty(Class<?> type, String field, Object value) {
     return new BasicDBObject(propertyName(type, field), value);
   }
