@@ -65,7 +65,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   protected void setupStorage() {
     EntityInducer inducer = new EntityInducer();
     EntityReducer reducer = new EntityReducer(registry);
-    storage = new MongoStorage(registry, mongoDB, entityIds, inducer, reducer);
+    storage = new MongoStorage(mongoDB, entityIds, inducer, reducer);
   }
 
   // ---------------------------------------------------------------------------

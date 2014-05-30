@@ -97,23 +97,18 @@ public class TypeRegistryTest {
 
   @Test
   public void testGetBaseClassFromCollectionClass() {
-    registry.init("");
-    assertEquals(BaseDomainEntity.class, registry.getBaseClass(BaseDomainEntity.class));
+    assertEquals(BaseDomainEntity.class, TypeRegistry.getBaseClass(BaseDomainEntity.class));
   }
 
   @Test
   public void testGetBaseClassForProjectSpecificClass() {
-    registry.init("");
-    assertEquals(BaseDomainEntity.class, registry.getBaseClass(ProjectADomainEntity.class));
+    assertEquals(BaseDomainEntity.class, TypeRegistry.getBaseClass(ProjectADomainEntity.class));
   }
 
   @Test
   public void testGetBaseClassOfNull() {
-    registry.init("");
-    assertEquals(null, registry.getBaseClass(null));
+    assertEquals(null, TypeRegistry.getBaseClass(null));
   }
-
-  // --- tests of static utilities -------------------------------------
 
   @Test
   public void testIsEntity() {

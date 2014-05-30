@@ -68,7 +68,6 @@ public class MongoStorage implements Storage {
 
   private static final Logger LOG = LoggerFactory.getLogger(MongoStorage.class);
 
-  private final TypeRegistry registry;
   private final MongoDB mongoDB;
   private final EntityIds entityIds;
   private final EntityInducer inducer;
@@ -79,8 +78,7 @@ public class MongoStorage implements Storage {
   private final TreeDecoderFactory treeDecoderFactory;
 
   @Inject
-  public MongoStorage(TypeRegistry registry, MongoDB mongoDB, EntityIds entityIds, EntityInducer inducer, EntityReducer reducer) {
-    this.registry = registry;
+  public MongoStorage(MongoDB mongoDB, EntityIds entityIds, EntityInducer inducer, EntityReducer reducer) {
     this.mongoDB = mongoDB;
     this.entityIds = entityIds;
     this.inducer = inducer;
@@ -113,7 +111,7 @@ public class MongoStorage implements Storage {
   private <T extends Entity> DBCollection getDBCollection(Class<T> type) {
     DBCollection collection = collectionCache.get(type);
     if (collection == null) {
-      Class<? extends Entity> baseType = registry.getBaseClass(type);
+      Class<? extends Entity> baseType = getBaseClass(type);
       String collectionName = getInternalName(baseType);
       collection = mongoDB.getCollection(collectionName);
       collection.setDBDecoderFactory(treeDecoderFactory);
@@ -124,12 +122,16 @@ public class MongoStorage implements Storage {
   }
 
   private <T extends Entity> DBCollection getVersionCollection(Class<T> type) {
-    Class<? extends Entity> baseType = registry.getBaseClass(type);
+    Class<? extends Entity> baseType = getBaseClass(type);
     String collectionName = getInternalName(baseType) + "_versions";
     DBCollection collection = mongoDB.getCollection(collectionName);
     collection.setDBDecoderFactory(treeDecoderFactory);
     collection.setDBEncoderFactory(treeEncoderFactory);
     return collection;
+  }
+
+  private Class<? extends Entity> getBaseClass(Class<? extends Entity> type) {
+    return TypeRegistry.getBaseClass(type);
   }
 
   private DBObject toDBObject(JsonNode node) {
@@ -181,8 +183,7 @@ public class MongoStorage implements Storage {
   @Override
   public <T extends Entity> long count(Class<T> type) {
     try {
-      Class<? extends Entity> baseType = registry.getBaseClass(type);
-      return mongoDB.count(getDBCollection(baseType));
+      return mongoDB.count(getDBCollection(type));
     } catch (StorageException e) {
       return 0;
     }
@@ -243,7 +244,7 @@ public class MongoStorage implements Storage {
     entity.setPid(null);
     entity.setDeleted(false);
     entity.setVariations(null); // make sure the list is empty
-    entity.addVariation(registry.getBaseClass(type));
+    entity.addVariation(getBaseClass(type));
     entity.addVariation(type);
 
     JsonNode tree = inducer.induceDomainEntity(type, entity);

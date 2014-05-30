@@ -47,21 +47,19 @@ public class EntityIds {
 
   private static final String ID_COLLECTION_NAME = "counters";
 
-  private final TypeRegistry typeRegistry;
   // The counters are stored in a collection, of course
   private final JacksonDBCollection<Counter, String> counters;
   // A cache to avoid repeated inspection of entity classes
   private final LoadingCache<Class<? extends Entity>, String> counterIdCache;
 
   @Inject
-  public EntityIds(MongoDB mongoDB, TypeRegistry registry) {
-    typeRegistry = registry;
+  public EntityIds(MongoDB mongoDB) {
     DBCollection collection = mongoDB.getCollection(ID_COLLECTION_NAME);
     counters = JacksonDBCollection.wrap(collection, Counter.class, String.class);
     counterIdCache = CacheBuilder.newBuilder().build(new CacheLoader<Class<? extends Entity>, String>() {
       @Override
       public String load(Class<? extends Entity> type) {
-        Class<? extends Entity> baseType = typeRegistry.getBaseClass(type);
+        Class<? extends Entity> baseType = TypeRegistry.getBaseClass(type);
         return TypeNames.getInternalName(baseType);
       }
     });
