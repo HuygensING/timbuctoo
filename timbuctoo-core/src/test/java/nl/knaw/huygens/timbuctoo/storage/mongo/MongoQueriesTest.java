@@ -33,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import org.junit.Before;
 import org.junit.Test;
 
+import test.model.BaseDomainEntity;
 import test.model.TestSystemEntity;
 
 import com.google.common.collect.Maps;
@@ -67,9 +68,9 @@ public class MongoQueriesTest {
   @Test
   public void testSelectByProperty() {
     Map<String, Object> expected = Maps.newHashMap();
-    expected.put("testKey", "testValue");
+    expected.put(FieldMapper.propertyName(BaseDomainEntity.class, "value1"), "testValue");
 
-    DBObject query = queries.selectByProperty("testKey", "testValue");
+    DBObject query = queries.selectByProperty(BaseDomainEntity.class, "value1", "testValue");
     assertEquals(expected, query.toMap());
   }
 
