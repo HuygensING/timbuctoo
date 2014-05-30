@@ -113,6 +113,18 @@ public class MongoDB {
   }
 
   /**
+   * Creates an index on a set of fields, if one does not already exist,
+   * using the specified options.
+   */
+  public void ensureIndex(DBCollection collection, DBObject keys, DBObject options) throws StorageException {
+    try {
+      collection.ensureIndex(keys, options);
+    } catch (MongoException e) {
+      throw new StorageException(e);
+    }
+  }
+
+  /**
    * Inserts a document into the database.
    */
   public void insert(DBCollection collection, String id, DBObject document) throws StorageException {

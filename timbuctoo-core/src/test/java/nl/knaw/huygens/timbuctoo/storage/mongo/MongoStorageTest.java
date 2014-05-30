@@ -22,6 +22,8 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 
 import java.util.Date;
@@ -38,6 +40,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 public class MongoStorageTest extends MongoStorageTestBase {
@@ -66,6 +69,27 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   // ---------------------------------------------------------------------------
+
+  // ensureIndex
+
+  @Test
+  public void testEnsureIndexWithOneKey() throws Exception {
+    storage.ensureIndex(true, TestSystemEntity.class, "name");
+
+    DBObject keys = new BasicDBObject(propertyName(TestSystemEntity.class, "name"), 1);
+    DBObject options = new BasicDBObject("unique", true);
+    verify(mongoDB).ensureIndex(eq(dbCollection), eq(keys), eq(options));
+  }
+
+  @Test
+  public void testEnsureIndexWithTwoKeys() throws Exception {
+    storage.ensureIndex(false, TestSystemEntity.class, "name", "^rev");
+
+    DBObject keys = new BasicDBObject(propertyName(TestSystemEntity.class, "name"), 1) //
+      .append(propertyName(TestSystemEntity.class, "^rev"), 1);
+    DBObject options = new BasicDBObject("unique", false);
+    verify(mongoDB).ensureIndex(eq(dbCollection), eq(keys), eq(options));
+  }
 
   // deleteSystemEntity
 

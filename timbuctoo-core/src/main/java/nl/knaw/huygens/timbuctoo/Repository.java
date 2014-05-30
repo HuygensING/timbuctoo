@@ -77,11 +77,22 @@ public class Repository {
   private final EntityMappers entityMappers;
 
   @Inject
-  public Repository(TypeRegistry registry, Storage storage) {
+  public Repository(TypeRegistry registry, Storage storage) throws StorageException {
     this.registry = registry;
     this.storage = storage;
     entityMappers = new EntityMappers(registry.getDomainEntityTypes());
+    ensureIndexes();
     setupRelationTypeCache();
+  }
+
+  /**
+   * Create indexes, if they don't already exist.
+   */
+  private void ensureIndexes() throws StorageException {
+    storage.ensureIndex(false, Relation.class, "^sourceId");
+    storage.ensureIndex(false, Relation.class, "^targetId");
+    storage.ensureIndex(false, Relation.class, "^sourceId", "^targetId");
+    storage.ensureIndex(true, Language.class, Language.CODE);
   }
 
   /**

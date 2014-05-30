@@ -59,7 +59,7 @@ public class RepositoryTest {
   private Change change;
 
   @Before
-  public void setup() {
+  public void setup() throws Exception {
     registry = mock(TypeRegistry.class);
     storage = mock(Storage.class);
     repository = new Repository(registry, storage);
