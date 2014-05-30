@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.mongojack.DBQuery;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
@@ -96,8 +97,9 @@ public class MongoQueries {
     return new BasicDBObject(key, new BasicDBObject("$lt", dateValue.getTime()));
   }
 
-  public DBObject selectVariation(String name) {
-    return new BasicDBObject(DomainEntity.VARIATIONS, name);
+  public DBObject selectVariationWithoutPID(Class<? extends DomainEntity> type) {
+    return new BasicDBObject(DomainEntity.VARIATIONS, TypeNames.getInternalName(type)) //
+      .append(DomainEntity.PID, new BasicDBObject("$exists", false));
   }
 
   /**

@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -33,9 +34,7 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -44,7 +43,6 @@ import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mongojack.DBQuery;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
@@ -99,9 +97,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllIdsWithoutPIDOfType() throws Exception {
-    String collection = TypeNames.getInternalName(BaseDomainEntity.class);
-    DBObject query = queries.selectVariation(collection);
-    query.putAll(DBQuery.notExists(DomainEntity.PID));
+    DBObject query = queries.selectVariationWithoutPID(BaseDomainEntity.class);
 
     String id1 = "TSD0000000001";
     DBObject dbObject = createDBJsonNode(createSimpleMap("_id", id1));
@@ -111,17 +107,13 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     List<String> ids = storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
 
+    assertEquals(1, ids.size());
     assertTrue(ids.contains(id1));
-
-    verify(dbCollection).find(query, returnIdField);
-    verify(db).getCollection(collection);
   }
 
   @Test
   public void testGetAllIdsWithoutPIDOfTypeMultipleFound() throws Exception {
-    String collection = TypeNames.getInternalName(BaseDomainEntity.class);
-    DBObject query = queries.selectVariation(collection);
-    query.putAll(DBQuery.notExists(DomainEntity.PID));
+    DBObject query = queries.selectVariationWithoutPID(BaseDomainEntity.class);
 
     String id1 = DEFAULT_ID;
     DBObject dbObject1 = createDBJsonNode(createSimpleMap("_id", id1));
@@ -138,37 +130,26 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     List<String> ids = storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
 
+    assertEquals(3, ids.size());
     assertTrue(ids.contains(id1));
     assertTrue(ids.contains(id2));
     assertTrue(ids.contains(id3));
-
-    verify(dbCollection).find(query, returnIdField);
-    verify(db).getCollection(collection);
   }
 
   @Test
   public void testGetAllIdsWithoutPIDOfTypeNoneFound() throws Exception {
-    String collection = TypeNames.getInternalName(BaseDomainEntity.class);
-    DBObject query = queries.selectVariation(collection);
-    query.putAll(DBQuery.notExists(DomainEntity.PID));
-
+    DBObject query = queries.selectVariationWithoutPID(BaseDomainEntity.class);
     DBCursor cursor = createCursorWithoutValues();
     when(dbCollection.find(query, returnIdField)).thenReturn(cursor);
 
     List<String> ids = storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
 
     assertTrue(ids.isEmpty());
-
-    verify(dbCollection).find(query, returnIdField);
-    verify(db).getCollection(collection);
   }
 
   @Test(expected = StorageException.class)
   public void testGetAllIdsWithoutPIDFindThrowsException() throws Exception {
-    String collection = TypeNames.getInternalName(BaseDomainEntity.class);
-    DBObject query = queries.selectVariation(collection);
-    query.putAll(DBQuery.notExists(DomainEntity.PID));
-
+    DBObject query = queries.selectVariationWithoutPID(BaseDomainEntity.class);
     doThrow(MongoException.class).when(dbCollection).find(query, returnIdField);
 
     storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
@@ -176,14 +157,10 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test(expected = StorageException.class)
   public void testGetAllIdsWithoutPIDCursorNextThrowsException() throws Exception {
-    String collection = TypeNames.getInternalName(BaseDomainEntity.class);
-    DBObject query = queries.selectVariation(collection);
-    query.putAll(DBQuery.notExists(DomainEntity.PID));
-
+    DBObject query = queries.selectVariationWithoutPID(BaseDomainEntity.class);
     DBCursor cursor = mock(DBCursor.class);
     when(cursor.hasNext()).thenReturn(true);
     doThrow(MongoException.class).when(cursor).next();
-
     when(dbCollection.find(query, returnIdField)).thenReturn(cursor);
 
     storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
@@ -191,10 +168,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test(expected = StorageException.class)
   public void testGetAllIdsWithoutPIDCursorHasNextThrowsException() throws Exception {
-    String collection = TypeNames.getInternalName(BaseDomainEntity.class);
-    DBObject query = queries.selectVariation(collection);
-    query.putAll(DBQuery.notExists(DomainEntity.PID));
-
+    DBObject query = queries.selectVariationWithoutPID(BaseDomainEntity.class);
     DBCursor cursor = mock(DBCursor.class);
     doThrow(MongoException.class).when(cursor).hasNext();
 
