@@ -31,7 +31,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -421,9 +420,7 @@ public class MongoStorage implements Storage {
     List<String> list = Lists.newArrayList();
 
     try {
-      String variationName = TypeNames.getInternalName(type);
-      DBObject query = queries.selectVariation(variationName);
-      query.put(DomainEntity.PID, new BasicDBObject("$exists", false));
+      DBObject query = queries.selectVariationWithoutPID(type);
       DBObject columnsToShow = new BasicDBObject("_id", 1);
 
       DBCursor cursor = getDBCollection(type).find(query, columnsToShow);
