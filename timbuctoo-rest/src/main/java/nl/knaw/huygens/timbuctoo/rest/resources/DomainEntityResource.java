@@ -121,7 +121,7 @@ public class DomainEntityResource extends ResourceBase {
     if (Strings.isNullOrEmpty(typeValue)) {
       return repository.getEntities(entityType).skip(start).getSome(rows);
     } else {
-      return repository.getEntitiesByProperty(entityType, "type", typeValue);
+      return repository.getEntitiesByProperty(entityType, "type", typeValue).getAll();
     }
   }
 

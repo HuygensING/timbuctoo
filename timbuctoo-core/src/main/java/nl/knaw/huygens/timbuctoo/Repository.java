@@ -261,6 +261,15 @@ public class Repository {
     }
   }
 
+  public <T extends DomainEntity> RevisionChanges<T> getVersions(Class<T> type, String id) {
+    try {
+      return storage.getAllRevisions(type, id);
+    } catch (StorageException e) {
+      LOG.error("Error while handling {} {}", type.getName(), id);
+      return null;
+    }
+  }
+
   public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) {
     try {
       return storage.getEntities(type);
@@ -270,12 +279,12 @@ public class Repository {
     }
   }
 
-  public <T extends DomainEntity> RevisionChanges<T> getVersions(Class<T> type, String id) {
+  public <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value) {
     try {
-      return storage.getAllRevisions(type, id);
+      return storage.getEntitiesByProperty(type, field, value);
     } catch (StorageException e) {
-      LOG.error("Error while handling {} {}", type.getName(), id);
-      return null;
+      // TODO handle properly
+      return StorageIteratorStub.newInstance();
     }
   }
 
@@ -288,15 +297,6 @@ public class Repository {
    */
   public <T extends DomainEntity> List<String> getAllIdsWithoutPID(Class<T> type) throws StorageException {
     return storage.getAllIdsWithoutPIDOfType(type);
-  }
-
-  public <T extends Entity> List<T> getEntitiesByProperty(Class<T> type, String field, String value) {
-    try {
-      return storage.getEntitiesByProperty(type, field, value).getAll();
-    } catch (StorageException e) {
-      // TODO handle properly
-      return null;
-    }
   }
 
   // --- relation types --------------------------------------------------------
