@@ -83,7 +83,7 @@ public class UserResource extends ResourceBase {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
   public List<User> getAll(@QueryParam("rows") @DefaultValue("200") int rows, @QueryParam("start") int start) {
-    return repository.getAllLimited(User.class, start, rows);
+    return repository.getEntities(User.class).skip(start).getSome(rows);
   }
 
   @GET

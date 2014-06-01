@@ -290,15 +290,6 @@ public class Repository {
     return storage.getAllIdsWithoutPIDOfType(type);
   }
 
-  public <T extends Entity> List<T> getAllLimited(Class<T> type, int offset, int limit) {
-    try {
-      return storage.getEntities(type).skip(offset).getSome(limit);
-    } catch (StorageException e) {
-      // TODO handle properly
-      return null;
-    }
-  }
-
   public <T extends Entity> List<T> getEntitiesByProperty(Class<T> type, String field, String value) {
     try {
       return storage.getEntitiesByProperty(type, field, value).getAll();

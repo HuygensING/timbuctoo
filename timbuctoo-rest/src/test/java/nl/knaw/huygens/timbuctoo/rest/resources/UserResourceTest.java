@@ -45,12 +45,13 @@ import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.security.UserRoles;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.google.common.collect.Lists;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.client.GenericType;
@@ -76,29 +77,14 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUpVREManager(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
 
-    List<User> expectedList = Lists.newArrayList(createUser("id1", "test1", "test1"), createUser("id2", "test2", "test2"));
-    when(repository.getAllLimited(User.class, 0, 200)).thenReturn(expectedList);
+    StorageIterator<User> iterator = StorageIteratorStub.newInstance(createUser("id1", "a", "b"), createUser("id2", "c", "d"));
+    when(repository.getEntities(User.class)).thenReturn(iterator);
 
     GenericType<List<User>> genericType = new GenericType<List<User>>() {};
     WebResource resource = createResource();
-    List<User> actualList = resource.header("Authorization", AUTHORIZATION).header("VRE_ID", VRE_ID).get(genericType);
+    List<User> users = resource.header("Authorization", AUTHORIZATION).header("VRE_ID", VRE_ID).get(genericType);
 
-    assertEquals(expectedList.size(), actualList.size());
-  }
-
-  @Test
-  public void testGetAllUsersNonFound() {
-    setUpVREManager(VRE_ID, true);
-    setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
-
-    List<User> expectedList = Lists.newArrayList();
-    when(repository.getAllLimited(User.class, 0, 200)).thenReturn(expectedList);
-
-    GenericType<List<User>> genericType = new GenericType<List<User>>() {};
-    WebResource resource = createResource();
-    List<User> actualList = resource.header("Authorization", AUTHORIZATION).header("VRE_ID", VRE_ID).get(genericType);
-
-    assertEquals(expectedList.size(), actualList.size());
+    assertEquals(2, users.size());
   }
 
   @Test
