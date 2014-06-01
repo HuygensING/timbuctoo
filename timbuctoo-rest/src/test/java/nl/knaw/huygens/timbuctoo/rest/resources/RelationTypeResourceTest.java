@@ -34,6 +34,7 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.RelationTypeBuilder;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.junit.AfterClass;
@@ -45,8 +46,6 @@ import org.junit.Test;
 import test.model.AnotherPrimitiveDomainEntity;
 import test.model.BaseDomainEntity;
 import test.model.PrimitiveDomainEntity;
-
-import com.google.common.collect.Lists;
 
 public class RelationTypeResourceTest {
 
@@ -74,11 +73,7 @@ public class RelationTypeResourceTest {
 
   @Test
   public void testGetAvailableRelationTypesWithNoName() {
-    List<RelationType> types = Lists.newArrayList(mock(RelationType.class), mock(RelationType.class));
-
-    @SuppressWarnings("unchecked")
-	StorageIterator<RelationType> iterator = mock(StorageIterator.class);
-    when(iterator.getAll()).thenReturn(types);
+    StorageIterator<RelationType> iterator = StorageIteratorStub.newInstance(mock(RelationType.class), mock(RelationType.class));
     when(repository.getEntities(RelationType.class)).thenReturn(iterator);
 
     List<RelationType> result = resource.getAvailableRelationTypes(null);
@@ -105,11 +100,7 @@ public class RelationTypeResourceTest {
     RelationType type1 = createRelationType(BaseDomainEntity.class, PrimitiveDomainEntity.class);
     RelationType type2 = createRelationType(BaseDomainEntity.class, AnotherPrimitiveDomainEntity.class);
     RelationType type3 = createRelationType(PrimitiveDomainEntity.class, AnotherPrimitiveDomainEntity.class);
-    List<RelationType> types = Lists.newArrayList(type1, type2, type3);
-
-    @SuppressWarnings("unchecked")
-	StorageIterator<RelationType> iterator = mock(StorageIterator.class);
-    when(iterator.getAll()).thenReturn(types);
+    StorageIterator<RelationType> iterator = StorageIteratorStub.newInstance(type1, type2, type3);
     when(repository.getEntities(RelationType.class)).thenReturn(iterator);
 
     List<RelationType> result = resource.getAvailableRelationTypes(iname);
