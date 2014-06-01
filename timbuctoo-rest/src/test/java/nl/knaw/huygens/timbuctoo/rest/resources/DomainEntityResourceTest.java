@@ -59,6 +59,8 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.rest.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -171,22 +173,10 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testGetAllDocs() {
-    List<ProjectADomainEntity> expectedList = Lists.newArrayList();
-    expectedList.add(new ProjectADomainEntity("TST0000000001"));
-    expectedList.add(new ProjectADomainEntity("TST0000000002"));
-    expectedList.add(new ProjectADomainEntity("TST0000000003"));
-    when(repository.getAllLimited(ProjectADomainEntity.class, 0, 200)).thenReturn(expectedList);
-
-    GenericType<List<ProjectADomainEntity>> genericType = new GenericType<List<ProjectADomainEntity>>() {};
-    List<ProjectADomainEntity> actualList = createResource(PROJECTADOMAINENTITIES_RESOURCE).get(genericType);
-    assertEquals(expectedList.size(), actualList.size());
-  }
-
-  @Test
-  public void testGetAllDocsNonFound() {
-    List<ProjectADomainEntity> expectedList = Lists.newArrayList();
-    when(repository.getAllLimited(ProjectADomainEntity.class, 0, 200)).thenReturn(expectedList);
+  public void testGetEntities() {
+    List<ProjectADomainEntity> expectedList = Lists.newArrayList(new ProjectADomainEntity("TEST001"), new ProjectADomainEntity("TEST002"));
+    StorageIterator<ProjectADomainEntity> iterator = StorageIteratorStub.newInstance(expectedList);
+    when(repository.getEntities(ProjectADomainEntity.class)).thenReturn(iterator);
 
     GenericType<List<ProjectADomainEntity>> genericType = new GenericType<List<ProjectADomainEntity>>() {};
     List<ProjectADomainEntity> actualList = createResource(PROJECTADOMAINENTITIES_RESOURCE).get(genericType);

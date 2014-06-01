@@ -24,7 +24,6 @@ package nl.knaw.huygens.timbuctoo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -40,7 +39,6 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
@@ -204,22 +202,6 @@ public class RepositoryTest {
     ArrayList<String> ids = Lists.newArrayList("id1", "id2", "id3");
     storage.getRelationIds(ids);
     verify(storage).getRelationIds(ids);
-  }
-
-  @Test
-  public void testGetAllLimited() throws Exception {
-    @SuppressWarnings("unchecked")
-    StorageIterator<BaseDomainEntity> iterator = mock(StorageIterator.class);
-    when(iterator.skip(anyInt())).thenReturn(iterator);
-    when(storage.getEntities(BaseDomainEntity.class)).thenReturn(iterator);
-
-    int offset = 3;
-    int limit = 7;
-    repository.getAllLimited(BaseDomainEntity.class, offset, limit);
-
-    verify(storage).getEntities(BaseDomainEntity.class);
-    verify(iterator).skip(offset);
-    verify(iterator).getSome(limit);
   }
 
   @Test
