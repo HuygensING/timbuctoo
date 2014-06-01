@@ -37,12 +37,12 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.EmptyStorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.apache.commons.lang.StringUtils;
@@ -153,7 +153,7 @@ public class MongoStorage implements Storage {
   @VisibleForTesting
   static <T extends Entity> StorageIterator<T> newStorageIterator(Class<T> type, DBCursor cursor, EntityReducer reducer) {
     if (cursor == null) {
-      return new EmptyStorageIterator<T>();
+      return StorageIteratorStub.newInstance();
     } else {
       return new MongoStorageIterator<T>(type, cursor, reducer);
     }
