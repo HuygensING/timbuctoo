@@ -394,7 +394,7 @@ public class SearchResource extends ResourceBase {
       DomainEntity source = retrieveEntity(mapper, relation.getSourceType(), relation.getSourceId());
       String sourceName = (source != null) ? source.getDisplayName() : "[unknown]";
       DomainEntity target = retrieveEntity(mapper, relation.getTargetType(), relation.getTargetId());
-      String targetName = (target != null) ? source.getDisplayName() : "[unknown]";
+      String targetName = (target != null) ? target.getDisplayName() : "[unknown]";
       list.add(new RelationRef(itype, xtype, relation.getId(), relationName, sourceName, targetName));
     }
     return list;
