@@ -81,6 +81,8 @@ import com.google.inject.Inject;
 @Path("search")
 public class SearchResource extends ResourceBase {
 
+  private static final String RELATION_SEARCH_PREFIX = "relations";
+
   private static final Logger LOG = LoggerFactory.getLogger(SearchResource.class);
 
   @Inject
@@ -139,8 +141,7 @@ public class SearchResource extends ResourceBase {
   public Response regularGet( //
       @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") final int start, //
-      @QueryParam("rows") @DefaultValue("10") final int rows
-  ) {
+      @QueryParam("rows") @DefaultValue("10") final int rows) {
 
     // Retrieve result
     SearchResult result = getSearchResult(queryId);
@@ -172,21 +173,26 @@ public class SearchResource extends ResourceBase {
 
     if (start > 0) {
       int prevStart = Math.max(start - rows, 0);
-      URI prev = createHATEOASURI(prevStart, rows, queryId);
+      URI prev = createHATEOASURI(prevStart, rows, queryId, false);
       returnValue.put("_prev", prev);
     }
 
     if (hi < idsSize) {
-      URI next = createHATEOASURI(start + rows, rows, queryId);
+      URI next = createHATEOASURI(start + rows, rows, queryId, false);
       returnValue.put("_next", next);
     }
 
     return Response.ok(returnValue).build();
   }
 
-  private URI createHATEOASURI(final int start, final int rows, String queryId) {
+  private URI createHATEOASURI(final int start, final int rows, String queryId, boolean isRelationSearch) {
     UriBuilder builder = UriBuilder.fromUri(config.getSetting("public_url"));
     builder.path("search");
+
+    if (isRelationSearch) {
+      builder.path(RELATION_SEARCH_PREFIX);
+    }
+
     builder.path(queryId);
     builder.queryParam("start", start).queryParam("rows", rows);
     return builder.build();
@@ -207,7 +213,7 @@ public class SearchResource extends ResourceBase {
   // ---------------------------------------------------------------------------
 
   @POST
-  @Path("/relations")
+  @Path("/" + RELATION_SEARCH_PREFIX)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response relationPost(@HeaderParam("VRE_ID") String vreId, RelationSearchParameters params) {
 
@@ -258,14 +264,13 @@ public class SearchResource extends ResourceBase {
   }
 
   @GET
-  @Path("/relations/{id: " + SearchResult.ID_PREFIX + "\\d+}")
+  @Path("/" + RELATION_SEARCH_PREFIX + "/{id: " + SearchResult.ID_PREFIX + "\\d+}")
   @Produces({ MediaType.APPLICATION_JSON })
   @JsonView(JsonViews.WebView.class)
   public Response relationGet( //
       @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") final int start, //
-      @QueryParam("rows") @DefaultValue("10") final int rows
-  ) {
+      @QueryParam("rows") @DefaultValue("10") final int rows) {
 
     // Retrieve result
     SearchResult result = getSearchResult(queryId);
@@ -297,12 +302,12 @@ public class SearchResource extends ResourceBase {
 
     if (start > 0) {
       int prevStart = Math.max(start - rows, 0);
-      URI prev = createHATEOASURI(prevStart, rows, queryId);
+      URI prev = createHATEOASURI(prevStart, rows, queryId, true);
       returnValue.put("_prev", prev);
     }
 
     if (hi < idsSize) {
-      URI next = createHATEOASURI(start + rows, rows, queryId);
+      URI next = createHATEOASURI(start + rows, rows, queryId, true);
       returnValue.put("_next", next);
     }
 
