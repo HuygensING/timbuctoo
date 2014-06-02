@@ -49,11 +49,14 @@ import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.config.EntityMapper;
+import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
@@ -181,20 +184,6 @@ public class SearchResource extends ResourceBase {
     return Response.ok(returnValue).build();
   }
 
-  private List<DomainEntity> retrieveEntities(Class<? extends DomainEntity> type, List<String> ids) {
-    // Retrieve entities one-by-one to retain ordering
-    List<DomainEntity> entities = Lists.newArrayList();
-    for (String id : ids) {
-      DomainEntity entity = repository.getEntity(type, id);
-      if (entity != null) {
-        entities.add(entity);
-      } else {
-        LOG.error("Failed to retrieve {} - {}", type, id);
-      }
-    }
-    return entities;
-  }
-
   private URI createHATEOASURI(final int start, final int rows, String queryId) {
     UriBuilder builder = UriBuilder.fromUri(config.getSetting("public_url"));
     builder.path("search");
@@ -287,6 +276,8 @@ public class SearchResource extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
     checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
+    @SuppressWarnings("unchecked")
+    Class<? extends Relation> rtype = (Class<? extends Relation>) type;
 
     List<String> ids = result.getIds() != null ? result.getIds() : Lists.<String> newArrayList();
     int idsSize = ids.size();
@@ -294,13 +285,13 @@ public class SearchResource extends ResourceBase {
     int hi = toRange(lo + rows, 0, idsSize);
     List<String> idsToGet = ids.subList(lo, hi);
 
-    List<DomainEntity> entities = retrieveEntities(type, idsToGet);
+    List<Relation> relations = retrieveRelations(rtype, idsToGet);
 
     Map<String, Object> returnValue = Maps.newHashMap();
     returnValue.put("numFound", idsSize);
     returnValue.put("ids", idsToGet);
-    returnValue.put("refs", createEntityRefs(type, entities));
-    returnValue.put("results", entities); // we willen meer info terugsturen
+    returnValue.put("refs", createRelationRefs(rtype, relations));
+    returnValue.put("results", relations);
     returnValue.put("start", lo);
     returnValue.put("rows", idsToGet.size());
 
@@ -319,6 +310,20 @@ public class SearchResource extends ResourceBase {
   }
 
   // ---------------------------------------------------------------------------
+
+  private List<DomainEntity> retrieveEntities(Class<? extends DomainEntity> type, List<String> ids) {
+    // Retrieve one-by-one to retain ordering
+    List<DomainEntity> entities = Lists.newArrayList();
+    for (String id : ids) {
+      DomainEntity entity = repository.getEntity(type, id);
+      if (entity != null) {
+        entities.add(entity);
+      } else {
+        LOG.error("Failed to retrieve {} - {}", type, id);
+      }
+    }
+    return entities;
+  }
 
   private List<EntityRef> createEntityRefs(Class<? extends DomainEntity> type, List<DomainEntity> entities) {
     String itype = TypeNames.getInternalName(type);
@@ -357,6 +362,93 @@ public class SearchResource extends ResourceBase {
 
     public String getDisplayName() {
       return displayName;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+
+  private List<Relation> retrieveRelations(Class<? extends Relation> type, List<String> ids) {
+    // Retrieve one-by-one to retain ordering
+    List<Relation> relations = Lists.newArrayList();
+    for (String id : ids) {
+      Relation relation = repository.getEntity(type, id);
+      if (relation != null) {
+        relations.add(relation);
+      } else {
+        LOG.error("Failed to retrieve {} - {}", type, id);
+      }
+    }
+    return relations;
+  }
+
+  private List<RelationRef> createRelationRefs(Class<? extends Relation> type, List<Relation> relations) {
+    EntityMappers entityMappers = new EntityMappers(registry.getDomainEntityTypes());
+    EntityMapper mapper = entityMappers.getEntityMapper(type);
+
+    String itype = TypeNames.getInternalName(type);
+    String xtype = TypeNames.getExternalName(type);
+    List<RelationRef> list = Lists.newArrayListWithCapacity(relations.size());
+    for (Relation relation : relations) {
+      RelationType relationType = repository.getRelationType(relation.getTypeId());
+      String relationName = relationType.getRegularName();
+      DomainEntity source = retrieveEntity(mapper, relation.getSourceType(), relation.getSourceId());
+      String sourceName = (source != null) ? source.getDisplayName() : "[unknown]";
+      DomainEntity target = retrieveEntity(mapper, relation.getTargetType(), relation.getTargetId());
+      String targetName = (target != null) ? source.getDisplayName() : "[unknown]";
+      list.add(new RelationRef(itype, xtype, relation.getId(), relationName, sourceName, targetName));
+    }
+    return list;
+  }
+
+  private DomainEntity retrieveEntity(EntityMapper mapper, String typeName, String typeId) {
+    Class<? extends DomainEntity> type = registry.getDomainEntityType(typeName);
+    if (type == null) {
+      LOG.error("Failed to convert {} to a domain entity", typeName);
+      return null;
+    }
+    Class<? extends DomainEntity> mappedType = (mapper != null) ? mapper.map(type) : type;
+    return repository.getEntity(mappedType, typeId);
+  }
+
+  public static class RelationRef {
+    private final String type;
+    private final String id;
+    private final String path;
+    private final String relationName;
+    private final String sourceName;
+    private final String targetName;
+
+    public RelationRef(String type, String xtype, String id, String relationName, String sourceName, String targetName) {
+      this.type = type;
+      this.id = id;
+      this.path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
+      this.relationName = relationName;
+      this.sourceName = sourceName;
+      this.targetName = targetName;
+    }
+
+    public String getType() {
+      return type;
+    }
+
+    public String getId() {
+      return id;
+    }
+
+    public String getPath() {
+      return path;
+    }
+
+    public String getRelationName() {
+      return relationName;
+    }
+
+    public String getSourceName() {
+      return sourceName;
+    }
+
+    public String geTargetName() {
+      return targetName;
     }
   }
 
