@@ -447,7 +447,7 @@ public class SearchResource extends ResourceBase {
       return sourceName;
     }
 
-    public String geTargetName() {
+    public String getTargetName() {
       return targetName;
     }
   }

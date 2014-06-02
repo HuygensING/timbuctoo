@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -57,6 +58,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -472,23 +474,27 @@ public class MongoStorage implements Storage {
   @Override
   public <T extends Relation> List<String> findRelations(Class<T> type, List<String> sourceIds, List<String> targetIds, List<String> relationTypeIds) throws StorageException {
 
-    List<String> relationIds = Lists.newArrayList();
+    List<String> result = Lists.newArrayList();
+
+    if (relationTypeIds == null || relationTypeIds.isEmpty()) {
+      return result;
+    }
+    Set<String> idSet = Sets.newHashSet(relationTypeIds);
 
     List<List<String>> sourceIdSubLists = Lists.partition(sourceIds, 100);
 
     for (List<String> sourceIdSubList : sourceIdSubLists) {
-      // for now we simply ignore relation type id's
       DBObject query = DBQuery.and(DBQuery.in("^sourceId", sourceIdSubList), DBQuery.in("^targetId", targetIds));
       StorageIterator<T> iterator = findItems(type, query);
 
       while (iterator.hasNext()) {
         T relation = iterator.next();
-        if (relation.isAccepted()) {
-          relationIds.add(relation.getId());
+        if (relation.isAccepted() && idSet.contains(relation.getTypeId())) {
+          result.add(relation.getId());
         }
       }
     }
-    return relationIds;
+    return result;
   }
 
   @Override
