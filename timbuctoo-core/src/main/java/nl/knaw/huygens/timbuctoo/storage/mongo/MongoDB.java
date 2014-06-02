@@ -108,9 +108,23 @@ public class MongoDB {
     return db.getCollection(name);
   }
 
+  /**
+   * Returns the number of documents in the specified collection.
+   */
   public long count(DBCollection collection) throws StorageException {
     try {
       return collection.count();
+    } catch (MongoException e) {
+      throw new StorageException(e);
+    }
+  }
+
+  /**
+   * Returns statistics for the specified collection.
+   */
+  public DBObject getStats(DBCollection collection) throws StorageException {
+    try {
+      return collection.getStats();
     } catch (MongoException e) {
       throw new StorageException(e);
     }
