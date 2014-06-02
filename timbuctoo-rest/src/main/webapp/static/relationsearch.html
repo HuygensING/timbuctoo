@@ -1,0 +1,251 @@
+<!--
+  #%L
+  Timbuctoo REST api
+  =======
+  Copyright (C) 2012 - 2014 Huygens ING
+  =======
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as
+  published by the Free Software Foundation, either version 3 of the 
+  License, or (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public 
+  License along with this program.  If not, see
+  <http://www.gnu.org/licenses/gpl-3.0.html>.
+  #L%
+  -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>Repository Search</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="css/static-html.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<h1>Repository Search</h1>
+<form id="formSearch" name="formSearch">
+<p id="error" style="display:none" />
+
+<h2>Overall Setting</h2>
+<table>
+<tr>
+  <td>VRE</td>
+  <td><select id="vreselect"></select></td>
+</tr>
+</table>
+
+<h2>Source Query</h2>
+<table>
+<tr>
+  <td>Type</td>
+  <td><input name="" type="text" size="50" id="searchtype1"/></td>
+</tr>
+<tr>
+  <td>Text</td>
+  <td><input name="" type="text" size="50" id="searchtext1"/></td>
+</tr>
+</table>
+<p><a href="#" onclick="doPost1()">Submit query</a></p>
+
+<h2>Target Query</h2>
+<table>
+<tr>
+  <td>Type</td>
+  <td><input name="" type="text" size="50" id="searchtype2"/></td>
+</tr>
+<tr>
+  <td>Text</td>
+  <td><input name="" type="text" size="50" id="searchtext2"/></td>
+</tr>
+</table>
+<p><a href="#" onclick="doPost2()">Submit query</a></p>
+
+<h2>Relation Query</h2>
+<table>
+<tr>
+  <td>Source Query</td>
+  <td><input name="" type="text" size="50" id="searchid1"/></td>
+</tr>
+<tr>
+  <td>Target Query</td>
+  <td><input name="" type="text" size="50" id="searchid2"/></td>
+</tr>
+</table>
+<p><a href="#" onclick="doPost3()">Submit query</a></p>
+
+<h2>Results</h2>
+<table>
+<tr>
+  <td>URL</td>
+  <td><input name="" type="text" size="50" id="searchid3"/></td>
+</tr>
+<tr>
+  <td>Start</td>
+  <td><input name="" type="text" size="50" id="start" value="0"/></td>
+</tr>
+<tr>
+  <td>Rows</td>
+  <td><input name="" type="text" size="50" id="rows" value="10"/></td>
+</tr>
+</table>
+<p><a href="#" onclick="doGet()">Show results</a></p>
+
+<div id="results">
+</div>
+</form>
+
+<script src="http://code.jquery.com/jquery-1.9.1.js" type="text/javascript"></script>
+<script src="config.js" type="text/javascript"></script>
+<script>
+  var baseUrl = 'http://' + window.config.serverUri + '/';
+  var searchUrl = baseUrl + 'search';
+  
+
+  /* Simply concatenates the components of a name */
+  function buildName(name) {
+    var components = name.components,
+        result = '';
+    for (var i in components) {
+      result += ' ' + components[i].value;
+    }
+    return result;
+  }
+
+  function doPost1() {
+	var errorToken = $('#error');
+    jQuery.ajax({
+      url: searchUrl,
+      type: 'POST',
+      data: JSON.stringify({
+        'typeString': $('#searchtype1').val(),
+        'term': $('#searchtext1').val(),
+        'sort': 'id'
+      }),
+      headers : { 
+    	  VRE_ID : $('#vreselect').val()
+      },
+      contentType: 'application/json; charset=utf-8',
+      success: function (data, status, xhr) {
+        var queryURL = xhr.getResponseHeader('Location') || 'None';
+        var n = queryURL.lastIndexOf('/');
+        $('#searchid1').val(queryURL.substring(n + 1));
+        errorToken.hide();
+      },
+      error: function (xhr, status, errorThrown){
+    	 errorToken.text(status + ' : ' + errorThrown);
+    	 errorToken.show();
+      }
+    });
+  }
+
+  function doPost2() {
+  var errorToken = $('#error');
+    jQuery.ajax({
+      url: searchUrl,
+      type: 'POST',
+      data: JSON.stringify({
+        'typeString': $('#searchtype2').val(),
+        'term': $('#searchtext2').val(),
+        'sort': 'id'
+      }),
+      headers : { 
+        VRE_ID : $('#vreselect').val()
+      },
+      contentType: 'application/json; charset=utf-8',
+      success: function (data, status, xhr) {
+        var queryURL = xhr.getResponseHeader('Location') || 'None';
+        var n = queryURL.lastIndexOf('/');
+        $('#searchid2').val(queryURL.substring(n + 1));
+        errorToken.hide();
+      },
+      error: function (xhr, status, errorThrown) {
+       errorToken.text(status + ' : ' + errorThrown);
+       errorToken.show();
+      }
+    });
+  }
+
+  function doPost3() {
+  var errorToken = $('#error');
+    jQuery.ajax({
+      url: searchUrl + "/relations",
+      type: 'POST',
+      data: JSON.stringify({
+        'typeString': 'wwrelation',
+        'sourceSearchId': $('#searchid1').val(),
+        'targetSearchId': $('#searchid2').val(),
+        'relationTypeIds': [ ]
+      }),
+      headers : { 
+        VRE_ID : $('#vreselect').val()
+      },
+      contentType: 'application/json; charset=utf-8',
+      success: function (data, status, xhr) {
+        var queryURL = xhr.getResponseHeader('Location') || 'None';
+        $('#searchid3').val(queryURL);
+        errorToken.hide();
+      },
+      error: function (xhr, status, errorThrown){
+       errorToken.text(status + ' : ' + errorThrown);
+       errorToken.show();
+      }
+    });
+  }
+
+  function doGet() {
+    var searchUrl = $('#searchid3').val();
+    var start = $('#start').val() || '0';
+    var rows = $('#rows').val() || '10';
+    jQuery.ajax({
+      url: searchUrl,
+      type: 'GET',
+      data: {'start': start, 'rows': rows},
+      contentType: 'application/json; charset=utf-8',
+      success: function (data) {
+        var html = '<table><tr><th>Id</th><th>Name</th></tr>';
+        $.each(data.refs, function (i, item) {
+        	html += '<tr><td><a href="' + baseUrl + item.path + '">' + item.id + '</a></td><td>' + item.displayName + '</td></tr>';
+        });
+        html += '</table>';
+        $('#results').html(html);
+      }
+    });
+  }
+
+  $(document).ready(function() {
+	$.ajax({
+	  url : searchUrl + "/vres",
+	  type: 'GET',
+	  success: function(data){
+		var vreSelect =$('#vreselect');  
+		$.each(data, function(i, item) {
+		  var option = $('<option>');
+		  option.attr('value', item);
+		  option.append(item);
+		  vreSelect.append(option);
+		})
+	  }
+	});
+
+    $('#searchtype1').val('wwdocument');
+    $('#searchtext1').val('Zuylen');
+    $('#searchid1').val('');
+
+    $('#searchtype2').val('wwdocument');
+    $('#searchtext2').val('Gids');
+    $('#searchid2').val('');
+
+    $('#searchid3').val('');
+    $('#results').html('No results (yet)');
+  });
+</script>
+</body>
+
+</html>
