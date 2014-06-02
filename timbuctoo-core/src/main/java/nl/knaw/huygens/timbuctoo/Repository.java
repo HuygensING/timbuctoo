@@ -89,6 +89,7 @@ public class Repository {
    * Create indexes, if they don't already exist.
    */
   private void ensureIndexes() throws StorageException {
+    storage.ensureIndex(false, Relation.class, "^typeId");
     storage.ensureIndex(false, Relation.class, "^sourceId");
     storage.ensureIndex(false, Relation.class, "^targetId");
     storage.ensureIndex(false, Relation.class, "^sourceId", "^targetId");
@@ -106,16 +107,20 @@ public class Repository {
   public StorageStatus getStatus() {
     StorageStatus status = new StorageStatus();
     for (Class<? extends SystemEntity> type : registry.getSystemEntityTypes()) {
-      status.addSystemEntityCount(getCount(type));
+      if (storage.count(type) != 0) {
+        status.addSystemEntityStats(getStats(type));
+      }
     }
     for (Class<? extends DomainEntity> type : registry.getPrimitiveDomainEntityTypes()) {
-      status.addDomainEntityCount(getCount(type));
+      if (storage.count(type) != 0) {
+        status.addDomainEntityStats(getStats(type));
+      }
     }
     return status;
   }
 
-  private KV<Long> getCount(Class<? extends Entity> type) {
-    return new KV<Long>(type.getSimpleName(), storage.count(type));
+  private KV<Long> getStats(Class<? extends Entity> type) {
+    return new KV<Long>(type.getSimpleName(), storage.count(type), storage.getStatistics(type));
   }
 
   public TypeRegistry getTypeRegistry() {

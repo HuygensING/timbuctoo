@@ -39,6 +39,11 @@ public interface Storage {
   void ensureIndex(boolean unique, Class<? extends Entity> type, String... fields) throws StorageException;
 
   /**
+   * Returns storage statistics for the specified entity type.
+   */
+  <T extends Entity> String getStatistics(Class<T> type);
+
+  /**
    * Closes the underlying storage.
    */
   void close();

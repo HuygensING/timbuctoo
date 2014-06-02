@@ -34,7 +34,7 @@ public class MongoDBTest {
     @Override
     public void describeTo(Description description) {
       description.appendText("StorageException with throwable");
-	}
+    }
 
     @Override
     public boolean matchesSafely(Exception item) {
@@ -61,6 +61,7 @@ public class MongoDBTest {
       doThrow(MongoException.class).when(dbCollection).ensureIndex(any(DBObject.class), any(DBObject.class));
       doThrow(MongoException.class).when(dbCollection).find(any(DBObject.class));
       doThrow(MongoException.class).when(dbCollection).findOne(any(DBObject.class));
+      doThrow(MongoException.class).when(dbCollection).getStats();
       doThrow(MongoException.class).when(dbCollection).remove(any(DBObject.class));
     }
   }
@@ -150,6 +151,27 @@ public class MongoDBTest {
       mongoDB.findOne(dbCollection, query);
     } finally {
       verify(dbCollection).findOne(query);
+    }
+  }
+
+  // getStats
+
+  @Test
+  public void testGetStatsNoException() throws StorageException {
+    testGetStats(NO_EXCEPTION);
+  }
+
+  @Test
+  public void testGetStatsThrowException() throws StorageException {
+    testGetStats(THROW_EXCEPTION);
+  }
+
+  private void testGetStats(boolean throwException) throws StorageException {
+    setupMongo(throwException);
+    try {
+      mongoDB.getStats(dbCollection);
+    } finally {
+      verify(dbCollection).getStats();
     }
   }
 

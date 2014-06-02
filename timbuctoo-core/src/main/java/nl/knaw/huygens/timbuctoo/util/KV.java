@@ -23,16 +23,22 @@ package nl.knaw.huygens.timbuctoo.util;
  */
 
 /**
- * Represents a key-value pair.
+ * Represents a key-value pair with optional info.
  */
 public class KV<T> {
 
   private final String key;
   private final T value;
+  private final String info;
 
-  public KV(String key, T value) {
+  public KV(String key, T value, String info) {
     this.key = key;
     this.value = value;
+    this.info = info;
+  }
+
+  public KV(String key, T value) {
+    this(key, value, "");
   }
 
   public String getKey() {
@@ -41,6 +47,10 @@ public class KV<T> {
 
   public T getValue() {
     return value;
+  }
+
+  public String getInfo() {
+    return info;
   }
 
 }

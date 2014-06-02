@@ -30,39 +30,39 @@ import com.google.common.collect.Lists;
 
 public class StorageStatus {
 
-  private final List<KV<Long>> domainEntityCounts;
-  private final List<KV<Long>> systemEntityCounts;
+  private final List<KV<Long>> domainEntityStats;
+  private final List<KV<Long>> systemEntityStats;
 
   public StorageStatus() {
-    domainEntityCounts = Lists.newArrayList();
-    systemEntityCounts = Lists.newArrayList();
+    domainEntityStats = Lists.newArrayList();
+    systemEntityStats = Lists.newArrayList();
   }
 
-  public List<KV<Long>> getDomainEntityCounts() {
-    return domainEntityCounts;
+  public List<KV<Long>> getDomainEntityStats() {
+    return domainEntityStats;
   }
 
-  public void addDomainEntityCount(KV<Long> count) {
-    domainEntityCounts.add(count);
+  public void addDomainEntityStats(KV<Long> stats) {
+    domainEntityStats.add(stats);
   }
 
-  public List<KV<Long>> getSystemEntityCounts() {
-    return systemEntityCounts;
+  public List<KV<Long>> getSystemEntityStats() {
+    return systemEntityStats;
   }
 
-  public void addSystemEntityCount(KV<Long> count) {
-    systemEntityCounts.add(count);
+  public void addSystemEntityStats(KV<Long> stats) {
+    systemEntityStats.add(stats);
   }
 
   @Override
   public String toString() {
     StringBuilder builder = new StringBuilder();
     builder.append("System entity counts\n");
-    for (KV<Long> kv : systemEntityCounts) {
+    for (KV<Long> kv : systemEntityStats) {
       builder.append(String.format("- %-20s %6d\n", kv.getKey(), kv.getValue()));
     }
     builder.append("Domain entity counts\n");
-    for (KV<Long> kv : domainEntityCounts) {
+    for (KV<Long> kv : domainEntityStats) {
       builder.append(String.format("- %-20s %6d\n", kv.getKey(), kv.getValue()));
     }
     return builder.toString();

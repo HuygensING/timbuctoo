@@ -63,16 +63,16 @@
         var html = '';
 
         html += '<td class="column"><h3>Stored system entities</h3>';
-        html += '<table><tr><th>Type</th><th>Count</th></tr>';
-        $.each(data.storageStatus.systemEntityCounts, function (i, item) {
-          html += '<tr><td class="name">' + item.key + '</td><td class="number">' + item.value + '</td></tr>';
+        html += '<table><tr><th>Type</th><th>Statistics</th></tr>';
+        $.each(data.storageStatus.systemEntityStats, function (i, item) {
+          html += '<tr><td class="name">' + item.key + '</td><td>' + item.info + '</td></tr>';
         });
         html += '</table></td>';
 
         html += '<td class="column"><h3>Stored domain entities</h3>';
-        html += '<table><tr><th>Type</th><th>Count</th></tr>';
-        $.each(data.storageStatus.domainEntityCounts, function (i, item) {
-          html += '<tr><td class="name">' + item.key + '</td><td class="number">' + item.value + '</td></tr>';
+        html += '<table><tr><th>Type</th><th>Statistics</th></tr>';
+        $.each(data.storageStatus.domainEntityStats, function (i, item) {
+          html += '<tr><td class="name">' + item.key + '</td><td>' + item.info + '</td></tr>';
         });
         html += '</table></td>';
         $('#mongostatus').html(html);

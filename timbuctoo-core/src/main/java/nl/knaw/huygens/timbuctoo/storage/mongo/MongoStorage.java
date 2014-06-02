@@ -102,6 +102,15 @@ public class MongoStorage implements Storage {
   }
 
   @Override
+  public <T extends Entity> String getStatistics(Class<T> type) {
+    try {
+      return mongoDB.getStats(getDBCollection(type)).toString();
+    } catch (StorageException e) {
+      return "?";
+    }
+  }
+
+  @Override
   public void close() {
     mongoDB.close();
   }
