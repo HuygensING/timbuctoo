@@ -118,7 +118,7 @@ public class SearchResultTool {
   }
 
   private void displayStatus(boolean verbose) {
-    StorageIterator<SearchResult> iterator = repository.getEntities(SearchResult.class);
+    StorageIterator<SearchResult> iterator = repository.getSystemEntities(SearchResult.class);
     System.out.printf("Search results in storage: %5d%n", iterator.size());
     while (verbose && iterator.hasNext()) {
       SearchResult result = iterator.next();

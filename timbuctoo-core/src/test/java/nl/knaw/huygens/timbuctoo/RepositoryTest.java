@@ -96,9 +96,21 @@ public class RepositoryTest {
   }
 
   @Test
-  public void testGetEntities() throws Exception {
-    repository.getEntities(BaseDomainEntity.class);
-    verify(storage).getEntities(BaseDomainEntity.class);
+  public void testGetSystemEntities() throws Exception {
+    repository.getSystemEntities(TestSystemEntity.class);
+    verify(storage).getSystemEntities(TestSystemEntity.class);
+  }
+
+  @Test
+  public void testGetPrimitiveDomainEntities() throws Exception {
+    repository.getDomainEntities(BaseDomainEntity.class);
+    verify(storage).getDomainEntities(BaseDomainEntity.class);
+  }
+
+  @Test
+  public void testGetProjectDomainEntities() throws Exception {
+    repository.getDomainEntities(ProjectADomainEntity.class);
+    verify(storage).getDomainEntities(ProjectADomainEntity.class);
   }
 
   @Test

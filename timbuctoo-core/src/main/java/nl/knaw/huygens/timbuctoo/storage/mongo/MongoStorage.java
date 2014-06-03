@@ -215,8 +215,14 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) throws StorageException {
+  public <T extends SystemEntity> StorageIterator<T> getSystemEntities(Class<T> type) throws StorageException {
     DBObject query = queries.selectAll();
+    return findItems(type, query);
+  }
+
+  @Override
+  public <T extends DomainEntity> StorageIterator<T> getDomainEntities(Class<T> type) throws StorageException {
+    DBObject query = TypeRegistry.isPrimitiveDomainEntity(type) ? queries.selectAll() : queries.selectVariation(type);
     return findItems(type, query);
   }
 

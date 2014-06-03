@@ -168,7 +168,7 @@ public abstract class DefaultImporter {
   protected final Map<String, Reference> relationTypes = Maps.newHashMap();
 
   protected void setupRelationTypeDefs() {
-    for (RelationType type : repository.getEntities(RelationType.class).getAll()) {
+    for (RelationType type : repository.getSystemEntities(RelationType.class).getAll()) {
       relationTypes.put(type.getRegularName(), new Reference(RelationType.class, type.getId()));
     }
   }
@@ -227,7 +227,7 @@ public abstract class DefaultImporter {
     Progress progress = new Progress();
     StorageIterator<T> iterator = null;
     try {
-      iterator = repository.getEntities(type);
+      iterator = repository.getDomainEntities(type);
       while (iterator.hasNext()) {
         progress.step();
         T entity = iterator.next();

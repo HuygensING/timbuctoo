@@ -34,6 +34,7 @@ import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
+import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -86,7 +87,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.ensureIndex(false, TestSystemEntity.class, "name", "^rev");
 
     DBObject keys = new BasicDBObject(propertyName(TestSystemEntity.class, "name"), 1) //
-      .append(propertyName(TestSystemEntity.class, "^rev"), 1);
+        .append(propertyName(TestSystemEntity.class, "^rev"), 1);
     DBObject options = new BasicDBObject("unique", false);
     verify(mongoDB).ensureIndex(eq(dbCollection), eq(keys), eq(options));
   }
@@ -97,7 +98,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   public void testDeleteSystemEntity() throws Exception {
     storage.deleteSystemEntity(TestSystemEntity.class, DEFAULT_ID);
 
-    DBObject query =  queries.selectById(DEFAULT_ID);
+    DBObject query = queries.selectById(DEFAULT_ID);
     verify(mongoDB).remove(dbCollection, query);
   }
 
@@ -159,21 +160,29 @@ public class MongoStorageTest extends MongoStorageTestBase {
     // TODO verify call to EntityReducer
   }
 
-  // getEntities
+  // getSystemEntities, getDomainEntities
 
   @Test
   public void testGetSystemEntities() throws Exception {
-    storage.getEntities(TestSystemEntity.class);
+    storage.getSystemEntities(TestSystemEntity.class);
 
     DBObject query = queries.selectAll();
     verify(mongoDB).find(dbCollection, query);
   }
 
   @Test
-  public void testGetDomainEntities() throws Exception {
-    storage.getEntities(BaseDomainEntity.class);
+  public void testGetPrimitiveDomainEntities() throws Exception {
+    storage.getDomainEntities(BaseDomainEntity.class);
 
     DBObject query = queries.selectAll();
+    verify(mongoDB).find(dbCollection, query);
+  }
+
+  @Test
+  public void testGetProjectDomainEntities() throws Exception {
+    storage.getDomainEntities(ProjectADomainEntity.class);
+
+    DBObject query = queries.selectVariation(ProjectADomainEntity.class);
     verify(mongoDB).find(dbCollection, query);
   }
 

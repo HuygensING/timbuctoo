@@ -275,9 +275,18 @@ public class Repository {
     }
   }
 
-  public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) {
+  public <T extends SystemEntity> StorageIterator<T> getSystemEntities(Class<T> type) {
     try {
-      return storage.getEntities(type);
+      return storage.getSystemEntities(type);
+    } catch (StorageException e) {
+      LOG.error("Failed to retrieve entities of type {}", type);
+      return StorageIteratorStub.newInstance();
+    }
+  }
+
+  public <T extends DomainEntity> StorageIterator<T> getDomainEntities(Class<T> type) {
+    try {
+      return storage.getDomainEntities(type);
     } catch (StorageException e) {
       LOG.error("Failed to retrieve entities of type {}", type);
       return StorageIteratorStub.newInstance();
@@ -346,7 +355,7 @@ public class Repository {
    */
   public Map<String, RelationType> getRelationTypeMap() {
     Map<String, RelationType> map = Maps.newHashMap();
-    for (RelationType type : getEntities(RelationType.class).getAll()) {
+    for (RelationType type : getSystemEntities(RelationType.class).getAll()) {
       map.put(type.getRegularName(), type);
     }
     return map;

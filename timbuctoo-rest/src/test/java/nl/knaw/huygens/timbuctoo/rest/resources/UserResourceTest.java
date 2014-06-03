@@ -78,7 +78,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
 
     StorageIterator<User> iterator = StorageIteratorStub.newInstance(createUser("id1", "a", "b"), createUser("id2", "c", "d"));
-    when(repository.getEntities(User.class)).thenReturn(iterator);
+    when(repository.getSystemEntities(User.class)).thenReturn(iterator);
 
     GenericType<List<User>> genericType = new GenericType<List<User>>() {};
     WebResource resource = createResource();

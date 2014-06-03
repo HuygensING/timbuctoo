@@ -176,7 +176,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testGetEntities() {
     List<ProjectADomainEntity> expectedList = Lists.newArrayList(new ProjectADomainEntity("TEST001"), new ProjectADomainEntity("TEST002"));
     StorageIterator<ProjectADomainEntity> iterator = StorageIteratorStub.newInstance(expectedList);
-    when(repository.getEntities(ProjectADomainEntity.class)).thenReturn(iterator);
+    when(repository.getDomainEntities(ProjectADomainEntity.class)).thenReturn(iterator);
 
     GenericType<List<ProjectADomainEntity>> genericType = new GenericType<List<ProjectADomainEntity>>() {};
     List<ProjectADomainEntity> actualList = createResource(PROJECTADOMAINENTITIES_RESOURCE).get(genericType);
