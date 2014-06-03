@@ -124,7 +124,7 @@ public class BulkImporter {
     System.out.println(".. " + type.getSimpleName());
     StorageIterator<T> iterator = null;
     try {
-      iterator = storageManager.getEntities(type);
+      iterator = storageManager.getDomainEntities(type);
       while (iterator.hasNext()) {
         T entity = iterator.next();
         indexManager.addEntity(type, entity.getId());

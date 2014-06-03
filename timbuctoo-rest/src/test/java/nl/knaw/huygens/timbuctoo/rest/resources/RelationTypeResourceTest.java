@@ -74,7 +74,7 @@ public class RelationTypeResourceTest {
   @Test
   public void testGetAvailableRelationTypesWithNoName() {
     StorageIterator<RelationType> iterator = StorageIteratorStub.newInstance(mock(RelationType.class), mock(RelationType.class));
-    when(repository.getEntities(RelationType.class)).thenReturn(iterator);
+    when(repository.getSystemEntities(RelationType.class)).thenReturn(iterator);
 
     List<RelationType> result = resource.getAvailableRelationTypes(null);
 
@@ -95,13 +95,13 @@ public class RelationTypeResourceTest {
   public void testGetAvailableRelationTypesForProject() throws ValidationException {
     getAvailableRelationTypesWithName("subadomainentity");
   }
-  
+
   private void getAvailableRelationTypesWithName(String iname) throws ValidationException {
     RelationType type1 = createRelationType(BaseDomainEntity.class, PrimitiveDomainEntity.class);
     RelationType type2 = createRelationType(BaseDomainEntity.class, AnotherPrimitiveDomainEntity.class);
     RelationType type3 = createRelationType(PrimitiveDomainEntity.class, AnotherPrimitiveDomainEntity.class);
     StorageIterator<RelationType> iterator = StorageIteratorStub.newInstance(type1, type2, type3);
-    when(repository.getEntities(RelationType.class)).thenReturn(iterator);
+    when(repository.getSystemEntities(RelationType.class)).thenReturn(iterator);
 
     List<RelationType> result = resource.getAvailableRelationTypes(iname);
 

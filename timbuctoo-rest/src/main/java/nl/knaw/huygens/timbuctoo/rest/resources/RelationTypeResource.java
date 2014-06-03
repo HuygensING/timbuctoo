@@ -92,8 +92,9 @@ public class RelationTypeResource extends ResourceBase {
       @Override
       public boolean apply(RelationType entity) {
         return name == null || entity.hasSourceTypeName(name) || entity.hasTargetTypeName(name);
-      }};
-    List<RelationType> entities = repository.getEntities(RelationType.class).getAll();
+      }
+    };
+    List<RelationType> entities = repository.getSystemEntities(RelationType.class).getAll();
     return Lists.newArrayList(Iterables.filter(entities, predicate));
   }
 

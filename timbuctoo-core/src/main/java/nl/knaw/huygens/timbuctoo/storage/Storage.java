@@ -116,9 +116,14 @@ public interface Storage {
   <T extends Entity> T getItem(Class<T> type, String id) throws StorageException;
 
   /**
-   * Retrieves entities by type.
+   * Retrieves all system entities of the specified type.
    */
-  <T extends Entity> StorageIterator<T> getEntities(Class<T> type) throws StorageException;
+  <T extends SystemEntity> StorageIterator<T> getSystemEntities(Class<T> type) throws StorageException;
+
+  /**
+   * Retrieves all domain entities of the specified type.
+   */
+  <T extends DomainEntity> StorageIterator<T> getDomainEntities(Class<T> type) throws StorageException;
 
   /**
    * Retrieves entities by type and property.
