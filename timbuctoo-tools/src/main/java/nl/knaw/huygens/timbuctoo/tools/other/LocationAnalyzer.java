@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.neww;
+package nl.knaw.huygens.timbuctoo.tools.other;
 
 /*
  * #%L
@@ -23,40 +23,26 @@ package nl.knaw.huygens.timbuctoo.tools.importer.neww;
  */
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
-import nl.knaw.huygens.timbuctoo.util.Token;
-import nl.knaw.huygens.timbuctoo.util.TokenHandler;
-import nl.knaw.huygens.timbuctoo.util.Tokens;
 
-public class RelationAnalyzer {
+public class LocationAnalyzer {
 
   public static void main(String[] args) throws Exception {
     final Repository repository = ToolsInjectionModule.createRepositoryInstance().getRepository();
     try {
-      Tokens tokens = new Tokens();
-      StorageIterator<Relation> iterator = repository.getDomainEntities(Relation.class);
+      StorageIterator<Location> iterator = repository.getDomainEntities(Location.class);
       while (iterator.hasNext()) {
-        Relation relation = iterator.next();
-        tokens.increment(relation.getTypeId());
+        Location location = iterator.next();
+        System.out.println(location.getDisplayName());
       }
       iterator.close();
-      tokens.handleSortedByCount(new TokenHandler() {
-        @Override
-        public boolean handle(Token token) {
-          String id = token.getText();
-          RelationType type = repository.getRelationType(id);
-          System.out.printf("%s %-25s %6d%n", id, type.getRegularName(), token.getCount());
-          return true;
-        }
-      });
     } finally {
       if (repository != null) {
         repository.close();
       }
-      // TODO close index manager, if it's not used...
+      // TODO close index manager, even if it's not used...
     }
   }
 
