@@ -25,7 +25,7 @@ package nl.knaw.huygens.timbuctoo.model.neww;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.model.EntityRef;
+import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.model.Person;
 
 import org.apache.commons.lang.StringUtils;
@@ -171,19 +171,19 @@ public class WWPerson extends Person {
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getPrimaryLanguages() {
+  public List<RelationRef> getPrimaryLanguages() {
     return getRelations("hasPersonLanguage");
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_collective", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getCollectives() {
+  public List<RelationRef> getCollectives() {
     return getRelations("isMemberOf");
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_religion", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getReligions() {
+  public List<RelationRef> getReligions() {
     return getRelations("hasReligion");
   }
 

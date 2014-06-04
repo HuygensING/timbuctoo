@@ -40,7 +40,7 @@ import com.google.common.collect.Maps;
 
 public abstract class DomainEntity extends Entity implements Variable {
 
-  private static final List<EntityRef> NO_RELATIONS = ImmutableList.of();
+  private static final List<RelationRef> NO_RELATIONS = ImmutableList.of();
 
   public static final String PID = "^pid";
   public static final String DELETED = "^deleted";
@@ -50,7 +50,7 @@ public abstract class DomainEntity extends Entity implements Variable {
   private String pid; // the persistent identifier.
   private boolean deleted;
   private int relationCount;
-  private final Map<String, List<EntityRef>> relations = Maps.newHashMap();
+  private final Map<String, List<RelationRef>> relations = Maps.newHashMap();
   private List<String> variations = Lists.newArrayList();
   private List<Role> roles = Lists.newArrayList();
 
@@ -79,13 +79,13 @@ public abstract class DomainEntity extends Entity implements Variable {
   }
 
   @JsonProperty("@relations")
-  public Map<String, List<EntityRef>> getRelations() {
+  public Map<String, List<RelationRef>> getRelations() {
     return relations;
   }
 
   @JsonIgnore
-  public List<EntityRef> getRelations(String name) {
-    List<EntityRef> list = relations.get(name);
+  public List<RelationRef> getRelations(String name) {
+    List<RelationRef> list = relations.get(name);
     return (list != null) ? list : NO_RELATIONS;
   }
 
@@ -99,9 +99,9 @@ public abstract class DomainEntity extends Entity implements Variable {
     this.relationCount = relationCount;
   }
 
-  public void addRelation(String name, EntityRef ref) {
+  public void addRelation(String name, RelationRef ref) {
     relationCount++;
-    List<EntityRef> refs = relations.get(name);
+    List<RelationRef> refs = relations.get(name);
     if (refs == null) {
       refs = Lists.newArrayList();
       relations.put(name, refs);
