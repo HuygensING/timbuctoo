@@ -28,7 +28,6 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.model.RelationEntityRef;
-import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.util.Text;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -58,18 +57,14 @@ public class WWDocument extends Document {
   @Override
   public String getDisplayName() {
     StringBuilder builder = new StringBuilder();
-    List<EntityRef> refs = getRelations("isCreatedBy");
-    if (refs != null) {
-      for (EntityRef ref : refs) {
-        RelationEntityRef rref = (RelationEntityRef) ref;
-        String author = rref.getDisplayName().replace("[TEMP] ", "");
-        Text.appendTo(builder, author, "; ");
-      }
+    for (EntityRef ref : getRelations("isCreatedBy")) {
+      RelationEntityRef rref = (RelationEntityRef) ref;
+      String author = rref.getDisplayName().replace("[TEMP] ", "");
+      Text.appendTo(builder, author, "; ");
     }
     Text.appendTo(builder, getTitle(), " - ");
-    Datable d = getDate();
-    if (d != null) {
-      int year = d.getFromYear();
+    if (getDate() != null) {
+      int year = getDate().getFromYear();
       builder.append(String.format(" (%d)", year));
     }
     return builder.toString();
