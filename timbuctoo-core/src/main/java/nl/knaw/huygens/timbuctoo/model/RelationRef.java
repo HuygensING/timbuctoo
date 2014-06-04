@@ -27,26 +27,30 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import com.google.common.base.Joiner;
 
 /**
- * A reference to an entity, to be used in other entities.
+ * A reference to a relation, to be used in other entities.
  * The reference is partially denormalized by including the display name.
- *
- * It is an open question whether we should include the variation.
  */
-public class EntityRef {
+public class RelationRef {
 
   private String type;
   private String id;
   private String path;
   private String displayName;
+  private String relationId;
+  private boolean accepted;
+  private int rev;
 
   // For deserialization...
-  public EntityRef() {}
+  public RelationRef() {}
 
-  public EntityRef(String type, String xtype, String id, String displayName) {
+  public RelationRef(String type, String xtype, String id, String displayName, String relationId, boolean accepted, int rev) {
     this.type = type;
     this.id = id;
     this.path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
     this.displayName = displayName;
+    this.rev = rev;
+    setRelationId(relationId);
+    setAccepted(accepted);
   }
 
   public String getType() {
@@ -81,10 +85,30 @@ public class EntityRef {
     this.displayName = displayName;
   }
 
+  public String getRelationId() {
+    return relationId;
+  }
+
+  public void setRelationId(String relationId) {
+    this.relationId = relationId;
+  }
+
+  public boolean isAccepted() {
+    return accepted;
+  }
+
+  public void setAccepted(boolean accepted) {
+    this.accepted = accepted;
+  }
+
+  public int getRev() {
+    return rev;
+  }
+
   @Override
   public boolean equals(Object object) {
-    if (object instanceof EntityRef) {
-      EntityRef that = (EntityRef) object;
+    if (object instanceof RelationRef) {
+      RelationRef that = (RelationRef) object;
       return (this.type == null ? that.type == null : this.type.equals(that.type)) //
           && (this.id == null ? that.id == null : this.id.equals(that.id));
     }

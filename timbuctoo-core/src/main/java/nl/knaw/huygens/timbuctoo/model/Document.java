@@ -179,19 +179,19 @@ public class Document extends DomainEntity {
   @JsonIgnore
   @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true), //
       @IndexAnnotation(fieldName = "dynamic_sort_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isSortable = true) })
-  public List<EntityRef> getCreators() {
+  public List<RelationRef> getCreators() {
     return getRelations("isCreatedBy");
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getSubjects() {
+  public List<RelationRef> getSubjects() {
     return getRelations("hasSubject"); // undefined relation name, currently not used
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getLanguages() {
+  public List<RelationRef> getLanguages() {
     return getRelations("hasWorkLanguage");
   }
 

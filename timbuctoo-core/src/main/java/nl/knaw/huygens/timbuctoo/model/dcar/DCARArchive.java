@@ -35,7 +35,7 @@ import nl.knaw.huygens.timbuctoo.facet.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Archive;
-import nl.knaw.huygens.timbuctoo.model.EntityRef;
+import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.model.util.PeriodHelper;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -269,7 +269,7 @@ public class DCARArchive extends Archive {
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
-  public List<EntityRef> getCreators() {
+  public List<RelationRef> getCreators() {
     return getRelations(IS_CREATOR_OF.inverse);
   }
 
@@ -283,19 +283,19 @@ public class DCARArchive extends Archive {
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getPlaceKeywords() {
+  public List<RelationRef> getPlaceKeywords() {
     return getRelations(HAS_ARCHIVE_PLACE.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getSubjectKeywords() {
+  public List<RelationRef> getSubjectKeywords() {
     return getRelations(HAS_ARCHIVE_KEYWORD.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getPersons() {
+  public List<RelationRef> getPersons() {
     return getRelations(HAS_ARCHIVE_PERSON.regular);
   }
 
@@ -326,19 +326,19 @@ public class DCARArchive extends Archive {
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_related_archive", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
-  public List<EntityRef> getOverheadArchives() {
+  public List<RelationRef> getOverheadArchives() {
     return getRelations(HAS_PARENT_ARCHIVE.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_related_archive", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
-  public List<EntityRef> getUnderlyingArchives() {
+  public List<RelationRef> getUnderlyingArchives() {
     return getRelations(HAS_PARENT_ARCHIVE.inverse);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_related_archive", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
-  public List<EntityRef> getRelatedUnitArchives() {
+  public List<RelationRef> getRelatedUnitArchives() {
     return getRelations(HAS_SIBLING_ARCHIVE.regular);
   }
 

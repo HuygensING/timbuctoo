@@ -31,7 +31,7 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.facet.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
-import nl.knaw.huygens.timbuctoo.model.EntityRef;
+import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.model.Legislation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -171,19 +171,19 @@ public class DCARLegislation extends Legislation {
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getPlaceKeywords() {
+  public List<RelationRef> getPlaceKeywords() {
     return getRelations(HAS_LEGISLATION_PLACE.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getSubjectKeywords() {
+  public List<RelationRef> getSubjectKeywords() {
     return getRelations(HAS_LEGISLATION_KEYWORD.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getPersons() {
+  public List<RelationRef> getPersons() {
     return getRelations(HAS_LEGISLATION_PERSON.regular);
   }
 

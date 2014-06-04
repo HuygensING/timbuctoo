@@ -26,8 +26,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Document;
-import nl.knaw.huygens.timbuctoo.model.EntityRef;
-import nl.knaw.huygens.timbuctoo.model.RelationEntityRef;
+import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.util.Text;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -57,9 +56,8 @@ public class WWDocument extends Document {
   @Override
   public String getDisplayName() {
     StringBuilder builder = new StringBuilder();
-    for (EntityRef ref : getRelations("isCreatedBy")) {
-      RelationEntityRef rref = (RelationEntityRef) ref;
-      String author = rref.getDisplayName().replace("[TEMP] ", "");
+    for (RelationRef ref : getRelations("isCreatedBy")) {
+      String author = ref.getDisplayName().replace("[TEMP] ", "");
       Text.appendTo(builder, author, "; ");
     }
     Text.appendTo(builder, getTitle(), " - ");
@@ -107,20 +105,20 @@ public class WWDocument extends Document {
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_genre", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getGenres() {
+  public List<RelationRef> getGenres() {
     return getRelations("hasGenre");
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_library", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
-  public List<EntityRef> getLibraries() {
+  public List<RelationRef> getLibraries() {
     // Relation with collectives with type "library".
     return getRelations("isStoredAt");
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_origin", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getOrigins() {
+  public List<RelationRef> getOrigins() {
     return getRelations("hasPublishLocation");
   }
 

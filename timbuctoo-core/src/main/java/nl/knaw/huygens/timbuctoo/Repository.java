@@ -36,11 +36,10 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.model.RelationEntityRef;
+import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
@@ -408,11 +407,11 @@ public class Repository {
         RelationType relType = getRelationType(relation.getTypeId());
         checkState(relType != null, "Failed to retrieve relation type");
         if (relation.hasSourceId(entityId)) {
-          EntityRef entityRef = getEntityRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
-          entity.addRelation(relType.getRegularName(), entityRef);
+          RelationRef ref = newRelationRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+          entity.addRelation(relType.getRegularName(), ref);
         } else if (relation.hasTargetId(entityId)) {
-          EntityRef entityRef = getEntityRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
-          entity.addRelation(relType.getInverseName(), entityRef);
+          RelationRef ref = newRelationRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+          entity.addRelation(relType.getInverseName(), ref);
         }
       }
     }
@@ -420,7 +419,7 @@ public class Repository {
 
   // Relations are defined between primitive domain entities
   // Map to a domain entity in the package from which an entity is requested
-  private EntityRef getEntityRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws StorageException {
+  private RelationRef newRelationRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws StorageException {
     String iname = reference.getType();
     Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
     type = mapper.map(type);
@@ -428,7 +427,7 @@ public class Repository {
     String xname = registry.getXNameForIName(iname);
     DomainEntity entity = storage.getItem(type, reference.getId());
 
-    return new RelationEntityRef(iname, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
+    return new RelationRef(iname, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
   }
 
   // --- languages -------------------------------------------------------------

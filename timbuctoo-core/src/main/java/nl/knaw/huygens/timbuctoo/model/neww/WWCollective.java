@@ -26,7 +26,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Collective;
-import nl.knaw.huygens.timbuctoo.model.EntityRef;
+import nl.knaw.huygens.timbuctoo.model.RelationRef;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -57,13 +57,13 @@ public class WWCollective extends Collective {
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_location", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
-  public List<EntityRef> getLocations() {
+  public List<RelationRef> getLocations() {
     return getRelations("hasLocation");
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_member", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
-  public List<EntityRef> getMembers() {
+  public List<RelationRef> getMembers() {
     return getRelations("hasMember");
   }
 

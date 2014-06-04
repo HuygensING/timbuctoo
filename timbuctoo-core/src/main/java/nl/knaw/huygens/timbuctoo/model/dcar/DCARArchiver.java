@@ -34,7 +34,7 @@ import nl.knaw.huygens.timbuctoo.facet.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Archiver;
-import nl.knaw.huygens.timbuctoo.model.EntityRef;
+import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.model.util.PeriodHelper;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -170,31 +170,31 @@ public class DCARArchiver extends Archiver {
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_archive", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
-  public List<EntityRef> getRelatedArchives() {
+  public List<RelationRef> getRelatedArchives() {
     return getRelations(IS_CREATOR_OF.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_related_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
-  public List<EntityRef> getRelatedArchivers() {
+  public List<RelationRef> getRelatedArchivers() {
     return getRelations(HAS_SIBLING_ARCHIVER.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getPlaceKeywords() {
+  public List<RelationRef> getPlaceKeywords() {
     return getRelations(HAS_ARCHIVER_PLACE.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getSubjectKeywords() {
+  public List<RelationRef> getSubjectKeywords() {
     return getRelations(HAS_ARCHIVER_KEYWORD.regular);
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<EntityRef> getPersons() {
+  public List<RelationRef> getPersons() {
     return getRelations(HAS_ARCHIVER_PERSON.regular);
   }
 
