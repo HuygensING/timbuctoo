@@ -34,10 +34,13 @@ import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public abstract class DomainEntity extends Entity implements Variable {
+
+  private static final List<EntityRef> NO_RELATIONS = ImmutableList.of();
 
   public static final String PID = "^pid";
   public static final String DELETED = "^deleted";
@@ -47,7 +50,7 @@ public abstract class DomainEntity extends Entity implements Variable {
   private String pid; // the persistent identifier.
   private boolean deleted;
   private int relationCount;
-  private Map<String, List<EntityRef>> relations = Maps.newHashMap();
+  private final Map<String, List<EntityRef>> relations = Maps.newHashMap();
   private List<String> variations = Lists.newArrayList();
   private List<Role> roles = Lists.newArrayList();
 
@@ -82,7 +85,8 @@ public abstract class DomainEntity extends Entity implements Variable {
 
   @JsonIgnore
   public List<EntityRef> getRelations(String name) {
-    return relations.get(name);
+    List<EntityRef> list = relations.get(name);
+    return (list != null) ? list : NO_RELATIONS;
   }
 
   @JsonProperty("@relationCount")
