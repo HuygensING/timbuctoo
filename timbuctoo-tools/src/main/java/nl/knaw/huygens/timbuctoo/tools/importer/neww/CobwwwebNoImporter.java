@@ -140,9 +140,8 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
   }
 
   private CWNOPerson parsePersonResource(String xml, String id) {
-    nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
     PersonContext context = new PersonContext(id);
-    document.accept(new PersonVisitor(context));
+    parseXml(xml, new PersonVisitor(context));
     return context.person;
   }
 
@@ -339,9 +338,8 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
   }
 
   private CWNODocument parseDocumentResource(String xml, String id) {
-    nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
     DocumentContext context = new DocumentContext(id);
-    document.accept(new DocumentVisitor(context));
+    parseXml(xml, new DocumentVisitor(context));
     return context.document;
   }
 
@@ -494,9 +492,8 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
   }
 
   private void parseRelationResource(String xml, String id) {
-    nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
     RelationContext context = new RelationContext(id);
-    document.accept(new RelationVisitor(context));
+    parseXml(xml, new RelationVisitor(context));
     Reference typeRef = relationTypes.get(context.relationTypeName);
     Reference sourceRef = references.get(context.sourceId);
     Reference targetRef = references.get(context.targetId);
