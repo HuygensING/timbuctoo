@@ -132,8 +132,12 @@ public abstract class DomainEntity extends Entity implements Variable {
     }
   }
 
-  public void addVariation(Class<?> type) {
+  public void addVariation(Class<? extends DomainEntity> type) {
     addVariation(TypeNames.getInternalName(type));
+  }
+
+  public boolean hasVariation(Class<? extends DomainEntity> type) {
+    return variations.contains(TypeNames.getInternalName(type));
   }
 
   @Override

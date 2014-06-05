@@ -57,8 +57,7 @@ public class WWDocument extends Document {
   public String getDisplayName() {
     StringBuilder builder = new StringBuilder();
     for (RelationRef ref : getRelations("isCreatedBy")) {
-      String author = ref.getDisplayName().replace("[TEMP] ", "");
-      Text.appendTo(builder, author, "; ");
+      Text.appendTo(builder, ref.getDisplayName(), "; ");
     }
     Text.appendTo(builder, getTitle(), " - ");
     if (getDate() != null) {

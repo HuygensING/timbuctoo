@@ -26,7 +26,6 @@ import java.io.StringWriter;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.rest.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.TestDomainEntity;
@@ -83,12 +82,6 @@ public class HTMLGeneratorTest {
     return writer.getBuffer().toString();
   }
 
-  private void addVariations(DomainEntity entity, Class<?>... types) {
-    for (Class<?> type : types) {
-      entity.addVariation(type);
-    }
-  }
-
   private void assertContains(String html, String key, String value) {
     Assert.assertThat(html, Matchers.containsString("<tr><th>" + key + "</th><td>" + value + "</td></tr>"));
   }
@@ -123,7 +116,7 @@ public class HTMLGeneratorTest {
     String id = "TCD0000000001";
     TestDomainEntity entity = new TestDomainEntity(id, "test");
     entity.setPid("pid");
-    addVariations(entity, TestDomainEntity.class);
+    entity.addVariation(TestDomainEntity.class);
 
     String html = generateHtml(entity);
 
@@ -147,7 +140,8 @@ public class HTMLGeneratorTest {
     entity.setPid("pid");
     entity.generalTestDocValue = "generalTestDocValue";
     entity.name = "test";
-    addVariations(entity, BaseDomainEntity.class, ProjectADomainEntity.class);
+    entity.addVariation(BaseDomainEntity.class);
+    entity.addVariation(ProjectADomainEntity.class);
 
     String html = generateHtml(entity);
 
