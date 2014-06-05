@@ -136,10 +136,10 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
       openImportLog("cobwwweb-rs-log.txt");
       importRelationTypes();
       setupRelationTypeDefs();
-      importCollectives();
-      //      importPersons();
-      //      importDocuments();
-      //      importRelations();
+      // importCollectives();
+      // importPersons();
+      importDocuments();
+      // importRelations();
       displayStatus();
     } finally {
       references.clear();
@@ -346,11 +346,14 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
       if (accept(entity)) {
         String storedId = updateExistingPerson(entity);
         if (storedId == null) {
-          storedId = createNewPerson(entity);
+          storedId = addDomainEntity(CWRSPerson.class, entity, change);
+          ensureVariation(WWPerson.class, storedId, change);
         }
         storeReference(id, CWRSPerson.class, storedId);
 
         handleLanguages(entity);
+        handleBirthLocation(entity);
+        handleDeathLocation(entity);
 
         indexManager.addEntity(CWRSPerson.class, storedId);
         indexManager.updateEntity(WWPerson.class, storedId);
@@ -392,14 +395,6 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     return storedId;
   }
 
-  // Save as CWRSPerson, add WWPerson variation
-  private String createNewPerson(CWRSPerson entity) {
-    String storedId = addDomainEntity(CWRSPerson.class, entity, change);
-    WWPerson person = repository.getEntity(WWPerson.class, storedId);
-    updateProjectDomainEntity(WWPerson.class, person, change);
-    return storedId;
-  }
-
   private void handleLanguages(CWRSPerson entity) {
     for (String code : entity.tempLanguageCodes) {
       Language language = getLanguage(code);
@@ -409,8 +404,49 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
         Reference typeRef = getRelationTypeRef("hasPersonLanguage", true);
         Reference sourceRef = new Reference(Person.class, entity.getId());
         Reference targetRef = new Reference(Language.class, language.getId());
-        addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, "");
+        String id = addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, "");
+        if (id == null) {
+          log("Failed to add hasPersonLanguage relation for  %s%n", code);
+        }
       }
+    }
+  }
+
+  private void handleBirthLocation(CWRSPerson entity) {
+    String name = entity.tempBirthPlace;
+    String urn = locations.lookup(name);
+    if (urn != null) {
+      Location location = repository.findEntity(Location.class, Location.URN, urn);
+      if (location != null) {
+        Reference typeRef = getRelationTypeRef("hasBirthPlace", true);
+        Reference sourceRef = new Reference(Person.class, entity.getId());
+        Reference targetRef = new Reference(Location.class, location.getId());
+        String id = addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, "");
+        if (id == null) {
+          log("Failed to add hasBirthPlace relation for  %s%n", name);
+        }
+      }
+    } else if (name != null) {
+      log("Unknown location [%s]%n", name);
+    }
+  }
+
+  private void handleDeathLocation(CWRSPerson entity) {
+    String name = entity.tempDeathPlace;
+    String urn = locations.lookup(name);
+    if (urn != null) {
+      Location location = repository.findEntity(Location.class, Location.URN, urn);
+      if (location != null) {
+        Reference typeRef = getRelationTypeRef("hasDeathPlace", true);
+        Reference sourceRef = new Reference(Person.class, entity.getId());
+        Reference targetRef = new Reference(Location.class, location.getId());
+        String id = addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, "");
+        if (id == null) {
+          log("Failed to add hasDeathPlace relation for  %s%n", name);
+        }
+      }
+    } else if (name != null) {
+      log("Unknown location [%s]%n", name);
     }
   }
 
@@ -429,6 +465,19 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
       log("[%s] %s%n", id, String.format(format, args));
     }
   }
+
+  // <person>
+  //   <gender>0</gender>
+  //   <names>
+  //     <persName>Густав Крклец</persName>
+  //   </names>
+  //   <names>
+  //     <persName>Gustav Krklec</persName>
+  //   </names>
+  //   <personId>http://ws-knjizenstvo.etf.rs/Knjizenstvo/Cobwwweb/person/ExternalAuthor_312</personId>
+  //   <reference></reference>
+  //   <type>Author</type>
+  // </person>
 
   private class PersonVisitor extends DelegatingVisitor<PersonContext> {
     public PersonVisitor(PersonContext context) {
@@ -521,7 +570,6 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     @Override
     public void handleContent(String text, PersonContext context) {
       context.person.tempBirthPlace = text;
-      // System.out.println("PlaceOfBirth: " + text);
     }
   }
 
@@ -529,7 +577,6 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     @Override
     public void handleContent(String text, PersonContext context) {
       context.person.tempDeathPlace = text;
-      // System.out.println("PlaceOfDeath: " + text);
     }
   }
 
@@ -614,6 +661,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
     for (String id : documentIds) {
       xml = getResource(URL, "document", id);
+      log("%s%n", xml);
       CWRSDocument entity = parseDocumentResource(xml, id);
       String storedId = updateExistingDocument(entity);
       if (storedId == null) {
@@ -621,6 +669,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
       }
       storeReference(id, CWRSDocument.class, storedId);
 
+      // should be document language!
       handleLanguages(entity);
 
       indexManager.addEntity(CWRSDocument.class, storedId);
@@ -685,15 +734,24 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     }
   }
 
+  // <document>
+  //   <date>1938</date>
+  //   <documentId>http://ws-knjizenstvo.etf.rs/Knjizenstvo/Cobwwweb/document/Work_171</documentId>
+  //   <language>srp</language>
+  //   <reference></reference>
+  //   <title>Милан Ракић</title>
+  //   <type>Work</type>
+  // </document>
+
   private class DocumentVisitor extends DelegatingVisitor<DocumentContext> {
     public DocumentVisitor(DocumentContext context) {
       super(context);
       setDefaultElementHandler(new DefaultDocumentHandler());
-      addElementHandler(new DocumentIdHandler(), "documentId"); // OK
-      addElementHandler(new DocumentTypeHandler(), "type"); // OK
-      addElementHandler(new DocumentTitleHandler(), "title"); // OK
-      addElementHandler(new DocumentDescriptionHandler(), "description"); // OK
-      addElementHandler(new DocumentDateHandler(), "date"); // OK
+      addElementHandler(new DocumentIdHandler(), "documentId");
+      addElementHandler(new DocumentTypeHandler(), "type");
+      addElementHandler(new DocumentTitleHandler(), "title");
+      addElementHandler(new DocumentDescriptionHandler(), "description");
+      addElementHandler(new DocumentDateHandler(), "date");
       addElementHandler(new DocumentLanguageHandler(), "language");
       addElementHandler(new DocumentLinkHandler(), "reference");
     }

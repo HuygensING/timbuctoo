@@ -25,7 +25,6 @@ package nl.knaw.huygens.timbuctoo.model.cwrs;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.Person;
-import nl.knaw.huygens.timbuctoo.util.Text;
 
 import com.google.common.collect.Lists;
 
@@ -44,14 +43,7 @@ public class CWRSPerson extends Person {
 
   @Override
   public String getDisplayName() {
-    String name = defaultName().getShortName();
-    if (Text.isCyrillicText(name)) {
-      return name + " (Cyrillic)";
-    } else if (Text.isGreekText(name)) {
-      return name + " (Greek)";
-    } else {
-      return defaultName().getShortName();
-    }
+    return defaultName().getShortName();
   }
 
   public String getNotes() {
