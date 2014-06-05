@@ -260,7 +260,7 @@ public class MongoStorage implements Storage {
     entity.setPid(null);
     entity.setDeleted(false);
     entity.setVariations(null); // make sure the list is empty
-    entity.addVariation(getBaseClass(type));
+    entity.addVariation(toBaseDomainEntity(type));
     entity.addVariation(type);
 
     JsonNode tree = inducer.induceDomainEntity(type, entity);
