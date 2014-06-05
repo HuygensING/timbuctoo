@@ -156,6 +156,20 @@ public class Repository {
     storage.setPID(type, id, pid);
   }
 
+  /**
+   * Ensures that the specified domain entity has a variation of the appropriate type.
+   *
+   * Even though a variation of an entity may always be retrieved, it may be "virtual", i.e. constructed
+   * with default vales for the fields that do not occur in the corresponding primitive domain entity.
+   * This method makes sure that the variation is actually stored.
+   */
+  public <T extends DomainEntity> void ensureVariation(Class<T> type, String id, Change change) throws StorageException {
+    T entity = getEntity(type, id);
+    if (entity != null && !entity.hasVariation(type)) {
+      updateDomainEntity(type, entity, change);
+    }
+  }
+
   // --- delete entities -------------------------------------------------------
 
   public <T extends SystemEntity> void deleteSystemEntity(T entity) throws StorageException {

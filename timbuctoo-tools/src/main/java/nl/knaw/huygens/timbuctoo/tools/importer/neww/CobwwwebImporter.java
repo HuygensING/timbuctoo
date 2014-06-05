@@ -2,21 +2,21 @@ package nl.knaw.huygens.timbuctoo.tools.importer.neww;
 
 import java.util.List;
 
-import org.restlet.data.MediaType;
-import org.restlet.resource.ClientResource;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-
 import nl.knaw.huygens.tei.DelegatingVisitor;
 import nl.knaw.huygens.tei.Element;
 import nl.knaw.huygens.tei.ElementHandler;
 import nl.knaw.huygens.tei.Traversal;
+import nl.knaw.huygens.tei.Visitor;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
 import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
+import org.restlet.data.MediaType;
+import org.restlet.resource.ClientResource;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 
 public class CobwwwebImporter extends DefaultImporter {
 
@@ -32,10 +32,13 @@ public class CobwwwebImporter extends DefaultImporter {
   }
 
   protected List<String> parseIdResource(String xml, String idElementName) {
-    nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
     IdContext context = new IdContext();
-    document.accept(new IdVisitor(context, idElementName));
+    parseXml(xml, new IdVisitor(context, idElementName));
     return context.ids;
+  }
+
+  protected void parseXml(String xml, Visitor visitor) {
+    nl.knaw.huygens.tei.Document.createFromXml(xml).accept(visitor);
   }
 
   private class IdContext extends XmlContext {

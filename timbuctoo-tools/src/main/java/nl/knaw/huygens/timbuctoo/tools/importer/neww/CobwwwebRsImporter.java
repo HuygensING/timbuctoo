@@ -57,7 +57,6 @@ import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
-import nl.knaw.huygens.timbuctoo.util.DisplayTokenHandler;
 import nl.knaw.huygens.timbuctoo.util.Text;
 import nl.knaw.huygens.timbuctoo.util.Tokens;
 
@@ -116,7 +115,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   private final Map<String, Reference> references = Maps.newHashMap();
   /** Used languages. */
   private LoadingCache<String, Language> languages;
-  private LocationConcordance locations;
+  private final LocationConcordance locations;
 
   public CobwwwebRsImporter(XRepository repository, String inputDirName) throws Exception {
     super(repository);
@@ -138,13 +137,12 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
       importRelationTypes();
       setupRelationTypeDefs();
       importCollectives();
-      if ("x".isEmpty()) {
-      importPersons();
-      importDocuments();
-      importRelations();
-      }
+      //      importPersons();
+      //      importDocuments();
+      //      importRelations();
       displayStatus();
     } finally {
+      references.clear();
       displayErrorSummary();
       closeImportLog();
     }
@@ -152,6 +150,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   // ---------------------------------------------------------------------------
 
+  // Caches the primitive domain entity Language
   private void setupLanguageCache() {
     languages = CacheBuilder.newBuilder().build(new CacheLoader<String, Language>() {
       @Override
@@ -188,40 +187,28 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   private void importCollectives() throws Exception {
     String xml = getResource(URL, "cooperations");
     List<String> ids = parseIdResource(xml, "cooperationId");
-    log("Retrieved %d id's.%n", ids.size());
+    log("Retrieved %d id's%n", ids.size());
 
     for (String id : ids) {
       xml = getResource(id);
       CWRSCollective entity = parseCollectiveResource(xml, id);
-      if (accept(entity)) {
-        String storedId = createNewCollective(entity);
 
-        handleCollectiveLocation(entity);
+      String storedId = addDomainEntity(CWRSCollective.class, entity, change);
+      ensureVariation(WWCollective.class, storedId, change);
 
-        indexManager.addEntity(CWRSCollective.class, storedId);
-        indexManager.updateEntity(WWCollective.class, storedId);
-      }
+      handleCollectiveLocation(entity);
+
+      indexManager.addEntity(CWRSCollective.class, storedId);
+      indexManager.updateEntity(WWCollective.class, storedId);
     }
-    System.out.println("Names");
-    nameTokens.handleSortedByText(new DisplayTokenHandler());
+    // System.out.println("Names");
+    // nameTokens.handleSortedByText(new DisplayTokenHandler());
   }
 
   private CWRSCollective parseCollectiveResource(String xml, String id) {
-    nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
     CollectiveContext context = new CollectiveContext(xml, id);
-    document.accept(new CollectiveVisitor(context));
+    parseXml(xml, new CollectiveVisitor(context));
     return context.entity;
-  }
-
-  private boolean accept(CWRSCollective entity) {
-    return true;
-  }
-
-  private String createNewCollective(CWRSCollective entity) {
-    String storedId = addDomainEntity(CWRSCollective.class, entity, change);
-    WWCollective collective = repository.getEntity(WWCollective.class, storedId);
-    updateProjectDomainEntity(WWCollective.class, collective, change);
-    return storedId;
   }
 
   private void handleCollectiveLocation(CWRSCollective entity) {
@@ -254,6 +241,15 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
       log("[%s] %s%n", id, String.format(format, args));
     }
   }
+
+  // <cooperation>
+  //   <cooperationId>http://ws-knjizenstvo.etf.rs/Knjizenstvo/Cobwwweb/cooperation/Publisher_TipografijaRodnikA</cooperationId>
+  //   <location>S.-PeterburgA, Russian Federation</location>
+  //   <names>Типографія РодникЪ</names>
+  //   <names>Tipografija RodnikA</names>
+  //   <reference></reference>
+  //   <type>Publishing House</type>
+  // </cooperation>
 
   private class CollectiveVisitor extends DelegatingVisitor<CollectiveContext> {
     public CollectiveVisitor(CollectiveContext context) {
@@ -314,7 +310,6 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     }
   }
 
-
   private class CollectiveLocationHandler extends CaptureHandler<CollectiveContext> {
 
     @Override
@@ -364,9 +359,8 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   }
 
   private CWRSPerson parsePersonResource(String xml, String id) {
-    nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
     PersonContext context = new PersonContext(xml, id);
-    document.accept(new PersonVisitor(context));
+    parseXml(xml, new PersonVisitor(context));
     return context.person;
   }
 
@@ -635,9 +629,8 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   }
 
   private CWRSDocument parseDocumentResource(String xml, String id) {
-    nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
     DocumentContext context = new DocumentContext(id);
-    document.accept(new DocumentVisitor(context));
+    parseXml(xml, new DocumentVisitor(context));
     return context.document;
   }
 
@@ -799,9 +792,8 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   }
 
   private void parseRelationResource(String xml, String id) {
-    nl.knaw.huygens.tei.Document document = nl.knaw.huygens.tei.Document.createFromXml(xml);
     RelationContext context = new RelationContext(id);
-    document.accept(new RelationVisitor(context));
+    parseXml(xml, new RelationVisitor(context));
 
     // Resolve ambiguous reception type
     if ("isWorkCommentedOnIn".equals(context.relationTypeName) && context.targetId.contains("/person/")) {

@@ -156,6 +156,14 @@ public abstract class DefaultImporter {
     }
   }
 
+  protected <T extends DomainEntity> void ensureVariation(Class<T> type, String id, Change change) {
+    try {
+      repository.ensureVariation(type, id, change);
+    } catch (StorageException e) {
+      handleError("Failed to ensure %s variation for id %s", type.getSimpleName(), id);
+    }
+  }
+
   // --- Relations -------------------------------------------------------------
 
   /** File with {@code RelationType} definitions; must be present on classpath. */
