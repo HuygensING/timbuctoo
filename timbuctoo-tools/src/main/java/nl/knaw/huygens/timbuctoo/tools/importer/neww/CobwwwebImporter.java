@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.tools.importer.neww;
 
+import java.io.IOException;
 import java.util.List;
 
 import nl.knaw.huygens.tei.DelegatingVisitor;
@@ -12,11 +13,13 @@ import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
 import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
-import org.restlet.data.MediaType;
-import org.restlet.resource.ClientResource;
-
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+
+import javax.ws.rs.core.MediaType;
 
 public class CobwwwebImporter extends DefaultImporter {
 
@@ -27,8 +30,13 @@ public class CobwwwebImporter extends DefaultImporter {
   protected String getResource(String... parts) throws Exception {
     String url = Joiner.on("/").join(parts);
     log("-- %s%n", url);
-    ClientResource resource = new ClientResource(url);
-    return resource.get(MediaType.APPLICATION_XML).getText();
+    Client client = Client.create();
+    WebResource webResource = client.resource(url);
+    ClientResponse response = webResource.accept(MediaType.APPLICATION_XML).get(ClientResponse.class);
+    if (response.getClientResponseStatus() != ClientResponse.Status.OK) {
+      throw new IOException("Failed to retrieve " + url);
+    }
+    return response.getEntity(String.class);
   }
 
   protected List<String> parseIdResource(String xml, String idElementName) {

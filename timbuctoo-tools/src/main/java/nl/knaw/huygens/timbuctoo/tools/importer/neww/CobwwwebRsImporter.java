@@ -57,8 +57,8 @@ import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 import nl.knaw.huygens.timbuctoo.util.Text;
-import nl.knaw.huygens.timbuctoo.util.Tokens;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,11 +76,6 @@ import com.google.common.collect.Sets;
  * Importer for Serbian COBWWWEB data.
  * Assumes the presence of New European Women Writers data,
  * because COBWWWEB records are linked to that data.
- * 
- * Place Mappings:
- * "Serbia" --> "co:srb"
- * "Hungary" --> "co:hun"
- * "Republic of Ragusa" --> "se:dubrovnik.hrv" (1358-1808)
  */
 public class CobwwwebRsImporter extends CobwwwebImporter {
 
@@ -124,9 +119,9 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
     File inputDir = new File(inputDirName);
     if (inputDir.isDirectory()) {
-      System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());
+      System.out.printf("%nImporting from %s%n", inputDir.getAbsolutePath());
     } else {
-      System.out.printf("%n.. Not a directory: %s%n", inputDir.getAbsolutePath());
+      System.out.printf("%nNot a directory: %s%n", inputDir.getAbsolutePath());
     }
     locations = new LocationConcordance(new File(inputDir, "neww-locations.txt"));
   }
@@ -136,10 +131,19 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
       openImportLog("cobwwweb-rs-log.txt");
       importRelationTypes();
       setupRelationTypeDefs();
-      // importCollectives();
-      // importPersons();
+
+      printBoxedText("Collectives");
+      importCollectives();
+ 
+      printBoxedText("Persons");
+      importPersons();
+
+      printBoxedText("Documents");
       importDocuments();
-      // importRelations();
+
+      printBoxedText("Relations");
+      importRelations();
+
       displayStatus();
     } finally {
       references.clear();
@@ -187,22 +191,23 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   private void importCollectives() throws Exception {
     String xml = getResource(URL, "cooperations");
     List<String> ids = parseIdResource(xml, "cooperationId");
-    log("Retrieved %d id's%n", ids.size());
+    log("Retrieved %d cooperation id's%n", ids.size());
 
+    Progress progress = new Progress();
     for (String id : ids) {
+      progress.step();
       xml = getResource(id);
       CWRSCollective entity = parseCollectiveResource(xml, id);
 
       String storedId = addDomainEntity(CWRSCollective.class, entity, change);
       ensureVariation(WWCollective.class, storedId, change);
 
-      handleCollectiveLocation(entity);
+      handleCollectiveLocationRelation(entity);
 
       indexManager.addEntity(CWRSCollective.class, storedId);
       indexManager.updateEntity(WWCollective.class, storedId);
     }
-    // System.out.println("Names");
-    // nameTokens.handleSortedByText(new DisplayTokenHandler());
+    progress.done();
   }
 
   private CWRSCollective parseCollectiveResource(String xml, String id) {
@@ -211,7 +216,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     return context.entity;
   }
 
-  private void handleCollectiveLocation(CWRSCollective entity) {
+  private void handleCollectiveLocationRelation(CWRSCollective entity) {
     String name = entity.tempLocation;
     String urn = locations.lookup(name);
     if (urn != null) {
@@ -318,8 +323,6 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     }
   }
 
-  private final Tokens nameTokens = new Tokens();
-
   private class CollectiveNamesHandler extends CaptureHandler<CollectiveContext> {
 
     @Override
@@ -329,7 +332,6 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
       if (Strings.isNullOrEmpty(context.entity.getName()) || Text.isCyrillicText(text)) {
         context.entity.setName(text);
       }
-      nameTokens.increment(text);
     }
   }
 
@@ -340,7 +342,9 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     List<String> personIds = parseIdResource(xml, "personId");
     log("Retrieved %d id's.%n", personIds.size());
 
+    Progress progress = new Progress();
     for (String id : personIds) {
+      progress.step();
       xml = getResource(URL, "person", id);
       CWRSPerson entity = parsePersonResource(xml, id);
       if (accept(entity)) {
@@ -351,14 +355,15 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
         }
         storeReference(id, CWRSPerson.class, storedId);
 
-        handleLanguages(entity);
-        handleBirthLocation(entity);
-        handleDeathLocation(entity);
+        handlePersonLanguageRelation(entity);
+        handleBirthPlaceRelation(entity);
+        handleDeathPlaceRelation(entity);
 
         indexManager.addEntity(CWRSPerson.class, storedId);
         indexManager.updateEntity(WWPerson.class, storedId);
       }
     }
+    progress.done();
   }
 
   private CWRSPerson parsePersonResource(String xml, String id) {
@@ -395,7 +400,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     return storedId;
   }
 
-  private void handleLanguages(CWRSPerson entity) {
+  private void handlePersonLanguageRelation(CWRSPerson entity) {
     for (String code : entity.tempLanguageCodes) {
       Language language = getLanguage(code);
       if (language == null) {
@@ -412,7 +417,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     }
   }
 
-  private void handleBirthLocation(CWRSPerson entity) {
+  private void handleBirthPlaceRelation(CWRSPerson entity) {
     String name = entity.tempBirthPlace;
     String urn = locations.lookup(name);
     if (urn != null) {
@@ -431,7 +436,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     }
   }
 
-  private void handleDeathLocation(CWRSPerson entity) {
+  private void handleDeathPlaceRelation(CWRSPerson entity) {
     String name = entity.tempDeathPlace;
     String urn = locations.lookup(name);
     if (urn != null) {
@@ -659,22 +664,24 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     List<String> documentIds = parseIdResource(xml, "documentId");
     log("Retrieved %d id's.%n", documentIds.size());
 
+    Progress progress = new Progress();
     for (String id : documentIds) {
+      progress.step();
       xml = getResource(URL, "document", id);
-      log("%s%n", xml);
       CWRSDocument entity = parseDocumentResource(xml, id);
       String storedId = updateExistingDocument(entity);
       if (storedId == null) {
-        storedId = createNewDocument(entity);
+        storedId = addDomainEntity(CWRSDocument.class, entity, change);
+        ensureVariation(WWDocument.class, storedId, change);
       }
       storeReference(id, CWRSDocument.class, storedId);
 
-      // should be document language!
-      handleLanguages(entity);
+      handleDocumentLanguageRelation(entity);
 
       indexManager.addEntity(CWRSDocument.class, storedId);
       indexManager.updateEntity(WWDocument.class, storedId);
     }
+    progress.done();
   }
 
   private CWRSDocument parseDocumentResource(String xml, String id) {
@@ -699,15 +706,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     return storedId;
   }
 
-  // Save as CWRSDocument, add WWDocument variation
-  private String createNewDocument(CWRSDocument entity) {
-    String storedId = addDomainEntity(CWRSDocument.class, entity, change);
-    WWDocument document = repository.getEntity(WWDocument.class, storedId);
-    updateProjectDomainEntity(WWDocument.class, document, change);
-    return storedId;
-  }
-
-  private void handleLanguages(CWRSDocument entity) {
+  private void handleDocumentLanguageRelation(CWRSDocument entity) {
     for (String code : entity.tempLanguages) {
       Language language = getLanguage(code);
       if (language == null) {
@@ -843,10 +842,13 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     List<String> relationIds = parseIdResource(xml, "relationId");
     log("Retrieved %d id's.%n", relationIds.size());
 
+    Progress progress = new Progress();
     for (String id : relationIds) {
+      progress.step();
       xml = getResource(id);
       parseRelationResource(xml, id);
     }
+    progress.done();
   }
 
   private void parseRelationResource(String xml, String id) {
@@ -854,14 +856,14 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     parseXml(xml, new RelationVisitor(context));
 
     // Resolve ambiguous reception type
-    if ("isWorkCommentedOnIn".equals(context.relationTypeName) && context.targetId.contains("/person/")) {
+    if ("isWorkCommentedOnIn".equals(context.relationTypeName) && context.sourceId.contains("/person/")) {
       context.relationTypeName = "isPersonCommentedOnIn";
     }
 
     Reference typeRef = relationTypes.get(context.relationTypeName);
     Reference sourceRef = references.get(context.sourceId);
     Reference targetRef = references.get(context.targetId);
-    // suppose that type is ambiguous, line <<vomments on>> How do we resolve?
+    // suppose that type is ambiguous, like <<comments on>> How do we resolve?
     if (typeRef != null && sourceRef != null && targetRef != null) {
       addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, xml);
     } else {
