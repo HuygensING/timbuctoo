@@ -108,6 +108,8 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   private final Change change;
   /** References of stored primitive entities. */
   private final Map<String, Reference> references = Maps.newHashMap();
+  /** Keys of invalid primitive entities */
+  private final Set<String> invalids = Sets.newHashSet();
   /** Used languages. */
   private LoadingCache<String, Language> languages;
   private final LocationConcordance locations;
@@ -132,16 +134,18 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
       importRelationTypes();
       setupRelationTypeDefs();
 
-      printBoxedText("Collectives");
+      printBoxedText("Get remote resources");
+
+      System.out.println(".. Collectives");
       importCollectives();
  
-      printBoxedText("Persons");
+      System.out.println(".. Persons");
       importPersons();
 
-      printBoxedText("Documents");
+      System.out.println(".. Documents");
       importDocuments();
 
-      printBoxedText("Relations");
+      System.out.println(".. Relations");
       importRelations();
 
       displayStatus();
@@ -345,9 +349,9 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     Progress progress = new Progress();
     for (String id : personIds) {
       progress.step();
-      xml = getResource(URL, "person", id);
+      xml = getResource(id);
       CWRSPerson entity = parsePersonResource(xml, id);
-      if (accept(entity)) {
+      if (accept(entity, id)) {
         String storedId = updateExistingPerson(entity);
         if (storedId == null) {
           storedId = addDomainEntity(CWRSPerson.class, entity, change);
@@ -372,11 +376,11 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     return context.person;
   }
 
-  private boolean accept(CWRSPerson entity) {
+  private boolean accept(CWRSPerson entity, String id) {
     List<PersonName> names = entity.getNames();
     if (names.size() == 1 && names.get(0).getFullName().equalsIgnoreCase("Anonymous")) {
       log("Rejected anonymous person%n");
-      // TODO register this one, in order to ignore relations
+      invalids.add(id);
       return false;
     }
     return true;
@@ -411,7 +415,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
         Reference targetRef = new Reference(Language.class, language.getId());
         String id = addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, "");
         if (id == null) {
-          log("Failed to add hasPersonLanguage relation for  %s%n", code);
+          log("Failed to add hasPersonLanguage relation for %s%n", code);
         }
       }
     }
@@ -428,7 +432,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
         Reference targetRef = new Reference(Location.class, location.getId());
         String id = addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, "");
         if (id == null) {
-          log("Failed to add hasBirthPlace relation for  %s%n", name);
+          log("Failed to add hasBirthPlace relation for %s%n", name);
         }
       }
     } else if (name != null) {
@@ -447,7 +451,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
         Reference targetRef = new Reference(Location.class, location.getId());
         String id = addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, "");
         if (id == null) {
-          log("Failed to add hasDeathPlace relation for  %s%n", name);
+          log("Failed to add hasDeathPlace relation for %s%n", name);
         }
       }
     } else if (name != null) {
@@ -667,7 +671,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     Progress progress = new Progress();
     for (String id : documentIds) {
       progress.step();
-      xml = getResource(URL, "document", id);
+      xml = getResource(id);
       CWRSDocument entity = parseDocumentResource(xml, id);
       String storedId = updateExistingDocument(entity);
       if (storedId == null) {
@@ -856,13 +860,29 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     parseXml(xml, new RelationVisitor(context));
 
     // Resolve ambiguous reception type
-    if ("isWorkCommentedOnIn".equals(context.relationTypeName) && context.sourceId.contains("/person/")) {
+    if ("isWorkCommentedOnIn".equals(context.relationTypeName) && context.targetId.contains("/person/")) {
       context.relationTypeName = "isPersonCommentedOnIn";
     }
 
     Reference typeRef = relationTypes.get(context.relationTypeName);
+    if (typeRef == null) {
+      log("Missing relation type %s%n", context.relationTypeName);
+      return;
+    }
     Reference sourceRef = references.get(context.sourceId);
+    if (sourceRef == null) {
+      if (!invalids.contains(context.sourceId)) {
+        log("No source reference for %s%n", context.sourceId);
+      }
+      return;
+    }
     Reference targetRef = references.get(context.targetId);
+    if (targetRef == null) {
+      if (!invalids.contains(context.targetId)) {
+        log("No target reference for %s%n", context.targetId);
+      }
+      return;
+    }
     // suppose that type is ambiguous, like <<comments on>> How do we resolve?
     if (typeRef != null && sourceRef != null && targetRef != null) {
       addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, xml);
