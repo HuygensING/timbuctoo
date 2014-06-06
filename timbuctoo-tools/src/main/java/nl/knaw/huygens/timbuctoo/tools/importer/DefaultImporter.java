@@ -45,6 +45,7 @@ import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 
 import org.apache.commons.lang.StringUtils;
@@ -123,11 +124,15 @@ public abstract class DefaultImporter {
 
   protected void log(String format, Object... args) {
     String text = String.format(format, args);
-    try {
-      importLog.write(text);
-    } catch (IOException e) {
-      System.out.println(text);
+    if (importLog != null) {
+      try {
+        importLog.write(text);
+        return;
+      } catch (IOException e) {
+        // ignore
+      }
     }
+    System.out.println(text);
   }
 
   // --- Storage ---------------------------------------------------------------
@@ -205,9 +210,11 @@ public abstract class DefaultImporter {
       return repository.addDomainEntity(type, relation, change);
     } catch (DuplicateException e) {
       duplicateRelationCount++;
-    } catch (Exception e) {
-      System.out.println(line);
-      System.out.println(">> " + e.getMessage());
+      log("Duplicate relation: %s%n", line);
+    } catch (ValidationException e) {
+      log("Invalid relation: %s in %s%n", e.getMessage(), line);
+    } catch (StorageException e) {
+      log("Failed to store relation: %s%n", line);
     }
     return null;
   }
