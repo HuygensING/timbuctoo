@@ -47,6 +47,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,9 +101,16 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
       openImportLog("cobwwweb-no-log.txt");
       importRelationTypes();
       setupRelationTypeDefs();
+
+      printBoxedText("Persons");
       importPersons();
+
+      printBoxedText("Documents");
       importDocuments();
+
+      printBoxedText("Relations");
       importRelations();
+
       displayStatus();
     } finally {
       displayErrorSummary();
@@ -126,7 +134,9 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
     List<String> personIds = parseIdResource(xml, "personId");
     log("Retrieved %d id's.%n", personIds.size());
 
+    Progress progress = new Progress();
     for (String id : personIds) {
+      progress.step();
       xml = getResource(URL, "person", id);
       CWNOPerson entity = parsePersonResource(xml, id);
       String storedId = updateExistingPerson(entity);
@@ -137,6 +147,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
       indexManager.addEntity(CWNOPerson.class, storedId);
       indexManager.updateEntity(WWPerson.class, storedId);
     }
+    progress.done();
   }
 
   private CWNOPerson parsePersonResource(String xml, String id) {
@@ -324,7 +335,9 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
     List<String> documentIds = parseIdResource(xml, "documentId");
     log("Retrieved %d id's.%n", documentIds.size());
 
+    Progress progress = new Progress();
     for (String id : documentIds) {
+      progress.step();
       xml = getResource(URL, "document", id);
       CWNODocument entity = parseDocumentResource(xml, id);
       String storedId = updateExistingDocument(entity);
@@ -335,6 +348,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
       indexManager.addEntity(CWNODocument.class, storedId);
       indexManager.updateEntity(WWDocument.class, storedId);
     }
+    progress.done();
   }
 
   private CWNODocument parseDocumentResource(String xml, String id) {
@@ -485,10 +499,13 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
     List<String> relationIds = parseIdResource(xml, "relationId");
     log("Retrieved %d id's.%n", relationIds.size());
 
+    Progress progress = new Progress();
     for (String id : relationIds) {
+      progress.step();
       xml = getResource(URL, "relation", id);
       parseRelationResource(xml, id);
     }
+    progress.done();
   }
 
   private void parseRelationResource(String xml, String id) {
