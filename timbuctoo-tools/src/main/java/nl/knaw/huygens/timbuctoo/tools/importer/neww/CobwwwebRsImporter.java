@@ -205,6 +205,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
       String storedId = addDomainEntity(CWRSCollective.class, entity, change);
       ensureVariation(WWCollective.class, storedId, change);
+      storeReference(id, CWRSCollective.class, storedId);
 
       handleCollectiveLocationRelation(entity);
 
@@ -856,38 +857,48 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   }
 
   private void parseRelationResource(String xml, String id) {
+    boolean inverse = false;
     RelationContext context = new RelationContext(id);
     parseXml(xml, new RelationVisitor(context));
 
+    if ("<<translated by>>".equals(context.relationTypeName)) {
+      log("Rejected relation <<translated by>>%n");
+      return;
+    }
+
     // Resolve ambiguous reception type
-    if ("isWorkCommentedOnIn".equals(context.relationTypeName) && context.targetId.contains("/person/")) {
-      context.relationTypeName = "isPersonCommentedOnIn";
+    if ("<<comments on>>".equals(context.relationTypeName)) {
+      inverse = true;
+      if (context.targetId.contains("/person/")) {
+        context.relationTypeName = "isPersonCommentedOnIn";
+      } else {
+        context.relationTypeName = "isWorkCommentedOnIn";
+      }
     }
 
     Reference typeRef = relationTypes.get(context.relationTypeName);
     if (typeRef == null) {
-      log("Missing relation type %s%n", context.relationTypeName);
+      log("Missing relation type %s in %s%n", context.relationTypeName, xml);
       return;
     }
     Reference sourceRef = references.get(context.sourceId);
     if (sourceRef == null) {
       if (!invalids.contains(context.sourceId)) {
-        log("No source reference for %s%n", context.sourceId);
+        log("No source reference for %s in %s%n", context.sourceId, xml);
       }
       return;
     }
     Reference targetRef = references.get(context.targetId);
     if (targetRef == null) {
       if (!invalids.contains(context.targetId)) {
-        log("No target reference for %s%n", context.targetId);
+        log("No target reference for %s in %s%n", context.targetId, xml);
       }
       return;
     }
-    // suppose that type is ambiguous, like <<comments on>> How do we resolve?
-    if (typeRef != null && sourceRef != null && targetRef != null) {
-      addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, xml);
+    if (inverse) {
+      addRelation(CWRSRelation.class, typeRef, targetRef, sourceRef, change, xml);
     } else {
-      log("Null reference in %s: %s --> %s%n", context.relationTypeName, context.sourceId, context.targetId);
+      addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, xml);
     }
   }
 
@@ -965,7 +976,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
       } else if (text.equalsIgnoreCase("translated by")) {
         context.relationTypeName = "<<translated by>>";
       } else if (text.equalsIgnoreCase("comments on")) {
-        context.relationTypeName = "isWorkCommentedOnIn"; // ambiguous...
+        context.relationTypeName = "<<comments on>>";
       } else if (text.equalsIgnoreCase("pseudonim of")) {
         context.relationTypeName = "isPseudonymOf";
       } else {
