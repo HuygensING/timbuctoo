@@ -75,11 +75,14 @@ public enum EDTFPattern {
   // Some day in the month 06/2004: 200406??
   // date and time: 20040611T121212
   // range, years: 2004/2006
-  YEAR_RANGE("^\\d{4}/\\d{4}(\\?)?$");
+  YEAR_RANGE("^\\d{4}/\\d{4}(\\?)?$"),
   // range, year-month/year-month: 2004-06/2006-08
   // range, unknown start: unknown/2006
   // range, unknown end: 2004/unknown
-  // range, open end:2004/open
+  // range, open start: open/2006
+  YEAR_RANGE_OPEN_START("^open/\\d{4}$"),
+  // range, open end: 2004/open
+  YEAR_RANGE_OPEN_END("^\\d{4}/open$");
   // xs:date:
   // 2008-02-03 (February 3, 2008)
   // 10000-01-01 (January 1 of the year 10,000)

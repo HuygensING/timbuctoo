@@ -39,6 +39,10 @@ import com.google.common.base.Objects;
 public class DatableTest {
 
   private void assertDate(String expectedAsText, Date date) {
+    if (date == null) {
+      Assert.assertEquals("open", expectedAsText);
+      return;
+    }
     try {
       DateFormat format = new SimpleDateFormat("yyyy-MM-dd:HH");
       format.setTimeZone(Datable.CET);
@@ -195,6 +199,20 @@ public class DatableTest {
     String edtf = "16480515~";
     Assert.assertTrue(EDTFPattern.YEAR_MONTH_DAY_A.matches(edtf));
     testDatable("1648-05-15:12", "1648-05-15:12", Datable.Certainty.MEDIUM, new Datable(edtf));
+  }
+
+  @Test
+  public void convert_YEAR_RANGE_OPEN_START() {
+    String edtf = "open/1648";
+    Assert.assertTrue(EDTFPattern.YEAR_RANGE_OPEN_START.matches(edtf));
+    testDatable("open", "1648-12-31:12", Datable.Certainty.LOW, new Datable(edtf));
+  }
+
+  @Test
+  public void convert_YEAR_RANGE_OPEN_END() {
+    String edtf = "1648/open";
+    Assert.assertTrue(EDTFPattern.YEAR_RANGE_OPEN_END.matches(edtf));
+    testDatable("1648-01-01:12", "open", Datable.Certainty.LOW, new Datable(edtf));
   }
 
   @Test

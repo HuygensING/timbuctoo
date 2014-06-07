@@ -224,7 +224,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   private class PersonIdHandler extends CaptureHandler<PersonContext> {
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       if (!context.id.equals(text)) {
         context.error("ID mismatch: %s", text);
       }
@@ -233,7 +233,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   private class PersonTypeHandler extends CaptureHandler<PersonContext> {
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       if (text.equalsIgnoreCase(Person.Type.ARCHETYPE)) {
         context.person.addType(Person.Type.ARCHETYPE);
       } else if (text.equalsIgnoreCase(Person.Type.AUTHOR)) {
@@ -248,7 +248,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   private class GenderHandler extends CaptureHandler<PersonContext> {
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       if (text.equals("1")) {
         context.person.setGender(Person.Gender.MALE);
       } else if (text.equals("2")) {
@@ -263,7 +263,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   private class DateOfBirthHandler extends CaptureHandler<PersonContext> {
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       Datable datable = new Datable(text);
       context.person.setBirthDate(datable);
     }
@@ -271,7 +271,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   private class DateOfDeathHandler extends CaptureHandler<PersonContext> {
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       Datable datable = new Datable(text);
       context.person.setDeathDate(datable);
     }
@@ -279,7 +279,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   private class NameHandler extends CaptureHandler<PersonContext> {
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       context.person.tempNames.add(text);
     }
   }
@@ -288,7 +288,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
     private static final String NEWW_URL = "http://neww.huygens.knaw.nl/authors/show/";
 
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       if (text.startsWith(NEWW_URL)) {
         log("Reference to NEWW: %s%n", text);
         context.person.tempNewwId = text.substring(NEWW_URL.length());
@@ -300,7 +300,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   private class PersonNotesHandler extends CaptureHandler<PersonContext> {
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       context.person.setNotes(text);
     }
   }
@@ -424,7 +424,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   private class DocumentIdHandler extends CaptureHandler<DocumentContext> {
     @Override
-    public void handleContent(String text, DocumentContext context) {
+    public void handleContent(Element element, DocumentContext context, String text) {
       if (!context.id.equals(text)) {
         context.error("ID mismatch: %s", text);
       }
@@ -433,7 +433,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   private class DocumentTypeHandler extends CaptureHandler<DocumentContext> {
     @Override
-    public void handleContent(String text, DocumentContext context) {
+    public void handleContent(Element element, DocumentContext context, String text) {
       if (text.equalsIgnoreCase(Document.DocumentType.WORK.name())) {
         context.document.setDocumentType(Document.DocumentType.WORK);
       } else {
@@ -444,21 +444,21 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   private class DocumentTitleHandler extends CaptureHandler<DocumentContext> {
     @Override
-    public void handleContent(String text, DocumentContext context) {
+    public void handleContent(Element element, DocumentContext context, String text) {
       context.document.setTitle(text);
     }
   }
 
   private class DocumentDescriptionHandler extends CaptureHandler<DocumentContext> {
     @Override
-    public void handleContent(String text, DocumentContext context) {
+    public void handleContent(Element element, DocumentContext context, String text) {
       context.document.setDescription(text);
     }
   }
 
   private class DocumentDateHandler extends CaptureHandler<DocumentContext> {
     @Override
-    public void handleContent(String text, DocumentContext context) {
+    public void handleContent(Element element, DocumentContext context, String text) {
       Datable datable = new Datable(text);
       context.document.setDate(datable);
     }
@@ -466,14 +466,14 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   private class DocumentNotesHandler extends CaptureHandler<DocumentContext> {
     @Override
-    public void handleContent(String text, DocumentContext context) {
+    public void handleContent(Element element, DocumentContext context, String text) {
       context.document.setNotes(text);
     }
   }
 
   private class DocumentLanguageHandler extends CaptureHandler<DocumentContext> {
     @Override
-    public void handleContent(String text, DocumentContext context) {
+    public void handleContent(Element element, DocumentContext context, String text) {
       context.document.tempLanguages.add(text);
     }
   }
@@ -482,7 +482,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
     private static final String NEWW_URL = "http://neww.huygens.knaw.nl/works/show/";
 
     @Override
-    public void handleContent(String text, DocumentContext context) {
+    public void handleContent(Element element, DocumentContext context, String text) {
       if (text.startsWith(NEWW_URL)) {
         log("Reference to NEWW: %s%n", text);
         context.document.tempNewwId = text.substring(NEWW_URL.length());
@@ -563,7 +563,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   private class RelationIdHandler extends CaptureHandler<RelationContext> {
     @Override
-    public void handleContent(String text, RelationContext context) {
+    public void handleContent(Element element, RelationContext context, String text) {
       if (!context.id.equals(text)) {
         context.error("ID mismatch: %s", text);
       }
@@ -572,14 +572,14 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   private class RelationLinkHandler extends CaptureHandler<RelationContext> {
     @Override
-    public void handleContent(String text, RelationContext context) {
+    public void handleContent(Element element, RelationContext context, String text) {
       context.error("Unexpected reference: %s", text);
     }
   }
 
   private class RelationTypeHandler extends CaptureHandler<RelationContext> {
     @Override
-    public void handleContent(String text, RelationContext context) {
+    public void handleContent(Element element, RelationContext context, String text) {
       if (text.equalsIgnoreCase("translation of")) {
         context.relationTypeName = "hasTranslation";
       } else if (text.equalsIgnoreCase("edition of")) {
@@ -597,14 +597,14 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   private class RelationActiveHandler extends CaptureHandler<RelationContext> {
     @Override
-    public void handleContent(String text, RelationContext context) {
+    public void handleContent(Element element, RelationContext context, String text) {
       context.sourceId = text;
     }
   }
 
   private class RelationPassiveHandler extends CaptureHandler<RelationContext> {
     @Override
-    public void handleContent(String text, RelationContext context) {
+    public void handleContent(Element element, RelationContext context, String text) {
       context.targetId = text;
     }
   }
