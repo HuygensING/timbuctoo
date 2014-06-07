@@ -47,6 +47,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import nl.knaw.huygens.timbuctoo.tools.importer.CaptureHandler;
 import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 
 import org.slf4j.Logger;

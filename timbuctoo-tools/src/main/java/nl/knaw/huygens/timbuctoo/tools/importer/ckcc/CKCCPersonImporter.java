@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.importer.neww;
+package nl.knaw.huygens.timbuctoo.tools.importer.ckcc;
 
 /*
  * #%L
@@ -27,9 +27,11 @@ import java.util.Collection;
 import java.util.Set;
 
 import nl.knaw.huygens.tei.DelegatingVisitor;
+import nl.knaw.huygens.tei.Document;
 import nl.knaw.huygens.tei.Element;
 import nl.knaw.huygens.tei.ElementHandler;
 import nl.knaw.huygens.tei.Traversal;
+import nl.knaw.huygens.tei.Visitor;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
 import nl.knaw.huygens.timbuctoo.XRepository;
@@ -41,8 +43,11 @@ import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import nl.knaw.huygens.timbuctoo.tools.importer.CaptureHandler;
+import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 import nl.knaw.huygens.timbuctoo.util.Files;
 import nl.knaw.huygens.timbuctoo.util.Text;
+import nl.knaw.huygens.timbuctoo.vre.CKCCVRE;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -51,7 +56,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
 
-public class CKCCPersonImporter extends CobwwwebImporter {
+public class CKCCPersonImporter extends DefaultImporter {
 
   private static final Logger LOG = LoggerFactory.getLogger(CKCCPersonImporter.class);
 
@@ -65,7 +70,7 @@ public class CKCCPersonImporter extends CobwwwebImporter {
     try {
       XRepository instance = ToolsInjectionModule.createRepositoryInstance();
       importer = new CKCCPersonImporter(instance, directory);
-      // importer.importAll();
+      importer.importAll();
     } finally {
       if (importer != null) {
         importer.close();
@@ -79,18 +84,21 @@ public class CKCCPersonImporter extends CobwwwebImporter {
   private static final String[] TEI_EXTENSIONS = { "xml" };
 
   private final Change change;
+  private final File inputDir;
 
   public CKCCPersonImporter(XRepository repository, String inputDirName) throws Exception {
     super(repository);
-    change = new Change("importer", "ckcc");
+    change = new Change("importer", CKCCVRE.NAME);
 
-    File inputDir = new File(inputDirName);
+    inputDir = new File(inputDirName);
     if (inputDir.isDirectory()) {
       System.out.printf("%nImporting from %s%n", inputDir.getCanonicalPath());
     } else {
       System.out.printf("%nNot a directory: %s%n", inputDir.getAbsolutePath());
     }
+  }
 
+  private void importAll() throws Exception {
     try {
       openImportLog("ckcc-log.txt");
       Collection<File> files = FileUtils.listFiles(inputDir, TEI_EXTENSIONS, true);
@@ -106,44 +114,22 @@ public class CKCCPersonImporter extends CobwwwebImporter {
 
   private void importPersons(File file) throws Exception {
     String name = file.getName();
+    System.out.printf(".. %s%n", name);
     if (name.equals("CKCC-organizations.xml")) {
-      log("-- Skipping %s%n", name);
+      log(".. Skipping %s%n", name);
     } else {
-      log("-- Handling %s%n", name);
+      log(".. Handling %s%n", name);
       String xml = Files.readTextFromFile(file);
       PersonContext context = new PersonContext();
-      parseXml(xml, new PersonListVisitor(context));
+      Visitor visitor = new PersonListVisitor(context);
+      Document.createFromXml(xml).accept(visitor);
     }
   }
 
   private class PersonContext extends XmlContext {
     public CKCCPerson person;
     public PersonName personName;
-
-    public void error(String format, Object... args) {
-      log(format, args);
-    }
   }
-
-// <person id="groot.hugo.1583-1645">
-//   <persName>
-//     <forename>Hugo</forename>
-//     <nameLink>de</nameLink>
-//     <surname>Groot</surname>
-//   </persName>
-//   <persName lang="la">
-//     <forename>Hugo</forename>
-//     <surname>Grotius</surname>
-//   </persName>
-//   <sex value="1">male</sex>
-//   <birth when="1583-04-10"/>
-//   <death when="1645-08-28"/>
-//   <occupation>staatsman</occupation>
-//   <occupation>rechtsgeleerde</occupation>
-//   <xref subtype="ppn" type="CEN">068407017</xref>
-//   <xref type="CERL">cnp01302116</xref>
-//   <xref type="CKCC">groot.hugo.1583-1645</xref>
-// </person>
 
   private class PersonListVisitor extends DelegatingVisitor<PersonContext> {
     public PersonListVisitor(PersonContext context) {
@@ -169,15 +155,12 @@ public class CKCCPersonImporter extends CobwwwebImporter {
     public Traversal enterElement(Element element, PersonContext context) {
       String name = element.getName();
       if (!ignoredNames.contains(name)) {
-        context.error("Unexpected element: %s%n", name);
+        log("## Unexpected element: %s%n", name);
       }
       return Traversal.NEXT;
     }
   }
 
-  /**
-   * Initializes data structures on enter, stores person on leave.
-   */
   private class PersonElementHandler implements ElementHandler<PersonContext> {
     @Override
     public Traversal enterElement(Element element, PersonContext context) {
@@ -188,9 +171,8 @@ public class CKCCPersonImporter extends CobwwwebImporter {
     @Override
     public Traversal leaveElement(Element element, PersonContext context) {
       try {
-        addDomainEntity(CKCCPerson.class, context.person, change);
-        // String storedId = addDomainEntity(CKCCPerson.class, context.person, change);
-        // indexManager.addEntity(CKCCPerson.class, storedId);
+        String storedId = addDomainEntity(CKCCPerson.class, context.person, change);
+        indexManager.addEntity(CKCCPerson.class, storedId);
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -228,7 +210,7 @@ public class CKCCPersonImporter extends CobwwwebImporter {
       } else if (element.hasName("genName")) {
         context.personName.addNameComponent(PersonNameComponent.Type.GEN_NAME, text);
       } else {
-        context.error("Unknown component: %s", element.getName());
+        log("## Unknown component: %s", element.getName());
       }
     }
   }
@@ -278,7 +260,7 @@ public class CKCCPersonImporter extends CobwwwebImporter {
         context.person.setBirthDate(new Datable("open/" + text));
         context.person.setDeathDate(new Datable(text + "/open"));
       } else {
-        // This use of "notBefore" and "notAfter" is consistent with CKCC,
+        // The use of "notBefore" and "notAfter" is consistent with CKCC,
         // but probably not as how it is intended in the TEI guidelines!
         if (element.hasAttribute("notBefore")) {
           context.person.setBirthDate(new Datable("open/" + element.getAttribute("notBefore")));
@@ -306,7 +288,7 @@ public class CKCCPersonImporter extends CobwwwebImporter {
       } else if (element.hasType("CEN")){
         context.person.setCenId(text);
       } else {
-        log("Unknown xref type %s%n", element.getType());
+        log("## Unknown xref type %s%n", element.getType());
       }
     }
   }
@@ -318,7 +300,7 @@ public class CKCCPersonImporter extends CobwwwebImporter {
       Text.appendTo(builder, context.person.getNotes(), "");
       Text.appendTo(builder, text, "; ");
       context.person.setNotes(builder.toString());
-	}
+    }
   }
 
 }

@@ -57,6 +57,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import nl.knaw.huygens.timbuctoo.tools.importer.CaptureHandler;
 import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 import nl.knaw.huygens.timbuctoo.util.Text;
 
