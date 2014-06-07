@@ -101,7 +101,7 @@ public class CobwwwebImporter extends DefaultImporter {
     public Traversal leaveElement(Element element, T context) {
       String text = context.closeLayer().trim();
       if (!text.isEmpty()) {
-        handleContent(filterField(text), context);
+        handleContent(element, context, filterField(text));
       }
       return Traversal.NEXT;
     }
@@ -115,7 +115,7 @@ public class CobwwwebImporter extends DefaultImporter {
       return text.trim();
     }
 
-    protected abstract void handleContent(String text, T context);
+    protected abstract void handleContent(Element element, T context, String text);
 
   }
 

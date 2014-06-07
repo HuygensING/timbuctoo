@@ -288,7 +288,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private class CollectiveIdHandler extends CaptureHandler<CollectiveContext> {
     @Override
-    public void handleContent(String text, CollectiveContext context) {
+    public void handleContent(Element element, CollectiveContext context, String text) {
       if (!context.id.equals(text)) {
         context.error("ID mismatch: %s", text);
       }
@@ -298,7 +298,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   private class CollectiveTypeHandler extends CaptureHandler<CollectiveContext> {
 
     @Override
-    public void handleContent(String text, CollectiveContext context) {
+    public void handleContent(Element element, CollectiveContext context, String text) {
       if (text.equals("Publishing House")) {
         text = "PUBLISHER";
       }
@@ -315,7 +315,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     // So references, if any, can be treated as simple links.
 
     @Override
-    public void handleContent(String text, CollectiveContext context) {
+    public void handleContent(Element element, CollectiveContext context, String text) {
       context.entity.addLink(new Link(text));
     }
   }
@@ -323,7 +323,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   private class CollectiveLocationHandler extends CaptureHandler<CollectiveContext> {
 
     @Override
-    public void handleContent(String text, CollectiveContext context) {
+    public void handleContent(Element element, CollectiveContext context, String text) {
       context.entity.tempLocation = text;
     }
   }
@@ -331,7 +331,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   private class CollectiveNamesHandler extends CaptureHandler<CollectiveContext> {
 
     @Override
-    public void handleContent(String text, CollectiveContext context) {
+    public void handleContent(Element element, CollectiveContext context, String text) {
       // TODO model name variants for collectives
       context.entity.tempNames.add(text);
       if (Strings.isNullOrEmpty(context.entity.getName()) || Text.isCyrillicText(text)) {
@@ -523,7 +523,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private class PersonIdHandler extends CaptureHandler<PersonContext> {
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       if (!context.id.equals(text)) {
         context.error("ID mismatch: %s", text);
       }
@@ -532,7 +532,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private class PersonTypeHandler extends CaptureHandler<PersonContext> {
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       if (text.equalsIgnoreCase(Person.Type.ARCHETYPE)) {
         context.person.addType(Person.Type.ARCHETYPE);
       } else if (text.equalsIgnoreCase(Person.Type.AUTHOR)) {
@@ -547,7 +547,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private class GenderHandler extends CaptureHandler<PersonContext> {
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       if (text.equals("1")) {
         context.person.setGender(Person.Gender.MALE);
       } else if (text.equals("2")) {
@@ -562,7 +562,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private class DateOfBirthHandler extends CaptureHandler<PersonContext> {
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       Datable datable = new Datable(text);
       context.person.setBirthDate(datable);
     }
@@ -570,7 +570,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private class DateOfDeathHandler extends CaptureHandler<PersonContext> {
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       Datable datable = new Datable(text);
       context.person.setDeathDate(datable);
     }
@@ -578,21 +578,21 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private class PlaceOfBirthHandler extends CaptureHandler<PersonContext> {
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       context.person.tempBirthPlace = text;
     }
   }
 
   private class PlaceOfDeathHandler extends CaptureHandler<PersonContext> {
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       context.person.tempDeathPlace = text;
     }
   }
 
   private class PersNameHandler extends CaptureHandler<PersonContext> {
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       List<String> words = Splitter.on(' ').splitToList(text);
       int n = words.size();
       if (n > 0) {
@@ -645,7 +645,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     private static final String NEWW_URL = "http://neww.huygens.knaw.nl/authors/show/";
 
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       if (text.startsWith(NEWW_URL)) {
         log("Reference to NEWW: %s%n", text);
         context.person.tempNewwId = text.substring(NEWW_URL.length());
@@ -657,7 +657,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private class PersonLanguagesHandler extends CaptureHandler<PersonContext> {
     @Override
-    public void handleContent(String text, PersonContext context) {
+    public void handleContent(Element element, PersonContext context, String text) {
       context.person.tempLanguageCodes.add(text);
     }
   }
@@ -776,7 +776,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private class DocumentIdHandler extends CaptureHandler<DocumentContext> {
     @Override
-    public void handleContent(String text, DocumentContext context) {
+    public void handleContent(Element element, DocumentContext context, String text) {
       if (!context.id.equals(text)) {
         context.error("ID mismatch: %s", text);
       }
@@ -785,7 +785,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private class DocumentTypeHandler extends CaptureHandler<DocumentContext> {
     @Override
-    public void handleContent(String text, DocumentContext context) {
+    public void handleContent(Element element, DocumentContext context, String text) {
       for (Document.DocumentType type : Document.DocumentType.values()) {
         if (text.equalsIgnoreCase(type.name())) {
           context.document.setDocumentType(type);
@@ -798,21 +798,21 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private class DocumentTitleHandler extends CaptureHandler<DocumentContext> {
     @Override
-    public void handleContent(String text, DocumentContext context) {
+    public void handleContent(Element element, DocumentContext context, String text) {
       context.document.setTitle(text);
     }
   }
 
   private class DocumentDescriptionHandler extends CaptureHandler<DocumentContext> {
     @Override
-    public void handleContent(String text, DocumentContext context) {
+    public void handleContent(Element element, DocumentContext context, String text) {
       context.document.setDescription(text);
     }
   }
 
   private class DocumentDateHandler extends CaptureHandler<DocumentContext> {
     @Override
-    public void handleContent(String text, DocumentContext context) {
+    public void handleContent(Element element, DocumentContext context, String text) {
       Datable datable = new Datable(text);
       context.document.setDate(datable);
     }
@@ -820,7 +820,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private class DocumentLanguageHandler extends CaptureHandler<DocumentContext> {
     @Override
-    public void handleContent(String text, DocumentContext context) {
+    public void handleContent(Element element, DocumentContext context, String text) {
       context.document.tempLanguages.add(text);
     }
   }
@@ -829,7 +829,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     private static final String NEWW_URL = "http://neww.huygens.knaw.nl/works/show/";
 
     @Override
-    public void handleContent(String text, DocumentContext context) {
+    public void handleContent(Element element, DocumentContext context, String text) {
       log("Reference: %s%n", text);
       if (text.startsWith(NEWW_URL)) {
         log("Reference to NEWW: %s%n", text);
@@ -944,7 +944,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private class RelationIdHandler extends CaptureHandler<RelationContext> {
     @Override
-    public void handleContent(String text, RelationContext context) {
+    public void handleContent(Element element, RelationContext context, String text) {
       if (!context.id.equals(text)) {
         context.error("ID mismatch: %s", text);
       }
@@ -953,14 +953,14 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private class RelationLinkHandler extends CaptureHandler<RelationContext> {
     @Override
-    public void handleContent(String text, RelationContext context) {
+    public void handleContent(Element element, RelationContext context, String text) {
       context.error("Unexpected reference: %s", text);
     }
   }
 
   private class RelationTypeHandler extends CaptureHandler<RelationContext> {
     @Override
-    public void handleContent(String text, RelationContext context) {
+    public void handleContent(Element element, RelationContext context, String text) {
       if (text.equalsIgnoreCase("translation of")) {
         context.relationTypeName = "hasTranslation";
       } else if (text.equalsIgnoreCase("edition of")) {
@@ -988,14 +988,14 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
   private class RelationActiveHandler extends CaptureHandler<RelationContext> {
     @Override
-    public void handleContent(String text, RelationContext context) {
+    public void handleContent(Element element, RelationContext context, String text) {
       context.sourceId = text;
     }
   }
 
   private class RelationPassiveHandler extends CaptureHandler<RelationContext> {
     @Override
-    public void handleContent(String text, RelationContext context) {
+    public void handleContent(Element element, RelationContext context, String text) {
       context.targetId = text;
     }
   }

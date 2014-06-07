@@ -55,11 +55,15 @@ public class Datable implements Comparable<Datable>, Serializable {
   }
 
   public boolean isValid() {
-    return (fromDate != null) && (toDate != null);
+    return (fromDate != null) || (toDate != null);
   }
 
   public boolean isRange() {
     return false;
+  }
+
+  public boolean isFloruit() {
+    return (fromDate == null) || (toDate == null);
   }
 
   public Certainty getCertainty() {
@@ -183,6 +187,20 @@ public class Datable implements Comparable<Datable>, Serializable {
         calendar.clear();
         set(calendar, Integer.parseInt(dmy2[1]), Calendar.DECEMBER, 31);
         setToDate(calendar);
+        break;
+      case YEAR_RANGE_OPEN_START: // "^open/\\d{4}$"
+        setCertainty(Certainty.LOW);
+        String[] dmy3 = text.split("/");
+        calendar.clear();
+        set(calendar, Integer.parseInt(dmy3[1]), Calendar.DECEMBER, 31);
+        setToDate(calendar);
+        break;
+      case YEAR_RANGE_OPEN_END: // "^\\d{4}/open$"
+        setCertainty(Certainty.LOW);
+        String[] dmy4 = text.split("/");
+        calendar.clear();
+        set(calendar, Integer.parseInt(dmy4[0]), Calendar.JANUARY, 1);
+        setFromDate(calendar);
         break;
       default:
         throw new RuntimeException("Unhandled case: " + edtf);

@@ -55,19 +55,19 @@ public class Person extends DomainEntity {
     }
   }
 
-  private List<String> types;
   private final Names names;
   /** Gender at birth. */
   private Gender gender;
   private Datable birthDate;
   private Datable deathDate;
+  private List<String> types;
   private List<Link> links;
 
   public Person() {
     names = new Names();
-    links = Lists.newArrayList();
-    types = Lists.newArrayList();
     gender = Gender.UNKNOWN;
+    types = Lists.newArrayList();
+    links = Lists.newArrayList();
   }
 
   protected PersonName defaultName() {
