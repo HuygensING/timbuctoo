@@ -26,8 +26,9 @@ import nl.knaw.huygens.timbuctoo.model.Person;
 
 public class CKCCPerson extends Person {
 
-  private String uri;
-  /** Either a Pica PPN or a name. */
+  /** Unique identifier for concordances */
+  private String urn;
+  /** Either a Pica PPN or a name */
   private String cenId;
   private String notes;
 
@@ -36,12 +37,12 @@ public class CKCCPerson extends Person {
     return defaultName().getShortName();
   }
 
-  public String getUri() {
-    return uri;
+  public String getUrn() {
+    return urn;
   }
 
-  public void setUri(String uri) {
-    this.uri = uri;
+  public void setUrn(String urn) {
+    this.urn = urn;
   }
 
   public String getCenId() {
