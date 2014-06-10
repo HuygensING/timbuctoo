@@ -29,6 +29,7 @@ import nl.knaw.huygens.facetedsearch.model.Facet;
 import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 
 @IDPrefix(SearchResult.ID_PREFIX)
 @EntityTypeName("search")
@@ -107,6 +108,12 @@ public class SearchResult extends SystemEntity implements Persistent {
 
   public void setFacets(List<Facet> facets) {
     this.facets = facets;
+  }
+
+  // TODO: Tempory method, should be changed when the OldSearchManager is replaced.
+  public void setFacetCount(List<FacetCount> facets2) {
+    // TODO Auto-generated method stub
+
   }
 
 }
