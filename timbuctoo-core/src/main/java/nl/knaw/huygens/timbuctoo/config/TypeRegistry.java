@@ -33,6 +33,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
@@ -110,7 +111,7 @@ public class TypeRegistry {
   private TypeRegistry() {}
 
   // This is a shared resource, so changes must be synchronized
-  public synchronized TypeRegistry init(String packageNames) {
+  public synchronized TypeRegistry init(String packageNames) throws ModelException {
     checkArgument(packageNames != null, "'packageNames' must not be null");
 
     clear();
@@ -142,7 +143,7 @@ public class TypeRegistry {
     }
   }
 
-  private void registerPackage(ClassPath classPath, String packageName) {
+  private void registerPackage(ClassPath classPath, String packageName) throws ModelException {
     Set<Class<? extends Role>> roles = Sets.newHashSet();
     for (ClassInfo info : getClassInfoSet(classPath, packageName)) {
       Class<?> type = info.load();
@@ -156,8 +157,7 @@ public class TypeRegistry {
             allowedRoles.put(entityType, roles);
           }
         } else {
-          LOG.error("Not a valid entity: '{}'", type.getName());
-          throw new IllegalStateException("Invalid entity");
+          throw new ModelException("Invalid entity %s", type);
         }
         LOG.debug("Registered entity {}", type.getName());
       } else if (isRole(type) && !shouldNotRegister(type)) {
@@ -166,8 +166,7 @@ public class TypeRegistry {
           registerRole(roleType);
           roles.add(roleType);
         } else {
-          LOG.error("Not a valid role: '{}'", type.getName());
-          throw new IllegalStateException("Invalid role");
+          throw new ModelException("Invalid role %s", type);
         }
       }
     }
@@ -187,38 +186,38 @@ public class TypeRegistry {
 
   // ---------------------------------------------------------------------------
 
-  private <T extends SystemEntity> void registerSystemEntity(Class<T> type) {
+  private <T extends SystemEntity> void registerSystemEntity(Class<T> type) throws ModelException {
     systemEntities.add(type);
 
     String iname = TypeNames.getInternalName(type);
     if (iname2SystemType.containsKey(iname)) {
-      throw new IllegalStateException("Duplicate internal type name " + iname);
+      throw new ModelException("Duplicate internal type name %s", iname);
     }
     iname2SystemType.put(iname, type);
   }
 
-  private <T extends DomainEntity> void registerDomainEntity(Class<T> type) {
+  private <T extends DomainEntity> void registerDomainEntity(Class<T> type) throws ModelException {
     domainEntities.add(type);
 
     String iname = TypeNames.getInternalName(type);
     if (iname2DomainType.containsKey(iname)) {
-      throw new IllegalStateException("Duplicate internal type name " + iname);
+      throw new ModelException("Duplicate internal type name %s", iname);
     }
     iname2DomainType.put(iname, type);
 
     String xname = TypeNames.getExternalName(type);
     if (xname2type.containsKey(xname)) {
-      throw new IllegalStateException("Duplicate internal type name " + xname);
+      throw new ModelException("Duplicate external type name %s", xname);
     }
     xname2type.put(xname, type);
 
     iname2xname.put(iname, xname);
   }
 
-  private <T extends Role> void registerRole(Class<T> role) {
+  private <T extends Role> void registerRole(Class<T> role) throws ModelException {
     String iname = TypeNames.getInternalName(role);
     if (role2iname.containsValue(iname)) {
-      throw new IllegalStateException("Duplicate internal type name " + iname);
+      throw new ModelException("Duplicate internal type name %s", iname);
     }
     role2iname.put(role, iname);
     iname2role.put(iname, role);

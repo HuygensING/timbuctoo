@@ -32,6 +32,7 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntityPrimitive;
@@ -63,19 +64,20 @@ public class EntityReducerTest {
 
   private static TypeRegistry registry;
 
-  private EntityReducer reducer;
-  private ObjectMapper mapper;
-
   @BeforeClass
-  public static void setupRegistry() {
-    registry = TypeRegistry.getInstance();
-    registry.init("test.model test.model.projecta test.model.projectb");
+  public static void setupRegistry() throws ModelException {
+    registry = TypeRegistry.getInstance().init("test.model test.model.projecta test.model.projectb");
   }
 
   @AfterClass
   public static void clearRegistry() {
     registry = null;
   }
+
+  // ---------------------------------------------------------------------------
+
+  private EntityReducer reducer;
+  private ObjectMapper mapper;
 
   @Before
   public void setup() throws Exception {

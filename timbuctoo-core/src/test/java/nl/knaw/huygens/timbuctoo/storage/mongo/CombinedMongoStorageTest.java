@@ -36,6 +36,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
@@ -71,7 +72,7 @@ public class CombinedMongoStorageTest {
   private ObjectMapper mapper;
 
   @BeforeClass
-  public static void setupTypeRegistry() {
+  public static void setupTypeRegistry() throws ModelException {
     registry = TypeRegistry.getInstance().init("timbuctoo.model timbuctoo.variation.model.*");
   }
 
