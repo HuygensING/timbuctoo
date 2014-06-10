@@ -26,10 +26,12 @@ import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import org.mongojack.JacksonDBCollection;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -37,6 +39,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
+import com.mongodb.MongoException;
 
 /**
  * A collection with id's for stored entities.
@@ -45,7 +48,8 @@ import com.mongodb.DBCollection;
 @Singleton
 public class EntityIds {
 
-  private static final String ID_COLLECTION_NAME = "counters";
+  public static final String ID_COLLECTION_NAME = "counters";
+  public static final String UNKNOWN_ID_PREFIX = "UNKN";
 
   // The counters are stored in a collection, of course
   private final JacksonDBCollection<Counter, String> counters;
@@ -65,30 +69,35 @@ public class EntityIds {
     });
   }
 
-  public String getNextId(Class<? extends Entity> type) {
-    String counterId = counterIdCache.getUnchecked(type);
-    BasicDBObject query = new BasicDBObject("_id", counterId);
-    BasicDBObject increment = new BasicDBObject("$inc", new BasicDBObject("next", 1));
+  public String getNextId(Class<? extends Entity> type) throws StorageException {
+    try {
+      String counterId = counterIdCache.getUnchecked(type);
+      BasicDBObject query = new BasicDBObject("_id", counterId);
+      BasicDBObject increment = new BasicDBObject("$inc", new BasicDBObject("next", 1));
 
-    // Find by id, return all fields, use default sort, increment the counter,
-    // return the new object, create if no object exists:
-    Counter counter = counters.findAndModify(query, null, null, false, increment, true, true);
+      // Find by id, return all fields, use default sort, increment the counter,
+      // return the new object, create if no object exists:
+      Counter counter = counters.findAndModify(query, null, null, false, increment, true, true);
 
-    return formatEntityId(type, counter.next);
+      return formatEntityId(type, counter.next);
+    } catch (MongoException e) {
+      throw new StorageException(e);
+    }
   }
-
-  public static final String UNKNOWN_ID_PREFIX = "UNKN";
 
   /**
    * Returns the prefix of an entity id.
    */
-  public static String getIDPrefix(Class<?> type) {
-    if (type != null && Entity.class.isAssignableFrom(type)) {
+  @VisibleForTesting
+  String getIDPrefix(Class<? extends Entity> type) {
+    if (type != null && type != Entity.class && Entity.class.isAssignableFrom(type)) {
       IDPrefix annotation = type.getAnnotation(IDPrefix.class);
       if (annotation != null) {
         return annotation.value();
       } else {
-        return getIDPrefix(type.getSuperclass());
+        @SuppressWarnings("unchecked")
+        Class<? extends Entity> parent = (Class<? extends Entity>) type.getSuperclass();
+        return getIDPrefix(parent);
       }
     }
     return UNKNOWN_ID_PREFIX;
@@ -97,7 +106,8 @@ public class EntityIds {
   /**
    * Returns a formatted entity id.
    */
-  public static String formatEntityId(Class<? extends Entity> type, long counter) {
+  @VisibleForTesting
+  String formatEntityId(Class<? extends Entity> type, long counter) {
     return String.format("%s%012d", getIDPrefix(type), counter);
   }
 

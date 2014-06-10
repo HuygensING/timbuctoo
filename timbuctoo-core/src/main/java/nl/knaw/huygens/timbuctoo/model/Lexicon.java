@@ -25,7 +25,7 @@ package nl.knaw.huygens.timbuctoo.model;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 
-@IDPrefix("DOCU")
+@IDPrefix("LEXI")
 public class Lexicon extends DomainEntity {
 
   private String type;

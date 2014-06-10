@@ -25,7 +25,7 @@ package nl.knaw.huygens.timbuctoo.model;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 
-@IDPrefix("DOCU")
+@IDPrefix("DOCT")
 public class Documentatie extends DomainEntity {
 
   private String type;
