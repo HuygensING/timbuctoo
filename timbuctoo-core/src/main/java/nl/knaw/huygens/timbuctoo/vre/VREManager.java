@@ -41,6 +41,7 @@ public class VREManager {
   public VREManager() {
     vreMap = Maps.newHashMap();
     List<VRE> vreList = ImmutableList.<VRE> of( //
+        new PrimitivesVRE(), //
         new BaseVRE(), //
         new CKCCVRE(), //
         new DutchCaribbeanVRE(), //
