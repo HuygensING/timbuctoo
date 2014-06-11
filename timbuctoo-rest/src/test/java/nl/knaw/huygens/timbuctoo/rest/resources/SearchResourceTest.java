@@ -170,7 +170,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   public void testPostTypeStringNull() throws Exception {
     setUpVREManager(true, true);
 
-    SearchParameters params =  new SearchParameters().setTerm(TERM);
+    SearchParameters params = new SearchParameters().setTerm(TERM);
 
     ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
 

@@ -34,10 +34,15 @@ public class BasicInjectionModule extends AbstractModule {
   private final TypeRegistry registry;
 
   public BasicInjectionModule(Configuration config) {
-    this.config = config;
-    registry = TypeRegistry.getInstance();
-    registry.init(config.getSetting("model-packages"));
-    new ConfigValidator(config).validate();
+    try {
+      this.config = config;
+      registry = TypeRegistry.getInstance();
+      registry.init(config.getSetting("model-packages"));
+      new ConfigValidator(config).validate();
+    } catch (Exception e) {
+      // TODO throw checked exception
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
@@ -49,7 +50,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   private static TypeRegistry registry;
 
   @BeforeClass
-  public static void setupRegistry() {
+  public static void setupRegistry() throws ModelException {
     registry = TypeRegistry.getInstance().init(TestSystemEntity.class.getPackage().getName());
   }
 

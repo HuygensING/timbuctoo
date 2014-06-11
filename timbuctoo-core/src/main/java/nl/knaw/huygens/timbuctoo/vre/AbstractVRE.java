@@ -79,7 +79,6 @@ public abstract class AbstractVRE implements VRE {
     return scope.inScope(entity);
   }
 
-  @Override
   public <T extends DomainEntity> List<T> filter(List<T> entities) {
     return scope.filter(entities);
   }

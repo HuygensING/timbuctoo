@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -57,7 +58,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   private static TypeRegistry registry;
 
   @BeforeClass
-  public static void setupRegistry() {
+  public static void setupRegistry() throws ModelException {
     registry = TypeRegistry.getInstance().init("timbuctoo.model timbuctoo.variation.model.*");
   }
 

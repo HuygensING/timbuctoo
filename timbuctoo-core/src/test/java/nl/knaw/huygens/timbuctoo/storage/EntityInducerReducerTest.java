@@ -30,6 +30,7 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
@@ -61,9 +62,8 @@ public class EntityInducerReducerTest {
   private EntityReducer reducer;
 
   @BeforeClass
-  public static void setupRegistry() {
-    registry = TypeRegistry.getInstance();
-    registry.init("test.model.*");
+  public static void setupRegistry() throws ModelException {
+    registry = TypeRegistry.getInstance().init("test.model.*");
   }
 
   @AfterClass

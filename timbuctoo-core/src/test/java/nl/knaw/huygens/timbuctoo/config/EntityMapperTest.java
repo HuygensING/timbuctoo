@@ -28,6 +28,7 @@ import static org.junit.Assert.assertNull;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Location;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
 
@@ -40,7 +41,7 @@ public class EntityMapperTest {
   private static EntityMappers mappers;
 
   @BeforeClass
-  public static void setup() {
+  public static void setup() throws ModelException {
     TypeRegistry registry = TypeRegistry.getInstance().init("timbuctoo.model.*");
     mappers = new EntityMappers(registry.getDomainEntityTypes());
   }

@@ -77,20 +77,24 @@ class ResourceTestModule extends JerseyServletModule {
   private IndexManager indexManager;
 
   public ResourceTestModule() {
-    config = mock(Configuration.class);
-    typeRegistry = TypeRegistry.getInstance().init(PACKAGES);
-    repository = mock(Repository.class);
-    jsonProvider = mock(JacksonJsonProvider.class);
-    validator = mock(Validator.class);
-    mailSender = mock(MailSender.class);
-    searchManager = mock(SearchManager.class);
-    securityContextCreator = new UserSecurityContextCreator(repository);
-    authorizationHandler = mock(AuthorizationHandler.class);
-    broker = mock(Broker.class);
-    indexProducer = mock(Producer.class);
-    persistenceProducer = mock(Producer.class);
-    vreManager = mock(VREManager.class);
-    indexManager = mock(IndexManager.class);
+    try {
+      config = mock(Configuration.class);
+      typeRegistry = TypeRegistry.getInstance().init(PACKAGES);
+      repository = mock(Repository.class);
+      jsonProvider = mock(JacksonJsonProvider.class);
+      validator = mock(Validator.class);
+      mailSender = mock(MailSender.class);
+      searchManager = mock(SearchManager.class);
+      securityContextCreator = new UserSecurityContextCreator(repository);
+      authorizationHandler = mock(AuthorizationHandler.class);
+      broker = mock(Broker.class);
+      indexProducer = mock(Producer.class);
+      persistenceProducer = mock(Producer.class);
+      vreManager = mock(VREManager.class);
+      indexManager = mock(IndexManager.class);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /* Because the RestAutoResourceModule is used in a static way for multiple tests,

@@ -31,6 +31,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
@@ -64,17 +65,17 @@ public class TypeRegistryTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testPackageNamesMustnotBeNull() {
+  public void testPackageNamesMustnotBeNull() throws ModelException {
     registry.init(null);
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void testEntityTypeNamesMustBeDifferent() {
+  @Test(expected = ModelException.class)
+  public void testEntityTypeNamesMustBeDifferent() throws ModelException {
     registry.init(MODEL_PACKAGE + " " + MODEL_PACKAGE);
   }
 
   @Test
-  public void testRecursivePackageSpecification() {
+  public void testRecursivePackageSpecification() throws ModelException {
     String iname = TypeNames.getInternalName(ProjectADomainEntity.class);
     registry.init(MODEL_PACKAGE);
     assertNull(registry.getDomainEntityType(iname));
@@ -83,14 +84,14 @@ public class TypeRegistryTest {
   }
 
   @Test
-  public void testGetTypeForIName() {
+  public void testGetTypeForIName() throws ModelException {
     registry.init(MODEL_PACKAGE);
     assertEquals(BaseDomainEntity.class, registry.getDomainEntityType("basedomainentity"));
     assertEquals(VTestSystemEntity.class, registry.getSystemEntityType("vtestsystementity"));
   }
 
   @Test
-  public void testGetTypeForXName() {
+  public void testGetTypeForXName() throws ModelException {
     registry.init(MODEL_PACKAGE);
     assertEquals(BaseDomainEntity.class, registry.getTypeForXName("basedomainentitys"));
   }
@@ -185,7 +186,7 @@ public class TypeRegistryTest {
   }
 
   @Test
-  public void testGetAllowedRolesForModelPackage() {
+  public void testGetAllowedRolesForModelPackage() throws ModelException {
     registry.init(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
     assertEquals(0, registry.getAllowedRolesFor(TestSystemEntity.class).size());
     Set<Class<? extends Role>> roles = registry.getAllowedRolesFor(BaseDomainEntity.class);
@@ -195,7 +196,7 @@ public class TypeRegistryTest {
   }
 
   @Test
-  public void testGetAllowedRolesForProjectPackage() {
+  public void testGetAllowedRolesForProjectPackage() throws ModelException {
     registry.init(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
     Set<Class<? extends Role>> roles = registry.getAllowedRolesFor(ProjectADomainEntity.class);
     assertEquals(2, roles.size());

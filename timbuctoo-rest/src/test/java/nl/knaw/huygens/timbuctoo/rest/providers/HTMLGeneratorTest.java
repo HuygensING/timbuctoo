@@ -27,6 +27,7 @@ import java.io.StringWriter;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.rest.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.TestDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.model.TestSystemEntity;
@@ -52,12 +53,8 @@ public class HTMLGeneratorTest {
 
   private static TypeRegistry registry;
 
-  private HTMLGenerator htmlGenerator;
-  private ObjectMapper mapper;
-  private StringWriter writer;
-
   @BeforeClass
-  public static void setupRegistry() {
+  public static void setupRegistry() throws ModelException {
     registry = TypeRegistry.getInstance().init("timbuctoo.rest.model.*");
   }
 
@@ -65,6 +62,12 @@ public class HTMLGeneratorTest {
   public static void clearRegistry() {
     registry = null;
   }
+
+  // ---------------------------------------------------------------------------
+
+  private HTMLGenerator htmlGenerator;
+  private ObjectMapper mapper;
+  private StringWriter writer;
 
   @Before
   public void setup() throws Exception {

@@ -30,6 +30,7 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.RelationTypeBuilder;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
@@ -51,11 +52,8 @@ public class RelationTypeResourceTest {
 
   private static TypeRegistry registry;
 
-  private Repository repository;
-  private RelationTypeResource resource;
-
   @BeforeClass
-  public static void setupRegistry() {
+  public static void setupRegistry() throws ModelException {
     registry = TypeRegistry.getInstance().init("test.model.*");
   }
 
@@ -63,6 +61,11 @@ public class RelationTypeResourceTest {
   public static void clearRegistry() {
     registry = null;
   }
+
+  // ---------------------------------------------------------------------------
+
+  private Repository repository;
+  private RelationTypeResource resource;
 
   @Before
   public void setup() {
