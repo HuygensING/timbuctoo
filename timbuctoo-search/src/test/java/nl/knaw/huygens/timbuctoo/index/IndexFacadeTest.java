@@ -39,7 +39,6 @@ public class IndexFacadeTest {
   private static final Class<ExplicitlyAnnotatedModel> BASE_TYPE = ExplicitlyAnnotatedModel.class;
   private static final Class<OtherIndexBaseType> OTHER_BASE_TYPE = OtherIndexBaseType.class;
   private static final String DEFAULT_ID = "id01234";
-  private ScopeManager scopeManagerMock;
   private IndexFacade instance;
   private Repository repositoryMock;
   private Class<SubModel> type = SubModel.class;
@@ -52,11 +51,10 @@ public class IndexFacadeTest {
   public void setUp() {
     indexStatusMock = mock(IndexStatus.class);
     repositoryMock = mock(Repository.class);
-    scopeManagerMock = mock(ScopeManager.class);
     sortableFieldFinderMock = mock(SortableFieldFinder.class);
     facetedSearchResultConverterMock = mock(FacetedSearchResultConverter.class);
     vreManagerMock = mock(VREManager.class);
-    instance = new IndexFacade(scopeManagerMock, repositoryMock, sortableFieldFinderMock, facetedSearchResultConverterMock, vreManagerMock) {
+    instance = new IndexFacade(repositoryMock, sortableFieldFinderMock, facetedSearchResultConverterMock, vreManagerMock) {
       @Override
       protected IndexStatus creatIndexStatus() {
         return indexStatusMock;
@@ -77,7 +75,7 @@ public class IndexFacadeTest {
     // when
     when(repositoryMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
-    when(scopeManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
+    when(vreManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
     when(vreMock.filter(variations)).thenReturn(filteredVariations);
 
     // action
@@ -103,8 +101,8 @@ public class IndexFacadeTest {
     // when
     when(repositoryMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
-    when(scopeManagerMock.getIndexFor(vreMock1, BASE_TYPE)).thenReturn(indexMock1);
-    when(scopeManagerMock.getIndexFor(vreMock2, BASE_TYPE)).thenReturn(indexMock2);
+    when(vreManagerMock.getIndexFor(vreMock1, BASE_TYPE)).thenReturn(indexMock1);
+    when(vreManagerMock.getIndexFor(vreMock2, BASE_TYPE)).thenReturn(indexMock2);
     when(vreMock1.filter(variations)).thenReturn(filteredVariations1);
     when(vreMock2.filter(variations)).thenReturn(filteredVariations2);
 
@@ -128,7 +126,7 @@ public class IndexFacadeTest {
     } finally {
       // verify
       verify(repositoryMock).getAllVariations(baseType, DEFAULT_ID);
-      verifyZeroInteractions(scopeManagerMock);
+      verifyZeroInteractions(vreManagerMock);
     }
   }
 
@@ -145,7 +143,7 @@ public class IndexFacadeTest {
     // when
     when(repositoryMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
-    when(scopeManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
+    when(vreManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
     when(vreMock.filter(variations)).thenReturn(filteredVariations);
     doThrow(IndexException.class).when(indexMock).add(filteredVariations);
 
@@ -175,7 +173,7 @@ public class IndexFacadeTest {
     // when
     doReturn(variations).when(repositoryMock).getAllVariations(baseType, DEFAULT_ID);
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
-    when(scopeManagerMock.getIndexFor(vreMock, baseType)).thenReturn(indexMock);
+    when(vreManagerMock.getIndexFor(vreMock, baseType)).thenReturn(indexMock);
     when(vreMock.filter(variations)).thenReturn(filteredVariations);
 
     // action
@@ -193,7 +191,7 @@ public class IndexFacadeTest {
 
     // when
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
-    when(scopeManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
+    when(vreManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
 
     // action
     instance.deleteEntity(type, DEFAULT_ID);
@@ -212,8 +210,8 @@ public class IndexFacadeTest {
 
     // when
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
-    when(scopeManagerMock.getIndexFor(vreMock1, BASE_TYPE)).thenReturn(indexMock1);
-    when(scopeManagerMock.getIndexFor(vreMock2, BASE_TYPE)).thenReturn(indexMock2);
+    when(vreManagerMock.getIndexFor(vreMock1, BASE_TYPE)).thenReturn(indexMock1);
+    when(vreManagerMock.getIndexFor(vreMock2, BASE_TYPE)).thenReturn(indexMock2);
 
     // action
     instance.deleteEntity(type, DEFAULT_ID);
@@ -232,7 +230,7 @@ public class IndexFacadeTest {
 
     // when
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
-    when(scopeManagerMock.getIndexFor(vreMock1, BASE_TYPE)).thenReturn(indexMock1);
+    when(vreManagerMock.getIndexFor(vreMock1, BASE_TYPE)).thenReturn(indexMock1);
     doThrow(IndexException.class).when(indexMock1).deleteById(DEFAULT_ID);
 
     try {
@@ -240,9 +238,10 @@ public class IndexFacadeTest {
       instance.deleteEntity(type, DEFAULT_ID);
     } finally {
       //verify
-      verify(scopeManagerMock).getIndexFor(vreMock1, BASE_TYPE);
+      verify(vreManagerMock).getAllVREs();
+      verify(vreManagerMock).getIndexFor(vreMock1, BASE_TYPE);
       verify(indexMock1).deleteById(DEFAULT_ID);
-      verifyNoMoreInteractions(scopeManagerMock);
+      verifyNoMoreInteractions(vreManagerMock);
     }
   }
 
@@ -256,7 +255,7 @@ public class IndexFacadeTest {
 
     // when
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
-    when(scopeManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
+    when(vreManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
 
     // action
     instance.deleteEntities(type, ids);
@@ -273,13 +272,12 @@ public class IndexFacadeTest {
 
     // when
     List<Index> indexes = Lists.newArrayList(indexMock1, indexMock2);
-    when(scopeManagerMock.getAllIndexes()).thenReturn(indexes);
+    when(vreManagerMock.getAllIndexes()).thenReturn(indexes);
 
     // action
     instance.deleteAllEntities();
 
     // verify
-    verify(scopeManagerMock).getAllIndexes();
     verify(indexMock1).clear();
     verify(indexMock2).clear();
   }
@@ -292,7 +290,7 @@ public class IndexFacadeTest {
 
     // when
     List<Index> indexes = Lists.newArrayList(indexMock1, indexMock2);
-    when(scopeManagerMock.getAllIndexes()).thenReturn(indexes);
+    when(vreManagerMock.getAllIndexes()).thenReturn(indexes);
     doThrow(IndexException.class).when(indexMock1).clear();
 
     try {
@@ -300,7 +298,6 @@ public class IndexFacadeTest {
       instance.deleteAllEntities();
     } finally {
       // verify
-      verify(scopeManagerMock).getAllIndexes();
       verify(indexMock1).clear();
       verifyZeroInteractions(indexMock2);
     }
@@ -325,16 +322,16 @@ public class IndexFacadeTest {
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
 
     doReturn(baseTypes).when(vreMock1).getBaseEntityTypes();
-    when(scopeManagerMock.getIndexFor(vreMock1, BASE_TYPE)).thenReturn(vre1BaseTypeIndex);
-    when(scopeManagerMock.getIndexFor(vreMock1, OTHER_BASE_TYPE)).thenReturn(vre1OtherBaseTypeIndex);
+    when(vreManagerMock.getIndexFor(vreMock1, BASE_TYPE)).thenReturn(vre1BaseTypeIndex);
+    when(vreManagerMock.getIndexFor(vreMock1, OTHER_BASE_TYPE)).thenReturn(vre1OtherBaseTypeIndex);
     long itemCount1 = 42;
     when(vre1BaseTypeIndex.getCount()).thenReturn(itemCount1);
     long itemCount2 = 43;
     when(vre1OtherBaseTypeIndex.getCount()).thenReturn(itemCount2);
 
     doReturn(baseTypes).when(vreMock2).getBaseEntityTypes();
-    when(scopeManagerMock.getIndexFor(vreMock2, BASE_TYPE)).thenReturn(vre2BaseTypeIndex);
-    when(scopeManagerMock.getIndexFor(vreMock2, OTHER_BASE_TYPE)).thenReturn(vre2OtherBaseTypeIndex);
+    when(vreManagerMock.getIndexFor(vreMock2, BASE_TYPE)).thenReturn(vre2BaseTypeIndex);
+    when(vreManagerMock.getIndexFor(vreMock2, OTHER_BASE_TYPE)).thenReturn(vre2OtherBaseTypeIndex);
     long itemCount3 = 44;
     when(vre2BaseTypeIndex.getCount()).thenReturn(itemCount3);
     long itemCount4 = 45;
@@ -364,8 +361,8 @@ public class IndexFacadeTest {
 
     // when
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
-    when(scopeManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
-    when(scopeManagerMock.getIndexFor(vreMock, OTHER_BASE_TYPE)).thenReturn(indexMock);
+    when(vreManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
+    when(vreManagerMock.getIndexFor(vreMock, OTHER_BASE_TYPE)).thenReturn(indexMock);
 
     when(vreMock.getBaseEntityTypes()).thenReturn(baseTypes);
     doThrow(IndexException.class).when(indexMock).getCount();
@@ -390,13 +387,12 @@ public class IndexFacadeTest {
     List<Index> indexes = Lists.newArrayList(indexMock1, indexMock2);
 
     // when
-    when(scopeManagerMock.getAllIndexes()).thenReturn(indexes);
+    when(vreManagerMock.getAllIndexes()).thenReturn(indexes);
 
     // action
     instance.commitAll();
 
     // verify
-    verify(scopeManagerMock).getAllIndexes();
     verify(indexMock1).commit();
     verify(indexMock2).commit();
   }
@@ -410,7 +406,7 @@ public class IndexFacadeTest {
     List<Index> indexes = Lists.newArrayList(indexMock1, indexMock2);
 
     // when
-    when(scopeManagerMock.getAllIndexes()).thenReturn(indexes);
+    when(vreManagerMock.getAllIndexes()).thenReturn(indexes);
     doThrow(IndexException.class).when(indexMock1).commit();
 
     try {
@@ -418,7 +414,6 @@ public class IndexFacadeTest {
       instance.commitAll();
     } finally {
       // verify
-      verify(scopeManagerMock).getAllIndexes();
       verify(indexMock1).commit();
       verifyZeroInteractions(indexMock2);
     }
@@ -431,7 +426,7 @@ public class IndexFacadeTest {
     Index indexMock2 = mock(Index.class);
 
     // when
-    when(scopeManagerMock.getAllIndexes()).thenReturn(Lists.newArrayList(indexMock1, indexMock2));
+    when(vreManagerMock.getAllIndexes()).thenReturn(Lists.newArrayList(indexMock1, indexMock2));
 
     // action
     instance.close();
@@ -448,7 +443,7 @@ public class IndexFacadeTest {
     Index indexMock2 = mock(Index.class);
 
     // when
-    when(scopeManagerMock.getAllIndexes()).thenReturn(Lists.newArrayList(indexMock1, indexMock2));
+    when(vreManagerMock.getAllIndexes()).thenReturn(Lists.newArrayList(indexMock1, indexMock2));
     doThrow(IndexException.class).when(indexMock1).close();
 
     // action
@@ -480,7 +475,7 @@ public class IndexFacadeTest {
     String typeString = "explicitlyannotatedmodel";
 
     // when
-    when(scopeManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
+    when(vreManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
     when(indexMock.search(searchParameters)).thenReturn(facetedSearchResult);
     when(facetedSearchResultConverterMock.convert(typeString, facetedSearchResult)).thenReturn(searchResult);
 
@@ -500,7 +495,7 @@ public class IndexFacadeTest {
     DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
 
     // when
-    when(scopeManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
+    when(vreManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
     doThrow(SearchException.class).when(indexMock).search(searchParameters);
 
     instance.search(vreMock, BASE_TYPE, searchParameters);

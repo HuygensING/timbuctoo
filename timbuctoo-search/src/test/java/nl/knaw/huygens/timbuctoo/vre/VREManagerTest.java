@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.index;
+package nl.knaw.huygens.timbuctoo.vre;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
@@ -8,9 +8,11 @@ import static org.mockito.Mockito.when;
 
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.index.ScopeManager.NoOpIndex;
+import nl.knaw.huygens.timbuctoo.index.Index;
+import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,21 +21,21 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-public class ScopeManagerTest {
+public class VREManagerTest {
 
   @Mock
   private Map<String, Index> indexMapMock;
 
   private IndexNameCreator indexNameCreatorMock;
 
-  private ScopeManager instance;
+  private VREManager instance;
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
 
     indexNameCreatorMock = mock(IndexNameCreator.class);
-    instance = new ScopeManager(indexMapMock, indexNameCreatorMock);
+    instance = new VREManager(indexMapMock, indexNameCreatorMock);
   }
 
   @Test
@@ -75,6 +77,6 @@ public class ScopeManagerTest {
     inOrder.verify(indexNameCreatorMock).getIndexNameFor(vreMock, type);
     inOrder.verify(indexMapMock).get(indexName);
 
-    assertThat(index, is(instanceOf(NoOpIndex.class)));
+    assertThat(index, is(instanceOf(VREManager.NoOpIndex.class)));
   }
 }
