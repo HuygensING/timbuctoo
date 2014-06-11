@@ -64,7 +64,7 @@ public class VREManager {
         new DutchCaribbeanVRE(), //
         new WomenWritersVRE(), //
         new TestVRE());
-
+    
     for (VRE vre : vreList) {
       vreMap.put(vre.getName(), vre);
     }
@@ -109,10 +109,8 @@ public class VREManager {
     return index;
   }
 
-  public List<Index> getAllIndexes() {
-    // TODO Auto-generated method stub
-    return null;
-
+  public Collection<Index> getAllIndexes() {
+    return indexes.values();
   }
 
   //--------------------------------------------------------------

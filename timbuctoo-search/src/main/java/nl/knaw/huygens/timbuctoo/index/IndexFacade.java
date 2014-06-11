@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.index;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -112,8 +111,7 @@ public class IndexFacade implements SearchManager, IndexManager {
 
   @Override
   public void deleteAllEntities() throws IndexException {
-    List<Index> allIndexes = vreManager.getAllIndexes();
-    for (Index index : allIndexes) {
+    for (Index index : vreManager.getAllIndexes()) {
       index.clear();
     }
   }
@@ -122,9 +120,7 @@ public class IndexFacade implements SearchManager, IndexManager {
   public IndexStatus getStatus() {
     IndexStatus indexStatus = creatIndexStatus();
 
-    Collection<VRE> vres = vreManager.getAllVREs();
-
-    for (VRE vre : vres) {
+    for (VRE vre : vreManager.getAllVREs()) {
       for (Class<? extends DomainEntity> type : vre.getBaseEntityTypes()) {
         Index index = vreManager.getIndexFor(vre, type);
         try {
