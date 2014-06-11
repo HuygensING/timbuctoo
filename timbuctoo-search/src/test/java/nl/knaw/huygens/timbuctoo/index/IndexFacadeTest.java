@@ -20,7 +20,6 @@ import java.util.Set;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.timbuctoo.index.model.SubModel;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -41,7 +40,6 @@ public class IndexFacadeTest {
   private static final Class<OtherIndexBaseType> OTHER_BASE_TYPE = OtherIndexBaseType.class;
   private static final String DEFAULT_ID = "id01234";
   private ScopeManager scopeManagerMock;
-  private TypeRegistry typeRegistryMock;
   private IndexFacade instance;
   private Repository repositoryMock;
   private Class<SubModel> type = SubModel.class;
@@ -55,11 +53,10 @@ public class IndexFacadeTest {
     indexStatusMock = mock(IndexStatus.class);
     repositoryMock = mock(Repository.class);
     scopeManagerMock = mock(ScopeManager.class);
-    typeRegistryMock = mock(TypeRegistry.class);
     sortableFieldFinderMock = mock(SortableFieldFinder.class);
     facetedSearchResultConverterMock = mock(FacetedSearchResultConverter.class);
     vreManagerMock = mock(VREManager.class);
-    instance = new IndexFacade(scopeManagerMock, typeRegistryMock, repositoryMock, sortableFieldFinderMock, facetedSearchResultConverterMock, vreManagerMock) {
+    instance = new IndexFacade(scopeManagerMock, repositoryMock, sortableFieldFinderMock, facetedSearchResultConverterMock, vreManagerMock) {
       @Override
       protected IndexStatus creatIndexStatus() {
         return indexStatusMock;

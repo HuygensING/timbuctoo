@@ -28,15 +28,12 @@ public class IndexFacade implements SearchManager, IndexManager {
   private static final Logger LOG = LoggerFactory.getLogger(IndexFacade.class);
   private final VREManager vreManager;
   private final ScopeManager scopeManager;
-  private final TypeRegistry typeRegistry;
   private final Repository storageManager;
   private final SortableFieldFinder sortableFieldFinder;
   private final FacetedSearchResultConverter facetedSearchResultConverter;
 
-  public IndexFacade(ScopeManager scopeManager, TypeRegistry typeRegistry, Repository storageManager, SortableFieldFinder sortableFieldFinder,
-      FacetedSearchResultConverter facetedSearchResultConverter, VREManager vreManager) {
+  public IndexFacade(ScopeManager scopeManager, Repository storageManager, SortableFieldFinder sortableFieldFinder, FacetedSearchResultConverter facetedSearchResultConverter, VREManager vreManager) {
     this.scopeManager = scopeManager; // TODO place functionality of ScopeManager in VREManager
-    this.typeRegistry = typeRegistry;
     this.storageManager = storageManager;
     this.sortableFieldFinder = sortableFieldFinder;
     this.facetedSearchResultConverter = facetedSearchResultConverter;
@@ -184,12 +181,14 @@ public class IndexFacade implements SearchManager, IndexManager {
     void executeIndexAction(Index index, List<? extends DomainEntity> variations) throws IndexException;
   }
 
+  @Deprecated
   @Override
   public <T extends DomainEntity> QueryResponse search(VRE vre, Class<T> type, SolrQuery query) throws IndexException {
     // TODO Auto-generated method stub
     return null;
   }
 
+  @Deprecated
   @Override
   public SearchResult search(VRE vre, Class<? extends DomainEntity> type, SearchParameters searchParameters) throws IndexException, NoSuchFacetException {
     // TODO Auto-generated method stub
