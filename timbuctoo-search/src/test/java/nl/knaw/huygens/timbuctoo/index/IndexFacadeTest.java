@@ -19,19 +19,18 @@ import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.timbuctoo.index.model.SubModel;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.vre.Scope;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InOrder;
-import org.mockito.Mockito;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -44,22 +43,23 @@ public class IndexFacadeTest {
   private ScopeManager scopeManagerMock;
   private TypeRegistry typeRegistryMock;
   private IndexFacade instance;
-  private StorageManager storageManagerMock;
+  private Repository repositoryMock;
   private Class<SubModel> type = SubModel.class;
   private IndexStatus indexStatusMock;
   private SortableFieldFinder sortableFieldFinderMock;
   private FacetedSearchResultConverter facetedSearchResultConverterMock;
+  private VREManager vreManagerMock;
 
   @Before
   public void setUp() {
     indexStatusMock = mock(IndexStatus.class);
-    storageManagerMock = mock(StorageManager.class);
+    repositoryMock = mock(Repository.class);
     scopeManagerMock = mock(ScopeManager.class);
     typeRegistryMock = mock(TypeRegistry.class);
-    doReturn(BASE_TYPE).when(typeRegistryMock).getBaseClass(type);
     sortableFieldFinderMock = mock(SortableFieldFinder.class);
     facetedSearchResultConverterMock = mock(FacetedSearchResultConverter.class);
-    instance = new IndexFacade(scopeManagerMock, typeRegistryMock, storageManagerMock, sortableFieldFinderMock, facetedSearchResultConverterMock) {
+    vreManagerMock = mock(VREManager.class);
+    instance = new IndexFacade(scopeManagerMock, typeRegistryMock, repositoryMock, sortableFieldFinderMock, facetedSearchResultConverterMock, vreManagerMock) {
       @Override
       protected IndexStatus creatIndexStatus() {
         return indexStatusMock;
@@ -70,7 +70,7 @@ public class IndexFacadeTest {
   @Test
   public void testAddEntityInOneIndex() throws IndexException, IOException {
     // mock
-    Scope scopeMock = mock(Scope.class);
+    VRE vreMock = mock(VRE.class);
     Index indexMock = mock(Index.class);
 
     List<ExplicitlyAnnotatedModel> variations = Lists.newArrayList(mock(BASE_TYPE), mock(type));
@@ -78,29 +78,23 @@ public class IndexFacadeTest {
     filteredVariations.add(mock(SubModel.class));
 
     // when
-    when(storageManagerMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
-    when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock));
-    when(scopeManagerMock.getIndexFor(scopeMock, BASE_TYPE)).thenReturn(indexMock);
-    when(scopeMock.filter(variations)).thenReturn(filteredVariations);
+    when(repositoryMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
+    when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
+    when(scopeManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
+    when(vreMock.filter(variations)).thenReturn(filteredVariations);
 
     // action
     instance.addEntity(type, DEFAULT_ID);
 
     // verify
-    InOrder inOrder = Mockito.inOrder(typeRegistryMock, storageManagerMock, scopeManagerMock, scopeMock, indexMock);
-    inOrder.verify(typeRegistryMock).getBaseClass(type);
-    inOrder.verify(storageManagerMock).getAllVariations(BASE_TYPE, DEFAULT_ID);
-    inOrder.verify(scopeManagerMock).getAllScopes();
-    inOrder.verify(scopeManagerMock).getIndexFor(scopeMock, BASE_TYPE);
-    inOrder.verify(scopeMock).filter(variations);
-    inOrder.verify(indexMock).add(filteredVariations);
+    verify(indexMock).add(filteredVariations);
   }
 
   @Test
   public void testAddEntityInMultipleIndexes() throws IndexException, IOException {
     // mock
-    Scope scopeMock1 = mock(Scope.class);
-    Scope scopeMock2 = mock(Scope.class);
+    VRE vreMock1 = mock(VRE.class);
+    VRE vreMock2 = mock(VRE.class);
     Index indexMock1 = mock(Index.class);
     Index indexMock2 = mock(Index.class);
 
@@ -110,24 +104,17 @@ public class IndexFacadeTest {
     List<ExplicitlyAnnotatedModel> filteredVariations2 = Lists.newArrayList(mock(ExplicitlyAnnotatedModel.class));
 
     // when
-    when(storageManagerMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
-    when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock1, scopeMock2));
-    when(scopeManagerMock.getIndexFor(scopeMock1, BASE_TYPE)).thenReturn(indexMock1);
-    when(scopeManagerMock.getIndexFor(scopeMock2, BASE_TYPE)).thenReturn(indexMock2);
-    when(scopeMock1.filter(variations)).thenReturn(filteredVariations1);
-    when(scopeMock2.filter(variations)).thenReturn(filteredVariations2);
+    when(repositoryMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
+    when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
+    when(scopeManagerMock.getIndexFor(vreMock1, BASE_TYPE)).thenReturn(indexMock1);
+    when(scopeManagerMock.getIndexFor(vreMock2, BASE_TYPE)).thenReturn(indexMock2);
+    when(vreMock1.filter(variations)).thenReturn(filteredVariations1);
+    when(vreMock2.filter(variations)).thenReturn(filteredVariations2);
 
     // action
     instance.addEntity(type, DEFAULT_ID);
 
     // verify
-    verify(typeRegistryMock).getBaseClass(type);
-    verify(storageManagerMock).getAllVariations(BASE_TYPE, DEFAULT_ID);
-    verify(scopeManagerMock).getAllScopes();
-    verify(scopeManagerMock).getIndexFor(scopeMock1, BASE_TYPE);
-    verify(scopeManagerMock).getIndexFor(scopeMock2, BASE_TYPE);
-    verify(scopeMock1).filter(variations);
-    verify(scopeMock2).filter(variations);
     verify(indexMock1).add(filteredVariations1);
     verify(indexMock2).add(filteredVariations2);
   }
@@ -136,15 +123,14 @@ public class IndexFacadeTest {
   public void testAddEntityStorageManagerReturnsEmptyList() throws IOException, IndexException {
     Class<SubModel> type = SubModel.class;
     Class<ExplicitlyAnnotatedModel> baseType = ExplicitlyAnnotatedModel.class;
-    doReturn(Collections.emptyList()).when(storageManagerMock).getAllVariations(baseType, DEFAULT_ID);
+    doReturn(Collections.emptyList()).when(repositoryMock).getAllVariations(baseType, DEFAULT_ID);
 
     try {
       // action
       instance.addEntity(type, DEFAULT_ID);
     } finally {
       // verify
-      verify(typeRegistryMock).getBaseClass(type);
-      verify(storageManagerMock).getAllVariations(baseType, DEFAULT_ID);
+      verify(repositoryMock).getAllVariations(baseType, DEFAULT_ID);
       verifyZeroInteractions(scopeManagerMock);
     }
   }
@@ -152,7 +138,7 @@ public class IndexFacadeTest {
   @Test(expected = IndexException.class)
   public void testAddIndexThrowsAnIndexException() throws IOException, IndexException {
     // mock
-    Scope scopeMock = mock(Scope.class);
+    VRE vreMock = mock(VRE.class);
     Index indexMock = mock(Index.class);
 
     List<ExplicitlyAnnotatedModel> variations = Lists.newArrayList(mock(ExplicitlyAnnotatedModel.class), mock(SubModel.class));
@@ -160,10 +146,10 @@ public class IndexFacadeTest {
     filteredVariations.add(mock(SubModel.class));
 
     // when
-    when(storageManagerMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
-    when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock));
-    when(scopeManagerMock.getIndexFor(scopeMock, BASE_TYPE)).thenReturn(indexMock);
-    when(scopeMock.filter(variations)).thenReturn(filteredVariations);
+    when(repositoryMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
+    when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
+    when(scopeManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
+    when(vreMock.filter(variations)).thenReturn(filteredVariations);
     doThrow(IndexException.class).when(indexMock).add(filteredVariations);
 
     try {
@@ -171,20 +157,14 @@ public class IndexFacadeTest {
       instance.addEntity(type, DEFAULT_ID);
     } finally {
       // verify
-      InOrder inOrder = Mockito.inOrder(typeRegistryMock, storageManagerMock, scopeManagerMock, scopeMock, indexMock);
-      inOrder.verify(typeRegistryMock).getBaseClass(type);
-      inOrder.verify(storageManagerMock).getAllVariations(BASE_TYPE, DEFAULT_ID);
-      inOrder.verify(scopeManagerMock).getAllScopes();
-      inOrder.verify(scopeManagerMock).getIndexFor(scopeMock, BASE_TYPE);
-      inOrder.verify(scopeMock).filter(variations);
-      inOrder.verify(indexMock).add(filteredVariations);
+      verify(indexMock).add(filteredVariations);
     }
   }
 
   @Test
   public void testUpdateEntity() throws IOException, IndexException {
     // mock
-    Scope scopeMock = mock(Scope.class);
+    VRE vreMock = mock(VRE.class);
     Index indexMock = mock(Index.class);
 
     Class<? extends DomainEntity> type = SubModel.class;
@@ -196,65 +176,52 @@ public class IndexFacadeTest {
     filteredVariations.add(model1);
 
     // when
-    doReturn(variations).when(storageManagerMock).getAllVariations(baseType, DEFAULT_ID);
-    when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock));
-    when(scopeManagerMock.getIndexFor(scopeMock, baseType)).thenReturn(indexMock);
-    when(scopeMock.filter(variations)).thenReturn(filteredVariations);
+    doReturn(variations).when(repositoryMock).getAllVariations(baseType, DEFAULT_ID);
+    when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
+    when(scopeManagerMock.getIndexFor(vreMock, baseType)).thenReturn(indexMock);
+    when(vreMock.filter(variations)).thenReturn(filteredVariations);
 
     // action
     instance.updateEntity(type, DEFAULT_ID);
 
     // verify
-    verify(typeRegistryMock).getBaseClass(type);
-    verify(storageManagerMock).getAllVariations(baseType, DEFAULT_ID);
-    verify(scopeManagerMock).getAllScopes();
-    verify(scopeManagerMock).getIndexFor(scopeMock, baseType);
-    verify(scopeMock).filter(variations);
     verify(indexMock).update(filteredVariations);
   }
 
   @Test
   public void testDelete() throws IndexException {
     // setup
-    Scope scopeMock = mock(Scope.class);
+    VRE vreMock = mock(VRE.class);
     Index indexMock = mock(Index.class);
 
     // when
-    when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock));
-    when(scopeManagerMock.getIndexFor(scopeMock, BASE_TYPE)).thenReturn(indexMock);
+    when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
+    when(scopeManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
 
     // action
     instance.deleteEntity(type, DEFAULT_ID);
 
     //verify
-    InOrder inOrder = Mockito.inOrder(typeRegistryMock, scopeManagerMock, indexMock);
-    inOrder.verify(typeRegistryMock).getBaseClass(type);
-    inOrder.verify(scopeManagerMock).getAllScopes();
-    inOrder.verify(scopeManagerMock).getIndexFor(scopeMock, BASE_TYPE);
-    inOrder.verify(indexMock).deleteById(DEFAULT_ID);
+    verify(indexMock).deleteById(DEFAULT_ID);
   }
 
   @Test
   public void testDeleteMultipleScopes() throws IndexException {
     // setup
-    Scope scopeMock1 = mock(Scope.class);
-    Scope scopeMock2 = mock(Scope.class);
+    VRE vreMock1 = mock(VRE.class);
+    VRE vreMock2 = mock(VRE.class);
     Index indexMock1 = mock(Index.class);
     Index indexMock2 = mock(Index.class);
 
     // when
-    when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock1, scopeMock2));
-    when(scopeManagerMock.getIndexFor(scopeMock1, BASE_TYPE)).thenReturn(indexMock1);
-    when(scopeManagerMock.getIndexFor(scopeMock2, BASE_TYPE)).thenReturn(indexMock2);
+    when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
+    when(scopeManagerMock.getIndexFor(vreMock1, BASE_TYPE)).thenReturn(indexMock1);
+    when(scopeManagerMock.getIndexFor(vreMock2, BASE_TYPE)).thenReturn(indexMock2);
 
     // action
     instance.deleteEntity(type, DEFAULT_ID);
 
     //verify
-    verify(typeRegistryMock).getBaseClass(type);
-    verify(scopeManagerMock).getAllScopes();
-    verify(scopeManagerMock).getIndexFor(scopeMock1, BASE_TYPE);
-    verify(scopeManagerMock).getIndexFor(scopeMock2, BASE_TYPE);
     verify(indexMock1).deleteById(DEFAULT_ID);
     verify(indexMock2).deleteById(DEFAULT_ID);
   }
@@ -262,13 +229,13 @@ public class IndexFacadeTest {
   @Test(expected = IndexException.class)
   public void testDeleteMultipleScopesFirstThrowsAnException() throws IndexException {
     // setup
-    Scope scopeMock1 = mock(Scope.class);
-    Scope scopeMock2 = mock(Scope.class);
+    VRE vreMock1 = mock(VRE.class);
+    VRE vreMock2 = mock(VRE.class);
     Index indexMock1 = mock(Index.class);
 
     // when
-    when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock1, scopeMock2));
-    when(scopeManagerMock.getIndexFor(scopeMock1, BASE_TYPE)).thenReturn(indexMock1);
+    when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
+    when(scopeManagerMock.getIndexFor(vreMock1, BASE_TYPE)).thenReturn(indexMock1);
     doThrow(IndexException.class).when(indexMock1).deleteById(DEFAULT_ID);
 
     try {
@@ -276,9 +243,7 @@ public class IndexFacadeTest {
       instance.deleteEntity(type, DEFAULT_ID);
     } finally {
       //verify
-      verify(typeRegistryMock).getBaseClass(type);
-      verify(scopeManagerMock).getAllScopes();
-      verify(scopeManagerMock).getIndexFor(scopeMock1, BASE_TYPE);
+      verify(scopeManagerMock).getIndexFor(vreMock1, BASE_TYPE);
       verify(indexMock1).deleteById(DEFAULT_ID);
       verifyNoMoreInteractions(scopeManagerMock);
     }
@@ -287,22 +252,19 @@ public class IndexFacadeTest {
   @Test
   public void testDeleteEntities() throws IndexException {
     // setup
-    Scope scopeMock = mock(Scope.class);
+    VRE vreMock = mock(VRE.class);
     Index indexMock = mock(Index.class);
 
     List<String> ids = Lists.newArrayList("id1", "id2", "id3");
 
     // when
-    when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock));
-    when(scopeManagerMock.getIndexFor(scopeMock, BASE_TYPE)).thenReturn(indexMock);
+    when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
+    when(scopeManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
 
     // action
     instance.deleteEntities(type, ids);
 
     // verify
-    verify(typeRegistryMock).getBaseClass(type);
-    verify(scopeManagerMock).getAllScopes();
-    verify(scopeManagerMock).getIndexFor(scopeMock, BASE_TYPE);
     verify(indexMock).deleteById(ids);
   }
 
@@ -354,41 +316,41 @@ public class IndexFacadeTest {
     baseTypes.add(BASE_TYPE);
     baseTypes.add(OTHER_BASE_TYPE);
 
-    Scope scopeMock1 = mock(Scope.class);
-    Index scope1BaseTypeIndex = mock(Index.class);
-    Index scope1OtherBaseTypeIndex = mock(Index.class);
+    VRE vreMock1 = mock(VRE.class);
+    Index vre1BaseTypeIndex = mock(Index.class);
+    Index vre1OtherBaseTypeIndex = mock(Index.class);
 
-    Scope scopeMock2 = mock(Scope.class);
-    Index scope2BaseTypeIndex = mock(Index.class);
-    Index scope2OtherBaseTypeIndex = mock(Index.class);
+    VRE vreMock2 = mock(VRE.class);
+    Index vre2BaseTypeIndex = mock(Index.class);
+    Index vre2OtherBaseTypeIndex = mock(Index.class);
 
     // when
-    when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock1, scopeMock2));
+    when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
 
-    doReturn(baseTypes).when(scopeMock1).getBaseEntityTypes();
-    when(scopeManagerMock.getIndexFor(scopeMock1, BASE_TYPE)).thenReturn(scope1BaseTypeIndex);
-    when(scopeManagerMock.getIndexFor(scopeMock1, OTHER_BASE_TYPE)).thenReturn(scope1OtherBaseTypeIndex);
+    doReturn(baseTypes).when(vreMock1).getBaseEntityTypes();
+    when(scopeManagerMock.getIndexFor(vreMock1, BASE_TYPE)).thenReturn(vre1BaseTypeIndex);
+    when(scopeManagerMock.getIndexFor(vreMock1, OTHER_BASE_TYPE)).thenReturn(vre1OtherBaseTypeIndex);
     long itemCount1 = 42;
-    when(scope1BaseTypeIndex.getCount()).thenReturn(itemCount1);
+    when(vre1BaseTypeIndex.getCount()).thenReturn(itemCount1);
     long itemCount2 = 43;
-    when(scope1OtherBaseTypeIndex.getCount()).thenReturn(itemCount2);
+    when(vre1OtherBaseTypeIndex.getCount()).thenReturn(itemCount2);
 
-    doReturn(baseTypes).when(scopeMock2).getBaseEntityTypes();
-    when(scopeManagerMock.getIndexFor(scopeMock2, BASE_TYPE)).thenReturn(scope2BaseTypeIndex);
-    when(scopeManagerMock.getIndexFor(scopeMock2, OTHER_BASE_TYPE)).thenReturn(scope2OtherBaseTypeIndex);
+    doReturn(baseTypes).when(vreMock2).getBaseEntityTypes();
+    when(scopeManagerMock.getIndexFor(vreMock2, BASE_TYPE)).thenReturn(vre2BaseTypeIndex);
+    when(scopeManagerMock.getIndexFor(vreMock2, OTHER_BASE_TYPE)).thenReturn(vre2OtherBaseTypeIndex);
     long itemCount3 = 44;
-    when(scope2BaseTypeIndex.getCount()).thenReturn(itemCount3);
+    when(vre2BaseTypeIndex.getCount()).thenReturn(itemCount3);
     long itemCount4 = 45;
-    when(scope2OtherBaseTypeIndex.getCount()).thenReturn(itemCount4);
+    when(vre2OtherBaseTypeIndex.getCount()).thenReturn(itemCount4);
 
     // action
     IndexStatus actualIndexStatus = instance.getStatus();
 
     // verify
-    verify(indexStatusMock).addCount(scopeMock1, BASE_TYPE, itemCount1);
-    verify(indexStatusMock).addCount(scopeMock1, OTHER_BASE_TYPE, itemCount2);
-    verify(indexStatusMock).addCount(scopeMock2, BASE_TYPE, itemCount3);
-    verify(indexStatusMock).addCount(scopeMock2, OTHER_BASE_TYPE, itemCount4);
+    verify(indexStatusMock).addCount(vreMock1, BASE_TYPE, itemCount1);
+    verify(indexStatusMock).addCount(vreMock1, OTHER_BASE_TYPE, itemCount2);
+    verify(indexStatusMock).addCount(vreMock2, BASE_TYPE, itemCount3);
+    verify(indexStatusMock).addCount(vreMock2, OTHER_BASE_TYPE, itemCount4);
 
     assertNotNull(actualIndexStatus);
   }
@@ -400,15 +362,15 @@ public class IndexFacadeTest {
     baseTypes.add(BASE_TYPE);
     baseTypes.add(OTHER_BASE_TYPE);
 
-    Scope scopeMock = mock(Scope.class);
+    VRE vreMock = mock(VRE.class);
     Index indexMock = mock(Index.class);
 
     // when
-    when(scopeManagerMock.getAllScopes()).thenReturn(Lists.newArrayList(scopeMock));
-    when(scopeManagerMock.getIndexFor(scopeMock, BASE_TYPE)).thenReturn(indexMock);
-    when(scopeManagerMock.getIndexFor(scopeMock, OTHER_BASE_TYPE)).thenReturn(indexMock);
+    when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
+    when(scopeManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
+    when(scopeManagerMock.getIndexFor(vreMock, OTHER_BASE_TYPE)).thenReturn(indexMock);
 
-    when(scopeMock.getBaseEntityTypes()).thenReturn(baseTypes);
+    when(vreMock.getBaseEntityTypes()).thenReturn(baseTypes);
     doThrow(IndexException.class).when(indexMock).getCount();
 
     // action
@@ -514,19 +476,18 @@ public class IndexFacadeTest {
   public void testSearch() throws SearchException {
     // setup
     Index indexMock = mock(Index.class);
-    Scope scopeMock = mock(Scope.class);
+    VRE vreMock = mock(VRE.class);
     DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
     SearchResult searchResult = new SearchResult();
     FacetedSearchResult facetedSearchResult = new FacetedSearchResult();
-    String typeString = "typeString";
+    String typeString = "explicitlyannotatedmodel";
 
     // when
-    when(scopeManagerMock.getIndexFor(scopeMock, BASE_TYPE)).thenReturn(indexMock);
+    when(scopeManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
     when(indexMock.search(searchParameters)).thenReturn(facetedSearchResult);
-    when(typeRegistryMock.getINameForType(BASE_TYPE)).thenReturn(typeString);
     when(facetedSearchResultConverterMock.convert(typeString, facetedSearchResult)).thenReturn(searchResult);
 
-    SearchResult actualSearchResult = instance.search(scopeMock, BASE_TYPE, searchParameters);
+    SearchResult actualSearchResult = instance.search(vreMock, BASE_TYPE, searchParameters);
 
     // verify
     verify(indexMock).search(searchParameters);
@@ -538,14 +499,14 @@ public class IndexFacadeTest {
   public void testSearchIndexThrowsSearchException() throws SearchException {
     // setup
     Index indexMock = mock(Index.class);
-    Scope scopeMock = mock(Scope.class);
+    VRE vreMock = mock(VRE.class);
     DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
 
     // when
-    when(scopeManagerMock.getIndexFor(scopeMock, BASE_TYPE)).thenReturn(indexMock);
+    when(scopeManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
     doThrow(SearchException.class).when(indexMock).search(searchParameters);
 
-    instance.search(scopeMock, BASE_TYPE, searchParameters);
+    instance.search(vreMock, BASE_TYPE, searchParameters);
   }
 
   private static class OtherIndexBaseType extends DomainEntity {

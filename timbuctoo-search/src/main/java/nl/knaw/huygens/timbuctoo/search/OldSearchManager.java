@@ -22,23 +22,20 @@ package nl.knaw.huygens.timbuctoo.search;
  * #L%
  */
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
-import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.solr.FacetInfo;
 import nl.knaw.huygens.solr.FacetParameter;
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.solr.SolrUtils;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.index.SearchException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
@@ -91,12 +88,12 @@ public class OldSearchManager implements SearchManager {
       ids.add(document.getFieldValue("id").toString());
     }
 
-    SearchResult searchResult = new SearchResult(ids, TypeNames.getInternalName(type), searchTerm, searchParameters.getSort(), new Date());
+    //    SearchResult searchResult = new SearchResult(ids, TypeNames.getInternalName(type), searchTerm, searchParameters.getSort(), new Date());
 
     List<FacetCount> facets = getFacetCounts(response.getFacetFields(), facetInfoMap);
-    searchResult.setFacetCount(facets);
+    //    searchResult.setFacetCount(facets);
 
-    return searchResult;
+    return null;
   }
 
   // FIXME this is probably suboptimal:
@@ -193,7 +190,7 @@ public class OldSearchManager implements SearchManager {
   }
 
   @Override
-  public <T extends FacetedSearchParameters<T>> SearchResult search(Scope scope, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) {
+  public <T extends FacetedSearchParameters<T>> SearchResult search(VRE vre, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException {
     // TODO Auto-generated method stub
     return null;
   }

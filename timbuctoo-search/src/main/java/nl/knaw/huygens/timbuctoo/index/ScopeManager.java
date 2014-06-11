@@ -6,27 +6,26 @@ import java.util.Map;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.vre.Scope;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 public class ScopeManager {
 
   private static final NoOpIndex NO_OP_INDEX = new NoOpIndex();
-  private final List<Scope> scopes;
   private final Map<String, Index> indexes;
   private final IndexNameCreator indexNameCreator;
 
-  public ScopeManager(List<Scope> scopes, Map<String, Index> indexes, IndexNameCreator indexNameCreator) {
-    this.scopes = scopes;
+  public ScopeManager(Map<String, Index> indexes, IndexNameCreator indexNameCreator) {
     this.indexNameCreator = indexNameCreator;
     this.indexes = indexes;
   }
 
-  public List<Scope> getAllScopes() {
-    return scopes;
-  }
+  //  public List<Scope> getAllScopes() {
+  //    return scopes;
+  //  }
 
-  public Index getIndexFor(Scope scope, Class<? extends DomainEntity> type) {
-    String indexName = indexNameCreator.getIndexNameFor(scope, type);
+  // Move to VREManager
+  public Index getIndexFor(VRE vre, Class<? extends DomainEntity> type) {
+    String indexName = indexNameCreator.getIndexNameFor(vre, type);
 
     Index index = indexes.get(indexName);
     if (index == null) {

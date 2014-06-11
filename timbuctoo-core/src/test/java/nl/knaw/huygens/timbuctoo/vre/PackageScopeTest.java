@@ -14,27 +14,14 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-public class AbstractScopeTest {
+public class PackageScopeTest {
   // mock
   DomainEntity inscopeEntity = new DomainEntityWithIndexAnnotations();
   DomainEntity outOfScopeEnitty = new ProjectADomainEntity();
 
   @Test
   public void testFilter() throws IOException {
-    AbstractScope instance = new AbstractScope("timbuctoo.variation.model") {
-
-      @Override
-      public String getName() {
-        // TODO Auto-generated method stub
-        return null;
-      }
-
-      @Override
-      public String getId() {
-        // TODO Auto-generated method stub
-        return null;
-      }
-    };
+    PackageScope instance = new PackageScope("timbuctoo.variation.model");
 
     List<DomainEntity> entities = Lists.newArrayList();
     entities.add(inscopeEntity);

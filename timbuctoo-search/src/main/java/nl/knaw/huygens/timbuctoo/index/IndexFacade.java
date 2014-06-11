@@ -1,19 +1,22 @@
 package nl.knaw.huygens.timbuctoo.index;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.solr.SearchParameters;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
-import nl.knaw.huygens.timbuctoo.storage.StorageManager;
-import nl.knaw.huygens.timbuctoo.vre.Scope;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -23,19 +26,21 @@ import org.slf4j.LoggerFactory;
 public class IndexFacade implements SearchManager, IndexManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(IndexFacade.class);
+  private final VREManager vreManager;
   private final ScopeManager scopeManager;
   private final TypeRegistry typeRegistry;
-  private final StorageManager storageManager;
+  private final Repository storageManager;
   private final SortableFieldFinder sortableFieldFinder;
   private final FacetedSearchResultConverter facetedSearchResultConverter;
 
-  public IndexFacade(ScopeManager scopeManager, TypeRegistry typeRegistry, StorageManager storageManager, SortableFieldFinder sortableFieldFinder,
-      FacetedSearchResultConverter facetedSearchResultConverter) {
+  public IndexFacade(ScopeManager scopeManager, TypeRegistry typeRegistry, Repository storageManager, SortableFieldFinder sortableFieldFinder,
+      FacetedSearchResultConverter facetedSearchResultConverter, VREManager vreManager) {
     this.scopeManager = scopeManager; // TODO place functionality of ScopeManager in VREManager
     this.typeRegistry = typeRegistry;
     this.storageManager = storageManager;
     this.sortableFieldFinder = sortableFieldFinder;
     this.facetedSearchResultConverter = facetedSearchResultConverter;
+    this.vreManager = vreManager;
   }
 
   @Override
@@ -61,16 +66,16 @@ public class IndexFacade implements SearchManager, IndexManager {
       throw new IndexException("Could not retrieve variations for type " + type + "with id " + id);
     }
 
-    for (Scope scope : scopeManager.getAllScopes()) {
-      Index index = scopeManager.getIndexFor(scope, baseType);
-      List<? extends DomainEntity> filteredVariations = scope.filter(variations);
+    for (VRE vre : vreManager.getAllVREs()) {
+      Index index = scopeManager.getIndexFor(vre, baseType);
+      List<? extends DomainEntity> filteredVariations = vre.filter(variations);
 
       indexChanger.executeIndexAction(index, filteredVariations);
     }
   }
 
   private <T extends DomainEntity> Class<? extends DomainEntity> baseTypeFor(Class<T> type) {
-    Class<? extends DomainEntity> baseType = TypeRegistry.toDomainEntity(typeRegistry.getBaseClass(type));
+    Class<? extends DomainEntity> baseType = TypeRegistry.toBaseDomainEntity(type);
     return baseType;
   }
 
@@ -90,8 +95,8 @@ public class IndexFacade implements SearchManager, IndexManager {
   public <T extends DomainEntity> void deleteEntity(Class<T> type, String id) throws IndexException {
     Class<? extends DomainEntity> baseType = baseTypeFor(type);
 
-    for (Scope scope : scopeManager.getAllScopes()) {
-      Index index = scopeManager.getIndexFor(scope, baseType);
+    for (VRE vre : vreManager.getAllVREs()) {
+      Index index = scopeManager.getIndexFor(vre, baseType);
 
       index.deleteById(id);
     }
@@ -102,8 +107,8 @@ public class IndexFacade implements SearchManager, IndexManager {
   public <T extends DomainEntity> void deleteEntities(Class<T> type, List<String> ids) throws IndexException {
     Class<? extends DomainEntity> baseType = baseTypeFor(type);
 
-    for (Scope scope : scopeManager.getAllScopes()) {
-      Index index = scopeManager.getIndexFor(scope, baseType);
+    for (VRE vre : vreManager.getAllVREs()) {
+      Index index = scopeManager.getIndexFor(vre, baseType);
 
       index.deleteById(ids);
     }
@@ -118,27 +123,17 @@ public class IndexFacade implements SearchManager, IndexManager {
     }
   }
 
-  /**
-   * @deprecated use SearchManager.search
-   */
-  @Override
-  @Deprecated
-  public <T extends DomainEntity> QueryResponse search(Scope scope, Class<T> type, SolrQuery query) throws IndexException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
   @Override
   public IndexStatus getStatus() {
     IndexStatus indexStatus = creatIndexStatus();
 
-    List<Scope> scopes = scopeManager.getAllScopes();
+    Collection<VRE> vres = vreManager.getAllVREs();
 
-    for (Scope scope : scopes) {
-      for (Class<? extends DomainEntity> type : scope.getBaseEntityTypes()) {
-        Index index = scopeManager.getIndexFor(scope, type);
+    for (VRE vre : vres) {
+      for (Class<? extends DomainEntity> type : vre.getBaseEntityTypes()) {
+        Index index = scopeManager.getIndexFor(vre, type);
         try {
-          indexStatus.addCount(scope, type, index.getCount());
+          indexStatus.addCount(vre, type, index.getCount());
         } catch (IndexException e) {
           LOG.error("Failed to obtain status: {}", e.getMessage());
         }
@@ -177,12 +172,12 @@ public class IndexFacade implements SearchManager, IndexManager {
   }
 
   @Override
-  public <T extends FacetedSearchParameters<T>> SearchResult search(Scope scope, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException {
-    Index index = scopeManager.getIndexFor(scope, type);
+  public <T extends FacetedSearchParameters<T>> SearchResult search(VRE vre, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException {
+    Index index = scopeManager.getIndexFor(vre, type);
 
     FacetedSearchResult facetedSearchResult = index.search(searchParameters);
 
-    return facetedSearchResultConverter.convert(typeRegistry.getINameForType(type), facetedSearchResult);
+    return facetedSearchResultConverter.convert(TypeNames.getInternalName(type), facetedSearchResult);
   }
 
   private static interface IndexChanger {
@@ -190,7 +185,13 @@ public class IndexFacade implements SearchManager, IndexManager {
   }
 
   @Override
-  public SearchResult search(Scope scope, Class<? extends DomainEntity> type, SearchParameters searchParameters) throws IndexException, NoSuchFacetException {
+  public <T extends DomainEntity> QueryResponse search(VRE vre, Class<T> type, SolrQuery query) throws IndexException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public SearchResult search(VRE vre, Class<? extends DomainEntity> type, SearchParameters searchParameters) throws IndexException, NoSuchFacetException {
     // TODO Auto-generated method stub
     return null;
   }

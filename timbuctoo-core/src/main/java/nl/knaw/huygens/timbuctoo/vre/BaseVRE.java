@@ -48,5 +48,4 @@ public class BaseVRE extends AbstractVRE {
   public String getDescription() {
     return "VRE for base domain entities.";
   }
-
 }
