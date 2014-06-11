@@ -22,15 +22,19 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
+import java.util.Map;
+
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import org.mongojack.JacksonDBCollection;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mongodb.BasicDBObject;
@@ -44,44 +48,63 @@ import com.mongodb.MongoException;
 @Singleton
 public class EntityIds {
 
-  public static final String ID_COLLECTION_NAME = "counters";
-  public static final String UNKNOWN_ID_PREFIX = "UNKN";
+  private static final String COLLECTION_NAME = "counters";
+  private static final String ID_PROPERTY = "_id";
 
   private final JacksonDBCollection<Counter, String> counters;
+  private final Map<Class<? extends Entity>, String> prefixes = Maps.newHashMap();
 
   @Inject
-  public EntityIds(MongoDB mongoDB) {
-    DBCollection collection = mongoDB.getCollection(ID_COLLECTION_NAME);
+  public EntityIds(TypeRegistry registry, MongoDB mongoDB) throws ModelException {
+    DBCollection collection = mongoDB.getCollection(COLLECTION_NAME);
     counters = JacksonDBCollection.wrap(collection, Counter.class, String.class);
+    registerPrefixes(registry);
+  }
+
+  public void registerPrefixes(TypeRegistry registry) throws ModelException {
+    for (Class<? extends Entity> type : registry.getSystemEntityTypes()) {
+      registerPrefix(type);
+    }
+    for (Class<? extends Entity> type : registry.getDomainEntityTypes()) {
+      if (TypeRegistry.isPrimitiveDomainEntity(type)) {
+        registerPrefix(type);
+      } else if (type.getAnnotation(IDPrefix.class) != null) {
+        throw new ModelException("Illegal IDPrefix annotation for %s", type);
+      }
+    }
+  }
+
+  private void registerPrefix(Class<? extends Entity> type) throws ModelException {
+    IDPrefix annotation = type.getAnnotation(IDPrefix.class);
+    if (annotation == null) {
+      throw new ModelException("Missing IDPrefix annotation for %s", type);
+    }
+    String prefix = annotation.value();
+    if (prefixes.containsValue(prefix)) {
+      throw new ModelException("Duplicate IDPrefix annotation value %s for %s", prefix, type);
+    }
+    prefixes.put(type, prefix);
   }
 
   public String getNextId(Class<? extends Entity> type) throws StorageException {
     try {
       Class<? extends Entity> baseType = TypeRegistry.getBaseClass(type);
-      String counterId = TypeNames.getInternalName(baseType);
-      BasicDBObject query = new BasicDBObject("_id", counterId);
+      String id = TypeNames.getInternalName(baseType);
+      BasicDBObject query = new BasicDBObject(ID_PROPERTY, id);
       BasicDBObject increment = new BasicDBObject("$inc", new BasicDBObject("next", 1));
 
       // Find by id, return all fields, use default sort, increment the counter,
       // return the new object, create if no object exists:
       Counter counter = counters.findAndModify(query, null, null, false, increment, true, true);
 
-      return String.format("%s%012d", getIDPrefix(baseType), counter.next);
+      return String.format("%s%012d", prefixes.get(baseType), counter.next);
     } catch (MongoException e) {
       throw new StorageException(e);
     }
   }
 
-  /**
-   * Returns the prefix of an entity id.
-   */
-  private String getIDPrefix(Class<? extends Entity> type) {
-    IDPrefix annotation = type.getAnnotation(IDPrefix.class);
-    return (annotation != null) ? annotation.value() : UNKNOWN_ID_PREFIX;
-  }
-
   private static class Counter {
-    @JsonProperty("_id")
+    @JsonProperty(ID_PROPERTY)
     public String id;
     public long next;
   }
