@@ -31,12 +31,12 @@ import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
+import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -44,7 +44,7 @@ public class VREManager {
 
   private static final String DEFAULT_VRE = PrimitivesVRE.NAME;
 
-  private final Map<String, VRE> vreMap;
+  private final Map<String, VRE> vres;
 
   public static final NoOpIndex NO_OP_INDEX = new NoOpIndex();
 
@@ -52,22 +52,10 @@ public class VREManager {
 
   private Map<String, Index> indexes;
 
-  @Inject
-  public VREManager(Map<String, Index> indexes, IndexNameCreator indexNameCreator) {
+  protected VREManager(Map<String, VRE> vres, Map<String, Index> indexes, IndexNameCreator indexNameCreator) {
     this.indexes = indexes;
     this.indexNameCreator = indexNameCreator;
-    vreMap = Maps.newHashMap();
-    List<VRE> vreList = ImmutableList.<VRE> of( //
-        new PrimitivesVRE(), //
-        new BaseVRE(), //
-        new CKCCVRE(), //
-        new DutchCaribbeanVRE(), //
-        new WomenWritersVRE(), //
-        new TestVRE());
-    
-    for (VRE vre : vreList) {
-      vreMap.put(vre.getName(), vre);
-    }
+    this.vres = vres;
   }
 
   /**
@@ -76,7 +64,7 @@ public class VREManager {
    * @return the VRE if one is found, null if the VRE cannot be found.
    */
   public VRE getVREById(String id) {
-    return vreMap.get(id);
+    return vres.get(id);
   }
 
   /**
@@ -87,15 +75,15 @@ public class VREManager {
   }
 
   public Set<String> getAvailableVREIds() {
-    return vreMap.keySet();
+    return vres.keySet();
   }
 
   public boolean doesVREExist(String vreId) {
-    return vreMap.keySet().contains(vreId);
+    return vres.keySet().contains(vreId);
   }
 
   public Collection<VRE> getAllVREs() {
-    return vreMap.values();
+    return vres.values();
   }
 
   public Index getIndexFor(VRE vre, Class<? extends DomainEntity> type) {
@@ -177,4 +165,23 @@ public class VREManager {
     }
   }
 
+  public static VREManager createInstance(List<VRE> vres, IndexNameCreator indexNameCreator, IndexFactory indexFactory) {
+    // TODO mode vreList to config
+    List<VRE> vreList = ImmutableList.<VRE> of( //
+        new PrimitivesVRE(), //
+        new BaseVRE(), //
+        new CKCCVRE(), //
+        new DutchCaribbeanVRE(), //
+        new WomenWritersVRE(), //
+        new TestVRE());
+
+    Map<String, VRE> vreMap = Maps.newHashMap();
+    Map<String, Index> indexMap = Maps.newHashMap();
+    for (VRE vre : vres) {
+      vreMap.put(vre.getName(), vre);
+      indexMap.putAll(indexFactory.createIndexesFor(vre));
+    }
+
+    return new VREManager(vreMap, indexMap, indexNameCreator);
+  }
 }
