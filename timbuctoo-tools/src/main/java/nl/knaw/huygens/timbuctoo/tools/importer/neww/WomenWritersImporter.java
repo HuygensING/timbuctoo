@@ -39,6 +39,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
+import nl.knaw.huygens.timbuctoo.model.ckcc.CKCCPerson;
 import nl.knaw.huygens.timbuctoo.model.neww.WWCollective;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
 import nl.knaw.huygens.timbuctoo.model.neww.WWKeyword;
@@ -1107,6 +1108,19 @@ public class WomenWritersImporter extends DefaultImporter {
 
   // --- Persons ---------------------------------------------------------------
 
+  private Map<String, String> ckccMap;
+
+  // Concordance with CKCC persons
+  public Map<String, String> ckccConcordance() {
+    Map<String, String> map = Maps.newHashMap();
+    map.put("354", "roemers-visscher.anna.1583-1651");
+    map.put("353", "roemers-visscher.maria-tesselschade.1594-1649");
+    map.put("486", "schurman.anna-maria.1607-1678");
+    map.put("1990","reigersberch.suzanna.1586-1640");
+    map.put("2199", "reigersberch.maria.1589-1653");
+    return map;
+  }
+
   private final Pattern simpleNamePattern = Pattern.compile("^(\\p{Lu}\\p{L}+), (\\p{Lu}\\p{L}+)$");
   private final Set<String> excludedNames = Sets.newHashSet("Comtesse", "Madame", "Madamoiselle", "Mejuffrouw", "Mevrouw", "Mme", "Mrs", "Queen", "Vrou");
   private final Set<String> ignoredValues = Sets.newHashSet("not relevant", "not yet checked", "not yet checke", "not yet known", "seems impossible to know", "to be specified", "unknown", "unkown");
@@ -1122,6 +1136,7 @@ public class WomenWritersImporter extends DefaultImporter {
 
   private int importPersons() throws Exception {
     int initialSize = references.size();
+    ckccMap = ckccConcordance();
     LineIterator iterator = getLineIterator("persons.json");
     String line = "";
     try {
@@ -1167,7 +1182,7 @@ public class WomenWritersImporter extends DefaultImporter {
         if (storedId != null) {
           nDuplicates++;
         } else {
-          storedId = addDomainEntity(WWPerson.class, converted, change);
+          storedId = storePerson(converted);
           lines.put(line, storedId);
         }
         Reference personRef = storeReference(key, WWPerson.class, storedId);
@@ -1179,6 +1194,23 @@ public class WomenWritersImporter extends DefaultImporter {
         handleXRelation(object.old_id, personRef, "hasSocialClass", "socialClass", object.social_class);
       }
     }
+  }
+
+  // For a limited number of cases we store the person as a variatiant of an existing CKCC person
+  private String storePerson(WWPerson wwPerson) {
+    String urn = wwPerson.tempOldId != null ? ckccMap.get(wwPerson.tempOldId) : null;
+    if (urn != null) {
+      CKCCPerson ckccPerson = repository.findEntity(CKCCPerson.class, "urn", urn);
+      if (ckccPerson != null) {
+        log("Updating %s with %s%n", urn, wwPerson.getTempName());
+        String storedId = ckccPerson.getId();
+        wwPerson.setId(storedId);
+        wwPerson.setRev(ckccPerson.getRev());
+        updateProjectDomainEntity(WWPerson.class, wwPerson, change);
+        return storedId;
+      }
+    }
+    return addDomainEntity(WWPerson.class, wwPerson, change);
   }
 
   private void handleXRelation(int oldId, Reference baseRef, String relationName, String keywordType, String... values) {
