@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.index.Index;
-import nl.knaw.huygens.timbuctoo.index.IndexFactory;
+import nl.knaw.huygens.timbuctoo.index.IndexMapCreator;
 import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 
@@ -139,7 +139,7 @@ public class VREManagerTest {
     combinedIndexes.putAll(vre1Indexes);
     combinedIndexes.putAll(vre2Indexes);
 
-    IndexFactory indexFactoryMock = mock(IndexFactory.class);
+    IndexMapCreator indexFactoryMock = mock(IndexMapCreator.class);
     when(indexFactoryMock.createIndexesFor(vre1)).thenReturn(vre1Indexes);
     when(indexFactoryMock.createIndexesFor(vre2)).thenReturn(vre2Indexes);
 

@@ -31,7 +31,7 @@ import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
-import nl.knaw.huygens.timbuctoo.index.IndexFactory;
+import nl.knaw.huygens.timbuctoo.index.IndexMapCreator;
 import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
@@ -47,6 +47,13 @@ public class VREManager {
   private final Map<String, VRE> vres;
 
   public static final NoOpIndex NO_OP_INDEX = new NoOpIndex();
+  public static final List<VRE> VRE_LIST = ImmutableList.<VRE> of( //
+      new PrimitivesVRE(), //
+      new BaseVRE(), //
+      new CKCCVRE(), //
+      new DutchCaribbeanVRE(), //
+      new WomenWritersVRE(), //
+      new TestVRE());
 
   private final IndexNameCreator indexNameCreator;
 
@@ -165,16 +172,7 @@ public class VREManager {
     }
   }
 
-  public static VREManager createInstance(List<VRE> vres, IndexNameCreator indexNameCreator, IndexFactory indexFactory) {
-    // TODO mode vreList to config
-    List<VRE> vreList = ImmutableList.<VRE> of( //
-        new PrimitivesVRE(), //
-        new BaseVRE(), //
-        new CKCCVRE(), //
-        new DutchCaribbeanVRE(), //
-        new WomenWritersVRE(), //
-        new TestVRE());
-
+  public static VREManager createInstance(List<VRE> vres, IndexNameCreator indexNameCreator, IndexMapCreator indexFactory) {
     Map<String, VRE> vreMap = Maps.newHashMap();
     Map<String, Index> indexMap = Maps.newHashMap();
     for (VRE vre : vres) {
