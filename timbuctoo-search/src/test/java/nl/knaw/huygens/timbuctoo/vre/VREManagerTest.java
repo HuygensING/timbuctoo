@@ -16,7 +16,6 @@ import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -172,21 +171,4 @@ public class VREManagerTest {
     indexMap.put(indexName, mock(Index.class));
   }
 
-  private static class BaseType1 extends DomainEntity {
-
-    @Override
-    public String getDisplayName() {
-      // TODO Auto-generated method stub
-      return null;
-    }
-  }
-
-  private static class BaseType2 extends DomainEntity {
-
-    @Override
-    public String getDisplayName() {
-      // TODO Auto-generated method stub
-      return null;
-    }
-  }
 }
