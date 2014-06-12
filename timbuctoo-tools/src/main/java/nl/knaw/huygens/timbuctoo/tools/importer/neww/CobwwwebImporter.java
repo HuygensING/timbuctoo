@@ -28,7 +28,7 @@ public class CobwwwebImporter extends DefaultImporter {
 
   protected String getResource(String... parts) throws Exception {
     String url = Joiner.on("/").join(parts);
-    log("-- %s%n", url);
+    openSource(url);
     Client client = Client.create();
     WebResource webResource = client.resource(url);
     ClientResponse response = webResource.accept(MediaType.APPLICATION_XML).get(ClientResponse.class);
