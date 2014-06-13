@@ -27,12 +27,14 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.facetedsearch.model.FacetDefinition;
+import nl.knaw.huygens.facetedsearch.model.FacetDefinitionBuilder;
+import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.solr.FacetInfo;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class FacetFinder {
@@ -60,16 +62,7 @@ public class FacetFinder {
       }
     }
 
-    Class<?> superclass = type.getSuperclass();
-    if (!Entity.class.equals(superclass)) {
-      facetMap.putAll(findFacets((Class<? extends Entity>) type.getSuperclass()));
-    }
-
     return facetMap;
-  }
-
-  public List<FacetDefinition> findFacetDefinitions(Class<? extends DomainEntity> type) {
-    throw new UnsupportedOperationException();
   }
 
   private void addFacet(Map<String, FacetInfo> facets, IndexAnnotation indexAnnotation) {
@@ -81,5 +74,37 @@ public class FacetFinder {
 
   private FacetInfo createFacetInfo(IndexAnnotation indexAnnotation) {
     return new FacetInfo().setName(indexAnnotation.fieldName()).setTitle(indexAnnotation.title()).setType(indexAnnotation.facetType());
+  }
+
+  public List<FacetDefinition> findFacetDefinitions(Class<? extends Entity> type) {
+    List<FacetDefinition> facetDefinitions = Lists.newArrayList();
+    Method[] methods = type.getMethods();
+
+    for (Method method : methods) {
+      if (method.isAnnotationPresent(INDEX_ANNOTATION_CLASS)) {
+        IndexAnnotation indexAnnotation = method.getAnnotation(INDEX_ANNOTATION_CLASS);
+        addFacetDefinition(facetDefinitions, indexAnnotation);
+
+      } else if (method.isAnnotationPresent(INDEX_ANNOTATIONS_CLASS)) {
+        IndexAnnotations indexAnnotations = method.getAnnotation(INDEX_ANNOTATIONS_CLASS);
+        IndexAnnotation[] values = indexAnnotations.value();
+        for (IndexAnnotation indexAnnotation : values) {
+          addFacetDefinition(facetDefinitions, indexAnnotation);
+        }
+      }
+    }
+
+    return facetDefinitions;
+  }
+
+  private void addFacetDefinition(List<FacetDefinition> facetDefinitions, IndexAnnotation indexAnnotation) {
+    if (indexAnnotation.isFaceted()) {
+      FacetDefinition definition = createFacetDefintion(indexAnnotation);
+      facetDefinitions.add(definition);
+    }
+  }
+
+  private FacetDefinition createFacetDefintion(IndexAnnotation indexAnnotation) {
+    return new FacetDefinitionBuilder(indexAnnotation.fieldName(), indexAnnotation.title(), FacetType.LIST).build();
   }
 }
