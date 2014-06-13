@@ -25,7 +25,6 @@ package nl.knaw.huygens.timbuctoo.index;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -73,12 +72,9 @@ class LocalSolrServer {
     commitWithin = config.getIntSetting("solr.commit_within", 10 * 1000);
     LOG.info("Maximum time before a commit: {} seconds", commitWithin / 1000);
 
-    try {
-      File configFile = new File(new File(solrHomeDir, "conf"), "solr.xml");
-      container = new CoreContainer(solrHomeDir, configFile);
-    } catch (FileNotFoundException e) {
-      throw new RuntimeException(e);
-    }
+    File configFile = new File(new File(solrHomeDir, "conf"), "solr.xml");
+    //      container = new CoreContainer(solrHomeDir, configFile);
+    container = null;
   }
 
   /**
@@ -92,9 +88,9 @@ class LocalSolrServer {
     String dataDir = "data/" + coreName.replace('.', '/');
 
     CoreDescriptor descriptor = new CoreDescriptor(container, coreName, solrHomeDir);
-    descriptor.setSchemaName(schemaName);
-    descriptor.setDataDir(dataDir);
-    descriptor.setLoadOnStartup(true);
+    //    descriptor.setSchemaName(schemaName);
+    //    descriptor.setDataDir(dataDir);
+    //    descriptor.setLoadOnStartup(true);
 
     SolrCore core = container.create(descriptor);
     container.register(coreName, core, true);

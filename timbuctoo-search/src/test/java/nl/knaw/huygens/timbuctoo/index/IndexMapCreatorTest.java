@@ -67,7 +67,7 @@ public class IndexMapCreatorTest {
     when(indexFactoryMock.createIndexFor(type2, name2)).thenReturn(indexMock2);
 
     // action
-    Map<String, Index> actualMap = instance.createIndexesFor(vreMock);
+    Map<String, Index> actualMap = instance.createIndexeMapFor(vreMock);
 
     // verify
     assertThat(actualMap.entrySet(), equalTo(expectedMap.entrySet()));
@@ -79,7 +79,7 @@ public class IndexMapCreatorTest {
     HashSet<Class<? extends DomainEntity>> emptyBaseTypeSet = Sets.newHashSet();
     when(vreMock.getBaseEntityTypes()).thenReturn(emptyBaseTypeSet);
 
-    Map<String, Index> actualIndexMap = instance.createIndexesFor(vreMock);
+    Map<String, Index> actualIndexMap = instance.createIndexeMapFor(vreMock);
 
     assertThat(actualIndexMap.entrySet(), is(empty()));
   }

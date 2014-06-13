@@ -22,15 +22,16 @@ package nl.knaw.huygens.timbuctoo.tools.config;
  * #L%
  */
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import org.apache.commons.configuration.ConfigurationException;
-
 import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.index.IndexFacade;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
-import nl.knaw.huygens.timbuctoo.index.OldIndexManager;
+
+import org.apache.commons.configuration.ConfigurationException;
+
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 /**
  * A class to make it possible to use Guice @see http://code.google.com/p/google-guice . 
@@ -53,7 +54,7 @@ public class ToolsInjectionModule extends BasicInjectionModule {
   @Override
   protected void configure() {
     super.configure();
-    bind(IndexManager.class).to(OldIndexManager.class);
+    bind(IndexManager.class).to(IndexFacade.class);
   }
 
 }

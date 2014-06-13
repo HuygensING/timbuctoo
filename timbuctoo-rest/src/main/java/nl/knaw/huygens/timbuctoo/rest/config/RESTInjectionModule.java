@@ -31,15 +31,17 @@ import nl.knaw.huygens.persistence.PersistenceManagerFactory;
 import nl.knaw.huygens.security.client.AuthorizationHandler;
 import nl.knaw.huygens.security.client.HuygensAuthorizationHandler;
 import nl.knaw.huygens.security.client.SecurityContextCreator;
+import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.index.IndexFacade;
+import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
-import nl.knaw.huygens.timbuctoo.index.OldIndexManager;
+import nl.knaw.huygens.timbuctoo.index.SolrIndexFactory;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.mail.MailSenderFactory;
 import nl.knaw.huygens.timbuctoo.messages.ActiveMQBroker;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
-import nl.knaw.huygens.timbuctoo.search.OldSearchManager;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.ExampleAuthorizationHandler;
@@ -47,6 +49,7 @@ import nl.knaw.huygens.timbuctoo.security.ExampleVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.SecurityType;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
+import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -63,17 +66,26 @@ public class RESTInjectionModule extends BasicInjectionModule {
   @Override
   protected void configure() {
 
+    super.configure();
+
     bind(SecurityContextCreator.class).to(UserSecurityContextCreator.class);
     bind(Broker.class).to(ActiveMQBroker.class);
-    bind(SearchManager.class).to(OldSearchManager.class);
-    bind(IndexManager.class).to(OldIndexManager.class);
+    bind(SearchManager.class).to(IndexFacade.class);
+    bind(IndexManager.class).to(IndexFacade.class);
 
+    bind(AbstractSolrServerBuilder.class).toProvider(AbstractSolrServerBuilderProvider.class);
+    bind(IndexFactory.class).to(SolrIndexFactory.class);
+    bind(VREManager.class).toProvider(VREManagerProvider.class);
+
+    configureTheAuthorizationHandler();
+  }
+
+  private void configureTheAuthorizationHandler() {
     if (SecurityType.DEFAULT.equals(securityType)) {
       bind(VREAuthorizationHandler.class).to(DefaultVREAuthorizationHandler.class);
     } else {
       bind(VREAuthorizationHandler.class).to(ExampleVREAuthorizationHandler.class);
     }
-    super.configure();
   }
 
   @Provides

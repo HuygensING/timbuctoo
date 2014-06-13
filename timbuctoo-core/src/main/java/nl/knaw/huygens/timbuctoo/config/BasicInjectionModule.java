@@ -53,5 +53,4 @@ public class BasicInjectionModule extends AbstractModule {
 
     bind(Storage.class).to(MongoStorage.class);
   }
-
 }

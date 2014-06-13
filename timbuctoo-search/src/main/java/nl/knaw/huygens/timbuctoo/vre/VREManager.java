@@ -172,12 +172,12 @@ public class VREManager {
     }
   }
 
-  public static VREManager createInstance(List<VRE> vres, IndexNameCreator indexNameCreator, IndexMapCreator indexFactory) {
+  public static VREManager createInstance(List<VRE> vres, IndexNameCreator indexNameCreator, IndexMapCreator indexMapCreator) {
     Map<String, VRE> vreMap = Maps.newHashMap();
     Map<String, Index> indexMap = Maps.newHashMap();
     for (VRE vre : vres) {
       vreMap.put(vre.getName(), vre);
-      indexMap.putAll(indexFactory.createIndexesFor(vre));
+      indexMap.putAll(indexMapCreator.createIndexeMapFor(vre));
     }
 
     return new VREManager(vreMap, indexMap, indexNameCreator);
