@@ -177,7 +177,7 @@ public class VREManager {
     Map<String, Index> indexMap = Maps.newHashMap();
     for (VRE vre : vres) {
       vreMap.put(vre.getName(), vre);
-      indexMap.putAll(indexMapCreator.createIndexeMapFor(vre));
+      indexMap.putAll(indexMapCreator.createIndexesFor(vre));
     }
 
     return new VREManager(vreMap, indexMap, indexNameCreator);

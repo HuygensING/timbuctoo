@@ -140,8 +140,8 @@ public class VREManagerTest {
     combinedIndexes.putAll(vre2Indexes);
 
     IndexMapCreator indexFactoryMock = mock(IndexMapCreator.class);
-    when(indexFactoryMock.createIndexeMapFor(vre1)).thenReturn(vre1Indexes);
-    when(indexFactoryMock.createIndexeMapFor(vre2)).thenReturn(vre2Indexes);
+    when(indexFactoryMock.createIndexesFor(vre1)).thenReturn(vre1Indexes);
+    when(indexFactoryMock.createIndexesFor(vre2)).thenReturn(vre2Indexes);
 
     VREManager expectedVREManager = new VREManager(vres, combinedIndexes, indexNameCreatorMock);
 

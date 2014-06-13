@@ -21,7 +21,7 @@ public class IndexMapCreator {
     this.indexFactory = indexFactory;
   }
 
-  public Map<String, Index> createIndexeMapFor(VRE vre) {
+  public Map<String, Index> createIndexesFor(VRE vre) {
     Map<String, Index> indexMap = createIndexMap();
 
     for (Class<? extends DomainEntity> type : vre.getBaseEntityTypes()) {
