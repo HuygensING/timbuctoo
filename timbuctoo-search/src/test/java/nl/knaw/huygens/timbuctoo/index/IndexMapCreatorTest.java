@@ -18,6 +18,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 
+import test.timbuctoo.index.model.BaseType1;
+import test.timbuctoo.index.model.BaseType2;
+
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -77,23 +80,5 @@ public class IndexMapCreatorTest {
     Map<String, Index> actualIndexMap = instance.createIndexesFor(vreMock);
 
     assertThat(actualIndexMap.entrySet(), is(empty()));
-  }
-
-  private static class BaseType1 extends DomainEntity {
-
-    @Override
-    public String getDisplayName() {
-      // TODO Auto-generated method stub
-      return null;
-    }
-  }
-
-  private static class BaseType2 extends DomainEntity {
-
-    @Override
-    public String getDisplayName() {
-      // TODO Auto-generated method stub
-      return null;
-    }
   }
 }
