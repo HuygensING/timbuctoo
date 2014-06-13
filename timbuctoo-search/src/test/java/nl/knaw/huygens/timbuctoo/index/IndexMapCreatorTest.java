@@ -44,15 +44,17 @@ public class IndexMapCreatorTest {
   public void createIndexesForCreatesAMapOfIndexesWithEachBaseTypeOfTheVRE() {
     // setup
     Set<Class<? extends DomainEntity>> baseTypes = Sets.newHashSet();
-    baseTypes.add(BaseType1.class);
-    baseTypes.add(BaseType2.class);
+    Class<BaseType1> type1 = BaseType1.class;
+    baseTypes.add(type1);
+    Class<BaseType2> type2 = BaseType2.class;
+    baseTypes.add(type2);
     VRE vreMock = mock(VRE.class);
     when(vreMock.getBaseEntityTypes()).thenReturn(baseTypes);
 
     String name1 = "basetype1";
-    when(indexNameCreatorMock.getIndexNameFor(vreMock, BaseType1.class)).thenReturn(name1);
+    when(indexNameCreatorMock.getIndexNameFor(vreMock, type1)).thenReturn(name1);
     String name2 = "basetype2";
-    when(indexNameCreatorMock.getIndexNameFor(vreMock, BaseType2.class)).thenReturn(name2);
+    when(indexNameCreatorMock.getIndexNameFor(vreMock, type2)).thenReturn(name2);
 
     Index indexMock1 = mock(Index.class);
     Index indexMock2 = mock(Index.class);
@@ -61,8 +63,8 @@ public class IndexMapCreatorTest {
     expectedMap.put(name1, indexMock1);
     expectedMap.put(name2, indexMock2);
 
-    when(indexFactoryMock.createIndexFor(name1)).thenReturn(indexMock1);
-    when(indexFactoryMock.createIndexFor(name2)).thenReturn(indexMock2);
+    when(indexFactoryMock.createIndexFor(type1, name1)).thenReturn(indexMock1);
+    when(indexFactoryMock.createIndexFor(type2, name2)).thenReturn(indexMock2);
 
     // action
     Map<String, Index> actualMap = instance.createIndexesFor(vreMock);
