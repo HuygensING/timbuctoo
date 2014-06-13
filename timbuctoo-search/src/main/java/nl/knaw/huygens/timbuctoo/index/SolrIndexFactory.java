@@ -30,7 +30,7 @@ public class SolrIndexFactory implements IndexFactory {
   @Override
   public SolrIndex createIndexFor(Class<? extends DomainEntity> type, String name) {
     List<FacetDefinition> facetDefinitions = this.facetFinderMock.findFacetDefinitions(type);
-    AbstractSolrServer abstractSolrServer = this.solrServerBuilder.build(facetDefinitions);
+    AbstractSolrServer abstractSolrServer = this.solrServerBuilder.setCoreName(name).build(facetDefinitions);
     FacetedSearchLibrary facetedSearchLibrary = this.facetedSearchLibraryFactory.create(abstractSolrServer);
 
     return new SolrIndex(name, solrDocumentCreator, abstractSolrServer, facetedSearchLibrary);

@@ -44,6 +44,7 @@ public class SolrIndexFactoryTest {
     Index expectedSolrIndex = new SolrIndex(name, solrInputDocumentCreatorMock, solrServerMock, facetedSearchLibraryMock);
 
     when(facetFinderMock.findFacetDefinitions(type)).thenReturn(facetDefinitions);
+    when(solrServerBuilderMock.setCoreName(name)).thenReturn(solrServerBuilderMock);
     when(solrServerBuilderMock.build(facetDefinitions)).thenReturn(solrServerMock);
     when(facetedSearchLibraryFactoryMock.create(solrServerMock)).thenReturn(facetedSearchLibraryMock);
 
