@@ -6,14 +6,19 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import org.apache.solr.common.SolrInputDocument;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 /**
  * A class an input document for the types in the scope.
  *
  */
+@Singleton
 public class SolrInputDocumentCreator {
 
   private final ModelIterator modelIterator;
 
+  @Inject
   public SolrInputDocumentCreator(ModelIterator modelIterator) {
     this.modelIterator = modelIterator;
   }

@@ -29,6 +29,9 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
+import com.google.inject.Singleton;
+
+@Singleton
 public class ModelIterator {
 
   /**

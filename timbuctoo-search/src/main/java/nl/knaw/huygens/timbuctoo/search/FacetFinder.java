@@ -23,16 +23,19 @@ package nl.knaw.huygens.timbuctoo.search;
  */
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.facetedsearch.model.FacetDefinition;
 import nl.knaw.huygens.solr.FacetInfo;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import com.google.common.collect.Maps;
 
-class FacetFinder {
+public class FacetFinder {
 
   private static final Class<IndexAnnotations> INDEX_ANNOTATIONS_CLASS = IndexAnnotations.class;
   private static final Class<IndexAnnotation> INDEX_ANNOTATION_CLASS = IndexAnnotation.class;
@@ -63,6 +66,10 @@ class FacetFinder {
     }
 
     return facetMap;
+  }
+
+  public List<FacetDefinition> findFacetDefinitions(Class<? extends DomainEntity> type) {
+    throw new UnsupportedOperationException();
   }
 
   private void addFacet(Map<String, FacetInfo> facets, IndexAnnotation indexAnnotation) {

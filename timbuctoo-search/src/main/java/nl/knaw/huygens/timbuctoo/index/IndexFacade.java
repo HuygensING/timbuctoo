@@ -22,6 +22,10 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+@Singleton
 public class IndexFacade implements SearchManager, IndexManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(IndexFacade.class);
@@ -30,6 +34,7 @@ public class IndexFacade implements SearchManager, IndexManager {
   private final SortableFieldFinder sortableFieldFinder;
   private final FacetedSearchResultConverter facetedSearchResultConverter;
 
+  @Inject
   public IndexFacade(Repository storageManager, SortableFieldFinder sortableFieldFinder, FacetedSearchResultConverter facetedSearchResultConverter, VREManager vreManager) {
     this.storageManager = storageManager;
     this.sortableFieldFinder = sortableFieldFinder;

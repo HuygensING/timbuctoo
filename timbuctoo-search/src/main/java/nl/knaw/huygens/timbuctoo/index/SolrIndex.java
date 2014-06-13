@@ -11,6 +11,8 @@ import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocumentList;
@@ -147,5 +149,27 @@ public class SolrIndex implements Index {
     } catch (FacetedSearchException e) {
       throw new SearchException(e);
     }
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof SolrIndex)) {
+      return false;
+    }
+
+    SolrIndex other = (SolrIndex) obj;
+
+    return new EqualsBuilder().append(name, other.name)//
+        .append(solrDocumentCreator, other.solrDocumentCreator)//
+        .append(facetedSearchLibrary, other.facetedSearchLibrary)//
+        .append(solrServer, other.solrServer).isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder().append(name)//
+        .append(solrDocumentCreator)//
+        .append(facetedSearchLibrary)//
+        .append(solrServer).toHashCode();
   }
 }
