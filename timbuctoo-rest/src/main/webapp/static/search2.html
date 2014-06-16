@@ -1,0 +1,286 @@
+<!--
+  #%L
+  Timbuctoo REST api
+  =======
+  Copyright (C) 2012 - 2014 Huygens ING
+  =======
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as
+  published by the Free Software Foundation, either version 3 of the 
+  License, or (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public 
+  License along with this program.  If not, see
+  <http://www.gnu.org/licenses/gpl-3.0.html>.
+  #L%
+  -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>Repository Search</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="css/static-html.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script type="text/javascript" src="http://d3js.org/d3.v3.js"></script>
+<script type="text/javascript" src="config.js"></script>
+</head>
+
+<body>
+
+<h1>Repository Search</h1>
+<form id="formSearch" name="formSearch">
+<p id="error" style="display:none" />
+<h2>Query</h2>
+<table>
+<tr>
+  <td>VRE</td>
+  <td><select id="vreselect"></select></td>
+</tr>
+<tr>
+  <td>Type</td>
+  <td><input name="" type="text" size="50" id="searchtype"/></td>
+</tr>
+<tr>
+  <td>Text</td>
+  <td><input name="" type="text" size="50" id="searchtext"/></td>
+</tr>
+</table>
+<p><a href="#" onclick="doPost()">Submit query</a></p>
+
+<h2>Results</h2>
+<table>
+<tr>
+  <td>URL</td>
+  <td><input name="" type="text" size="50" id="searchid"/></td>
+</tr>
+<tr>
+  <td>Start</td>
+  <td><input name="" type="text" size="50" id="start" value="0"/></td>
+</tr>
+<tr>
+  <td>Rows</td>
+  <td><input name="" type="text" size="50" id="rows" value="10"/></td>
+</tr>
+</table>
+<p><a href="#" onclick="doGet()">Show results</a></p>
+
+<div id="results">
+</div>
+
+<!--
+<p><a href="#" onclick="getGraph('ckccpersons/PERS000000001687')">Show graph</a></p>
+-->
+</form>
+
+<div id="graph">
+</div>
+
+<style>
+
+.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+#licensing {
+  fill: green;
+}
+
+.link.isParentOf {
+  stroke: green;
+}
+
+.link.isSpouseOf {
+  stroke: red;
+}
+
+.link.isChildOf {
+  stroke: blue;
+}
+
+circle {
+  fill: #ccc;
+  stroke: #333;
+  stroke-width: 1.5px;
+}
+
+text {
+  font: 10px sans-serif;
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}
+
+</style>
+<script>
+  var baseUrl = 'http://' + window.config.serverUri + '/';
+  var searchUrl = baseUrl + 'search';
+
+  /* Simply concatenates the components of a name */
+  function buildName(name) {
+    var components = name.components,
+        result = '';
+    for (var i in components) {
+      result += ' ' + components[i].value;
+    }
+    return result;
+  }
+
+  function doPost() {
+	var errorToken = $('#error');
+    jQuery.ajax({
+      url: searchUrl,
+      type: 'POST',
+      data: JSON.stringify({
+        'scopeId': $('#searchscope').val(),
+        'typeString': $('#searchtype').val(),
+        'term': $('#searchtext').val(),
+        'sortParameters': []
+      }),
+      headers : { 
+    	  VRE_ID : $('#vreselect').val()
+      },
+      contentType: 'application/json; charset=utf-8',
+      success: function (data, status, xhr) {
+        var queryURL = xhr.getResponseHeader('Location') || 'None';
+        $('#searchid').val(queryURL);
+        errorToken.hide();
+      },
+      error: function (xhr, status, errorThrown){
+        errorToken.text(status + ' : ' + errorThrown);
+        errorToken.show();
+      }
+    });
+  }
+
+  function doGet() {
+    var searchUrl = $('#searchid').val();
+    var start = $('#start').val() || '0';
+    var rows = $('#rows').val() || '10';
+    jQuery.ajax({
+      url: searchUrl,
+      type: 'GET',
+      data: {'start': start, 'rows': rows},
+      contentType: 'application/json; charset=utf-8',
+      success: function (data) {
+        var html = '<table><tr><th>Name</th><th>Link</th></tr>';
+        $.each(data.refs, function (i, item) {
+          var url = baseUrl + item.path;
+          var path = item.path.replace(/domain\//g, '');
+          html += '<tr><td><a href="' + url + '">' + item.displayName + '</a></td>'
+                + '<td><a href="#" onclick="getGraph(' + "'" + path + "'" + ')">graph</a></td></tr>';
+        });
+        html += '</table>';
+        $('#results').html(html);
+      }
+    });
+  }
+
+  function getGraph(path) {
+    jQuery.ajax({
+      url: 'http://localhost:8080/timbuctoo/graph/' + path,
+      type: 'GET',
+      contentType: 'application/json; charset=utf-8',
+      success: function (json) {
+
+        var w = 640;
+        var h = 480;
+
+        var svg = d3.select("#graph")
+          .append("svg:svg")
+          .attr("width", w)
+          .attr("height", h);
+
+        var force = d3.layout.force()
+          .nodes(json.nodes)
+          .links(json.links)
+          .size([w, h])
+          .linkDistance(150)
+          .charge(-300)
+          .on("tick", tick)
+          .start();
+
+        // Per-type markers, as they don't inherit styles.
+        svg.append("defs").selectAll("marker")
+          .data(["isParentOf", "isChildOf", "hasBirthPlace", "hasDeathPlace"])
+          .enter().append("marker")
+          .attr("id", function(d) { return d; })
+          .attr("viewBox", "0 -5 10 10")
+          .attr("refX", 15)
+          .attr("refY", -1.5)
+          .attr("markerWidth", 6)
+          .attr("markerHeight", 6)
+          .attr("orient", "auto")
+          .append("path")
+          .attr("d", "M0,-5L10,0L0,5");
+
+        var path = svg.append("g").selectAll("path")
+          .data(force.links())
+          .enter().append("path")
+          .attr("class", function(d) { return "link " + d.type; })
+          .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
+
+        var circle = svg.append("g").selectAll("circle")
+          .data(force.nodes())
+          .enter().append("circle")
+          .attr("r", 6)
+          .call(force.drag);
+
+        var text = svg.append("g").selectAll("text")
+         .data(force.nodes())
+         .enter().append("text")
+         .attr("x", 8)
+         .attr("y", ".31em")
+         .text(function(d) { return d.name; });
+
+        // Use elliptical arc path segments to doubly-encode directionality.
+        function tick() {
+          path.attr("d", linkArc);
+          circle.attr("transform", transform);
+          text.attr("transform", transform);
+        }
+
+        function linkArc(d) {
+          var dx = d.target.x - d.source.x,
+              dy = d.target.y - d.source.y,
+              dr = Math.sqrt(dx * dx + dy * dy);
+          return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+        }
+
+        function transform(d) {
+          return "translate(" + d.x + "," + d.y + ")";
+        }
+
+      }
+    });
+  }
+
+  $(document).ready(function() {
+    $.ajax({
+      url : searchUrl + "/vres",
+      type: 'GET',
+      success: function(data){
+      var vreSelect =$('#vreselect');  
+      $.each(data, function(i, item){
+        var option = $('<option>');
+        option.attr('value', item);
+        option.append(item);
+        vreSelect.append(option);
+      })
+      }
+    });
+    $('#searchtype').val('dcararchive');
+    $('#searchtext').val('Storm');
+    $('#searchid').val('');
+    $('#results').html('No results (yet)');
+  });
+</script>
+</body>
+
+</html>
