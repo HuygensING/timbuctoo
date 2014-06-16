@@ -118,7 +118,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
   public void testPostSuccess() throws Exception {
     setUpVREManager(true, true);
 
-    SearchParameters params = new SearchParameters().setTypeString(TYPE_STRING).setSort(ID).setTerm(TERM);
+    SearchParameters params = new SearchParameters().setTypeString(TYPE_STRING).setTerm(TERM);
     SearchResult searchResult = mock(SearchResult.class);;
     setSearchResult(searchResult);
     when(repository.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
@@ -126,7 +126,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     WebResource resource = super.resource();
     String expected = String.format("%ssearch/%s", resource.getURI().toString(), ID);
     ClientResponse response = resource.path("search").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
-    String actual = response.getHeaders().getFirst(LOCATION_HEADER);
+    String actual = null; //response.getHeaders().getFirst(LOCATION_HEADER);
 
     assertEquals(Status.CREATED, response.getClientResponseStatus());
     assertEquals(expected, actual);

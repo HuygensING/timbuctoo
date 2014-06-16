@@ -46,6 +46,10 @@ public class SolrIndex implements Index {
   }
 
   private void updateIndex(List<? extends DomainEntity> variations) throws IndexException {
+    if (variations == null || variations.isEmpty()) {
+      return;
+    }
+
     SolrInputDocument document = solrDocumentCreator.create(variations);
 
     try {
@@ -64,6 +68,10 @@ public class SolrIndex implements Index {
 
   @Override
   public void deleteById(String id) throws IndexException {
+    if (id == null) {
+      return;
+    }
+
     try {
       solrServer.deleteById(id);
     } catch (SolrServerException e) {
@@ -77,7 +85,9 @@ public class SolrIndex implements Index {
   @Override
   public void deleteById(List<String> ids) throws IndexException {
     try {
-      solrServer.deleteById(ids);
+      if (ids != null && !ids.isEmpty()) {
+        solrServer.deleteById(ids);
+      }
     } catch (SolrServerException e) {
       throw new IndexException(e);
     } catch (IOException e) {

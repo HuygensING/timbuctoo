@@ -35,13 +35,16 @@ import nl.knaw.huygens.timbuctoo.index.IndexMapCreator;
 import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.inject.Singleton;
 
 @Singleton
 public class VREManager {
-
+  private static final Logger LOG = LoggerFactory.getLogger(VREManager.class);
   private static final String DEFAULT_VRE = PrimitivesVRE.NAME;
 
   private final Map<String, VRE> vres;
@@ -98,6 +101,7 @@ public class VREManager {
 
     Index index = indexes.get(indexName);
     if (index == null) {
+      LOG.warn("No index found {}", indexName);
       index = VREManager.NO_OP_INDEX;
     }
 
@@ -167,8 +171,8 @@ public class VREManager {
 
     @Override
     public <T extends FacetedSearchParameters<T>> FacetedSearchResult search(FacetedSearchParameters<T> searchParamaters) {
-      // TODO Auto-generated method stub
-      return null;
+      LOG.warn("Searching on a non existing index");
+      return new FacetedSearchResult();
     }
   }
 

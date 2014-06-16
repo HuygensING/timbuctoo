@@ -59,7 +59,6 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
-import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -126,9 +125,10 @@ public class SearchResource extends ResourceBase {
       SearchResult result = searchManager.search(vre, type, searchParams);
       String queryId = putSearchResult(result);
       return Response.created(new URI(queryId)).build();
-    } catch (NoSuchFacetException e) {
-      throw new TimbuctooException(BAD_REQUEST, "No such facet: %s", e.getMessage());
+      //    } catch (NoSuchFacetException e) {
+      //      throw new TimbuctooException(BAD_REQUEST, "No such facet: %s", e.getMessage());
     } catch (Exception e) {
+      LOG.error(e.getMessage(), e);
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
     }
   }

@@ -8,9 +8,11 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.FacetedSearchException;
@@ -98,6 +100,24 @@ public class SolrIndexTest {
   }
 
   @Test
+  public void testAddWithNullVariationList() throws IndexException {
+    // action
+    instance.add(null);
+
+    // verify
+    verifyZeroInteractions(documentCreatorMock, solrServerMock);
+  }
+
+  @Test
+  public void testAddWithEmptyVariationList() throws IndexException {
+    // action
+    instance.add(Lists.<DomainEntity> newArrayList());
+
+    // verify
+    verifyZeroInteractions(documentCreatorMock, solrServerMock);
+  }
+
+  @Test
   public void testUpdate() throws IndexException, SolrServerException, IOException {
     // when
     when(documentCreatorMock.create(variationsToAdd)).thenReturn(solrInputDocumentMock);
@@ -107,6 +127,24 @@ public class SolrIndexTest {
 
     // verify
     verifyTheIndexIsUpdated();
+  }
+
+  @Test
+  public void testUpdateWithNullVariationList() throws IndexException {
+    // action
+    instance.update(null);
+
+    // verify
+    verifyZeroInteractions(documentCreatorMock, solrServerMock);
+  }
+
+  @Test
+  public void testUpdateWithEmptyVariationList() throws IndexException {
+    // action
+    instance.update(Lists.<DomainEntity> newArrayList());
+
+    // verify
+    verifyZeroInteractions(documentCreatorMock, solrServerMock);
   }
 
   @Test
@@ -145,6 +183,17 @@ public class SolrIndexTest {
   }
 
   @Test
+  public void testDeleteByIdWithNullVariationList() throws IndexException {
+    String test = null;
+
+    // action
+    instance.deleteById(test);
+
+    // verify
+    verifyZeroInteractions(documentCreatorMock, solrServerMock);
+  }
+
+  @Test
   public void testDeleteMultipleItems() throws SolrServerException, IOException, IndexException {
     // setup
     List<String> ids = Lists.newArrayList("id1", "id2", "id3");
@@ -179,6 +228,27 @@ public class SolrIndexTest {
       // verify
       verify(solrServerMock).deleteById(ids);
     }
+  }
+
+  @Test
+  public void testDeleteMultipleItemsByIdWithNullVariationList() throws IndexException {
+    List<String> nullList = null;
+
+    // action
+    instance.deleteById(nullList);
+
+    // verify
+    verifyZeroInteractions(documentCreatorMock, solrServerMock);
+  }
+
+  @Test
+  public void testDeleteMultipleByIdWithEmptyList() throws IndexException {
+    // action
+    final ArrayList<String> emptyList = Lists.<String> newArrayList();
+    instance.deleteById(emptyList);
+
+    // verify
+    verifyZeroInteractions(documentCreatorMock, solrServerMock);
   }
 
   @Test

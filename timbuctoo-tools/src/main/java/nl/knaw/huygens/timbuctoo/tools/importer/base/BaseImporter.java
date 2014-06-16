@@ -88,6 +88,8 @@ public class BaseImporter extends DefaultImporter {
       importer.indexEntities(BaseLanguage.class);
       importer.indexEntities(BaseLocation.class);
 
+    } catch (Exception e) {
+      e.printStackTrace();
     } finally {
       if (importer != null) {
         importer.close();

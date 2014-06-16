@@ -1,17 +1,16 @@
 package nl.knaw.huygens.timbuctoo.index;
 
+import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
+
 import java.util.List;
 import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
-import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -57,7 +56,8 @@ public class IndexFacade implements SearchManager, IndexManager {
   }
 
   private <T extends DomainEntity> void changeIndex(Class<T> type, String id, IndexChanger indexChanger) throws IndexException {
-    Class<? extends DomainEntity> baseType = baseTypeFor(type);
+    Class<? extends DomainEntity> baseType1 = toBaseDomainEntity(type);
+    Class<? extends DomainEntity> baseType = baseType1;
     List<? extends DomainEntity> variations = null;
 
     variations = storageManager.getAllVariations(baseType, id);
@@ -66,16 +66,11 @@ public class IndexFacade implements SearchManager, IndexManager {
     }
 
     for (VRE vre : vreManager.getAllVREs()) {
-      Index index = vreManager.getIndexFor(vre, baseType);
+      Index index = vreManager.getIndexFor(vre, type);
       List<? extends DomainEntity> filteredVariations = vre.filter(variations);
 
       indexChanger.executeIndexAction(index, filteredVariations);
     }
-  }
-
-  private <T extends DomainEntity> Class<? extends DomainEntity> baseTypeFor(Class<T> type) {
-    Class<? extends DomainEntity> baseType = TypeRegistry.toBaseDomainEntity(type);
-    return baseType;
   }
 
   @Override
@@ -92,10 +87,8 @@ public class IndexFacade implements SearchManager, IndexManager {
 
   @Override
   public <T extends DomainEntity> void deleteEntity(Class<T> type, String id) throws IndexException {
-    Class<? extends DomainEntity> baseType = baseTypeFor(type);
-
     for (VRE vre : vreManager.getAllVREs()) {
-      Index index = vreManager.getIndexFor(vre, baseType);
+      Index index = vreManager.getIndexFor(vre, type);
 
       index.deleteById(id);
     }
@@ -104,10 +97,8 @@ public class IndexFacade implements SearchManager, IndexManager {
 
   @Override
   public <T extends DomainEntity> void deleteEntities(Class<T> type, List<String> ids) throws IndexException {
-    Class<? extends DomainEntity> baseType = baseTypeFor(type);
-
     for (VRE vre : vreManager.getAllVREs()) {
-      Index index = vreManager.getIndexFor(vre, baseType);
+      Index index = vreManager.getIndexFor(vre, type);
 
       index.deleteById(ids);
     }
@@ -183,13 +174,6 @@ public class IndexFacade implements SearchManager, IndexManager {
   @Deprecated
   @Override
   public <T extends DomainEntity> QueryResponse search(VRE vre, Class<T> type, SolrQuery query) throws IndexException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Deprecated
-  @Override
-  public SearchResult search(VRE vre, Class<? extends DomainEntity> type, SearchParameters searchParameters) throws IndexException, NoSuchFacetException {
     // TODO Auto-generated method stub
     return null;
   }

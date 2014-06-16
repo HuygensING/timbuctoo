@@ -1,6 +1,5 @@
-package nl.knaw.huygens.timbuctoo.rest.config;
+package nl.knaw.huygens.solr;
 
-import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilder.SolrServerType;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 
@@ -27,7 +26,8 @@ public class AbstractSolrServerBuilderProvider implements Provider<AbstractSolrS
 
     switch (serverType) {
       case LOCAL:
-        builder.setSolrDir(config.getSolrHomeDir());
+        String solrDir = config.getSolrHomeDir();
+        builder.setSolrDir(solrDir);
         break;
 
       case REMOTE:

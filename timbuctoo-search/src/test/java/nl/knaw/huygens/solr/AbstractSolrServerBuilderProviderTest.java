@@ -1,13 +1,12 @@
-package nl.knaw.huygens.timbuctoo.rest.config;
+package nl.knaw.huygens.solr;
 
-import static nl.knaw.huygens.timbuctoo.rest.config.AbstractSolrServerBuilderProvider.COMMIT_TIME;
-import static nl.knaw.huygens.timbuctoo.rest.config.AbstractSolrServerBuilderProvider.SERVER_TYPE;
+import static nl.knaw.huygens.solr.AbstractSolrServerBuilderProvider.COMMIT_TIME;
+import static nl.knaw.huygens.solr.AbstractSolrServerBuilderProvider.SERVER_TYPE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilder.SolrServerType;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 

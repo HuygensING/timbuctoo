@@ -1,8 +1,7 @@
-package nl.knaw.huygens.timbuctoo.rest.config;
+package nl.knaw.huygens.timbuctoo.vre;
 
 import nl.knaw.huygens.timbuctoo.index.IndexMapCreator;
 import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;

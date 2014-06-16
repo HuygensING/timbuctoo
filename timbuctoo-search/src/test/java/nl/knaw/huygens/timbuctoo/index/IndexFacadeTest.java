@@ -75,7 +75,7 @@ public class IndexFacadeTest {
     // when
     when(repositoryMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
-    when(vreManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
+    when(vreManagerMock.getIndexFor(vreMock, type)).thenReturn(indexMock);
     when(vreMock.filter(variations)).thenReturn(filteredVariations);
 
     // action
@@ -101,8 +101,8 @@ public class IndexFacadeTest {
     // when
     when(repositoryMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
-    when(vreManagerMock.getIndexFor(vreMock1, BASE_TYPE)).thenReturn(indexMock1);
-    when(vreManagerMock.getIndexFor(vreMock2, BASE_TYPE)).thenReturn(indexMock2);
+    when(vreManagerMock.getIndexFor(vreMock1, type)).thenReturn(indexMock1);
+    when(vreManagerMock.getIndexFor(vreMock2, type)).thenReturn(indexMock2);
     when(vreMock1.filter(variations)).thenReturn(filteredVariations1);
     when(vreMock2.filter(variations)).thenReturn(filteredVariations2);
 
@@ -143,7 +143,7 @@ public class IndexFacadeTest {
     // when
     when(repositoryMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
-    when(vreManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
+    when(vreManagerMock.getIndexFor(vreMock, type)).thenReturn(indexMock);
     when(vreMock.filter(variations)).thenReturn(filteredVariations);
     doThrow(IndexException.class).when(indexMock).add(filteredVariations);
 
@@ -173,7 +173,7 @@ public class IndexFacadeTest {
     // when
     doReturn(variations).when(repositoryMock).getAllVariations(baseType, DEFAULT_ID);
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
-    when(vreManagerMock.getIndexFor(vreMock, baseType)).thenReturn(indexMock);
+    when(vreManagerMock.getIndexFor(vreMock, type)).thenReturn(indexMock);
     when(vreMock.filter(variations)).thenReturn(filteredVariations);
 
     // action
@@ -191,7 +191,7 @@ public class IndexFacadeTest {
 
     // when
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
-    when(vreManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
+    when(vreManagerMock.getIndexFor(vreMock, type)).thenReturn(indexMock);
 
     // action
     instance.deleteEntity(type, DEFAULT_ID);
@@ -210,8 +210,8 @@ public class IndexFacadeTest {
 
     // when
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
-    when(vreManagerMock.getIndexFor(vreMock1, BASE_TYPE)).thenReturn(indexMock1);
-    when(vreManagerMock.getIndexFor(vreMock2, BASE_TYPE)).thenReturn(indexMock2);
+    when(vreManagerMock.getIndexFor(vreMock1, type)).thenReturn(indexMock1);
+    when(vreManagerMock.getIndexFor(vreMock2, type)).thenReturn(indexMock2);
 
     // action
     instance.deleteEntity(type, DEFAULT_ID);
@@ -230,7 +230,7 @@ public class IndexFacadeTest {
 
     // when
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
-    when(vreManagerMock.getIndexFor(vreMock1, BASE_TYPE)).thenReturn(indexMock1);
+    when(vreManagerMock.getIndexFor(vreMock1, type)).thenReturn(indexMock1);
     doThrow(IndexException.class).when(indexMock1).deleteById(DEFAULT_ID);
 
     try {
@@ -239,7 +239,7 @@ public class IndexFacadeTest {
     } finally {
       //verify
       verify(vreManagerMock).getAllVREs();
-      verify(vreManagerMock).getIndexFor(vreMock1, BASE_TYPE);
+      verify(vreManagerMock).getIndexFor(vreMock1, type);
       verify(indexMock1).deleteById(DEFAULT_ID);
       verifyNoMoreInteractions(vreManagerMock);
     }
@@ -255,7 +255,7 @@ public class IndexFacadeTest {
 
     // when
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
-    when(vreManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
+    when(vreManagerMock.getIndexFor(vreMock, type)).thenReturn(indexMock);
 
     // action
     instance.deleteEntities(type, ids);

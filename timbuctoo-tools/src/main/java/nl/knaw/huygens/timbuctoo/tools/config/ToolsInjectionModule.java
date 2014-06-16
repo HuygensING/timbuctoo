@@ -22,11 +22,17 @@ package nl.knaw.huygens.timbuctoo.tools.config;
  * #L%
  */
 
+import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
+import nl.knaw.huygens.solr.AbstractSolrServerBuilderProvider;
 import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.index.IndexFacade;
+import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.index.SolrIndexFactory;
+import nl.knaw.huygens.timbuctoo.vre.VREManager;
+import nl.knaw.huygens.timbuctoo.vre.VREManagerProvider;
 
 import org.apache.commons.configuration.ConfigurationException;
 
@@ -55,6 +61,8 @@ public class ToolsInjectionModule extends BasicInjectionModule {
   protected void configure() {
     super.configure();
     bind(IndexManager.class).to(IndexFacade.class);
+    bind(VREManager.class).toProvider(VREManagerProvider.class);
+    bind(IndexFactory.class).to(SolrIndexFactory.class);
+    bind(AbstractSolrServerBuilder.class).toProvider(AbstractSolrServerBuilderProvider.class);
   }
-
 }

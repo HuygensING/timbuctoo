@@ -32,6 +32,7 @@ import nl.knaw.huygens.security.client.AuthorizationHandler;
 import nl.knaw.huygens.security.client.HuygensAuthorizationHandler;
 import nl.knaw.huygens.security.client.SecurityContextCreator;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
+import nl.knaw.huygens.solr.AbstractSolrServerBuilderProvider;
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.index.IndexFacade;
@@ -50,6 +51,7 @@ import nl.knaw.huygens.timbuctoo.security.SecurityType;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
+import nl.knaw.huygens.timbuctoo.vre.VREManagerProvider;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -68,14 +70,14 @@ public class RESTInjectionModule extends BasicInjectionModule {
 
     super.configure();
 
+    bind(AbstractSolrServerBuilder.class).toProvider(AbstractSolrServerBuilderProvider.class);
+    bind(IndexFactory.class).to(SolrIndexFactory.class);
+    bind(VREManager.class).toProvider(VREManagerProvider.class).in(Singleton.class);
+
     bind(SecurityContextCreator.class).to(UserSecurityContextCreator.class);
     bind(Broker.class).to(ActiveMQBroker.class);
     bind(SearchManager.class).to(IndexFacade.class);
     bind(IndexManager.class).to(IndexFacade.class);
-
-    bind(AbstractSolrServerBuilder.class).toProvider(AbstractSolrServerBuilderProvider.class);
-    bind(IndexFactory.class).to(SolrIndexFactory.class);
-    bind(VREManager.class).toProvider(VREManagerProvider.class);
 
     configureTheAuthorizationHandler();
   }
