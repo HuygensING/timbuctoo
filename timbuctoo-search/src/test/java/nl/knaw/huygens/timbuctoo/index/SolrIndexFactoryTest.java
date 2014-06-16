@@ -15,6 +15,7 @@ import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.search.FacetFinder;
 
+import org.apache.solr.core.CoreDescriptor;
 import org.junit.Test;
 
 import test.timbuctoo.index.model.BaseType1;
@@ -46,6 +47,7 @@ public class SolrIndexFactoryTest {
     when(facetFinderMock.findFacetDefinitions(type)).thenReturn(facetDefinitions);
     when(solrServerBuilderMock.setCoreName(name)).thenReturn(solrServerBuilderMock);
     when(solrServerBuilderMock.build(facetDefinitions)).thenReturn(solrServerMock);
+    when(solrServerBuilderMock.addProperty(CoreDescriptor.CORE_DATADIR, "data/" + name.replace('.', '/'))).thenReturn(solrServerBuilderMock);
     when(facetedSearchLibraryFactoryMock.create(solrServerMock)).thenReturn(facetedSearchLibraryMock);
 
     SolrIndexFactory instance = new SolrIndexFactory(solrInputDocumentCreatorMock, solrServerBuilderMock, facetFinderMock, facetedSearchLibraryFactoryMock);

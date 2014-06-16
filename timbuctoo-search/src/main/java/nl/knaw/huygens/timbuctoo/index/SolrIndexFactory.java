@@ -9,6 +9,8 @@ import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.search.FacetFinder;
 
+import org.apache.solr.core.CoreDescriptor;
+
 import com.google.inject.Inject;
 
 public class SolrIndexFactory implements IndexFactory {
@@ -30,7 +32,10 @@ public class SolrIndexFactory implements IndexFactory {
   @Override
   public SolrIndex createIndexFor(Class<? extends DomainEntity> type, String name) {
     List<FacetDefinition> facetDefinitions = this.facetFinderMock.findFacetDefinitions(type);
-    AbstractSolrServer abstractSolrServer = this.solrServerBuilder.setCoreName(name).build(facetDefinitions);
+    AbstractSolrServer abstractSolrServer = this.solrServerBuilder.setCoreName(name) //
+        //TODO extract the data dir name creation
+        .addProperty(CoreDescriptor.CORE_DATADIR, "data/" + name.replace('.', '/')) //
+        .build(facetDefinitions);
     FacetedSearchLibrary facetedSearchLibrary = this.facetedSearchLibraryFactory.create(abstractSolrServer);
 
     return new SolrIndex(name, solrDocumentCreator, abstractSolrServer, facetedSearchLibrary);

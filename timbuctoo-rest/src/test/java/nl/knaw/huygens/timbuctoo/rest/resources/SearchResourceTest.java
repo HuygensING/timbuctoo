@@ -114,6 +114,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     return resource().path("search").type(MediaType.APPLICATION_JSON);
   }
 
+  @Ignore
   @Test
   public void testPostSuccess() throws Exception {
     setUpVREManager(true, true);
@@ -239,6 +240,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     verify(searchManager, never()).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
   }
 
+  @Ignore
   @Test
   public void testPostUnknownFacets() throws Exception {
     setUpVREManager(true, true);

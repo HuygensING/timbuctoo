@@ -1,7 +1,11 @@
 package nl.knaw.huygens.solr;
 
+import java.io.File;
+
 import nl.knaw.huygens.solr.AbstractSolrServerBuilder.SolrServerType;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+
+import org.apache.solr.core.CoreDescriptor;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -27,7 +31,7 @@ public class AbstractSolrServerBuilderProvider implements Provider<AbstractSolrS
     switch (serverType) {
       case LOCAL:
         String solrDir = config.getSolrHomeDir();
-        builder.setSolrDir(solrDir);
+        builder.setSolrDir(solrDir).addProperty(CoreDescriptor.CORE_LOADONSTARTUP, true).setConfigFile(getSolrConfigFile(solrDir));
         break;
 
       case REMOTE:
@@ -49,6 +53,10 @@ public class AbstractSolrServerBuilderProvider implements Provider<AbstractSolrS
   protected AbstractSolrServerBuilder createAbstractSolrServer(SolrServerType serverType, int commitTimeInSeconds) {
 
     return new AbstractSolrServerBuilder(serverType, commitTimeInSeconds);
+  }
+
+  protected File getSolrConfigFile(String solrDir) {
+    return new File(new File(solrDir, "conf"), "solr.xml");
   }
 
 }
