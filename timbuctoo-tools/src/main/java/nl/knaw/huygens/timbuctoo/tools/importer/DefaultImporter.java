@@ -108,6 +108,7 @@ public abstract class DefaultImporter {
   // --- Import log ------------------------------------------------------------
 
   private Writer importLog;
+  private String source;
 
   protected void openImportLog(String fileName) throws IOException {
     File file = new File(fileName);
@@ -122,10 +123,21 @@ public abstract class DefaultImporter {
     }
   }
 
+  protected void openSource(String source) {
+    this.source = source;
+  }
+
+  protected void closeSource() {
+    source = null;
+  }
+
   protected void log(String format, Object... args) {
     String text = String.format(format, args);
     if (importLog != null) {
       try {
+        if (source != null) {
+          importLog.write(String.format("-- %s%n", source));
+        }
         importLog.write(text);
         return;
       } catch (IOException e) {
