@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -19,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.vre.VREManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -158,6 +160,9 @@ public class IndexFacade implements SearchManager, IndexManager {
 
   @Override
   public <T extends FacetedSearchParameters<T>> SearchResult search(VRE vre, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException {
+    FullTextSearchFieldFinder ftsff = new FullTextSearchFieldFinder();
+    searchParameters.setFullTextSearchFields(Lists.newArrayList(ftsff.findFields(type)));
+
     Index index = vreManager.getIndexFor(vre, type);
 
     FacetedSearchResult facetedSearchResult = index.search(searchParameters);
