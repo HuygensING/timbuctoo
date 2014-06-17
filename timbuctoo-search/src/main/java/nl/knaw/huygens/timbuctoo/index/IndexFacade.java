@@ -16,8 +16,6 @@ import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.response.QueryResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,12 +167,5 @@ public class IndexFacade implements SearchManager, IndexManager {
 
   private static interface IndexChanger {
     void executeIndexAction(Index index, List<? extends DomainEntity> variations) throws IndexException;
-  }
-
-  @Deprecated
-  @Override
-  public <T extends DomainEntity> QueryResponse search(VRE vre, Class<T> type, SolrQuery query) throws IndexException {
-    // TODO Auto-generated method stub
-    return null;
   }
 }
