@@ -1,25 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  #%L
-  Timbuctoo configuration war example
-  =======
-  Copyright (C) 2012 - 2014 Huygens ING
-  =======
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as
-  published by the Free Software Foundation, either version 3 of the 
-  License, or (at your option) any later version.
-  
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-  
-  You should have received a copy of the GNU General Public 
-  License along with this program.  If not, see
-  <http://www.gnu.org/licenses/gpl-3.0.html>.
-  #L%
-  -->
+<!-- #%L Timbuctoo configuration war example ======= Copyright (C) 2012 - 
+  2014 Huygens ING ======= This program is free software: you can redistribute 
+  it and/or modify it under the terms of the GNU General Public License as 
+  published by the Free Software Foundation, either version 3 of the License, 
+  or (at your option) any later version. This program is distributed in the 
+  hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
+  warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+  GNU General Public License for more details. You should have received a copy 
+  of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. 
+  #L% -->
 
 <config version="0.1">
   <settings>
@@ -38,6 +27,10 @@
       <password>{password}</password>
     </database>
     <solr>
+      <!-- server_type could be LOCAL or REMOTE. When LOCAL is used a "directory" 
+        property is expected. When REMOTE is used a "url" property is needed. -->
+      <server_type>LOCAL</server_type>
+      <commit_within_seconds>10</commit_within_seconds>
       <use_user_home>true</use_user_home> <!-- does solr use the user home dir -->
       <directory>{dir}</directory> <!-- folder to find solr cores in. -->
       <!-- Maximum time before a commit in ms -->
@@ -75,7 +68,8 @@
       <!-- Used by the security client library, when it is false, no user 
         can execute write actions -->
       <enabled>true</enabled>
-      <!-- The example security is purely for testing purposes only and requires no further configuration -->
+      <!-- The example security is purely for testing purposes only and requires 
+        no further configuration -->
       <type>example</type>
       <!-- Security implementation details should be added here. -->
     </security>
@@ -101,7 +95,8 @@
       timbuctoo.model.dcar
       timbuctoo.model.test
     </model-packages>
-    <!-- The base url the application can be reached. When a proxy is used this should be the address of the proxy. -->
+    <!-- The base url the application can be reached. When a proxy is used 
+      this should be the address of the proxy. -->
     <public_url>http://localhost:8080/timbuctoo</public_url>
     <html>
       <defaultstylesheet>/static/css/static-html.css</defaultstylesheet>
