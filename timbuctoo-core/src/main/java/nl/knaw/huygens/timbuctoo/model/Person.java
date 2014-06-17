@@ -76,7 +76,57 @@ public class Person extends DomainEntity {
 
   @Override
   public String getDisplayName() {
-    return defaultName().getShortName();
+    return defaultName().getShortName() + period();
+  }
+
+  private String period() {
+    boolean floruit = false;
+    int birthYear = 0;
+    int deathYear = 0;
+
+    Datable birthDate = getBirthDate();
+    if (birthDate != null) {
+      if (birthDate.getFromDate() != null) {
+        birthYear = birthDate.getFromYear();
+      } else {
+        floruit = true;
+        if (birthDate.getToDate() != null) {
+          birthYear = birthDate.getToYear();
+        }
+      }
+    }
+
+    Datable deathDate = getDeathDate();
+    if (deathDate != null) {
+      if (deathDate.getToDate() != null) {
+        deathYear = deathDate.getToYear();
+      } else {
+        floruit = true;
+        if (deathDate.getFromDate() != null) {
+          deathYear = deathDate.getFromYear();
+        }
+      }
+    }
+
+    if (birthYear != 0 || deathYear != 0) {
+      StringBuilder builder = new StringBuilder();
+      builder.append(" (");
+      if (floruit) {
+        builder.append("fl. ");
+      }
+      if (birthYear != 0) {
+        builder.append(birthYear);
+      }
+      if (deathYear > birthYear) {
+        builder.append("-");
+        if (deathYear != 0) {
+          builder.append(deathYear);
+        }
+      }
+      builder.append(")");
+      return builder.toString();
+    }
+    return "";
   }
 
   @JsonIgnore

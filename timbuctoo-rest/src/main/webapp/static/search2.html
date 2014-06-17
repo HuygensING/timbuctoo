@@ -46,16 +46,16 @@
   stroke-width: 1.5px;
 }
 
-.link.isParentOf {
-  stroke: green;
+.node.collective {
+  fill: blue;
 }
 
-.link.isSpouseOf {
-  stroke: red;
+.node.person {
+  fill: green;
 }
 
-.link.isChildOf {
-  stroke: blue;
+.node.location {
+  fill: red;
 }
 
 circle {
@@ -136,16 +136,6 @@ text {
     .attr("width", width)
     .attr("height", height);
 
-  /* Simply concatenates the components of a name */
-  function buildName(name) {
-    var components = name.components,
-        result = '';
-    for (var i in components) {
-      result += ' ' + components[i].value;
-    }
-    return result;
-  }
-
   function doPost() {
 	var errorToken = $('#error');
     jQuery.ajax({
@@ -158,7 +148,7 @@ text {
         'sortParameters': []
       }),
       headers : { 
-    	  VRE_ID : $('#vreselect').val()
+        VRE_ID : $('#vreselect').val()
       },
       contentType: 'application/json; charset=utf-8',
       success: function (data, status, xhr) {
@@ -212,7 +202,7 @@ text {
           .on("tick", tick)
           .start();
 
-        // First clear existing content [WR]
+        // First clear existing content
         svg.selectAll("*").remove();
 
         // Per-type markers, as they don't inherit styles.
@@ -248,7 +238,8 @@ text {
           .data(force.nodes())
           .enter().append("circle")
           .attr("r", 6)
-          .on("dblclick", function(d) { getGraph(d.path); })
+          .attr("class", function(d) { return "node " + d.type; })
+          .on("dblclick", function(d) { getGraph(d.key); })
           .call(force.drag);
 
         var text = svg.append("g").selectAll("text")
@@ -256,7 +247,7 @@ text {
          .enter().append("text")
          .attr("x", 8)
          .attr("y", ".31em")
-         .text(function(d) { return d.name; });
+         .text(function(d) { return d.label; });
 
         // Use elliptical arc path segments to doubly-encode directionality.
         function tick() {

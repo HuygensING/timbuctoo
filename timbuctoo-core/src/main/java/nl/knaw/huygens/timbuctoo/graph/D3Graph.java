@@ -59,6 +59,10 @@ public class D3Graph {
     links.add(link);
   }
 
+  public void addLink(int source, int target, String type) {
+    addLink(new D3Link(source, target, type));
+  }
+
   public List<D3Node> getNodes() {
     return nodes;
   }

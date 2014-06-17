@@ -22,10 +22,8 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-
-import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -35,15 +33,13 @@ import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Paths;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.graph.GraphBuilder;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.RelationRef;
+import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
 /**
@@ -51,12 +47,11 @@ import com.google.inject.Inject;
  * 
  * Uses d3.js format:
  * {
- *   fullNodeCount: 42,
  *   nodes: [
  *     {
- *       name: 'John Doe',
+ *       key: 'persons/PERS000000000042'
  *       type: 'person',
- *       path: 'persons/PERS000000000042'
+ *       label: 'John Doe',
  *     },
  *     ...
  *   ],
@@ -65,7 +60,8 @@ import com.google.inject.Inject;
  *       source: 0,
  *       target: 2
  *       type: 'isParentOf'
- *     }
+ *     },
+ *     ...
  *   ]
  * }
  */
@@ -78,12 +74,12 @@ public class GraphResource extends ResourceBase {
   private static final String ID_PATH = "/{id: " + Paths.ID_REGEX + "}";
 
   private final Repository repository;
-  private final TypeRegistry typeRegistry;
+  private final TypeRegistry registry;
 
   @Inject
   public GraphResource(Repository repository) {
     this.repository = repository;
-    typeRegistry = repository.getTypeRegistry();
+    registry = repository.getTypeRegistry();
   }
 
   // --- API -----------------------------------------------------------
@@ -92,61 +88,21 @@ public class GraphResource extends ResourceBase {
   @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON })
   @JsonView(JsonViews.WebView.class)
-  public Object getEntity( //
-      @PathParam(ENTITY_PARAM) String entityName, //
-      @PathParam(ID_PARAM) String id) {
-    Class<? extends DomainEntity> type = getValidEntityType(entityName);
+  public Object getEntity(@PathParam(ENTITY_PARAM) String entityName, @PathParam(ID_PARAM) String id) {
 
-    DomainEntity entity = repository.getEntityWithRelations(type, id);
+    Class<? extends DomainEntity> type = registry.getTypeForXName(entityName);
+    checkNotNull(type, NOT_FOUND, "No domain entity collection %s", entityName);
+
+    DomainEntity entity = repository.getEntity(type, id);
     checkNotNull(entity, NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
 
-    Map<String, Object> result = Maps.newHashMap();
-    result.put("fullNodeCount", entity.getRelationCount() + 1);
-    List<Map<String, Object>> nodes = Lists.newArrayList();
-    result.put("nodes", nodes);
-    List<Map<String, Object>> links = Lists.newArrayList();
-    result.put("links", links);
-
-    nodes.add(createNode(entity));
-
-    int index = 1;
-    for (Map.Entry<String, List<RelationRef>> entry : entity.getRelations().entrySet()) {
-      List<RelationRef> refs = entry.getValue();
-      for (RelationRef ref : refs) {
-        nodes.add(createNode(ref));
-        Map<String, Object> link = Maps.newHashMap();
-        link.put("source", 0);
-        link.put("target", index++);
-        link.put("type", entry.getKey());
-        links.add(link);
-      }
+    try {
+      GraphBuilder builder = new GraphBuilder(repository);
+      builder.addEntity(entity);
+      return builder.getGraph();
+    } catch (Exception e) {
+      throw new TimbuctooException(INTERNAL_SERVER_ERROR);
     }
-    return result;
-  }
-
-  private Map<String, Object> createNode(DomainEntity entity) {
-    Map<String, Object> node = Maps.newHashMap();
-    node.put("name", entity.getDisplayName());
-    node.put("type", TypeNames.getInternalName(entity.getClass()));
-    node.put("path", TypeNames.getExternalName(entity.getClass()) + "/" + entity.getId());
-    return node;
-  }
-
-  private Map<String, Object> createNode(RelationRef ref) {
-    Map<String, Object> node = Maps.newHashMap();
-    node.put("name", ref.getDisplayName());
-    node.put("type", ref.getType());
-    String path = ref.getPath();
-    node.put("path", path.substring(path.indexOf('/') + 1));
-    return node;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  private Class<? extends DomainEntity> getValidEntityType(String name) {
-    Class<? extends DomainEntity> type = typeRegistry.getTypeForXName(name);
-    checkNotNull(type, NOT_FOUND, "No domain entity collection %s", name);
-    return type;
   }
 
 }

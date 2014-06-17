@@ -402,6 +402,11 @@ public class Repository {
   public List<String> getRelationIds(List<String> ids) throws StorageException {
     return storage.getRelationIds(ids);
   }
+
+  public List<Relation> getRelationsByEntityId(String id, int limit) throws StorageException {
+    return storage.getRelationsByEntityId(Relation.class, id).getSome(limit);
+  }
+
   /**
    * Adds relations for the specified entity as virtual properties.
    *
