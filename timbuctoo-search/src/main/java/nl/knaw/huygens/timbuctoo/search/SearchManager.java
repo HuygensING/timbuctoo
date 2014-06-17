@@ -34,8 +34,6 @@ public interface SearchManager {
 
   Set<String> findSortableFields(Class<? extends DomainEntity> type);
 
-  //  @Deprecated
-  //  SearchResult search(VRE vre, Class<? extends DomainEntity> type, SearchParameters searchParameters) throws IndexException, NoSuchFacetException;
   <T extends FacetedSearchParameters<T>> SearchResult search(VRE vre, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException;
 
 }

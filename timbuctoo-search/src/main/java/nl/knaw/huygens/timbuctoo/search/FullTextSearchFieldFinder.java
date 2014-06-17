@@ -28,7 +28,7 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 
 import org.apache.commons.lang.StringUtils;
 
-class FullTextSearchFieldFinder extends AbstractFieldFinder {
+public class FullTextSearchFieldFinder extends AbstractFieldFinder {
 
   private static final String FULL_TEXT_SEARCH_PREFIX = "dynamic_t_";
 
