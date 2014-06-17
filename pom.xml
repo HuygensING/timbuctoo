@@ -50,15 +50,6 @@
       <url>http://download.oracle.com/maven/</url>
     </repository>
     <repository>
-      <id>surfconext</id>
-      <url>https://build.surfconext.nl/repository/public/releases/</url>
-    </repository>
-    <repository>
-      <id>maven-restlet</id>
-      <name>maven-restlet repository</name>
-      <url>http://maven.restlet.org</url>
-    </repository>
-    <repository>
       <id>Huygens</id>
       <url>http://maven.huygens.knaw.nl/repository/</url>
       <releases>
