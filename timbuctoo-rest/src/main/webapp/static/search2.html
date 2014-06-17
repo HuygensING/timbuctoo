@@ -29,6 +29,48 @@
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
 <script type="text/javascript" src="http://d3js.org/d3.v3.js"></script>
 <script type="text/javascript" src="config.js"></script>
+<style>
+
+#graph {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  width: 960px;
+  height: 800px;
+  border: 1px solid
+}
+
+.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+.link.isParentOf {
+  stroke: green;
+}
+
+.link.isSpouseOf {
+  stroke: red;
+}
+
+.link.isChildOf {
+  stroke: blue;
+}
+
+circle {
+  fill: #ccc;
+  stroke: #333;
+  stroke-width: 1.5px;
+}
+
+text {
+  font: 10px sans-serif;
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}
+</style>
+
 </head>
 
 <body>
@@ -73,54 +115,26 @@
 <div id="results">
 </div>
 
-<!--
-<p><a href="#" onclick="getGraph('ckccpersons/PERS000000001687')">Show graph</a></p>
--->
+<p><a href="#" onclick="getGraph('ckccpersons/PERS000000001687')">ckccpersons/PERS000000001687</a></p>
+<p><a href="#" onclick="getGraph('wwpersons/PERS000000009000')">wwpersons/PERS000000009000</a></p>
+<p><a href="#" onclick="getGraph('wwdocuments/DOCU000000009000')">wwdocuments/DOCU000000009000</a></p>
+
 </form>
 
 <div id="graph">
 </div>
 
-<style>
-
-.link {
-  fill: none;
-  stroke: #666;
-  stroke-width: 1.5px;
-}
-
-#licensing {
-  fill: green;
-}
-
-.link.isParentOf {
-  stroke: green;
-}
-
-.link.isSpouseOf {
-  stroke: red;
-}
-
-.link.isChildOf {
-  stroke: blue;
-}
-
-circle {
-  fill: #ccc;
-  stroke: #333;
-  stroke-width: 1.5px;
-}
-
-text {
-  font: 10px sans-serif;
-  pointer-events: none;
-  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
-}
-
-</style>
 <script>
   var baseUrl = 'http://' + window.config.serverUri + '/';
   var searchUrl = baseUrl + 'search';
+
+  var width = 960;
+  var height = 800;
+
+  var svg = d3.select("#graph")
+    .append("svg:svg")
+    .attr("width", width)
+    .attr("height", height);
 
   /* Simply concatenates the components of a name */
   function buildName(name) {
@@ -189,22 +203,17 @@ text {
       contentType: 'application/json; charset=utf-8',
       success: function (json) {
 
-        var w = 640;
-        var h = 480;
-
-        var svg = d3.select("#graph")
-          .append("svg:svg")
-          .attr("width", w)
-          .attr("height", h);
-
         var force = d3.layout.force()
           .nodes(json.nodes)
           .links(json.links)
-          .size([w, h])
+          .size([width, height])
           .linkDistance(150)
           .charge(-300)
           .on("tick", tick)
           .start();
+
+        // First clear existing content [WR]
+        svg.selectAll("*").remove();
 
         // Per-type markers, as they don't inherit styles.
         svg.append("defs").selectAll("marker")
@@ -226,10 +235,20 @@ text {
           .attr("class", function(d) { return "link " + d.type; })
           .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
 
+        var label = svg.append("g").selectAll("text")
+          .data(force.links())
+          .enter().append("text")
+          .attr("x", function(d) { return (d.source.y + d.target.y) / 2; }) 
+          .attr("y", function(d) { return (d.source.x + d.target.x) / 2; }) 
+          .attr("text-anchor", "middle")
+          .attr("font-style", "italic")
+          .text(function(d) {return d.type;});
+
         var circle = svg.append("g").selectAll("circle")
           .data(force.nodes())
           .enter().append("circle")
           .attr("r", 6)
+          .on("dblclick", function(d) { getGraph(d.path); })
           .call(force.drag);
 
         var text = svg.append("g").selectAll("text")
@@ -244,6 +263,10 @@ text {
           path.attr("d", linkArc);
           circle.attr("transform", transform);
           text.attr("transform", transform);
+
+          label
+            .attr("x", function(d) { return (d.source.x + d.target.x) / 2; }) 
+            .attr("y", function(d) { return (d.source.y + d.target.y) / 2; });
         }
 
         function linkArc(d) {

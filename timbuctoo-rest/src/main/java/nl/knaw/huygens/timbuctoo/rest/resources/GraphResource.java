@@ -48,26 +48,26 @@ import com.google.inject.Inject;
 
 /**
  * Domain entities as graph.
+ * 
  * Uses d3.js format:
- *
+ * {
+ *   fullNodeCount: 42,
+ *   nodes: [
  *     {
- *       fullNodeCount: 42,
- *       nodes: [
- *         {
- *           name: 'John Doe',
- *           w: 2,
- *           group: 1
- *         },
- *         ...
- *       ],
- *       links: [
- *         {
- *           source: 0,
- *           target: 2
- *           w: 3
- *         }
- *       ]
+ *       name: 'John Doe',
+ *       type: 'person',
+ *       path: 'persons/PERS000000000042'
+ *     },
+ *     ...
+ *   ],
+ *   links: [
+ *     {
+ *       source: 0,
+ *       target: 2
+ *       type: 'isParentOf'
  *     }
+ *   ]
+ * }
  */
 @Path("graph/{" + GraphResource.ENTITY_PARAM + ": " + Paths.ENTITY_REGEX + "}")
 public class GraphResource extends ResourceBase {
@@ -94,13 +94,12 @@ public class GraphResource extends ResourceBase {
   @JsonView(JsonViews.WebView.class)
   public Object getEntity( //
       @PathParam(ENTITY_PARAM) String entityName, //
-      @PathParam(ID_PARAM) String id
-  ) {
+      @PathParam(ID_PARAM) String id) {
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
 
     DomainEntity entity = repository.getEntityWithRelations(type, id);
     checkNotNull(entity, NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
-    
+
     Map<String, Object> result = Maps.newHashMap();
     result.put("fullNodeCount", entity.getRelationCount() + 1);
     List<Map<String, Object>> nodes = Lists.newArrayList();
@@ -128,18 +127,19 @@ public class GraphResource extends ResourceBase {
   private Map<String, Object> createNode(DomainEntity entity) {
     Map<String, Object> node = Maps.newHashMap();
     node.put("name", entity.getDisplayName());
-    node.put("group", TypeNames.getInternalName(entity.getClass()));
+    node.put("type", TypeNames.getInternalName(entity.getClass()));
+    node.put("path", TypeNames.getExternalName(entity.getClass()) + "/" + entity.getId());
     return node;
   }
 
   private Map<String, Object> createNode(RelationRef ref) {
     Map<String, Object> node = Maps.newHashMap();
     node.put("name", ref.getDisplayName());
-    node.put("group", ref.getType());
-    node.put("w", 1);
+    node.put("type", ref.getType());
+    String path = ref.getPath();
+    node.put("path", path.substring(path.indexOf('/') + 1));
     return node;
   }
-  
 
   // ---------------------------------------------------------------------------
 
