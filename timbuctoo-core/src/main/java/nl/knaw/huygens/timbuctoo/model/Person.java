@@ -122,6 +122,8 @@ public class Person extends DomainEntity {
         if (deathYear != 0) {
           builder.append(deathYear);
         }
+      } else if (!floruit) {
+        builder.append("-");
       }
       builder.append(")");
       return builder.toString();

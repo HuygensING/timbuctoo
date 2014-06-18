@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.graph;
  * #L%
  */
 
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
@@ -52,6 +53,9 @@ public class D3Node {
 
   @Override
   public boolean equals(Object obj) {
+    if (obj instanceof D3Node) {
+      return Objects.equal(key, ((D3Node) obj).key);
+    }
     return false;
   }
 

@@ -92,6 +92,7 @@ public class GraphResource extends ResourceBase {
 
     Class<? extends DomainEntity> type = registry.getTypeForXName(entityName);
     checkNotNull(type, NOT_FOUND, "No domain entity collection %s", entityName);
+    type = TypeRegistry.toBaseDomainEntity(type);
 
     DomainEntity entity = repository.getEntity(type, id);
     checkNotNull(entity, NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
