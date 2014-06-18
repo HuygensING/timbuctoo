@@ -25,10 +25,12 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.timbuctoo.Repository;
@@ -88,8 +90,11 @@ public class GraphResource extends ResourceBase {
   @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON })
   @JsonView(JsonViews.WebView.class)
-  public Object getEntity(@PathParam(ENTITY_PARAM) String entityName, @PathParam(ID_PARAM) String id) {
-
+  public Object getEntity( //
+    @PathParam(ENTITY_PARAM) String entityName, //
+    @PathParam(ID_PARAM) String id, //
+    @QueryParam("depth") @DefaultValue("1") int depth) //
+  {
     Class<? extends DomainEntity> type = registry.getTypeForXName(entityName);
     checkNotNull(type, NOT_FOUND, "No domain entity collection %s", entityName);
     type = TypeRegistry.toBaseDomainEntity(type);
@@ -99,7 +104,7 @@ public class GraphResource extends ResourceBase {
 
     try {
       GraphBuilder builder = new GraphBuilder(repository);
-      builder.addEntity(entity);
+      builder.addEntity(entity, depth);
       return builder.getGraph();
     } catch (Exception e) {
       throw new TimbuctooException(INTERNAL_SERVER_ERROR);

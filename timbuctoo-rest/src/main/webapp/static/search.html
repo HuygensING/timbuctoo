@@ -36,7 +36,7 @@
   top: 10px;
   right: 10px;
   width: 960px;
-  height: 800px;
+  height: 850px;
   border: 1px solid
 }
 
@@ -129,6 +129,7 @@ text {
 </form>
 
 <div id="graph">
+<p>Depth: <input name="" type="text" size="2" id="depth" value="1"/></p>
 </div>
 
 <script>
@@ -194,9 +195,11 @@ text {
   }
 
   function getGraph(path) {
+    var depth = $('#depth').val() || '1';
     jQuery.ajax({
       url: 'http://localhost:8080/timbuctoo/graph/' + path,
       type: 'GET',
+      data: {'depth': depth},
       contentType: 'application/json; charset=utf-8',
       success: function (json) {
 
@@ -286,18 +289,19 @@ text {
     $.ajax({
       url : searchUrl + "/vres",
       type: 'GET',
-      success: function(data){
-      var vreSelect =$('#vreselect');  
-      $.each(data, function(i, item){
-        var option = $('<option>');
-        option.attr('value', item);
-        option.append(item);
-        vreSelect.append(option);
-      })
+      success: function(data) {
+        var vreSelect = $('#vreselect');  
+        $.each(data, function(i, item) {
+          var option = $('<option>');
+          option.attr('value', item);
+          option.append(item);
+          vreSelect.append(option);
+        })
+        $('#vreselect').val('CKCC');
       }
     });
-    $('#searchtype').val('dcararchive');
-    $('#searchtext').val('Storm');
+    $('#searchtype').val('ckccperson');
+    $('#searchtext').val('Reigersberch');
     $('#searchid').val('');
     $('#results').html('No results (yet)');
   });

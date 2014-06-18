@@ -22,6 +22,10 @@ package nl.knaw.huygens.timbuctoo.graph;
  * #L%
  */
 
+import java.util.Set;
+
+import com.google.common.collect.Sets;
+
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -32,6 +36,8 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 /**
  * Creates a relation graph for visualization with d3.js.
+ * 
+ * TODO Prevent duplicate links
  */
 public class GraphBuilder {
 
@@ -50,28 +56,45 @@ public class GraphBuilder {
     return graph;
   }
 
-  public <T extends DomainEntity> void addEntity(T entity) throws StorageException {
-    String entityId = entity.getId();
-    int index = graph.addNode(createNode(entity));
+  public <T extends DomainEntity> void addEntity(T entity, int depth) throws StorageException {
+    addEntity(entity, depth, false);
+  }
 
-    for (Relation relation : repository.getRelationsByEntityId(entityId, 200)) {
-      RelationType relationType = repository.getRelationType(relation.getTypeId());
-      String name = relationType.getRegularName();
-      if (relation.hasSourceId(entityId)) {
-        D3Node node = createNode(relation.getTargetType(), relation.getTargetId());
-        int target = graph.addNode(node);
-        graph.addLink(index, target, name);
-      } else {
-        D3Node node = createNode(relation.getSourceType(), relation.getSourceId());
-        int source = graph.addNode(node);
-        graph.addLink(source, index, name);
+  private <T extends DomainEntity> void addEntity(T entity, int depth, boolean reduce) throws StorageException {
+    if (depth > 0 && accept(entity, reduce)) {
+      String entityId = entity.getId();
+      int index = addNodeToGraph(entity);
+
+      for (Relation relation : repository.getRelationsByEntityId(entityId, 200)) {
+        RelationType relationType = repository.getRelationType(relation.getTypeId());
+        String name = relationType.getRegularName();
+        if (relation.hasSourceId(entityId)) {
+          DomainEntity other = getEntity(relation.getTargetType(), relation.getTargetId());
+          int target = addNodeToGraph(other);
+          graph.addLink(index, target, name);
+          addEntity(other, depth - 1, true);
+        } else {
+          DomainEntity other = getEntity(relation.getSourceType(), relation.getSourceId());
+          int source = addNodeToGraph(other);
+          graph.addLink(source, index, name);
+          addEntity(other, depth - 1, true);
+        }
       }
     }
   }
 
-  private D3Node createNode(String iname, String id) {
-    Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
-    return createNode(repository.getEntity(type, id));
+  private static Set<String> EXCLUDED = Sets.newHashSet("language", "location", "keyword");
+
+  private boolean accept(DomainEntity entity, boolean reduce) {
+    if (reduce) {
+      String iname = TypeNames.getInternalName(entity.getClass());
+      return !EXCLUDED.contains(iname);
+    }
+    return true;
+  }
+
+  private int addNodeToGraph(DomainEntity entity) {
+    return graph.addNode(createNode(entity));
   }
 
   private <T extends DomainEntity> D3Node createNode(T entity) {
@@ -81,6 +104,11 @@ public class GraphBuilder {
     String iname = TypeNames.getInternalName(type);
     String label = entity.getDisplayName();
     return new D3Node(key, iname, label);
+  }
+
+  private DomainEntity getEntity(String iname, String id) {
+    Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
+    return repository.getEntity(type, id);
   }
 
 }
