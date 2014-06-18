@@ -25,8 +25,8 @@ package nl.knaw.huygens.timbuctoo.model.neww;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.RelationRef;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -168,6 +168,12 @@ public class WWPerson extends Person {
 
   // NOTE. Some relations are generic, but a project need not be interested
   // So it seems to make sense to define relations here and not in Person
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_residence", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getResidenceLocation() {
+    return getRelations().get("hasResidenceLocation");
+  }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)

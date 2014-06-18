@@ -26,9 +26,67 @@
 <title>Repository Search</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <link href="css/static-html.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script type="text/javascript" src="http://d3js.org/d3.v3.js"></script>
+<script type="text/javascript" src="config.js"></script>
+<style>
+
+#graph {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  width: 960px;
+  height: 800px;
+  border: 1px solid
+}
+
+.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+.node.collective {
+  fill: blue;
+}
+
+.node.document {
+  fill: black;
+}
+
+.node.keyword {
+  fill: brown;
+}
+
+.node.language {
+  fill: yellow;
+}
+
+.node.location {
+  fill: red;
+}
+
+.node.person {
+  fill: green;
+}
+
+circle {
+  fill: #ccc;
+  stroke: #333;
+  stroke-width: 1.5px;
+}
+
+text {
+  font: 10px sans-serif;
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}
+</style>
+
 </head>
 
 <body>
+
 <h1>Repository Search</h1>
 <form id="formSearch" name="formSearch">
 <p id="error" style="display:none" />
@@ -68,27 +126,30 @@
 
 <div id="results">
 </div>
+
+<p><a href="#" onclick="getGraph('ckccpersons/PERS000000001687')">ckccpersons/PERS000000001687</a></p>
+<p><a href="#" onclick="getGraph('wwpersons/PERS000000009000')">wwpersons/PERS000000009000</a></p>
+<p><a href="#" onclick="getGraph('wwdocuments/DOCU000000009000')">wwdocuments/DOCU000000009000</a></p>
+
 </form>
 
-<script src="http://code.jquery.com/jquery-1.9.1.js" type="text/javascript"></script>
-<script src="config.js" type="text/javascript"></script>
+<div id="graph">
+</div>
+
 <script>
   var baseUrl = 'http://' + window.config.serverUri + '/';
   var searchUrl = baseUrl + 'search';
-  
 
-  /* Simply concatenates the components of a name */
-  function buildName(name) {
-    var components = name.components,
-        result = '';
-    for (var i in components) {
-      result += ' ' + components[i].value;
-    }
-    return result;
-  }
+  var width = 960;
+  var height = 800;
+
+  var svg = d3.select("#graph")
+    .append("svg:svg")
+    .attr("width", width)
+    .attr("height", height);
 
   function doPost() {
-	var errorToken = $('#error');
+  var errorToken = $('#error');
     jQuery.ajax({
       url: searchUrl,
       type: 'POST',
@@ -99,7 +160,7 @@
         'sortParameters': []
       }),
       headers : { 
-    	  VRE_ID : $('#vreselect').val()
+        VRE_ID : $('#vreselect').val()
       },
       contentType: 'application/json; charset=utf-8',
       success: function (data, status, xhr) {
@@ -108,8 +169,8 @@
         errorToken.hide();
       },
       error: function (xhr, status, errorThrown){
-    	 errorToken.text(status + ' : ' + errorThrown);
-    	 errorToken.show();
+        errorToken.text(status + ' : ' + errorThrown);
+        errorToken.show();
       }
     });
   }
@@ -124,9 +185,12 @@
       data: {'start': start, 'rows': rows},
       contentType: 'application/json; charset=utf-8',
       success: function (data) {
-        var html = '<table><tr><th>Id</th><th>Name</th></tr>';
+        var html = '<table><tr><th>Name</th><th>Link</th></tr>';
         $.each(data.refs, function (i, item) {
-        	html += '<tr><td><a href="' + baseUrl + item.path + '">' + item.id + '</a></td><td>' + item.displayName + '</td></tr>';
+          var url = baseUrl + item.path;
+          var path = item.path.replace(/domain\//g, '');
+          html += '<tr><td><a href="' + url + '">' + item.displayName + '</a></td>'
+                + '<td><a href="#" onclick="getGraph(' + "'" + path + "'" + ')">graph</a></td></tr>';
         });
         html += '</table>';
         $('#results').html(html);
@@ -134,24 +198,109 @@
     });
   }
 
+  function getGraph(path) {
+    jQuery.ajax({
+      url: 'http://localhost:8080/timbuctoo/graph/' + path,
+      type: 'GET',
+      contentType: 'application/json; charset=utf-8',
+      success: function (json) {
+
+        var force = d3.layout.force()
+          .nodes(json.nodes)
+          .links(json.links)
+          .size([width, height])
+          .linkDistance(150)
+          .charge(-300)
+          .on("tick", tick)
+          .start();
+
+        // First clear existing content
+        svg.selectAll("*").remove();
+
+        // Per-type markers, as they don't inherit styles.
+        svg.append("defs").selectAll("marker")
+          .data(["isParentOf", "isChildOf", "hasBirthPlace", "hasDeathPlace"])
+          .enter().append("marker")
+          .attr("id", function(d) { return d; })
+          .attr("viewBox", "0 -5 10 10")
+          .attr("refX", 15)
+          .attr("refY", -1.5)
+          .attr("markerWidth", 6)
+          .attr("markerHeight", 6)
+          .attr("orient", "auto")
+          .append("path")
+          .attr("d", "M0,-5L10,0L0,5");
+
+        var path = svg.append("g").selectAll("path")
+          .data(force.links())
+          .enter().append("path")
+          .attr("class", function(d) { return "link " + d.type; })
+          .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
+
+        var label = svg.append("g").selectAll("text")
+          .data(force.links())
+          .enter().append("text")
+          .attr("x", function(d) { return (d.source.y + d.target.y) / 2; }) 
+          .attr("y", function(d) { return (d.source.x + d.target.x) / 2; }) 
+          .attr("text-anchor", "middle")
+          .attr("font-style", "italic")
+          .text(function(d) {return d.type;});
+
+        var circle = svg.append("g").selectAll("circle")
+          .data(force.nodes())
+          .enter().append("circle")
+          .attr("r", 6)
+          .attr("class", function(d) { return "node " + d.type; })
+          .on("dblclick", function(d) { getGraph(d.key); })
+          .call(force.drag);
+
+        var text = svg.append("g").selectAll("text")
+         .data(force.nodes())
+         .enter().append("text")
+         .attr("x", 8)
+         .attr("y", ".31em")
+         .text(function(d) { return d.label; });
+
+        // Use elliptical arc path segments to doubly-encode directionality.
+        function tick() {
+          path.attr("d", linkArc);
+          circle.attr("transform", transform);
+          text.attr("transform", transform);
+
+          label
+            .attr("x", function(d) { return (d.source.x + d.target.x) / 2; }) 
+            .attr("y", function(d) { return (d.source.y + d.target.y) / 2; });
+        }
+
+        function linkArc(d) {
+          var dx = d.target.x - d.source.x,
+              dy = d.target.y - d.source.y,
+              dr = Math.sqrt(dx * dx + dy * dy);
+          return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+        }
+
+        function transform(d) {
+          return "translate(" + d.x + "," + d.y + ")";
+        }
+
+      }
+    });
+  }
+
   $(document).ready(function() {
-	$.ajax({
-	  url : searchUrl + "/vres",
-	  type: 'GET',
-	  success: function(data){
-		var vreSelect =$('#vreselect');  
-		$.each(data, function(i, item){
-		  var option = $('<option>');
-		  option.attr('value', item);
-		  option.append(item);
-		  vreSelect.append(option);
-		})
-		  
-	  }
-	});
-	  
-	  
-    //$('#searchscope').val('dcar');
+    $.ajax({
+      url : searchUrl + "/vres",
+      type: 'GET',
+      success: function(data){
+      var vreSelect =$('#vreselect');  
+      $.each(data, function(i, item){
+        var option = $('<option>');
+        option.attr('value', item);
+        option.append(item);
+        vreSelect.append(option);
+      })
+      }
+    });
     $('#searchtype').val('dcararchive');
     $('#searchtext').val('Storm');
     $('#searchid').val('');
