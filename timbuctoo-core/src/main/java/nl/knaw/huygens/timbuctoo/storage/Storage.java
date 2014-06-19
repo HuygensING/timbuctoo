@@ -154,13 +154,18 @@ public interface Storage {
   <T extends Relation> T findRelation(Class<T> type, String sourceId, String targetId, String relationTypeId) throws StorageException;
 
   /**
+   * Returns an iterator for all relations that match the specified id's, each of which may be null.
+   */
+  <T extends Relation> StorageIterator<T> findRelations(Class<T> type, String sourceId, String targetId, String relationTypeId) throws StorageException;
+
+  /**
    * Returns the id's of the relations that satisfy the following requirements:<Ul>
    * <li>the source id occurs in the {@code sourceIds} list;</li>
    * <li>the target id occurs in the {@code targetIds} list;</li>
    * <li>the relation type id occurs in the {@code relationTypeIds} list.</li>
    * </ul>
    */
-  <T extends Relation> List<String> findRelations(Class<T> type, List<String> sourceIds, List<String> targetIds, List<String> relationTypeIds) throws StorageException;
+  <T extends Relation> List<String> findRelationIds(Class<T> type, List<String> sourceIds, List<String> targetIds, List<String> relationTypeIds) throws StorageException;
 
   /**
    * Returns an iterator for all relations of the specified entity id.

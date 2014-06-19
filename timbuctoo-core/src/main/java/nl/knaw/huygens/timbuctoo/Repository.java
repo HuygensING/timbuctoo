@@ -392,7 +392,7 @@ public class Repository {
    * </ul>
    */
   public <T extends Relation> List<String> findRelations(Class<T> type, List<String> sourceIds, List<String> targetIds, List<String> relationTypeIds) throws StorageException {
-    return storage.findRelations(type, sourceIds, targetIds, relationTypeIds);
+    return storage.findRelationIds(type, sourceIds, targetIds, relationTypeIds);
   }
 
   /**
