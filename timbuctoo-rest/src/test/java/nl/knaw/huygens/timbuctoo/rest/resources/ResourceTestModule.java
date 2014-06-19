@@ -75,6 +75,7 @@ class ResourceTestModule extends JerseyServletModule {
   private Producer persistenceProducer;
   private VREManager vreManager;
   private IndexManager indexManager;
+  private SearchRequestValidator searchRequestValidator;
 
   public ResourceTestModule() {
     try {
@@ -92,6 +93,7 @@ class ResourceTestModule extends JerseyServletModule {
       persistenceProducer = mock(Producer.class);
       vreManager = mock(VREManager.class);
       indexManager = mock(IndexManager.class);
+      searchRequestValidator = mock(SearchRequestValidator.class);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -102,7 +104,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(config, repository, jsonProvider, validator, mailSender, searchManager, authorizationHandler, broker, indexProducer, persistenceProducer, vreManager, indexManager);
+    reset(config, repository, jsonProvider, validator, mailSender, searchManager, authorizationHandler, broker, indexProducer, persistenceProducer, vreManager, indexManager, searchRequestValidator);
   }
 
   @Override
@@ -216,6 +218,12 @@ class ResourceTestModule extends JerseyServletModule {
   @Provides
   public VREAuthorizationHandler provideVreAuthorizationHandler() {
     return new DefaultVREAuthorizationHandler(repository, mailSender);
+  }
+
+  @Singleton
+  @Provides
+  public SearchRequestValidator provideSearchRequestValidator() {
+    return searchRequestValidator;
   }
 
 }

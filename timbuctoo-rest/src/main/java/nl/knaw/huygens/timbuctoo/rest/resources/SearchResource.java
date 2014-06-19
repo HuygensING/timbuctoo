@@ -95,6 +95,8 @@ public class SearchResource extends ResourceBase {
   private VREManager vreManager;
   @Inject
   private Configuration config;
+  @Inject
+  private SearchRequestValidator searchRequestValidator;
 
   @GET
   @Path("/vres")
@@ -109,17 +111,11 @@ public class SearchResource extends ResourceBase {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response regularPost(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
 
+    searchRequestValidator.validate(vreId, searchParams);
+
     VRE vre = vreManager.getVREById(vreId);
     String typeString = StringUtils.trimToNull(searchParams.getTypeString());
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
-    String queryString = StringUtils.trimToNull(searchParams.getTerm());
-
-    checkNotNull(vreId, BAD_REQUEST, "No VRE id specified");
-    checkNotNull(vre, BAD_REQUEST, "No VRE with id \"%s\"", vreId);
-    checkNotNull(typeString, BAD_REQUEST, "No 'typeString' parameter specified");
-    checkNotNull(type, BAD_REQUEST, "No domain entity type for \"%s\"", typeString);
-    checkCondition(vre.inScope(type), BAD_REQUEST, "Type not in scope: \"%s\"", typeString);
-    checkNotNull(queryString, BAD_REQUEST, "No 'q' parameter specified");
 
     // Process
     try {
