@@ -110,16 +110,16 @@ public class SearchResource extends ResourceBase {
   public Response regularPost(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
 
     VRE vre = vreManager.getVREById(vreId);
-    checkNotNull(vre, BAD_REQUEST, "No VRE with id %s", vreId);
-
     String typeString = StringUtils.trimToNull(searchParams.getTypeString());
-    checkNotNull(typeString, BAD_REQUEST, "No 'typeString' parameter specified");
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
-    checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
-    checkCondition(vre.inScope(type), BAD_REQUEST, "Type not in scope: %s", typeString);
+    String queryString = StringUtils.trimToNull(searchParams.getTerm());
 
-    String q = StringUtils.trimToNull(searchParams.getTerm());
-    checkNotNull(q, BAD_REQUEST, "No 'q' parameter specified");
+    checkNotNull(vreId, BAD_REQUEST, "No VRE id specified");
+    checkNotNull(vre, BAD_REQUEST, "No VRE with id \"%s\"", vreId);
+    checkNotNull(typeString, BAD_REQUEST, "No 'typeString' parameter specified");
+    checkNotNull(type, BAD_REQUEST, "No domain entity type for \"%s\"", typeString);
+    checkCondition(vre.inScope(type), BAD_REQUEST, "Type not in scope: \"%s\"", typeString);
+    checkNotNull(queryString, BAD_REQUEST, "No 'q' parameter specified");
 
     // Process
     try {
@@ -127,7 +127,7 @@ public class SearchResource extends ResourceBase {
       String queryId = putSearchResult(result);
       return Response.created(new URI(queryId)).build();
     } catch (SearchValidationException e) {
-      throw new TimbuctooException(BAD_REQUEST, "No such facet: %s", e.getMessage());
+      throw new TimbuctooException(BAD_REQUEST, "Search request not valid: %s", e.getMessage());
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
