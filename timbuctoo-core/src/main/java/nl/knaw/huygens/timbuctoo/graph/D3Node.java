@@ -28,6 +28,8 @@ import com.google.common.base.Strings;
 
 public class D3Node {
 
+  private static final int LABEL_LENGTH = 40;
+
   /** Unique key for this node. */
   private final String key;
   private final String type;
@@ -36,7 +38,17 @@ public class D3Node {
   public D3Node(String key, String type, String label) {
     this.key = Preconditions.checkNotNull(key);
     this.type = Preconditions.checkNotNull(type);
-    this.label = Strings.isNullOrEmpty(label) ? "-" : label;
+    this.label = normalizeLabel(label);
+  }
+
+  private String normalizeLabel(String label) {
+    if (Strings.isNullOrEmpty(label)) {
+      return "-";
+    } else if (label.length() <= LABEL_LENGTH) {
+      return label;
+    } else {
+      return label.substring(0, LABEL_LENGTH - 3) + "...";
+    }
   }
 
   public String getkey() {
