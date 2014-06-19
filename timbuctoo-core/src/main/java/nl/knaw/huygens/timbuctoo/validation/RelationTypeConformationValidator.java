@@ -40,18 +40,21 @@ class RelationTypeConformationValidator implements Validator<Relation> {
 
   @Override
   public void validate(Relation entity) throws ValidationException {
-    String relationTypeId = entity.getTypeId();
+    String typeId = entity.getTypeId();
 
-    RelationType relationType = repository.getRelationType(relationTypeId);
-    if (relationType == null) {
-      throw new ValidationException("No RelationType with id " + relationTypeId);
+    RelationType type = repository.getRelationType(typeId);
+    if (type == null) {
+      throw new ValidationException("No RelationType with id %s", typeId);
+    }
+    if (type.isDerived()) {
+      throw new ValidationException("Cannot store derived RelationType with id %s and name %s", typeId, type.getRegularName());
     }
 
-    if (!relationType.hasSourceTypeName(entity.getSourceType())) {
-      throw new ValidationException("SourceType of Relation does not match RelationType with id " + relationTypeId);
+    if (!type.hasSourceTypeName(entity.getSourceType())) {
+      throw new ValidationException("SourceType of Relation does not match RelationType with id %s and name %s", typeId, type.getRegularName());
     }
-    if (!relationType.hasTargetTypeName(entity.getTargetType())) {
-      throw new ValidationException("TargetType of Relation does not match RelationType with id " + relationTypeId);
+    if (!type.hasTargetTypeName(entity.getTargetType())) {
+      throw new ValidationException("TargetType of Relation does not match RelationType with id %s and name %s", typeId, type.getRegularName());
     }
   }
 

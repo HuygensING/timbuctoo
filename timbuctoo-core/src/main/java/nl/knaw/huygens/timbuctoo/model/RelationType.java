@@ -52,8 +52,12 @@ public class RelationType extends SystemEntity {
   private boolean reflexive;
   /** If source and target types are the same, does relation(A,B) imply relation(B,A)? */
   private boolean symmetric;
+  /** Is this relation derived from other relation types? */
+  private boolean derived;
 
-  public RelationType() {}
+  public RelationType() {
+    derived = false;
+  }
 
   @Override
   public String getDisplayName() {
@@ -114,6 +118,14 @@ public class RelationType extends SystemEntity {
 
   public void setSymmetric(boolean symmetric) {
     this.symmetric = symmetric;
+  }
+
+  public boolean isDerived() {
+    return derived;
+  }
+
+  public void setDerived(boolean derived) {
+    this.derived = derived;
   }
 
   @Override
