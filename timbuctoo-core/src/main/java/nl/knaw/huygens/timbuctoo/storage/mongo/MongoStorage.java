@@ -487,7 +487,13 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Relation> List<String> findRelations(Class<T> type, List<String> sourceIds, List<String> targetIds, List<String> relationTypeIds) throws StorageException {
+  public <T extends Relation> StorageIterator<T> findRelations(Class<T> type, String sourceId, String targetId, String relationTypeId) throws StorageException {
+    DBObject query = queries.selectRelationsByIds(sourceId, targetId, relationTypeId);
+    return findItems(type, query);
+  }
+
+  @Override
+  public <T extends Relation> List<String> findRelationIds(Class<T> type, List<String> sourceIds, List<String> targetIds, List<String> relationTypeIds) throws StorageException {
     Set<String> typeIdSet = Sets.newHashSet();
     if (relationTypeIds != null) {
       typeIdSet.addAll(relationTypeIds);

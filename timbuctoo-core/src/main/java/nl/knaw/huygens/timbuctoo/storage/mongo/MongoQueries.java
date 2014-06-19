@@ -120,4 +120,18 @@ public class MongoQueries {
     return DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id));
   }
 
+  public DBObject selectRelationsByIds(String sourceId, String targetId, String relationTypeId) {
+    DBObject query = new BasicDBObject();
+    if (sourceId != null) {
+      query.put("^sourceId", sourceId);
+    }
+    if (targetId != null) {
+      query.put("^targetId", targetId);
+    }
+    if (relationTypeId != null) {
+      query.put("^typeId", relationTypeId);
+    }
+    return query;
+  }
+
 }
