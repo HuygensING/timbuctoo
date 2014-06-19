@@ -41,10 +41,12 @@ import java.util.Set;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
+import nl.knaw.huygens.facetedsearch.model.DefaultFacet;
+import nl.knaw.huygens.facetedsearch.model.Facet;
+import nl.knaw.huygens.facetedsearch.model.FacetOption;
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 import nl.knaw.huygens.timbuctoo.index.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -285,7 +287,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     int numberOfRows = 10;
     createSearchResultOf100Persons(repository, idList, personList);
 
-    List<FacetCount> facets = createFacets();
+    List<Facet> facets = createFacets();
     setUpSearchResult(idList, repository, facets);
 
     WebResource resource = super.resource();
@@ -309,7 +311,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     int numberOfRows = 20;
     createSearchResultOf100Persons(repository, idList, personList);
 
-    List<FacetCount> facets = createFacets();
+    List<Facet> facets = createFacets();
 
     setUpSearchResult(idList, repository, facets);
 
@@ -340,7 +342,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     int numberOfRows = 100;
     createSearchResultOf100Persons(repository, idList, personList);
 
-    List<FacetCount> facets = createFacets();
+    List<Facet> facets = createFacets();
 
     setUpSearchResult(idList, repository, facets);
 
@@ -363,9 +365,9 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetNoResults() {
-    setUpSearchResult(null, repository, Lists.<FacetCount> newArrayList());
+    setUpSearchResult(null, repository, Lists.<Facet> newArrayList());
 
-    Map<String, Object> expected = createExpectedResult(Lists.<String> newArrayList(), Lists.<Person> newArrayList(), Lists.<FacetCount> newArrayList(), 0, 0, SORTABLE_FIELDS, 0, null, null);
+    Map<String, Object> expected = createExpectedResult(Lists.<String> newArrayList(), Lists.<Person> newArrayList(), Lists.<Facet> newArrayList(), 0, 0, SORTABLE_FIELDS, 0, null, null);
 
     WebResource resource = super.resource();
     Map<String, Object> actual = resource.path("search").path(ID).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<Map<String, Object>>() {});
@@ -406,8 +408,8 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
   }
 
-  private Map<String, Object> createExpectedResult(List<String> idList, List<Person> personList, List<FacetCount> facets, int start, int rows, Set<String> sortableFields, int returnedRows,
-      String next, String prev) {
+  private Map<String, Object> createExpectedResult(List<String> idList, List<Person> personList, List<Facet> facets, int start, int rows, Set<String> sortableFields, int returnedRows, String next,
+      String prev) {
     Map<String, Object> result = Maps.newHashMap();
     int lastIndex = (start + rows) >= personList.size() ? personList.size() : (start + rows);
 
@@ -425,16 +427,17 @@ public class SearchResourceTest extends WebServiceTestSetup {
     return result;
   }
 
-  private List<FacetCount> createFacets() {
-    List<FacetCount> facets = Lists.newArrayList();
-    FacetCount.Option option1 = new FacetCount.Option().setCount(1).setName("17-5-1900");
-    FacetCount.Option option2 = new FacetCount.Option().setCount(2).setName("21-6");
-    FacetCount.Option option3 = new FacetCount.Option().setCount(97).setName("1780");
-    FacetCount facet = new FacetCount().setName("dynamic_s_birthDate").setTitle("birthdate");
+  private List<Facet> createFacets() {
+    List<Facet> facets = Lists.newArrayList();
+    FacetOption option1 = new FacetOption("17-5-1900", 1);
+    FacetOption option2 = new FacetOption("21-6", 2);
+    FacetOption option3 = new FacetOption("1780", 97);
+    DefaultFacet facet = new DefaultFacet("dynamic_s_birthDate", "birthdate");
     facet.addOption(option1);
     facet.addOption(option2);
     facet.addOption(option3);
     facets.add(facet);
+
     return facets;
   }
 
@@ -449,13 +452,13 @@ public class SearchResourceTest extends WebServiceTestSetup {
     }
   }
 
-  private void setUpSearchResult(List<String> idList, Repository repository, List<FacetCount> facets) {
+  private void setUpSearchResult(List<String> idList, Repository repository, List<Facet> facets) {
     SearchResult result = mock(SearchResult.class);
     when(result.getTerm()).thenReturn(TERM);
     when(result.getId()).thenReturn(ID);
     when(result.getSearchType()).thenReturn("person");
     when(result.getIds()).thenReturn(idList);
-    //    when(result.getFacets()).thenReturn(facets);
+    when(result.getFacets()).thenReturn(facets);
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(result);
   }
 
@@ -466,7 +469,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertEquals(expected.get("numFound"), actual.get("numFound"));
     assertEquals(expected.get("start"), actual.get("start"));
     assertEquals(expected.get("rows"), actual.get("rows"));
-    assertEquals(((List<FacetCount>) expected.get("facets")).size(), ((List<FacetCount>) actual.get("facets")).size());
+    assertEquals(((List<Facet>) expected.get("facets")).size(), ((List<Facet>) actual.get("facets")).size());
     assertEquals(((Collection<String>) expected.get("sortableFields")).size(), ((Collection<String>) actual.get("sortableFields")).size());
     assertEquals(expected.get("_next"), actual.get("_next"));
     assertEquals(expected.get("_prev"), actual.get("_prev"));
