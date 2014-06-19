@@ -38,7 +38,8 @@ import org.junit.Test;
 
 public class RelationTypeConformationValidatorTest {
 
-  private String relationTypeId = "relationTypeId";
+  private static final String TYPE_ID = "relationTypeId";
+
   private Relation relationMock;
   private RelationType relationType;
   private Repository repository;
@@ -47,10 +48,11 @@ public class RelationTypeConformationValidatorTest {
   @Before
   public void setup() {
     relationMock = MockRelationBuilder.createRelation(Relation.class) //
-        .withRelationTypeId(relationTypeId) //
+        .withRelationTypeId(TYPE_ID) //
         .build();
 
     relationType = new RelationType();
+    relationType.setRegularName("testRelation");
     relationType.setSourceTypeName("sourceType");
     relationType.setTargetTypeName("targetType");
     repository = mock(Repository.class);
@@ -59,7 +61,7 @@ public class RelationTypeConformationValidatorTest {
 
   @Test
   public void testValidate() throws IOException, ValidationException {
-    when(repository.getRelationType(relationTypeId)).thenReturn(relationType);
+    when(repository.getRelationType(TYPE_ID)).thenReturn(relationType);
     when(relationMock.getSourceType()).thenReturn("sourceType");
     when(relationMock.getTargetType()).thenReturn("targetType");
 
@@ -68,7 +70,17 @@ public class RelationTypeConformationValidatorTest {
 
   @Test(expected = ValidationException.class)
   public void testValidateRelationTypeDoesNotExist() throws IOException, ValidationException {
-    when(repository.getRelationType(relationTypeId)).thenReturn(null);
+    when(repository.getRelationType(TYPE_ID)).thenReturn(null);
+    when(relationMock.getSourceType()).thenReturn("targetType");
+    when(relationMock.getTargetType()).thenReturn("sourceType");
+
+    validator.validate(relationMock);
+  }
+
+  @Test(expected = ValidationException.class)
+  public void testValidateDerivedRelationType() throws IOException, ValidationException {
+    relationType.setDerived(true);
+    when(repository.getRelationType(TYPE_ID)).thenReturn(relationType);
     when(relationMock.getSourceType()).thenReturn("targetType");
     when(relationMock.getTargetType()).thenReturn("sourceType");
 

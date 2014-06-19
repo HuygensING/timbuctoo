@@ -37,7 +37,7 @@ public class RelationTypeImporter extends CSVImporter {
   private final Repository repository;
 
   public RelationTypeImporter(Repository repository) {
-    super(new PrintWriter(System.err), ';', '"', 4);
+    super(new PrintWriter(System.err), ';', '"', 5);
     this.repository = repository;
   }
 
@@ -59,6 +59,7 @@ public class RelationTypeImporter extends CSVImporter {
     entity.setTargetTypeName(items[3].toLowerCase());
     entity.setReflexive(Boolean.parseBoolean(items[4]));
     entity.setSymmetric(Boolean.parseBoolean(items[5]));
+    entity.setDerived(Boolean.parseBoolean(items[6]));
     if (repository.findEntity(RelationType.class, "regularName", entity.getRegularName()) == null) {
       repository.addSystemEntity(RelationType.class, entity);
     }
