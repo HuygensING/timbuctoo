@@ -465,7 +465,7 @@ public class IndexFacadeTest {
   }
 
   @Test
-  public void testSearch() throws SearchException {
+  public void testSearch() throws SearchException, SearchValidationException {
     // setup
     Index indexMock = mock(Index.class);
     VRE vreMock = mock(VRE.class);
@@ -488,7 +488,16 @@ public class IndexFacadeTest {
   }
 
   @Test(expected = SearchException.class)
-  public void testSearchIndexThrowsSearchException() throws SearchException {
+  public void testSearchIndexThrowsSearchException() throws SearchException, SearchValidationException {
+    testSearchIndexThrowsException(SearchException.class);
+  }
+
+  @Test(expected = SearchValidationException.class)
+  public void testSearchIndexThrowsSearchValidationException() throws SearchException, SearchValidationException {
+    testSearchIndexThrowsException(SearchValidationException.class);
+  }
+
+  protected void testSearchIndexThrowsException(Class<? extends Exception> exceptionToThrow) throws SearchException, SearchValidationException {
     // setup
     Index indexMock = mock(Index.class);
     VRE vreMock = mock(VRE.class);
@@ -496,7 +505,7 @@ public class IndexFacadeTest {
 
     // when
     when(vreManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
-    doThrow(SearchException.class).when(indexMock).search(searchParameters);
+    doThrow(exceptionToThrow).when(indexMock).search(searchParameters);
 
     instance.search(vreMock, BASE_TYPE, searchParameters);
   }

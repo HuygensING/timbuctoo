@@ -54,6 +54,7 @@ import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -108,8 +109,8 @@ public class SearchResource extends ResourceBase {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response regularPost(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
 
-    VRE vre = Strings.isNullOrEmpty(vreId) ? vreManager.getDefaultVRE() : vreManager.getVREById(vreId);
-    checkNotNull(vre, NOT_FOUND, "No VRE with id %s", vreId);
+    VRE vre = vreManager.getVREById(vreId);
+    checkNotNull(vre, BAD_REQUEST, "No VRE with id %s", vreId);
 
     String typeString = StringUtils.trimToNull(searchParams.getTypeString());
     checkNotNull(typeString, BAD_REQUEST, "No 'typeString' parameter specified");
@@ -125,8 +126,8 @@ public class SearchResource extends ResourceBase {
       SearchResult result = searchManager.search(vre, type, searchParams);
       String queryId = putSearchResult(result);
       return Response.created(new URI(queryId)).build();
-      //    } catch (NoSuchFacetException e) {
-      //      throw new TimbuctooException(BAD_REQUEST, "No such facet: %s", e.getMessage());
+    } catch (SearchValidationException e) {
+      throw new TimbuctooException(BAD_REQUEST, "No such facet: %s", e.getMessage());
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());

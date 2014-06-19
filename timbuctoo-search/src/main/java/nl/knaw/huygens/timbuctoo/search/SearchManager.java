@@ -26,6 +26,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.index.SearchException;
+import nl.knaw.huygens.timbuctoo.index.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -34,6 +35,7 @@ public interface SearchManager {
 
   Set<String> findSortableFields(Class<? extends DomainEntity> type);
 
-  <T extends FacetedSearchParameters<T>> SearchResult search(VRE vre, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException;
+  <T extends FacetedSearchParameters<T>> SearchResult search(VRE vre, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException,
+      SearchValidationException;
 
 }

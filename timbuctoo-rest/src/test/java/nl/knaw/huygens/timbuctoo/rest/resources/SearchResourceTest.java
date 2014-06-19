@@ -45,16 +45,15 @@ import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.facet.FacetCount;
+import nl.knaw.huygens.timbuctoo.index.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.NoSuchFacetException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
@@ -114,7 +113,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
     return resource().path("search").type(MediaType.APPLICATION_JSON);
   }
 
-  @Ignore
   @Test
   public void testPostSuccess() throws Exception {
     setUpVREManager(true, true);
@@ -127,7 +125,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     WebResource resource = super.resource();
     String expected = String.format("%ssearch/%s", resource.getURI().toString(), ID);
     ClientResponse response = resource.path("search").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
-    String actual = null; //response.getHeaders().getFirst(LOCATION_HEADER);
+    String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
     assertEquals(Status.CREATED, response.getClientResponseStatus());
     assertEquals(expected, actual);
@@ -197,7 +195,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostVREIdNull() throws Exception {
-    setUpVREManager(true, true);
+    setUpVREManager(true, false);
 
     SearchParameters params = new SearchParameters().setTypeString(TYPE_STRING).setTerm(TERM);
     SearchResult searchResult = mock(SearchResult.class);
@@ -205,13 +203,10 @@ public class SearchResourceTest extends WebServiceTestSetup {
     when(repository.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
 
     WebResource resource = super.resource();
-    String expected = String.format("%ssearch/%s", resource.getURI().toString(), ID);
     ClientResponse response = resource.path("search").type(MediaType.APPLICATION_JSON).post(ClientResponse.class, params);
-    String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
-    assertEquals(Status.CREATED, response.getClientResponseStatus());
-    assertEquals(expected, actual);
-    verify(vreManager).getDefaultVRE();
+    assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
+    verify(vreManager).getVREById(null);
   }
 
   @Test
@@ -222,7 +217,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
 
-    assertEquals(Status.NOT_FOUND, response.getClientResponseStatus());
+    assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
     verify(repository, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verify(searchManager, never()).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
   }
@@ -240,13 +235,12 @@ public class SearchResourceTest extends WebServiceTestSetup {
     verify(searchManager, never()).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
   }
 
-  @Ignore
   @Test
   public void testPostUnknownFacets() throws Exception {
     setUpVREManager(true, true);
 
     SearchParameters params = new SearchParameters().setTypeString(TYPE_STRING).setTerm(TERM);
-    doThrow(NoSuchFacetException.class).when(searchManager).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
+    doThrow(SearchValidationException.class).when(searchManager).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParameters.class));
 
     ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
 
@@ -282,7 +276,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
     verify(vreManager).getVREById(anyString());
   }
 
-  @Ignore("redefine test when new searchmanager is ready")
   @Test
   public void testGetSuccess() {
     List<String> idList = Lists.newArrayList();
@@ -307,7 +300,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
     compareResults(expected, actual);
   }
 
-  @Ignore("redefine test when new searchmanager is ready")
   @Test
   public void testGetSuccessWithStartAndRows() {
     List<String> idList = Lists.newArrayList();
@@ -339,7 +331,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
     compareResults(expected, actual);
   }
 
-  @Ignore("redefine test when new searchmanager is ready")
   @Test
   public void testGetSuccessWithStartAndRowsMoreThanMax() {
     List<String> idList = Lists.newArrayList();

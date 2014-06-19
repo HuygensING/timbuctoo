@@ -151,11 +151,11 @@ public class SolrIndex implements Index {
   }
 
   @Override
-  public <T extends FacetedSearchParameters<T>> FacetedSearchResult search(FacetedSearchParameters<T> searchParameters) throws SearchException {
+  public <T extends FacetedSearchParameters<T>> FacetedSearchResult search(FacetedSearchParameters<T> searchParameters) throws SearchException, SearchValidationException {
     try {
       return facetedSearchLibrary.search(searchParameters);
     } catch (NoSuchFieldInIndexException e) {
-      throw new SearchException(e);
+      throw new SearchValidationException(e);
     } catch (FacetedSearchException e) {
       throw new SearchException(e);
     }
