@@ -247,7 +247,7 @@ public class SearchResource extends ResourceBase {
     List<String> relationTypeIds = params.getRelationTypeIds();
     checkNotNull(relationTypeIds, BAD_REQUEST, "No 'relationTypeIds' specified");
     for (String id : relationTypeIds) {
-      checkNotNull(repository.getRelationType(id), BAD_REQUEST, "No RelationType with id %s", id);
+      checkNotNull(repository.getRelationTypeById(id), BAD_REQUEST, "No RelationType with id %s", id);
     }
 
     // Process
@@ -397,7 +397,7 @@ public class SearchResource extends ResourceBase {
     String xtype = TypeNames.getExternalName(type);
     List<RelationRef> list = Lists.newArrayListWithCapacity(relations.size());
     for (Relation relation : relations) {
-      RelationType relationType = repository.getRelationType(relation.getTypeId());
+      RelationType relationType = repository.getRelationTypeById(relation.getTypeId());
       String relationName = relationType.getRegularName();
       DomainEntity source = retrieveEntity(mapper, relation.getSourceType(), relation.getSourceId());
       String sourceName = (source != null) ? source.getDisplayName() : "[unknown]";

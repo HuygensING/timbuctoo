@@ -354,11 +354,11 @@ public class Repository {
    * Returns the relation type with the specified id,
    * or {@code null} if no such relation type exists.
    */
-  public RelationType getRelationType(String id) {
+  public RelationType getRelationTypeById(String id) {
     try {
       return relationTypeCache.get(id);
     } catch (ExecutionException e) {
-      LOG.debug("Failed to retrieve relation type {}: {}", id, e.getMessage());
+      LOG.debug("No relation type with id {}: {}", id, e.getMessage());
       return null;
     }
   }
@@ -422,7 +422,7 @@ public class Repository {
       @SuppressWarnings("unchecked")
       Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
       for (Relation relation : storage.getRelationsByEntityId(mappedType, entityId).getSome(limit)) {
-        RelationType relType = getRelationType(relation.getTypeId());
+        RelationType relType = getRelationTypeById(relation.getTypeId());
         checkState(relType != null, "Failed to retrieve relation type");
         if (relation.hasSourceId(entityId)) {
           RelationRef ref = newRelationRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());

@@ -220,7 +220,7 @@ public class RepositoryTest {
   public void testGetRelationTypeWhenExceptionOccurs() throws Exception {
     String id = "id";
     when(storage.getItem(RelationType.class, id)).thenThrow(new StorageException());
-    assertNull(repository.getRelationType(id));
+    assertNull(repository.getRelationTypeById(id));
     verify(storage, times(1)).getItem(RelationType.class, id);
   }
 
@@ -228,7 +228,7 @@ public class RepositoryTest {
   public void testGetRelationTypeWhenItemIsUnknown() throws Exception {
     String id = "id";
     when(storage.getItem(RelationType.class, id)).thenReturn(null);
-    assertNull(repository.getRelationType(id));
+    assertNull(repository.getRelationTypeById(id));
     verify(storage, times(1)).getItem(RelationType.class, id);
   }
 
@@ -237,7 +237,7 @@ public class RepositoryTest {
     String id = "id";
     RelationType type = new RelationType();
     when(storage.getItem(RelationType.class, id)).thenReturn(type);
-    assertEquals(type, repository.getRelationType(id));
+    assertEquals(type, repository.getRelationTypeById(id));
     verify(storage, times(1)).getItem(RelationType.class, id);
   }
 
@@ -246,8 +246,8 @@ public class RepositoryTest {
     String id = "id";
     RelationType type = new RelationType();
     when(storage.getItem(RelationType.class, id)).thenReturn(type);
-    repository.getRelationType(id);
-    assertEquals(type, repository.getRelationType(id));
+    repository.getRelationTypeById(id);
+    assertEquals(type, repository.getRelationTypeById(id));
     verify(storage, times(1)).getItem(RelationType.class, id);
   }
 

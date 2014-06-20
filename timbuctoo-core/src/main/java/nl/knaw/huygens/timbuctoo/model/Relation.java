@@ -183,7 +183,7 @@ public class Relation extends DomainEntity {
   public void normalize(Repository repository) {
     // Make sure symmetric relations are stored in canonical order
     if (typeId != null & sourceId != null && targetId != null) {
-      RelationType relationType = repository.getRelationType(typeId);
+      RelationType relationType = repository.getRelationTypeById(typeId);
       if (relationType != null && relationType.isSymmetric() && sourceId.compareTo(targetId) > 0) {
         String temp = sourceId;
         sourceId = targetId;
