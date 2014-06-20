@@ -390,7 +390,7 @@ public class CKCCImporter extends DefaultImporter {
         throw new ValidationException("Lines must have at least 3 items");
       }
       Reference typeRef = relationTypes.get(items[0]);
-      RelationType relationType = repository.getRelationType(typeRef.getId());
+      RelationType relationType = repository.getRelationTypeById(typeRef.getId());
       Reference sourceRef = getReference(relationType.getSourceTypeName(), items[1]);
       Reference targetRef = getReference(relationType.getTargetTypeName(), items[2]);
       if (typeRef != null && sourceRef != null && targetRef != null) {

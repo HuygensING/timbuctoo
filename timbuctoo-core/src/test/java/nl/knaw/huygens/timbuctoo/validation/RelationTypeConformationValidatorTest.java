@@ -61,7 +61,7 @@ public class RelationTypeConformationValidatorTest {
 
   @Test
   public void testValidate() throws IOException, ValidationException {
-    when(repository.getRelationType(TYPE_ID)).thenReturn(relationType);
+    when(repository.getRelationTypeById(TYPE_ID)).thenReturn(relationType);
     when(relationMock.getSourceType()).thenReturn("sourceType");
     when(relationMock.getTargetType()).thenReturn("targetType");
 
@@ -70,7 +70,7 @@ public class RelationTypeConformationValidatorTest {
 
   @Test(expected = ValidationException.class)
   public void testValidateRelationTypeDoesNotExist() throws IOException, ValidationException {
-    when(repository.getRelationType(TYPE_ID)).thenReturn(null);
+    when(repository.getRelationTypeById(TYPE_ID)).thenReturn(null);
     when(relationMock.getSourceType()).thenReturn("targetType");
     when(relationMock.getTargetType()).thenReturn("sourceType");
 
@@ -80,7 +80,7 @@ public class RelationTypeConformationValidatorTest {
   @Test(expected = ValidationException.class)
   public void testValidateDerivedRelationType() throws IOException, ValidationException {
     relationType.setDerived(true);
-    when(repository.getRelationType(TYPE_ID)).thenReturn(relationType);
+    when(repository.getRelationTypeById(TYPE_ID)).thenReturn(relationType);
     when(relationMock.getSourceType()).thenReturn("targetType");
     when(relationMock.getTargetType()).thenReturn("sourceType");
 
