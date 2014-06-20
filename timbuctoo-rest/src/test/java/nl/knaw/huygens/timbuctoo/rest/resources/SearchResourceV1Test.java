@@ -75,6 +75,7 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class SearchResourceV1Test extends WebServiceTestSetup {
 
+  private static final String V1_PREFIX = "v1";
   private static final Set<String> SORTABLE_FIELDS = Sets.newHashSet("test1", "test");
   private static final String SCOPE_ID = "base";
   private static final String TERM = "dynamic_t_name:Huygens";
@@ -122,7 +123,7 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
   }
 
   private WebResource.Builder getResourceBuilder() {
-    return resource().path("search").type(MediaType.APPLICATION_JSON);
+    return resource().path(V1_PREFIX).path("search").type(MediaType.APPLICATION_JSON);
   }
 
   @Test
@@ -134,14 +135,17 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     setSearchResult(searchResult);
     when(repository.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
 
-    WebResource resource = super.resource();
-    String expected = String.format("%ssearch/%s", resource.getURI().toString(), ID);
-    ClientResponse response = resource.path("search").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
+    String expected = getExpectedURL(ID);
+    ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
     String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
     assertEquals(Status.CREATED, response.getClientResponseStatus());
     assertEquals(expected, actual);
     verify(vreManager).getVREById(anyString());
+  }
+
+  protected String getExpectedURL(String id) {
+    return String.format("%s%s/search/%s", resource().getURI().toString(), V1_PREFIX, id);
   }
 
   @Test
@@ -153,10 +157,8 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     setSearchResult(searchResult);
     when(repository.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
 
-    WebResource resource = super.resource();
-    String expected = String.format("%ssearch/%s", resource.getURI().toString(), ID);
-
-    ClientResponse response = resource.path("search").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
+    String expected = getExpectedURL(ID);
+    ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
     String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
     assertEquals(Status.CREATED, response.getClientResponseStatus());

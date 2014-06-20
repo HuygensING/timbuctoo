@@ -78,7 +78,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
-@Path("search")
+@Path("v1/search")
 public class SearchResourceV1 extends ResourceBase {
 
   private static final String RELATION_SEARCH_PREFIX = "relations";
