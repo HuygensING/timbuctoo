@@ -45,7 +45,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import nl.knaw.huygens.solr.RelationSearchParameters;
-import nl.knaw.huygens.solr.SearchParameters;
+import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
@@ -54,6 +54,7 @@ import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -78,11 +79,11 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
 @Path("search")
-public class SearchResource extends ResourceBase {
+public class SearchResourceV1 extends ResourceBase {
 
   private static final String RELATION_SEARCH_PREFIX = "relations";
 
-  private static final Logger LOG = LoggerFactory.getLogger(SearchResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SearchResourceV1.class);
 
   @Inject
   private TypeRegistry registry;
@@ -108,9 +109,9 @@ public class SearchResource extends ResourceBase {
   @POST
   @APIDesc("Searches the Solr index")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response regularPost(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
+  public Response regularPost(SearchParametersV1 searchParams, @HeaderParam("VRE_ID") String vreId) {
 
-    //    searchRequestValidator.validate(vreId, searchParams);
+    searchRequestValidator.validate(vreId, searchParams);
 
     VRE vre = vreManager.getVREById(vreId);
     String typeString = StringUtils.trimToNull(searchParams.getTypeString());
@@ -118,11 +119,11 @@ public class SearchResource extends ResourceBase {
 
     // Process
     try {
-      //      SearchResult result = searchManager.search(vre, type, searchParams);
-      String queryId = null;//putSearchResult(result);
+      SearchResult result = searchManager.search(vre, type, searchParams);
+      String queryId = putSearchResult(result);
       return Response.created(new URI(queryId)).build();
-      //    } catch (SearchValidationException e) {
-      //      throw new TimbuctooException(BAD_REQUEST, "Search request not valid: %s", e.getMessage());
+    } catch (SearchValidationException e) {
+      throw new TimbuctooException(BAD_REQUEST, "Search request not valid: %s", e.getMessage());
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());

@@ -4,7 +4,7 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import javax.ws.rs.core.Response.Status;
 
-import nl.knaw.huygens.solr.SearchParameters;
+import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
@@ -24,7 +24,7 @@ public class SearchRequestValidator {
     this.typeRegistryMock = typeRegistryMock;
   }
 
-  public void validate(String vreId, SearchParameters searchParameters) throws TimbuctooException {
+  public void validate(String vreId, SearchParametersV1 searchParameters) throws TimbuctooException {
     checkNotNull(vreId, BAD_REQUEST, "No VRE id specified");
     VRE vre = vreManagerMock.getVREById(vreId);
     checkNotNull(vre, BAD_REQUEST, "No VRE with id \"%s\"", vreId);
