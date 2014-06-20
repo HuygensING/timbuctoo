@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import nl.knaw.huygens.timbuctoo.config.EntityMapper;
 import nl.knaw.huygens.timbuctoo.config.EntityMappers;
@@ -44,6 +43,7 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
 import nl.knaw.huygens.timbuctoo.storage.RevisionChanges;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -56,10 +56,6 @@ import nl.knaw.huygens.timbuctoo.util.KV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -74,6 +70,7 @@ public class Repository {
   private final TypeRegistry registry;
   private final Storage storage;
   private final EntityMappers entityMappers;
+  private final RelationTypes relationTypes;
 
   @Inject
   public Repository(TypeRegistry registry, Storage storage) throws StorageException {
@@ -81,7 +78,7 @@ public class Repository {
     this.storage = storage;
     entityMappers = new EntityMappers(registry.getDomainEntityTypes());
     ensureIndexes();
-    setupRelationTypeCache();
+    relationTypes = new RelationTypes(storage);
   }
 
   /**
@@ -328,26 +325,8 @@ public class Repository {
 
   // --- relation types --------------------------------------------------------
 
-  private LoadingCache<String, RelationType> relationTypeCache;
-
-  private void setupRelationTypeCache() {
-    relationTypeCache = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<String, RelationType>() {
-      @Override
-      public RelationType load(String id) throws StorageException {
-        // Not allowed to return null
-        RelationType relationType = storage.getItem(RelationType.class, id);
-        if (relationType == null) {
-          throw new StorageException("item does not exist");
-        }
-        return relationType;
-      }
-    });
-  }
-
   public void logCacheStats() {
-    if (relationTypeCache != null) {
-      LOG.info("RelationType {}", relationTypeCache.stats());
-    }
+    relationTypes.logCacheStats();
   }
 
   /**
@@ -355,23 +334,14 @@ public class Repository {
    * or {@code null} if no such relation type exists.
    */
   public RelationType getRelationTypeById(String id) {
-    try {
-      return relationTypeCache.get(id);
-    } catch (ExecutionException e) {
-      LOG.debug("No relation type with id {}: {}", id, e.getMessage());
-      return null;
-    }
+    return relationTypes.getRelationTypeById( id);
   }
 
   /*
    * Returns a map for retrieving relation types by their regular name.
    */
   public Map<String, RelationType> getRelationTypeMap() {
-    Map<String, RelationType> map = Maps.newHashMap();
-    for (RelationType type : getSystemEntities(RelationType.class).getAll()) {
-      map.put(type.getRegularName(), type);
-    }
-    return map;
+    return  relationTypes.getRelationTypeMap();
   }
 
   // --- relations -------------------------------------------------------------
