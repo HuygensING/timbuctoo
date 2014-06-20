@@ -148,24 +148,6 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
   }
 
   @Test
-  public void testPostSuccessWithoutSort() throws Exception {
-    setUpVREManager(true, true);
-
-    SearchParametersV1 params = new SearchParametersV1().setTypeString(TYPE_STRING).setTerm(TERM);
-    SearchResult searchResult = mock(SearchResult.class);
-    setSearchResult(searchResult);
-    when(repository.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
-
-    String expected = getExpectedURL(ID);
-    ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
-    String actual = response.getHeaders().getFirst(LOCATION_HEADER);
-
-    assertEquals(Status.CREATED, response.getClientResponseStatus());
-    assertEquals(expected, actual);
-    verify(vreManager).getVREById(anyString());
-  }
-
-  @Test
   public void testPostRequestInvalid() {
     // setup
     SearchParametersV1 SearchParametersV1 = new SearchParametersV1();

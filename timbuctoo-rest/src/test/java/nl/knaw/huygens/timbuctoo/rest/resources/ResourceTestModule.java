@@ -76,6 +76,7 @@ class ResourceTestModule extends JerseyServletModule {
   private VREManager vreManager;
   private IndexManager indexManager;
   private SearchRequestValidator searchRequestValidator;
+  private SearchParametersConverter searchParametersConverter;
 
   public ResourceTestModule() {
     try {
@@ -94,6 +95,7 @@ class ResourceTestModule extends JerseyServletModule {
       vreManager = mock(VREManager.class);
       indexManager = mock(IndexManager.class);
       searchRequestValidator = mock(SearchRequestValidator.class);
+      searchParametersConverter = mock(SearchParametersConverter.class);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -104,7 +106,8 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(config, repository, jsonProvider, validator, mailSender, searchManager, authorizationHandler, broker, indexProducer, persistenceProducer, vreManager, indexManager, searchRequestValidator);
+    reset(config, repository, jsonProvider, validator, mailSender, searchManager, authorizationHandler, broker, indexProducer, persistenceProducer, vreManager, indexManager, searchRequestValidator,
+        searchParametersConverter);
   }
 
   @Override
@@ -224,6 +227,12 @@ class ResourceTestModule extends JerseyServletModule {
   @Provides
   public SearchRequestValidator provideSearchRequestValidator() {
     return searchRequestValidator;
+  }
+
+  @Singleton
+  @Provides
+  public SearchParametersConverter prSearchParametersConverter() {
+    return searchParametersConverter;
   }
 
 }

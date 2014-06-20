@@ -98,6 +98,8 @@ public class SearchResource extends ResourceBase {
   private Configuration config;
   @Inject
   private SearchRequestValidator searchRequestValidator;
+  @Inject
+  SearchParametersConverter searchParametersConverter;
 
   @GET
   @Path("/vres")
@@ -112,7 +114,7 @@ public class SearchResource extends ResourceBase {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response regularPost(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
 
-    SearchParametersV1 searchParamsV1 = searchParams.convertToV1();
+    SearchParametersV1 searchParamsV1 = searchParametersConverter.toV1(searchParams);
 
     searchRequestValidator.validate(vreId, searchParamsV1);
 

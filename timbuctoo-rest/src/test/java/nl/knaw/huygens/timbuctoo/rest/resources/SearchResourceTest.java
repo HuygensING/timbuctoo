@@ -56,6 +56,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
+import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
@@ -127,42 +128,39 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostSuccess() throws Exception {
-    setUpVREManager(true, true);
+    final SearchParametersV1 searchParametersV1Mock = mock(SearchParametersV1.class);
+    // setup
+    SearchParameters searchParameters = new SearchParameters();
+    String typeString = "otherdomainentity";
+    searchParameters.setTypeString(typeString);
 
-    SearchParameters params = new SearchParameters().setTypeString(TYPE_STRING).setTerm(TERM);
+    SearchParametersConverter searchParametersConverter = injector.getInstance(SearchParametersConverter.class);
+    when(searchParametersConverter.toV1(any(SearchParameters.class))).thenReturn(searchParametersV1Mock);
+
+    Class<OtherDomainEntity> type = OtherDomainEntity.class;
+
     SearchResult searchResult = mock(SearchResult.class);
     setSearchResult(searchResult);
+
+    VRE vreMock = mock(VRE.class);
+    vreManager = injector.getInstance(VREManager.class);
+    when(vreManager.getVREById(VRE_ID)).thenReturn(vreMock);
+
     when(repository.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
 
+    // action
     String expected = getExpectedURL(ID);
-    ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
+    ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, searchParameters);
     String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
+    // verify
+    verify(searchManager).search(vreMock, type, searchParametersV1Mock);
     assertEquals(Status.CREATED, response.getClientResponseStatus());
     assertEquals(expected, actual);
-    verify(vreManager).getVREById(anyString());
   }
 
   protected String getExpectedURL(String id) {
     return String.format("%ssearch/%s", resource().getURI().toString(), id);
-  }
-
-  @Test
-  public void testPostSuccessWithoutSort() throws Exception {
-    setUpVREManager(true, true);
-
-    SearchParameters params = new SearchParameters().setTypeString(TYPE_STRING).setTerm(TERM);
-    SearchResult searchResult = mock(SearchResult.class);
-    setSearchResult(searchResult);
-    when(repository.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
-
-    String expected = getExpectedURL(ID);
-    ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
-    String actual = response.getHeaders().getFirst(LOCATION_HEADER);
-
-    assertEquals(Status.CREATED, response.getClientResponseStatus());
-    assertEquals(expected, actual);
-    verify(vreManager).getVREById(anyString());
   }
 
   @Test
