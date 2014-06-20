@@ -116,7 +116,6 @@ public class SearchResourceTest extends WebServiceTestSetup {
       when(vre.inScope(Mockito.<Class<? extends DomainEntity>> any())).thenReturn(isTypeInScope);
 
       when(vreManager.getVREById(anyString())).thenReturn(vre);
-      when(vreManager.getDefaultVRE()).thenReturn(vre);
     } else {
       when(vreManager.getVREById(anyString())).thenReturn(null);
     }
@@ -135,14 +134,17 @@ public class SearchResourceTest extends WebServiceTestSetup {
     setSearchResult(searchResult);
     when(repository.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
 
-    WebResource resource = super.resource();
-    String expected = String.format("%ssearch/%s", resource.getURI().toString(), ID);
-    ClientResponse response = resource.path("search").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
+    String expected = getExpectedURL(ID);
+    ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
     String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
     assertEquals(Status.CREATED, response.getClientResponseStatus());
     assertEquals(expected, actual);
     verify(vreManager).getVREById(anyString());
+  }
+
+  protected String getExpectedURL(String id) {
+    return String.format("%ssearch/%s", resource().getURI().toString(), id);
   }
 
   @Test
@@ -154,10 +156,8 @@ public class SearchResourceTest extends WebServiceTestSetup {
     setSearchResult(searchResult);
     when(repository.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
 
-    WebResource resource = super.resource();
-    String expected = String.format("%ssearch/%s", resource.getURI().toString(), ID);
-
-    ClientResponse response = resource.path("search").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
+    String expected = getExpectedURL(ID);
+    ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
     String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
     assertEquals(Status.CREATED, response.getClientResponseStatus());

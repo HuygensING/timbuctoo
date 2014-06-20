@@ -140,4 +140,9 @@ public class SearchParameters {
     return this;
   }
 
+  public SearchParametersV1 convertToV1() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }

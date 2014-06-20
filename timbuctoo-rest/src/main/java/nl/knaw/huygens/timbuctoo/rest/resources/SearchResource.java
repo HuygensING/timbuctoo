@@ -46,6 +46,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParameters;
+import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
@@ -54,6 +55,7 @@ import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -110,7 +112,9 @@ public class SearchResource extends ResourceBase {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response regularPost(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
 
-    //    searchRequestValidator.validate(vreId, searchParams);
+    SearchParametersV1 searchParamsV1 = searchParams.convertToV1();
+
+    searchRequestValidator.validate(vreId, searchParamsV1);
 
     VRE vre = vreManager.getVREById(vreId);
     String typeString = StringUtils.trimToNull(searchParams.getTypeString());
@@ -118,11 +122,11 @@ public class SearchResource extends ResourceBase {
 
     // Process
     try {
-      //      SearchResult result = searchManager.search(vre, type, searchParams);
-      String queryId = null;//putSearchResult(result);
+      SearchResult result = searchManager.search(vre, type, searchParamsV1);
+      String queryId = putSearchResult(result);
       return Response.created(new URI(queryId)).build();
-      //    } catch (SearchValidationException e) {
-      //      throw new TimbuctooException(BAD_REQUEST, "Search request not valid: %s", e.getMessage());
+    } catch (SearchValidationException e) {
+      throw new TimbuctooException(BAD_REQUEST, "Search request not valid: %s", e.getMessage());
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());

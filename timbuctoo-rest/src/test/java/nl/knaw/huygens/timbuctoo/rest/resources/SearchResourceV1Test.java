@@ -116,7 +116,6 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
       when(vre.inScope(Mockito.<Class<? extends DomainEntity>> any())).thenReturn(isTypeInScope);
 
       when(vreManager.getVREById(anyString())).thenReturn(vre);
-      when(vreManager.getDefaultVRE()).thenReturn(vre);
     } else {
       when(vreManager.getVREById(anyString())).thenReturn(null);
     }
