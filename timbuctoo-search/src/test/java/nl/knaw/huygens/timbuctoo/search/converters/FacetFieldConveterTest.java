@@ -8,7 +8,6 @@ import nl.knaw.huygens.solr.SearchParametersV1;
 import org.junit.Test;
 
 public class FacetFieldConveterTest {
-  @SuppressWarnings("unchecked")
   @Test
   public void testAddToV1() {
     // setup
