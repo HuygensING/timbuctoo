@@ -53,14 +53,14 @@ public class WWPerson extends Person {
   public String tempDeathPlace;
   public String tempDeath;
   public String tempFinancialSituation;
-  public String tempLanguages;
+  // public String tempLanguages;
   public String tempMemberships; // as relation
   public String tempMotherTongue;
   private String tempName;
   public String tempPlaceOfBirth;
   public String tempPsChildren;
   public String tempPseudonyms;
-  public String tempPublishingLanguages;
+  // public String tempPublishingLanguages;
   private String tempSpouse;
 
   // ---------------------------------------------------------------------------

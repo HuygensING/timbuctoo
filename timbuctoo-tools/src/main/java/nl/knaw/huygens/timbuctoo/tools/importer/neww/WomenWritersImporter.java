@@ -1298,7 +1298,7 @@ public class WomenWritersImporter extends DefaultImporter {
     }
 
     converted.setHealth(filterField(object.health));
-    converted.tempLanguages = concatenate(object.languages);
+    // converted.tempLanguages = concatenate(object.languages);
     converted.setLivedIn(filterField(object.lived_in));
     converted.tempMemberships = concatenate(object.memberships);
     converted.tempMotherTongue = filterField(object.mother_tongue);
@@ -1326,7 +1326,7 @@ public class WomenWritersImporter extends DefaultImporter {
     converted.tempDeathPlace = filterField(object.placeOfDeath);
     converted.tempPseudonyms = concatenate(object.pseudonyms);
     converted.tempPsChildren = concatenate(object.ps_children);
-    converted.tempPublishingLanguages = concatenate(object.publishing_languages);
+    // converted.tempPublishingLanguages = concatenate(object.publishing_languages);
     converted.setTempSpouse(filterField(object.spouse));
 
     String type = filterField(object.type);
