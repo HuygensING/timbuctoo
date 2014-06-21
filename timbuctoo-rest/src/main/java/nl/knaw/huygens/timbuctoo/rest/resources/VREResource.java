@@ -23,7 +23,6 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  */
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.GET;
@@ -65,7 +64,6 @@ public class VREResource extends ResourceBase {
   public VREInfo getVREInfo(@PathParam("id") String vreId) {
     VRE vre = vreManager.getVREById(vreId);
     checkNotNull(vre, Status.NOT_FOUND, "No VRE with id %s", vreId);
-    Map<String, RelationType> map = repository.getRelationTypeMap();
 
     VREInfo info = new VREInfo();
     info.setName(vre.getName());
@@ -73,7 +71,7 @@ public class VREResource extends ResourceBase {
 
     String prefix = vre.getDomainEntityPrefix();
     for (String name : vre.getReceptionNames()) {
-      RelationType type = map.get(name);
+      RelationType type = repository.getRelationTypeByName(name);
       if (type != null) {
         Reception reception = new Reception();
         reception.typeId = type.getId();

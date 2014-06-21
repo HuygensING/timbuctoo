@@ -1,17 +1,15 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
+
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import nl.knaw.huygens.timbuctoo.model.RelationType;
-
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Maps;
 
 /**
  * Provides for access to stored relation types.
@@ -24,19 +22,40 @@ public class RelationTypes {
   
   /** Caches relation types by id. */
   private LoadingCache<String, RelationType> idCache;
+  
+  /** Caches relation types by name. */
+  private LoadingCache<String, RelationType> nameCache;
 
   public RelationTypes(Storage storage) {
     this.storage = storage;
     setupIdCache();
+    setupNameCache();
   }
 
   private void setupIdCache() {
     idCache = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<String, RelationType>() {
       @Override
       public RelationType load(String id) throws StorageException {
-        // Not allowed to return null
         RelationType type = storage.getItem(RelationType.class, id);
         if (type == null) {
+          // Not allowed to return null
+          throw new StorageException("item does not exist");
+        }
+        return type;
+      }
+    });
+  }
+
+  private void setupNameCache() {
+    nameCache = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<String, RelationType>() {
+      @Override
+      public RelationType load(String name) throws StorageException {
+        RelationType type = storage.findItemByProperty(RelationType.class, "regularName", name);
+        if (type == null) {
+          type = storage.findItemByProperty(RelationType.class, "inverseName", name);
+        }
+        if (type == null) {
+          // Not allowed to return null
           throw new StorageException("item does not exist");
         }
         return type;
@@ -45,37 +64,34 @@ public class RelationTypes {
   }
 
   public void logCacheStats() {
-    if (idCache != null) {
-      LOG.info("RelationType id cache {}", idCache.stats());
-    }
+    LOG.info("RelationType id cache {}", idCache.stats());
+    LOG.info("RelationType name cache {}", nameCache.stats());
   }
 
   /**
    * Returns the relation type with the specified id,
    * or {@code null} if no such relation type exists.
    */
-  public RelationType getRelationTypeById(String id) {
+  public RelationType getById(String id) {
     try {
       return idCache.get(id);
     } catch (ExecutionException e) {
-      LOG.debug("No relation type with id {}: {}", id, e.getMessage());
+      LOG.debug("No relation type with id {}", id);
       return null;
     }
   }
 
-  /*
-   * Returns a map for retrieving relation types by their regular name.
+  /**
+   * Returns the relation type with the specified name,
+   * or {@code null} if no such relation type exists.
    */
-  public Map<String, RelationType> getRelationTypeMap() {
-    Map<String, RelationType> map = Maps.newHashMap();
+  public RelationType getByName(String name) {
     try {
-      for (RelationType type : storage.getSystemEntities(RelationType.class).getAll()) {
-        map.put(type.getRegularName(), type);
-      }
-    } catch (StorageException e)	{
-      // TODO handle
+      return nameCache.get(name);
+    } catch (ExecutionException e) {
+      LOG.debug("No relation type with name {}", name);
+      return null;
     }
-    return map;
   }
 
 }
