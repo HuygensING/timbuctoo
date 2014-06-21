@@ -27,6 +27,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.EntityMapper;
 import nl.knaw.huygens.timbuctoo.config.EntityMappers;
@@ -41,6 +42,7 @@ import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
 import nl.knaw.huygens.timbuctoo.storage.RevisionChanges;
@@ -55,6 +57,7 @@ import nl.knaw.huygens.timbuctoo.util.KV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -402,6 +405,7 @@ public class Repository {
           entity.addRelation(relType.getInverseName(), ref);
         }
       }
+      addDerivedRelationsTo(entity);
     }
   }
 
@@ -416,6 +420,37 @@ public class Repository {
     DomainEntity entity = storage.getItem(type, reference.getId());
 
     return new RelationRef(iname, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
+  }
+
+  // Implements a single derived relation
+  // Note that it pertains to WWPerson only
+  private <T extends DomainEntity> void addDerivedRelationsTo(T entity) throws StorageException {
+    if (entity.getClass() == WWPerson.class) {
+      Set<String> languageIds = Sets.newHashSet();
+      String isCreatedById = relationTypes.getByName("isCreatedBy").getId();
+      String hasWorkLanguageId = relationTypes.getByName("hasWorkLanguage").getId();
+
+      // if other relations are already attached, we don't need this query...
+      StorageIterator<Relation> iterator1 = storage.findRelations(Relation.class, null, entity.getId(), isCreatedById);
+      while (iterator1.hasNext()) {
+        Relation relation1 = iterator1.next();
+        StorageIterator<Relation> iterator2 = storage.findRelations(Relation.class, relation1.getSourceId(), null, hasWorkLanguageId);
+        while (iterator2.hasNext()) {
+          Relation relation2 = iterator2.next();
+          languageIds.add(relation2.getTargetId());
+        }
+        iterator2.close();
+      }
+      iterator1.close();
+
+      for (String languageId : languageIds) {
+        Language language = storage.getItem(Language.class, languageId);
+        if (language != null) {
+          RelationRef ref = new RelationRef("language", "languages", languageId, language.getDisplayName(), null, true, 0);
+          entity.addRelation("hasPersonLanguage", ref);
+        }
+      }
+    }
   }
 
   // --- languages -------------------------------------------------------------
