@@ -27,7 +27,6 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.EntityMapper;
 import nl.knaw.huygens.timbuctoo.config.EntityMappers;
@@ -334,14 +333,15 @@ public class Repository {
    * or {@code null} if no such relation type exists.
    */
   public RelationType getRelationTypeById(String id) {
-    return relationTypes.getRelationTypeById( id);
+    return relationTypes.getById(id);
   }
 
-  /*
-   * Returns a map for retrieving relation types by their regular name.
+  /**
+   * Returns the relation type with the specified name, regular or inverse,
+   * or {@code null} if no such relation type exists.
    */
-  public Map<String, RelationType> getRelationTypeMap() {
-    return  relationTypes.getRelationTypeMap();
+  public RelationType getRelationTypeByName(String name) {
+    return relationTypes.getByName(name);
   }
 
   // --- relations -------------------------------------------------------------

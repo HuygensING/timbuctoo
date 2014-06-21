@@ -210,24 +210,23 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   // --- relations -----------------------------------------------------
 
   private void setupRelationTypes() {
-    Map<String, RelationType> map = repository.getRelationTypeMap();
-    isCreatorRef = retrieveRelationType(map, IS_CREATOR_OF.regular);
-    hasArchiveKeywordRef = retrieveRelationType(map, HAS_ARCHIVE_KEYWORD.regular);
-    hasArchiverKeywordRef = retrieveRelationType(map, HAS_ARCHIVER_KEYWORD.regular);
-    hasLegislationKeywordRef = retrieveRelationType(map, HAS_LEGISLATION_KEYWORD.regular);
-    hasArchivePersonRef = retrieveRelationType(map, HAS_ARCHIVE_PERSON.regular);
-    hasArchiverPersonRef = retrieveRelationType(map, HAS_ARCHIVER_PERSON.regular);
-    hasLegislationPersonRef = retrieveRelationType(map, HAS_LEGISLATION_PERSON.regular);
-    hasArchivePlaceRef = retrieveRelationType(map, HAS_ARCHIVE_PLACE.regular);
-    hasArchiverPlaceRef = retrieveRelationType(map, HAS_ARCHIVER_PLACE.regular);
-    hasLegislationPlaceRef = retrieveRelationType(map, HAS_LEGISLATION_PLACE.regular);
-    hasParentArchive = retrieveRelationType(map, HAS_PARENT_ARCHIVE.regular);
-    hasSiblingArchive = retrieveRelationType(map, HAS_SIBLING_ARCHIVE.regular);
-    hasSiblingArchiver = retrieveRelationType(map, HAS_SIBLING_ARCHIVER.regular);
+    isCreatorRef = retrieveRelationType(IS_CREATOR_OF.regular);
+    hasArchiveKeywordRef = retrieveRelationType(HAS_ARCHIVE_KEYWORD.regular);
+    hasArchiverKeywordRef = retrieveRelationType(HAS_ARCHIVER_KEYWORD.regular);
+    hasLegislationKeywordRef = retrieveRelationType(HAS_LEGISLATION_KEYWORD.regular);
+    hasArchivePersonRef = retrieveRelationType(HAS_ARCHIVE_PERSON.regular);
+    hasArchiverPersonRef = retrieveRelationType(HAS_ARCHIVER_PERSON.regular);
+    hasLegislationPersonRef = retrieveRelationType(HAS_LEGISLATION_PERSON.regular);
+    hasArchivePlaceRef = retrieveRelationType(HAS_ARCHIVE_PLACE.regular);
+    hasArchiverPlaceRef = retrieveRelationType(HAS_ARCHIVER_PLACE.regular);
+    hasLegislationPlaceRef = retrieveRelationType(HAS_LEGISLATION_PLACE.regular);
+    hasParentArchive = retrieveRelationType(HAS_PARENT_ARCHIVE.regular);
+    hasSiblingArchive = retrieveRelationType(HAS_SIBLING_ARCHIVE.regular);
+    hasSiblingArchiver = retrieveRelationType(HAS_SIBLING_ARCHIVER.regular);
   }
 
-  private Reference retrieveRelationType(Map<String, RelationType> map, String name) {
-    RelationType type = map.get(name);
+  private Reference retrieveRelationType(String name) {
+    RelationType type = repository.getRelationTypeByName(name);
     if (type != null) {
       return new Reference(RelationType.class, type.getId());
     } else {
