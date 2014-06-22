@@ -159,7 +159,9 @@ public class WomenWritersImporter extends DefaultImporter {
     System.out.printf("Regular documents = %6d%n%n", importRegularDocuments());
 
     System.out.println(".. Persons");
-    System.out.printf("Number = %6d%n%n", importPersons());
+    Set<String> collaboratorIds = collectCollaborators();
+    System.out.printf("Number = %6d%n%n", importPersons(collaboratorIds));
+    collaboratorIds.clear();
 
     System.out.printf("nUnknown    %5d%n", nUnknown);
     System.out.printf("nArchetype  %5d%n", nArchetype);
@@ -1134,7 +1136,7 @@ public class WomenWritersImporter extends DefaultImporter {
   private int nPseudonym = 0;
   private int nDuplicates = 0;
 
-  private int importPersons() throws Exception {
+  private int importPersons(Set<String> collaboratorIds) throws Exception {
     int initialSize = references.size();
     ckccMap = ckccConcordance();
     LineIterator iterator = getLineIterator("persons.json");
@@ -1143,7 +1145,7 @@ public class WomenWritersImporter extends DefaultImporter {
       while (iterator.hasNext()) {
         line = preprocessJson(iterator.nextLine());
         if (!line.isEmpty()) {
-          handlePerson(preprocessPerson(line));
+          handlePerson(preprocessPerson(line), collaboratorIds);
         }
       }
     } catch (JsonMappingException e) {
@@ -1167,8 +1169,14 @@ public class WomenWritersImporter extends DefaultImporter {
     return text;
   }
 
-  private void handlePerson(String json) throws Exception {
+  private void handlePerson(String json, Set<String> collaboratorIds) throws Exception {
     XPerson object = objectMapper.readValue(json, XPerson.class);
+
+    if (collaboratorIds.contains(object.tempid)) {
+      log("Ignoring generated collaborator %s%n", object.name);
+      return;
+    }
+
     String key = newKey("Person", object.tempid);
     if (references.containsKey(key)) {
       handleError("Duplicate key %s", key);
@@ -1417,6 +1425,36 @@ public class WomenWritersImporter extends DefaultImporter {
 
   // --- Relations -------------------------------------------------------------
 
+  // We won't be using the collaborators generated in the first processing step.
+  // It turns out that the quality is bad. We end up with more work to correct
+  // them than it wil be to enter them properly "by hand".
+  private Set<String> collectCollaborators() throws Exception {
+    Set<String> ids = Sets.newHashSet();
+    LineIterator iterator = getLineIterator("relations.json");
+    String line = "";
+    try {
+      while (iterator.hasNext()) {
+        line = preprocessJson(iterator.nextLine());
+        if (!line.isEmpty()) {
+          XRelation object = objectMapper.readValue(line, XRelation.class);
+          String relationType = filterField(object.relation_type);
+          if ("collaborated_with".equals(relationType)) {
+            String leftObject = verifyNonEmptyField(line, "leftObject", filterField(object.leftObject));
+            String leftId = verifyNonEmptyField(line, "leftId", filterField(object.leftId));
+            if ("Person".equals(leftObject)) {
+              ids.add(leftId);
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      LineIterator.closeQuietly(iterator);
+    }
+    return ids;
+  }
+
   // Maps from names used in json to registered relation type names
   private RelationTypeConcordance relationTypeConcordance;
 
@@ -1457,9 +1495,6 @@ public class WomenWritersImporter extends DefaultImporter {
       LineIterator.closeQuietly(iterator);
       relationTypeConcordance = null;
     }
-    // for (String name : names) {
-    //   System.out.println(name);
-    // }
   }
 
   private void handleRelation(String line) throws Exception {
@@ -1473,6 +1508,12 @@ public class WomenWritersImporter extends DefaultImporter {
       }
       return;
     }
+
+    // Ignore collaborations; see method collectCollaborators
+    if ("collaborated_with".equals(relationType)) {
+      return;
+    }
+
     String leftObject = verifyNonEmptyField(line, "leftObject", filterField(object.leftObject));
     String leftId = verifyNonEmptyField(line, "leftId", filterField(object.leftId));
     String rightObject = verifyNonEmptyField(line, "rightObject", filterField(object.rightObject));
