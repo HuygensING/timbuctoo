@@ -79,6 +79,7 @@ public class SortConverterTest {
 
   @Test
   public void testAddToV1WithSortDirectionAsc() {
+    // setup
     SearchParameters searchParameters = new SearchParameters().setSort(sortField);
     searchParameters.setSortDir("asc");
 
