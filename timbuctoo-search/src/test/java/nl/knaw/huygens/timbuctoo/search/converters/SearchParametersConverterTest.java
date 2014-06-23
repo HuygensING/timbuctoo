@@ -16,7 +16,7 @@ public class SearchParametersConverterTest {
     final SearchParametersV1 searchParametersV1Mock = mock(SearchParametersV1.class);
     FacetFieldConverter facetFieldConveterMock = mock(FacetFieldConverter.class);
     SortConverter sortConverterMock = mock(SortConverter.class);
-    FacetFieldConverter facetParameterConverter = mock(FacetFieldConverter.class);
+    FacetParameterConverter facetParameterConverter = mock(FacetParameterConverter.class);
 
     String term = "test";
     String typeString = "testType";

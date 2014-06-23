@@ -7,6 +7,10 @@ public class SearchParametersConverter {
 
   private final SearchParametersFieldConveter[] converters;
 
+  public SearchParametersConverter() {
+    this(new FacetFieldConverter(), new SortConverter(), new FacetParameterConverter());
+  }
+
   public SearchParametersConverter(SearchParametersFieldConveter... converters) {
     this.converters = converters;
 
