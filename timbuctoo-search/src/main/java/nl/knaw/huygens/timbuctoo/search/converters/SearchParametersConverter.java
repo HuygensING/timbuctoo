@@ -5,9 +5,9 @@ import nl.knaw.huygens.solr.SearchParametersV1;
 
 public class SearchParametersConverter {
 
-  private final SearchParameterFieldConveter[] converters;
+  private final SearchParametersFieldConveter[] converters;
 
-  public SearchParametersConverter(SearchParameterFieldConveter... converters) {
+  public SearchParametersConverter(SearchParametersFieldConveter... converters) {
     this.converters = converters;
 
   }
@@ -17,7 +17,7 @@ public class SearchParametersConverter {
     searchParametersV1.setTerm(searchParameters.getTerm());
     searchParametersV1.setFuzzy(searchParameters.isFuzzy());
     searchParametersV1.setTypeString(searchParameters.getTypeString());
-    for (SearchParameterFieldConveter converter : converters) {
+    for (SearchParametersFieldConveter converter : converters) {
       converter.addToV1(searchParameters, searchParametersV1);
     }
     return searchParametersV1;

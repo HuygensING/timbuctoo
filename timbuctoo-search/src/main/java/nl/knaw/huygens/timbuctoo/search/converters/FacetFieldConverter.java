@@ -8,7 +8,7 @@ import nl.knaw.huygens.solr.SearchParametersV1;
 
 import com.google.common.collect.Lists;
 
-public class FacetFieldConverter implements SearchParameterFieldConveter {
+public class FacetFieldConverter implements SearchParametersFieldConveter {
 
   @Override
   public void addToV1(SearchParameters searchParameters, SearchParametersV1 searchParametersV1) {
