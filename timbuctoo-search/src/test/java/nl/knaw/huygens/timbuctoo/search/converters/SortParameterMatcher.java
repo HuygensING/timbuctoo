@@ -29,7 +29,7 @@ public class SortParameterMatcher extends TypeSafeMatcher<SortParameter> {
 
   @Override
   protected boolean matchesSafely(SortParameter item) {
-    return Objects.equal(name, item.getFieldname()) && Objects.equal(sortDirection, item.getDirection());
+    return Objects.equal(name, item.getFieldName()) && Objects.equal(sortDirection, item.getDirection());
   }
 
   public static SortParameterMatcher likeSortParameter(String name, SortDirection sortDirection) {
