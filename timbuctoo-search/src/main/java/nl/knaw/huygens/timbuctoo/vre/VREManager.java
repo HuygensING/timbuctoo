@@ -101,7 +101,8 @@ public class VREManager {
 
     Index index = indexes.get(indexName);
     if (index == null) {
-      LOG.warn("No index found {}", indexName);
+      // see: http://en.wikipedia.org/wiki/Null_Object_pattern
+      LOG.debug("No index found {}, using a null Index", indexName);
       index = VREManager.NO_OP_INDEX;
     }
 
