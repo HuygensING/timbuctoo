@@ -25,6 +25,12 @@
       <groupId>nl.knaw.huygens</groupId>
       <artifactId>facetedsearch-tools-lib</artifactId>
       <version>${faceted.search.tools.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>slf4j-api</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     
     <!-- Huygens Solr wrapper -->
@@ -76,6 +82,14 @@
           <groupId>org.restlet.jee</groupId>
           <artifactId>org.restlet.ext.servlet</artifactId>
         </exclusion>
+        <exclusion>
+          <artifactId>slf4j-log4j12</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>log4j</artifactId>
+          <groupId>log4j</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -83,8 +97,12 @@
       <artifactId>solr-solrj</artifactId>
       <version>${solr.version}</version>
       <exclusions>
-        <exclusion>
+      <exclusion>
           <artifactId>slf4j-api</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>slf4j-log4j12</artifactId>
           <groupId>org.slf4j</groupId>
         </exclusion>
       </exclusions>
