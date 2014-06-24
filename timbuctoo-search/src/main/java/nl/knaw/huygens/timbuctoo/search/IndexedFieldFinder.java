@@ -8,8 +8,7 @@ public class IndexedFieldFinder extends AbstractFieldFinder {
 
   @Override
   protected void addField(Set<String> fields, IndexAnnotation indexAnnotation) {
-    // TODO Auto-generated method stub
-
+    fields.add(indexAnnotation.fieldName());
   }
 
 }
