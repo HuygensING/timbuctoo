@@ -113,60 +113,38 @@ public class VREManager {
     return indexes.values();
   }
 
-  //--------------------------------------------------------------
-  public static class NoOpIndex implements Index {
+  // ---------------------------------------------------------------------------
+
+  static class NoOpIndex implements Index {
 
     @Override
-    public void add(List<? extends DomainEntity> variations) {
-      // TODO Auto-generated method stub
-
-    }
+    public void add(List<? extends DomainEntity> variations) {}
 
     @Override
-    public void update(List<? extends DomainEntity> variations) throws IndexException {
-      // TODO Auto-generated method stub
-
-    }
+    public void update(List<? extends DomainEntity> variations) throws IndexException {}
 
     @Override
-    public void deleteById(String id) {
-      // TODO Auto-generated method stub
-
-    }
+    public void deleteById(String id) {}
 
     @Override
-    public void deleteById(List<String> ids) {
-      // TODO Auto-generated method stub
-
-    }
+    public void deleteById(List<String> ids) {}
 
     @Override
-    public void clear() {
-      // TODO Auto-generated method stub
-
-    }
+    public void clear() {}
 
     @Override
     public long getCount() {
-      // TODO Auto-generated method stub
       return 0;
     }
 
     @Override
-    public void commit() {
-      // TODO Auto-generated method stub
-
-    }
+    public void commit() {}
 
     @Override
-    public void close() {
-      // TODO Auto-generated method stub
-
-    }
+    public void close() {}
 
     @Override
     public String getName() {
-      // TODO Auto-generated method stub
       return null;
     }
 
@@ -187,4 +165,5 @@ public class VREManager {
 
     return new VREManager(vreMap, indexMap, indexNameCreator);
   }
+
 }

@@ -114,7 +114,6 @@ public class VREManagerTest {
     assertThat(actualVRE, equalTo(null));
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void createInstanceCreatesAnInstanceWithGeneratedVREAndIndexMaps() {
     // setup
