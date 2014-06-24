@@ -43,6 +43,7 @@ import nl.knaw.huygens.timbuctoo.model.cwno.CWNOPerson;
 import nl.knaw.huygens.timbuctoo.model.cwno.CWNORelation;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
 import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
+import nl.knaw.huygens.timbuctoo.model.neww.WWRelation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
@@ -504,22 +505,30 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
     for (String id : relationIds) {
       progress.step();
       xml = getResource(URL, "relation", id);
-      parseRelationResource(xml, id);
+      String storedId = parseRelationResource(xml, id);
+      if (storedId != null) {
+        indexManager.addEntity(CWNORelation.class, storedId);
+        indexManager.updateEntity(WWRelation.class, storedId);
+      }
     }
+
     progress.done();
   }
 
-  private void parseRelationResource(String xml, String id) {
+  private String parseRelationResource(String xml, String id) {
     RelationContext context = new RelationContext(id);
     parseXml(xml, new RelationVisitor(context));
     Reference typeRef = relationTypes.get(context.relationTypeName);
     Reference sourceRef = references.get(context.sourceId);
     Reference targetRef = references.get(context.targetId);
+    String storedId = null;
     if (typeRef != null && sourceRef != null && targetRef != null) {
-      addRelation(CWNORelation.class, typeRef, sourceRef, targetRef, change, xml);
+      storedId = addRelation(CWNORelation.class, typeRef, sourceRef, targetRef, change, xml);
     } else {
       System.err.printf("Error in %s: %s --> %s%n", context.relationTypeName, context.sourceId, context.targetId);
     }
+
+    return storedId;
   }
 
   private class RelationContext extends XmlContext {

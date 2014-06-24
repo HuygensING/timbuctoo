@@ -183,6 +183,7 @@ public class WomenWritersImporter extends DefaultImporter {
     indexEntities(WWLanguage.class);
     indexEntities(WWPerson.class);
     indexEntities(WWLocation.class);
+    indexEntities(WWRelation.class);
 
     displayStatus();
     displayErrorSummary();
@@ -1118,7 +1119,7 @@ public class WomenWritersImporter extends DefaultImporter {
     map.put("354", "roemers-visscher.anna.1583-1651");
     map.put("353", "roemers-visscher.maria-tesselschade.1594-1649");
     map.put("486", "schurman.anna-maria.1607-1678");
-    map.put("1990","reigersberch.suzanna.1586-1640");
+    map.put("1990", "reigersberch.suzanna.1586-1640");
     map.put("2199", "reigersberch.maria.1589-1653");
     return map;
   }

@@ -51,6 +51,7 @@ import nl.knaw.huygens.timbuctoo.model.cwrs.CWRSRelation;
 import nl.knaw.huygens.timbuctoo.model.neww.WWCollective;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
 import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
+import nl.knaw.huygens.timbuctoo.model.neww.WWRelation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
@@ -139,7 +140,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
       System.out.println(".. Collectives");
       importCollectives();
- 
+
       System.out.println(".. Persons");
       importPersons();
 
@@ -852,19 +853,24 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     for (String id : relationIds) {
       progress.step();
       xml = getResource(id);
-      parseRelationResource(xml, id);
+      String storedId = parseRelationResource(xml, id);
+
+      if (storedId != null) {
+        indexManager.addEntity(CWRSRelation.class, storedId);
+        indexManager.updateEntity(WWRelation.class, storedId);
+      }
     }
     progress.done();
   }
 
-  private void parseRelationResource(String xml, String id) {
+  private String parseRelationResource(String xml, String id) {
     boolean inverse = false;
     RelationContext context = new RelationContext(id);
     parseXml(xml, new RelationVisitor(context));
 
     if ("<<translated by>>".equals(context.relationTypeName)) {
       log("Rejected relation <<translated by>>%n");
-      return;
+      return null;
     }
 
     // Resolve ambiguous reception type
@@ -880,26 +886,26 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     Reference typeRef = relationTypes.get(context.relationTypeName);
     if (typeRef == null) {
       log("Missing relation type %s in %s%n", context.relationTypeName, xml);
-      return;
+      return null;
     }
     Reference sourceRef = references.get(context.sourceId);
     if (sourceRef == null) {
       if (!invalids.contains(context.sourceId)) {
         log("No source reference for %s in %s%n", context.sourceId, xml);
       }
-      return;
+      return null;
     }
     Reference targetRef = references.get(context.targetId);
     if (targetRef == null) {
       if (!invalids.contains(context.targetId)) {
         log("No target reference for %s in %s%n", context.targetId, xml);
       }
-      return;
+      return null;
     }
     if (inverse) {
-      addRelation(CWRSRelation.class, typeRef, targetRef, sourceRef, change, xml);
+      return addRelation(CWRSRelation.class, typeRef, targetRef, sourceRef, change, xml);
     } else {
-      addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, xml);
+      return addRelation(CWRSRelation.class, typeRef, sourceRef, targetRef, change, xml);
     }
   }
 
