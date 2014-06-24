@@ -1,8 +1,8 @@
-package nl.knaw.huygens.timbuctoo.model.util;
+package nl.knaw.huygens.timbuctoo.tools.importer.ckcc;
 
 /*
  * #%L
- * Timbuctoo core
+ * Timbuctoo tools
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
  * =======
@@ -22,39 +22,8 @@ package nl.knaw.huygens.timbuctoo.model.util;
  * #L%
  */
 
-import org.apache.commons.lang.StringUtils;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 
-public class Link {
-
-  private String url;
-  private String label;
-
-  public Link() {}
-
-  public Link(String url) {
-    setUrl(url);
-    setLabel("");
-  }
-
-  public Link(String url, String label) {
-    setUrl(url);
-    setLabel(label);
-  }
-
-  public String getUrl() {
-    return url;
-  }
-
-  public void setUrl(String url) {
-    this.url = StringUtils.stripToEmpty(url);
-  }
-
-  public String getLabel() {
-    return label;
-  }
-
-  public void setLabel(String label) {
-    this.label = StringUtils.stripToEmpty(label);
-  }
+public class CKCCRelation extends Relation {
 
 }

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.model.util;
+package nl.knaw.huygens.timbuctoo.model.ckcc;
 
 /*
  * #%L
@@ -22,39 +22,37 @@ package nl.knaw.huygens.timbuctoo.model.util;
  * #L%
  */
 
-import org.apache.commons.lang.StringUtils;
+import nl.knaw.huygens.timbuctoo.model.Document;
 
-public class Link {
+/**
+ * Documents in the CKCC project are all letters.
+ */
+public class CKCCDocument extends Document {
 
-  private String url;
-  private String label;
+  /** Not (yet) used. */
+  private String provenance;
+  /** Identification used by project. */
+  private String urn;
 
-  public Link() {}
-
-  public Link(String url) {
-    setUrl(url);
-    setLabel("");
+  public CKCCDocument() {
+    setDocumentType(DocumentType.LETTER);
+    setResourceType(ResourceType.TEXT);
   }
 
-  public Link(String url, String label) {
-    setUrl(url);
-    setLabel(label);
+  public String getProvenance() {
+    return provenance;
   }
 
-  public String getUrl() {
-    return url;
+  public void setProvenance(String provenance) {
+    this.provenance = provenance;
   }
 
-  public void setUrl(String url) {
-    this.url = StringUtils.stripToEmpty(url);
+  public String getUrn() {
+    return urn;
   }
 
-  public String getLabel() {
-    return label;
-  }
-
-  public void setLabel(String label) {
-    this.label = StringUtils.stripToEmpty(label);
+  public void setUrn(String urn) {
+    this.urn = urn;
   }
 
 }

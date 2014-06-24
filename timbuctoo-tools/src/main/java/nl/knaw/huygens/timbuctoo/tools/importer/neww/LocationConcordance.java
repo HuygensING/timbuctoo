@@ -61,4 +61,9 @@ public class LocationConcordance extends CSVImporter {
     return (text != null) ? map.get(text) : null;
   }
 
+  public String convert(String text) {
+    String mapped = map.get(text);
+    return (mapped != null) ? mapped : text;
+  }
+
 }

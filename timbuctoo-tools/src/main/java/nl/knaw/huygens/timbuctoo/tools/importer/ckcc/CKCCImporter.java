@@ -36,12 +36,14 @@ import nl.knaw.huygens.tei.Visitor;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
 import nl.knaw.huygens.timbuctoo.XRepository;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.ckcc.CKCCCollective;
+import nl.knaw.huygens.timbuctoo.model.ckcc.CKCCDocument;
 import nl.knaw.huygens.timbuctoo.model.ckcc.CKCCPerson;
 import nl.knaw.huygens.timbuctoo.model.ckcc.CKCCRelation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -49,11 +51,13 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent;
+import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
 import nl.knaw.huygens.timbuctoo.tools.importer.CaptureHandler;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
+import nl.knaw.huygens.timbuctoo.tools.importer.neww.LocationConcordance;
 import nl.knaw.huygens.timbuctoo.util.Files;
 import nl.knaw.huygens.timbuctoo.util.Text;
 import nl.knaw.huygens.timbuctoo.vre.CKCCVRE;
@@ -62,12 +66,12 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
 
 /**
- * Imports persons and relations of the CKCC project into the repository.
- * N.B. Places are already imported by the BaseImporter.
+ * Imports data of the CKCC project into the repository.
  */
 public class CKCCImporter extends DefaultImporter {
 
@@ -83,7 +87,7 @@ public class CKCCImporter extends DefaultImporter {
     try {
       XRepository instance = ToolsInjectionModule.createRepositoryInstance();
       importer = new CKCCImporter(instance, directory);
-      importer.importAll();
+      importer.importAll(false);
     } finally {
       if (importer != null) {
         importer.close();
@@ -99,6 +103,7 @@ public class CKCCImporter extends DefaultImporter {
 
   private final Change change;
   private final File inputDir;
+  private final LocationConcordance concordance;
 
   public CKCCImporter(XRepository repository, String inputDirName) throws Exception {
     super(repository);
@@ -110,9 +115,10 @@ public class CKCCImporter extends DefaultImporter {
     } else {
       System.out.printf("%nNot a directory: %s%n", inputDir.getAbsolutePath());
     }
+    concordance = new LocationConcordance(new File(inputDir, "location-concordance.csv"));
   }
 
-  private void importAll() throws Exception {
+  private void importAll(boolean letters) throws Exception {
     try {
       openImportLog("ckcc-log.txt");
       importRelationTypes();
@@ -126,6 +132,17 @@ public class CKCCImporter extends DefaultImporter {
 
       // relations
       new RelationImporter().handleFile(new File(inputDir, "relations.csv"), 0, false);
+
+      // documents and relations
+      if (letters) {
+        new LetterImporter().handleFile(new File(inputDir, "meta-barl001.csv"), 0, false);
+        new LetterImporter().handleFile(new File(inputDir, "meta-beec002.csv"), 0, false);
+        new LetterImporter().handleFile(new File(inputDir, "meta-groo001.csv"), 0, false);
+        new LetterImporter().handleFile(new File(inputDir, "meta-huyg001.csv"), 0, false);
+        new LetterImporter().handleFile(new File(inputDir, "meta-huyg003.csv"), 0, false);
+        new LetterImporter().handleFile(new File(inputDir, "meta-leeu027.csv"), 0, false);
+        new LetterImporter().handleFile(new File(inputDir, "meta-nier005.csv"), 0, false);
+      }
 
     } finally {
       displayStatus();
@@ -380,14 +397,16 @@ public class CKCCImporter extends DefaultImporter {
 
   public class RelationImporter extends CSVImporter {
 
+    private static final int FIELDS = 3;
+
     public RelationImporter() {
       super(new PrintWriter(System.err));
     }
 
     @Override
     protected void handleLine(String[] items) throws Exception {
-      if (items.length < 3) {
-        throw new ValidationException("Lines must have at least 3 items");
+      if (items.length < FIELDS) {
+        throw new ValidationException("Lines must have at least %d items", FIELDS);
       }
       Reference typeRef = relationTypes.get(items[0]);
       RelationType relationType = repository.getRelationTypeById(typeRef.getId());
@@ -425,6 +444,133 @@ public class CKCCImporter extends DefaultImporter {
       }
       log("Unknown type name %s%n", iname);
       return null;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Imports metada of letters
+   */
+  public class LetterImporter extends CSVImporter {
+
+    private static final int FIELDS = 8;
+
+    private static final String URL_PREFIX = "http://ckcc.huygens.knaw.nl/epistolarium/letter.html?id=";
+
+    private final String isCreatedById;
+    private final String hasRecipientId;
+    private final String hasSenderLocationId;
+    private final String hasRecipientLocationId;
+
+    public LetterImporter() {
+      super(new PrintWriter(System.err));
+      isCreatedById = repository.getRelationTypeByName("isCreatedBy").getId();
+      hasRecipientId = repository.getRelationTypeByName("hasRecipient").getId();
+      hasSenderLocationId = repository.getRelationTypeByName("hasSenderLocation").getId();
+      hasRecipientLocationId = repository.getRelationTypeByName("hasRecipientLocation").getId();
+    }
+
+    @Override
+    protected void handleLine(String[] items) throws Exception {
+      if (items.length < FIELDS) {
+        throw new ValidationException("Lines must have at least %d items", FIELDS);
+      }
+      String letterId = items[0];
+      String date = items[1];
+      String senders = items[2];
+      String senderLoc = items[3];
+      // String senderLocCertainty = items[4];
+      String recipients = items[5];
+      String recipientLoc = items[6];
+      // String recipientLocCertainty = items[7];
+
+      CKCCDocument document = new CKCCDocument();
+      document.setUrn(letterId);
+      document.setDate(new Datable(date));
+      document.setTitle("Letter " + letterId);
+      document.addLink(new Link(URL_PREFIX + letterId));
+      String storedId = addDomainEntity(CKCCDocument.class, document, change);
+
+      if (valid(senders)) {
+        for (String sender : Splitter.on('#').split(senders)) {
+          String urn = sender.replace("?", "");
+          CKCCPerson person = repository.findEntity(CKCCPerson.class, "urn", urn);
+          if (person != null) {
+            CKCCRelation relation = RelationBuilder.newInstance(CKCCRelation.class)
+              .withRelationTypeId(isCreatedById)
+              .withSourceType(TypeNames.getInternalName(Document.class))
+              .withSourceId(storedId)
+              .withTargetType(TypeNames.getInternalName(Person.class))
+              .withTargetId(person.getId())
+              .build();
+            addDomainEntity(CKCCRelation.class, relation, change);
+          } else if (repository.findEntity(CKCCCollective.class, "urn", urn) == null) {
+            System.out.printf("%s: failed to find sender %s%n", letterId, urn);
+          }
+        }
+      }
+
+      if (valid(senderLoc)) {
+        String urn = concordance.convert(senderLoc.replace("?", ""));
+        if (!urn.equals("?")) {
+          Location location = repository.findEntity(Location.class, "^urn", urn);
+          if (location != null) {
+            CKCCRelation relation = RelationBuilder.newInstance(CKCCRelation.class)
+              .withRelationTypeId(hasSenderLocationId)
+              .withSourceType(TypeNames.getInternalName(Document.class))
+              .withSourceId(storedId)
+              .withTargetType(TypeNames.getInternalName(Location.class))
+              .withTargetId(location.getId())
+              .build();
+            addDomainEntity(CKCCRelation.class, relation, change);
+          } else {
+            System.out.printf("%s: failed to find sender location %s (mapped to %s)%n", letterId, senderLoc, urn);
+          }
+        }
+      }
+
+      if (valid(recipients)) {
+        for (String recipient : Splitter.on('#').split(recipients)) {
+          String urn = recipient.replace("?", "");
+          CKCCPerson person = repository.findEntity(CKCCPerson.class, "urn", urn);
+          if (person != null) {
+            CKCCRelation relation = RelationBuilder.newInstance(CKCCRelation.class)
+              .withRelationTypeId(hasRecipientId)
+              .withSourceType(TypeNames.getInternalName(Document.class))
+              .withSourceId(storedId)
+              .withTargetType(TypeNames.getInternalName(Person.class))
+              .withTargetId(person.getId())
+              .build();
+            addDomainEntity(CKCCRelation.class, relation, change);
+          } else if (repository.findEntity(CKCCCollective.class, "urn", urn) == null) {
+            System.out.printf("%s: failed to find recipient %s%n", letterId, urn);
+          }
+        }
+      }
+
+      if (valid(recipientLoc)) {
+        String urn = concordance.convert(recipientLoc.replace("?", ""));
+        if (!urn.equals("?")) {
+          Location location = repository.findEntity(Location.class, "^urn", urn);
+          if (location != null) {
+            CKCCRelation relation = RelationBuilder.newInstance(CKCCRelation.class)
+              .withRelationTypeId(hasRecipientLocationId)
+              .withSourceType(TypeNames.getInternalName(Document.class))
+              .withSourceId(storedId)
+              .withTargetType(TypeNames.getInternalName(Location.class))
+              .withTargetId(location.getId())
+              .build();
+            addDomainEntity(CKCCRelation.class, relation, change);
+          } else {
+            System.out.printf("%s: failed to find recipient location %s (mapped to %s)%n", letterId, recipientLoc, urn);
+          }
+        }
+      }
+    }
+
+    private boolean valid(String text) {
+      return !text.isEmpty() && !text.equals("?");
     }
   }
 

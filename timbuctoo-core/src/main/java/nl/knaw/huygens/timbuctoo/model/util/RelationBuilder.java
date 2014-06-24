@@ -22,13 +22,17 @@ package nl.knaw.huygens.timbuctoo.model.util;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 
 /**
 * Helper class for creating {@code Relation} instances.
 */
 public class RelationBuilder<T extends Relation> {
+
+  private static final String TYPE_TYPE = TypeNames.getInternalName(RelationType.class);
 
   public static <T extends Relation> RelationBuilder<T> newInstance(Class<T> type) {
     return new RelationBuilder<T>(type);
@@ -46,6 +50,7 @@ public class RelationBuilder<T extends Relation> {
 
   protected RelationBuilder(Class<T> type) {
     this.type = type;
+    typeType = TYPE_TYPE;
   }
 
   public RelationBuilder<T> withId(String id) {
