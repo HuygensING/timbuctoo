@@ -8,6 +8,8 @@ import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
 import nl.knaw.huygens.timbuctoo.search.IndexedFieldFinder;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 
+import com.google.inject.Inject;
+
 public class IndexDescriptionFactory {
 
   private final IndexDescriptionBuilder indexDescriptionBuilder;
@@ -16,6 +18,7 @@ public class IndexDescriptionFactory {
   private final IndexedFieldFinder indexedFieldFinder;
   private final SortableFieldFinder sortableFieldFinder;
 
+  @Inject
   public IndexDescriptionFactory( // 
       IndexDescriptionBuilder indexDescriptionBuilder, //
       FacetFinder facetFinder, //
