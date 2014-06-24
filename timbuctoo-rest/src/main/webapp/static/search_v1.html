@@ -134,7 +134,7 @@ text {
 
 <script>
   var baseUrl = 'http://' + window.config.serverUri + '/';
-  var searchUrl = baseUrl + 'search';
+  var searchUrl = baseUrl + 'v1/search';
 
   var width = 960;
   var height = 800;
@@ -153,6 +153,7 @@ text {
         'scopeId': $('#searchscope').val(),
         'typeString': $('#searchtype').val(),
         'term': $('#searchtext').val(),
+        'sortParameters': []
       }),
       headers : { 
         VRE_ID : $('#vreselect').val()

@@ -45,7 +45,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import nl.knaw.huygens.solr.RelationSearchParameters;
-import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
@@ -62,7 +61,6 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
-import nl.knaw.huygens.timbuctoo.search.converters.SearchParametersConverter;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -80,12 +78,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
-@Path("search")
-public class SearchResource extends ResourceBase {
+@Path("v1/search")
+public class SearchResourceV1 extends ResourceBase {
 
   private static final String RELATION_SEARCH_PREFIX = "relations";
 
-  private static final Logger LOG = LoggerFactory.getLogger(SearchResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SearchResourceV1.class);
 
   @Inject
   private TypeRegistry registry;
@@ -99,8 +97,6 @@ public class SearchResource extends ResourceBase {
   private Configuration config;
   @Inject
   private SearchRequestValidator searchRequestValidator;
-  @Inject
-  SearchParametersConverter searchParametersConverter;
 
   @GET
   @Path("/vres")
@@ -113,11 +109,9 @@ public class SearchResource extends ResourceBase {
   @POST
   @APIDesc("Searches the Solr index")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response regularPost(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
+  public Response regularPost(SearchParametersV1 searchParams, @HeaderParam("VRE_ID") String vreId) {
 
-    SearchParametersV1 searchParamsV1 = searchParametersConverter.toV1(searchParams);
-
-    searchRequestValidator.validate(vreId, searchParamsV1);
+    searchRequestValidator.validate(vreId, searchParams);
 
     VRE vre = vreManager.getVREById(vreId);
     String typeString = StringUtils.trimToNull(searchParams.getTypeString());
@@ -125,7 +119,7 @@ public class SearchResource extends ResourceBase {
 
     // Process
     try {
-      SearchResult result = searchManager.search(vre, type, searchParamsV1);
+      SearchResult result = searchManager.search(vre, type, searchParams);
       String queryId = putSearchResult(result);
       return Response.created(new URI(queryId)).build();
     } catch (SearchValidationException e) {

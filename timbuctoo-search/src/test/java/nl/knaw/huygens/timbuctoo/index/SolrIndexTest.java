@@ -437,7 +437,7 @@ public class SolrIndexTest {
   }
 
   @Test
-  public void testSearch() throws NoSuchFieldInIndexException, FacetedSearchException, SearchException {
+  public void testSearch() throws NoSuchFieldInIndexException, FacetedSearchException, SearchException, SearchValidationException {
     // setup
     DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
     FacetedSearchResult facetedSearchResult = new FacetedSearchResult();
@@ -454,17 +454,18 @@ public class SolrIndexTest {
     assertThat(actualSearchResult, is(facetedSearchResult));
   }
 
-  @Test(expected = SearchException.class)
-  public void testSearchFacetedSearchLibraryThrowsNoSuchFieldInIndexException() throws NoSuchFieldInIndexException, FacetedSearchException, SearchException {
+  @Test(expected = SearchValidationException.class)
+  public void testSearchFacetedSearchLibraryThrowsNoSuchFieldInIndexException() throws NoSuchFieldInIndexException, FacetedSearchException, SearchException, SearchValidationException {
     testSeachFacetedSearchLibraryThrowsAnException(NoSuchFieldInIndexException.class);
   }
 
   @Test(expected = SearchException.class)
-  public void testSearchFacetedSearchLibraryThrowsFacetedSearchException() throws NoSuchFieldInIndexException, FacetedSearchException, SearchException {
+  public void testSearchFacetedSearchLibraryThrowsFacetedSearchException() throws NoSuchFieldInIndexException, FacetedSearchException, SearchException, SearchValidationException {
     testSeachFacetedSearchLibraryThrowsAnException(FacetedSearchException.class);
   }
 
-  private void testSeachFacetedSearchLibraryThrowsAnException(Class<? extends Exception> exceptionToThrow) throws NoSuchFieldInIndexException, FacetedSearchException, SearchException {
+  private void testSeachFacetedSearchLibraryThrowsAnException(Class<? extends Exception> exceptionToThrow) throws NoSuchFieldInIndexException, FacetedSearchException, SearchException,
+      SearchValidationException {
     // setup
     DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
 

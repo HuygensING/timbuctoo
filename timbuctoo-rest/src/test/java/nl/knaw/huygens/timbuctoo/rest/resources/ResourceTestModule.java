@@ -37,6 +37,7 @@ import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
+import nl.knaw.huygens.timbuctoo.search.converters.SearchParametersConverter;
 import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
@@ -75,6 +76,8 @@ class ResourceTestModule extends JerseyServletModule {
   private Producer persistenceProducer;
   private VREManager vreManager;
   private IndexManager indexManager;
+  private SearchRequestValidator searchRequestValidator;
+  private SearchParametersConverter searchParametersConverter;
 
   public ResourceTestModule() {
     try {
@@ -92,6 +95,8 @@ class ResourceTestModule extends JerseyServletModule {
       persistenceProducer = mock(Producer.class);
       vreManager = mock(VREManager.class);
       indexManager = mock(IndexManager.class);
+      searchRequestValidator = mock(SearchRequestValidator.class);
+      searchParametersConverter = mock(SearchParametersConverter.class);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -102,7 +107,8 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(config, repository, jsonProvider, validator, mailSender, searchManager, authorizationHandler, broker, indexProducer, persistenceProducer, vreManager, indexManager);
+    reset(config, repository, jsonProvider, validator, mailSender, searchManager, authorizationHandler, broker, indexProducer, persistenceProducer, vreManager, indexManager, searchRequestValidator,
+        searchParametersConverter);
   }
 
   @Override
@@ -216,6 +222,18 @@ class ResourceTestModule extends JerseyServletModule {
   @Provides
   public VREAuthorizationHandler provideVreAuthorizationHandler() {
     return new DefaultVREAuthorizationHandler(repository, mailSender);
+  }
+
+  @Singleton
+  @Provides
+  public SearchRequestValidator provideSearchRequestValidator() {
+    return searchRequestValidator;
+  }
+
+  @Singleton
+  @Provides
+  public SearchParametersConverter prSearchParametersConverter() {
+    return searchParametersConverter;
   }
 
 }

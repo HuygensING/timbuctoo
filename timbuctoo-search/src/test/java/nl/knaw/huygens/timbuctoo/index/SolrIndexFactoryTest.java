@@ -5,22 +5,16 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import java.util.List;
-
 import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
-import nl.knaw.huygens.facetedsearch.model.FacetDefinition;
+import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.search.FacetFinder;
 
 import org.apache.solr.core.CoreDescriptor;
 import org.junit.Test;
 
 import test.timbuctoo.index.model.BaseType1;
-
-import com.google.common.collect.Lists;
 
 public class SolrIndexFactoryTest {
   @Test
@@ -31,11 +25,11 @@ public class SolrIndexFactoryTest {
 
     // setup
     AbstractSolrServer solrServerMock = mock(AbstractSolrServer.class);
-    List<FacetDefinition> facetDefinitions = Lists.newArrayList();
+    IndexDescription facetDefinitions = mock(IndexDescription.class);
     FacetedSearchLibrary facetedSearchLibraryMock = mock(FacetedSearchLibrary.class);
     SolrInputDocumentCreator solrInputDocumentCreatorMock = mock(SolrInputDocumentCreator.class);
 
-    FacetFinder facetFinderMock = mock(FacetFinder.class);
+    IndexDescriptionFactory indexDescriptionFactoryMock = mock(IndexDescriptionFactory.class);
     AbstractSolrServerBuilder solrServerBuilderMock = mock(AbstractSolrServerBuilder.class);
     FacetedSearchLibraryFactory facetedSearchLibraryFactoryMock = mock(FacetedSearchLibraryFactory.class);
 
@@ -44,13 +38,13 @@ public class SolrIndexFactoryTest {
 
     Index expectedSolrIndex = new SolrIndex(name, solrInputDocumentCreatorMock, solrServerMock, facetedSearchLibraryMock);
 
-    when(facetFinderMock.findFacetDefinitions(type)).thenReturn(facetDefinitions);
+    when(indexDescriptionFactoryMock.create(type)).thenReturn(facetDefinitions);
     when(solrServerBuilderMock.setCoreName(name)).thenReturn(solrServerBuilderMock);
     when(solrServerBuilderMock.build(facetDefinitions)).thenReturn(solrServerMock);
     when(solrServerBuilderMock.addProperty(CoreDescriptor.CORE_DATADIR, "data/" + name.replace('.', '/'))).thenReturn(solrServerBuilderMock);
     when(facetedSearchLibraryFactoryMock.create(solrServerMock)).thenReturn(facetedSearchLibraryMock);
 
-    SolrIndexFactory instance = new SolrIndexFactory(solrInputDocumentCreatorMock, solrServerBuilderMock, facetFinderMock, facetedSearchLibraryFactoryMock);
+    SolrIndexFactory instance = new SolrIndexFactory(solrInputDocumentCreatorMock, solrServerBuilderMock, indexDescriptionFactoryMock, facetedSearchLibraryFactoryMock);
 
     // action
     SolrIndex actualSolrIndex = instance.createIndexFor(type, name);

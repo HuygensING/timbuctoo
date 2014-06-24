@@ -1,4 +1,6 @@
-package nl.knaw.huygens.timbuctoo.search;
+package nl.knaw.huygens.solr;
+
+import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 
 /*
  * #%L
@@ -22,20 +24,17 @@ package nl.knaw.huygens.timbuctoo.search;
  * #L%
  */
 
-import java.util.Set;
+public class SearchParametersV1 extends FacetedSearchParameters<SearchParametersV1> {
 
-import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
-import nl.knaw.huygens.timbuctoo.index.SearchException;
-import nl.knaw.huygens.timbuctoo.index.SearchValidationException;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.vre.VRE;
+  private String typeString;
 
-public interface SearchManager {
+  public String getTypeString() {
+    return typeString;
+  }
 
-  Set<String> findSortableFields(Class<? extends DomainEntity> type);
-
-  <T extends FacetedSearchParameters<T>> SearchResult search(VRE vre, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException,
-      SearchValidationException;
+  public SearchParametersV1 setTypeString(String typeString) {
+    this.typeString = typeString;
+    return this;
+  }
 
 }

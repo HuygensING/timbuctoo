@@ -159,7 +159,8 @@ public class IndexFacade implements SearchManager, IndexManager {
   }
 
   @Override
-  public <T extends FacetedSearchParameters<T>> SearchResult search(VRE vre, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException {
+  public <T extends FacetedSearchParameters<T>> SearchResult search(VRE vre, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException,
+      SearchValidationException {
     FullTextSearchFieldFinder ftsff = new FullTextSearchFieldFinder();
     searchParameters.setFullTextSearchFields(Lists.newArrayList(ftsff.findFields(type)));
 
