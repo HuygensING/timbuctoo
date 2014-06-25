@@ -4,8 +4,12 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.model.TestDomainEntity;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -13,6 +17,8 @@ import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 public class SearchRequestValidatorTest {
   private static final String INVALID_VRE_ID = "invalidVRE";
@@ -22,6 +28,12 @@ public class SearchRequestValidatorTest {
   private VREManager vreManagerMock;
   private TypeRegistry typeRegistryMock;
   private VRE vreMock;
+  private RelationSearchParameters unusedRelationSearchParameters = null;
+  private String nullVREId = null;
+  private String unknownTypeString = "unknownType";
+  private String knownTypeString = "testdomainentity";
+  private Class<TestDomainEntity> typeNotInScope = TestDomainEntity.class;
+  private Repository repositoryMock;
 
   @Before
   public void setUp() {
@@ -29,19 +41,20 @@ public class SearchRequestValidatorTest {
     typeRegistryMock = mock(TypeRegistry.class);
     vreMock = mock(VRE.class);
     when(vreManagerMock.getVREById(VALID_VRE_ID)).thenReturn(vreMock);
+    when(vreManagerMock.getVREById(INVALID_VRE_ID)).thenReturn(null);
 
-    instance = new SearchRequestValidator(vreManagerMock, typeRegistryMock);
+    repositoryMock = mock(Repository.class);
+
+    instance = new SearchRequestValidator(vreManagerMock, typeRegistryMock, repositoryMock);
   }
 
   @Test(expected = TimbuctooException.class)
   public void testValidateNoVREIdSpecified() {
-    instance.validate(null, unusedSearchParametersV1);
+    instance.validate(nullVREId, unusedSearchParametersV1);
   }
 
   @Test(expected = TimbuctooException.class)
   public void testValidateVREUnknown() {
-    when(vreManagerMock.getVREById(INVALID_VRE_ID)).thenReturn(null);
-
     instance.validate(INVALID_VRE_ID, unusedSearchParametersV1);
   }
 
@@ -65,8 +78,6 @@ public class SearchRequestValidatorTest {
   @Test(expected = TimbuctooException.class)
   public void testValidateTypeUnknown() {
     SearchParametersV1 SearchParametersV1Mock = mock(SearchParametersV1.class);
-    String unknownTypeString = "unknownType";
-
     when(SearchParametersV1Mock.getTypeString()).thenReturn(unknownTypeString);
     when(typeRegistryMock.getDomainEntityType(unknownTypeString)).thenReturn(null);
 
@@ -137,6 +148,215 @@ public class SearchRequestValidatorTest {
       verify(typeRegistryMock).getDomainEntityType(knownTypeString);
       verify(vreMock).inScope(typeNotInScope);
       verify(SearchParametersV1Mock).getTerm();
+    }
+  }
+
+  /********************************************************************************
+  ** Reception Search validation **************************************************
+  ********************************************************************************/
+
+  @Test(expected = TimbuctooException.class)
+  public void testValidateRelationRequestNoVREIdSpecified() {
+    RelationSearchParameters unusedRelationSearchParameters = null;
+
+    instance.validateRelationRequest(nullVREId, unusedRelationSearchParameters);
+  }
+
+  @Test(expected = TimbuctooException.class)
+  public void testValidateRelationRequestUnknownVRESpecified() {
+    instance.validateRelationRequest(INVALID_VRE_ID, unusedRelationSearchParameters);
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testValidateRelationRequestNoSearchParametersSpecified() {
+    RelationSearchParameters nullSearchParameters = null;
+
+    instance.validateRelationRequest(VALID_VRE_ID, nullSearchParameters);
+  }
+
+  @Test(expected = TimbuctooException.class)
+  public void testValidateRelationRequestNoTypeStringSpecified() {
+    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+
+    instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
+  }
+
+  @Test(expected = TimbuctooException.class)
+  public void testValidateRelationRequestTypeStringNotValid() {
+    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+    relationSearchParameters.setTypeString(unknownTypeString);
+
+    when(typeRegistryMock.getDomainEntityType(unknownTypeString)).thenReturn(null);
+
+    try {
+      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
+    } finally {
+      verify(typeRegistryMock).getDomainEntityType(unknownTypeString);
+    }
+  }
+
+  @Test(expected = TimbuctooException.class)
+  public void testValidateRelationRequestTypeNotInScope() {
+    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+    relationSearchParameters.setTypeString(knownTypeString);
+
+    setupTypeInScope(true, typeNotInScope, knownTypeString);
+
+    try {
+      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
+    } finally {
+      verify(typeRegistryMock).getDomainEntityType(knownTypeString);
+      verify(vreMock).inScope(typeNotInScope);
+    }
+  }
+
+  @Test(expected = TimbuctooException.class)
+  public void testValidateRelationRequestNoSourceSearchIdSpecified() {
+    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+    relationSearchParameters.setTypeString(knownTypeString);
+    relationSearchParameters.setSourceSearchId(null);
+
+    setupTypeInScope(true, typeNotInScope, knownTypeString);
+
+    try {
+      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
+    } finally {
+      verify(typeRegistryMock).getDomainEntityType(knownTypeString);
+      verify(vreMock).inScope(typeNotInScope);
+    }
+
+  }
+
+  protected void setupTypeInScope(boolean inScope, Class<TestDomainEntity> type, String typeString) {
+    doReturn(type).when(typeRegistryMock).getDomainEntityType(typeString);
+    when(vreMock.inScope(typeNotInScope)).thenReturn(inScope);
+  }
+
+  @Test(expected = TimbuctooException.class)
+  public void testValidateRelationRequestSourceSearchFoundForIdSpecified() {
+    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+    relationSearchParameters.setTypeString(knownTypeString);
+    String unknownSourceSearchId = "unknowId";
+    relationSearchParameters.setSourceSearchId(unknownSourceSearchId);
+
+    setupTypeInScope(true, typeNotInScope, knownTypeString);
+
+    when(repositoryMock.getEntity(SearchResult.class, unknownSourceSearchId)).thenReturn(null);
+
+    try {
+      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
+    } finally {
+      verify(typeRegistryMock).getDomainEntityType(knownTypeString);
+      verify(vreMock).inScope(typeNotInScope);
+      verify(repositoryMock).getEntity(SearchResult.class, unknownSourceSearchId);
+    }
+  }
+
+  @Test(expected = TimbuctooException.class)
+  public void testValidateRelationRequestNoTargetSearchIdSpecified() {
+    String knownSourceSearchId = "knowId";
+
+    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+    relationSearchParameters.setTypeString(knownTypeString);
+    relationSearchParameters.setSourceSearchId(knownSourceSearchId);
+    relationSearchParameters.setTargetSearchId(null);
+
+    setupTypeInScope(true, typeNotInScope, knownTypeString);
+
+    when(repositoryMock.getEntity(SearchResult.class, knownSourceSearchId)).thenReturn(mock(SearchResult.class));
+
+    try {
+      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
+    } finally {
+      verify(typeRegistryMock).getDomainEntityType(knownTypeString);
+      verify(vreMock).inScope(typeNotInScope);
+      verify(repositoryMock).getEntity(SearchResult.class, knownSourceSearchId);
+    }
+  }
+
+  @Test(expected = TimbuctooException.class)
+  public void testValidateRelationRequestTargetSearchFoundForIdSpecified() {
+    String knownSourceSearchId = "knowId";
+    String unknownTargetSearchId = "unknowId";
+
+    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+    relationSearchParameters.setTypeString(knownTypeString);
+    relationSearchParameters.setSourceSearchId(knownSourceSearchId);
+    relationSearchParameters.setTargetSearchId(unknownTargetSearchId);
+
+    setupTypeInScope(true, typeNotInScope, knownTypeString);
+
+    when(repositoryMock.getEntity(SearchResult.class, knownSourceSearchId)).thenReturn(mock(SearchResult.class));
+    when(repositoryMock.getEntity(SearchResult.class, unknownTargetSearchId)).thenReturn(null);
+
+    try {
+      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
+    } finally {
+      verify(typeRegistryMock).getDomainEntityType(knownTypeString);
+      verify(vreMock).inScope(typeNotInScope);
+      verify(repositoryMock).getEntity(SearchResult.class, knownSourceSearchId);
+      verify(repositoryMock).getEntity(SearchResult.class, unknownTargetSearchId);
+    }
+  }
+
+  @Test(expected = TimbuctooException.class)
+  public void testValidateRelationRequestContainsIllegalRelationTypeIdSpecified() {
+    String knownSourceSearchId = "knowIdSource";
+    String knownTargetSearchId = "knowIdTarget";
+    String invalidRelationTypeId = "invalidId";
+    String validRelationTypeId = "validId";
+
+    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+    relationSearchParameters.setTypeString(knownTypeString);
+    relationSearchParameters.setSourceSearchId(knownSourceSearchId);
+    relationSearchParameters.setTargetSearchId(knownTargetSearchId);
+    relationSearchParameters.setRelationTypeIds(Lists.newArrayList(validRelationTypeId, invalidRelationTypeId));
+
+    setupTypeInScope(true, typeNotInScope, knownTypeString);
+
+    when(repositoryMock.getEntity(SearchResult.class, knownSourceSearchId)).thenReturn(mock(SearchResult.class));
+    when(repositoryMock.getEntity(SearchResult.class, knownTargetSearchId)).thenReturn(mock(SearchResult.class));
+    when(repositoryMock.getRelationTypeById(invalidRelationTypeId)).thenReturn(null);
+    when(repositoryMock.getRelationTypeById(validRelationTypeId)).thenReturn(mock(RelationType.class));
+
+    try {
+      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
+    } finally {
+      verify(typeRegistryMock).getDomainEntityType(knownTypeString);
+      verify(vreMock).inScope(typeNotInScope);
+      verify(repositoryMock).getEntity(SearchResult.class, knownSourceSearchId);
+      verify(repositoryMock).getEntity(SearchResult.class, knownTargetSearchId);
+      verify(repositoryMock).getRelationTypeById(validRelationTypeId);
+      verify(repositoryMock).getRelationTypeById(invalidRelationTypeId);
+    }
+  }
+
+  @Test
+  public void testValidateRelationRequestValid() {
+    String knownSourceSearchId = "knowIdSource";
+    String knownTargetSearchId = "knowIdTarget";
+    String validRelationTypeId = "validId";
+
+    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+    relationSearchParameters.setTypeString(knownTypeString);
+    relationSearchParameters.setSourceSearchId(knownSourceSearchId);
+    relationSearchParameters.setTargetSearchId(knownTargetSearchId);
+    relationSearchParameters.setRelationTypeIds(Lists.newArrayList(validRelationTypeId));
+
+    setupTypeInScope(true, typeNotInScope, knownTypeString);
+
+    when(repositoryMock.getEntity(SearchResult.class, knownSourceSearchId)).thenReturn(mock(SearchResult.class));
+    when(repositoryMock.getEntity(SearchResult.class, knownTargetSearchId)).thenReturn(mock(SearchResult.class));
+    when(repositoryMock.getRelationTypeById(validRelationTypeId)).thenReturn(mock(RelationType.class));
+
+    try {
+      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
+    } finally {
+      verify(typeRegistryMock).getDomainEntityType(knownTypeString);
+      verify(vreMock).inScope(typeNotInScope);
+      verify(repositoryMock).getEntity(SearchResult.class, knownSourceSearchId);
+      verify(repositoryMock).getEntity(SearchResult.class, knownTargetSearchId);
+      verify(repositoryMock).getRelationTypeById(validRelationTypeId);
     }
   }
 }
