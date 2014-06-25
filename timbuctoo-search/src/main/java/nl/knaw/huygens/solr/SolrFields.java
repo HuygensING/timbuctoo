@@ -22,7 +22,6 @@ package nl.knaw.huygens.solr;
  * #L%
  */
 
-
 public class SolrFields {
 
   public static final String SORT_PREFIX = "sort_";

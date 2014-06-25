@@ -33,6 +33,6 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
  */
 public interface AnnotatedMethodProcessor {
 
-  public void process(Method m, IndexAnnotation annotation);
+  void process(Method m, IndexAnnotation annotation);
 
 }

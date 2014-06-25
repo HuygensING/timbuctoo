@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.vre;
 
 /*
  * #%L
- * Timbuctoo core
+ * Timbuctoo search
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
  * =======
@@ -60,7 +60,7 @@ public class VREManager {
 
   private final IndexNameCreator indexNameCreator;
 
-  private Map<String, Index> indexes;
+  private final Map<String, Index> indexes;
 
   protected VREManager(Map<String, VRE> vres, Map<String, Index> indexes, IndexNameCreator indexNameCreator) {
     this.indexes = indexes;
