@@ -67,7 +67,7 @@ public class Repository {
   private static final Logger LOG = LoggerFactory.getLogger(Repository.class);
 
   /** Maximum number of relations added to an entity. */
-  private static final int DEFAULT_RELATION_LIMIT = 500;
+  private static final int DEFAULT_RELATION_LIMIT = 1000;
 
   private final TypeRegistry registry;
   private final Storage storage;
