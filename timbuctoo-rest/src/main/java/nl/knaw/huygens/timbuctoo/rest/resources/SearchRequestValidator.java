@@ -11,10 +11,13 @@ import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.google.inject.Inject;
 
@@ -44,7 +47,7 @@ public class SearchRequestValidator {
   }
 
   protected void isValidType(VRE vre, String typeString) {
-    checkNotNull(typeString, BAD_REQUEST, "No 'typeString' parameter specified");
+    checkNotNull(StringUtils.trimToNull(typeString), BAD_REQUEST, "No 'typeString' parameter specified");
     Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for \"%s\"", typeString);
 
@@ -84,11 +87,20 @@ public class SearchRequestValidator {
    */
   public void validateRelationRequest(String vreId, RelationSearchParameters relationSearchParameters) {
     VRE vre = isValidVRE(vreId);
-    isValidType(vre, relationSearchParameters.getTypeString());
+    isValidRelationType(vre, relationSearchParameters.getTypeString());
     isValidSearch(relationSearchParameters.getSourceSearchId());
     isValidSearch(relationSearchParameters.getTargetSearchId());
 
     areValidRelationTypes(relationSearchParameters.getRelationTypeIds());
+  }
+
+  private void isValidRelationType(VRE vre, String typeString) {
+    checkNotNull(StringUtils.trimToNull(typeString), BAD_REQUEST, "No 'typeString' parameter specified");
+    Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
+    checkNotNull(type, BAD_REQUEST, "No domain entity type for \"%s\"", typeString);
+
+    checkCondition(vre.inScope(type), BAD_REQUEST, "Type not in scope: \"%s\"", typeString);
+    checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
   }
 
   private void areValidRelationTypes(List<String> relationTypeIds) {
