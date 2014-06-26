@@ -36,6 +36,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
+import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchParametersConverter;
 import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
@@ -78,6 +79,7 @@ class ResourceTestModule extends JerseyServletModule {
   private IndexManager indexManager;
   private SearchRequestValidator searchRequestValidator;
   private SearchParametersConverter searchParametersConverter;
+  private RelationSearcher relationSearcher;
 
   public ResourceTestModule() {
     try {
@@ -97,6 +99,7 @@ class ResourceTestModule extends JerseyServletModule {
       indexManager = mock(IndexManager.class);
       searchRequestValidator = mock(SearchRequestValidator.class);
       searchParametersConverter = mock(SearchParametersConverter.class);
+      relationSearcher = mock(RelationSearcher.class);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -108,7 +111,7 @@ class ResourceTestModule extends JerseyServletModule {
    */
   public void cleanUpMocks() {
     reset(config, repository, jsonProvider, validator, mailSender, searchManager, authorizationHandler, broker, indexProducer, persistenceProducer, vreManager, indexManager, searchRequestValidator,
-        searchParametersConverter);
+        searchParametersConverter, relationSearcher);
   }
 
   @Override
@@ -232,8 +235,14 @@ class ResourceTestModule extends JerseyServletModule {
 
   @Singleton
   @Provides
-  public SearchParametersConverter prSearchParametersConverter() {
+  public SearchParametersConverter provideSearchParametersConverter() {
     return searchParametersConverter;
+  }
+
+  @Singleton
+  @Provides
+  public RelationSearcher provideRelationSearcher() {
+    return relationSearcher;
   }
 
 }
