@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.search;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -53,25 +52,6 @@ public class RelationSearcher {
   private List<String> getSearchResultIds(String searchId) {
     SearchResult sourceSearch = repository.getEntity(SearchResult.class, searchId);
     return sourceSearch.getIds();
-  }
-
-  protected static class RelationSourceTargetPredicate<T extends Relation> //
-      implements Predicate<T> {
-
-    private final Collection<String> sourceIds;
-    private final Collection<String> targetIds;
-
-    public RelationSourceTargetPredicate(Collection<String> sourceIds, Collection<String> targetIds) {
-      this.sourceIds = sourceIds;
-      this.targetIds = targetIds;
-    }
-
-    @Override
-    public boolean apply(T relation) {
-      // TODO Auto-generated method stub
-      return false;
-    }
-
   }
 
 }
