@@ -193,4 +193,18 @@ public interface Storage {
    */
   List<String> getRelationIds(List<String> ids) throws StorageException;
 
+  /**
+   * Get all the relations that have the type in {@code relationTypIds}.
+   * @param relationTypeIds the relation type should be in this collection.
+   * @return a collection with the found relations.
+   */
+  List<Relation> getRelationsByType(List<String> relationTypeIds);
+
+  /**
+   * Get all the relation types that have a name in the relationNames collection. 
+   * @param relationTypeNames collection to get the relation types for.
+   * @return the found relation types.
+   */
+  List<String> getRelationTypeIdsByName(List<String> relationTypeNames);
+
 }

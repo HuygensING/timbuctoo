@@ -22,6 +22,8 @@ package nl.knaw.huygens.timbuctoo;
  * #L%
  */
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.doThrow;
@@ -32,8 +34,10 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -251,4 +255,33 @@ public class RepositoryTest {
     verify(storage, times(1)).getItem(RelationType.class, id);
   }
 
+  @Test
+  public void testGetRelationsByType() {
+    // setup
+    List<String> relationTypeIds = Lists.newArrayList();
+    List<Relation> relations = Lists.newArrayList();
+    when(storage.getRelationsByType(relationTypeIds)).thenReturn(relations);
+
+    // action
+    List<Relation> actualRelations = repository.getRelationsByType(relationTypeIds);
+
+    // verify
+    verify(storage).getRelationsByType(relationTypeIds);
+    assertThat(actualRelations, equalTo(relations));
+  }
+
+  @Test
+  public void testGetRelationTypeIdsByName() {
+    // setup
+    List<String> relationTypeNames = Lists.newArrayList();
+    List<String> relations = Lists.newArrayList();
+    when(storage.getRelationTypeIdsByName(relationTypeNames)).thenReturn(relations);
+
+    // action
+    List<String> relationTypeIds = repository.getRelationTypeIdsByName(relationTypeNames);
+
+    // verify
+    verify(storage).getRelationTypeIdsByName(relationTypeIds);
+    assertThat(relationTypeIds, equalTo(relations));
+  }
 }

@@ -386,7 +386,7 @@ public class Repository {
    * @return a collection with the found relations.
    */
   public List<Relation> getRelationsByType(List<String> relationTypeIds) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return storage.getRelationsByType(relationTypeIds);
   }
 
   /**
@@ -395,7 +395,7 @@ public class Repository {
    * @return the found relation types.
    */
   public List<String> getRelationTypeIdsByName(List<String> relationTypeNames) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return storage.getRelationTypeIdsByName(relationTypeNames);
   }
 
   /**
