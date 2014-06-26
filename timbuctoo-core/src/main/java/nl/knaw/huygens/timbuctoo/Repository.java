@@ -381,6 +381,24 @@ public class Repository {
   }
 
   /**
+   * Get all the relations that have the type in {@code relationTypIds}.
+   * @param relationTypeIds the relation type should be in this collection.
+   * @return a collection with the found relations.
+   */
+  public List<Relation> getRelationsByType(List<String> relationTypeIds) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
+  /**
+   * Get all the relation types that have a name in the relationNames collection. 
+   * @param relationTypeNames collection to get the relation types for.
+   * @return the found relation types.
+   */
+  public List<String> getRelationTypeIdsByName(List<String> relationTypeNames) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
+  /**
    * Adds relations for the specified entity as virtual properties.
    *
    * NOTE We retrieve relations where the entity is source or target with one query;
