@@ -5,8 +5,10 @@ import java.util.Set;
 
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.index.SearchException;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import com.google.common.base.Predicate;
@@ -23,7 +25,7 @@ public class RelationSearcher {
     this.relationSearchResultCreator = relationSearchResultCreator;
   }
 
-  public SearchResult search(VRE vre, RelationSearchParameters relationSearchParameters) {
+  public SearchResult search(VRE vre, RelationSearchParameters relationSearchParameters) throws SearchException {
     List<String> sourceIds = getSearchResultIds(relationSearchParameters.getSourceSearchId());
     List<String> targetIds = getSearchResultIds(relationSearchParameters.getTargetSearchId());
 
@@ -35,8 +37,13 @@ public class RelationSearcher {
     return relationSearchResultCreator.create(filteredRelations, sourceIds, targetIds);
   }
 
-  private FilterableSet<Relation> getRelationsAsFilterableSet(List<String> relationTypeIds, VRE vre) {
-    List<Relation> relations = repository.getRelationsByType(Relation.class, getRelationTypes(relationTypeIds, vre));
+  private FilterableSet<Relation> getRelationsAsFilterableSet(List<String> relationTypeIds, VRE vre) throws SearchException {
+    List<Relation> relations;
+    try {
+      relations = repository.getRelationsByType(Relation.class, getRelationTypes(relationTypeIds, vre));
+    } catch (StorageException e) {
+      throw new SearchException(e);
+    }
     return collectionConverter.toFilterableSet(relations);
   }
 

@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.search;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,8 +12,10 @@ import java.util.Set;
 
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.index.SearchException;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.junit.Before;
@@ -46,7 +49,7 @@ public class RelationSearcherTest {
   private RelationSearcher instance;
 
   @Before
-  public void setup() {
+  public void setup() throws Exception {
     MockitoAnnotations.initMocks(this);
 
     vreMock = mock(VRE.class);
@@ -68,7 +71,8 @@ public class RelationSearcherTest {
   }
 
   @Test
-  public void testSearchWithRelationTypes() {
+  public void testSearchWithRelationTypes() throws Exception {
+    // setup
     RelationSearchParameters params = new RelationSearchParameters();
     params.setRelationTypeIds(relationTypeIds);
     params.setSourceSearchId(sourceSearchId);
@@ -87,7 +91,7 @@ public class RelationSearcherTest {
   }
 
   @Test
-  public void testSearchWithOutSpecifiedRelations() {
+  public void testSearchWithOutSpecifiedRelations() throws Exception {
     // setup
     RelationSearchParameters params = new RelationSearchParameters();
     params.setSourceSearchId(sourceSearchId);
@@ -109,5 +113,19 @@ public class RelationSearcherTest {
     verify(filterableRelationsMock).filter(Mockito.<RelationSourceTargetPredicate<Relation>> any());
     verify(relationSearchResultCreatorMock).create(filteredRelations, sourceIds, targetIds);
     assertThat(actualResult, equalTo(relationSearchResult));
+  }
+
+  @Test(expected = SearchException.class)
+  public void searchShouldThrowAnSearchExceptionWhenTheRepositoryThrowsAnStorageException() throws Exception {
+    RelationSearchParameters params = new RelationSearchParameters();
+    params.setRelationTypeIds(relationTypeIds);
+    params.setSourceSearchId(sourceSearchId);
+    params.setTargetSearchId(targetSearchId);
+
+    doThrow(StorageException.class).when(repositoryMock).getRelationsByType(Mockito.<Class<? extends Relation>> any(), Mockito.<List<String>> any());
+
+    // action 
+    instance.search(vreMock, params);
+
   }
 }

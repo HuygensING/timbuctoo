@@ -258,7 +258,7 @@ public class RepositoryTest {
   }
 
   @Test
-  public void testGetRelationsByType() {
+  public void testGetRelationsByType() throws Exception {
     // setup
     List<String> relationTypeIds = Lists.newArrayList();
     List<Relation> relations = Lists.newArrayList();

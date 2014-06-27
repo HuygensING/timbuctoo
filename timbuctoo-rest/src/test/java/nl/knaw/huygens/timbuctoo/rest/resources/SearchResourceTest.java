@@ -469,10 +469,8 @@ public class SearchResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void whenTheRepositoryCannotStoreTheRelationSearchResultAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException {
+  public void whenTheRepositoryCannotStoreTheRelationSearchResultAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
     // setup
-    String expectedLocationHeader = getRelationSearchURL(ID);
-
     RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
 
     final VRE vreMock = mock(VRE.class);
@@ -493,7 +491,28 @@ public class SearchResourceTest extends WebServiceTestSetup {
     verify(searchRequestValidator).validateRelationRequest(anyString(), any(RelationSearchParameters.class));
     verify(relationSearcher).search(any(VRE.class), any(RelationSearchParameters.class));
     verify(repository).addSystemEntity(SearchResult.class, searchResultMock);
+  }
 
+  @Test
+  public void whenTheRelationSearcherThrowsAnSearchExceptionAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
+    // setup
+    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+
+    final VRE vreMock = mock(VRE.class);
+    RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
+
+    when(vreManager.getVREById(VRE_ID)).thenReturn(vreMock);
+    doThrow(SearchException.class).when(relationSearcher).search(any(VRE.class), any(RelationSearchParameters.class));
+
+    // action
+    ClientResponse response = resource().path("search").path("relations").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
+
+    // verify
+    assertThat(response.getClientResponseStatus(), equalTo(INTERNAL_SERVER_ERROR));
+
+    verify(searchRequestValidator).validateRelationRequest(anyString(), any(RelationSearchParameters.class));
+    verify(relationSearcher).search(any(VRE.class), any(RelationSearchParameters.class));
+    verifyZeroInteractions(repository);
   }
 
   private String getRelationSearchURL(String id) {

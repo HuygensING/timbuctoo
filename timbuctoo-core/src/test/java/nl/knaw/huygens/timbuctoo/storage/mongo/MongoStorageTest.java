@@ -31,6 +31,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
@@ -233,6 +234,23 @@ public class MongoStorageTest extends MongoStorageTestBase {
     DBObject query = queries.selectById(DEFAULT_ID);
     verify(mongoDB).findOne(dbCollection, query);
     // TODO verify call to EntityReducer
+  }
+
+  @Test
+  public void testGetRelationsByType() throws Exception {
+    // setup
+    final String id1 = "id1";
+    final String id2 = "id2";
+    List<String> relationTypeIds = Lists.newArrayList(id1, id2);
+
+    final Class<Relation> type = Relation.class;
+    DBObject query = queries.selectByProperty(type, "^typeId", relationTypeIds);
+
+    // action
+    storage.getRelationsByType(type, relationTypeIds);
+
+    // verify
+    verify(mongoDB).find(dbCollection, query);
   }
 
 }

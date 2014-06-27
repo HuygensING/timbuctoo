@@ -79,6 +79,10 @@ public class MongoQueries {
     return new BasicDBObject(propertyName(type, field), value);
   }
 
+  public DBObject selectByProperty(Class<?> type, String field, List<String> relationTypeIds) {
+    return new BasicDBObject(propertyName(type, field), new BasicDBObject("$in", relationTypeIds));
+  }
+
   /**
    * Generates a query based on the non-null values of an entity.
    */

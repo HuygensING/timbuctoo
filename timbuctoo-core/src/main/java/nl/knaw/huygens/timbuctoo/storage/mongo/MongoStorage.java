@@ -518,8 +518,10 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Relation> List<T> getRelationsByType(Class<T> type, List<String> relationTypeIds) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  public <T extends Relation> List<T> getRelationsByType(Class<T> type, List<String> relationTypeIds) throws StorageException {
+    DBObject query = queries.selectByProperty(type, "^typeId", relationTypeIds);
+
+    return findItems(type, query).getAll();
   }
 
   @Override

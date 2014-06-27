@@ -393,8 +393,9 @@ public class Repository {
    * @param variation the project specific variation of the relation to get.
    * @param relationTypeIds the relation type should be in this collection.
    * @return a collection with the found relations.
+   * @throws StorageException 
    */
-  public <T extends Relation> List<T> getRelationsByType(Class<T> variation, List<String> relationTypeIds) {
+  public <T extends Relation> List<T> getRelationsByType(Class<T> variation, List<String> relationTypeIds) throws StorageException {
     return storage.getRelationsByType(variation, relationTypeIds);
   }
 
