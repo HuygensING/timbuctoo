@@ -518,7 +518,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public List<Relation> getRelationsByType(List<String> relationTypeIds) {
+  public <T extends Relation> List<T> getRelationsByType(Class<T> type, List<String> relationTypeIds) {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 

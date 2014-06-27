@@ -262,13 +262,14 @@ public class RepositoryTest {
     // setup
     List<String> relationTypeIds = Lists.newArrayList();
     List<Relation> relations = Lists.newArrayList();
-    when(storage.getRelationsByType(relationTypeIds)).thenReturn(relations);
+    final Class<Relation> type = Relation.class;
+    when(storage.getRelationsByType(type, relationTypeIds)).thenReturn(relations);
 
     // action
-    List<Relation> actualRelations = repository.getRelationsByType(relationTypeIds);
+    List<Relation> actualRelations = repository.getRelationsByType(type, relationTypeIds);
 
     // verify
-    verify(storage).getRelationsByType(relationTypeIds);
+    verify(storage).getRelationsByType(type, relationTypeIds);
     assertThat(actualRelations, equalTo(relations));
   }
 

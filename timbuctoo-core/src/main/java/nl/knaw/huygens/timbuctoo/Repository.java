@@ -390,11 +390,12 @@ public class Repository {
 
   /**
    * Get all the relations that have the type in {@code relationTypIds}.
+   * @param variation the project specific variation of the relation to get.
    * @param relationTypeIds the relation type should be in this collection.
    * @return a collection with the found relations.
    */
-  public List<Relation> getRelationsByType(List<String> relationTypeIds) {
-    return storage.getRelationsByType(relationTypeIds);
+  public <T extends Relation> List<T> getRelationsByType(Class<T> variation, List<String> relationTypeIds) {
+    return storage.getRelationsByType(variation, relationTypeIds);
   }
 
   /**

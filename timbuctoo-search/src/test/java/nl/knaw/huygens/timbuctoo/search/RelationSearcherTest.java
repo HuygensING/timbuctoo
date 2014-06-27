@@ -25,6 +25,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public class RelationSearcherTest {
+  private static final Class<SearchResult> SEARCH_RESULT_TYPE = SearchResult.class;
+  private static final Class<Relation> RELATION_VARIATION = Relation.class;
   @Mock
   private FilterableSet<Relation> filterableRelationsMock;
   private VRE vreMock;
@@ -55,9 +57,9 @@ public class RelationSearcherTest {
     sourceSearchResult.setIds(sourceIds);
     targetSearchResult.setIds(targetIds);
 
-    when(repositoryMock.getRelationsByType(relationTypeIds)).thenReturn(foundRelations);
-    when(repositoryMock.getEntity(SearchResult.class, sourceSearchId)).thenReturn(sourceSearchResult);
-    when(repositoryMock.getEntity(SearchResult.class, targetSearchId)).thenReturn(targetSearchResult);
+    when(repositoryMock.getRelationsByType(RELATION_VARIATION, relationTypeIds)).thenReturn(foundRelations);
+    when(repositoryMock.getEntity(SEARCH_RESULT_TYPE, sourceSearchId)).thenReturn(sourceSearchResult);
+    when(repositoryMock.getEntity(SEARCH_RESULT_TYPE, targetSearchId)).thenReturn(targetSearchResult);
     when(collectionConverterMock.toFilterableSet(foundRelations)).thenReturn(filterableRelationsMock);
     when(filterableRelationsMock.filter(Mockito.<RelationSourceTargetPredicate<Relation>> any())).thenReturn(filteredRelations);
     when(relationSearchResultCreatorMock.create(filteredRelations, sourceIds, targetIds)).thenReturn(relationSearchResult);
@@ -76,9 +78,9 @@ public class RelationSearcherTest {
     SearchResult actualResult = instance.search(vreMock, params);
 
     // verify
-    verify(repositoryMock).getRelationsByType(relationTypeIds);
-    verify(repositoryMock).getEntity(SearchResult.class, sourceSearchId);
-    verify(repositoryMock).getEntity(SearchResult.class, targetSearchId);
+    verify(repositoryMock).getRelationsByType(RELATION_VARIATION, relationTypeIds);
+    verify(repositoryMock).getEntity(SEARCH_RESULT_TYPE, sourceSearchId);
+    verify(repositoryMock).getEntity(SEARCH_RESULT_TYPE, targetSearchId);
     verify(filterableRelationsMock).filter(Mockito.<RelationSourceTargetPredicate<Relation>> any());
     verify(relationSearchResultCreatorMock).create(filteredRelations, sourceIds, targetIds);
     assertThat(actualResult, equalTo(relationSearchResult));
@@ -101,9 +103,9 @@ public class RelationSearcherTest {
 
     // verify
     verify(repositoryMock).getRelationTypeIdsByName(relationTypeNames);
-    verify(repositoryMock).getRelationsByType(relationTypeIds);
-    verify(repositoryMock).getEntity(SearchResult.class, sourceSearchId);
-    verify(repositoryMock).getEntity(SearchResult.class, targetSearchId);
+    verify(repositoryMock).getRelationsByType(RELATION_VARIATION, relationTypeIds);
+    verify(repositoryMock).getEntity(SEARCH_RESULT_TYPE, sourceSearchId);
+    verify(repositoryMock).getEntity(SEARCH_RESULT_TYPE, targetSearchId);
     verify(filterableRelationsMock).filter(Mockito.<RelationSourceTargetPredicate<Relation>> any());
     verify(relationSearchResultCreatorMock).create(filteredRelations, sourceIds, targetIds);
     assertThat(actualResult, equalTo(relationSearchResult));

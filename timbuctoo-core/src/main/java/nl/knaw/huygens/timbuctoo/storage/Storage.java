@@ -195,9 +195,10 @@ public interface Storage {
 
   /**
    * Get all the relations that have the type in {@code relationTypIds}.
+   * @param type the type of the relations to get.
    * @param relationTypeIds the relation type should be in this collection.
    * @return a collection with the found relations.
    */
-  List<Relation> getRelationsByType(List<String> relationTypeIds);
+  <T extends Relation> List<T> getRelationsByType(Class<T> type, List<String> relationTypeIds);
 
 }

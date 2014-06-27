@@ -36,7 +36,7 @@ public class RelationSearcher {
   }
 
   private FilterableSet<Relation> getRelationsAsFilterableSet(List<String> relationTypeIds, VRE vre) {
-    List<Relation> relations = repository.getRelationsByType(getRelationTypes(relationTypeIds, vre));
+    List<Relation> relations = repository.getRelationsByType(Relation.class, getRelationTypes(relationTypeIds, vre));
     return collectionConverter.toFilterableSet(relations);
   }
 
