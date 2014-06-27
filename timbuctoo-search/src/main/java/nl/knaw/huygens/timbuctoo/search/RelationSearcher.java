@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import com.google.common.base.Predicate;
+import com.google.inject.Inject;
 
 public class RelationSearcher {
 
@@ -19,6 +20,7 @@ public class RelationSearcher {
   private final CollectionConverter collectionConverter;
   private final RelationSearchResultCreator relationSearchResultCreator;
 
+  @Inject
   public RelationSearcher(Repository repository, CollectionConverter collectionConverter, RelationSearchResultCreator relationSearchResultCreator) {
     this.repository = repository;
     this.collectionConverter = collectionConverter;
