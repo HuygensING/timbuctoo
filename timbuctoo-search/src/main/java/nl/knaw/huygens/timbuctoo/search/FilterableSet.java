@@ -85,4 +85,8 @@ public class FilterableSet<E> implements Set<E> {
     return Sets.filter(this, predicate);
   }
 
+  @Override
+  public String toString() {
+    return innerSet.toString();
+  }
 }
