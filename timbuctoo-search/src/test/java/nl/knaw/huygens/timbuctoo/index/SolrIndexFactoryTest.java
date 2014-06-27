@@ -36,7 +36,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import org.apache.solr.core.CoreDescriptor;
 import org.junit.Test;
 
-import test.timbuctoo.index.model.BaseType1;
+import test.timbuctoo.index.model.Type1;
 
 public class SolrIndexFactoryTest {
   @Test
@@ -56,7 +56,7 @@ public class SolrIndexFactoryTest {
     FacetedSearchLibraryFactory facetedSearchLibraryFactoryMock = mock(FacetedSearchLibraryFactory.class);
 
     String name = "test";
-    Class<? extends DomainEntity> type = BaseType1.class;
+    Class<? extends DomainEntity> type = Type1.class;
 
     Index expectedSolrIndex = new SolrIndex(name, solrInputDocumentCreatorMock, solrServerMock, facetedSearchLibraryMock);
 

@@ -38,6 +38,11 @@ interface Scope {
   Set<Class<? extends DomainEntity>> getBaseEntityTypes();
 
   /**
+   * Returns the entity types in this scope.
+   */
+  Set<Class<? extends DomainEntity>> getEntityTypes();
+
+  /**
    * Checks if the {@code type} is in scope. A light method to check if it is needed to do a further check.
    * @param type the type to check if it is in scope.
    * @return {@code true} if the type is in scope {@code false} if not.

@@ -46,7 +46,7 @@ public class IndexMapCreator {
   public Map<String, Index> createIndexesFor(VRE vre) {
     Map<String, Index> indexMap = createIndexMap();
 
-    for (Class<? extends DomainEntity> type : vre.getBaseEntityTypes()) {
+    for (Class<? extends DomainEntity> type : vre.getEntityTypes()) {
       String indexName = indexNameCreator.getIndexNameFor(vre, type);
       //FIXME: use project specific type for creating the index.
       indexMap.put(indexName, indexFactory.createIndexFor(type, indexName));

@@ -40,8 +40,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 
-import test.timbuctoo.index.model.BaseType1;
-import test.timbuctoo.index.model.BaseType2;
+import test.timbuctoo.index.model.Type1;
+import test.timbuctoo.index.model.Type2;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -65,17 +65,17 @@ public class IndexMapCreatorTest {
   @Test
   public void createIndexesForCreatesAMapOfIndexesWithEachBaseTypeOfTheVRE() {
     // setup
-    Set<Class<? extends DomainEntity>> baseTypes = Sets.newHashSet();
-    Class<BaseType1> type1 = BaseType1.class;
-    baseTypes.add(type1);
-    Class<BaseType2> type2 = BaseType2.class;
-    baseTypes.add(type2);
+    Set<Class<? extends DomainEntity>> types = Sets.newHashSet();
+    Class<Type1> type1 = Type1.class;
+    types.add(type1);
+    Class<Type2> type2 = Type2.class;
+    types.add(type2);
     VRE vreMock = mock(VRE.class);
-    when(vreMock.getBaseEntityTypes()).thenReturn(baseTypes);
+    when(vreMock.getEntityTypes()).thenReturn(types);
 
-    String name1 = "basetype1";
+    String name1 = "type1";
     when(indexNameCreatorMock.getIndexNameFor(vreMock, type1)).thenReturn(name1);
-    String name2 = "basetype2";
+    String name2 = "type2";
     when(indexNameCreatorMock.getIndexNameFor(vreMock, type2)).thenReturn(name2);
 
     Index indexMock1 = mock(Index.class);
@@ -96,7 +96,7 @@ public class IndexMapCreatorTest {
   }
 
   @Test
-  public void createIndexesForCreatesAnEmptyMapIfTheVREHasNoBaseTypes() {
+  public void createIndexesForCreatesAnEmptyMapIfTheVREHasTypes() {
     VRE vreMock = mock(VRE.class);
     HashSet<Class<? extends DomainEntity>> emptyBaseTypeSet = Sets.newHashSet();
     when(vreMock.getBaseEntityTypes()).thenReturn(emptyBaseTypeSet);

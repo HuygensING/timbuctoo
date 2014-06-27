@@ -65,6 +65,11 @@ public abstract class AbstractVRE implements VRE {
   }
 
   @Override
+  public Set<Class<? extends DomainEntity>> getEntityTypes() {
+    return scope.getEntityTypes();
+  }
+
+  @Override
   public <T extends DomainEntity> boolean inScope(Class<T> type) {
     return scope.inScope(type);
   }

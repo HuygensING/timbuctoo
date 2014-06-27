@@ -42,7 +42,7 @@ class PackageScope implements Scope {
   private ClassPath classPath;
   private Builder<Class<? extends DomainEntity>> builder;
 
-  private Set<Class<? extends DomainEntity>> allTypes;
+  private Set<Class<? extends DomainEntity>> types;
   private Set<Class<? extends DomainEntity>> baseTypes;
 
   public PackageScope() throws IOException {
@@ -83,7 +83,7 @@ class PackageScope implements Scope {
    */
   @Override
   public <T extends DomainEntity> boolean inScope(Class<T> type, String id) {
-    return allTypes.contains(type);
+    return types.contains(type);
   }
 
   /**
@@ -91,12 +91,12 @@ class PackageScope implements Scope {
    */
   @Override
   public <T extends DomainEntity> boolean inScope(T entity) {
-    return allTypes.contains(entity.getClass());
+    return types.contains(entity.getClass());
   }
 
   @Override
   public <T extends DomainEntity> boolean inScope(Class<T> type) {
-    return allTypes.contains(type);
+    return types.contains(type);
   }
 
   protected final void addPackage(String name) throws IOException {
@@ -116,7 +116,7 @@ class PackageScope implements Scope {
 
   protected final void buildTypes() {
     checkState(builder != null);
-    allTypes = builder.build();
+    types = builder.build();
     baseTypes = buildBaseTypes();
     builder = null;
     classPath = null;
@@ -128,10 +128,15 @@ class PackageScope implements Scope {
 
   private Set<Class<? extends DomainEntity>> buildBaseTypes() {
     Builder<Class<? extends DomainEntity>> builder = newBuilder();
-    for (Class<? extends DomainEntity> type : allTypes) {
+    for (Class<? extends DomainEntity> type : types) {
       builder.add(TypeRegistry.toBaseDomainEntity(type));
     }
     return builder.build();
+  }
+
+  @Override
+  public Set<Class<? extends DomainEntity>> getEntityTypes() {
+    return types;
   }
 
 }
