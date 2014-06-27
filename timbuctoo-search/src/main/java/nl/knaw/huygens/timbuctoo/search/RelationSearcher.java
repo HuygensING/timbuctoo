@@ -29,18 +29,20 @@ public class RelationSearcher {
     List<String> sourceIds = getSearchResultIds(relationSearchParameters.getSourceSearchId());
     List<String> targetIds = getSearchResultIds(relationSearchParameters.getTargetSearchId());
 
-    FilterableSet<Relation> filterableRelations = getRelationsAsFilterableSet(relationSearchParameters.getRelationTypeIds(), vre);
+    List<String> relationTypeIds = getRelationTypes(relationSearchParameters.getRelationTypeIds(), vre);
+
+    FilterableSet<Relation> filterableRelations = getRelationsAsFilterableSet(relationTypeIds);
 
     Predicate<Relation> predicate = new RelationSourceTargetPredicate<Relation>(sourceIds, targetIds);
     Set<Relation> filteredRelations = filterableRelations.filter(predicate);
 
-    return relationSearchResultCreator.create(filteredRelations, sourceIds, targetIds);
+    return relationSearchResultCreator.create(filteredRelations, sourceIds, targetIds, relationTypeIds, relationSearchParameters.getTypeString());
   }
 
-  private FilterableSet<Relation> getRelationsAsFilterableSet(List<String> relationTypeIds, VRE vre) throws SearchException {
+  private FilterableSet<Relation> getRelationsAsFilterableSet(List<String> relationTypeIds) throws SearchException {
     List<Relation> relations;
     try {
-      relations = repository.getRelationsByType(Relation.class, getRelationTypes(relationTypeIds, vre));
+      relations = repository.getRelationsByType(Relation.class, relationTypeIds);
     } catch (StorageException e) {
       throw new SearchException(e);
     }
