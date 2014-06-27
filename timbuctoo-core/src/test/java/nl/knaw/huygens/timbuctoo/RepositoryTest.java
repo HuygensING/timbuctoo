@@ -41,6 +41,7 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -64,6 +65,7 @@ public class RepositoryTest {
   public void setup() throws Exception {
     registry = mock(TypeRegistry.class);
     storage = mock(Storage.class);
+
     repository = new Repository(registry, storage);
     change = new Change("userId", "vreId");
   }
@@ -271,17 +273,21 @@ public class RepositoryTest {
   }
 
   @Test
-  public void testGetRelationTypeIdsByName() {
+  public void testGetRelationTypeIdsByName() throws Exception {
     // setup
     List<String> relationTypeNames = Lists.newArrayList();
-    List<String> relations = Lists.newArrayList();
-    when(storage.getRelationTypeIdsByName(relationTypeNames)).thenReturn(relations);
+    List<String> relationTypeIds = Lists.newArrayList();
+    RelationTypes relationTypes = mock(RelationTypes.class);
+
+    Repository repository = new Repository(registry, storage, relationTypes);
+
+    when(relationTypes.getRelationTypeIdsByName(relationTypeNames)).thenReturn(relationTypeIds);
 
     // action
-    List<String> relationTypeIds = repository.getRelationTypeIdsByName(relationTypeNames);
+    List<String> actualRelationTypeIds = repository.getRelationTypeIdsByName(relationTypeNames);
 
     // verify
-    verify(storage).getRelationTypeIdsByName(relationTypeIds);
-    assertThat(relationTypeIds, equalTo(relations));
+    verify(relationTypes).getRelationTypeIdsByName(relationTypeIds);
+    assertThat(actualRelationTypeIds, equalTo(relationTypeIds));
   }
 }

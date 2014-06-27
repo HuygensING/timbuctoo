@@ -83,6 +83,14 @@ public class Repository {
     relationTypes = new RelationTypes(storage);
   }
 
+  public Repository(TypeRegistry registry, Storage storage, RelationTypes relationTypes) throws StorageException {
+    this.registry = registry;
+    this.storage = storage;
+    entityMappers = new EntityMappers(registry.getDomainEntityTypes());
+    ensureIndexes();
+    this.relationTypes = relationTypes;
+  }
+
   /**
    * Create indexes, if they don't already exist.
    */
@@ -395,7 +403,7 @@ public class Repository {
    * @return the found relation types.
    */
   public List<String> getRelationTypeIdsByName(List<String> relationTypeNames) {
-    return storage.getRelationTypeIdsByName(relationTypeNames);
+    return relationTypes.getRelationTypeIdsByName(relationTypeNames);
   }
 
   /**

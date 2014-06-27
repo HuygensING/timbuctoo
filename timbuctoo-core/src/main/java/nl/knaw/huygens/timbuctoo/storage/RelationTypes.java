@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Lists;
 
 /**
  * Provides for access to stored relation types.
@@ -19,10 +21,10 @@ public class RelationTypes {
   private static final Logger LOG = LoggerFactory.getLogger(RelationTypes.class);
 
   private final Storage storage;
-  
+
   /** Caches relation types by id. */
   private LoadingCache<String, RelationType> idCache;
-  
+
   /** Caches relation types by name. */
   private LoadingCache<String, RelationType> nameCache;
 
@@ -94,4 +96,24 @@ public class RelationTypes {
     }
   }
 
+  /**
+   * Get the id's of the relations with their name in {@code relationTypeNames}. 
+   * @param relationTypeNames the names to get the id's for.
+   * @return a list with id's
+   */
+  public List<String> getRelationTypeIdsByName(List<String> relationTypeNames) {
+    List<String> ids = Lists.newArrayList();
+
+    for (String relationTypeName : relationTypeNames) {
+      try {
+        RelationType relationType = nameCache.get(relationTypeName);
+        if (relationType != null) {
+          ids.add(relationType.getId());
+        }
+      } catch (ExecutionException e) {
+        LOG.debug("No relation type with name {}", relationTypeName);
+      }
+    }
+    return ids;
+  }
 }

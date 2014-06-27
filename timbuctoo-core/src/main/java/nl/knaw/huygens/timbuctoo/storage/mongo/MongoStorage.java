@@ -523,11 +523,6 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public List<String> getRelationTypeIdsByName(List<String> relationTypeNames) {
-    throw new UnsupportedOperationException("Yet to be implemented");
-  }
-
-  @Override
   public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException {
     DBObject query = queries.selectNonPersistent(ids);
     mongoDB.remove(getDBCollection(type), query);
