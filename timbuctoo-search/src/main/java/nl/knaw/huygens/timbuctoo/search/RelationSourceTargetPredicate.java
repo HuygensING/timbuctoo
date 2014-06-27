@@ -19,6 +19,14 @@ public class RelationSourceTargetPredicate<T extends Relation> //
 
   @Override
   public boolean apply(T relation) {
+    return isMatchingRelation(relation) || isMatchingInverseRelation(relation);
+  }
+
+  private boolean isMatchingInverseRelation(T relation) {
+    return sourceIds.contains(relation.getTargetId()) && targetIds.contains(relation.getSourceId());
+  }
+
+  private boolean isMatchingRelation(T relation) {
     return sourceIds.contains(relation.getSourceId()) && targetIds.contains(relation.getTargetId());
   }
 

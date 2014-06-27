@@ -14,11 +14,13 @@ import com.google.common.collect.Lists;
 
 public class RelationSourceTargetPredicateTest {
   private String sourceIdInCollection = "sourceId1";
-  private String sourceIdNotInCollection = "sourceId3";
-  private List<String> sourceIds = Lists.newArrayList(sourceIdInCollection, "sourceId2");
+  private String sourceIdNotInAnyCollection = "sourceId3";
+  private String targetIdInSourceIdsCollection = "targetIdInSourceCollection";
+  private List<String> sourceIds = Lists.newArrayList(sourceIdInCollection, "sourceId2", targetIdInSourceIdsCollection);
   private String targetIdInCollection = "targetId1";
-  private String targetIdNotInCollection = "targetId3";
-  private List<String> targetIds = Lists.newArrayList(targetIdInCollection, "targetId2");
+  private String targetIdNotInAnyCollection = "targetId3";
+  private String sourceIdInTargetIdsCollection = "sourceIdInTargetCollection";
+  private List<String> targetIds = Lists.newArrayList(targetIdInCollection, "targetId2", sourceIdInTargetIdsCollection);
 
   private RelationSourceTargetPredicate<Relation> instance;
 
@@ -31,7 +33,7 @@ public class RelationSourceTargetPredicateTest {
   public void whenOnlyTheSourceIdIsInThePossibleSourceIdCollectionApplyReturnsFalse() {
     Relation relation = new Relation();
     relation.setSourceId(sourceIdInCollection);
-    relation.setTargetId(targetIdNotInCollection);
+    relation.setTargetId(targetIdNotInAnyCollection);
 
     assertThat(instance.apply(relation), is(false));
 
@@ -40,14 +42,14 @@ public class RelationSourceTargetPredicateTest {
   @Test
   public void whenOnlyTheTargetIdIsInThePossibleTargetIdCollectionApplyReturnsFalse() {
     Relation relation = new Relation();
-    relation.setSourceId(sourceIdNotInCollection);
+    relation.setSourceId(sourceIdNotInAnyCollection);
     relation.setTargetId(targetIdInCollection);
 
     assertThat(instance.apply(relation), is(false));
   }
 
   @Test
-  public void whenTheSourceIdIsInThePossibleSourceIdCollectionAndTheTargetIdIsInThePossibleTargetIdCollectionApplyReturnsTrue() {
+  public void whenTheSourceIdIsInThePossibleSourceIdCollectionAndTheTargetIdIsInThePossibleTargetIdsCollectionApplyReturnsTrue() {
     Relation relation = new Relation();
     relation.setSourceId(sourceIdInCollection);
     relation.setTargetId(targetIdInCollection);
@@ -56,10 +58,19 @@ public class RelationSourceTargetPredicateTest {
   }
 
   @Test
+  public void whenTheSourceIdIsInTTargetIdsCollectionAndTargetIdIsInSourceIdsCollectionApplyReturnsTrue() {
+    Relation relation = new Relation();
+    relation.setSourceId(sourceIdInTargetIdsCollection);
+    relation.setTargetId(targetIdInSourceIdsCollection);
+
+    assertThat(instance.apply(relation), is(true));
+  }
+
+  @Test
   public void whenNeitherIsInTheAppropriateCollectionApplyReturnsFalse() {
     Relation relation = new Relation();
-    relation.setSourceId(sourceIdNotInCollection);
-    relation.setTargetId(targetIdNotInCollection);
+    relation.setSourceId(sourceIdNotInAnyCollection);
+    relation.setTargetId(targetIdNotInAnyCollection);
 
     assertThat(instance.apply(relation), is(false));
   }
