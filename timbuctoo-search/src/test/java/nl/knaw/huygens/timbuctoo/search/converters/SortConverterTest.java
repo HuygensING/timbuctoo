@@ -26,6 +26,7 @@ import static nl.knaw.huygens.timbuctoo.search.converters.SortParameterMatcher.l
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 import java.util.List;
 
@@ -117,4 +118,17 @@ public class SortConverterTest {
         SortDirection.ASCENDING);
   }
 
+  @Test
+  public void testAddToV1WithoutSortField() {
+    // setup
+    SearchParameters searchParameters = new SearchParameters();
+    searchParameters.setSortDir("asc");
+
+    // action
+    instance.addToV1(searchParameters, searchParametersV1Mock);
+
+    // verify
+    verify(searchParametersV1Mock).setSortParameters(sortParametersMock);
+    verifyZeroInteractions(sortParametersMock);
+  }
 }

@@ -31,7 +31,7 @@ import com.google.common.collect.Lists;
 public class SearchParameters {
 
   private String term = "*";
-  private String sort = SolrFields.SCORE;
+  private String sort;
   private String sortDir = "asc";
   private String typeString;
   private boolean caseSensitive = false;

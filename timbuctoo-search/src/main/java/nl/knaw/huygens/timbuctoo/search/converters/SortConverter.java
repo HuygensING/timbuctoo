@@ -29,6 +29,8 @@ import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.common.collect.Lists;
 
 public class SortConverter implements SearchParametersFieldConveter {
@@ -37,7 +39,9 @@ public class SortConverter implements SearchParametersFieldConveter {
   public void addToV1(SearchParameters searchParameters, SearchParametersV1 searchParametersV1) {
     List<SortParameter> sortParameters = createSortParamterList();
 
-    sortParameters.add(new SortParameter(searchParameters.getSort(), getSortDirection(searchParameters)));
+    if (!StringUtils.isBlank(searchParameters.getSort())) {
+      sortParameters.add(new SortParameter(searchParameters.getSort(), getSortDirection(searchParameters)));
+    }
     searchParametersV1.setSortParameters(sortParameters);
   }
 
