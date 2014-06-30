@@ -102,7 +102,7 @@ public class SearchResource extends ResourceBase {
   @Inject
   SearchParametersConverter searchParametersConverter;
   @Inject
-  RelationSearcher relationSearcher;
+  private RelationSearcher relationSearcher;
 
   @GET
   @Path("/vres")
@@ -228,13 +228,6 @@ public class SearchResource extends ResourceBase {
 
     // Process
     try {
-      //      SearchResult result = new SearchResult();
-      //      result.setRelationSearch(true);
-      //      result.setSearchType(typeString);
-      //      result.setSourceIds(sourceIds);
-      //      result.setTargetIds(targetIds);
-      //      result.setRelationTypeIds(relationTypeIds);
-      //      result.setIds(repository.findRelations(relationType, sourceIds, targetIds, relationTypeIds));
       SearchResult result = relationSearcher.search(vre, params);
       String queryId = putSearchResult(result);
       return Response.created(new URI(queryId)).build();
