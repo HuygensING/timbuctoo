@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.validation.RelationValidator;
 
@@ -86,6 +87,7 @@ public class Relation extends DomainEntity {
   }
 
   @JsonProperty("^sourceId")
+  @IndexAnnotation(fieldName = "dynamic_s_sourceId", isFaceted = true)
   public String getSourceId() {
     return sourceId;
   }
@@ -124,6 +126,7 @@ public class Relation extends DomainEntity {
   }
 
   @JsonProperty("^typeId")
+  @IndexAnnotation(fieldName = "dynamic_s_typeId", isFaceted = true)
   public String getTypeId() {
     return typeId;
   }
@@ -158,6 +161,7 @@ public class Relation extends DomainEntity {
   }
 
   @JsonProperty("^targetId")
+  @IndexAnnotation(fieldName = "dynamic_s_targetId", isFaceted = true)
   public String getTargetId() {
     return targetId;
   }
@@ -220,12 +224,12 @@ public class Relation extends DomainEntity {
   @Override
   public String toString() {
     return Objects.toStringHelper(this) //
-      .add("typeId", typeId) //
-      .add("sourceType", sourceType) //
-      .add("sourceId", sourceId) //
-      .add("targetType", targetType) //
-      .add("targetId", targetId) //
-      .toString();
+        .add("typeId", typeId) //
+        .add("sourceType", sourceType) //
+        .add("sourceId", sourceId) //
+        .add("targetType", targetType) //
+        .add("targetId", targetId) //
+        .toString();
   }
 
 }

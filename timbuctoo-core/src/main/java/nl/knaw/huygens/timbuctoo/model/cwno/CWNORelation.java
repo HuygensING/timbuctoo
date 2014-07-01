@@ -22,25 +22,6 @@ package nl.knaw.huygens.timbuctoo.model.cwno;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 
-public class CWNORelation extends Relation {
-  @Override
-  @IndexAnnotation(fieldName = "dynamic_s_sourceId", isFaceted = true)
-  public String getSourceId() {
-    return super.getSourceId();
-  }
-
-  @Override
-  @IndexAnnotation(fieldName = "dynamic_s_targetId", isFaceted = true)
-  public String getTargetId() {
-    return super.getTargetId();
-  }
-
-  @Override
-  @IndexAnnotation(fieldName = "dynamic_s_typeId", isFaceted = true)
-  public String getTypeId() {
-    return super.getTypeId();
-  }
-}
+public class CWNORelation extends Relation {}

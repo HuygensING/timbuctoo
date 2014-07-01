@@ -27,7 +27,7 @@ import org.mockito.MockitoAnnotations;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-public class RelationSearcherTest {
+public class MongoRelationSearcherTest {
   private static final Class<SearchResult> SEARCH_RESULT_TYPE = SearchResult.class;
   private static final Class<Relation> RELATION_VARIATION = Relation.class;
   @Mock
@@ -46,7 +46,7 @@ public class RelationSearcherTest {
   private Set<Relation> filteredRelations = Sets.newHashSet();
   private SearchResult relationSearchResult = new SearchResult();
   private RelationSearchResultCreator relationSearchResultCreatorMock;
-  private RelationSearcher instance;
+  private MongoRelationSearcher instance;
   private String typeString = "relationSubType";
 
   @Before
@@ -68,7 +68,7 @@ public class RelationSearcherTest {
     when(filterableRelationsMock.filter(Mockito.<RelationSourceTargetPredicate<Relation>> any())).thenReturn(filteredRelations);
     when(relationSearchResultCreatorMock.create(filteredRelations, sourceIds, targetIds, relationTypeIds, typeString)).thenReturn(relationSearchResult);
 
-    instance = new RelationSearcher(repositoryMock, collectionConverterMock, relationSearchResultCreatorMock);
+    instance = new MongoRelationSearcher(repositoryMock, collectionConverterMock, relationSearchResultCreatorMock);
   }
 
   @Test

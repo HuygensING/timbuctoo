@@ -40,7 +40,7 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-public class FacetedSearchResultConverterTest {
+public class RegularFacetedSearchResultConverterTest {
 
   @Test
   public void testConvert() {
@@ -48,7 +48,7 @@ public class FacetedSearchResultConverterTest {
     final SearchResult searchResultMock = mock(SearchResult.class);
     FacetedSearchResult facetedSearchResult = new FacetedSearchResult();
 
-    FacetedSearchResultConverter instance = new FacetedSearchResultConverter() {
+    FacetedSearchResultConverter instance = new RegularFacetedSearchResultConverter() {
       @Override
       protected SearchResult createSearchResult() {
         return searchResultMock;

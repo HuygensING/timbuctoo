@@ -66,7 +66,7 @@ public class IndexFacadeTest {
   private final Class<SubModel> type = SubModel.class;
   private IndexStatus indexStatusMock;
   private SortableFieldFinder sortableFieldFinderMock;
-  private FacetedSearchResultConverter facetedSearchResultConverterMock;
+  private RegularFacetedSearchResultConverter facetedSearchResultConverterMock;
   private VREManager vreManagerMock;
 
   @Before
@@ -74,7 +74,7 @@ public class IndexFacadeTest {
     indexStatusMock = mock(IndexStatus.class);
     repositoryMock = mock(Repository.class);
     sortableFieldFinderMock = mock(SortableFieldFinder.class);
-    facetedSearchResultConverterMock = mock(FacetedSearchResultConverter.class);
+    facetedSearchResultConverterMock = mock(RegularFacetedSearchResultConverter.class);
     vreManagerMock = mock(VREManager.class);
     instance = new IndexFacade(repositoryMock, sortableFieldFinderMock, facetedSearchResultConverterMock, vreManagerMock) {
       @Override
