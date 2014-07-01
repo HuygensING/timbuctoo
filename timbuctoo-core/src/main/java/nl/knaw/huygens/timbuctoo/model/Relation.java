@@ -37,6 +37,7 @@ import com.google.common.base.Objects;
  */
 @IDPrefix("RELA")
 public class Relation extends DomainEntity {
+  public static final String RELATION_TYPE_ID_FACET_NAME = "dynamic_s_typeId";
 
   /** A reference to the 'active' participant of the relation (resembles rdf:subject). */
   private String sourceType;
@@ -126,7 +127,7 @@ public class Relation extends DomainEntity {
   }
 
   @JsonProperty("^typeId")
-  @IndexAnnotation(fieldName = "dynamic_s_typeId", isFaceted = true)
+  @IndexAnnotation(fieldName = RELATION_TYPE_ID_FACET_NAME, isFaceted = true)
   public String getTypeId() {
     return typeId;
   }
