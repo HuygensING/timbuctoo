@@ -27,6 +27,8 @@ import java.util.List;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.search.SearchException;
+import nl.knaw.huygens.timbuctoo.search.SearchValidationException;
 
 public interface Index {
 

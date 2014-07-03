@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.index;
+package nl.knaw.huygens.timbuctoo.index.solr;
 
 /*
  * #%L
@@ -33,6 +33,7 @@ import java.util.Collection;
 
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.index.model.TestExtraBaseDoc;
+import nl.knaw.huygens.timbuctoo.index.solr.SolrInputDocGenerator;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.apache.solr.common.SolrInputDocument;

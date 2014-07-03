@@ -4,8 +4,6 @@ import java.util.List;
 
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.index.SearchException;
-import nl.knaw.huygens.timbuctoo.index.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 

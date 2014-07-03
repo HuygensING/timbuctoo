@@ -25,8 +25,6 @@ package nl.knaw.huygens.timbuctoo.search;
 import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
-import nl.knaw.huygens.timbuctoo.index.SearchException;
-import nl.knaw.huygens.timbuctoo.index.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.vre.VRE;

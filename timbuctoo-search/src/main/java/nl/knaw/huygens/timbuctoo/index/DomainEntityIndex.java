@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.index;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.index.solr.SolrInputDocGenerator;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import org.apache.solr.client.solrj.SolrQuery;

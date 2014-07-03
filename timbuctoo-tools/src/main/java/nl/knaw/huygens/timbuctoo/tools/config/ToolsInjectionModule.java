@@ -30,7 +30,7 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.index.IndexFacade;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
-import nl.knaw.huygens.timbuctoo.index.SolrIndexFactory;
+import nl.knaw.huygens.timbuctoo.index.solr.SolrIndexFactory;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 import nl.knaw.huygens.timbuctoo.vre.VREManagerProvider;
 

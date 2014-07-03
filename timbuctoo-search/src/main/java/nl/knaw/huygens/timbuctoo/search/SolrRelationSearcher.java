@@ -12,10 +12,7 @@ import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.index.FacetedSearchResultConverter;
 import nl.knaw.huygens.timbuctoo.index.Index;
-import nl.knaw.huygens.timbuctoo.index.SearchException;
-import nl.knaw.huygens.timbuctoo.index.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConverter;
@@ -27,6 +24,26 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 public class SolrRelationSearcher extends RelationSearcher {
+
+  private static final class TargetSourceIdRelationPredicate implements Predicate<Map<String, Object>> {
+    private final List<String> targetSearchIds;
+    private final List<String> sourceSearchIds;
+
+    private TargetSourceIdRelationPredicate(List<String> targetSearchIds, List<String> sourceSearchIds) {
+      this.targetSearchIds = targetSearchIds;
+      this.sourceSearchIds = sourceSearchIds;
+    }
+
+    @Override
+    public boolean apply(Map<String, Object> input) {
+      @SuppressWarnings("unchecked")
+      List<String> sourceIds = (List<String>) input.get(SOURCE_ID_FACET_NAME);
+      @SuppressWarnings("unchecked")
+      List<String> targetIds = (List<String>) input.get(TARGET_ID_FACET_NAME);
+
+      return sourceSearchIds.containsAll(sourceIds) && targetSearchIds.containsAll(targetIds);
+    }
+  }
 
   private final VREManager vreManager;
   private final RelationSearchParametersConverter relationSearchParametersConverter;
@@ -62,17 +79,7 @@ public class SolrRelationSearcher extends RelationSearcher {
     FacetedSearchResult facetedSearchResult = index.search(searchParametersV1);
 
     FilterableSet<Map<String, Object>> fitlerableResults = collectionConverter.toFilterableSet(facetedSearchResult.getRawResults());
-    Set<Map<String, Object>> filteredSet = fitlerableResults.filter(new Predicate<Map<String, Object>>() {
-      @Override
-      public boolean apply(Map<String, Object> input) {
-        @SuppressWarnings("unchecked")
-        List<String> sourceIds = (List<String>) input.get(SOURCE_ID_FACET_NAME);
-        @SuppressWarnings("unchecked")
-        List<String> targetIds = (List<String>) input.get(TARGET_ID_FACET_NAME);
-
-        return sourceSearchIds.containsAll(sourceIds) && targetSearchIds.containsAll(targetIds);
-      }
-    });
+    Set<Map<String, Object>> filteredSet = fitlerableResults.filter(new TargetSourceIdRelationPredicate(targetSearchIds, sourceSearchIds));
 
     facetedSearchResult.setRawResults(Lists.newArrayList(filteredSet));
 

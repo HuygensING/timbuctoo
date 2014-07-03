@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.index;
+package nl.knaw.huygens.timbuctoo.index.solr;
 
 /*
  * #%L
@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.index;
 
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.index.ModelIterator;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import org.apache.solr.common.SolrInputDocument;

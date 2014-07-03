@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.index;
+package nl.knaw.huygens.timbuctoo.index.solr;
 
 /*
  * #%L
@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.index.AnnotatedMethodProcessor;
+import nl.knaw.huygens.timbuctoo.index.Utils;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.apache.commons.lang.ArrayUtils;

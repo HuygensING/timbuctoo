@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.index;
+package nl.knaw.huygens.timbuctoo.index.solr;
 
 /*
  * #%L
@@ -31,7 +31,13 @@ import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
 import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
+import nl.knaw.huygens.timbuctoo.index.Index;
+import nl.knaw.huygens.timbuctoo.index.IndexDescriptionFactory;
+import nl.knaw.huygens.timbuctoo.index.solr.SolrIndex;
+import nl.knaw.huygens.timbuctoo.index.solr.SolrIndexFactory;
+import nl.knaw.huygens.timbuctoo.index.solr.SolrInputDocumentCreator;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.search.FacetedSearchLibraryFactory;
 
 import org.apache.solr.core.CoreDescriptor;
 import org.junit.Test;
