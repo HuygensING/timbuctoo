@@ -1,39 +1,56 @@
 package nl.knaw.huygens.timbuctoo.search;
 
+import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID_FACET_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID_FACET_NAME;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.FacetedSearchResultConverter;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.SearchException;
 import nl.knaw.huygens.timbuctoo.index.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.converters.RelationFacetedSearchResultConverter;
 import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConverter;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
 
 public class SolrRelationSearcher extends RelationSearcher {
 
   private final VREManager vreManager;
   private final RelationSearchParametersConverter relationSearchParametersConverter;
   private final TypeRegistry typeRegistry;
-  private final RelationFacetedSearchResultConverter searchResultConverter;
+  private final CollectionConverter collectionConverter;
+  private final FacetedSearchResultConverter facetedSearchResultConverter;
 
+  @Inject
   public SolrRelationSearcher(Repository repository, VREManager vreManager, RelationSearchParametersConverter relationSearchParametersConverter, TypeRegistry typeRegistry,
-      RelationFacetedSearchResultConverter searchResultConverter) {
+      CollectionConverter collectionConverter, FacetedSearchResultConverter facetedSearchResultConverter) {
     super(repository);
     this.vreManager = vreManager;
     this.relationSearchParametersConverter = relationSearchParametersConverter;
     this.typeRegistry = typeRegistry;
-    this.searchResultConverter = searchResultConverter;
+    this.collectionConverter = collectionConverter;
+    this.facetedSearchResultConverter = facetedSearchResultConverter;
   }
 
   @Override
   public SearchResult search(VRE vre, RelationSearchParameters relationSearchParameters) throws SearchException, SearchValidationException {
     getRelationTypeIds(vre, relationSearchParameters);
+
+    final List<String> sourceSearchIds = getSearchIds(relationSearchParameters.getSourceSearchId());
+    final List<String> targetSearchIds = getSearchIds(relationSearchParameters.getTargetSearchId());
 
     SearchParametersV1 searchParametersV1 = relationSearchParametersConverter.toSearchParamtersV1(relationSearchParameters);
 
@@ -42,13 +59,35 @@ public class SolrRelationSearcher extends RelationSearcher {
 
     Index index = vreManager.getIndexFor(vre, type);
 
-    FacetedSearchResult facetedSearchResult = null;
+    FacetedSearchResult facetedSearchResult = index.search(searchParametersV1);
 
-    facetedSearchResult = index.search(searchParametersV1);
+    FilterableSet<Map<String, Object>> fitlerableResults = collectionConverter.toFilterableSet(facetedSearchResult.getRawResults());
+    Set<Map<String, Object>> filteredSet = fitlerableResults.filter(new Predicate<Map<String, Object>>() {
+      @Override
+      public boolean apply(Map<String, Object> input) {
+        @SuppressWarnings("unchecked")
+        List<String> sourceIds = (List<String>) input.get(SOURCE_ID_FACET_NAME);
+        @SuppressWarnings("unchecked")
+        List<String> targetIds = (List<String>) input.get(TARGET_ID_FACET_NAME);
 
-    SearchResult searchResult = searchResultConverter.convert(typeString, facetedSearchResult);
+        return sourceSearchIds.containsAll(sourceIds) && targetSearchIds.containsAll(targetIds);
+      }
+    });
+
+    facetedSearchResult.setRawResults(Lists.newArrayList(filteredSet));
+
+    SearchResult searchResult = facetedSearchResultConverter.convert(relationSearchParameters.getTypeString(), facetedSearchResult);
+    searchResult.setSourceIds(sourceSearchIds);
+    searchResult.setTargetIds(targetSearchIds);
+    searchResult.setRelationSearch(true);
 
     return searchResult;
+  }
+
+  private List<String> getSearchIds(String id) {
+    SearchResult result = repository.getEntity(SearchResult.class, id);
+
+    return result.getIds();
   }
 
   private void getRelationTypeIds(VRE vre, RelationSearchParameters relationSearchParameters) {

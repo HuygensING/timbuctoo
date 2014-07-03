@@ -232,6 +232,7 @@ public class SearchResource extends ResourceBase {
       String queryId = putSearchResult(result);
       return Response.created(new URI(queryId)).build();
     } catch (Exception e) {
+      e.printStackTrace();
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
     }
   }

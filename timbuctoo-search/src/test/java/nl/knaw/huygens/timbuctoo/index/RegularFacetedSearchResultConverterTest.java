@@ -48,7 +48,7 @@ public class RegularFacetedSearchResultConverterTest {
     final SearchResult searchResultMock = mock(SearchResult.class);
     FacetedSearchResult facetedSearchResult = new FacetedSearchResult();
 
-    FacetedSearchResultConverter instance = new RegularFacetedSearchResultConverter() {
+    FacetedSearchResultConverter instance = new FacetedSearchResultConverter() {
       @Override
       protected SearchResult createSearchResult() {
         return searchResultMock;

@@ -37,6 +37,10 @@ import com.google.common.base.Objects;
  */
 @IDPrefix("RELA")
 public class Relation extends DomainEntity {
+  public static final String TARGET_ID_FACET_NAME = "dynamic_s_targetId";
+
+  public static final String SOURCE_ID_FACET_NAME = "dynamic_s_sourceId";
+
   public static final String RELATION_TYPE_ID_FACET_NAME = "dynamic_s_typeId";
 
   /** A reference to the 'active' participant of the relation (resembles rdf:subject). */
@@ -88,7 +92,7 @@ public class Relation extends DomainEntity {
   }
 
   @JsonProperty("^sourceId")
-  @IndexAnnotation(fieldName = "dynamic_s_sourceId", isFaceted = true)
+  @IndexAnnotation(fieldName = SOURCE_ID_FACET_NAME, isFaceted = true)
   public String getSourceId() {
     return sourceId;
   }
@@ -162,7 +166,7 @@ public class Relation extends DomainEntity {
   }
 
   @JsonProperty("^targetId")
-  @IndexAnnotation(fieldName = "dynamic_s_targetId", isFaceted = true)
+  @IndexAnnotation(fieldName = TARGET_ID_FACET_NAME, isFaceted = true)
   public String getTargetId() {
     return targetId;
   }
