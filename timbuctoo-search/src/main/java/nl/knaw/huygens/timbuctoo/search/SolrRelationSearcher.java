@@ -78,56 +78,66 @@ public class SolrRelationSearcher extends RelationSearcher {
   public SearchResult search(VRE vre, RelationSearchParameters relationSearchParameters) throws SearchException, SearchValidationException {
     StopWatch getIdsStopWatch = new StopWatch();
     getIdsStopWatch.start();
+
     getRelationTypeIds(vre, relationSearchParameters);
     final List<String> sourceSearchIds = getSearchIds(relationSearchParameters.getSourceSearchId());
     final List<String> targetSearchIds = getSearchIds(relationSearchParameters.getTargetSearchId());
+
     getIdsStopWatch.stop();
     logStopWatchTimeInSeconds(getIdsStopWatch, "get ids");
 
     StopWatch convertSearchParametersStopWatch = new StopWatch();
     convertSearchParametersStopWatch.start();
+
     SearchParametersV1 searchParametersV1 = relationSearchParametersConverter.toSearchParamtersV1(relationSearchParameters);
-    searchParametersV1.getQueryOptimizer().setRows(1000000);
+    searchParametersV1.getQueryOptimizer().setRows(1000000); // TODO find a better way to get all the found solr entries.
+
     convertSearchParametersStopWatch.stop();
     logStopWatchTimeInSeconds(convertSearchParametersStopWatch, "convert parameters");
 
     StopWatch getEntityStopWatch = new StopWatch();
     getEntityStopWatch.start();
+
     final String typeString = relationSearchParameters.getTypeString();
     Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
+
     getEntityStopWatch.stop();
     logStopWatchTimeInSeconds(getEntityStopWatch, "get entity");
 
     StopWatch getIndexStopWatch = new StopWatch();
     getIndexStopWatch.start();
+
     Index index = vreManager.getIndexFor(vre, type);
+
     getIndexStopWatch.stop();
     logStopWatchTimeInSeconds(getIndexStopWatch, "get index");
 
     StopWatch searchStopWatch = new StopWatch();
     searchStopWatch.start();
+
     FacetedSearchResult facetedSearchResult = index.search(searchParametersV1);
+
     searchStopWatch.stop();
     logStopWatchTimeInSeconds(searchStopWatch, "search");
 
     StopWatch filterStopWatch = new StopWatch();
     filterStopWatch.start();
-    StopWatch convertListToFilterableSetStopWatch = new StopWatch();
-    convertListToFilterableSetStopWatch.start();
+
     FilterableSet<Map<String, Object>> fitlerableResults = collectionConverter.toFilterableSet(facetedSearchResult.getRawResults());
-    convertListToFilterableSetStopWatch.stop();
-    logStopWatchTimeInSeconds(convertListToFilterableSetStopWatch, "convert raw result");
     Set<Map<String, Object>> filteredSet = fitlerableResults.filter(new TargetSourceIdRelationPredicate(targetSearchIds, sourceSearchIds));
     facetedSearchResult.setRawResults(Lists.newArrayList(filteredSet));
+
     filterStopWatch.stop();
     logStopWatchTimeInSeconds(filterStopWatch, "filter");
 
     StopWatch convertSearchResultStopWatch = new StopWatch();
     convertSearchResultStopWatch.start();
+
     SearchResult searchResult = facetedSearchResultConverter.convert(relationSearchParameters.getTypeString(), facetedSearchResult);
     searchResult.setSourceIds(sourceSearchIds);
     searchResult.setTargetIds(targetSearchIds);
     searchResult.setRelationSearch(true);
+
     convertSearchResultStopWatch.stop();
     logStopWatchTimeInSeconds(convertSearchResultStopWatch, "convert search result");
 
