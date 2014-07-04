@@ -78,11 +78,8 @@ public class TransformedDataImporter extends DefaultImporter {
     }
 
     repository.close();
-    try {
-      indexManager.close();
-    } catch (IndexException e) {
-      LOG.error("Error while closing index: {}", e.getMessage());
-    }
+    indexManager.close();
+
   }
 
   protected File[] getJsonFiles(String dataPath) {

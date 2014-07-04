@@ -76,11 +76,9 @@ public abstract class DefaultImporter {
    */
   public void close() {
     repository.close();
-    try {
-      indexManager.close();
-    } catch (IndexException e) {
-      LOG.error("Error while closing index: {}", e.getMessage());
-    }
+
+    indexManager.close();
+
   }
 
   // --- Error handling --------------------------------------------------------

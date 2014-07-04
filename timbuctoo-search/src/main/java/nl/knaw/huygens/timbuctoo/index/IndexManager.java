@@ -42,6 +42,6 @@ public interface IndexManager {
 
   void commitAll() throws IndexException;
 
-  void close() throws IndexException;
+  void close();
 
 }

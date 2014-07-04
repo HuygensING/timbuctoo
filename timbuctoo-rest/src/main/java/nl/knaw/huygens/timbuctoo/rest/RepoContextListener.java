@@ -30,6 +30,7 @@ import javax.servlet.ServletContextEvent;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.index.IndexService;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceService;
@@ -117,6 +118,8 @@ public class RepoContextListener extends GuiceServletContextListener {
 
   @Override
   public void contextDestroyed(ServletContextEvent event) {
+    closeIndexManager();
+
     if (scheduler != null) {
       scheduler.stop();
       scheduler = null;
@@ -156,6 +159,15 @@ public class RepoContextListener extends GuiceServletContextListener {
       broker = null;
     }
     super.contextDestroyed(event);
+  }
+
+  private void closeIndexManager() {
+    IndexManager indexManager = injector.getInstance(IndexManager.class);
+
+    if (indexManager != null) {
+      indexManager.close();
+    }
+
   }
 
 }

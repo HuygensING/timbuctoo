@@ -167,7 +167,7 @@ public class IndexFacade implements SearchManager, IndexManager {
   }
 
   @Override
-  public void close() throws IndexException {
+  public void close() {
     for (Index index : vreManager.getAllIndexes()) {
       try {
         index.close();
