@@ -19,29 +19,41 @@ import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConve
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
+import org.apache.commons.lang3.time.StopWatch;
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
 public class SolrRelationSearcher extends RelationSearcher {
 
   private static final class TargetSourceIdRelationPredicate implements Predicate<Map<String, Object>> {
-    private final List<String> targetSearchIds;
-    private final List<String> sourceSearchIds;
+    private final Set<String> targetSearchIds;
+    private final Set<String> sourceSearchIds;
 
     private TargetSourceIdRelationPredicate(List<String> targetSearchIds, List<String> sourceSearchIds) {
-      this.targetSearchIds = targetSearchIds;
-      this.sourceSearchIds = sourceSearchIds;
+      this.targetSearchIds = Sets.newTreeSet(targetSearchIds);
+      this.sourceSearchIds = Sets.newTreeSet(sourceSearchIds);
     }
 
     @Override
     public boolean apply(Map<String, Object> input) {
-      @SuppressWarnings("unchecked")
-      List<String> sourceIds = (List<String>) input.get(SOURCE_ID_FACET_NAME);
-      @SuppressWarnings("unchecked")
-      List<String> targetIds = (List<String>) input.get(TARGET_ID_FACET_NAME);
 
-      return sourceSearchIds.containsAll(sourceIds) && targetSearchIds.containsAll(targetIds);
+      return sourceSearchIds.contains(getSourceIds(input)) && targetSearchIds.contains(getTargetIds(input));
+    }
+
+    private String getTargetIds(Map<String, Object> input) {
+      return getFirstValueAsString(input, TARGET_ID_FACET_NAME);
+    }
+
+    @SuppressWarnings("unchecked")
+    private String getFirstValueAsString(Map<String, Object> input, String fieldName) {
+      return ((List<String>) input.get(fieldName)).get(0);
+    }
+
+    private String getSourceIds(Map<String, Object> input) {
+      return getFirstValueAsString(input, SOURCE_ID_FACET_NAME);
     }
   }
 
@@ -64,29 +76,60 @@ public class SolrRelationSearcher extends RelationSearcher {
 
   @Override
   public SearchResult search(VRE vre, RelationSearchParameters relationSearchParameters) throws SearchException, SearchValidationException {
+    StopWatch getIdsStopWatch = new StopWatch();
+    getIdsStopWatch.start();
     getRelationTypeIds(vre, relationSearchParameters);
-
     final List<String> sourceSearchIds = getSearchIds(relationSearchParameters.getSourceSearchId());
     final List<String> targetSearchIds = getSearchIds(relationSearchParameters.getTargetSearchId());
+    getIdsStopWatch.stop();
+    logStopWatchTimeInSeconds(getIdsStopWatch, "get ids");
 
+    StopWatch convertSearchParametersStopWatch = new StopWatch();
+    convertSearchParametersStopWatch.start();
     SearchParametersV1 searchParametersV1 = relationSearchParametersConverter.toSearchParamtersV1(relationSearchParameters);
+    searchParametersV1.getQueryOptimizer().setRows(1000000);
+    convertSearchParametersStopWatch.stop();
+    logStopWatchTimeInSeconds(convertSearchParametersStopWatch, "convert parameters");
 
+    StopWatch getEntityStopWatch = new StopWatch();
+    getEntityStopWatch.start();
     final String typeString = relationSearchParameters.getTypeString();
     Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
+    getEntityStopWatch.stop();
+    logStopWatchTimeInSeconds(getEntityStopWatch, "get entity");
 
+    StopWatch getIndexStopWatch = new StopWatch();
+    getIndexStopWatch.start();
     Index index = vreManager.getIndexFor(vre, type);
+    getIndexStopWatch.stop();
+    logStopWatchTimeInSeconds(getIndexStopWatch, "get index");
 
+    StopWatch searchStopWatch = new StopWatch();
+    searchStopWatch.start();
     FacetedSearchResult facetedSearchResult = index.search(searchParametersV1);
+    searchStopWatch.stop();
+    logStopWatchTimeInSeconds(searchStopWatch, "search");
 
+    StopWatch filterStopWatch = new StopWatch();
+    filterStopWatch.start();
+    StopWatch convertListToFilterableSetStopWatch = new StopWatch();
+    convertListToFilterableSetStopWatch.start();
     FilterableSet<Map<String, Object>> fitlerableResults = collectionConverter.toFilterableSet(facetedSearchResult.getRawResults());
+    convertListToFilterableSetStopWatch.stop();
+    logStopWatchTimeInSeconds(convertListToFilterableSetStopWatch, "convert raw result");
     Set<Map<String, Object>> filteredSet = fitlerableResults.filter(new TargetSourceIdRelationPredicate(targetSearchIds, sourceSearchIds));
-
     facetedSearchResult.setRawResults(Lists.newArrayList(filteredSet));
+    filterStopWatch.stop();
+    logStopWatchTimeInSeconds(filterStopWatch, "filter");
 
+    StopWatch convertSearchResultStopWatch = new StopWatch();
+    convertSearchResultStopWatch.start();
     SearchResult searchResult = facetedSearchResultConverter.convert(relationSearchParameters.getTypeString(), facetedSearchResult);
     searchResult.setSourceIds(sourceSearchIds);
     searchResult.setTargetIds(targetSearchIds);
     searchResult.setRelationSearch(true);
+    convertSearchResultStopWatch.stop();
+    logStopWatchTimeInSeconds(convertSearchResultStopWatch, "convert search result");
 
     return searchResult;
   }

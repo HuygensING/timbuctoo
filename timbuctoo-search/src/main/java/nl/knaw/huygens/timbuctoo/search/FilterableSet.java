@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Sets;
+import com.google.common.collect.FluentIterable;
 
 public class FilterableSet<E> implements Set<E> {
 
@@ -82,7 +82,7 @@ public class FilterableSet<E> implements Set<E> {
   }
 
   public Set<E> filter(Predicate<E> predicate) {
-    return Sets.filter(this, predicate);
+    return FluentIterable.from(this).filter(predicate).toSet();
   }
 
   @Override
