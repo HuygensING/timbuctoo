@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH;
 
 import java.net.URI;
 import java.util.List;
@@ -78,7 +79,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
-@Path("v1/search")
+@Path(V1_PATH + "/search")
 public class SearchResourceV1 extends ResourceBase {
 
   private static final String RELATION_SEARCH_PREFIX = "relations";

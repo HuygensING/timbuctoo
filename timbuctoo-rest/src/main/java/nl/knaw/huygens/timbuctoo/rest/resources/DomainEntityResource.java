@@ -26,6 +26,10 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_REGEX;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ID_REGEX;
+import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH_OPTIONAL;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
@@ -56,7 +60,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
@@ -82,7 +85,7 @@ import com.google.inject.Inject;
 /**
  * A REST resource for adressing collections of domain entities.
  */
-@Path(Paths.DOMAIN_PREFIX + "/{" + DomainEntityResource.ENTITY_PARAM + ": " + Paths.ENTITY_REGEX + "}")
+@Path(V1_PATH_OPTIONAL + DOMAIN_PREFIX + "/{" + DomainEntityResource.ENTITY_PARAM + ": " + ENTITY_REGEX + "}")
 public class DomainEntityResource extends ResourceBase {
 
   public static final String ENTITY_PARAM = "entityName";
@@ -90,7 +93,7 @@ public class DomainEntityResource extends ResourceBase {
   private static final Logger LOG = LoggerFactory.getLogger(DomainEntityResource.class);
 
   private static final String ID_PARAM = "id";
-  private static final String ID_PATH = "/{id: " + Paths.ID_REGEX + "}";
+  private static final String ID_PATH = "/{id: " + ID_REGEX + "}";
   private static final String PID_PATH = "/pid";
 
   private final TypeRegistry typeRegistry;
@@ -297,17 +300,17 @@ public class DomainEntityResource extends ResourceBase {
    */
   private void notifyChange(ActionType actionType, Class<? extends DomainEntity> type, String id) {
     switch (actionType) {
-    case ADD:
-    case MOD:
-      sendPersistMessage(actionType, type, id);
-      sendIndexMessage(actionType, type, id);
-      break;
-    case DEL:
-      sendIndexMessage(actionType, type, id);
-      break;
-    default:
-      LOG.error("Unexpected action {}", actionType);
-      break;
+      case ADD:
+      case MOD:
+        sendPersistMessage(actionType, type, id);
+        sendIndexMessage(actionType, type, id);
+        break;
+      case DEL:
+        sendIndexMessage(actionType, type, id);
+        break;
+      default:
+        LOG.error("Unexpected action {}", actionType);
+        break;
     }
   }
 

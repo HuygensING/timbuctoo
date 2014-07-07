@@ -27,6 +27,7 @@ import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -88,8 +89,13 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   private static final Class<BaseDomainEntity> BASE_TYPE = BaseDomainEntity.class;
   private static final String DEFAULT_ID = "TEST000000000001";
 
-  private WebResource createResource(String... pathElements) {
-    WebResource resource = resource().path(Paths.DOMAIN_PREFIX);
+  private WebResource createResource(String version, String... pathElements) {
+    WebResource resource = resource();
+    if (version != null) {
+      resource = resource.path(version);
+    }
+
+    resource = resource.path(Paths.DOMAIN_PREFIX);
     for (String pathElement : pathElements) {
       resource = resource.path(pathElement);
     }
@@ -117,7 +123,11 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     when(repository.getEntityWithRelations(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(entity);
 
-    ProjectADomainEntity actualDoc = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).get(ProjectADomainEntity.class);
+    ClientResponse clientResponse = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).get(ClientResponse.class);
+
+    assertThat(clientResponse.getClientResponseStatus(), equalTo(ClientResponse.Status.OK));
+
+    ProjectADomainEntity actualDoc = clientResponse.getEntity(ProjectADomainEntity.class);
     assertNotNull(actualDoc);
     assertEquals(entity.getId(), actualDoc.getId());
   }
@@ -125,34 +135,15 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetDocWithRevision() {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
-    int revision = 1;
-    when(repository.getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision)).thenReturn(entity);
-
-    ProjectADomainEntity actualDoc = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).queryParam(REVISION_KEY, "1").get(ProjectADomainEntity.class);
-    assertNotNull(actualDoc);
-    assertEquals(entity.getId(), actualDoc.getId());
-    verify(repository).getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision);
-  }
-
-  @Test
-  public void testGetDocWithRevisionTwo() {
-    ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     int revision = 2;
     when(repository.getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision)).thenReturn(entity);
 
-    ProjectADomainEntity actualDoc = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).queryParam(REVISION_KEY, "2").get(ProjectADomainEntity.class);
-    assertNotNull(actualDoc);
-    assertEquals(entity.getId(), actualDoc.getId());
-    verify(repository).getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision);
-  }
+    ClientResponse clientResponse = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).queryParam(REVISION_KEY, "2").get(ClientResponse.class);
 
-  @Test
-  public void testGetDocWithRevisionZero() {
-    ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
-    int revision = 0;
-    when(repository.getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision)).thenReturn(entity);
+    assertThat(clientResponse.getClientResponseStatus(), equalTo(ClientResponse.Status.OK));
 
-    ProjectADomainEntity actualDoc = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).queryParam(REVISION_KEY, "0").get(ProjectADomainEntity.class);
+    ProjectADomainEntity actualDoc = clientResponse.getEntity(ProjectADomainEntity.class);
+
     assertNotNull(actualDoc);
     assertEquals(entity.getId(), actualDoc.getId());
     verify(repository).getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision);
@@ -162,13 +153,13 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testGetDocNonExistingInstance() {
     when(repository.getEntity(ProjectADomainEntity.class, "TST0000000001")).thenReturn(null);
 
-    ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, "TST0000000001").get(ClientResponse.class);
+    ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, "TST0000000001").get(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
   @Test
   public void testGetDocNonExistingClass() {
-    ClientResponse response = createResource("unknown", "TST0000000001").get(ClientResponse.class);
+    ClientResponse response = createResource(null, "unknown", "TST0000000001").get(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
@@ -179,7 +170,12 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     when(repository.getDomainEntities(ProjectADomainEntity.class)).thenReturn(iterator);
 
     GenericType<List<ProjectADomainEntity>> genericType = new GenericType<List<ProjectADomainEntity>>() {};
-    List<ProjectADomainEntity> actualList = createResource(PROJECTADOMAINENTITIES_RESOURCE).get(genericType);
+
+    ClientResponse clientResponse = createResource(null, PROJECTADOMAINENTITIES_RESOURCE).get(ClientResponse.class);
+
+    assertThat(clientResponse.getClientResponseStatus(), equalTo(ClientResponse.Status.OK));
+
+    List<ProjectADomainEntity> actualList = clientResponse.getEntity(genericType);
     assertEquals(expectedList.size(), actualList.size());
   }
 
@@ -205,7 +201,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     when(repository.getEntity(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
-    ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), times(1)).send(ActionType.MOD, DEFAULT_TYPE, DEFAULT_ID);
@@ -225,7 +221,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     when(repository.getEntity(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
-    ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
 
@@ -244,7 +240,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     when(repository.getEntity(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
 
-    ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -309,7 +305,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     when(validator.validate(entity)).thenReturn(Sets.<ConstraintViolation<ProjectADomainEntity>> newHashSet(violation));
 
-    ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -328,7 +324,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
     whenJsonProviderReadFromThenReturn(entity);
 
-    ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, id).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -344,7 +340,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
 
-    ClientResponse response = createResource("unknown", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, "unknown", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -360,7 +356,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
 
-    ClientResponse response = createResource("otherdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, "otherdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -376,7 +372,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     BaseDomainEntity entity = new BaseDomainEntity(DEFAULT_ID);
 
-    ClientResponse response = createResource("otherdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, "otherdomainentities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -386,7 +382,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutOnCollection() throws Exception {
     BaseDomainEntity entity = new BaseDomainEntity(DEFAULT_ID);
 
-    ClientResponse response = createResource("otherdomainentities").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, "otherdomainentities").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -413,7 +409,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     when(repository.addDomainEntity(Matchers.<Class<ProjectADomainEntity>> any(), any(ProjectADomainEntity.class), any(Change.class))).thenReturn(DEFAULT_ID);
     whenJsonProviderReadFromThenReturn(entity);
 
-    ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.CREATED, response.getClientResponseStatus());
     String location = response.getHeaders().getFirst("Location");
@@ -434,7 +430,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     when(repository.addDomainEntity(Matchers.<Class<ProjectADomainEntity>> any(), any(ProjectADomainEntity.class), any(Change.class))).thenReturn(DEFAULT_ID);
     whenJsonProviderReadFromThenReturn(entity);
 
-    ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -447,7 +443,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
 
-    ClientResponse response = createResource("unknown", "all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, "unknown", "all").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -463,7 +459,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
     whenJsonProviderReadFromThenReturn(entity);
 
-    ClientResponse response = createResource("otherdomainentities").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, "otherdomainentities").type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -473,7 +469,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPostSpecificDocument() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
 
-    ClientResponse response = createResource("otherentitys", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, "otherentitys", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -500,7 +496,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
     when(repository.getEntity(BASE_TYPE, DEFAULT_ID)).thenReturn(entity);
 
-    ClientResponse response = createResource(BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NO_CONTENT, response.getClientResponseStatus());
     verify(getProducer(PERSISTENCE_PRODUCER), never()).send(ActionType.DEL, BASE_TYPE, DEFAULT_ID);
@@ -515,7 +511,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     when(vre.inScope(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(true);
     makeVREAvailable(vre, VRE_ID);
 
-    ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
 
     assertEquals(ClientResponse.Status.BAD_REQUEST, response.getClientResponseStatus());
@@ -530,7 +526,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     BaseDomainEntity entity = new BaseDomainEntity(DEFAULT_ID);
     when(repository.getEntity(BaseDomainEntity.class, DEFAULT_ID)).thenReturn(entity);
 
-    ClientResponse response = createResource(BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -545,7 +541,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     when(repository.getEntity(BASE_TYPE, DEFAULT_ID)).thenReturn(null);
 
-    ClientResponse response = createResource(BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -558,7 +554,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     VREManager vreManager = injector.getInstance(VREManager.class);
     when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
 
-    ClientResponse response = createResource("unknownEntities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, "unknownEntities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.NOT_FOUND, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -566,7 +562,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteCollection() throws Exception {
-    ClientResponse response = createResource(BASEADOMAINENTITIES_RESOURCE).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, BASEADOMAINENTITIES_RESOURCE).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER), repository);
@@ -579,7 +575,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ProjectADomainEntity expectedDoc = new ProjectADomainEntity(DEFAULT_ID);
     when(repository.getEntityWithRelations(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(expectedDoc);
 
-    ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).get(ClientResponse.class);
+    ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
   }
 
@@ -588,7 +584,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ProjectADomainEntity expectedDoc = new ProjectADomainEntity(DEFAULT_ID);
     when(repository.getEntityWithRelations(ProjectADomainEntity.class, DEFAULT_ID)).thenReturn(expectedDoc);
 
-    ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).get(ClientResponse.class);
+    ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).get(ClientResponse.class);
     assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
   }
 
@@ -599,7 +595,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     whenJsonProviderReadFromThenReturn(entity);
 
-    ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
+    ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -612,7 +608,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     setUserNotLoggedIn();
 
-    ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).header(VRE_ID_KEY, VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, entity);
+    ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID).header(VRE_ID_KEY, VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
   }
@@ -624,7 +620,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
     whenJsonProviderReadFromThenReturn(entity);
 
-    ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE).header(VRE_ID_KEY, VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION)
+    ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE).header(VRE_ID_KEY, VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION)
         .header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -637,7 +633,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     setUserNotLoggedIn();
 
-    ClientResponse response = createResource(PROJECTADOMAINENTITIES_RESOURCE).header(VRE_ID_KEY, VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, entity);
+    ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE).header(VRE_ID_KEY, VRE_ID).type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, entity);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
   }
@@ -646,7 +642,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testDeleteNotLoggedIn() throws Exception {
     setUserNotLoggedIn();
 
-    ClientResponse response = createResource(BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
+    ClientResponse response = createResource(null, BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.UNAUTHORIZED, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
   }
@@ -655,7 +651,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testDeleteUserNotInRole() throws Exception {
     setupUserWithRoles(VRE_ID, USER_ID);
 
-    ClientResponse response = createResource(BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header(VRE_ID_KEY, VRE_ID).header("Authorization", AUTHORIZATION)
+    ClientResponse response = createResource(null, BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header(VRE_ID_KEY, VRE_ID).header("Authorization", AUTHORIZATION)
         .header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
     assertEquals(ClientResponse.Status.FORBIDDEN, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
@@ -750,7 +746,24 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   private ClientResponse doPutPIDRequest(String collectionName) {
-    return createResource(collectionName, "pid").header(VRE_ID_KEY, VRE_ID).header("Authorization", AUTHORIZATION).put(ClientResponse.class);
+    return createResource(null, collectionName, "pid").header(VRE_ID_KEY, VRE_ID).header("Authorization", AUTHORIZATION).put(ClientResponse.class);
   }
 
+  /************************************************************************************************
+   * V1 Test
+   ***********************************************************************************************/
+  @Test
+  public void testGetEntitiesV1() {
+    List<ProjectADomainEntity> expectedList = Lists.newArrayList(new ProjectADomainEntity("TEST001"), new ProjectADomainEntity("TEST002"));
+    StorageIterator<ProjectADomainEntity> iterator = StorageIteratorStub.newInstance(expectedList);
+    when(repository.getDomainEntities(ProjectADomainEntity.class)).thenReturn(iterator);
+
+    GenericType<List<ProjectADomainEntity>> genericType = new GenericType<List<ProjectADomainEntity>>() {};
+    ClientResponse clientResponse = createResource(Paths.V1_PATH, PROJECTADOMAINENTITIES_RESOURCE).get(ClientResponse.class);
+
+    assertThat(clientResponse.getClientResponseStatus(), equalTo(ClientResponse.Status.OK));
+
+    List<ProjectADomainEntity> actualList = clientResponse.getEntity(genericType);
+    assertEquals(expectedList.size(), actualList.size());
+  }
 }

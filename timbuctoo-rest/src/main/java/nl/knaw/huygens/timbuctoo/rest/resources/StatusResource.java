@@ -22,6 +22,9 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.config.Paths.SYSTEM_PREFIX;
+import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH_OPTIONAL;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -29,13 +32,12 @@ import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
-import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.rest.util.Status;
 
 import com.google.inject.Inject;
 
-@Path(Paths.SYSTEM_PREFIX + "/status")
+@Path(V1_PATH_OPTIONAL + SYSTEM_PREFIX + "/status")
 public class StatusResource {
 
   private final Repository repository;

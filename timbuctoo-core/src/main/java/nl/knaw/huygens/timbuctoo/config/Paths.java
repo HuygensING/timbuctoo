@@ -37,6 +37,13 @@ public class Paths {
   public static final String ID_REGEX = "[a-zA-Z]{4}\\d+";
   /** The path of the {@code UserResource} */
   public static final String USER_PATH = "users";
+  /** The path for api version 1 */
+  public static final String V1_PATH = "v1";
+  /** 
+   * When the version 1 path is optional. Contains a slash. 
+   * Regex is only allowed for variables, so we assign it apiVersion.
+   */
+  public static final String V1_PATH_OPTIONAL = "{ apiVersion: (v1/)? }";
 
   private Paths() {
     throw new AssertionError("Non-instantiable class");
