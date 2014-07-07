@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -47,7 +46,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.apache.commons.lang.StringUtils;
-import org.mongojack.DBQuery;
 import org.mongojack.internal.stream.JacksonDBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +56,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -458,7 +455,7 @@ public class MongoStorage implements Storage {
     List<String> relationIds = Lists.newArrayList();
 
     try {
-      DBObject query = DBQuery.or(DBQuery.in("^sourceId", ids), DBQuery.in("^targetId", ids));
+      DBObject query = queries.selectRelationsByEntityIds(ids);
       DBObject columnsToShow = new BasicDBObject("_id", 1);
 
       DBCursor cursor = getDBCollection(Relation.class).find(query, columnsToShow);
@@ -490,31 +487,6 @@ public class MongoStorage implements Storage {
   public <T extends Relation> StorageIterator<T> findRelations(Class<T> type, String sourceId, String targetId, String relationTypeId) throws StorageException {
     DBObject query = queries.selectRelationsByIds(sourceId, targetId, relationTypeId);
     return findItems(type, query);
-  }
-
-  @Override
-  public <T extends Relation> List<String> findRelationIds(Class<T> type, List<String> sourceIds, List<String> targetIds, List<String> relationTypeIds) throws StorageException {
-    Set<String> typeIdSet = Sets.newHashSet();
-    if (relationTypeIds != null) {
-      typeIdSet.addAll(relationTypeIds);
-    }
-
-    List<String> result = Lists.newArrayList();
-
-    List<List<String>> sourceIdSubLists = Lists.partition(sourceIds, 100);
-    for (List<String> sourceIdSubList : sourceIdSubLists) {
-      DBObject query = DBQuery.and(DBQuery.in("^sourceId", sourceIdSubList), DBQuery.in("^targetId", targetIds));
-      StorageIterator<T> iterator = findItems(type, query);
-
-      while (iterator.hasNext()) {
-        T relation = iterator.next();
-        if (relation.isAccepted() && (typeIdSet.isEmpty() || typeIdSet.contains(relation.getTypeId()))) {
-          result.add(relation.getId());
-        }
-      }
-    }
-
-    return result;
   }
 
   @Override

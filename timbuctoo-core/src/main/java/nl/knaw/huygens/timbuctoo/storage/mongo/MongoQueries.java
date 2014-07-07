@@ -124,6 +124,14 @@ public class MongoQueries {
     return DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id));
   }
 
+  /**
+   * Returns a query for selecting relations of multiple entities by using the id's.
+   * This assumes that entity id's are unique over the various collections.
+   */
+  public DBObject selectRelationsByEntityIds(List<String> ids) {
+    return DBQuery.or(DBQuery.in("^sourceId", ids), DBQuery.in("^targetId", ids));
+  }
+
   public DBObject selectRelationsByIds(String sourceId, String targetId, String relationTypeId) {
     DBObject query = new BasicDBObject();
     if (sourceId != null) {
