@@ -59,6 +59,7 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
+import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.search.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.storage.JsonViews;
@@ -73,7 +74,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -97,6 +97,8 @@ public class SearchResourceV1 extends ResourceBase {
   private Configuration config;
   @Inject
   private SearchRequestValidator searchRequestValidator;
+  @Inject
+  private RelationSearcher relationSearcher;
 
   @GET
   @Path("/vres")
@@ -213,49 +215,17 @@ public class SearchResourceV1 extends ResourceBase {
   @Path("/" + RELATION_SEARCH_PREFIX)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response relationPost(@HeaderParam("VRE_ID") String vreId, RelationSearchParameters params) {
+    searchRequestValidator.validateRelationRequest(vreId, params);
 
-    VRE vre = Strings.isNullOrEmpty(vreId) ? vreManager.getDefaultVRE() : vreManager.getVREById(vreId);
-    checkNotNull(vre, NOT_FOUND, "No VRE with id %s", vreId);
-
-    String typeString = StringUtils.trimToNull(params.getTypeString());
-    checkNotNull(typeString, BAD_REQUEST, "No 'typeString' parameter specified");
-    Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
-    checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
-    checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
-    @SuppressWarnings("unchecked")
-    Class<? extends Relation> relationType = (Class<? extends Relation>) type;
-    checkCondition(vre.inScope(type), BAD_REQUEST, "Type not in scope: %s", typeString);
-
-    String sourceSearchId = StringUtils.trimToNull(params.getSourceSearchId());
-    checkNotNull(sourceSearchId, BAD_REQUEST, "No 'sourceSearchId' specified");
-    SearchResult sourceSearchResult = getSearchResult(sourceSearchId);
-    checkNotNull(sourceSearchResult, BAD_REQUEST, "No SearchResult with id %s", sourceSearchId);
-    List<String> sourceIds = sourceSearchResult.getIds();
-
-    String targetSearchId = StringUtils.trimToNull(params.getTargetSearchId());
-    checkNotNull(targetSearchId, BAD_REQUEST, "No 'targetSearchId' specified");
-    SearchResult targetSearchResult = getSearchResult(targetSearchId);
-    checkNotNull(targetSearchResult, BAD_REQUEST, "No SearchResult with id %s", targetSearchId);
-    List<String> targetIds = targetSearchResult.getIds();
-
-    List<String> relationTypeIds = params.getRelationTypeIds();
-    checkNotNull(relationTypeIds, BAD_REQUEST, "No 'relationTypeIds' specified");
-    for (String id : relationTypeIds) {
-      checkNotNull(repository.getRelationTypeById(id), BAD_REQUEST, "No RelationType with id %s", id);
-    }
+    VRE vre = vreManager.getVREById(vreId);
 
     // Process
     try {
-      SearchResult result = new SearchResult();
-      result.setRelationSearch(true);
-      result.setSearchType(typeString);
-      result.setSourceIds(sourceIds);
-      result.setTargetIds(targetIds);
-      result.setRelationTypeIds(relationTypeIds);
-      result.setIds(repository.findRelations(relationType, sourceIds, targetIds, relationTypeIds));
+      SearchResult result = relationSearcher.search(vre, params);
       String queryId = putSearchResult(result);
       return Response.created(new URI(queryId)).build();
     } catch (Exception e) {
+      e.printStackTrace();
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
     }
   }

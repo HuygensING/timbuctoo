@@ -22,6 +22,9 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
+import static com.sun.jersey.api.client.ClientResponse.Status.BAD_REQUEST;
+import static com.sun.jersey.api.client.ClientResponse.Status.CREATED;
+import static com.sun.jersey.api.client.ClientResponse.Status.INTERNAL_SERVER_ERROR;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -48,6 +51,7 @@ import javax.ws.rs.core.Response;
 import nl.knaw.huygens.facetedsearch.model.DefaultFacet;
 import nl.knaw.huygens.facetedsearch.model.Facet;
 import nl.knaw.huygens.facetedsearch.model.FacetOption;
+import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
@@ -55,7 +59,12 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
+import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
+import nl.knaw.huygens.timbuctoo.search.SearchException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
+import nl.knaw.huygens.timbuctoo.search.SearchValidationException;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -88,6 +97,11 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
   private SearchRequestValidator searchRequestValidator;
 
   @Before
+  public void initializeVREManager() {
+    vreManager = injector.getInstance(VREManager.class);
+  }
+
+  @Before
   public void setupSearchManager() {
     searchManager = injector.getInstance(SearchManager.class);
     when(searchManager.findSortableFields(Matchers.<Class<? extends DomainEntity>> any())).thenReturn(SORTABLE_FIELDS);
@@ -107,8 +121,6 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
   }
 
   private void setUpVREManager(boolean isTypeInScope, boolean isVREKnown) {
-    vreManager = injector.getInstance(VREManager.class);
-
     if (isVREKnown) {
       VRE vre = mock(VRE.class);
       when(vre.getName()).thenReturn(VRE_ID);
@@ -385,6 +397,112 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     assertEquals(((Collection<String>) expected.get("sortableFields")).size(), ((Collection<String>) actual.get("sortableFields")).size());
     assertEquals(expected.get("_next"), actual.get("_next"));
     assertEquals(expected.get("_prev"), actual.get("_prev"));
+  }
+
+  /*
+   * ****************************************************************************
+   * Reception Search                                                           *
+   * ****************************************************************************
+   */
+
+  @Test
+  public void aSuccessfulRelationSearchPostShouldResponseWithStatusCodeCreatedandALocationHeader() throws SearchException, SearchValidationException, StorageException, ValidationException {
+    // setup
+    String expectedLocationHeader = getRelationSearchURL(ID);
+
+    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+
+    final VRE vreMock = mock(VRE.class);
+    final SearchResult searchResultMock = mock(SearchResult.class);
+
+    RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
+
+    when(vreManager.getVREById(VRE_ID)).thenReturn(vreMock);
+    when(relationSearcher.search(any(VRE.class), any(RelationSearchParameters.class))).thenReturn(searchResultMock);
+    when(repository.addSystemEntity(SearchResult.class, searchResultMock)).thenReturn(ID);
+
+    // action
+    ClientResponse response = resource().path("search").path("relations").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
+
+    // verify
+    assertThat(response.getClientResponseStatus(), equalTo(CREATED));
+    assertThat(response.getLocation().toString(), equalTo(expectedLocationHeader));
+
+    verify(searchRequestValidator).validateRelationRequest(anyString(), any(RelationSearchParameters.class));
+    verify(relationSearcher).search(any(VRE.class), any(RelationSearchParameters.class));
+    verify(repository).addSystemEntity(SearchResult.class, searchResultMock);
+
+  }
+
+  @Test
+  public void anInvalidSearchRequestPostShouldRespondWithABadRequestStatus() throws StorageException, ValidationException {
+    // setup
+    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+
+    RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
+
+    doThrow(new TimbuctooException(Response.Status.BAD_REQUEST, "Error")).when(searchRequestValidator).validateRelationRequest(anyString(), any(RelationSearchParameters.class));
+
+    // action
+    ClientResponse response = resource().path("search").path("relations").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
+
+    // verify
+    assertThat(response.getClientResponseStatus(), equalTo(BAD_REQUEST));
+    verifyZeroInteractions(vreManager, repository, relationSearcher);
+  }
+
+  @Test
+  public void whenTheRepositoryCannotStoreTheRelationSearchResultAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
+    // setup
+    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+
+    final VRE vreMock = mock(VRE.class);
+    final SearchResult searchResultMock = mock(SearchResult.class);
+
+    RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
+
+    when(vreManager.getVREById(VRE_ID)).thenReturn(vreMock);
+    when(relationSearcher.search(any(VRE.class), any(RelationSearchParameters.class))).thenReturn(searchResultMock);
+    doThrow(Exception.class).when(repository).addSystemEntity(SearchResult.class, searchResultMock);
+
+    // action
+    ClientResponse response = resource().path("search").path("relations").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
+
+    // verify
+    assertThat(response.getClientResponseStatus(), equalTo(INTERNAL_SERVER_ERROR));
+
+    verify(searchRequestValidator).validateRelationRequest(anyString(), any(RelationSearchParameters.class));
+    verify(relationSearcher).search(any(VRE.class), any(RelationSearchParameters.class));
+    verify(repository).addSystemEntity(SearchResult.class, searchResultMock);
+  }
+
+  @Test
+  public void whenTheRelationSearcherThrowsAnSearchExceptionAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
+    // setup
+    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+
+    final VRE vreMock = mock(VRE.class);
+    RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
+
+    when(vreManager.getVREById(VRE_ID)).thenReturn(vreMock);
+    doThrow(SearchException.class).when(relationSearcher).search(any(VRE.class), any(RelationSearchParameters.class));
+
+    // action
+    ClientResponse response = resource().path("search").path("relations").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
+
+    // verify
+    assertThat(response.getClientResponseStatus(), equalTo(INTERNAL_SERVER_ERROR));
+
+    verify(searchRequestValidator).validateRelationRequest(anyString(), any(RelationSearchParameters.class));
+    verify(relationSearcher).search(any(VRE.class), any(RelationSearchParameters.class));
+    verifyZeroInteractions(repository);
+  }
+
+  private String getRelationSearchURL(String id) {
+    return String.format(//
+        "%ssearch/relations/%s", //
+        resource().getURI().toString(), //
+        id);
   }
 
 }
