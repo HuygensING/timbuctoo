@@ -45,6 +45,10 @@ public class Paths {
    */
   public static final String V1_PATH_OPTIONAL = "{ apiVersion: (v1/)? }";
 
+  public static final String ENTITY_PARAM = "entityName";
+
+  public static final String ENTITY_PATH = "{" + ENTITY_PARAM + ": " + ENTITY_REGEX + "}";
+
   private Paths() {
     throw new AssertionError("Non-instantiable class");
   }

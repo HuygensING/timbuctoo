@@ -21,6 +21,7 @@ package nl.knaw.huygens.timbuctoo.rest.util;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
 
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class Sitemap {
   public final String description = "Repository Sitemap";
   public final List<API> availableAPIList;
 
-  private static final String ENTITY_REGEXP = "\\{" + DomainEntityResource.ENTITY_PARAM + "\\}";
+  private static final String ENTITY_REGEXP = "\\{" + ENTITY_PARAM + "\\}";
 
   public Sitemap(Application application, TypeRegistry registry) {
     availableAPIList = Lists.newArrayList();

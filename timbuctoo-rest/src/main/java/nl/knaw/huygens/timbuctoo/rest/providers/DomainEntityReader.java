@@ -22,6 +22,8 @@ package nl.knaw.huygens.timbuctoo.rest.providers;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -44,7 +46,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
-import nl.knaw.huygens.timbuctoo.rest.resources.DomainEntityResource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +85,7 @@ public class DomainEntityReader implements MessageBodyReader<Entity> {
   @SuppressWarnings("unchecked")
   public Entity readFrom(Class<Entity> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException {
 
-    String entityType = uriInfo.getPathParameters().getFirst(DomainEntityResource.ENTITY_PARAM);
+    String entityType = uriInfo.getPathParameters().getFirst(ENTITY_PARAM);
     if (entityType == null) {
       throw new TimbuctooException(Status.NOT_FOUND, "Missing path parameter");
     }

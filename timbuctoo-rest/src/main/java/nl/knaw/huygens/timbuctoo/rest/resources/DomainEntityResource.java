@@ -27,7 +27,8 @@ import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_REGEX;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ID_REGEX;
 import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH_OPTIONAL;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
@@ -85,10 +86,8 @@ import com.google.inject.Inject;
 /**
  * A REST resource for adressing collections of domain entities.
  */
-@Path(V1_PATH_OPTIONAL + DOMAIN_PREFIX + "/{" + DomainEntityResource.ENTITY_PARAM + ": " + ENTITY_REGEX + "}")
+@Path(V1_PATH_OPTIONAL + DOMAIN_PREFIX + "/" + ENTITY_PATH)
 public class DomainEntityResource extends ResourceBase {
-
-  public static final String ENTITY_PARAM = "entityName";
 
   private static final Logger LOG = LoggerFactory.getLogger(DomainEntityResource.class);
 
