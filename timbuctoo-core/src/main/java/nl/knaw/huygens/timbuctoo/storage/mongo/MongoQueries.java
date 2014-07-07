@@ -35,8 +35,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.storage.PropertyMap;
 
-import org.mongojack.DBQuery;
-
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
@@ -121,7 +120,16 @@ public class MongoQueries {
    * This assumes that entity id's are unique over the various collections.
    */
   public DBObject selectRelationsByEntityId(String id) {
-    return DBQuery.or(DBQuery.is("^sourceId", id), DBQuery.is("^targetId", id));
+    return or(new BasicDBObject("^sourceId", id), new BasicDBObject("^targetId", id));
+  }
+
+  private DBObject or(DBObject... subQueries) {
+    BasicDBList or = new BasicDBList();
+    for (DBObject dbObject : subQueries) {
+      or.add(dbObject);
+    }
+
+    return new BasicDBObject("$or", or);
   }
 
   /**
@@ -129,7 +137,11 @@ public class MongoQueries {
    * This assumes that entity id's are unique over the various collections.
    */
   public DBObject selectRelationsByEntityIds(List<String> ids) {
-    return DBQuery.or(DBQuery.in("^sourceId", ids), DBQuery.in("^targetId", ids));
+    return or(in("^sourceId", ids), in("^targetId", ids));
+  }
+
+  private DBObject in(String fieldName, List<String> ids) {
+    return new BasicDBObject(fieldName, new BasicDBObject("$in", ids));
   }
 
   public DBObject selectRelationsByIds(String sourceId, String targetId, String relationTypeId) {
