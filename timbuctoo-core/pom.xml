@@ -61,13 +61,13 @@
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongo-java-driver</artifactId>
-      <version>2.9.1</version>
+      <version>2.12.2</version>
     </dependency>
     <!-- Mongo with Jackson 2.0 plugin -->
     <dependency>
       <groupId>org.mongojack</groupId>
       <artifactId>mongojack</artifactId>
-      <version>2.0.0-RC1</version>
+      <version>2.0.0</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
