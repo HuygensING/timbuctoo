@@ -121,7 +121,7 @@
   function doPost1() {
 	var errorToken = $('#error');
     jQuery.ajax({
-      url: searchUrl,
+      url: searchUrl + '/' + $('#searchtype1').val() + 's',
       type: 'POST',
       data: JSON.stringify({
         'typeString': $('#searchtype1').val(),
@@ -147,7 +147,7 @@
   function doPost2() {
   var errorToken = $('#error');
     jQuery.ajax({
-      url: searchUrl,
+      url: searchUrl + '/' + $('#searchtype1').val() + 's',
       type: 'POST',
       data: JSON.stringify({
         'typeString': $('#searchtype2').val(),
@@ -173,7 +173,7 @@
   function doPost3() {
   var errorToken = $('#error');
     jQuery.ajax({
-      url: searchUrl + "/relations",
+      url: searchUrl + "/wwrelations",
       type: 'POST',
       data: JSON.stringify({
         'typeString': 'wwrelation',

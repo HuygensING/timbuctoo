@@ -120,7 +120,7 @@ public class SearchResource extends ResourceBase {
     SearchParametersV1 searchParamsV1 = searchParametersConverter.toV1(searchParams);
 
     String typeString = StringUtils.trimToNull(searchParams.getTypeString());
-    searchRequestValidator.validate(vreId, typeString, searchParamsV1);
+    searchRequestValidator.validate(vreId, registry.getXNameForIName(typeString), searchParamsV1);
 
     VRE vre = vreManager.getVREById(vreId);
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
@@ -225,7 +225,7 @@ public class SearchResource extends ResourceBase {
     final String typeString = params.getTypeString();
     Class<? extends DomainEntity> relationType = registry.getDomainEntityType(typeString);
 
-    searchRequestValidator.validateRelationRequest(vreId, typeString, params);
+    searchRequestValidator.validateRelationRequest(vreId, registry.getXNameForIName(typeString), params);
 
     VRE vre = vreManager.getVREById(vreId);
 

@@ -147,7 +147,7 @@ text {
   function doPost() {
   var errorToken = $('#error');
     jQuery.ajax({
-      url: searchUrl,
+      url: searchUrl + '/' +$('#searchtype').val() + 's',
       type: 'POST',
       data: JSON.stringify({
         'scopeId': $('#searchscope').val(),
