@@ -5,6 +5,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -33,7 +34,7 @@ public class MongoRelationSearcher extends RelationSearcher {
   }
 
   @Override
-  public SearchResult search(VRE vre, RelationSearchParameters relationSearchParameters) throws SearchException {
+  public SearchResult search(VRE vre, Class<? extends DomainEntity> relationType, RelationSearchParameters relationSearchParameters) throws SearchException {
     List<String> sourceIds = getSearchResultIds(relationSearchParameters.getSourceSearchId());
     List<String> targetIds = getSearchResultIds(relationSearchParameters.getTargetSearchId());
 

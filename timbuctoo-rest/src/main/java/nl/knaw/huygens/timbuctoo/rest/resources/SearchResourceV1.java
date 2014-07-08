@@ -240,7 +240,7 @@ public class SearchResourceV1 extends ResourceBase {
 
     // Process
     try {
-      SearchResult result = relationSearcher.search(vre, params);
+      SearchResult result = relationSearcher.search(vre, relationType, params);
       String queryId = saveSearchResult(result);
       return Response.created(new URI(queryId)).build();
     } catch (Exception e) {

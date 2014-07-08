@@ -105,7 +105,7 @@ public class SolrRelationSearcherTest {
     when(relationSearcherParametersConverterMock.toSearchParamtersV1(relationSearchParameters)).thenReturn(searchParametersV1);
 
     // action
-    SearchResult actualResult = instance.search(vreMock, relationSearchParameters);
+    SearchResult actualResult = instance.search(vreMock, Relation.class, relationSearchParameters);
 
     // verify
     verify(relationSearcherParametersConverterMock).toSearchParamtersV1(relationSearchParameters);
@@ -135,7 +135,7 @@ public class SolrRelationSearcherTest {
     when(repositoryMock.getRelationTypeIdsByName(relationTypeNames)).thenReturn(relationTypeIds);
 
     // action
-    SearchResult actualResult = instance.search(vreMock, relationSearchParameters);
+    SearchResult actualResult = instance.search(vreMock, Relation.class, relationSearchParameters);
 
     // verify
     InOrder inOrder = Mockito.inOrder(repositoryMock, relationSearcherParametersConverterMock);
@@ -175,7 +175,7 @@ public class SolrRelationSearcherTest {
     doThrow(exceptionToBeThrown).when(indexMock).search(searchParametersV1);
 
     // action
-    instance.search(vreMock, relationSearchParameters);
+    instance.search(vreMock, Relation.class, relationSearchParameters);
 
     // verify
     verify(relationSearcherParametersConverterMock).toSearchParamtersV1(relationSearchParameters);

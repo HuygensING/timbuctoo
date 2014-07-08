@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.isNotNull;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -58,6 +59,7 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
@@ -87,6 +89,7 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class SearchResourceTest extends WebServiceTestSetup {
 
+  private static final String RELATION_TYPE_STRING = "testrelation";
   private static final Set<String> SORTABLE_FIELDS = Sets.newHashSet("test1", "test");
   private static final String SCOPE_ID = "base";
   private static final String TERM = "dynamic_t_name:Huygens";
@@ -428,6 +431,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     String expectedLocationHeader = getRelationSearchURL(ID);
 
     RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+    relationSearchParameters.setTypeString(RELATION_TYPE_STRING);
 
     final VRE vreMock = mock(VRE.class);
     final SearchResult searchResultMock = mock(SearchResult.class);
@@ -435,7 +439,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
 
     when(vreManager.getVREById(VRE_ID)).thenReturn(vreMock);
-    when(relationSearcher.search(any(VRE.class), any(RelationSearchParameters.class))).thenReturn(searchResultMock);
+    when(relationSearcher.search(any(VRE.class), isNotNull(new GenericType<Class<? extends Relation>>() {}.getRawClass()), any(RelationSearchParameters.class))).thenReturn(searchResultMock);
     when(repository.addSystemEntity(SearchResult.class, searchResultMock)).thenReturn(ID);
 
     // action
@@ -446,7 +450,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertThat(response.getLocation().toString(), equalTo(expectedLocationHeader));
 
     verify(searchRequestValidator).validateRelationRequest(anyString(), any(RelationSearchParameters.class));
-    verify(relationSearcher).search(any(VRE.class), any(RelationSearchParameters.class));
+    verify(relationSearcher).search(any(VRE.class), isNotNull(new GenericType<Class<? extends Relation>>() {}.getRawClass()), any(RelationSearchParameters.class));
     verify(repository).addSystemEntity(SearchResult.class, searchResultMock);
 
   }
@@ -472,14 +476,16 @@ public class SearchResourceTest extends WebServiceTestSetup {
   public void whenTheRepositoryCannotStoreTheRelationSearchResultAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
     // setup
     RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+    relationSearchParameters.setTypeString(RELATION_TYPE_STRING);
 
     final VRE vreMock = mock(VRE.class);
     final SearchResult searchResultMock = mock(SearchResult.class);
 
     RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
+    relationSearchParameters.setTypeString(RELATION_TYPE_STRING);
 
     when(vreManager.getVREById(VRE_ID)).thenReturn(vreMock);
-    when(relationSearcher.search(any(VRE.class), any(RelationSearchParameters.class))).thenReturn(searchResultMock);
+    when(relationSearcher.search(any(VRE.class), isNotNull(new GenericType<Class<? extends Relation>>() {}.getRawClass()), any(RelationSearchParameters.class))).thenReturn(searchResultMock);
     doThrow(Exception.class).when(repository).addSystemEntity(SearchResult.class, searchResultMock);
 
     // action
@@ -489,7 +495,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertThat(response.getClientResponseStatus(), equalTo(INTERNAL_SERVER_ERROR));
 
     verify(searchRequestValidator).validateRelationRequest(anyString(), any(RelationSearchParameters.class));
-    verify(relationSearcher).search(any(VRE.class), any(RelationSearchParameters.class));
+    verify(relationSearcher).search(any(VRE.class), isNotNull(new GenericType<Class<? extends Relation>>() {}.getRawClass()), any(RelationSearchParameters.class));
     verify(repository).addSystemEntity(SearchResult.class, searchResultMock);
   }
 
@@ -497,12 +503,13 @@ public class SearchResourceTest extends WebServiceTestSetup {
   public void whenTheRelationSearcherThrowsAnSearchExceptionAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
     // setup
     RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+    relationSearchParameters.setTypeString(RELATION_TYPE_STRING);
 
     final VRE vreMock = mock(VRE.class);
     RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
 
     when(vreManager.getVREById(VRE_ID)).thenReturn(vreMock);
-    doThrow(SearchException.class).when(relationSearcher).search(any(VRE.class), any(RelationSearchParameters.class));
+    doThrow(SearchException.class).when(relationSearcher).search(any(VRE.class), isNotNull(new GenericType<Class<? extends Relation>>() {}.getRawClass()), any(RelationSearchParameters.class));
 
     // action
     ClientResponse response = resource().path("search").path("relations").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
@@ -511,7 +518,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     assertThat(response.getClientResponseStatus(), equalTo(INTERNAL_SERVER_ERROR));
 
     verify(searchRequestValidator).validateRelationRequest(anyString(), any(RelationSearchParameters.class));
-    verify(relationSearcher).search(any(VRE.class), any(RelationSearchParameters.class));
+    verify(relationSearcher).search(any(VRE.class), isNotNull(new GenericType<Class<? extends Relation>>() {}.getRawClass()), any(RelationSearchParameters.class));
     verifyZeroInteractions(repository);
   }
 

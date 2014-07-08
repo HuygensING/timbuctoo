@@ -222,13 +222,15 @@ public class SearchResource extends ResourceBase {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response relationPost(@HeaderParam("VRE_ID") String vreId, RelationSearchParameters params) {
 
+    Class<? extends DomainEntity> relationType = registry.getDomainEntityType(params.getTypeString());
+
     searchRequestValidator.validateRelationRequest(vreId, params);
 
     VRE vre = vreManager.getVREById(vreId);
 
     // Process
     try {
-      SearchResult result = relationSearcher.search(vre, params);
+      SearchResult result = relationSearcher.search(vre, relationType, params);
       String queryId = putSearchResult(result);
       return Response.created(new URI(queryId)).build();
     } catch (Exception e) {

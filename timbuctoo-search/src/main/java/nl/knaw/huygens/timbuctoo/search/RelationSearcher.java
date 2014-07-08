@@ -4,6 +4,7 @@ import java.util.List;
 
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
@@ -20,7 +21,7 @@ public abstract class RelationSearcher {
     this.repository = repository;
   }
 
-  public abstract SearchResult search(VRE vre, RelationSearchParameters relationSearchParameters) throws SearchException, SearchValidationException;
+  public abstract SearchResult search(VRE vre, Class<? extends DomainEntity> relationType, RelationSearchParameters relationSearchParameters) throws SearchException, SearchValidationException;
 
   protected void logStopWatchTimeInSeconds(StopWatch stopWatch, String eventDescription) {
     LOG.info(String.format("%s: %.3f seconds", eventDescription, (double) stopWatch.getTime() / 1000));

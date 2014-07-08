@@ -75,7 +75,7 @@ public class SolrRelationSearcher extends RelationSearcher {
   }
 
   @Override
-  public SearchResult search(VRE vre, RelationSearchParameters relationSearchParameters) throws SearchException, SearchValidationException {
+  public SearchResult search(VRE vre, Class<? extends DomainEntity> relationType, RelationSearchParameters relationSearchParameters) throws SearchException, SearchValidationException {
     StopWatch getIdsStopWatch = new StopWatch();
     getIdsStopWatch.start();
 

@@ -80,7 +80,7 @@ public class MongoRelationSearcherTest {
     params.setTypeString(typeString);
 
     // action 
-    SearchResult actualResult = instance.search(vreMock, params);
+    SearchResult actualResult = instance.search(vreMock, Relation.class, params);
 
     // verify
     verify(repositoryMock).getRelationsByType(RELATION_VARIATION, relationTypeIds);
@@ -105,7 +105,7 @@ public class MongoRelationSearcherTest {
     when(repositoryMock.getRelationTypeIdsByName(relationTypeNames)).thenReturn(relationTypeIds);
 
     // action 
-    SearchResult actualResult = instance.search(vreMock, params);
+    SearchResult actualResult = instance.search(vreMock, Relation.class, params);
 
     // verify
     verify(repositoryMock).getRelationTypeIdsByName(relationTypeNames);
@@ -127,7 +127,7 @@ public class MongoRelationSearcherTest {
     doThrow(StorageException.class).when(repositoryMock).getRelationsByType(Mockito.<Class<? extends Relation>> any(), Mockito.<List<String>> any());
 
     // action 
-    instance.search(vreMock, params);
+    instance.search(vreMock, Relation.class, params);
 
   }
 }
