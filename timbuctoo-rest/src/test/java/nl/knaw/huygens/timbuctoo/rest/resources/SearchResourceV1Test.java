@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.isNotNull;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -89,7 +90,7 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
   private static final String SCOPE_ID = "base";
   private static final String TERM = "dynamic_t_name:Huygens";
   private static final String LOCATION_HEADER = "Location";
-  private static final String TYPE_STRING = "person";
+  private static final String TYPE_STRING = "persons";
   private static final String ID = "QURY0000000001";
 
   private VREManager vreManager;
@@ -113,7 +114,7 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
   }
 
   private void setSearchResult(SearchResult searchResult) throws Exception {
-    when(searchManager.search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParametersV1.class))).thenReturn(searchResult);
+    when(searchManager.search(any(VRE.class), isNotNull(new GenericType<Class<? extends DomainEntity>>() {}.getRawClass()), any(SearchParametersV1.class))).thenReturn(searchResult);
   }
 
   private void setupPublicUrl(String url) {
@@ -133,21 +134,31 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     }
   }
 
-  private WebResource.Builder getResourceBuilder() {
-    return resource().path(V1_PREFIX).path("search").type(MediaType.APPLICATION_JSON);
+  private WebResource.Builder searchResourceBuilder(String... pathElements) {
+    return searchResource(pathElements).type(MediaType.APPLICATION_JSON);
+  }
+
+  private WebResource searchResource(String... pathElements) {
+    WebResource resource = resource().path(V1_PREFIX).path("search");
+    for (String pathElement : pathElements) {
+      resource = resource.path(pathElement);
+    }
+    return resource;
   }
 
   @Test
   public void testPostSuccess() throws Exception {
     setUpVREManager(true, true);
 
-    SearchParametersV1 params = new SearchParametersV1().setTypeString(TYPE_STRING).setTerm(TERM);
+    SearchParametersV1 params = new SearchParametersV1().setTerm(TERM);
     SearchResult searchResult = mock(SearchResult.class);
     setSearchResult(searchResult);
     when(repository.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
 
+    setupPublicUrl(resource().getURI().toString());
+
     String expected = getExpectedURL(ID);
-    ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
+    ClientResponse response = searchResourceBuilder(TYPE_STRING).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
     String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
     assertEquals(Status.CREATED, response.getClientResponseStatus());
@@ -166,7 +177,7 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     doThrow(new TimbuctooException(Response.Status.BAD_REQUEST, "Error")).when(searchRequestValidator).validate(anyString(), any(SearchParametersV1.class));
 
     // action
-    ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, SearchParametersV1);
+    ClientResponse response = searchResourceBuilder(TYPE_STRING).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, SearchParametersV1);
 
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(Status.BAD_REQUEST));
@@ -178,10 +189,10 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
   public void testPostSearchManagerThrowsAnException() throws Exception {
     setUpVREManager(true, true);
 
-    SearchParametersV1 params = new SearchParametersV1().setTypeString(TYPE_STRING).setTerm(TERM);
+    SearchParametersV1 params = new SearchParametersV1().setTerm(TERM);
     doThrow(Exception.class).when(searchManager).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParametersV1.class));
 
-    ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
+    ClientResponse response = searchResourceBuilder(TYPE_STRING).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
 
     assertEquals(Status.INTERNAL_SERVER_ERROR, response.getClientResponseStatus());
     verify(repository, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
@@ -191,12 +202,12 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
   public void testPostStorageManagerThrowsAnException() throws Exception {
     setUpVREManager(true, true);
 
-    SearchParametersV1 params = new SearchParametersV1().setTypeString(TYPE_STRING).setTerm(TERM);
+    SearchParametersV1 params = new SearchParametersV1().setTerm(TERM);
     SearchResult searchResult = mock(SearchResult.class);
     setSearchResult(searchResult);
     doThrow(IOException.class).when(repository).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
 
-    ClientResponse response = getResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
+    ClientResponse response = searchResourceBuilder(TYPE_STRING).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
 
     assertEquals(Status.INTERNAL_SERVER_ERROR, response.getClientResponseStatus());
     verify(vreManager).getVREById(anyString());
@@ -214,16 +225,22 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     List<Facet> facets = createFacets();
     setUpSearchResult(idList, repository, facets);
 
-    WebResource resource = super.resource();
-    setupPublicUrl(resource.getURI().toString());
+    setupPublicUrl(resource().getURI().toString());
 
-    String nextUri = String.format("%ssearch/%s?start=10&rows=10", resource.getURI(), ID);
+    String nextUri = getHATEOASUrl(ID, 10, 10);
     int returnedRows = 10;
     Map<String, Object> expected = createExpectedResult(idList, personList, facets, startIndex, numberOfRows, SORTABLE_FIELDS, returnedRows, nextUri, null);
 
-    Map<String, Object> actual = resource.path("search").path(ID).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<Map<String, Object>>() {});
+    ClientResponse clientResponse = searchResourceBuilder(ID).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
+    assertThat(clientResponse.getClientResponseStatus(), equalTo(ClientResponse.Status.OK));
+
+    Map<String, Object> actual = clientResponse.getEntity(new GenericType<Map<String, Object>>() {});
     compareResults(expected, actual);
+  }
+
+  private String getHATEOASUrl(String id, int start, int rows) {
+    return String.format("%s?start=%d&rows=%d", getExpectedURL(id), start, rows);
   }
 
   @Test
@@ -243,16 +260,18 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     queryParameters.add("start", "20");
     queryParameters.add("rows", "20");
 
-    WebResource resource = super.resource();
-    setupPublicUrl(resource.getURI().toString());
+    setupPublicUrl(resource().getURI().toString());
 
-    String prevUri = String.format("%ssearch/%s?start=0&rows=20", resource.getURI(), ID);
-    String nextUri = String.format("%ssearch/%s?start=40&rows=20", resource.getURI(), ID);
+    String prevUri = getHATEOASUrl(ID, 0, 20);
+    String nextUri = getHATEOASUrl(ID, 40, 20);
     int returnedRows = 20;
     Map<String, Object> expected = createExpectedResult(idList, personList, facets, startIndex, numberOfRows, SORTABLE_FIELDS, returnedRows, nextUri, prevUri);
 
-    Map<String, Object> actual = resource.path("search").path(ID).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE)
-        .get(new GenericType<Map<String, Object>>() {});
+    ClientResponse clientResponse = searchResource(ID).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+
+    assertThat(clientResponse.getClientResponseStatus(), equalTo(ClientResponse.Status.OK));
+
+    Map<String, Object> actual = clientResponse.getEntity(new GenericType<Map<String, Object>>() {});
 
     compareResults(expected, actual);
   }
@@ -274,15 +293,17 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     queryParameters.add("start", "10");
     queryParameters.add("rows", "100");
 
-    WebResource resource = super.resource();
-    setupPublicUrl(resource.getURI().toString());
+    setupPublicUrl(resource().getURI().toString());
 
-    String prevUri = String.format("%ssearch/%s?start=0&rows=100", resource.getURI(), ID);
+    String prevUri = getHATEOASUrl(ID, 0, 100);
     int returnedRows = 90;
     Map<String, Object> expected = createExpectedResult(idList, personList, facets, startIndex, numberOfRows, SORTABLE_FIELDS, returnedRows, null, prevUri);
 
-    Map<String, Object> actual = resource.path("search").path(ID).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE)
-        .get(new GenericType<Map<String, Object>>() {});
+    ClientResponse clientResponse = searchResource(ID).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+
+    assertThat(clientResponse.getClientResponseStatus(), equalTo(ClientResponse.Status.OK));
+
+    Map<String, Object> actual = clientResponse.getEntity(new GenericType<Map<String, Object>>() {});
 
     compareResults(expected, actual);
   }
@@ -293,16 +314,18 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
 
     Map<String, Object> expected = createExpectedResult(Lists.<String> newArrayList(), Lists.<Person> newArrayList(), Lists.<Facet> newArrayList(), 0, 0, SORTABLE_FIELDS, 0, null, null);
 
-    WebResource resource = super.resource();
-    Map<String, Object> actual = resource.path("search").path(ID).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<Map<String, Object>>() {});
+    ClientResponse clientResponse = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+
+    assertThat(clientResponse.getClientResponseStatus(), equalTo(ClientResponse.Status.OK));
+
+    Map<String, Object> actual = clientResponse.getEntity(new GenericType<Map<String, Object>>() {});
 
     compareResults(expected, actual);
   }
 
   @Test
   public void testGetNoId() {
-    WebResource resource = super.resource();
-    ClientResponse response = resource.path("search").type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+    ClientResponse response = searchResourceBuilder().accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
     assertEquals(Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
   }
@@ -311,8 +334,7 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
   public void testGetUnknownId() {
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(null);
 
-    WebResource resource = super.resource();
-    ClientResponse response = resource.path("search").path(ID).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+    ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
     assertEquals(Status.NOT_FOUND, response.getClientResponseStatus());
   }
@@ -326,8 +348,7 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
 
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
 
-    WebResource resource = super.resource();
-    ClientResponse response = resource.path("search").path(ID).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+    ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
     assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
   }

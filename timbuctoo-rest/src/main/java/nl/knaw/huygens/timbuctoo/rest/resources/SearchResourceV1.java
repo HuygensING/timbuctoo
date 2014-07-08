@@ -25,7 +25,10 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH;
+import static nl.knaw.huygens.timbuctoo.rest.resources.SearchResourceV1.SEARCH_PATH;
 
 import java.net.URI;
 import java.util.List;
@@ -69,7 +72,6 @@ import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,8 +81,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
-@Path(V1_PATH + "/search")
+@Path(V1_PATH + "/" + SEARCH_PATH)
 public class SearchResourceV1 extends ResourceBase {
+
+  public static final String SEARCH_PATH = "search";
 
   private static final String RELATION_SEARCH_PREFIX = "relations";
 
@@ -110,21 +114,21 @@ public class SearchResourceV1 extends ResourceBase {
   }
 
   @POST
+  @Path("/" + ENTITY_PATH)
   @APIDesc("Searches the Solr index")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response regularPost(SearchParametersV1 searchParams, @HeaderParam("VRE_ID") String vreId) {
+  public Response regularPost(SearchParametersV1 searchParams, @PathParam(ENTITY_PARAM) String typeString, @HeaderParam("VRE_ID") String vreId) {
 
     searchRequestValidator.validate(vreId, searchParams);
 
     VRE vre = vreManager.getVREById(vreId);
-    String typeString = StringUtils.trimToNull(searchParams.getTypeString());
-    Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
+    Class<? extends DomainEntity> type = registry.getTypeForXName(typeString);
 
     // Process
     try {
       SearchResult result = searchManager.search(vre, type, searchParams);
-      String queryId = putSearchResult(result);
-      return Response.created(new URI(queryId)).build();
+      String queryId = saveSearchResult(result);
+      return Response.created(createHATEOASURI(queryId)).build();
     } catch (SearchValidationException e) {
       throw new TimbuctooException(BAD_REQUEST, "Search request not valid: %s", e.getMessage());
     } catch (Exception e) {
@@ -185,9 +189,19 @@ public class SearchResourceV1 extends ResourceBase {
     return Response.ok(returnValue).build();
   }
 
+  private URI createHATEOASURI(String queryId) {
+    UriBuilder builder = UriBuilder.fromUri(config.getSetting("public_url"));
+    builder.path(V1_PATH);
+    builder.path(SEARCH_PATH);
+    builder.path(queryId);
+
+    return builder.build();
+  }
+
   private URI createHATEOASURI(final int start, final int rows, String queryId, boolean isRelationSearch) {
     UriBuilder builder = UriBuilder.fromUri(config.getSetting("public_url"));
-    builder.path("search");
+    builder.path(V1_PATH);
+    builder.path(SEARCH_PATH);
 
     if (isRelationSearch) {
       builder.path(RELATION_SEARCH_PREFIX);
@@ -206,7 +220,7 @@ public class SearchResourceV1 extends ResourceBase {
     return repository.getEntity(SearchResult.class, id);
   }
 
-  private String putSearchResult(SearchResult result) throws StorageException, ValidationException {
+  private String saveSearchResult(SearchResult result) throws StorageException, ValidationException {
     return repository.addSystemEntity(SearchResult.class, result);
   }
 
@@ -223,7 +237,7 @@ public class SearchResourceV1 extends ResourceBase {
     // Process
     try {
       SearchResult result = relationSearcher.search(vre, params);
-      String queryId = putSearchResult(result);
+      String queryId = saveSearchResult(result);
       return Response.created(new URI(queryId)).build();
     } catch (Exception e) {
       e.printStackTrace();
