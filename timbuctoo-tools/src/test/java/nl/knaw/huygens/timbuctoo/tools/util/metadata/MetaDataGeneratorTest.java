@@ -81,7 +81,6 @@ public class MetaDataGeneratorTest {
     verify(fieldMetaDataGeneratorMock1).addMetaDataToMap(metaDataMapMock, field1);
     verify(fieldMetaDataGeneratorFactoryMock).create(field2, containingType);
     verify(fieldMetaDataGeneratorMock2).addMetaDataToMap(metaDataMapMock, field2);
-
   }
 
   @Test
@@ -102,18 +101,22 @@ public class MetaDataGeneratorTest {
     verifyZeroInteractions(fieldMetaDataGeneratorFactoryMock);
   }
 
+  @SuppressWarnings("unused")
   private static class TestConcreteClass {
     private Object field1;
     private Object field2;
   }
 
+  @SuppressWarnings("unused")
   private static abstract class TestAbstractClass {
     private Object field1;
     private Object field2;
   }
 
+  @SuppressWarnings("unused")
   private static interface TestInterface {
     String FIELD1 = "FIELD1";
     String FIELD2 = "FIELD2";
   }
+
 }

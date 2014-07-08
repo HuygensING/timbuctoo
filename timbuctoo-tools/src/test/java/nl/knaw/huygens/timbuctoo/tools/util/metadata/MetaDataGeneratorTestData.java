@@ -28,6 +28,8 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class MetaDataGeneratorTestData {
+
+  @SuppressWarnings("unused")
   static class TestModel {
     protected int testInt;
     private String testString;
@@ -36,14 +38,17 @@ public class MetaDataGeneratorTestData {
     private TestModel nestedObject;
   }
 
+  @SuppressWarnings("unused")
   static class OtherModel extends TestModel {
     private String test;
   }
 
+  @SuppressWarnings("unused")
   static class SubOtherModel extends OtherModel {
     private Integer subOtherInt;
   }
 
+  @SuppressWarnings("unused")
   static class SubSubOtherModel extends SubOtherModel {
     private int subSubOtherInt;
   }
@@ -56,11 +61,13 @@ public class MetaDataGeneratorTestData {
 
   }
 
+  @SuppressWarnings("unused")
   static class TypeWithStaticFields {
     private static String staticTest;
     private String test;
   }
 
+  @SuppressWarnings("unused")
   static class TypeWithGenericFields {
     private List<String> testList;
     private Map<String, String> testMap;
@@ -81,6 +88,7 @@ public class MetaDataGeneratorTestData {
     }
   }
 
+  @SuppressWarnings("unused")
   public static class TypeWithAnnotatedSetter {
     private String annotatedString;
 
@@ -90,11 +98,13 @@ public class MetaDataGeneratorTestData {
     }
   }
 
+  @SuppressWarnings("unused")
   static class ClassWithConstants {
     private static final String TEST_STRING = "TEST";
     public static final int TEST_INT = 1234;
   }
 
+  @SuppressWarnings("unused")
   static class ClassWithEnumValues {
     private enum TestEnum {
       TEST1, TEST2
@@ -103,6 +113,7 @@ public class MetaDataGeneratorTestData {
     private TestEnum test;
   }
 
+  @SuppressWarnings("unused")
   static class ClassWithListOfEnumValues {
     private enum TestEnum {
       TEST1, TEST2
@@ -111,6 +122,7 @@ public class MetaDataGeneratorTestData {
     private List<TestEnum> test;
   }
 
+  @SuppressWarnings("unused")
   static class ClassWithPoorMansEnum {
     static class PoorMansEnum {
       public static final String VALUE1 = "TEST1";
@@ -120,6 +132,7 @@ public class MetaDataGeneratorTestData {
     private String poorMansEnum;
   }
 
+  @SuppressWarnings("unused")
   static class ClassWithPoorMansEnumList {
     static class PoorMansEnum {
       public static final String VALUE1 = "TEST1";
@@ -129,6 +142,7 @@ public class MetaDataGeneratorTestData {
     private List<String> poorMansEnum;
   }
 
+  @SuppressWarnings("unused")
   public static class ClassWithTypeOfInnerClass {
     public static class InnerClass {
       private String test;
@@ -136,4 +150,5 @@ public class MetaDataGeneratorTestData {
 
     private InnerClass testClass;
   }
+
 }

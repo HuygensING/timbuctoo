@@ -37,11 +37,14 @@ import com.google.common.base.Objects;
  */
 @IDPrefix("RELA")
 public class Relation extends DomainEntity {
-  public static final String TARGET_ID_FACET_NAME = "dynamic_s_targetId";
+
+  public static final String SOURCE_ID = "^sourceId";
+  public static final String TARGET_ID = "^targetId";
+  public static final String TYPE_ID = "^typeId";
 
   public static final String SOURCE_ID_FACET_NAME = "dynamic_s_sourceId";
-
-  public static final String RELATION_TYPE_ID_FACET_NAME = "dynamic_s_typeId";
+  public static final String TARGET_ID_FACET_NAME = "dynamic_s_targetId";
+  public static final String TYPE_ID_FACET_NAME = "dynamic_s_typeId";
 
   /** A reference to the 'active' participant of the relation (resembles rdf:subject). */
   private String sourceType;
@@ -91,7 +94,7 @@ public class Relation extends DomainEntity {
     this.sourceType = sourceRefType;
   }
 
-  @JsonProperty("^sourceId")
+  @JsonProperty(SOURCE_ID)
   @IndexAnnotation(fieldName = SOURCE_ID_FACET_NAME, isFaceted = true)
   public String getSourceId() {
     return sourceId;
@@ -101,7 +104,7 @@ public class Relation extends DomainEntity {
     return sourceId != null && sourceId.equals(id);
   }
 
-  @JsonProperty("^sourceId")
+  @JsonProperty(SOURCE_ID)
   public void setSourceId(String sourceRefId) {
     this.sourceId = sourceRefId;
   }
@@ -130,13 +133,13 @@ public class Relation extends DomainEntity {
     this.typeType = typeRefType;
   }
 
-  @JsonProperty("^typeId")
-  @IndexAnnotation(fieldName = RELATION_TYPE_ID_FACET_NAME, isFaceted = true)
+  @JsonProperty(TYPE_ID)
+  @IndexAnnotation(fieldName = TYPE_ID_FACET_NAME, isFaceted = true)
   public String getTypeId() {
     return typeId;
   }
 
-  @JsonProperty("^typeId")
+  @JsonProperty(TYPE_ID)
   public void setTypeId(String typeRefId) {
     this.typeId = typeRefId;
   }
@@ -165,7 +168,7 @@ public class Relation extends DomainEntity {
     this.targetType = targetRefType;
   }
 
-  @JsonProperty("^targetId")
+  @JsonProperty(TARGET_ID)
   @IndexAnnotation(fieldName = TARGET_ID_FACET_NAME, isFaceted = true)
   public String getTargetId() {
     return targetId;
@@ -175,7 +178,7 @@ public class Relation extends DomainEntity {
     return targetId != null && targetId.equals(id);
   }
 
-  @JsonProperty("^targetId")
+  @JsonProperty(TARGET_ID)
   public void setTargetId(String targetRefId) {
     this.targetId = targetRefId;
   }

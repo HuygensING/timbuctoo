@@ -95,10 +95,10 @@ public class Repository {
    * Create indexes, if they don't already exist.
    */
   private void ensureIndexes() throws StorageException {
-    storage.ensureIndex(false, Relation.class, "^typeId");
-    storage.ensureIndex(false, Relation.class, "^sourceId");
-    storage.ensureIndex(false, Relation.class, "^targetId");
-    storage.ensureIndex(false, Relation.class, "^sourceId", "^targetId");
+    storage.ensureIndex(false, Relation.class, Relation.TYPE_ID);
+    storage.ensureIndex(false, Relation.class, Relation.SOURCE_ID);
+    storage.ensureIndex(false, Relation.class, Relation.TARGET_ID);
+    storage.ensureIndex(false, Relation.class, Relation.SOURCE_ID, Relation.TARGET_ID);
     storage.ensureIndex(true, Language.class, Language.CODE);
   }
 

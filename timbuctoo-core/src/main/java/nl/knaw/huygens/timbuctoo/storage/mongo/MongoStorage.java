@@ -473,11 +473,10 @@ public class MongoStorage implements Storage {
   @Override
   public <T extends Relation> T findRelation(Class<T> type, String sourceId, String targetId, String relationTypeId) throws StorageException {
     if (sourceId != null && targetId != null && relationTypeId != null) {
-      // TODO Use index on "^sourceId" and "^targetId"
       DBObject query = new BasicDBObject();
-      query.put("^sourceId", sourceId);
-      query.put("^targetId", targetId);
-      query.put("^typeId", relationTypeId);
+      query.put(Relation.SOURCE_ID, sourceId);
+      query.put(Relation.TARGET_ID, targetId);
+      query.put(Relation.TYPE_ID, relationTypeId);
       return getItem(type, query);
     }
     return null;
@@ -491,7 +490,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Relation> List<T> getRelationsByType(Class<T> type, List<String> relationTypeIds) throws StorageException {
-    DBObject query = queries.selectByProperty(type, "^typeId", relationTypeIds);
+    DBObject query = queries.selectByProperty(type, Relation.TYPE_ID, relationTypeIds);
 
     return findItems(type, query).getAll();
   }

@@ -32,6 +32,7 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.storage.PropertyMap;
 
@@ -120,7 +121,7 @@ public class MongoQueries {
    * This assumes that entity id's are unique over the various collections.
    */
   public DBObject selectRelationsByEntityId(String id) {
-    return or(new BasicDBObject("^sourceId", id), new BasicDBObject("^targetId", id));
+    return or(new BasicDBObject(Relation.SOURCE_ID, id), new BasicDBObject(Relation.TARGET_ID, id));
   }
 
   private DBObject or(DBObject... subQueries) {
@@ -137,7 +138,7 @@ public class MongoQueries {
    * This assumes that entity id's are unique over the various collections.
    */
   public DBObject selectRelationsByEntityIds(List<String> ids) {
-    return or(in("^sourceId", ids), in("^targetId", ids));
+    return or(in(Relation.SOURCE_ID, ids), in(Relation.TARGET_ID, ids));
   }
 
   private DBObject in(String fieldName, List<String> ids) {
@@ -147,13 +148,13 @@ public class MongoQueries {
   public DBObject selectRelationsByIds(String sourceId, String targetId, String relationTypeId) {
     DBObject query = new BasicDBObject();
     if (sourceId != null) {
-      query.put("^sourceId", sourceId);
+      query.put(Relation.SOURCE_ID, sourceId);
     }
     if (targetId != null) {
-      query.put("^targetId", targetId);
+      query.put(Relation.TARGET_ID, targetId);
     }
     if (relationTypeId != null) {
-      query.put("^typeId", relationTypeId);
+      query.put(Relation.TYPE_ID, relationTypeId);
     }
     return query;
   }

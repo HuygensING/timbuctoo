@@ -72,6 +72,7 @@ class LocalSolrServer {
     commitWithin = config.getIntSetting("solr.commit_within", 10 * 1000);
     LOG.info("Maximum time before a commit: {} seconds", commitWithin / 1000);
 
+    @SuppressWarnings("unused")
     File configFile = new File(new File(solrHomeDir, "conf"), "solr.xml");
     //      container = new CoreContainer(solrHomeDir, configFile);
     container = null;
@@ -84,7 +85,9 @@ class LocalSolrServer {
     checkArgument(collection != null && collection.matches("^[a-z]+$"), "collection '%s'", collection);
     checkArgument(coreName != null && coreName.matches("^[a-z\\.]+$"), "coreName '%s'", coreName);
 
+    @SuppressWarnings("unused")
     String schemaName = getSchemaName(collection);
+    @SuppressWarnings("unused")
     String dataDir = "data/" + coreName.replace('.', '/');
 
     CoreDescriptor descriptor = new CoreDescriptor(container, coreName, solrHomeDir);

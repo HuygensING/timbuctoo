@@ -244,7 +244,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     List<String> relationTypeIds = Lists.newArrayList(id1, id2);
 
     final Class<Relation> type = Relation.class;
-    DBObject query = queries.selectByProperty(type, "^typeId", relationTypeIds);
+    DBObject query = queries.selectByProperty(type, Relation.TYPE_ID, relationTypeIds);
 
     // action
     storage.getRelationsByType(type, relationTypeIds);

@@ -22,8 +22,6 @@ package test.timbuctoo.index.model;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-
 public class Type2 extends BaseType2 {
 
 }

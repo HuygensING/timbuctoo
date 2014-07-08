@@ -36,6 +36,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -251,8 +252,8 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
   protected DBObject createRelatedToQuery(List<String> inputIds) {
     //You can not use DBQuery.or or DBQuery.in in tests, because the equals will fail.
     BasicDBObject inCollection = new BasicDBObject("$in", inputIds);
-    DBObject sourceIdIn = new BasicDBObject("^sourceId", inCollection);
-    DBObject targetIdIn = new BasicDBObject("^targetId", inCollection);
+    DBObject sourceIdIn = new BasicDBObject(Relation.SOURCE_ID, inCollection);
+    DBObject targetIdIn = new BasicDBObject(Relation.TARGET_ID, inCollection);
     DBObject query = new BasicDBObject("$or", Lists.newArrayList(sourceIdIn, targetIdIn));
     return query;
   }
