@@ -85,6 +85,7 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class SearchResourceV1Test extends WebServiceTestSetup {
 
+  private static final String RELATION_TYPE_STRING = "testrelations";
   private static final String V1_PREFIX = "v1";
   private static final Set<String> SORTABLE_FIELDS = Sets.newHashSet("test1", "test");
   private static final String SCOPE_ID = "base";
@@ -443,7 +444,7 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     when(repository.addSystemEntity(SearchResult.class, searchResultMock)).thenReturn(ID);
 
     // action
-    ClientResponse response = resource().path("search").path("relations").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
+    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
 
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(CREATED));
@@ -465,7 +466,7 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     doThrow(new TimbuctooException(Response.Status.BAD_REQUEST, "Error")).when(searchRequestValidator).validateRelationRequest(anyString(), any(RelationSearchParameters.class));
 
     // action
-    ClientResponse response = resource().path("search").path("relations").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
+    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING).type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
 
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(BAD_REQUEST));
@@ -487,7 +488,7 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     doThrow(Exception.class).when(repository).addSystemEntity(SearchResult.class, searchResultMock);
 
     // action
-    ClientResponse response = resource().path("search").path("relations").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
+    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING).type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
 
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(INTERNAL_SERVER_ERROR));
@@ -509,7 +510,7 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     doThrow(SearchException.class).when(relationSearcher).search(any(VRE.class), any(RelationSearchParameters.class));
 
     // action
-    ClientResponse response = resource().path("search").path("relations").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
+    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING).type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
 
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(INTERNAL_SERVER_ERROR));
@@ -521,8 +522,10 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
 
   private String getRelationSearchURL(String id) {
     return String.format(//
-        "%ssearch/relations/%s", //
+        "%s%s/search/%s/%s", //
         resource().getURI().toString(), //
+        V1_PREFIX, //
+        RELATION_TYPE_STRING, //
         id);
   }
 

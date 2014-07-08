@@ -86,7 +86,8 @@ public class SearchResourceV1 extends ResourceBase {
 
   public static final String SEARCH_PATH = "search";
 
-  private static final String RELATION_SEARCH_PREFIX = "relations";
+  private static final String RELATION_PARAM = "relationType";
+  private static final String RELATION_SEARCH_PREFIX = "{" + RELATION_PARAM + ": [a-z]*relations }";
 
   private static final Logger LOG = LoggerFactory.getLogger(SearchResourceV1.class);
 
@@ -229,7 +230,10 @@ public class SearchResourceV1 extends ResourceBase {
   @POST
   @Path("/" + RELATION_SEARCH_PREFIX)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response relationPost(@HeaderParam("VRE_ID") String vreId, RelationSearchParameters params) {
+  public Response relationPost(@HeaderParam("VRE_ID") String vreId, RelationSearchParameters params, @PathParam(RELATION_PARAM) String relationTypeString) {
+
+    Class<? extends DomainEntity> relationType = registry.getTypeForXName(relationTypeString);
+
     searchRequestValidator.validateRelationRequest(vreId, params);
 
     VRE vre = vreManager.getVREById(vreId);
