@@ -33,7 +33,7 @@ import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
 
 import com.google.common.collect.Sets;
-import com.mongodb.MongoException;
+import com.mongodb.DuplicateKeyException;
 
 /**
  * Imports languages from a file with ISO-639-3 language codes.
@@ -110,7 +110,7 @@ public class LanguageImporter extends CSVImporter {
 
     try {
       repository.addDomainEntity(BaseLanguage.class, language, change);
-    } catch (MongoException.DuplicateKey e) {
+    } catch (DuplicateKeyException e) {
       displayError("Duplicate key", items);
     } catch (StorageException e) {
       displayError(e.getMessage(), items);

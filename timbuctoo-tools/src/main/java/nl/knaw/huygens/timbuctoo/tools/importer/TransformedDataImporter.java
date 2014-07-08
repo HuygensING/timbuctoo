@@ -27,7 +27,6 @@ import java.io.FileFilter;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.XRepository;
-import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;

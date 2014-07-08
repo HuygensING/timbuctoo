@@ -70,8 +70,8 @@ public class MongoDB {
 
     String user = config.getSetting("database.user");
     if (!user.isEmpty()) {
-    String password = config.getSetting("database.password");
-    db.authenticate(user, password.toCharArray());
+      String password = config.getSetting("database.password");
+      db.authenticate(user, password.toCharArray());
     }
   }
 
@@ -79,6 +79,16 @@ public class MongoDB {
   MongoDB(Mongo mongo, DB db) {
     this.mongo = mongo;
     this.db = db;
+  }
+
+  public void dropDatabase() {
+    try {
+      LOG.info("Dropping database '{}'", db.getName());
+      db.dropDatabase();
+      LOG.info("Dropped database");
+    } catch (MongoException e) {
+      LOG.error(e.getMessage());
+    }
   }
 
   public void close() {

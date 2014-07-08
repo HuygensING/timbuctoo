@@ -65,4 +65,5 @@ public class ToolsInjectionModule extends BasicInjectionModule {
     bind(IndexFactory.class).to(SolrIndexFactory.class);
     bind(AbstractSolrServerBuilder.class).toProvider(AbstractSolrServerBuilderProvider.class);
   }
+
 }

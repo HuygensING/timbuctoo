@@ -49,8 +49,6 @@ import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -60,8 +58,6 @@ import com.google.common.collect.Maps;
  * Contains functionality needed in most importers.
  */
 public abstract class DefaultImporter {
-
-  private static final Logger LOG = LoggerFactory.getLogger(DefaultImporter.class);
 
   protected final Repository repository;
   protected final IndexManager indexManager;

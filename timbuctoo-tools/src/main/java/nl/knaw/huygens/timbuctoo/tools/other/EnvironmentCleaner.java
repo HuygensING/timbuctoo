@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.tools.other;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.storage.mongo.MongoDB;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 
 import org.slf4j.Logger;
@@ -47,8 +48,9 @@ public class EnvironmentCleaner {
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
     // clean the database
-    MongoAdmin admin = new MongoAdmin(config);
-    admin.dropDatabase();
+    MongoDB mongoDB = new MongoDB(config);
+    mongoDB.dropDatabase();
+    mongoDB.close();
 
     // clean the index
     IndexManager indexManager = injector.getInstance(IndexManager.class);
