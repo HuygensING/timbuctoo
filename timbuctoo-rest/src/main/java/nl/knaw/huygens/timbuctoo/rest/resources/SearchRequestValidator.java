@@ -34,10 +34,10 @@ public class SearchRequestValidator {
     this.repository = repository;
   }
 
-  public void validate(String vreId, SearchParametersV1 searchParameters) throws TimbuctooException {
+  public void validate(String vreId, String typeString, SearchParametersV1 searchParameters) throws TimbuctooException {
     VRE vre = isValidVRE(vreId);
 
-    isValidType(vre, searchParameters.getTypeString());
+    isValidType(vre, typeString);
 
     isValidTerm(searchParameters);
   }
@@ -48,7 +48,7 @@ public class SearchRequestValidator {
 
   protected void isValidType(VRE vre, String typeString) {
     checkNotNull(StringUtils.trimToNull(typeString), BAD_REQUEST, "No 'typeString' parameter specified");
-    Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
+    Class<? extends DomainEntity> type = typeRegistry.getTypeForXName(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for \"%s\"", typeString);
 
     checkCondition(vre.inScope(type), BAD_REQUEST, "Type not in scope: \"%s\"", typeString);
@@ -82,12 +82,13 @@ public class SearchRequestValidator {
   /**
    * Validates the VRE and the RelationSearchParamters 
    * @param vreId
+   * @param relationTypeString 
    * @param relationSearchParameters
    * @throws TimbuctooException when one of the parameters is invalid.
    */
-  public void validateRelationRequest(String vreId, RelationSearchParameters relationSearchParameters) {
+  public void validateRelationRequest(String vreId, String relationTypeString, RelationSearchParameters relationSearchParameters) {
     VRE vre = isValidVRE(vreId);
-    isValidRelationType(vre, relationSearchParameters.getTypeString());
+    isValidRelationType(vre, relationTypeString);
     isValidSearch(relationSearchParameters.getSourceSearchId());
     isValidSearch(relationSearchParameters.getTargetSearchId());
 
@@ -96,7 +97,7 @@ public class SearchRequestValidator {
 
   private void isValidRelationType(VRE vre, String typeString) {
     checkNotNull(StringUtils.trimToNull(typeString), BAD_REQUEST, "No 'typeString' parameter specified");
-    Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
+    Class<? extends DomainEntity> type = typeRegistry.getTypeForXName(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for \"%s\"", typeString);
 
     checkCondition(vre.inScope(type), BAD_REQUEST, "Type not in scope: \"%s\"", typeString);
@@ -113,4 +114,5 @@ public class SearchRequestValidator {
     checkNotNull(searchId, BAD_REQUEST, "sourceSearchId is not specified");
     checkNotNull(repository.getEntity(SearchResult.class, searchId), BAD_REQUEST, "Search result for id %s does not exist.", searchId);
   }
+
 }

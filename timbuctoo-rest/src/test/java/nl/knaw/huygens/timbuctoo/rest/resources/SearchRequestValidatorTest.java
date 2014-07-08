@@ -34,10 +34,12 @@ public class SearchRequestValidatorTest {
   private RelationSearchParameters unusedRelationSearchParameters = null;
   private String nullVREId = null;
   private String unknownTypeString = "unknownType";
-  private String knownTypeString = "testdomainentity";
-  private String relationTypeString = "testrelation";
+  private String knownTypeString = "testdomainentities";
+  private String relationTypeString = "testrelations";
   private Class<? extends Relation> testRelation = TestRelation.class;
   private Repository repositoryMock;
+  private String unusedTypeString;
+  private String nullTypeString;
 
   @Before
   public void setUp() {
@@ -54,81 +56,67 @@ public class SearchRequestValidatorTest {
 
   @Test(expected = TimbuctooException.class)
   public void testValidateNoVREIdSpecified() {
-    instance.validate(nullVREId, unusedSearchParametersV1);
+    instance.validate(nullVREId, unusedTypeString, unusedSearchParametersV1);
   }
 
   @Test(expected = TimbuctooException.class)
   public void testValidateVREUnknown() {
-    instance.validate(INVALID_VRE_ID, unusedSearchParametersV1);
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void testValidateNoSearchParametersV1Specified() {
-    instance.validate(VALID_VRE_ID, null);
+    instance.validate(INVALID_VRE_ID, unusedTypeString, unusedSearchParametersV1);
   }
 
   @Test(expected = TimbuctooException.class)
   public void testValidateNoTypeStringSpecified() {
-    SearchParametersV1 SearchParametersV1Mock = mock(SearchParametersV1.class);
-    when(SearchParametersV1Mock.getTypeString()).thenReturn(null);
-
-    try {
-      instance.validate(VALID_VRE_ID, SearchParametersV1Mock);
-    } finally {
-      verify(SearchParametersV1Mock).getTypeString();
-    }
+    instance.validate(VALID_VRE_ID, null, unusedSearchParametersV1);
   }
 
   @Test(expected = TimbuctooException.class)
   public void testValidateTypeUnknown() {
-    SearchParametersV1 SearchParametersV1Mock = mock(SearchParametersV1.class);
-    when(SearchParametersV1Mock.getTypeString()).thenReturn(unknownTypeString);
-    when(typeRegistryMock.getDomainEntityType(unknownTypeString)).thenReturn(null);
+    when(typeRegistryMock.getTypeForXName(unknownTypeString)).thenReturn(null);
 
     try {
-      instance.validate(VALID_VRE_ID, SearchParametersV1Mock);
+      instance.validate(VALID_VRE_ID, unknownTypeString, unusedSearchParametersV1);
     } finally {
-      verify(SearchParametersV1Mock).getTypeString();
-      verify(typeRegistryMock).getDomainEntityType(unknownTypeString);
+      verify(typeRegistryMock).getTypeForXName(unknownTypeString);
     }
-
   }
 
   @Test(expected = TimbuctooException.class)
   public void testValidateTypeIsNotInScope() {
-    SearchParametersV1 SearchParametersV1Mock = mock(SearchParametersV1.class);
-    String knownTypeString = "testdomainentity";
-
-    when(SearchParametersV1Mock.getTypeString()).thenReturn(knownTypeString);
     Class<TestDomainEntity> typeNotInScope = TestDomainEntity.class;
-    doReturn(typeNotInScope).when(typeRegistryMock).getDomainEntityType(knownTypeString);
+    doReturn(typeNotInScope).when(typeRegistryMock).getTypeForXName(knownTypeString);
     when(vreMock.inScope(typeNotInScope)).thenReturn(false);
 
     try {
-      instance.validate(VALID_VRE_ID, SearchParametersV1Mock);
+      instance.validate(VALID_VRE_ID, knownTypeString, unusedSearchParametersV1);
     } finally {
-      verify(SearchParametersV1Mock).getTypeString();
-      verify(typeRegistryMock).getDomainEntityType(knownTypeString);
+      verify(typeRegistryMock).getTypeForXName(knownTypeString);
       verify(vreMock).inScope(typeNotInScope);
     }
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testValidateNoSearchParametersV1Specified() {
+    Class<TestDomainEntity> typeNotInScope = TestDomainEntity.class;
+    doReturn(typeNotInScope).when(typeRegistryMock).getTypeForXName(knownTypeString);
+    when(vreMock.inScope(typeNotInScope)).thenReturn(true);
+
+    instance.validate(VALID_VRE_ID, knownTypeString, null);
   }
 
   @Test(expected = TimbuctooException.class)
   public void testValidateNoQueryStringIsSpecified() {
     SearchParametersV1 SearchParametersV1Mock = mock(SearchParametersV1.class);
-    String knownTypeString = "testdomainentity";
 
     when(SearchParametersV1Mock.getTypeString()).thenReturn(knownTypeString);
     when(SearchParametersV1Mock.getTerm()).thenReturn(null);
     Class<TestDomainEntity> typeNotInScope = TestDomainEntity.class;
-    doReturn(typeNotInScope).when(typeRegistryMock).getDomainEntityType(knownTypeString);
+    doReturn(typeNotInScope).when(typeRegistryMock).getTypeForXName(knownTypeString);
     when(vreMock.inScope(typeNotInScope)).thenReturn(true);
 
     try {
-      instance.validate(VALID_VRE_ID, SearchParametersV1Mock);
+      instance.validate(VALID_VRE_ID, knownTypeString, SearchParametersV1Mock);
     } finally {
-      verify(SearchParametersV1Mock).getTypeString();
-      verify(typeRegistryMock).getDomainEntityType(knownTypeString);
+      verify(typeRegistryMock).getTypeForXName(knownTypeString);
       verify(vreMock).inScope(typeNotInScope);
       verify(SearchParametersV1Mock).getTerm();
     }
@@ -137,19 +125,17 @@ public class SearchRequestValidatorTest {
   @Test
   public void testValidateValid() {
     SearchParametersV1 SearchParametersV1Mock = mock(SearchParametersV1.class);
-    String knownTypeString = "testdomainentity";
 
     when(SearchParametersV1Mock.getTypeString()).thenReturn(knownTypeString);
     when(SearchParametersV1Mock.getTerm()).thenReturn("test");
     Class<TestDomainEntity> typeNotInScope = TestDomainEntity.class;
-    doReturn(typeNotInScope).when(typeRegistryMock).getDomainEntityType(knownTypeString);
+    doReturn(typeNotInScope).when(typeRegistryMock).getTypeForXName(knownTypeString);
     when(vreMock.inScope(typeNotInScope)).thenReturn(true);
 
     try {
-      instance.validate(VALID_VRE_ID, SearchParametersV1Mock);
+      instance.validate(VALID_VRE_ID, knownTypeString, SearchParametersV1Mock);
     } finally {
-      verify(SearchParametersV1Mock).getTypeString();
-      verify(typeRegistryMock).getDomainEntityType(knownTypeString);
+      verify(typeRegistryMock).getTypeForXName(knownTypeString);
       verify(vreMock).inScope(typeNotInScope);
       verify(SearchParametersV1Mock).getTerm();
     }
@@ -163,95 +149,84 @@ public class SearchRequestValidatorTest {
   public void testValidateRelationRequestNoVREIdSpecified() {
     RelationSearchParameters unusedRelationSearchParameters = null;
 
-    instance.validateRelationRequest(nullVREId, unusedRelationSearchParameters);
+    instance.validateRelationRequest(nullVREId, unusedTypeString, unusedRelationSearchParameters);
   }
 
   @Test(expected = TimbuctooException.class)
   public void testValidateRelationRequestUnknownVRESpecified() {
-    instance.validateRelationRequest(INVALID_VRE_ID, unusedRelationSearchParameters);
+    instance.validateRelationRequest(INVALID_VRE_ID, unusedTypeString, unusedRelationSearchParameters);
+  }
+
+  @Test(expected = TimbuctooException.class)
+  public void testValidateRelationRequestNoTypeStringSpecified() {
+    instance.validateRelationRequest(VALID_VRE_ID, nullTypeString, unusedRelationSearchParameters);
+  }
+
+  @Test(expected = TimbuctooException.class)
+  public void testValidateRelationRequestTypeStringNotValid() {
+    when(typeRegistryMock.getTypeForXName(unknownTypeString)).thenReturn(null);
+
+    try {
+      instance.validateRelationRequest(VALID_VRE_ID, unknownTypeString, unusedRelationSearchParameters);
+    } finally {
+      verify(typeRegistryMock).getTypeForXName(unknownTypeString);
+    }
+  }
+
+  @Test(expected = TimbuctooException.class)
+  public void testValidateRelationRequestTypeIsNotARelation() {
+    try {
+      instance.validateRelationRequest(VALID_VRE_ID, knownTypeString, unusedRelationSearchParameters);
+    } finally {
+      verify(typeRegistryMock).getTypeForXName(knownTypeString);
+    }
+  }
+
+  @Test(expected = TimbuctooException.class)
+  public void testValidateRelationRequestTypeNotInScope() {
+    setupTypeInScope(false, testRelation, relationTypeString);
+
+    try {
+      instance.validateRelationRequest(VALID_VRE_ID, relationTypeString, unusedRelationSearchParameters);
+    } finally {
+      verify(typeRegistryMock).getTypeForXName(relationTypeString);
+      verify(vreMock).inScope(testRelation);
+    }
   }
 
   @Test(expected = NullPointerException.class)
   public void testValidateRelationRequestNoSearchParametersSpecified() {
     RelationSearchParameters nullSearchParameters = null;
 
-    instance.validateRelationRequest(VALID_VRE_ID, nullSearchParameters);
-  }
-
-  @Test(expected = TimbuctooException.class)
-  public void testValidateRelationRequestNoTypeStringSpecified() {
-    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
-
-    instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
-  }
-
-  @Test(expected = TimbuctooException.class)
-  public void testValidateRelationRequestTypeStringNotValid() {
-    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
-    relationSearchParameters.setTypeString(unknownTypeString);
-
-    when(typeRegistryMock.getDomainEntityType(unknownTypeString)).thenReturn(null);
-
-    try {
-      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
-    } finally {
-      verify(typeRegistryMock).getDomainEntityType(unknownTypeString);
-    }
-  }
-
-  @Test(expected = TimbuctooException.class)
-  public void testValidateRelationRequestTypeIsNotARelation() {
-    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
-    relationSearchParameters.setTypeString(knownTypeString);
-
-    try {
-      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
-    } finally {
-      verify(typeRegistryMock).getDomainEntityType(knownTypeString);
-    }
-  }
-
-  @Test(expected = TimbuctooException.class)
-  public void testValidateRelationRequestTypeNotInScope() {
-    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
-    relationSearchParameters.setTypeString(relationTypeString);
-
     setupTypeInScope(true, testRelation, relationTypeString);
 
-    try {
-      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
-    } finally {
-      verify(typeRegistryMock).getDomainEntityType(relationTypeString);
-      verify(vreMock).inScope(testRelation);
-    }
+    instance.validateRelationRequest(VALID_VRE_ID, relationTypeString, nullSearchParameters);
   }
 
   @Test(expected = TimbuctooException.class)
   public void testValidateRelationRequestNoSourceSearchIdSpecified() {
     RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
-    relationSearchParameters.setTypeString(relationTypeString);
     relationSearchParameters.setSourceSearchId(null);
 
     setupTypeInScope(true, testRelation, relationTypeString);
 
     try {
-      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
+      instance.validateRelationRequest(VALID_VRE_ID, relationTypeString, relationSearchParameters);
     } finally {
-      verify(typeRegistryMock).getDomainEntityType(relationTypeString);
+      verify(typeRegistryMock).getTypeForXName(relationTypeString);
       verify(vreMock).inScope(testRelation);
     }
 
   }
 
   protected void setupTypeInScope(boolean inScope, Class<? extends DomainEntity> type, String typeString) {
-    doReturn(type).when(typeRegistryMock).getDomainEntityType(typeString);
+    doReturn(type).when(typeRegistryMock).getTypeForXName(typeString);
     when(vreMock.inScope(type)).thenReturn(inScope);
   }
 
   @Test(expected = TimbuctooException.class)
   public void testValidateRelationRequestSourceSearchFoundForIdSpecified() {
     RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
-    relationSearchParameters.setTypeString(relationTypeString);
     String unknownSourceSearchId = "unknowId";
     relationSearchParameters.setSourceSearchId(unknownSourceSearchId);
 
@@ -260,9 +235,9 @@ public class SearchRequestValidatorTest {
     when(repositoryMock.getEntity(SearchResult.class, unknownSourceSearchId)).thenReturn(null);
 
     try {
-      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
+      instance.validateRelationRequest(VALID_VRE_ID, relationTypeString, relationSearchParameters);
     } finally {
-      verify(typeRegistryMock).getDomainEntityType(relationTypeString);
+      verify(typeRegistryMock).getTypeForXName(relationTypeString);
       verify(vreMock).inScope(testRelation);
       verify(repositoryMock).getEntity(SearchResult.class, unknownSourceSearchId);
     }
@@ -273,7 +248,6 @@ public class SearchRequestValidatorTest {
     String knownSourceSearchId = "knowId";
 
     RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
-    relationSearchParameters.setTypeString(relationTypeString);
     relationSearchParameters.setSourceSearchId(knownSourceSearchId);
     relationSearchParameters.setTargetSearchId(null);
 
@@ -282,9 +256,9 @@ public class SearchRequestValidatorTest {
     when(repositoryMock.getEntity(SearchResult.class, knownSourceSearchId)).thenReturn(mock(SearchResult.class));
 
     try {
-      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
+      instance.validateRelationRequest(VALID_VRE_ID, relationTypeString, relationSearchParameters);
     } finally {
-      verify(typeRegistryMock).getDomainEntityType(relationTypeString);
+      verify(typeRegistryMock).getTypeForXName(relationTypeString);
       verify(vreMock).inScope(testRelation);
       verify(repositoryMock).getEntity(SearchResult.class, knownSourceSearchId);
     }
@@ -296,7 +270,6 @@ public class SearchRequestValidatorTest {
     String unknownTargetSearchId = "unknowId";
 
     RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
-    relationSearchParameters.setTypeString(relationTypeString);
     relationSearchParameters.setSourceSearchId(knownSourceSearchId);
     relationSearchParameters.setTargetSearchId(unknownTargetSearchId);
 
@@ -306,9 +279,9 @@ public class SearchRequestValidatorTest {
     when(repositoryMock.getEntity(SearchResult.class, unknownTargetSearchId)).thenReturn(null);
 
     try {
-      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
+      instance.validateRelationRequest(VALID_VRE_ID, relationTypeString, relationSearchParameters);
     } finally {
-      verify(typeRegistryMock).getDomainEntityType(relationTypeString);
+      verify(typeRegistryMock).getTypeForXName(relationTypeString);
       verify(vreMock).inScope(testRelation);
       verify(repositoryMock).getEntity(SearchResult.class, knownSourceSearchId);
       verify(repositoryMock).getEntity(SearchResult.class, unknownTargetSearchId);
@@ -323,7 +296,6 @@ public class SearchRequestValidatorTest {
     String validRelationTypeId = "validId";
 
     RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
-    relationSearchParameters.setTypeString(relationTypeString);
     relationSearchParameters.setSourceSearchId(knownSourceSearchId);
     relationSearchParameters.setTargetSearchId(knownTargetSearchId);
     relationSearchParameters.setRelationTypeIds(Lists.newArrayList(validRelationTypeId, invalidRelationTypeId));
@@ -336,9 +308,9 @@ public class SearchRequestValidatorTest {
     when(repositoryMock.getRelationTypeById(validRelationTypeId)).thenReturn(mock(RelationType.class));
 
     try {
-      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
+      instance.validateRelationRequest(VALID_VRE_ID, relationTypeString, relationSearchParameters);
     } finally {
-      verify(typeRegistryMock).getDomainEntityType(relationTypeString);
+      verify(typeRegistryMock).getTypeForXName(relationTypeString);
       verify(vreMock).inScope(testRelation);
       verify(repositoryMock).getEntity(SearchResult.class, knownSourceSearchId);
       verify(repositoryMock).getEntity(SearchResult.class, knownTargetSearchId);
@@ -354,7 +326,6 @@ public class SearchRequestValidatorTest {
     String validRelationTypeId = "validId";
 
     RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
-    relationSearchParameters.setTypeString(relationTypeString);
     relationSearchParameters.setSourceSearchId(knownSourceSearchId);
     relationSearchParameters.setTargetSearchId(knownTargetSearchId);
     relationSearchParameters.setRelationTypeIds(Lists.newArrayList(validRelationTypeId));
@@ -366,9 +337,9 @@ public class SearchRequestValidatorTest {
     when(repositoryMock.getRelationTypeById(validRelationTypeId)).thenReturn(mock(RelationType.class));
 
     try {
-      instance.validateRelationRequest(VALID_VRE_ID, relationSearchParameters);
+      instance.validateRelationRequest(VALID_VRE_ID, relationTypeString, relationSearchParameters);
     } finally {
-      verify(typeRegistryMock).getDomainEntityType(relationTypeString);
+      verify(typeRegistryMock).getTypeForXName(relationTypeString);
       verify(vreMock).inScope(testRelation);
       verify(repositoryMock).getEntity(SearchResult.class, knownSourceSearchId);
       verify(repositoryMock).getEntity(SearchResult.class, knownTargetSearchId);

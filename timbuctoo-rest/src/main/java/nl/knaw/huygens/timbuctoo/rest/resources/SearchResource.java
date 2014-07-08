@@ -119,10 +119,10 @@ public class SearchResource extends ResourceBase {
 
     SearchParametersV1 searchParamsV1 = searchParametersConverter.toV1(searchParams);
 
-    searchRequestValidator.validate(vreId, searchParamsV1);
+    String typeString = StringUtils.trimToNull(searchParams.getTypeString());
+    searchRequestValidator.validate(vreId, typeString, searchParamsV1);
 
     VRE vre = vreManager.getVREById(vreId);
-    String typeString = StringUtils.trimToNull(searchParams.getTypeString());
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
 
     // Process
@@ -222,9 +222,10 @@ public class SearchResource extends ResourceBase {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response relationPost(@HeaderParam("VRE_ID") String vreId, RelationSearchParameters params) {
 
-    Class<? extends DomainEntity> relationType = registry.getDomainEntityType(params.getTypeString());
+    final String typeString = params.getTypeString();
+    Class<? extends DomainEntity> relationType = registry.getDomainEntityType(typeString);
 
-    searchRequestValidator.validateRelationRequest(vreId, params);
+    searchRequestValidator.validateRelationRequest(vreId, typeString, params);
 
     VRE vre = vreManager.getVREById(vreId);
 
