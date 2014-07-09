@@ -47,6 +47,18 @@ public class Files {
     return new File(System.getProperty("user.home"), filename);
   }
 
+  public static PrintWriter createPrintWriter(File file) {
+    try {
+      return new PrintWriter(file, ENCODING);
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to create PrintWriter: " + e.getMessage());
+    }
+  }
+
+  public static PrintWriter createPrintWriter(File directory, String filename) {
+    return createPrintWriter(new File(directory, filename));
+  }
+
   public static void writeTextToFile(String text, File file, boolean append) {
     FileOutputStream stream = null;
     try {
