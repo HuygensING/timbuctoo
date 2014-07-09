@@ -66,7 +66,6 @@ import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.search.SearchValidationException;
-import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -75,7 +74,6 @@ import nl.knaw.huygens.timbuctoo.vre.VREManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -142,7 +140,6 @@ public class SearchResourceV1 extends ResourceBase {
   @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}")
   @APIDesc("Returns (paged) search results")
   @Produces({ MediaType.APPLICATION_JSON })
-  @JsonView(JsonViews.WebView.class)
   public Response regularGet( //
       @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") final int start, //
@@ -252,7 +249,6 @@ public class SearchResourceV1 extends ResourceBase {
   @GET
   @Path("/" + RELATION_SEARCH_PREFIX + "/{id: " + SearchResult.ID_PREFIX + "\\d+}")
   @Produces({ MediaType.APPLICATION_JSON })
-  @JsonView(JsonViews.WebView.class)
   public Response relationGet( //
       @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") final int start, //

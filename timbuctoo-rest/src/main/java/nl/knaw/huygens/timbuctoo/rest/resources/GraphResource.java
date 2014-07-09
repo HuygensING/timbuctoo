@@ -39,9 +39,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.graph.GraphBuilder;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
-import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 
-import com.fasterxml.jackson.annotation.JsonView;
 import com.google.inject.Inject;
 
 /**
@@ -89,7 +87,6 @@ public class GraphResource extends ResourceBase {
   @GET
   @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON })
-  @JsonView(JsonViews.WebView.class)
   public Object getEntity( //
     @PathParam(ENTITY_PARAM) String entityName, //
     @PathParam(ID_PARAM) String id, //

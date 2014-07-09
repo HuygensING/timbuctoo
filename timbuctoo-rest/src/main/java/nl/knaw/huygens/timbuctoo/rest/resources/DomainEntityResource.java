@@ -69,7 +69,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
-import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -79,7 +78,6 @@ import nl.knaw.huygens.timbuctoo.vre.VREManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
@@ -112,7 +110,6 @@ public class DomainEntityResource extends ResourceBase {
 
   @GET
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
-  @JsonView(JsonViews.WebView.class)
   public List<? extends DomainEntity> getAllDocs( //
       @PathParam(ENTITY_PARAM) String entityName, //
       @QueryParam("type") String typeValue, //
@@ -130,7 +127,6 @@ public class DomainEntityResource extends ResourceBase {
   @SuppressWarnings("unchecked")
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
-  @JsonView(JsonViews.WebView.class)
   @RolesAllowed({ USER_ROLE, ADMIN_ROLE })
   public <T extends DomainEntity> Response post( //
       @PathParam(ENTITY_PARAM) String entityName, //
@@ -177,7 +173,6 @@ public class DomainEntityResource extends ResourceBase {
   @GET
   @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
-  @JsonView(JsonViews.WebView.class)
   public DomainEntity getDoc( //
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id, //
@@ -200,7 +195,6 @@ public class DomainEntityResource extends ResourceBase {
   @PUT
   @Path(ID_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
-  @JsonView(JsonViews.WebView.class)
   @RolesAllowed({ USER_ROLE, ADMIN_ROLE })
   public <T extends DomainEntity> void put( //
       @PathParam(ENTITY_PARAM) String entityName, //
@@ -235,7 +229,6 @@ public class DomainEntityResource extends ResourceBase {
   @Path(PID_PATH)
   @RolesAllowed(ADMIN_ROLE)
   @Consumes(MediaType.APPLICATION_JSON)
-  @JsonView(JsonViews.WebView.class)
   public void putPIDs(//
       @PathParam(ENTITY_PARAM) String entityName,//
       @HeaderParam(VRE_ID_KEY) String vreId) {
@@ -261,7 +254,6 @@ public class DomainEntityResource extends ResourceBase {
 
   @DELETE
   @Path(ID_PATH)
-  @JsonView(JsonViews.WebView.class)
   @RolesAllowed({ USER_ROLE, ADMIN_ROLE })
   public Response delete( //
       @PathParam(ENTITY_PARAM) String entityName, //

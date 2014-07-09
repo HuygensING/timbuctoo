@@ -38,9 +38,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 
-import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -65,7 +63,6 @@ public class RelationTypeResource extends ResourceBase {
 
   @GET
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
-  @JsonView(JsonViews.WebView.class)
   public List<RelationType> getRelationTypes(@QueryParam("iname") String name) {
     return getAvailableRelationTypes(name);
   }
@@ -73,7 +70,6 @@ public class RelationTypeResource extends ResourceBase {
   @GET
   @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
-  @JsonView(JsonViews.WebView.class)
   public RelationType getRelationType(@PathParam(ID_PARAM) String id) {
     RelationType entity = repository.getEntity(RelationType.class, id);
     checkNotNull(entity, Status.NOT_FOUND, "No RelationType with id %s", id);
