@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.annotations;
 
 /*
  * #%L
@@ -22,14 +22,20 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
+/**
+ * Defines views for serializing properties with Jackson using {@code JsonView}
+ * annotations. By requesting an {@code ObjectWriter} with a view, properties
+ * with a {@code JsonView} annotation are matched with that view. Properties
+ * without a {@code JsonView} annotation are always included.
+ *
+ * For export of entities we exclude some properties, mainly administrative
+ * ones, by annotating them with {@code NoExportView} and by using an
+ * {@code ObjectWriter} with a {@code ExportView}.
+ */
 public class JsonViews {
 
-  public static class WebView {
+  public static class ExportView {}
 
-  }
-
-  public static class DBView {
-
-  }
+  public static class NoExportView {}
 
 }

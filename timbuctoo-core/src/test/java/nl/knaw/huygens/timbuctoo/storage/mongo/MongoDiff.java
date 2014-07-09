@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.JsonViews;
 
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
@@ -45,7 +44,7 @@ public class MongoDiff {
   static {
     ObjectMapper mapper = new ObjectMapper();
     mapper.setSerializationInclusion(Include.NON_DEFAULT);
-    dbWriter = mapper.writerWithView(JsonViews.DBView.class);
+    dbWriter = mapper.writer();
   }
 
   public static DBObject getObjectForDoc(Object doc) throws IOException {

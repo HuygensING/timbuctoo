@@ -26,6 +26,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.JsonViews;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TimbuctooTypeIdResolver;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
@@ -35,6 +36,7 @@ import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 
 // Annotations determine to which subclass the entity has to be resolved.
@@ -75,6 +77,7 @@ public abstract class Entity {
   }
 
   @JsonProperty("^rev")
+  @JsonView(JsonViews.NoExportView.class)
   public int getRev() {
     return rev;
   }
@@ -85,6 +88,7 @@ public abstract class Entity {
   }
 
   @JsonProperty("^created")
+  @JsonView(JsonViews.NoExportView.class)
   public Change getCreated() {
     return created;
   }
@@ -95,6 +99,7 @@ public abstract class Entity {
   }
 
   @JsonProperty("^modified")
+  @JsonView(JsonViews.NoExportView.class)
   public Change getModified() {
     return modified;
   }

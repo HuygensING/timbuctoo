@@ -28,12 +28,14 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.JsonViews;
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -59,6 +61,7 @@ public abstract class DomainEntity extends Entity implements Variable {
   }
 
   @JsonProperty(PID)
+  @JsonView(JsonViews.NoExportView.class)
   public String getPid() {
     return pid;
   }
@@ -69,6 +72,7 @@ public abstract class DomainEntity extends Entity implements Variable {
   }
 
   @JsonProperty(DELETED)
+  @JsonView(JsonViews.NoExportView.class)
   public boolean isDeleted() {
     return deleted;
   }
@@ -90,6 +94,7 @@ public abstract class DomainEntity extends Entity implements Variable {
   }
 
   @JsonProperty("@relationCount")
+  @JsonView(JsonViews.NoExportView.class)
   public int getRelationCount() {
     return relationCount;
   }
