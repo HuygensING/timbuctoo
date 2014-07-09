@@ -409,10 +409,10 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends DomainEntity> MongoChanges<T> getAllRevisions(Class<T> type, String id) throws StorageException {
+  public <T extends DomainEntity> List<T> getAllRevisions(Class<T> type, String id) throws StorageException {
     DBObject query = queries.selectById(id);
     DBObject item = mongoDB.findOne(getVersionCollection(type), query);
-    return (item != null) ? reducer.reduceAllRevisions(type, toJsonNode(item)) : null;
+    return (item != null) ? reducer.reduceAllRevisions(type, toJsonNode(item)) : Lists.<T>newArrayList();
   }
 
   @Override

@@ -149,7 +149,7 @@ public interface Storage {
 
   <T extends DomainEntity> T getRevision(Class<T> type, String id, int revisionId) throws StorageException;
 
-  <T extends DomainEntity> RevisionChanges<T> getAllRevisions(Class<T> type, String id) throws StorageException;
+  <T extends DomainEntity> List<T> getAllRevisions(Class<T> type, String id) throws StorageException;
 
   <T extends Relation> T findRelation(Class<T> type, String sourceId, String targetId, String relationTypeId) throws StorageException;
 

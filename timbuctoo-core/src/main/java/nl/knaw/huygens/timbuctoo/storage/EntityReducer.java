@@ -37,7 +37,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoChanges;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,22 +113,16 @@ public class EntityReducer {
     return entities;
   }
 
-  public <T extends Entity> MongoChanges<T> reduceAllRevisions(Class<T> type, JsonNode tree) throws StorageException {
+  public <T extends Entity> List<T> reduceAllRevisions(Class<T> type, JsonNode tree) throws StorageException {
     checkNotNull(tree);
 
     ArrayNode versionsNode = (ArrayNode) tree.get("versions");
-    MongoChanges<T> changes = null;
 
+    List<T> revisions = Lists.newArrayList();
     for (int i = 0; versionsNode.hasNonNull(i); i++) {
-      T item = reduceVariation(type, versionsNode.get(i));
-      if (i == 0) {
-        changes = new MongoChanges<T>(item.getId(), item);
-      } else {
-        changes.getRevisions().add(item);
-      }
+      revisions.add(reduceVariation(type, versionsNode.get(i)));
     }
-
-    return changes;
+    return revisions;
   }
 
   // -------------------------------------------------------------------

@@ -45,7 +45,6 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
-import nl.knaw.huygens.timbuctoo.storage.RevisionChanges;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -57,6 +56,7 @@ import nl.knaw.huygens.timbuctoo.util.KV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -286,12 +286,12 @@ public class Repository {
     }
   }
 
-  public <T extends DomainEntity> RevisionChanges<T> getVersions(Class<T> type, String id) {
+  public <T extends DomainEntity> List<T> getVersions(Class<T> type, String id) {
     try {
       return storage.getAllRevisions(type, id);
     } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
-      return null;
+      return Lists.newArrayList();
     }
   }
 
