@@ -28,6 +28,7 @@ import static com.sun.jersey.api.client.ClientResponse.Status.INTERNAL_SERVER_ER
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -40,24 +41,17 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import nl.knaw.huygens.facetedsearch.model.DefaultFacet;
-import nl.knaw.huygens.facetedsearch.model.Facet;
-import nl.knaw.huygens.facetedsearch.model.FacetOption;
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
-import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.model.ClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
@@ -75,8 +69,6 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.ClientResponse.Status;
@@ -86,6 +78,7 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class SearchResourceV1Test extends WebServiceTestSetup {
 
+  private static final String SEARCH_RESULT_TYPE = "person";
   private static final Class<Class<? extends Relation>> RELATION_TYPE = new GenericType<Class<? extends Relation>>() {}.getRawClass();
   private static final String RELATION_TYPE_STRING = "testrelations";
   private static final String V1_PREFIX = "v1";
@@ -95,10 +88,13 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
   private static final String LOCATION_HEADER = "Location";
   private static final String TYPE_STRING = "persons";
   private static final String ID = "QURY0000000001";
+  private static final String RELATION_SEARCH_RESULT_TYPE = "testrelation";
 
   private VREManager vreManager;
   private SearchManager searchManager;
   private SearchRequestValidator searchRequestValidator;
+  private RegularClientSearchResultCreator regularClientSearchResultCreatorMock;
+  private RelationClientSearchResultCreator relationClientSearchResultCreatorMock;
 
   @Before
   public void initializeVREManager() {
@@ -109,6 +105,12 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
   public void setupSearchManager() {
     searchManager = injector.getInstance(SearchManager.class);
     when(searchManager.findSortableFields(Matchers.<Class<? extends DomainEntity>> any())).thenReturn(SORTABLE_FIELDS);
+  }
+
+  @Before
+  public void setUpClientSearchResultCreators() {
+    regularClientSearchResultCreatorMock = injector.getInstance(RegularClientSearchResultCreator.class);
+    relationClientSearchResultCreatorMock = injector.getInstance(RelationClientSearchResultCreator.class);
   }
 
   @Before
@@ -218,112 +220,88 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
 
   @Test
   public void testGetSuccess() {
-    List<String> idList = Lists.newArrayList();
-    List<Person> personList = Lists.newArrayList();
+    // setup
+    SearchResult searchResult = new SearchResult();
+    searchResult.setSearchType(SEARCH_RESULT_TYPE);
 
-    int startIndex = 0;
-    int numberOfRows = 10;
-    createSearchResultOf100Persons(repository, idList, personList);
+    ClientSearchResult clientSearchResult = new ClientSearchResult();
 
-    List<Facet> facets = createFacets();
-    setUpSearchResult(idList, repository, facets);
+    final int defaultStart = 0;
+    final int defaultRows = 10;
 
-    setupPublicUrl(resource().getURI().toString());
+    when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
+    when(regularClientSearchResultCreatorMock.create(searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
 
-    String nextUri = getHATEOASUrl(ID, 10, 10);
-    int returnedRows = 10;
-    Map<String, Object> expected = createExpectedResult(idList, personList, facets, startIndex, numberOfRows, SORTABLE_FIELDS, returnedRows, nextUri, null);
+    // action
+    ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
-    ClientResponse clientResponse = searchResourceBuilder(ID).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+    // verify
+    assertThat(response.getClientResponseStatus(), equalTo(Status.OK));
 
-    assertThat(clientResponse.getClientResponseStatus(), equalTo(ClientResponse.Status.OK));
+    ClientSearchResult actualResult = response.getEntity(ClientSearchResult.class);
+    assertThat(actualResult, notNullValue(ClientSearchResult.class));
 
-    Map<String, Object> actual = clientResponse.getEntity(new GenericType<Map<String, Object>>() {});
-    compareResults(expected, actual);
-  }
+    verify(repository).getEntity(SearchResult.class, ID);
+    verify(regularClientSearchResultCreatorMock).create(searchResult, defaultStart, defaultRows);
 
-  private String getHATEOASUrl(String id, int start, int rows) {
-    return String.format("%s?start=%d&rows=%d", getExpectedURL(id), start, rows);
   }
 
   @Test
   public void testGetSuccessWithStartAndRows() {
-    List<String> idList = Lists.newArrayList();
-    List<Person> personList = Lists.newArrayList();
-
+    // setup
     int startIndex = 20;
     int numberOfRows = 20;
-    createSearchResultOf100Persons(repository, idList, personList);
 
-    List<Facet> facets = createFacets();
+    SearchResult searchResult = new SearchResult();
+    searchResult.setSearchType(SEARCH_RESULT_TYPE);
 
-    setUpSearchResult(idList, repository, facets);
+    ClientSearchResult clientSearchResult = new ClientSearchResult();
 
     MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
     queryParameters.add("start", "20");
     queryParameters.add("rows", "20");
 
-    setupPublicUrl(resource().getURI().toString());
+    when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
+    when(regularClientSearchResultCreatorMock.create(searchResult, startIndex, numberOfRows)).thenReturn(clientSearchResult);
 
-    String prevUri = getHATEOASUrl(ID, 0, 20);
-    String nextUri = getHATEOASUrl(ID, 40, 20);
-    int returnedRows = 20;
-    Map<String, Object> expected = createExpectedResult(idList, personList, facets, startIndex, numberOfRows, SORTABLE_FIELDS, returnedRows, nextUri, prevUri);
-
+    // action
     ClientResponse clientResponse = searchResource(ID).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
-    assertThat(clientResponse.getClientResponseStatus(), equalTo(ClientResponse.Status.OK));
+    // verify
+    assertThat(clientResponse.getClientResponseStatus(), equalTo(Status.OK));
 
-    Map<String, Object> actual = clientResponse.getEntity(new GenericType<Map<String, Object>>() {});
+    ClientSearchResult actualResult = clientResponse.getEntity(ClientSearchResult.class);
+    assertThat(actualResult, notNullValue(ClientSearchResult.class));
 
-    compareResults(expected, actual);
+    verify(repository).getEntity(SearchResult.class, ID);
+    verify(regularClientSearchResultCreatorMock).create(searchResult, startIndex, numberOfRows);
   }
 
   @Test
-  public void testGetSuccessWithStartAndRowsMoreThanMax() {
-    List<String> idList = Lists.newArrayList();
-    List<Person> personList = Lists.newArrayList();
+  public void testGetRelationSearch() {
+    // setup
+    SearchResult searchResult = new SearchResult();
+    searchResult.setSearchType(RELATION_SEARCH_RESULT_TYPE);
 
-    int startIndex = 10;
-    int numberOfRows = 100;
-    createSearchResultOf100Persons(repository, idList, personList);
+    ClientSearchResult clientSearchResult = new ClientSearchResult();
 
-    List<Facet> facets = createFacets();
+    final int defaultStart = 0;
+    final int defaultRows = 10;
 
-    setUpSearchResult(idList, repository, facets);
+    when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
+    when(relationClientSearchResultCreatorMock.create(searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
 
-    MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
-    queryParameters.add("start", "10");
-    queryParameters.add("rows", "100");
+    // action
+    ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
-    setupPublicUrl(resource().getURI().toString());
+    // verify
+    assertThat(response.getClientResponseStatus(), equalTo(Status.OK));
 
-    String prevUri = getHATEOASUrl(ID, 0, 100);
-    int returnedRows = 90;
-    Map<String, Object> expected = createExpectedResult(idList, personList, facets, startIndex, numberOfRows, SORTABLE_FIELDS, returnedRows, null, prevUri);
+    ClientSearchResult actualResult = response.getEntity(ClientSearchResult.class);
+    assertThat(actualResult, notNullValue(ClientSearchResult.class));
 
-    ClientResponse clientResponse = searchResource(ID).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
-
-    assertThat(clientResponse.getClientResponseStatus(), equalTo(ClientResponse.Status.OK));
-
-    Map<String, Object> actual = clientResponse.getEntity(new GenericType<Map<String, Object>>() {});
-
-    compareResults(expected, actual);
-  }
-
-  @Test
-  public void testGetNoResults() {
-    setUpSearchResult(null, repository, Lists.<Facet> newArrayList());
-
-    Map<String, Object> expected = createExpectedResult(Lists.<String> newArrayList(), Lists.<Person> newArrayList(), Lists.<Facet> newArrayList(), 0, 0, SORTABLE_FIELDS, 0, null, null);
-
-    ClientResponse clientResponse = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
-
-    assertThat(clientResponse.getClientResponseStatus(), equalTo(ClientResponse.Status.OK));
-
-    Map<String, Object> actual = clientResponse.getEntity(new GenericType<Map<String, Object>>() {});
-
-    compareResults(expected, actual);
+    verify(repository).getEntity(SearchResult.class, ID);
+    verify(relationClientSearchResultCreatorMock).create(searchResult, defaultStart, defaultRows);
   }
 
   @Test
@@ -344,7 +322,7 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
 
   @Test
   public void testGetSearchTypeUnknown() {
-    SearchResult searchResult = mock(SearchResult.class);
+    SearchResult searchResult = new SearchResult();
     searchResult.setId(ID);
     String unknownType = "unknown";
     searchResult.setSearchType(unknownType);
@@ -354,73 +332,6 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
     assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
-  }
-
-  private Map<String, Object> createExpectedResult(List<String> idList, List<Person> personList, List<Facet> facets, int start, int rows, Set<String> sortableFields, int returnedRows, String next,
-      String prev) {
-    Map<String, Object> result = Maps.newHashMap();
-    int lastIndex = (start + rows) >= personList.size() ? personList.size() : (start + rows);
-
-    result.put("results", personList.subList(start, Math.max(lastIndex, 0)));
-    result.put("start", start); // start index of the results
-    result.put("rows", returnedRows); // number of results in the response
-    result.put("term", TERM); // search query
-    result.put("facets", facets); // all applying facets
-    result.put("numFound", idList.size()); // all found results
-    result.put("ids", idList.subList(start, rows)); //only the ids of the objects in the in response.
-    result.put("sortableFields", sortableFields);
-    result.put("_next", next);
-    result.put("_prev", prev);
-
-    return result;
-  }
-
-  private List<Facet> createFacets() {
-    List<Facet> facets = Lists.newArrayList();
-    FacetOption option1 = new FacetOption("17-5-1900", 1);
-    FacetOption option2 = new FacetOption("21-6", 2);
-    FacetOption option3 = new FacetOption("1780", 97);
-    DefaultFacet facet = new DefaultFacet("dynamic_s_birthDate", "birthdate");
-    facet.addOption(option1);
-    facet.addOption(option2);
-    facet.addOption(option3);
-    facets.add(facet);
-
-    return facets;
-  }
-
-  private void createSearchResultOf100Persons(Repository repository, final List<String> idList, final List<Person> personList) {
-    for (int i = 0; i < 100; i++) {
-      String personId = "" + i;
-      Person person = new Person();
-      person.setId(personId);
-      personList.add(person);
-      idList.add(personId);
-      when(repository.getEntity(Person.class, personId)).thenReturn(person);
-    }
-  }
-
-  private void setUpSearchResult(List<String> idList, Repository repository, List<Facet> facets) {
-    SearchResult result = mock(SearchResult.class);
-    when(result.getTerm()).thenReturn(TERM);
-    when(result.getId()).thenReturn(ID);
-    when(result.getSearchType()).thenReturn("person");
-    when(result.getIds()).thenReturn(idList);
-    when(result.getFacets()).thenReturn(facets);
-    when(repository.getEntity(SearchResult.class, ID)).thenReturn(result);
-  }
-
-  @SuppressWarnings("unchecked")
-  private void compareResults(Map<String, Object> expected, Map<String, Object> actual) {
-    assertEquals(((List<Person>) expected.get("results")).size(), ((List<Person>) actual.get("results")).size());
-    assertEquals(expected.get("term"), actual.get("term"));
-    assertEquals(expected.get("numFound"), actual.get("numFound"));
-    assertEquals(expected.get("start"), actual.get("start"));
-    assertEquals(expected.get("rows"), actual.get("rows"));
-    assertEquals(((List<Facet>) expected.get("facets")).size(), ((List<Facet>) actual.get("facets")).size());
-    assertEquals(((Collection<String>) expected.get("sortableFields")).size(), ((Collection<String>) actual.get("sortableFields")).size());
-    assertEquals(expected.get("_next"), actual.get("_next"));
-    assertEquals(expected.get("_prev"), actual.get("_prev"));
   }
 
   /*

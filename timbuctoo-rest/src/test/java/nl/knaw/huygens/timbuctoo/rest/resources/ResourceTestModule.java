@@ -80,6 +80,8 @@ class ResourceTestModule extends JerseyServletModule {
   private SearchRequestValidator searchRequestValidator;
   private SearchParametersConverter searchParametersConverter;
   private RelationSearcher relationSearcher;
+  private RegularClientSearchResultCreator regularClientSearchResultCreator;
+  private RelationClientSearchResultCreator relationClientSearchResultCreator;
 
   public ResourceTestModule() {
     try {
@@ -100,6 +102,8 @@ class ResourceTestModule extends JerseyServletModule {
       searchRequestValidator = mock(SearchRequestValidator.class);
       searchParametersConverter = mock(SearchParametersConverter.class);
       relationSearcher = mock(RelationSearcher.class);
+      regularClientSearchResultCreator = mock(RegularClientSearchResultCreator.class);
+      relationClientSearchResultCreator = mock(RelationClientSearchResultCreator.class);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -111,7 +115,7 @@ class ResourceTestModule extends JerseyServletModule {
    */
   public void cleanUpMocks() {
     reset(config, repository, jsonProvider, validator, mailSender, searchManager, authorizationHandler, broker, indexProducer, persistenceProducer, vreManager, indexManager, searchRequestValidator,
-        searchParametersConverter, relationSearcher);
+        searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator);
   }
 
   @Override
@@ -243,6 +247,18 @@ class ResourceTestModule extends JerseyServletModule {
   @Provides
   public RelationSearcher provideRelationSearcher() {
     return relationSearcher;
+  }
+
+  @Singleton
+  @Provides
+  public RegularClientSearchResultCreator provideRegularClientSearchResultBuilder() {
+    return regularClientSearchResultCreator;
+  }
+
+  @Singleton
+  @Provides
+  public RelationClientSearchResultCreator provideRelationClientSearchResultCreator() {
+    return relationClientSearchResultCreator;
   }
 
 }

@@ -58,6 +58,7 @@ import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.ClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -103,6 +104,10 @@ public class SearchResourceV1 extends ResourceBase {
   private SearchRequestValidator searchRequestValidator;
   @Inject
   private RelationSearcher relationSearcher;
+  @Inject
+  private RegularClientSearchResultCreator regularSearchResultCreator;
+  @Inject
+  private RelationClientSearchResultCreator relationrSearchResultCreator;
 
   @GET
   @Path("/vres")
@@ -154,37 +159,12 @@ public class SearchResourceV1 extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    List<String> ids = result.getIds() != null ? result.getIds() : Lists.<String> newArrayList();
-    int idsSize = ids.size();
-    int lo = toRange(start, 0, idsSize);
-    int hi = toRange(lo + rows, 0, idsSize);
-    List<String> idsToGet = ids.subList(lo, hi);
+    final ClientSearchResult clientSearchResult = getClientSearchResultCreator(type).create(result, start, rows);
+    return Response.ok(clientSearchResult).build();
+  }
 
-    List<DomainEntity> entities = retrieveEntities(type, idsToGet);
-
-    Map<String, Object> returnValue = Maps.newHashMap();
-    returnValue.put("term", result.getTerm());
-    returnValue.put("facets", result.getFacets());
-    returnValue.put("numFound", idsSize);
-    returnValue.put("ids", idsToGet);
-    returnValue.put("refs", createEntityRefs(type, entities));
-    returnValue.put("results", entities);
-    returnValue.put("start", lo);
-    returnValue.put("rows", idsToGet.size());
-    returnValue.put("sortableFields", searchManager.findSortableFields(type));
-
-    if (start > 0) {
-      int prevStart = Math.max(start - rows, 0);
-      URI prev = createHATEOASURI(prevStart, rows, queryId, false);
-      returnValue.put("_prev", prev);
-    }
-
-    if (hi < idsSize) {
-      URI next = createHATEOASURI(start + rows, rows, queryId, false);
-      returnValue.put("_next", next);
-    }
-
-    return Response.ok(returnValue).build();
+  private ClientSearchResultCreator getClientSearchResultCreator(Class<? extends DomainEntity> type) {
+    return Relation.class.isAssignableFrom(type) ? relationrSearchResultCreator : regularSearchResultCreator;
   }
 
   private URI createHATEOASURI(String queryId) {
