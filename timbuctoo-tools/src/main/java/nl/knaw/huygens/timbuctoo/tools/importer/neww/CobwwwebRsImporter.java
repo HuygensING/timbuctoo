@@ -35,8 +35,9 @@ import nl.knaw.huygens.tei.ElementHandler;
 import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
-import nl.knaw.huygens.timbuctoo.XRepository;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -73,6 +74,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.inject.Injector;
 
 /**
  * Importer for Serbian COBWWWEB data.
@@ -94,8 +96,11 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
 
     CobwwwebRsImporter importer = null;
     try {
-      XRepository instance = ToolsInjectionModule.createRepositoryInstance();
-      importer = new CobwwwebRsImporter(instance, directory);
+      Injector injector = ToolsInjectionModule.createInjector();
+      Repository repository = injector.getInstance(Repository.class);
+      IndexManager indexManager = injector.getInstance(IndexManager.class);
+
+      importer = new CobwwwebRsImporter(repository, indexManager, directory);
       importer.importAll();
     } finally {
       if (importer != null) {
@@ -116,8 +121,8 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
   private LoadingCache<String, Language> languages;
   private final LocationConcordance locations;
 
-  public CobwwwebRsImporter(XRepository repository, String inputDirName) throws Exception {
-    super(repository);
+  public CobwwwebRsImporter(Repository repository, IndexManager indexManager, String inputDirName) throws Exception {
+    super(repository, indexManager);
     change = new Change("importer", "cwrs");
     setupLanguageCache();
 

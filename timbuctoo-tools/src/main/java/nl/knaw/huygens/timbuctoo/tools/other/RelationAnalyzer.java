@@ -31,10 +31,13 @@ import nl.knaw.huygens.timbuctoo.util.Token;
 import nl.knaw.huygens.timbuctoo.util.TokenHandler;
 import nl.knaw.huygens.timbuctoo.util.Tokens;
 
+import com.google.inject.Injector;
+
 public class RelationAnalyzer {
 
   public static void main(String[] args) throws Exception {
-    final Repository repository = ToolsInjectionModule.createRepositoryInstance().getRepository();
+    Injector injector = ToolsInjectionModule.createInjector();
+    final Repository repository = injector.getInstance(Repository.class);
     try {
       Tokens tokens = new Tokens();
       StorageIterator<Relation> iterator = repository.getDomainEntities(Relation.class);

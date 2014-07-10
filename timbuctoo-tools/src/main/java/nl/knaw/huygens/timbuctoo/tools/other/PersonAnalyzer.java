@@ -22,18 +22,20 @@ package nl.knaw.huygens.timbuctoo.tools.other;
  * #L%
  */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Injector;
+
 public class PersonAnalyzer {
 
   public static void main(String[] args) throws Exception {
+    Injector injector = ToolsInjectionModule.createInjector();
+    Repository repository = injector.getInstance(Repository.class);
     ObjectMapper mapper = new ObjectMapper();
-    Repository repository = ToolsInjectionModule.createRepositoryInstance().getRepository();
     try {
       StorageIterator<Person> iterator = repository.getDomainEntities(Person.class);
       while (iterator.hasNext()) {

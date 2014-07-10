@@ -40,7 +40,8 @@ import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.IS_CREATOR_OF;
 import java.io.File;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.XRepository;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Archive;
 import nl.knaw.huygens.timbuctoo.model.Archiver;
 import nl.knaw.huygens.timbuctoo.model.Keyword;
@@ -71,6 +72,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
+import com.google.inject.Injector;
 
 /**
  * Imports data of the "Dutch Caribbean" project.
@@ -90,8 +92,11 @@ public class DutchCaribbeanImporter extends DefaultImporter {
 
     DutchCaribbeanImporter importer = null;
     try {
-      XRepository instance = ToolsInjectionModule.createRepositoryInstance();
-      importer = new DutchCaribbeanImporter(instance, importDirName);
+      Injector injector = ToolsInjectionModule.createInjector();
+      Repository repository = injector.getInstance(Repository.class);
+      IndexManager indexManager = injector.getInstance(IndexManager.class);
+
+      importer = new DutchCaribbeanImporter(repository, indexManager, importDirName);
       importer.importAll();
     } finally {
       if (importer != null) {
@@ -129,8 +134,8 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private Reference hasSiblingArchive;
   private Reference hasSiblingArchiver;
 
-  public DutchCaribbeanImporter(XRepository repository, String inputDirName) {
-    super(repository);
+  public DutchCaribbeanImporter(Repository repository, IndexManager indexManager, String inputDirName) {
+    super(repository, indexManager);
     change = new Change("importer", "dcar");
     objectMapper = new ObjectMapper();
     inputDir = new File(inputDirName);

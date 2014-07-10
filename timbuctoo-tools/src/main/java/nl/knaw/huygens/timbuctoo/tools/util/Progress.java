@@ -36,7 +36,7 @@ public class Progress {
   public void step() {
     if (count % 10 == 0) {
       if (count % 1000 == 0) {
-        System.out.printf("%n%05d ", count);
+        System.out.printf("%n%06d ", count);
       }
       System.out.print(".");
     }
@@ -44,7 +44,7 @@ public class Progress {
   }
 
   public void done() {
-    System.out.printf("%n%05d%n%n", count);
+    System.out.printf("%n%06d%n%n", count);
   }
 
 }

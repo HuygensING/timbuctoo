@@ -25,7 +25,8 @@ package nl.knaw.huygens.timbuctoo.tools.importer.ebnm;
 import java.io.File;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.XRepository;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMDocumentatie;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMLexicon;
@@ -49,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
+import com.google.inject.Injector;
 
 /**
  * Imports data of the "eBNM" project.
@@ -68,8 +70,11 @@ public class EBNMImporter extends DefaultImporter {
 
     EBNMImporter importer = null;
     try {
-      XRepository instance = ToolsInjectionModule.createRepositoryInstance();
-      importer = new EBNMImporter(instance, importDirName);
+      Injector injector = ToolsInjectionModule.createInjector();
+      Repository repository = injector.getInstance(Repository.class);
+      IndexManager indexManager = injector.getInstance(IndexManager.class);
+
+      importer = new EBNMImporter(repository, indexManager, importDirName);
       importer.importAll();
     } finally {
       if (importer != null) {
@@ -95,8 +100,8 @@ public class EBNMImporter extends DefaultImporter {
   private final Map<String, Reference> signalementcodeRefMap = Maps.newHashMap();
   private final Map<String, Reference> watermerkRefMap = Maps.newHashMap();
 
-  public EBNMImporter(XRepository repository, String inputDirName) {
-    super(repository);
+  public EBNMImporter(Repository repository, IndexManager indexManager, String inputDirName) {
+    super(repository, indexManager);
     objectMapper = new ObjectMapper();
     inputDir = new File(inputDirName);
     System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());

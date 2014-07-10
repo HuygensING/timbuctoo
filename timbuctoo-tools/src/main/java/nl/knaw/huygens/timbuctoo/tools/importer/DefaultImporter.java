@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
@@ -62,9 +61,9 @@ public abstract class DefaultImporter {
   protected final Repository repository;
   protected final IndexManager indexManager;
 
-  public DefaultImporter(XRepository instance) {
-    repository = Preconditions.checkNotNull(instance.getRepository());
-    indexManager = Preconditions.checkNotNull(instance.getIndexManager());
+  public DefaultImporter(Repository repository, IndexManager indexManager) {
+    this.repository = Preconditions.checkNotNull(repository);
+    this.indexManager = Preconditions.checkNotNull(indexManager);
   }
 
   /**
@@ -72,9 +71,7 @@ public abstract class DefaultImporter {
    */
   public void close() {
     repository.close();
-
     indexManager.close();
-
   }
 
   // --- Error handling --------------------------------------------------------

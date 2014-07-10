@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.tools.util;
  */
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import nl.knaw.huygens.timbuctoo.annotations.JsonViews;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -53,6 +54,10 @@ public class EntityToJsonConverter {
 
   public <T extends Entity> String convert(T entity) throws IOException {
     return writer.writeValueAsString(entity).replaceAll(TYPE_INFO, "");
+  }
+
+  public <T extends Entity> void appendTo(PrintWriter writer, T entity) throws IOException {
+    writer.println(convert(entity));
   }
 
 }

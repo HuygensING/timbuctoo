@@ -24,7 +24,8 @@ package nl.knaw.huygens.timbuctoo.tools.importer.base;
 
 import java.io.File;
 
-import nl.knaw.huygens.timbuctoo.XRepository;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -35,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Stopwatch;
+import com.google.inject.Injector;
 
 /**
  * Importer for base domain entities, such as language.
@@ -71,18 +73,20 @@ public class BaseImporter extends DefaultImporter {
 
     BaseImporter importer = null;
     try {
-      XRepository instance = ToolsInjectionModule.createRepositoryInstance();
+      Injector injector = ToolsInjectionModule.createInjector();
+      Repository repository = injector.getInstance(Repository.class);
+      IndexManager indexManager = injector.getInstance(IndexManager.class);
 
       // Get rid of existing stuff
-      importer = new BaseImporter(instance);
+      importer = new BaseImporter(repository, indexManager);
       importer.removeNonPersistentEntities(BaseLanguage.class);
       importer.removeNonPersistentEntities(BaseLocation.class);
 
       importer.printBoxedText("Import languages");
-      new LanguageImporter(instance.getRepository(), change).handleFile(languageFile, 0, false);
+      new LanguageImporter(repository, change).handleFile(languageFile, 0, false);
 
       importer.printBoxedText("Import locations");
-      new LocationImporter(instance, change).handleFile(locationFile);
+      new LocationImporter(repository, indexManager, change).handleFile(locationFile);
 
       importer.printBoxedText("Indexing");
       importer.indexEntities(BaseLanguage.class);
@@ -98,8 +102,8 @@ public class BaseImporter extends DefaultImporter {
     }
   }
 
-  public BaseImporter(XRepository repository) {
-    super(repository);
+  public BaseImporter(Repository repository, IndexManager indexManager) {
+    super(repository, indexManager);
   }
 
 }

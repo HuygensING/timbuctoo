@@ -30,8 +30,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import nl.knaw.huygens.timbuctoo.XRepository;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.Document.DocumentType;
@@ -69,6 +70,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.inject.Injector;
 
 /**
  * Imports data of the "New European Women Writers" project.
@@ -88,8 +90,11 @@ public class WomenWritersImporter extends DefaultImporter {
 
     WomenWritersImporter importer = null;
     try {
-      XRepository instance = ToolsInjectionModule.createRepositoryInstance();
-      importer = new WomenWritersImporter(instance, directory);
+      Injector injector = ToolsInjectionModule.createInjector();
+      Repository repository = injector.getInstance(Repository.class);
+      IndexManager indexManager = injector.getInstance(IndexManager.class);
+
+      importer = new WomenWritersImporter(repository, indexManager, directory);
       importer.importAll();
     } finally {
       if (importer != null) {
@@ -112,8 +117,8 @@ public class WomenWritersImporter extends DefaultImporter {
   private final File inputDir;
   private final Change change;
 
-  public WomenWritersImporter(XRepository repository, String inputDirName) {
-    super(repository);
+  public WomenWritersImporter(Repository repository, IndexManager indexManager, String inputDirName) {
+    super(repository, indexManager);
     objectMapper = new ObjectMapper();
     inputDir = new File(inputDirName);
     if (inputDir.isDirectory()) {

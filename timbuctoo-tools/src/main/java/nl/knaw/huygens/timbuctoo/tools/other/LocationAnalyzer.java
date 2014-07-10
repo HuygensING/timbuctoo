@@ -27,10 +27,14 @@ import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 
+import com.google.inject.Injector;
+
 public class LocationAnalyzer {
 
   public static void main(String[] args) throws Exception {
-    final Repository repository = ToolsInjectionModule.createRepositoryInstance().getRepository();
+    Injector injector = ToolsInjectionModule.createInjector();
+    Repository repository = injector.getInstance(Repository.class);
+
     try {
       StorageIterator<Location> iterator = repository.getDomainEntities(Location.class);
       while (iterator.hasNext()) {

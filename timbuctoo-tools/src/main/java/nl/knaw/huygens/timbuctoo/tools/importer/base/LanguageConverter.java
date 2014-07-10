@@ -128,8 +128,7 @@ public class LanguageConverter extends CSVImporter {
     language.setName(items[6]);
 
     try {
-      String json = jsonConverter.convert(language);
-      out.println(json);
+      jsonConverter.appendTo(out, language);
     } catch (Exception e) {
       displayError(e.getMessage(), items);
     }

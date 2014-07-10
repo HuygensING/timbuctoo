@@ -32,8 +32,9 @@ import nl.knaw.huygens.tei.ElementHandler;
 import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
-import nl.knaw.huygens.timbuctoo.XRepository;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -58,6 +59,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.inject.Injector;
 
 /**
  * Importer for Norwegian COBWWWEB data.
@@ -76,8 +78,11 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
     CobwwwebNoImporter importer = null;
     try {
-      XRepository instance = ToolsInjectionModule.createRepositoryInstance();
-      importer = new CobwwwebNoImporter(instance);
+      Injector injector = ToolsInjectionModule.createInjector();
+      Repository repository = injector.getInstance(Repository.class);
+      IndexManager indexManager = injector.getInstance(IndexManager.class);
+
+      importer = new CobwwwebNoImporter(repository, indexManager);
       importer.importAll();
     } finally {
       if (importer != null) {
@@ -93,8 +98,8 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
   /** References of stored primitive entities */
   private final Map<String, Reference> references = Maps.newHashMap();
 
-  public CobwwwebNoImporter(XRepository repository) {
-    super(repository);
+  public CobwwwebNoImporter(Repository repository, IndexManager indexManager) {
+    super(repository, indexManager);
     change = new Change("importer", "cwno");
   }
 

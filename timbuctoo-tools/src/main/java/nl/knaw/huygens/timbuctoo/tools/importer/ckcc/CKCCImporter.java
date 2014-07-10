@@ -35,8 +35,9 @@ import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.Visitor;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
-import nl.knaw.huygens.timbuctoo.XRepository;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -69,6 +70,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
+import com.google.inject.Injector;
 
 /**
  * Imports data of the CKCC project into the repository.
@@ -85,8 +87,11 @@ public class CKCCImporter extends DefaultImporter {
 
     CKCCImporter importer = null;
     try {
-      XRepository instance = ToolsInjectionModule.createRepositoryInstance();
-      importer = new CKCCImporter(instance, directory);
+      Injector injector = ToolsInjectionModule.createInjector();
+      Repository repository = injector.getInstance(Repository.class);
+      IndexManager indexManager = injector.getInstance(IndexManager.class);
+
+      importer = new CKCCImporter(repository, indexManager, directory);
       importer.importAll(false);
     } finally {
       if (importer != null) {
@@ -105,8 +110,8 @@ public class CKCCImporter extends DefaultImporter {
   private final File inputDir;
   private final LocationConcordance concordance;
 
-  public CKCCImporter(XRepository repository, String inputDirName) throws Exception {
-    super(repository);
+  public CKCCImporter(Repository repository, IndexManager indexManager, String inputDirName) throws Exception {
+    super(repository, indexManager);
     change = new Change("importer", CKCCVRE.NAME);
 
     inputDir = new File(inputDirName);
@@ -375,7 +380,7 @@ public class CKCCImporter extends DefaultImporter {
     public void handleContent(Element element, ImportContext context, String text) {
       if (element.hasType("CKCC")) {
         context.person.setUrn(text);
-      } else if (element.hasType("CEN")){
+      } else if (element.hasType("CEN")) {
         context.person.setCenId(text);
       } else {
         log("## Unknown xref type %s%n", element.getType());
@@ -497,13 +502,8 @@ public class CKCCImporter extends DefaultImporter {
           String urn = sender.replace("?", "");
           CKCCPerson person = repository.findEntity(CKCCPerson.class, "urn", urn);
           if (person != null) {
-            CKCCRelation relation = RelationBuilder.newInstance(CKCCRelation.class)
-              .withRelationTypeId(isCreatedById)
-              .withSourceType(TypeNames.getInternalName(Document.class))
-              .withSourceId(storedId)
-              .withTargetType(TypeNames.getInternalName(Person.class))
-              .withTargetId(person.getId())
-              .build();
+            CKCCRelation relation = RelationBuilder.newInstance(CKCCRelation.class).withRelationTypeId(isCreatedById).withSourceType(TypeNames.getInternalName(Document.class)).withSourceId(storedId)
+                .withTargetType(TypeNames.getInternalName(Person.class)).withTargetId(person.getId()).build();
             addDomainEntity(CKCCRelation.class, relation, change);
           } else if (repository.findEntity(CKCCCollective.class, "urn", urn) == null) {
             System.out.printf("%s: failed to find sender %s%n", letterId, urn);
@@ -516,13 +516,8 @@ public class CKCCImporter extends DefaultImporter {
         if (!urn.equals("?")) {
           Location location = repository.findEntity(Location.class, "^urn", urn);
           if (location != null) {
-            CKCCRelation relation = RelationBuilder.newInstance(CKCCRelation.class)
-              .withRelationTypeId(hasSenderLocationId)
-              .withSourceType(TypeNames.getInternalName(Document.class))
-              .withSourceId(storedId)
-              .withTargetType(TypeNames.getInternalName(Location.class))
-              .withTargetId(location.getId())
-              .build();
+            CKCCRelation relation = RelationBuilder.newInstance(CKCCRelation.class).withRelationTypeId(hasSenderLocationId).withSourceType(TypeNames.getInternalName(Document.class))
+                .withSourceId(storedId).withTargetType(TypeNames.getInternalName(Location.class)).withTargetId(location.getId()).build();
             addDomainEntity(CKCCRelation.class, relation, change);
           } else {
             System.out.printf("%s: failed to find sender location %s (mapped to %s)%n", letterId, senderLoc, urn);
@@ -535,13 +530,8 @@ public class CKCCImporter extends DefaultImporter {
           String urn = recipient.replace("?", "");
           CKCCPerson person = repository.findEntity(CKCCPerson.class, "urn", urn);
           if (person != null) {
-            CKCCRelation relation = RelationBuilder.newInstance(CKCCRelation.class)
-              .withRelationTypeId(hasRecipientId)
-              .withSourceType(TypeNames.getInternalName(Document.class))
-              .withSourceId(storedId)
-              .withTargetType(TypeNames.getInternalName(Person.class))
-              .withTargetId(person.getId())
-              .build();
+            CKCCRelation relation = RelationBuilder.newInstance(CKCCRelation.class).withRelationTypeId(hasRecipientId).withSourceType(TypeNames.getInternalName(Document.class)).withSourceId(storedId)
+                .withTargetType(TypeNames.getInternalName(Person.class)).withTargetId(person.getId()).build();
             addDomainEntity(CKCCRelation.class, relation, change);
           } else if (repository.findEntity(CKCCCollective.class, "urn", urn) == null) {
             System.out.printf("%s: failed to find recipient %s%n", letterId, urn);
@@ -554,13 +544,8 @@ public class CKCCImporter extends DefaultImporter {
         if (!urn.equals("?")) {
           Location location = repository.findEntity(Location.class, "^urn", urn);
           if (location != null) {
-            CKCCRelation relation = RelationBuilder.newInstance(CKCCRelation.class)
-              .withRelationTypeId(hasRecipientLocationId)
-              .withSourceType(TypeNames.getInternalName(Document.class))
-              .withSourceId(storedId)
-              .withTargetType(TypeNames.getInternalName(Location.class))
-              .withTargetId(location.getId())
-              .build();
+            CKCCRelation relation = RelationBuilder.newInstance(CKCCRelation.class).withRelationTypeId(hasRecipientLocationId).withSourceType(TypeNames.getInternalName(Document.class))
+                .withSourceId(storedId).withTargetType(TypeNames.getInternalName(Location.class)).withTargetId(location.getId()).build();
             addDomainEntity(CKCCRelation.class, relation, change);
           } else {
             System.out.printf("%s: failed to find recipient location %s (mapped to %s)%n", letterId, recipientLoc, urn);

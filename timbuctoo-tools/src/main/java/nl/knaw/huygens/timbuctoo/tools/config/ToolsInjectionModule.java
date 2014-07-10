@@ -24,7 +24,6 @@ package nl.knaw.huygens.timbuctoo.tools.config;
 
 import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilderProvider;
-import nl.knaw.huygens.timbuctoo.XRepository;
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.index.IndexFacade;
@@ -44,13 +43,9 @@ import com.google.inject.Injector;
  */
 public class ToolsInjectionModule extends BasicInjectionModule {
 
-  /**
-   * Creates a configured repository instance.
-   */
-  public static XRepository createRepositoryInstance() throws ConfigurationException {
+  public static Injector createInjector() throws ConfigurationException {
     Configuration config = new Configuration("config.xml");
-    Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
-    return injector.getInstance(XRepository.class);
+    return Guice.createInjector(new ToolsInjectionModule(config));
   }
 
   public ToolsInjectionModule(Configuration config) {

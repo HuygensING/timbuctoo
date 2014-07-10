@@ -26,7 +26,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.XRepository;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Injector;
 
 /**
  * This importer uses json-files created by the {@code BulkDataTransformer}, to import into a database.
@@ -49,14 +51,17 @@ public class TransformedDataImporter extends DefaultImporter {
   public static void main(String[] args) throws Exception {
     String dataPath = args.length > 0 ? args[0] : "src/main/resources/testdata";
 
-    XRepository instance = ToolsInjectionModule.createRepositoryInstance();
-    TransformedDataImporter importer = new TransformedDataImporter(instance);
+    Injector injector = ToolsInjectionModule.createInjector();
+    Repository repository = injector.getInstance(Repository.class);
+    IndexManager indexManager = injector.getInstance(IndexManager.class);
+
+    TransformedDataImporter importer = new TransformedDataImporter(repository, indexManager);
     importer.importData(dataPath);
     importer.close();
   }
 
-  public TransformedDataImporter(XRepository repository) {
-    super(repository);
+  public TransformedDataImporter(Repository repository, IndexManager indexManager) {
+    super(repository, indexManager);
   }
 
   protected void importData(String dataPath) throws Exception {

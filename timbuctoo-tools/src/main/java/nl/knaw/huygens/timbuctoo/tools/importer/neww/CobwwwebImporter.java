@@ -11,7 +11,8 @@ import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.Visitor;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
-import nl.knaw.huygens.timbuctoo.XRepository;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
 import com.google.common.base.Joiner;
@@ -22,8 +23,8 @@ import com.sun.jersey.api.client.WebResource;
 
 public class CobwwwebImporter extends DefaultImporter {
 
-  public CobwwwebImporter(XRepository repository) {
-    super(repository);
+  public CobwwwebImporter(Repository repository, IndexManager indexManager) {
+    super(repository, indexManager);
   }
 
   protected String getResource(String... parts) throws Exception {
