@@ -31,7 +31,7 @@ public class RegularClientSearchResultCreator implements ClientSearchResultCreat
   }
 
   @Override
-  public RegularClientSearchResult create(Class<? extends DomainEntity> type, SearchResult searchResult, int start, int rows) {
+  public <T extends DomainEntity> RegularClientSearchResult create(Class<T> type, SearchResult searchResult, int start, int rows) {
     RegularClientSearchResult clientSearchResult = new RegularClientSearchResult();
 
     List<String> ids = searchResult.getIds();
@@ -41,7 +41,7 @@ public class RegularClientSearchResultCreator implements ClientSearchResultCreat
     int end = normalizedStart + normalizedRows;
 
     List<String> idsToRetrieve = ids.subList(normalizedStart, end);
-    List<? extends DomainEntity> results = retrieveEntities(type, idsToRetrieve);
+    List<T> results = retrieveEntities(type, idsToRetrieve);
 
     String queryId = searchResult.getId();
 
@@ -50,7 +50,7 @@ public class RegularClientSearchResultCreator implements ClientSearchResultCreat
     clientSearchResult.setIds(idsToRetrieve);
     clientSearchResult.setResults(results);
     clientSearchResult.setNumFound(numFound);
-    clientSearchResult.setRefs(entityRefCreator.createRefs(results));
+    clientSearchResult.setRefs(entityRefCreator.createRefs(type, results));
     clientSearchResult.setSortableFields(sortableFieldFinder.findFields(type));
     clientSearchResult.setTerm(searchResult.getTerm());
     clientSearchResult.setFacets(searchResult.getFacets());
@@ -90,11 +90,11 @@ public class RegularClientSearchResultCreator implements ClientSearchResultCreat
     return Math.min(Math.max(value, minValue), maxValue);
   }
 
-  private List<DomainEntity> retrieveEntities(Class<? extends DomainEntity> type, List<String> ids) {
+  private <T extends DomainEntity> List<T> retrieveEntities(Class<T> type, List<String> ids) {
     // Retrieve one-by-one to retain ordering
-    List<DomainEntity> entities = Lists.newArrayList();
+    List<T> entities = Lists.newArrayList();
     for (String id : ids) {
-      DomainEntity entity = repository.getEntity(type, id);
+      T entity = repository.getEntity(type, id);
       if (entity != null) {
         entities.add(entity);
       } else {

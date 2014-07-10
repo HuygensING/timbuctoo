@@ -5,8 +5,8 @@ import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.Facet;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
-import nl.knaw.huygens.timbuctoo.rest.resources.SearchResourceV1.EntityRef;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;

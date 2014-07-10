@@ -13,10 +13,10 @@ import java.util.List;
 import nl.knaw.huygens.facetedsearch.model.Facet;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
-import nl.knaw.huygens.timbuctoo.rest.resources.SearchResourceV1.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 
 import org.junit.Before;
@@ -69,9 +69,9 @@ public class RegularClientSearchResultCreatorTest {
     int normalizedStart = 0;
 
     final ArrayList<String> idsToGet = ID_LIST_WITH_TEN_IDS;
-    List<? extends DomainEntity> result = setupRepository(TYPE, idsToGet);
+    List<OtherDomainEntity> result = setupRepository(TYPE, idsToGet);
     int normalizedRows = 10;
-    testCreate(start, rows, normalizedStart, normalizedRows, idsToGet, result, nullNextLink, nullPrevLink, NUMBER_OF_RESULTS_FOUND);
+    testCreate(TYPE, start, rows, normalizedStart, normalizedRows, idsToGet, result, nullNextLink, nullPrevLink, NUMBER_OF_RESULTS_FOUND);
 
   }
 
@@ -81,12 +81,12 @@ public class RegularClientSearchResultCreatorTest {
     int rows = 9;
 
     final List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(start, 10);
-    List<? extends DomainEntity> result = setupRepository(TYPE, idsToGet);
+    List<OtherDomainEntity> result = setupRepository(TYPE, idsToGet);
 
     final int previousStart = 0;
     when(hateoasURICreatorMock.createHATEOASURIAsString(previousStart, rows, QUERY_ID)).thenReturn(PREV_LINK);
     int normalizedRows = 9;
-    testCreate(start, rows, start, normalizedRows, idsToGet, result, nullNextLink, PREV_LINK, NUMBER_OF_RESULTS_FOUND);
+    testCreate(TYPE, start, rows, start, normalizedRows, idsToGet, result, nullNextLink, PREV_LINK, NUMBER_OF_RESULTS_FOUND);
   }
 
   @Test
@@ -96,10 +96,10 @@ public class RegularClientSearchResultCreatorTest {
 
     final int normalizedStart = 0;
     final List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(normalizedStart, 10);
-    List<? extends DomainEntity> result = setupRepository(TYPE, idsToGet);
+    List<OtherDomainEntity> result = setupRepository(TYPE, idsToGet);
 
     int normalizedRows = 10;
-    testCreate(start, rows, normalizedStart, normalizedRows, idsToGet, result, nullNextLink, nullPrevLink, NUMBER_OF_RESULTS_FOUND);
+    testCreate(TYPE, start, rows, normalizedStart, normalizedRows, idsToGet, result, nullNextLink, nullPrevLink, NUMBER_OF_RESULTS_FOUND);
   }
 
   @Test
@@ -109,13 +109,13 @@ public class RegularClientSearchResultCreatorTest {
 
     final int normalizedStart = 0;
     final List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(normalizedStart, 5);
-    List<? extends DomainEntity> result = setupRepository(TYPE, idsToGet);
+    List<OtherDomainEntity> result = setupRepository(TYPE, idsToGet);
 
     int nextStart = 5;
     when(hateoasURICreatorMock.createHATEOASURIAsString(nextStart, rows, QUERY_ID)).thenReturn(NEXT_LINK);
 
     int normalizedRows = 5;
-    testCreate(start, rows, normalizedStart, normalizedRows, idsToGet, result, NEXT_LINK, nullPrevLink, NUMBER_OF_RESULTS_FOUND);
+    testCreate(TYPE, start, rows, normalizedStart, normalizedRows, idsToGet, result, NEXT_LINK, nullPrevLink, NUMBER_OF_RESULTS_FOUND);
   }
 
   @Test
@@ -126,14 +126,14 @@ public class RegularClientSearchResultCreatorTest {
     final int normalizedStart = 0;
     final int normalizedRows = 10;
     final List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(normalizedStart, 10);
-    List<? extends DomainEntity> result = setupRepository(TYPE, idsToGet);
+    List<OtherDomainEntity> result = setupRepository(TYPE, idsToGet);
 
-    testCreate(start, rows, normalizedStart, normalizedRows, idsToGet, result, nullNextLink, nullPrevLink, NUMBER_OF_RESULTS_FOUND);
+    testCreate(TYPE, start, rows, normalizedStart, normalizedRows, idsToGet, result, nullNextLink, nullPrevLink, NUMBER_OF_RESULTS_FOUND);
   }
 
-  private void testCreate(int start, int rows, final int normalizedStart, int normalizedRows, final List<String> idsToGet, List<? extends DomainEntity> result, String nextLink, String prevLink,
-      int numberOfResultsFound) {
-    when(entityRefCreatorMock.createRefs(result)).thenReturn(UNIMPORTANT_REF_LIST);
+  private <T extends DomainEntity> void testCreate(Class<T> type, int start, int rows, final int normalizedStart, int normalizedRows, final List<String> idsToGet, List<T> result, String nextLink,
+      String prevLink, int numberOfResultsFound) {
+    when(entityRefCreatorMock.createRefs(type, result)).thenReturn(UNIMPORTANT_REF_LIST);
 
     RegularClientSearchResultMatcher clientSearchResultMatcher = newClientSearchResultMatcher() //
         .withTerm(TERM) //
@@ -165,9 +165,9 @@ public class RegularClientSearchResultCreatorTest {
     final int normalizedStart = 0;
     final int normalizedRows = 0;
     final List<String> idsToGet = Lists.newArrayList();
-    List<? extends DomainEntity> result = setupRepository(TYPE, idsToGet);
+    List<OtherDomainEntity> result = setupRepository(TYPE, idsToGet);
 
-    when(entityRefCreatorMock.createRefs(result)).thenReturn(UNIMPORTANT_REF_LIST);
+    when(entityRefCreatorMock.createRefs(TYPE, result)).thenReturn(UNIMPORTANT_REF_LIST);
 
     RegularClientSearchResultMatcher clientSearchResultMatcher = newClientSearchResultMatcher() //
         .withTerm(TERM) //

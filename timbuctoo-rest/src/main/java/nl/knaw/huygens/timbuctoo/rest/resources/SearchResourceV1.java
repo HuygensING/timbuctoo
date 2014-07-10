@@ -59,6 +59,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.EntityRef;
 import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -300,35 +301,7 @@ public class SearchResourceV1 extends ResourceBase {
     return list;
   }
 
-  public static class EntityRef {
-    private final String type;
-    private final String id;
-    private final String path;
-    private final String displayName;
-
-    public EntityRef(String type, String xtype, String id, String displayName) {
-      this.type = type;
-      this.id = id;
-      this.path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
-      this.displayName = displayName;
-    }
-
-    public String getType() {
-      return type;
-    }
-
-    public String getId() {
-      return id;
-    }
-
-    public String getPath() {
-      return path;
-    }
-
-    public String getDisplayName() {
-      return displayName;
-    }
-  }
+  
 
   // ---------------------------------------------------------------------------
 

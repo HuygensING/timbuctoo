@@ -6,6 +6,6 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
 public interface ClientSearchResultCreator {
 
-  RegularClientSearchResult create(Class<? extends DomainEntity> type, SearchResult searchResult, int start, int rows);
+  <T extends DomainEntity> RegularClientSearchResult create(Class<T> type, SearchResult searchResult, int start, int rows);
 
 }

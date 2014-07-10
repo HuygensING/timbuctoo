@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.Facet;
-import nl.knaw.huygens.timbuctoo.rest.resources.SearchResourceV1.EntityRef;
 
 // extends SystemEntity for easy (de)serialization
 public class RegularClientSearchResult extends SystemEntity {
