@@ -31,6 +31,9 @@ public class Paths {
   public static final String SYSTEM_PREFIX = "system";
   /** Used for domain entities. */
   public static final String DOMAIN_PREFIX = "domain";
+  /** Name of the search resource */
+  public static final String SEARCH_PATH = "search";
+
   /** Regex for determining the entity name.*/
   public static final String ENTITY_REGEX = "[a-zA-Z]+";
   /** Regex for determining the id.*/

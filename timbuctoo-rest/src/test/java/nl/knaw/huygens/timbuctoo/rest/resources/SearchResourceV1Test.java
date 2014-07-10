@@ -50,11 +50,13 @@ import javax.ws.rs.core.Response;
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.model.ClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
+import nl.knaw.huygens.timbuctoo.rest.model.TestRelation;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.SearchException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
@@ -78,7 +80,8 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class SearchResourceV1Test extends WebServiceTestSetup {
 
-  private static final String SEARCH_RESULT_TYPE = "person";
+  private static final Class<TestRelation> TEST_RELATION_TYPE = TestRelation.class;
+  private static final String SEARCH_RESULT_TYPE_STRING = "person";
   private static final Class<Class<? extends Relation>> RELATION_TYPE = new GenericType<Class<? extends Relation>>() {}.getRawClass();
   private static final String RELATION_TYPE_STRING = "testrelations";
   private static final String V1_PREFIX = "v1";
@@ -89,6 +92,7 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
   private static final String TYPE_STRING = "persons";
   private static final String ID = "QURY0000000001";
   private static final String RELATION_SEARCH_RESULT_TYPE = "testrelation";
+  private static final Class<? extends DomainEntity> SEARCH_RESULT_TYPE = Person.class;
 
   private VREManager vreManager;
   private SearchManager searchManager;
@@ -222,15 +226,15 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
   public void testGetSuccess() {
     // setup
     SearchResult searchResult = new SearchResult();
-    searchResult.setSearchType(SEARCH_RESULT_TYPE);
+    searchResult.setSearchType(SEARCH_RESULT_TYPE_STRING);
 
-    ClientSearchResult clientSearchResult = new ClientSearchResult();
+    RegularClientSearchResult clientSearchResult = new RegularClientSearchResult();
 
     final int defaultStart = 0;
     final int defaultRows = 10;
 
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
-    when(regularClientSearchResultCreatorMock.create(searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
+    when(regularClientSearchResultCreatorMock.create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
 
     // action
     ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
@@ -238,11 +242,11 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(Status.OK));
 
-    ClientSearchResult actualResult = response.getEntity(ClientSearchResult.class);
-    assertThat(actualResult, notNullValue(ClientSearchResult.class));
+    RegularClientSearchResult actualResult = response.getEntity(RegularClientSearchResult.class);
+    assertThat(actualResult, notNullValue(RegularClientSearchResult.class));
 
     verify(repository).getEntity(SearchResult.class, ID);
-    verify(regularClientSearchResultCreatorMock).create(searchResult, defaultStart, defaultRows);
+    verify(regularClientSearchResultCreatorMock).create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows);
 
   }
 
@@ -253,16 +257,16 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     int numberOfRows = 20;
 
     SearchResult searchResult = new SearchResult();
-    searchResult.setSearchType(SEARCH_RESULT_TYPE);
+    searchResult.setSearchType(SEARCH_RESULT_TYPE_STRING);
 
-    ClientSearchResult clientSearchResult = new ClientSearchResult();
+    RegularClientSearchResult clientSearchResult = new RegularClientSearchResult();
 
     MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
     queryParameters.add("start", "20");
     queryParameters.add("rows", "20");
 
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
-    when(regularClientSearchResultCreatorMock.create(searchResult, startIndex, numberOfRows)).thenReturn(clientSearchResult);
+    when(regularClientSearchResultCreatorMock.create(SEARCH_RESULT_TYPE, searchResult, startIndex, numberOfRows)).thenReturn(clientSearchResult);
 
     // action
     ClientResponse clientResponse = searchResource(ID).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
@@ -270,11 +274,11 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     // verify
     assertThat(clientResponse.getClientResponseStatus(), equalTo(Status.OK));
 
-    ClientSearchResult actualResult = clientResponse.getEntity(ClientSearchResult.class);
-    assertThat(actualResult, notNullValue(ClientSearchResult.class));
+    RegularClientSearchResult actualResult = clientResponse.getEntity(RegularClientSearchResult.class);
+    assertThat(actualResult, notNullValue(RegularClientSearchResult.class));
 
     verify(repository).getEntity(SearchResult.class, ID);
-    verify(regularClientSearchResultCreatorMock).create(searchResult, startIndex, numberOfRows);
+    verify(regularClientSearchResultCreatorMock).create(SEARCH_RESULT_TYPE, searchResult, startIndex, numberOfRows);
   }
 
   @Test
@@ -283,13 +287,13 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     SearchResult searchResult = new SearchResult();
     searchResult.setSearchType(RELATION_SEARCH_RESULT_TYPE);
 
-    ClientSearchResult clientSearchResult = new ClientSearchResult();
+    RegularClientSearchResult clientSearchResult = new RegularClientSearchResult();
 
     final int defaultStart = 0;
     final int defaultRows = 10;
 
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
-    when(relationClientSearchResultCreatorMock.create(searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
+    when(relationClientSearchResultCreatorMock.create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
 
     // action
     ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
@@ -297,11 +301,11 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(Status.OK));
 
-    ClientSearchResult actualResult = response.getEntity(ClientSearchResult.class);
-    assertThat(actualResult, notNullValue(ClientSearchResult.class));
+    RegularClientSearchResult actualResult = response.getEntity(RegularClientSearchResult.class);
+    assertThat(actualResult, notNullValue(RegularClientSearchResult.class));
 
     verify(repository).getEntity(SearchResult.class, ID);
-    verify(relationClientSearchResultCreatorMock).create(searchResult, defaultStart, defaultRows);
+    verify(relationClientSearchResultCreatorMock).create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows);
   }
 
   @Test

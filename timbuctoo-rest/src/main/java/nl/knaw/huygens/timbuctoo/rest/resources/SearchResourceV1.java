@@ -27,8 +27,8 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.SEARCH_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH;
-import static nl.knaw.huygens.timbuctoo.rest.resources.SearchResourceV1.SEARCH_PATH;
 
 import java.net.URI;
 import java.util.List;
@@ -58,8 +58,8 @@ import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.ClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
@@ -82,8 +82,6 @@ import com.google.inject.Inject;
 
 @Path(V1_PATH + "/" + SEARCH_PATH)
 public class SearchResourceV1 extends ResourceBase {
-
-  public static final String SEARCH_PATH = "search";
 
   private static final String RELATION_PARAM = "relationType";
   private static final String RELATION_SEARCH_PREFIX = "{" + RELATION_PARAM + ": [a-z]*relations }";
@@ -159,7 +157,7 @@ public class SearchResourceV1 extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    final ClientSearchResult clientSearchResult = getClientSearchResultCreator(type).create(result, start, rows);
+    final RegularClientSearchResult clientSearchResult = getClientSearchResultCreator(type).create(type, result, start, rows);
     return Response.ok(clientSearchResult).build();
   }
 
