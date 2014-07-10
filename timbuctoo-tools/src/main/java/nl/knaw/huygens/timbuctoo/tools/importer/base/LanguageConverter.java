@@ -68,9 +68,9 @@ public class LanguageConverter extends CSVImporter {
       System.exit(-1);
     }
 
-    File outputDirectory = new File("import");
+    File outputDirectory = new File("import/base");
     outputDirectory.mkdirs();
-    File outputFile = new File(outputDirectory, "languages.json");
+    File outputFile = new File(outputDirectory, "baselanguage.json");
     new LanguageConverter(outputFile).handleFile(languageFile, 0, false);
 
     System.out.printf("-- Time used: %s%n", stopWatch);
