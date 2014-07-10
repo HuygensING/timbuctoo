@@ -8,7 +8,7 @@ public class RegularClientSearchResult extends ClientSearchResult {
 
   private String term;
   private List<Facet> facets;
-  private List<EntityRef> refs;
+  private List<ClientEntityRepresentation> refs;
 
   public String getTerm() {
     return term;
@@ -18,11 +18,11 @@ public class RegularClientSearchResult extends ClientSearchResult {
     return facets;
   }
 
-  public List<EntityRef> getRefs() {
+  public List<ClientEntityRepresentation> getRefs() {
     return refs;
   }
 
-  public void setRefs(List<EntityRef> refs) {
+  public void setRefs(List<ClientEntityRepresentation> refs) {
     this.refs = refs;
   }
 

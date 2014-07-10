@@ -13,7 +13,7 @@ import java.util.List;
 import nl.knaw.huygens.facetedsearch.model.Facet;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.EntityRef;
+import nl.knaw.huygens.timbuctoo.model.ClientEntityRepresentation;
 import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
@@ -29,7 +29,7 @@ public class RegularClientSearchResultCreatorTest {
   private static final String NEXT_LINK = "http://www.test.com/next";
   private static final String PREV_LINK = "http://www.test.com/prev";
   private static final HashSet<String> SORTABLE_FIELDS = Sets.newHashSet();
-  private static final ArrayList<EntityRef> UNIMPORTANT_REF_LIST = Lists.newArrayList();
+  private static final ArrayList<ClientEntityRepresentation> UNIMPORTANT_REF_LIST = Lists.newArrayList();
   private static final Class<OtherDomainEntity> TYPE = OtherDomainEntity.class;
   private static final String TERM = "term";
   private static final ArrayList<Facet> FACET_LIST = Lists.newArrayList();

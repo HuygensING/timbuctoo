@@ -5,7 +5,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.Facet;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.EntityRef;
+import nl.knaw.huygens.timbuctoo.model.ClientEntityRepresentation;
 import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 
 import org.hamcrest.Description;
@@ -19,7 +19,7 @@ public class RegularClientSearchResultMatcher extends TypeSafeMatcher<RegularCli
   private List<Facet> facets;
   private int numFound;
   private List<String> ids;
-  private List<EntityRef> refs;
+  private List<ClientEntityRepresentation> refs;
   private List<? extends DomainEntity> results;
   private int start;
   private int rows;
@@ -32,7 +32,7 @@ public class RegularClientSearchResultMatcher extends TypeSafeMatcher<RegularCli
       List<Facet> facets, //
       int numFound, //
       List<String> ids, //
-      List<EntityRef> refs, //
+      List<ClientEntityRepresentation> refs, //
       List<? extends DomainEntity> results, //
       int start, //
       int rows, //
@@ -120,7 +120,7 @@ public class RegularClientSearchResultMatcher extends TypeSafeMatcher<RegularCli
     private List<Facet> facets;
     private int numFound;
     private List<String> ids;
-    private List<EntityRef> refs;
+    private List<ClientEntityRepresentation> refs;
     private List<? extends DomainEntity> results;
     private int start;
     private int rows;
@@ -148,7 +148,7 @@ public class RegularClientSearchResultMatcher extends TypeSafeMatcher<RegularCli
       return this;
     }
 
-    public ClientSearchResultMatcherBuilder withRefs(List<EntityRef> refs) {
+    public ClientSearchResultMatcherBuilder withRefs(List<ClientEntityRepresentation> refs) {
       this.refs = refs;
       return this;
     }

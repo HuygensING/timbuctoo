@@ -59,7 +59,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.EntityRef;
+import nl.knaw.huygens.timbuctoo.model.ClientEntityRepresentation;
 import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -291,12 +291,12 @@ public class SearchResourceV1 extends ResourceBase {
     return entities;
   }
 
-  private List<EntityRef> createEntityRefs(Class<? extends DomainEntity> type, List<DomainEntity> entities) {
+  private List<ClientEntityRepresentation> createEntityRefs(Class<? extends DomainEntity> type, List<DomainEntity> entities) {
     String itype = TypeNames.getInternalName(type);
     String xtype = TypeNames.getExternalName(type);
-    List<EntityRef> list = Lists.newArrayListWithCapacity(entities.size());
+    List<ClientEntityRepresentation> list = Lists.newArrayListWithCapacity(entities.size());
     for (DomainEntity entity : entities) {
-      list.add(new EntityRef(itype, xtype, entity.getId(), entity.getDisplayName()));
+      list.add(new ClientEntityRepresentation(itype, xtype, entity.getId(), entity.getDisplayName()));
     }
     return list;
   }
