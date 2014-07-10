@@ -25,11 +25,13 @@ package nl.knaw.huygens.timbuctoo.tools.importer;
 import java.io.File;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
@@ -37,7 +39,7 @@ import org.apache.commons.io.LineIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Injector;
 
-// TODO make more generic
+// TODO determine VRE
 // TODO including date in directory name
 public class JsonImporter extends CSVImporter {
 
@@ -57,18 +59,20 @@ public class JsonImporter extends CSVImporter {
       JsonImporter importer = new JsonImporter(repository, indexManager, directory);
       importer.handleFile(file, 2, false);
     } finally {
-      repository.close();
+      indexManager.commitAll();
       indexManager.close();
+      repository.close();
     }
   }
 
   // ---------------------------------------------------------------------------
 
+  private final TypeRegistry registry;
   private final File directory;
   private final Handler handler;
 
   public JsonImporter(Repository repository, IndexManager indexManager, File directory) {
-    super(null);
+    registry = repository.getTypeRegistry();
     this.directory = directory;
     Change change = new Change("importer", "base");
     handler = new Handler(repository, indexManager, change);
@@ -77,7 +81,8 @@ public class JsonImporter extends CSVImporter {
   @Override
   protected void handleLine(String[] items) throws Exception {
     File file = new File(directory, items[0]);
-    handler.handleFile(file, items[1]);
+    Class<? extends DomainEntity> type = registry.getDomainEntityType(items[1]);
+    handler.handleFile(file, type);
   }
 
   // ---------------------------------------------------------------------------
@@ -93,25 +98,26 @@ public class JsonImporter extends CSVImporter {
       mapper = new ObjectMapper();
     }
 
-    public void handleFile(File file, String iname) throws Exception {
-      Class<? extends DomainEntity> type = BaseLanguage.class;
+    public <T extends DomainEntity> void handleFile(File file, Class<T> type) throws Exception {
       System.out.printf("%n-- Importing %s entities from file %s%n", type.getSimpleName(), file.getName());
+      String replacement = String.format("{\"@type\":\"%s\",", TypeNames.getInternalName(type));
 
-      int count = 0;
+      Progress progress = new Progress();
       LineIterator iterator = FileUtils.lineIterator(file, "UTF-8");
       try {
         while (iterator.hasNext()) {
           String line = iterator.nextLine();
           if (!line.isEmpty()) {
-            count++;
-            line = line.replace("{", "{\"@type\":\"baselanguage\",");
-            BaseLanguage entity = mapper.readValue(line, BaseLanguage.class);
-            addDomainEntity(BaseLanguage.class, entity, change);
+            progress.step();
+            line = line.replace("{", replacement);
+            T entity = mapper.readValue(line, type);
+            String id = addDomainEntity(type, entity, change);
+            indexManager.addEntity(type, id);
           }
         }
       } finally {
-        System.out.printf("Number of entities: %d%n", count);
         LineIterator.closeQuietly(iterator);
+        progress.done();
       }
     }
   }
