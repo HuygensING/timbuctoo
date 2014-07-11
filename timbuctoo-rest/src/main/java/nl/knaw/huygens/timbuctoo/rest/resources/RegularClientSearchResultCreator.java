@@ -24,7 +24,7 @@ public class RegularClientSearchResultCreator extends ClientSearchResultCreator 
   public <T extends DomainEntity> RegularClientSearchResult create(Class<T> type, SearchResult searchResult, int start, int rows) {
     RegularClientSearchResult clientSearchResult = new RegularClientSearchResult();
 
-    List<String> ids = searchResult.getIds();
+    List<String> ids = getIds(searchResult);
     int numFound = ids.size();
     int normalizedStart = mapToRange(start, 0, numFound);
     int normalizedRows = mapToRange(rows, 0, numFound - start);

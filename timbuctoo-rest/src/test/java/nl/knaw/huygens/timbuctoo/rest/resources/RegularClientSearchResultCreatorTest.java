@@ -237,8 +237,6 @@ public class RegularClientSearchResultCreatorTest extends ClientSearchResultCrea
 
     SearchResult emptySearchResult = new SearchResult();
     emptySearchResult.setId(QUERY_ID);
-    List<String> idList = Lists.newArrayList();
-    emptySearchResult.setIds(idList);
     emptySearchResult.setTerm(TERM);
     emptySearchResult.setFacets(FACET_LIST);
 

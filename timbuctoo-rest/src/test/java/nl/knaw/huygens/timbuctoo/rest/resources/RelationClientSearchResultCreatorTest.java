@@ -191,11 +191,9 @@ public class RelationClientSearchResultCreatorTest extends ClientSearchResultCre
 
     Class<TestRelation> type = TestRelation.class;
     SearchResult searchResult = new SearchResult();
-    final List<String> emptySearchResult = Lists.newArrayList();
-    searchResult.setIds(emptySearchResult);
     searchResult.setId(QUERY_ID);
 
-    final List<String> idsToGet = emptySearchResult;
+    final List<String> idsToGet = Lists.newArrayList();
     List<TestRelation> result = setupRepository(type, idsToGet);
     final List<ClientRelationRepresentation> emptyRefList = Lists.newArrayList();
 

@@ -348,6 +348,7 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
   @Test
   public void aSuccessfulRelationSearchPostShouldResponseWithStatusCodeCreatedandALocationHeader() throws SearchException, SearchValidationException, StorageException, ValidationException {
     // setup
+    setupPublicUrl(resource().getURI().toString());
     String expectedLocationHeader = getRelationSearchURL(ID);
 
     RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
@@ -440,10 +441,9 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
 
   private String getRelationSearchURL(String id) {
     return String.format(//
-        "%s%s/search/%s/%s", //
+        "%s%s/search/%s", //
         resource().getURI().toString(), //
         V1_PREFIX, //
-        RELATION_TYPE_STRING, //
         id);
   }
 

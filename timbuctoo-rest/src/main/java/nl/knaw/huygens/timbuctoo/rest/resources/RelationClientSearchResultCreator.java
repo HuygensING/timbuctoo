@@ -8,10 +8,13 @@ import nl.knaw.huygens.timbuctoo.model.RelationClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 
+import com.google.inject.Inject;
+
 public class RelationClientSearchResultCreator extends ClientSearchResultCreator {
 
   private final ClientRelationRepresentationCreator clientRelationRepresentationCreator;
 
+  @Inject
   public RelationClientSearchResultCreator(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator,
       ClientRelationRepresentationCreator clientRelationRepresentationCreator) {
     super(repository, sortableFieldFinder, hateoasURICreator);
@@ -23,7 +26,7 @@ public class RelationClientSearchResultCreator extends ClientSearchResultCreator
     RelationClientSearchResult clientSearchResult = new RelationClientSearchResult();
 
     String queryId = searchResult.getId();
-    List<String> ids = searchResult.getIds();
+    List<String> ids = getIds(searchResult);
     int numFound = ids.size();
     int normalizedStart = mapToRange(start, 0, numFound);
     int normalizedRows = mapToRange(rows, 0, numFound - start);
@@ -44,5 +47,4 @@ public class RelationClientSearchResultCreator extends ClientSearchResultCreator
 
     return clientSearchResult;
   }
-
 }

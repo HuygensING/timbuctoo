@@ -70,4 +70,8 @@ public abstract class ClientSearchResultCreator {
     }
   }
 
+  protected List<String> getIds(SearchResult searchResult) {
+    return searchResult.getIds() != null ? searchResult.getIds() : Lists.<String> newArrayList();
+  }
+
 }
