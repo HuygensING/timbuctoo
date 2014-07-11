@@ -4,28 +4,19 @@ import java.util.List;
 import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.Facet;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.ClientEntityRepresentation;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 
 import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
 
 import com.google.common.base.Objects;
 
-public class RegularClientSearchResultMatcher extends TypeSafeMatcher<RegularClientSearchResult> {
+public class RegularClientSearchResultMatcher extends ClientSearchResultMatcher<RegularClientSearchResult> {
 
   private String term;
   private List<Facet> facets;
-  private int numFound;
-  private List<String> ids;
   private List<ClientEntityRepresentation> refs;
-  private List<? extends DomainEntity> results;
-  private int start;
-  private int rows;
-  private Set<String> sortableFields;
-  private String nextLink;
-  private String prevLink;
 
   private RegularClientSearchResultMatcher( //
       String term, //
@@ -39,23 +30,17 @@ public class RegularClientSearchResultMatcher extends TypeSafeMatcher<RegularCli
       Set<String> sortableFields, //
       String nextLink, //
       String prevLink) {
+
+    super(numFound, ids, results, start, rows, sortableFields, nextLink, prevLink);
+
     this.term = term;
     this.facets = facets;
-    this.numFound = numFound;
-    this.ids = ids;
     this.refs = refs;
-    this.results = results;
-    this.start = start;
-    this.rows = rows;
-    this.sortableFields = sortableFields;
-    this.nextLink = nextLink;
-    this.prevLink = prevLink;
-
   }
 
   @Override
   public void describeTo(Description description) {
-    description.appendText("ClientSearchResult with \n");
+    description.appendText("RegularClientSearchResult with \n");
 
     addToDescription(description, "term", term);
     addToDescription(description, "facets", facets);
@@ -70,16 +55,9 @@ public class RegularClientSearchResultMatcher extends TypeSafeMatcher<RegularCli
     addToDescription(description, "prevLink", prevLink);
   }
 
-  private void addToDescription(Description description, String fieldName, Object value) {
-    description.appendText(fieldName) //
-        .appendText(" ")//
-        .appendValue(value) //
-        .appendText("\n");
-  }
-
   @Override
   protected void describeMismatchSafely(RegularClientSearchResult item, Description mismatchdescription) {
-    mismatchdescription.appendText("ClientSearchResult with \n");
+    mismatchdescription.appendText("RegularClientSearchResult with \n");
 
     addToDescription(mismatchdescription, "term", item.getTerm());
     addToDescription(mismatchdescription, "facets", item.getFacets());
@@ -98,24 +76,16 @@ public class RegularClientSearchResultMatcher extends TypeSafeMatcher<RegularCli
   protected boolean matchesSafely(RegularClientSearchResult item) {
     boolean isEqual = Objects.equal(term, item.getTerm());
     isEqual &= Objects.equal(facets, item.getFacets());
-    isEqual &= Objects.equal(numFound, item.getNumFound());
-    isEqual &= Objects.equal(ids, item.getIds());
     isEqual &= Objects.equal(refs, item.getRefs());
-    isEqual &= Objects.equal(results, item.getResults());
-    isEqual &= Objects.equal(start, item.getStart());
-    isEqual &= Objects.equal(rows, item.getRows());
-    isEqual &= Objects.equal(sortableFields, item.getSortableFields());
-    isEqual &= Objects.equal(nextLink, item.getNextLink());
-    isEqual &= Objects.equal(prevLink, item.getPrevLink());
 
     return isEqual;
   }
 
-  public static ClientSearchResultMatcherBuilder newClientSearchResultMatcher() {
-    return new ClientSearchResultMatcherBuilder();
+  public static RegularClientSearchResultMatcherBuilder newRegularClientSearchResultMatcherBuilder() {
+    return new RegularClientSearchResultMatcherBuilder();
   }
 
-  public static class ClientSearchResultMatcherBuilder {
+  public static class RegularClientSearchResultMatcherBuilder {
     private String term;
     private List<Facet> facets;
     private int numFound;
@@ -128,57 +98,57 @@ public class RegularClientSearchResultMatcher extends TypeSafeMatcher<RegularCli
     private String nextLink;
     private String prevLink;
 
-    public ClientSearchResultMatcherBuilder withTerm(String term) {
+    public RegularClientSearchResultMatcherBuilder withTerm(String term) {
       this.term = term;
       return this;
     }
 
-    public ClientSearchResultMatcherBuilder withFacets(List<Facet> facets) {
+    public RegularClientSearchResultMatcherBuilder withFacets(List<Facet> facets) {
       this.facets = facets;
       return this;
     }
 
-    public ClientSearchResultMatcherBuilder withNumFound(int numFound) {
+    public RegularClientSearchResultMatcherBuilder withNumFound(int numFound) {
       this.numFound = numFound;
       return this;
     }
 
-    public ClientSearchResultMatcherBuilder withIds(List<String> ids) {
+    public RegularClientSearchResultMatcherBuilder withIds(List<String> ids) {
       this.ids = ids;
       return this;
     }
 
-    public ClientSearchResultMatcherBuilder withRefs(List<ClientEntityRepresentation> refs) {
+    public RegularClientSearchResultMatcherBuilder withRefs(List<ClientEntityRepresentation> refs) {
       this.refs = refs;
       return this;
     }
 
-    public ClientSearchResultMatcherBuilder withResults(List<? extends DomainEntity> results) {
+    public RegularClientSearchResultMatcherBuilder withResults(List<? extends DomainEntity> results) {
       this.results = results;
       return this;
     }
 
-    public ClientSearchResultMatcherBuilder withStart(int start) {
+    public RegularClientSearchResultMatcherBuilder withStart(int start) {
       this.start = start;
       return this;
     }
 
-    public ClientSearchResultMatcherBuilder withRows(int rows) {
+    public RegularClientSearchResultMatcherBuilder withRows(int rows) {
       this.rows = rows;
       return this;
     }
 
-    public ClientSearchResultMatcherBuilder withSortableFields(Set<String> sortableFields) {
+    public RegularClientSearchResultMatcherBuilder withSortableFields(Set<String> sortableFields) {
       this.sortableFields = sortableFields;
       return this;
     }
 
-    public ClientSearchResultMatcherBuilder withNextLink(String nextLink) {
+    public RegularClientSearchResultMatcherBuilder withNextLink(String nextLink) {
       this.nextLink = nextLink;
       return this;
     }
 
-    public ClientSearchResultMatcherBuilder withPrevLink(String prevLink) {
+    public RegularClientSearchResultMatcherBuilder withPrevLink(String prevLink) {
       this.prevLink = prevLink;
       return this;
     }

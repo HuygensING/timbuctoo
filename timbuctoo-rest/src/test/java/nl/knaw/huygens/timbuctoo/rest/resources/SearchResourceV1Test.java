@@ -54,6 +54,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.model.TestRelation;
@@ -287,7 +288,7 @@ public class SearchResourceV1Test extends WebServiceTestSetup {
     SearchResult searchResult = new SearchResult();
     searchResult.setSearchType(RELATION_SEARCH_RESULT_TYPE);
 
-    RegularClientSearchResult clientSearchResult = new RegularClientSearchResult();
+    RelationClientSearchResult clientSearchResult = new RelationClientSearchResult();
 
     final int defaultStart = 0;
     final int defaultRows = 10;

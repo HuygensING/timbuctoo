@@ -58,9 +58,9 @@ import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.ClientEntityRepresentation;
-import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
+import nl.knaw.huygens.timbuctoo.model.ClientSearchResult;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
@@ -158,7 +158,7 @@ public class SearchResourceV1 extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    final RegularClientSearchResult clientSearchResult = getClientSearchResultCreator(type).create(type, result, start, rows);
+    final ClientSearchResult clientSearchResult = getClientSearchResultCreator(type).create(type, result, start, rows);
     return Response.ok(clientSearchResult).build();
   }
 
@@ -300,8 +300,6 @@ public class SearchResourceV1 extends ResourceBase {
     }
     return list;
   }
-
-  
 
   // ---------------------------------------------------------------------------
 

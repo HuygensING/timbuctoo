@@ -8,7 +8,7 @@ import nl.knaw.huygens.timbuctoo.model.ClientEntityRepresentation;
 
 import com.google.common.collect.Lists;
 
-public class EntityRefCreator {
+public class ClientEntityRepresentationCreator {
 
   public <T extends DomainEntity> List<ClientEntityRepresentation> createRefs(Class<T> type, List<T> result) {
     String itype = TypeNames.getInternalName(type);
