@@ -60,6 +60,10 @@ public abstract class CSVImporter {
     this(out, SEPARATOR_CHAR, QUOTE_CHAR, LINES_TO_SKIP);
   }
 
+  public CSVImporter() {
+    this(null, SEPARATOR_CHAR, QUOTE_CHAR, LINES_TO_SKIP);
+  }
+
   public void handleFile(File file, int itemsPerLine, boolean verbose) throws Exception {
     if (!file.canRead()) {
       throw new FileNotFoundException("Missing CSV file " + file.getName());
