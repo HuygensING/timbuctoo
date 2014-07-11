@@ -39,15 +39,12 @@ import org.apache.commons.io.LineIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Injector;
 
-// TODO determine VRE
-// TODO including date in directory name
 public class JsonImporter extends CSVImporter {
 
   private static final String CONTROL_FILE_NAME = "import.txt";
 
   public static void main(String[] args) throws Exception {
-    // String directoryName = (args.length > 0) ? args[0] : "../../timbuctoo-testdata/src/main/resources/import/base/";
-    String directoryName = (args.length > 0) ? args[0] : "import/base/";
+    String directoryName = (args.length > 0) ? args[0] : "../../timbuctoo-testdata/src/main/resources/import/base/";
     File directory = new File(directoryName);
 
     Injector injector = ToolsInjectionModule.createInjector();
@@ -99,8 +96,8 @@ public class JsonImporter extends CSVImporter {
     }
 
     public <T extends DomainEntity> void handleFile(File file, Class<T> type) throws Exception {
-      System.out.printf("%n-- Importing %s entities from file %s%n", type.getSimpleName(), file.getName());
-      String replacement = String.format("{\"@type\":\"%s\",", TypeNames.getInternalName(type));
+      System.out.printf("%n.. File: %s%n", file.getName());
+      String prefix = String.format("{\"@type\":\"%s\",", TypeNames.getInternalName(type));
 
       Progress progress = new Progress();
       LineIterator iterator = FileUtils.lineIterator(file, "UTF-8");
@@ -109,7 +106,7 @@ public class JsonImporter extends CSVImporter {
           String line = iterator.nextLine();
           if (!line.isEmpty()) {
             progress.step();
-            line = line.replace("{", replacement);
+            line = prefix + line.substring(1);
             T entity = mapper.readValue(line, type);
             String id = addDomainEntity(type, entity, change);
             indexManager.addEntity(type, id);

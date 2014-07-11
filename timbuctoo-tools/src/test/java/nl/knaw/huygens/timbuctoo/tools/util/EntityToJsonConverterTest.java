@@ -23,13 +23,27 @@ package nl.knaw.huygens.timbuctoo.tools.util;
  */
 
 import java.io.IOException;
+import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Language;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
+import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
+import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class EntityToJsonConverterTest {
+
+  @BeforeClass
+  public static void setupRegistry() throws ModelException {
+    // needed for type resolver
+    TypeRegistry.getInstance().init("timbuctoo.model.*");
+  }
 
   @Test
   public void testConversion() throws IOException {
@@ -53,6 +67,42 @@ public class EntityToJsonConverterTest {
 
   private void assertContains(boolean expected, String json, String text) {
     Assert.assertEquals(expected, json.contains(text.replaceAll("'", "\"")));
+  }
+
+  @Test
+  public void testSerializationOfComplexEntity() throws Exception {
+   EntityToJsonConverter converter = new EntityToJsonConverter();
+   ObjectMapper mapper = new ObjectMapper();
+
+   BaseLocation location = createBaseLocation();
+   String json = converter.convert(location);
+   json = "{\"@type\":\"baselocation\"," + json.substring(1);
+
+   BaseLocation converted = mapper.readValue(json, BaseLocation.class);
+   Assert.assertEquals("eng", converted.getDefLang());
+   Assert.assertEquals("re:derbyshire.eng", converted.getUrn());
+   Map<String, PlaceName> names = converted.getNames();
+   Assert.assertNotNull(names);
+   PlaceName name = names.get("eng");
+   Assert.assertNotNull(name);
+   Assert.assertNull(name.getDistrict());
+   Assert.assertNull(name.getSettlement());
+   Assert.assertEquals("Derbyshire", name.getRegion());
+   Assert.assertEquals("England", name.getCountry());
+   Assert.assertEquals("ENG", name.getCountryCode());
+   Assert.assertNull(name.getBloc());
+  }
+
+  private BaseLocation createBaseLocation() {
+    PlaceName name = new PlaceName();
+    name.setRegion("Derbyshire");
+    name.setCountry("England");
+    name.setCountryCode("ENG");
+    BaseLocation location = new BaseLocation();
+    location.setDefLang("eng");
+    location.setUrn("re:derbyshire.eng");
+    location.addName("eng", name);
+    return location;
   }
 
 }
