@@ -31,7 +31,6 @@ import static nl.knaw.huygens.timbuctoo.config.Paths.SEARCH_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH;
 
 import java.net.URI;
-import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -100,14 +99,6 @@ public class SearchResourceV1 extends ResourceBase {
   private RegularClientSearchResultCreator regularSearchResultCreator;
   @Inject
   private RelationClientSearchResultCreator relationrSearchResultCreator;
-
-  @GET
-  @Path("/vres")
-  @Produces({ MediaType.APPLICATION_JSON })
-  @Deprecated
-  public Set<String> getAvailableVREs() {
-    return vreManager.getAvailableVREIds();
-  }
 
   @POST
   @Path("/" + ENTITY_PATH)

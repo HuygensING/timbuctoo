@@ -30,7 +30,6 @@ import static nl.knaw.huygens.timbuctoo.rest.util.RangeHelper.mapToRange;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -103,14 +102,6 @@ public class SearchResource extends ResourceBase {
   SearchParametersConverter searchParametersConverter;
   @Inject
   private RelationSearcher relationSearcher;
-
-  @GET
-  @Path("/vres")
-  @Produces({ MediaType.APPLICATION_JSON })
-  @Deprecated
-  public Set<String> getAvailableVREs() {
-    return vreManager.getAvailableVREIds();
-  }
 
   @POST
   @APIDesc("Searches the Solr index")
