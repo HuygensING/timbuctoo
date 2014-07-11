@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static nl.knaw.huygens.timbuctoo.rest.util.RangeHelper.mapToRange;
 
 import java.net.URI;
 import java.util.List;
@@ -157,8 +158,8 @@ public class SearchResource extends ResourceBase {
 
     List<String> ids = result.getIds() != null ? result.getIds() : Lists.<String> newArrayList();
     int idsSize = ids.size();
-    int lo = toRange(start, 0, idsSize);
-    int hi = toRange(lo + rows, 0, idsSize);
+    int lo = mapToRange(start, 0, idsSize);
+    int hi = mapToRange(lo + rows, 0, idsSize);
     List<String> idsToGet = ids.subList(lo, hi);
 
     List<DomainEntity> entities = retrieveEntities(type, idsToGet);
@@ -199,10 +200,6 @@ public class SearchResource extends ResourceBase {
     builder.path(queryId);
     builder.queryParam("start", start).queryParam("rows", rows);
     return builder.build();
-  }
-
-  private int toRange(int value, int minValue, int maxValue) {
-    return Math.min(Math.max(value, minValue), maxValue);
   }
 
   private SearchResult getSearchResult(String id) {
@@ -260,8 +257,8 @@ public class SearchResource extends ResourceBase {
 
     List<String> ids = result.getIds() != null ? result.getIds() : Lists.<String> newArrayList();
     int idsSize = ids.size();
-    int lo = toRange(start, 0, idsSize);
-    int hi = toRange(lo + rows, 0, idsSize);
+    int lo = mapToRange(start, 0, idsSize);
+    int hi = mapToRange(lo + rows, 0, idsSize);
     List<String> idsToGet = ids.subList(lo, hi);
 
     List<Relation> relations = retrieveRelations(rtype, idsToGet);

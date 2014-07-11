@@ -22,6 +22,8 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.rest.util.RangeHelper.mapToRange;
+
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.Repository;

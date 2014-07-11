@@ -51,19 +51,6 @@ public abstract class ClientSearchResultCreator {
 
   public abstract <T extends DomainEntity> ClientSearchResult create(Class<T> type, SearchResult searchResult, int start, int rows);
 
-  /**
-   * Make sure {@code value} is between {@code minValue} and {@code maxValue}.
-   * @param value the value that has to be in the range
-   * @param minValue the minimum value of the range
-   * @param maxValue the maximum value of the range
-   * @return {@code value} if it's in the range, 
-   * {@code minValue} if {@code value} is lower than the {@code minValue}, 
-   * {@code maxValue} if {@code value} is higher than the {@code maxValue}
-   */
-  protected int mapToRange(int value, int minValue, int maxValue) {
-    return Math.min(Math.max(value, minValue), maxValue);
-  }
-
   protected <T extends DomainEntity> List<T> retrieveEntities(Class<T> type, List<String> ids) {
     // Retrieve one-by-one to retain ordering
     List<T> entities = Lists.newArrayList();
