@@ -197,7 +197,7 @@ text {
   function getGraph(path) {
     var depth = $('#depth').val() || '1';
     jQuery.ajax({
-      url: 'http://localhost:8080/timbuctoo/graph/' + path,
+      url: baseUrl + 'graph/' + path,
       type: 'GET',
       data: {'depth': depth},
       contentType: 'application/json; charset=utf-8',
