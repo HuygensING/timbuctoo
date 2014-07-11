@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.rest.resources;
+package nl.knaw.huygens.timbuctoo.rest.util.search;
 
 /*
  * #%L

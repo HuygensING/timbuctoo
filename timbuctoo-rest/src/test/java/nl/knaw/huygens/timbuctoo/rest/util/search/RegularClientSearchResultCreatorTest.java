@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.rest.resources;
+package nl.knaw.huygens.timbuctoo.rest.util.search;
 
 /*
  * #%L
@@ -22,7 +22,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.rest.resources.RegularClientSearchResultMatcher.newRegularClientSearchResultMatcherBuilder;
+import static nl.knaw.huygens.timbuctoo.rest.util.search.RegularClientSearchResultMatcher.newRegularClientSearchResultMatcherBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -36,6 +36,8 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
+import nl.knaw.huygens.timbuctoo.rest.util.search.ClientEntityRepresentationCreator;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RegularClientSearchResultCreator;
 
 import org.junit.Before;
 import org.junit.Test;
