@@ -39,6 +39,7 @@ import com.google.common.collect.Lists;
 public abstract class ClientSearchResultCreator {
 
   private static final Logger LOG = LoggerFactory.getLogger(RegularClientSearchResultCreator.class);
+
   protected final Repository repository;
   protected final SortableFieldFinder sortableFieldFinder;
   protected final HATEOASURICreator hateoasURICreator;

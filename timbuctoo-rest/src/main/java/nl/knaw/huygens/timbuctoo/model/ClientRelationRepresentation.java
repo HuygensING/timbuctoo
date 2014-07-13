@@ -27,6 +27,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import com.google.common.base.Joiner;
 
 public class ClientRelationRepresentation {
+
   private final String type;
   private final String id;
   private final String path;
@@ -66,4 +67,5 @@ public class ClientRelationRepresentation {
   public String getTargetName() {
     return targetName;
   }
+
 }

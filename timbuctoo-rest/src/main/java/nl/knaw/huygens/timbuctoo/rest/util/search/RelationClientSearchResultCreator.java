@@ -72,4 +72,5 @@ public class RelationClientSearchResultCreator extends ClientSearchResultCreator
 
     return clientSearchResult;
   }
+
 }

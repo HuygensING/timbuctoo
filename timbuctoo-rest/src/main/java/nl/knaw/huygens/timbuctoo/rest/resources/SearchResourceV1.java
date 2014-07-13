@@ -98,7 +98,7 @@ public class SearchResourceV1 extends ResourceBase {
   @Inject
   private RegularClientSearchResultCreator regularSearchResultCreator;
   @Inject
-  private RelationClientSearchResultCreator relationrSearchResultCreator;
+  private RelationClientSearchResultCreator relationSearchResultCreator;
 
   @POST
   @Path("/" + ENTITY_PATH)
@@ -147,7 +147,7 @@ public class SearchResourceV1 extends ResourceBase {
   }
 
   private ClientSearchResultCreator getClientSearchResultCreator(Class<? extends DomainEntity> type) {
-    return Relation.class.isAssignableFrom(type) ? relationrSearchResultCreator : regularSearchResultCreator;
+    return Relation.class.isAssignableFrom(type) ? relationSearchResultCreator : regularSearchResultCreator;
   }
 
   private URI createHATEOASURI(String queryId) {
@@ -190,7 +190,5 @@ public class SearchResourceV1 extends ResourceBase {
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
     }
   }
-
-  // ---------------------------------------------------------------------------
 
 }

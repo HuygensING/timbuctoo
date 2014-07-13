@@ -58,17 +58,15 @@ public class SearchRequestValidator {
 
   public void validate(String vreId, String typeString, SearchParametersV1 searchParameters) throws TimbuctooException {
     VRE vre = isValidVRE(vreId);
-
-    isValidType(vre, typeString);
-
-    isValidTerm(searchParameters);
+    validateType(vre, typeString);
+    validateTerm(searchParameters);
   }
 
-  protected void isValidTerm(SearchParametersV1 searchParameters) {
+  private void validateTerm(SearchParametersV1 searchParameters) {
     checkNotNull(searchParameters.getTerm(), BAD_REQUEST, "No query parameter specified");
   }
 
-  protected void isValidType(VRE vre, String typeString) {
+  private void validateType(VRE vre, String typeString) {
     checkNotNull(StringUtils.trimToNull(typeString), BAD_REQUEST, "No 'typeString' parameter specified");
     Class<? extends DomainEntity> type = typeRegistry.getTypeForXName(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for \"%s\"", typeString);
@@ -76,7 +74,7 @@ public class SearchRequestValidator {
     checkCondition(vre.inScope(type), BAD_REQUEST, "Type not in scope: \"%s\"", typeString);
   }
 
-  protected VRE isValidVRE(String vreId) {
+  private VRE isValidVRE(String vreId) {
     checkNotNull(vreId, BAD_REQUEST, "No VRE id specified");
     VRE vre = vreManager.getVREById(vreId);
     checkNotNull(vre, BAD_REQUEST, "No VRE with id \"%s\"", vreId);
@@ -87,7 +85,7 @@ public class SearchRequestValidator {
    * Checks the specified condition
    * and throws a {@code TimbuctooException} if the condition is {@code false}.
    */
-  protected void checkCondition(boolean condition, Status status, String errorMessageTemplate, Object... errorMessageArgs) {
+  private void checkCondition(boolean condition, Status status, String errorMessageTemplate, Object... errorMessageArgs) {
     if (!condition) {
       throw new TimbuctooException(status, errorMessageTemplate, errorMessageArgs);
     }
@@ -97,7 +95,7 @@ public class SearchRequestValidator {
    * Checks the specified reference
    * and throws a {@code TimbuctooException} if the reference is {@code null}.
    */
-  protected <T> void checkNotNull(T reference, Status status, String errorMessageTemplate, Object... errorMessageArgs) {
+  private <T> void checkNotNull(T reference, Status status, String errorMessageTemplate, Object... errorMessageArgs) {
     checkCondition(reference != null, status, errorMessageTemplate, errorMessageArgs);
   }
 

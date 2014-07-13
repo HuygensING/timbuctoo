@@ -27,6 +27,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import com.google.common.base.Joiner;
 
 public class ClientEntityRepresentation {
+
   private final String type;
   private final String id;
   private final String path;
@@ -54,4 +55,5 @@ public class ClientEntityRepresentation {
   public String getDisplayName() {
     return displayName;
   }
+
 }

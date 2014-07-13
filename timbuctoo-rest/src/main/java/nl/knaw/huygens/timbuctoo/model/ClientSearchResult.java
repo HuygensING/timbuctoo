@@ -41,7 +41,6 @@ public abstract class ClientSearchResult {
   }
 
   public List<String> getIds() {
-
     return ids;
   }
 
@@ -50,12 +49,10 @@ public abstract class ClientSearchResult {
   }
 
   public int getNumFound() {
-
     return numFound;
   }
 
   public int getStart() {
-
     return start;
   }
 
@@ -77,42 +74,34 @@ public abstract class ClientSearchResult {
 
   public void setRows(int rows) {
     this.rows = rows;
-
   }
 
   public void setStart(int start) {
     this.start = start;
-
   }
 
   public void setIds(List<String> ids) {
     this.ids = ids;
-
   }
 
   public void setResults(List<? extends DomainEntity> results) {
     this.results = results;
-
   }
 
   public void setNumFound(int numFound) {
     this.numFound = numFound;
-
   }
 
   public void setSortableFields(Set<String> sortableFields) {
     this.sortableFields = sortableFields;
-
   }
 
   public void setNextLink(String nextLink) {
     this.nextLink = nextLink;
-
   }
 
   public void setPrevLink(String prevLink) {
     this.prevLink = prevLink;
-
   }
 
 }
