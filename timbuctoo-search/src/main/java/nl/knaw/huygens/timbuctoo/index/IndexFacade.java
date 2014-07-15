@@ -53,6 +53,7 @@ import com.google.inject.Singleton;
 public class IndexFacade implements SearchManager, IndexManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(IndexFacade.class);
+
   private final VREManager vreManager;
   private final Repository storageManager;
   private final SortableFieldFinder sortableFieldFinder;
@@ -69,39 +70,28 @@ public class IndexFacade implements SearchManager, IndexManager {
   @Override
   public <T extends DomainEntity> void addEntity(Class<T> type, String id) throws IndexException {
     IndexChanger indexAdder = new IndexChanger() {
-
       @Override
       public void executeIndexAction(Index index, List<? extends DomainEntity> variations) throws IndexException {
         index.add(variations);
-
       }
     };
     changeIndex(type, id, indexAdder);
-
   }
 
   private <T extends DomainEntity> void changeIndex(Class<T> type, String id, IndexChanger indexChanger) throws IndexException {
-    Class<? extends DomainEntity> baseType1 = toBaseDomainEntity(type);
-    Class<? extends DomainEntity> baseType = baseType1;
-    List<? extends DomainEntity> variations = null;
-
-    variations = storageManager.getAllVariations(baseType, id);
-    if (variations == null || variations.isEmpty()) {
-      throw new IndexException("Could not retrieve variations for type " + type + "with id " + id);
-    }
-
-    for (VRE vre : vreManager.getAllVREs()) {
-      Index index = vreManager.getIndexFor(vre, type);
-      List<? extends DomainEntity> filteredVariations = vre.filter(variations);
-
-      indexChanger.executeIndexAction(index, filteredVariations);
+    Class<? extends DomainEntity> baseType = toBaseDomainEntity(type);
+    List<? extends DomainEntity> variations = storageManager.getAllVariations(baseType, id);
+    if (!variations.isEmpty()) {
+      for (VRE vre : vreManager.getAllVREs()) {
+        Index index = vreManager.getIndexFor(vre, type);
+        indexChanger.executeIndexAction(index, vre.filter(variations));
+      }
     }
   }
 
   @Override
   public <T extends DomainEntity> void updateEntity(Class<T> type, String id) throws IndexException {
     IndexChanger indexUpdater = new IndexChanger() {
-
       @Override
       public void executeIndexAction(Index index, List<? extends DomainEntity> variations) throws IndexException {
         index.update(variations);
@@ -114,20 +104,16 @@ public class IndexFacade implements SearchManager, IndexManager {
   public <T extends DomainEntity> void deleteEntity(Class<T> type, String id) throws IndexException {
     for (VRE vre : vreManager.getAllVREs()) {
       Index index = vreManager.getIndexFor(vre, type);
-
       index.deleteById(id);
     }
-
   }
 
   @Override
   public <T extends DomainEntity> void deleteEntities(Class<T> type, List<String> ids) throws IndexException {
     for (VRE vre : vreManager.getAllVREs()) {
       Index index = vreManager.getIndexFor(vre, type);
-
       index.deleteById(ids);
     }
-
   }
 
   @Override
@@ -175,7 +161,6 @@ public class IndexFacade implements SearchManager, IndexManager {
         LOG.error("closing of index {} went wrong", index.getName(), ex);
       }
     }
-
   }
 
   @Override
@@ -199,4 +184,5 @@ public class IndexFacade implements SearchManager, IndexManager {
   private static interface IndexChanger {
     void executeIndexAction(Index index, List<? extends DomainEntity> variations) throws IndexException;
   }
+
 }

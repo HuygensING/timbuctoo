@@ -139,7 +139,7 @@ public class IndexFacadeTest {
     verify(indexMock2).add(filteredVariations2);
   }
 
-  @Test(expected = IndexException.class)
+  @Test
   public void testAddEntityStorageManagerReturnsEmptyList() throws IOException, IndexException {
     Class<SubModel> type = SubModel.class;
     Class<ExplicitlyAnnotatedModel> baseType = ExplicitlyAnnotatedModel.class;
