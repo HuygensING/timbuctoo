@@ -145,6 +145,9 @@ public interface Storage {
    */
   <T extends Entity> T findItem(Class<T> type, T example) throws StorageException;
 
+  /**
+   * Returns a list of all variations of the specified <em>primitive</em> entity.
+   */
   <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException;
 
   <T extends DomainEntity> T getRevision(Class<T> type, String id, int revisionId) throws StorageException;

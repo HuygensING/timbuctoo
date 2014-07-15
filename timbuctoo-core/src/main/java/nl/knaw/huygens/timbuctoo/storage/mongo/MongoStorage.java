@@ -54,6 +54,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -399,6 +400,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException {
+    Preconditions.checkArgument(TypeRegistry.isPrimitiveDomainEntity(type), "Nonprimitive type %s", type);
     DBObject query = queries.selectById(id);
     DBObject item = mongoDB.findOne(getDBCollection(type), query);
     if (item != null) {

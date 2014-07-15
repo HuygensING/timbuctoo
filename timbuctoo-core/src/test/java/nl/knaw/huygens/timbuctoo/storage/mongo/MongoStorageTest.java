@@ -203,6 +203,11 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   // getAllVariations
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testGetAllVariationsOfNonPrimitive() throws Exception {
+    storage.getAllVariations(ProjectADomainEntity.class, DEFAULT_ID);
+  }
+
   @Test
   public void testGetAllVariationsWithoutRelations() throws Exception {
     storage.getAllVariations(BaseDomainEntity.class, DEFAULT_ID);
