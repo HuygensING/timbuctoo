@@ -106,7 +106,7 @@ public class JsonImporter extends CSVImporter {
             progress.step();
             line = prefix + line.substring(1);
             T entity = mapper.readValue(line, type);
-            String id = addDomainEntity(type, entity, change);
+            String id = addDomainEntity(type, entity);
             indexManager.addEntity(type, id);
           }
         }

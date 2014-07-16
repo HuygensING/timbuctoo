@@ -264,7 +264,7 @@ public class WomenWritersImporter extends DefaultImporter {
       if (converted == null) {
         invalids.add(key);
       } else {
-        String storedId = addDomainEntity(WWCollective.class, converted, change);
+        String storedId = addDomainEntity(WWCollective.class, converted);
         storeReference(key, WWCollective.class, storedId);
       }
     }
@@ -351,7 +351,7 @@ public class WomenWritersImporter extends DefaultImporter {
               document.setSource(true);
               document.setTitle(title);
               document.setNotes(filterNotesField(object.source.notes));
-              String storedId = addDomainEntity(WWDocument.class, document, change);
+              String storedId = addDomainEntity(WWDocument.class, document);
               Reference documentRef = new Reference(Document.class, storedId);
               references.put(key, documentRef);
               String category = StringUtils.trimToEmpty(object.source.type);
@@ -442,7 +442,7 @@ public class WomenWritersImporter extends DefaultImporter {
     } else {
       WWDocument converted = convert(json, object);
       if (converted != null) {
-        String storedId = addDomainEntity(WWDocument.class, converted, change);
+        String storedId = addDomainEntity(WWDocument.class, converted);
         Reference reference = storeReference(key, WWDocument.class, storedId);
         handlePublisher(extractPrints(object), converted.getDate(), reference);
         if (object.source != null) {
@@ -565,7 +565,7 @@ public class WomenWritersImporter extends DefaultImporter {
             collective.setType(Collective.Type.PUBLISHER);
             collective.setName(name);
             collective.tempLocationPlacename = first.location;
-            String storedId = addDomainEntity(WWCollective.class, collective, change);
+            String storedId = addDomainEntity(WWCollective.class, collective);
             publisherRef = storeReference(key, WWCollective.class, storedId);
           }
           Reference relationRef = relationTypes.get(IS_PUBLISHED_BY);
@@ -687,7 +687,7 @@ public class WomenWritersImporter extends DefaultImporter {
         String value = converted.getValue();
         String storedId = keywordValueIdMap.get(value);
         if (storedId == null) {
-          storedId = addDomainEntity(WWKeyword.class, converted, change);
+          storedId = addDomainEntity(WWKeyword.class, converted);
           keywordValueIdMap.put(value, storedId);
         }
         storeReference(key, WWKeyword.class, storedId);
@@ -821,7 +821,7 @@ public class WomenWritersImporter extends DefaultImporter {
               System.out.printf("%-30s%-8s%-30s%s%n", name, language.getCode(), language.getName(), flag);
               language.setCore(true);
               // TODO prevent multiple updates for same language
-              updateProjectDomainEntity(WWLanguage.class, language, change);
+              updateProjectDomainEntity(WWLanguage.class, language);
               String key = newKey("Language", object.tempid);
               storeReference(key, WWLanguage.class, language.getId());
             }
@@ -1043,7 +1043,7 @@ public class WomenWritersImporter extends DefaultImporter {
     String urn = conc.get(code.toLowerCase());
     if (urn == null) {
       System.out.println(".. Adding new location: " + code);
-      String storedId = addDomainEntity(WWLocation.class, converted, change);
+      String storedId = addDomainEntity(WWLocation.class, converted);
       storeReference(key, WWLocation.class, storedId);
       return;
     }
@@ -1064,7 +1064,7 @@ public class WomenWritersImporter extends DefaultImporter {
     converted.setNames(location.getNames());
     converted.setLatitude(location.getLatitude());
     converted.setLongitude(location.getLongitude());
-    updateProjectDomainEntity(WWLocation.class, converted, change);
+    updateProjectDomainEntity(WWLocation.class, converted);
     storeReference(key, WWLocation.class, location.getId());
   }
 
@@ -1217,11 +1217,11 @@ public class WomenWritersImporter extends DefaultImporter {
         String storedId = ckccPerson.getId();
         wwPerson.setId(storedId);
         wwPerson.setRev(ckccPerson.getRev());
-        updateProjectDomainEntity(WWPerson.class, wwPerson, change);
+        updateProjectDomainEntity(WWPerson.class, wwPerson);
         return storedId;
       }
     }
-    return addDomainEntity(WWPerson.class, wwPerson, change);
+    return addDomainEntity(WWPerson.class, wwPerson);
   }
 
   private void handleXRelation(int oldId, Reference baseRef, String relationName, String keywordType, String... values) {

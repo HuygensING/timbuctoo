@@ -59,7 +59,7 @@ public class LocationImporter extends DefaultImporter {
         if (!line.isEmpty()) {
           Place place = objectMapper.readValue(line, Place.class);
           BaseLocation location = convert(place);
-          addDomainEntity(BaseLocation.class, location, change);
+          addDomainEntity(BaseLocation.class, location);
         }
       }
     } finally {

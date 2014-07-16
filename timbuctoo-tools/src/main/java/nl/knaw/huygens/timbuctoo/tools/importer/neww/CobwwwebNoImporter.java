@@ -169,7 +169,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
         storedId = person.getId();
         entity.setId(storedId);
         entity.setRev(person.getRev());
-        updateProjectDomainEntity(CWNOPerson.class, entity, change);
+        updateProjectDomainEntity(CWNOPerson.class, entity);
         log("Updated person with id %s%n", storedId);
       }
     }
@@ -178,9 +178,9 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   // Save as CWNOPerson, add WWPerson variation
   private String createNewPerson(CWNOPerson entity) {
-    String storedId = addDomainEntity(CWNOPerson.class, entity, change);
+    String storedId = addDomainEntity(CWNOPerson.class, entity);
     WWPerson person = repository.getEntity(WWPerson.class, storedId);
-    updateProjectDomainEntity(WWPerson.class, person, change);
+    updateProjectDomainEntity(WWPerson.class, person);
     return storedId;
   }
 
@@ -370,7 +370,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
         storedId = document.getId();
         entity.setId(storedId);
         entity.setRev(document.getRev());
-        updateProjectDomainEntity(CWNODocument.class, entity, change);
+        updateProjectDomainEntity(CWNODocument.class, entity);
         log("Updated document with id %s%n", storedId);
       }
     }
@@ -379,9 +379,9 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   // Save as CWNODocument, add WWDocument variation
   private String createNewDocument(CWNODocument entity) {
-    String storedId = addDomainEntity(CWNODocument.class, entity, change);
+    String storedId = addDomainEntity(CWNODocument.class, entity);
     WWDocument document = repository.getEntity(WWDocument.class, storedId);
-    updateProjectDomainEntity(WWDocument.class, document, change);
+    updateProjectDomainEntity(WWDocument.class, document);
     return storedId;
   }
 

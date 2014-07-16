@@ -190,7 +190,7 @@ public class CKCCImporter extends DefaultImporter {
     @Override
     public Traversal leaveElement(Element element, ImportContext context) {
       try {
-        String storedId = addDomainEntity(CKCCCollective.class, context.collective, change);
+        String storedId = addDomainEntity(CKCCCollective.class, context.collective);
         indexManager.addEntity(CKCCCollective.class, storedId);
       } catch (Exception e) {
         e.printStackTrace();
@@ -263,7 +263,7 @@ public class CKCCImporter extends DefaultImporter {
     @Override
     public Traversal leaveElement(Element element, ImportContext context) {
       try {
-        String storedId = addDomainEntity(CKCCPerson.class, context.person, change);
+        String storedId = addDomainEntity(CKCCPerson.class, context.person);
         indexManager.addEntity(CKCCPerson.class, storedId);
       } catch (Exception e) {
         e.printStackTrace();
@@ -492,7 +492,7 @@ public class CKCCImporter extends DefaultImporter {
       document.setDate(new Datable(date));
       document.setTitle("Letter " + letterId);
       document.addLink(new Link(URL_PREFIX + letterId));
-      String storedId = addDomainEntity(CKCCDocument.class, document, change);
+      String storedId = addDomainEntity(CKCCDocument.class, document);
 
       if (valid(senders)) {
         for (String sender : Splitter.on('#').split(senders)) {
@@ -501,7 +501,7 @@ public class CKCCImporter extends DefaultImporter {
           if (person != null) {
             CKCCRelation relation = RelationBuilder.newInstance(CKCCRelation.class).withRelationTypeId(isCreatedById).withSourceType(TypeNames.getInternalName(Document.class)).withSourceId(storedId)
                 .withTargetType(TypeNames.getInternalName(Person.class)).withTargetId(person.getId()).build();
-            addDomainEntity(CKCCRelation.class, relation, change);
+            addDomainEntity(CKCCRelation.class, relation);
           } else if (repository.findEntity(CKCCCollective.class, "urn", urn) == null) {
             System.out.printf("%s: failed to find sender %s%n", letterId, urn);
           }
@@ -515,7 +515,7 @@ public class CKCCImporter extends DefaultImporter {
           if (location != null) {
             CKCCRelation relation = RelationBuilder.newInstance(CKCCRelation.class).withRelationTypeId(hasSenderLocationId).withSourceType(TypeNames.getInternalName(Document.class))
                 .withSourceId(storedId).withTargetType(TypeNames.getInternalName(Location.class)).withTargetId(location.getId()).build();
-            addDomainEntity(CKCCRelation.class, relation, change);
+            addDomainEntity(CKCCRelation.class, relation);
           } else {
             System.out.printf("%s: failed to find sender location %s (mapped to %s)%n", letterId, senderLoc, urn);
           }
@@ -529,7 +529,7 @@ public class CKCCImporter extends DefaultImporter {
           if (person != null) {
             CKCCRelation relation = RelationBuilder.newInstance(CKCCRelation.class).withRelationTypeId(hasRecipientId).withSourceType(TypeNames.getInternalName(Document.class)).withSourceId(storedId)
                 .withTargetType(TypeNames.getInternalName(Person.class)).withTargetId(person.getId()).build();
-            addDomainEntity(CKCCRelation.class, relation, change);
+            addDomainEntity(CKCCRelation.class, relation);
           } else if (repository.findEntity(CKCCCollective.class, "urn", urn) == null) {
             System.out.printf("%s: failed to find recipient %s%n", letterId, urn);
           }
@@ -543,7 +543,7 @@ public class CKCCImporter extends DefaultImporter {
           if (location != null) {
             CKCCRelation relation = RelationBuilder.newInstance(CKCCRelation.class).withRelationTypeId(hasRecipientLocationId).withSourceType(TypeNames.getInternalName(Document.class))
                 .withSourceId(storedId).withTargetType(TypeNames.getInternalName(Location.class)).withTargetId(location.getId()).build();
-            addDomainEntity(CKCCRelation.class, relation, change);
+            addDomainEntity(CKCCRelation.class, relation);
           } else {
             System.out.printf("%s: failed to find recipient location %s (mapped to %s)%n", letterId, recipientLoc, urn);
           }

@@ -142,7 +142,7 @@ public abstract class DefaultImporter {
 
   // --- Storage ---------------------------------------------------------------
 
-  protected <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) {
+  protected <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity) {
     try {
       repository.addDomainEntity(type, entity, change);
       return entity.getId();
@@ -152,7 +152,7 @@ public abstract class DefaultImporter {
     }
   }
 
-  protected <T extends DomainEntity> T updateProjectDomainEntity(Class<T> type, T entity, Change change) {
+  protected <T extends DomainEntity> T updateProjectDomainEntity(Class<T> type, T entity) {
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
       handleError("Unexpected update of primitive domain entity %s", type.getSimpleName());
       return null;
@@ -166,7 +166,7 @@ public abstract class DefaultImporter {
     }
   }
 
-  protected <T extends DomainEntity> void ensureVariation(Class<T> type, String id, Change change) {
+  protected <T extends DomainEntity> void ensureVariation(Class<T> type, String id) {
     try {
       repository.ensureVariation(type, id, change);
     } catch (StorageException e) {

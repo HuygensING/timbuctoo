@@ -195,7 +195,7 @@ public class EBNMImporter extends DefaultImporter {
         handleError("[%s] Duplicate documentatie id %s", DOCUMENTATIE_FILE, jsonId);
       } else {
         EBNMDocumentatie documentatie = convert(xdocumentatie);
-        String storedId = addDomainEntity(EBNMDocumentatie.class, documentatie, change);
+        String storedId = addDomainEntity(EBNMDocumentatie.class, documentatie);
         referenceMap.put(jsonId, new Reference(EBNMDocumentatie.class, storedId));
       }
     }
@@ -341,7 +341,7 @@ public class EBNMImporter extends DefaultImporter {
         handleError("[%s] Duplicate lexicon id %s", LEXICON_FILE, jsonId);
       } else {
         EBNMLexicon lexicon = convert(xlexicon);
-        String storedId = addDomainEntity(EBNMLexicon.class, lexicon, change);
+        String storedId = addDomainEntity(EBNMLexicon.class, lexicon);
         referenceMap.put(jsonId, new Reference(EBNMLexicon.class, storedId));
       }
     }
@@ -415,7 +415,7 @@ public class EBNMImporter extends DefaultImporter {
         handleError("[%s] Duplicate tekstdrager id %s", TEKSTDRAGER_FILE, jsonId);
       } else {
         EBNMTekstdrager tekstdrager = convert(xtekstdrager);
-        String storedId = addDomainEntity(EBNMTekstdrager.class, tekstdrager, change);
+        String storedId = addDomainEntity(EBNMTekstdrager.class, tekstdrager);
         referenceMap.put(jsonId, new Reference(EBNMTekstdrager.class, storedId));
       }
     }
@@ -507,7 +507,7 @@ public class EBNMImporter extends DefaultImporter {
         handleError("[%s] Duplicate tekst id %s", TEKST_FILE, jsonId);
       } else {
         EBNMTekst tekst = convert(xtekst);
-        String storedId = addDomainEntity(EBNMTekst.class, tekst, change);
+        String storedId = addDomainEntity(EBNMTekst.class, tekst);
         referenceMap.put(jsonId, new Reference(EBNMTekst.class, storedId));
       }
     }
@@ -603,7 +603,7 @@ public class EBNMImporter extends DefaultImporter {
         handleError("[%s] Duplicate taal id %s", TAAL_FILE, jsonId);
       } else {
         EBNMTaal taal = convert(xtaal);
-        String storedId = addDomainEntity(EBNMTaal.class, taal, change);
+        String storedId = addDomainEntity(EBNMTaal.class, taal);
         referenceMap.put(jsonId, new Reference(EBNMTaal.class, storedId));
       }
     }
@@ -634,7 +634,7 @@ public class EBNMImporter extends DefaultImporter {
         handleError("[%s] Duplicate periode id %s", PERIODE_FILE, jsonId);
       } else {
         EBNMPeriode periode = convert(xperiode);
-        String storedId = addDomainEntity(EBNMPeriode.class, periode, change);
+        String storedId = addDomainEntity(EBNMPeriode.class, periode);
         referenceMap.put(jsonId, new Reference(EBNMPeriode.class, storedId));
       }
     }
@@ -667,7 +667,7 @@ public class EBNMImporter extends DefaultImporter {
         handleError("[%s] Duplicate regiocode id %s", REGIOCODE_FILE, jsonId);
       } else {
         EBNMRegiocode regiocode = convert(xregiocode);
-        String storedId = addDomainEntity(EBNMRegiocode.class, regiocode, change);
+        String storedId = addDomainEntity(EBNMRegiocode.class, regiocode);
         referenceMap.put(jsonId, new Reference(EBNMRegiocode.class, storedId));
       }
     }
@@ -700,7 +700,7 @@ public class EBNMImporter extends DefaultImporter {
         handleError("[%s] Duplicate signalementcode id %s", SIGNALEMENTCODE_FILE, jsonId);
       } else {
         EBNMSignalementcode signalementcode = convert(xsignalementcode);
-        String storedId = addDomainEntity(EBNMSignalementcode.class, signalementcode, change);
+        String storedId = addDomainEntity(EBNMSignalementcode.class, signalementcode);
         referenceMap.put(jsonId, new Reference(EBNMSignalementcode.class, storedId));
       }
     }
@@ -733,7 +733,7 @@ public class EBNMImporter extends DefaultImporter {
         handleError("[%s] Duplicate watermerk id %s", WATERMERK_FILE, jsonId);
       } else {
         EBNMWatermerk watermerk = convert(xwatermerk);
-        String storedId = addDomainEntity(EBNMWatermerk.class, watermerk, change);
+        String storedId = addDomainEntity(EBNMWatermerk.class, watermerk);
         referenceMap.put(jsonId, new Reference(EBNMWatermerk.class, storedId));
       }
     }

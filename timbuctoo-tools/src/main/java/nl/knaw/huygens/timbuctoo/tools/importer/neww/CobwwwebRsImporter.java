@@ -207,8 +207,8 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
       xml = getResource(id);
       CWRSCollective entity = parseCollectiveResource(xml, id);
 
-      String storedId = addDomainEntity(CWRSCollective.class, entity, change);
-      ensureVariation(WWCollective.class, storedId, change);
+      String storedId = addDomainEntity(CWRSCollective.class, entity);
+      ensureVariation(WWCollective.class, storedId);
       storeReference(id, CWRSCollective.class, storedId);
 
       handleCollectiveLocationRelation(entity);
@@ -359,8 +359,8 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
       if (accept(entity, id)) {
         String storedId = updateExistingPerson(entity);
         if (storedId == null) {
-          storedId = addDomainEntity(CWRSPerson.class, entity, change);
-          ensureVariation(WWPerson.class, storedId, change);
+          storedId = addDomainEntity(CWRSPerson.class, entity);
+          ensureVariation(WWPerson.class, storedId);
         }
         storeReference(id, CWRSPerson.class, storedId);
 
@@ -402,7 +402,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
         storedId = person.getId();
         entity.setId(storedId);
         entity.setRev(person.getRev());
-        updateProjectDomainEntity(CWRSPerson.class, entity, change);
+        updateProjectDomainEntity(CWRSPerson.class, entity);
         log("Updated person with id %s%n", storedId);
       }
     }
@@ -680,8 +680,8 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
       CWRSDocument entity = parseDocumentResource(xml, id);
       String storedId = updateExistingDocument(entity);
       if (storedId == null) {
-        storedId = addDomainEntity(CWRSDocument.class, entity, change);
-        ensureVariation(WWDocument.class, storedId, change);
+        storedId = addDomainEntity(CWRSDocument.class, entity);
+        ensureVariation(WWDocument.class, storedId);
       }
       storeReference(id, CWRSDocument.class, storedId);
 
@@ -708,7 +708,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
         storedId = document.getId();
         entity.setId(storedId);
         entity.setRev(document.getRev());
-        updateProjectDomainEntity(CWRSDocument.class, entity, change);
+        updateProjectDomainEntity(CWRSDocument.class, entity);
         log("Updated document with id %s%n", storedId);
       }
     }

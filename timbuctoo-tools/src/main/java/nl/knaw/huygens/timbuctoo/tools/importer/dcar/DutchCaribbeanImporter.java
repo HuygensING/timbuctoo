@@ -266,7 +266,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
         handleError("[%s] Duplicate keyword id %s", KEYWORD_FILE, jsonId);
       } else {
         DCARKeyword keyword = convert(xkeyword);
-        String storedId = addDomainEntity(DCARKeyword.class, keyword, change);
+        String storedId = addDomainEntity(DCARKeyword.class, keyword);
         referenceMap.put(jsonId, new Reference(Keyword.class, storedId));
       }
     }
@@ -309,7 +309,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
         handleError("[%s] Duplicate person id %s", PERSON_FILE, jsonId);
       } else {
         DCARPerson person = convert(xperson);
-        String storedId = addDomainEntity(DCARPerson.class, person, change);
+        String storedId = addDomainEntity(DCARPerson.class, person);
         referenceMap.put(jsonId, new Reference(Person.class, storedId));
       }
     }
@@ -361,7 +361,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
           handleError("[%s] Duplicate 'wetgeving' id %s", file.getName(), jsonId);
         } else {
           DCARLegislation legislation = convert(wetgeving);
-          String storedId = addDomainEntity(DCARLegislation.class, legislation, change);
+          String storedId = addDomainEntity(DCARLegislation.class, legislation);
           referenceMap.put(jsonId, new Reference(Legislation.class, storedId));
         }
       }
@@ -436,7 +436,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
           handleError("[%s] Duplicate 'archiefmat' id %s", file.getName(), jsonId);
         } else {
           DCARArchive archive = convert(archiefmat);
-          String storedId = addDomainEntity(DCARArchive.class, archive, change);
+          String storedId = addDomainEntity(DCARArchive.class, archive);
           referenceMap.put(jsonId, new Reference(Archive.class, storedId));
         }
       }
@@ -532,7 +532,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
           handleError("[%s] Duplicate 'creator' id %s", file.getName(), jsonId);
         } else {
           DCARArchiver archiver = convert(creator);
-          String storedId = addDomainEntity(DCARArchiver.class, archiver, change);
+          String storedId = addDomainEntity(DCARArchiver.class, archiver);
           referenceMap.put(jsonId, new Reference(Archiver.class, storedId));
         }
       }
