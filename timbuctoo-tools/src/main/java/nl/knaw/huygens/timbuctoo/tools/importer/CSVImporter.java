@@ -112,7 +112,7 @@ public abstract class CSVImporter {
   /**
    * Performa actions after file has been handled.
    */
-  protected void handleEndOfFile() {};
+  protected void handleEndOfFile() throws Exception {};
 
   private void validateLine(String[] line, int itemsPerLine, boolean verbose) {
     boolean error = (line.length < itemsPerLine);

@@ -39,6 +39,10 @@ public class CWNODocument extends Document {
 
   // ---------------------------------------------------------------------------
 
+  public CWNODocument() {
+    setResourceType(ResourceType.TEXT);
+  }
+
   public String getNotes() {
     return notes;
   }

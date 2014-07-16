@@ -35,4 +35,10 @@ public class CWRSDocument extends Document {
   public String tempNewwId;
   public List<String> tempLanguages = Lists.newArrayList();
 
+  // ---------------------------------------------------------------------------
+
+  public CWRSDocument() {
+    setResourceType(ResourceType.TEXT);
+  }
+
 }

@@ -152,36 +152,39 @@
         <configuration>
           <programs>
             <program>
-              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.base.BaseImporter</mainClass>
               <name>baseImport</name>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.JsonImporter</mainClass>
+              <commandLineArguments>
+                <commandLineArgument>base</commandLineArgument>
+              </commandLineArguments>
             </program>
             <program>
-              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.ckcc.CKCCImporter</mainClass>
               <name>ckccImport</name>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.ckcc.CKCCImporter</mainClass>
             </program>
             <program>
-              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.neww.CobwwwebNoImporter</mainClass>
               <name>cwnoImport</name>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.neww.CobwwwebNoImporter</mainClass>
             </program>
             <program>
-              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.neww.CobwwwebRsImporter</mainClass>
               <name>cwrsImport</name>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.neww.CobwwwebRsImporter</mainClass>
             </program>
             <program>
-              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.dcar.DutchCaribbeanImporter</mainClass>
               <name>dcarImport</name>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.dcar.DutchCaribbeanImporter</mainClass>
             </program>
             <program>
-              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.neww.WomenWritersImporter</mainClass>
               <name>newwImport</name>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.neww.WomenWritersImporter</mainClass>
               <jvmSettings>
                 <initialMemorySize>256m</initialMemorySize>
                 <maxMemorySize>1024m</maxMemorySize>
               </jvmSettings>
             </program>
             <program>
-              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.TransformedDataImporter</mainClass>
               <name>transformedDataImport</name>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.TransformedDataImporter</mainClass>
             </program>
           </programs>
         </configuration>

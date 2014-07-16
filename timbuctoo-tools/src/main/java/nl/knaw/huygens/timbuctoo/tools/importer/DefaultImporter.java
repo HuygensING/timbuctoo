@@ -285,7 +285,6 @@ public abstract class DefaultImporter {
     System.out.print(text);
     System.out.println("  --");
     System.out.println(line);
-    System.out.println();
   }
 
   /**

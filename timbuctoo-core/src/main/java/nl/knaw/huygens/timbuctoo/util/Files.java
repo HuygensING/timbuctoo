@@ -30,6 +30,7 @@ import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.LineIterator;
 
 public class Files {
 
@@ -84,6 +85,10 @@ public class Files {
     } catch (IOException e) {
       throw new RuntimeException("Failed to read from " + file.getAbsolutePath());
     }
+  }
+
+  public static LineIterator getLineIterator(File file) throws IOException {
+    return FileUtils.lineIterator(file, ENCODING);
   }
 
   /**
