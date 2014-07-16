@@ -45,7 +45,6 @@ import nl.knaw.huygens.timbuctoo.model.cwno.CWNORelation;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
 import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 import nl.knaw.huygens.timbuctoo.model.neww.WWRelation;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
@@ -94,13 +93,11 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
 
   // -------------------------------------------------------------------
 
-  private final Change change;
   /** References of stored primitive entities */
   private final Map<String, Reference> references = Maps.newHashMap();
 
   public CobwwwebNoImporter(Repository repository, IndexManager indexManager) {
-    super(repository, indexManager);
-    change = new Change("importer", "cwno");
+    super(repository, indexManager, "cwno");
   }
 
   public void importAll() throws Exception {

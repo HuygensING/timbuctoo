@@ -28,7 +28,6 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
@@ -45,7 +44,6 @@ public class BaseImporter extends DefaultImporter {
 
   private static final Logger LOG = LoggerFactory.getLogger(BaseImporter.class);
 
-  private static final String USER_ID = "importer";
   private static final String VRE_ID = "base";
 
   public static void main(String[] args) throws Exception {
@@ -69,8 +67,6 @@ public class BaseImporter extends DefaultImporter {
       System.exit(-1);
     }
 
-    Change change = new Change(USER_ID, VRE_ID);
-
     BaseImporter importer = null;
     try {
       Injector injector = ToolsInjectionModule.createInjector();
@@ -83,10 +79,10 @@ public class BaseImporter extends DefaultImporter {
       importer.removeNonPersistentEntities(BaseLocation.class);
 
       importer.printBoxedText("Import languages");
-      new LanguageImporter(repository, change).handleFile(languageFile, 0, false);
+      new LanguageImporter(repository, VRE_ID).handleFile(languageFile, 0, false);
 
       importer.printBoxedText("Import locations");
-      new LocationImporter(repository, indexManager, change).handleFile(locationFile);
+      new LocationImporter(repository, indexManager, VRE_ID).handleFile(locationFile);
 
       importer.printBoxedText("Indexing");
       importer.indexEntities(BaseLanguage.class);
@@ -103,7 +99,7 @@ public class BaseImporter extends DefaultImporter {
   }
 
   public BaseImporter(Repository repository, IndexManager indexManager) {
-    super(repository, indexManager);
+    super(repository, indexManager, VRE_ID);
   }
 
 }

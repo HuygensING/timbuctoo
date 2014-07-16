@@ -60,10 +60,12 @@ public abstract class DefaultImporter {
 
   protected final Repository repository;
   protected final IndexManager indexManager;
+  protected final Change change;
 
-  public DefaultImporter(Repository repository, IndexManager indexManager) {
+  public DefaultImporter(Repository repository, IndexManager indexManager, String vreId) {
     this.repository = Preconditions.checkNotNull(repository);
     this.indexManager = Preconditions.checkNotNull(indexManager);
+    change = new Change("importer", vreId);
   }
 
   /**

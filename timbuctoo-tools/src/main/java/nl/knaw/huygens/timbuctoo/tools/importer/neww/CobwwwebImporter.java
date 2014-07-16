@@ -45,8 +45,8 @@ import com.sun.jersey.api.client.WebResource;
 
 public class CobwwwebImporter extends DefaultImporter {
 
-  public CobwwwebImporter(Repository repository, IndexManager indexManager) {
-    super(repository, indexManager);
+  public CobwwwebImporter(Repository repository, IndexManager indexManager, String vreId) {
+    super(repository, indexManager, vreId);
   }
 
   protected String getResource(String... parts) throws Exception {

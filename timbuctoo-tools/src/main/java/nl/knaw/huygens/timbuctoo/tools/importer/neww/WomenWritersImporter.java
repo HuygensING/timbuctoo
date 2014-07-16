@@ -48,7 +48,6 @@ import nl.knaw.huygens.timbuctoo.model.neww.WWLanguage;
 import nl.knaw.huygens.timbuctoo.model.neww.WWLocation;
 import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 import nl.knaw.huygens.timbuctoo.model.neww.WWRelation;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
@@ -115,10 +114,9 @@ public class WomenWritersImporter extends DefaultImporter {
   /** For deserializing JSON */
   private final ObjectMapper objectMapper;
   private final File inputDir;
-  private final Change change;
 
   public WomenWritersImporter(Repository repository, IndexManager indexManager, String inputDirName) {
-    super(repository, indexManager);
+    super(repository, indexManager, "neww");
     objectMapper = new ObjectMapper();
     inputDir = new File(inputDirName);
     if (inputDir.isDirectory()) {
@@ -126,7 +124,6 @@ public class WomenWritersImporter extends DefaultImporter {
     } else {
       System.out.printf("%n.. Not a directory: %s%n", inputDir.getAbsolutePath());
     }
-    change = new Change("importer", "neww");
   }
 
   public void importAll() throws Exception {

@@ -61,12 +61,10 @@ public class TransformedDataImporter extends DefaultImporter {
   }
 
   public TransformedDataImporter(Repository repository, IndexManager indexManager) {
-    super(repository, indexManager);
+    super(repository, indexManager, "timbuctoo");
   }
 
   protected void importData(String dataPath) throws Exception {
-    Change change = new Change("timbuctoo", "timbuctoo");
-
     File[] jsonFiles = getJsonFiles(dataPath);
 
     for (File jsonFile : jsonFiles) {

@@ -28,7 +28,6 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 
@@ -43,12 +42,10 @@ import com.google.common.collect.Maps;
  */
 public class LocationImporter extends DefaultImporter {
 
-  private final Change change;
   private final ObjectMapper objectMapper;
 
-  public LocationImporter(Repository repository, IndexManager indexManager, Change change) {
-    super(repository, indexManager);
-    this.change = change;
+  public LocationImporter(Repository repository, IndexManager indexManager, String vreId) {
+    super(repository, indexManager, vreId);
     objectMapper = new ObjectMapper();
   }
 

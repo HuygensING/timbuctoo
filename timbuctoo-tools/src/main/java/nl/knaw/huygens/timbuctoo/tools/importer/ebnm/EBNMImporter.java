@@ -37,7 +37,6 @@ import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMTaal;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMTekst;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMTekstdrager;
 import nl.knaw.huygens.timbuctoo.model.ebnm.EBNMWatermerk;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 import nl.knaw.huygens.timbuctoo.tools.importer.RelationTypeImporter;
@@ -88,7 +87,6 @@ public class EBNMImporter extends DefaultImporter {
 
   private final ObjectMapper objectMapper;
   private final File inputDir;
-  private final Change change;
 
   private final Map<String, Reference> documentatieRefMap = Maps.newHashMap();
   private final Map<String, Reference> lexiconRefMap = Maps.newHashMap();
@@ -101,11 +99,10 @@ public class EBNMImporter extends DefaultImporter {
   private final Map<String, Reference> watermerkRefMap = Maps.newHashMap();
 
   public EBNMImporter(Repository repository, IndexManager indexManager, String inputDirName) {
-    super(repository, indexManager);
+    super(repository, indexManager, "ebnm");
     objectMapper = new ObjectMapper();
     inputDir = new File(inputDirName);
     System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());
-    change = new Change("importer", "ebnm");
     setupRelationTypes();
   }
 

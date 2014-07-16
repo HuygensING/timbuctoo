@@ -65,10 +65,10 @@ public class LanguageImporter extends CSVImporter {
   private int totalCount;
   private int coreCount;
 
-  public LanguageImporter(Repository repository, Change change) {
+  public LanguageImporter(Repository repository, String vreId) {
     super(new PrintWriter(System.err), SEPERATOR_CHAR, QUOTE_CHAR, LINES_TO_SKIP);
     this.repository = repository;
-    this.change = change;
+    change = new Change("importer", vreId);
   }
 
   @Override

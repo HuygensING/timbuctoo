@@ -56,7 +56,6 @@ import nl.knaw.huygens.timbuctoo.model.dcar.DCARLegislation;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARRelation;
 import nl.knaw.huygens.timbuctoo.model.dcar.XRelated;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
@@ -110,7 +109,6 @@ public class DutchCaribbeanImporter extends DefaultImporter {
 
   private static final String[] JSON_EXTENSION = { "json" };
 
-  private final Change change;
   private final ObjectMapper objectMapper;
   private final File inputDir;
 
@@ -135,8 +133,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private Reference hasSiblingArchiver;
 
   public DutchCaribbeanImporter(Repository repository, IndexManager indexManager, String inputDirName) {
-    super(repository, indexManager);
-    change = new Change("importer", "dcar");
+    super(repository, indexManager, "dcar");
     objectMapper = new ObjectMapper();
     inputDir = new File(inputDirName);
     System.out.printf("%n.. Importing from %s%n", inputDir.getAbsolutePath());

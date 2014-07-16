@@ -47,7 +47,6 @@ import nl.knaw.huygens.timbuctoo.model.ckcc.CKCCCollective;
 import nl.knaw.huygens.timbuctoo.model.ckcc.CKCCDocument;
 import nl.knaw.huygens.timbuctoo.model.ckcc.CKCCPerson;
 import nl.knaw.huygens.timbuctoo.model.ckcc.CKCCRelation;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
@@ -106,13 +105,11 @@ public class CKCCImporter extends DefaultImporter {
   private static final String[] TEI_EXTENSIONS = { "xml" };
   private static final String ORGANIZATIONS = "CKCC-organizations.xml";
 
-  private final Change change;
   private final File inputDir;
   private final LocationConcordance concordance;
 
   public CKCCImporter(Repository repository, IndexManager indexManager, String inputDirName) throws Exception {
-    super(repository, indexManager);
-    change = new Change("importer", CKCCVRE.NAME);
+    super(repository, indexManager, CKCCVRE.NAME);
 
     inputDir = new File(inputDirName);
     if (inputDir.isDirectory()) {

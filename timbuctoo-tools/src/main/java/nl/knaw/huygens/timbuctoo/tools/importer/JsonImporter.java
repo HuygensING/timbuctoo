@@ -29,7 +29,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 
@@ -41,10 +40,12 @@ import com.google.inject.Injector;
 
 public class JsonImporter extends CSVImporter {
 
+  private static final String IMPORT_DIRECTORY_NAME = "../../timbuctoo-testdata/src/main/resources/import/";
   private static final String CONTROL_FILE_NAME = "import.txt";
+  private static final String VRE_ID = "base";
 
   public static void main(String[] args) throws Exception {
-    String directoryName = (args.length > 0) ? args[0] : "../../timbuctoo-testdata/src/main/resources/import/base/";
+    String directoryName = (args.length > 0) ? args[0] : IMPORT_DIRECTORY_NAME + VRE_ID + "/";
     File directory = new File(directoryName);
 
     Injector injector = ToolsInjectionModule.createInjector();
@@ -71,8 +72,7 @@ public class JsonImporter extends CSVImporter {
   public JsonImporter(Repository repository, IndexManager indexManager, File directory) {
     registry = repository.getTypeRegistry();
     this.directory = directory;
-    Change change = new Change("importer", "base");
-    handler = new Handler(repository, indexManager, change);
+    handler = new Handler(repository, indexManager, VRE_ID);
   }
 
   @Override
@@ -86,12 +86,10 @@ public class JsonImporter extends CSVImporter {
 
   private static class Handler extends DefaultImporter {
 
-    private final Change change;
     private final ObjectMapper mapper;
 
-    public Handler(Repository repository, IndexManager indexManager, Change change) {
-      super(repository, indexManager);
-      this.change = change;
+    public Handler(Repository repository, IndexManager indexManager, String vreId) {
+      super(repository, indexManager, vreId);
       mapper = new ObjectMapper();
     }
 
