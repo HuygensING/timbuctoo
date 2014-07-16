@@ -35,13 +35,13 @@ import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class PrimitivesVRETest {
+public class AdminVRETest {
 
   private static VRE vre;
 
   @BeforeClass
   public static void setupVRE() throws IOException {
-    vre = new PrimitivesVRE();
+    vre = new AdminVRE();
   }
 
   @Test

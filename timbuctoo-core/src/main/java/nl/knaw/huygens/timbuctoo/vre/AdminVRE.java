@@ -25,11 +25,9 @@ package nl.knaw.huygens.timbuctoo.vre;
 import java.io.IOException;
 
 /**
- * VRE for primitive domain entities.
+ * Admin VRE. Manages primitive domain entities.
  */
-public class PrimitivesVRE extends AbstractVRE {
-
-  public static final String NAME = "Primitives";
+public class AdminVRE extends AbstractVRE {
 
   @Override
   protected Scope createScope() throws IOException {
@@ -38,17 +36,17 @@ public class PrimitivesVRE extends AbstractVRE {
 
   @Override
   public String getScopeId() {
-    return "prim";
+    return "admin";
   }
 
   @Override
   public String getName() {
-    return NAME;
+    return "Admin";
   }
 
   @Override
   public String getDescription() {
-    return "VRE for primitive domain entities.";
+    return "Admin VRE.";
   }
 
 }

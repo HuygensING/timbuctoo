@@ -44,14 +44,14 @@ import com.google.inject.Singleton;
 
 @Singleton
 public class VREManager {
+
   private static final Logger LOG = LoggerFactory.getLogger(VREManager.class);
-  private static final String DEFAULT_VRE = PrimitivesVRE.NAME;
 
   private final Map<String, VRE> vres;
 
   public static final NoOpIndex NO_OP_INDEX = new NoOpIndex();
   public static final List<VRE> VRE_LIST = ImmutableList.<VRE> of( //
-      new PrimitivesVRE(), //
+      new AdminVRE(), //
       new BaseVRE(), //
       new CKCCVRE(), //
       new DutchCaribbeanVRE(), //
@@ -75,13 +75,6 @@ public class VREManager {
    */
   public VRE getVREById(String id) {
     return vres.get(id);
-  }
-
-  /**
-   * Gets the VRE that is defined as the default.
-   */
-  public VRE getDefaultVRE() {
-    return this.getVREById(DEFAULT_VRE);
   }
 
   public Set<String> getAvailableVREIds() {
