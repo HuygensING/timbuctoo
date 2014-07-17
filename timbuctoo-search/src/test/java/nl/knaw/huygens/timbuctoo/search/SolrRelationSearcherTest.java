@@ -124,13 +124,13 @@ public class SolrRelationSearcherTest {
     relationSearchParameters.setSourceSearchId(sourceSearchId);
     relationSearchParameters.setTargetSearchId(targetSearchId);
 
-    when(relationSearcherParametersConverterMock.toSearchParamtersV1(relationSearchParameters)).thenReturn(searchParametersV1);
+    when(relationSearcherParametersConverterMock.toSearchParametersV1(relationSearchParameters)).thenReturn(searchParametersV1);
 
     // action
     SearchResult actualResult = instance.search(vreMock, Relation.class, relationSearchParameters);
 
     // verify
-    verify(relationSearcherParametersConverterMock).toSearchParamtersV1(relationSearchParameters);
+    verify(relationSearcherParametersConverterMock).toSearchParametersV1(relationSearchParameters);
     verify(indexMock).search(searchParametersV1);
 
     InOrder inOrder = Mockito.inOrder(filterableResults, facetedSearchResultConverterMock);
@@ -152,7 +152,7 @@ public class SolrRelationSearcherTest {
 
     List<String> relationTypeNames = Lists.newArrayList();
 
-    when(relationSearcherParametersConverterMock.toSearchParamtersV1(relationSearchParameters)).thenReturn(searchParametersV1);
+    when(relationSearcherParametersConverterMock.toSearchParametersV1(relationSearchParameters)).thenReturn(searchParametersV1);
     when(vreMock.getReceptionNames()).thenReturn(relationTypeNames);
     when(repositoryMock.getRelationTypeIdsByName(relationTypeNames)).thenReturn(relationTypeIds);
 
@@ -162,7 +162,7 @@ public class SolrRelationSearcherTest {
     // verify
     InOrder inOrder = Mockito.inOrder(repositoryMock, relationSearcherParametersConverterMock);
     inOrder.verify(repositoryMock).getRelationTypeIdsByName(relationTypeNames);
-    inOrder.verify(relationSearcherParametersConverterMock).toSearchParamtersV1(relationSearchParameters);
+    inOrder.verify(relationSearcherParametersConverterMock).toSearchParametersV1(relationSearchParameters);
     verify(indexMock).search(searchParametersV1);
 
     InOrder inOrder2 = Mockito.inOrder(filterableResults, facetedSearchResultConverterMock);
@@ -193,14 +193,14 @@ public class SolrRelationSearcherTest {
     relationSearchParameters.setSourceSearchId(sourceSearchId);
     relationSearchParameters.setTargetSearchId(targetSearchId);
 
-    when(relationSearcherParametersConverterMock.toSearchParamtersV1(relationSearchParameters)).thenReturn(searchParametersV1);
+    when(relationSearcherParametersConverterMock.toSearchParametersV1(relationSearchParameters)).thenReturn(searchParametersV1);
     doThrow(exceptionToBeThrown).when(indexMock).search(searchParametersV1);
 
     // action
     instance.search(vreMock, Relation.class, relationSearchParameters);
 
     // verify
-    verify(relationSearcherParametersConverterMock).toSearchParamtersV1(relationSearchParameters);
+    verify(relationSearcherParametersConverterMock).toSearchParametersV1(relationSearchParameters);
     verify(indexMock).search(searchParametersV1);
   }
 }

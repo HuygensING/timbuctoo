@@ -102,8 +102,8 @@ public class SolrRelationSearcher extends RelationSearcher {
     getIdsStopWatch.start();
 
     getRelationTypeIds(vre, relationSearchParameters);
-    final List<String> sourceSearchIds = getSearchIds(relationSearchParameters.getSourceSearchId());
-    final List<String> targetSearchIds = getSearchIds(relationSearchParameters.getTargetSearchId());
+    List<String> sourceSearchIds = getSearchIds(relationSearchParameters.getSourceSearchId());
+    List<String> targetSearchIds = getSearchIds(relationSearchParameters.getTargetSearchId());
 
     getIdsStopWatch.stop();
     logStopWatchTimeInSeconds(getIdsStopWatch, "get ids");
@@ -111,7 +111,7 @@ public class SolrRelationSearcher extends RelationSearcher {
     StopWatch convertSearchParametersStopWatch = new StopWatch();
     convertSearchParametersStopWatch.start();
 
-    SearchParametersV1 searchParametersV1 = relationSearchParametersConverter.toSearchParamtersV1(relationSearchParameters);
+    SearchParametersV1 searchParametersV1 = relationSearchParametersConverter.toSearchParametersV1(relationSearchParameters);
     searchParametersV1.getQueryOptimizer().setRows(1000000); // TODO find a better way to get all the found solr entries.
 
     convertSearchParametersStopWatch.stop();
@@ -120,7 +120,7 @@ public class SolrRelationSearcher extends RelationSearcher {
     StopWatch getEntityStopWatch = new StopWatch();
     getEntityStopWatch.start();
 
-    final String typeString = relationSearchParameters.getTypeString();
+    String typeString = relationSearchParameters.getTypeString();
     Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
 
     getEntityStopWatch.stop();
