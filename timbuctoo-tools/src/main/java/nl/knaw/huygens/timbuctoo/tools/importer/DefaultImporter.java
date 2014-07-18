@@ -45,7 +45,7 @@ import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.tools.util.Progress;
+import nl.knaw.huygens.timbuctoo.tools.process.Progress;
 
 import org.apache.commons.lang.StringUtils;
 

@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.tools.importer.neww;
  * #L%
  */
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +33,7 @@ import nl.knaw.huygens.tei.ElementHandler;
 import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -49,54 +45,24 @@ import nl.knaw.huygens.timbuctoo.model.cwno.CWNORelation;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
-import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.CaptureHandler;
 import nl.knaw.huygens.timbuctoo.tools.importer.RelationTypeImporter;
-import nl.knaw.huygens.timbuctoo.tools.util.EntityToJsonConverter;
-import nl.knaw.huygens.timbuctoo.tools.util.Progress;
-import nl.knaw.huygens.timbuctoo.util.Files;
+import nl.knaw.huygens.timbuctoo.tools.process.Pipeline;
+import nl.knaw.huygens.timbuctoo.tools.process.Progress;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.inject.Injector;
 
 /**
- * Converter for Norwegian COBWWWEB data.
- * Reads data from webservice and stores it as json.
+ * Reads data from Norwegian COBWWWEB webservice and converts it to json.
  */
-public class CobwwwebNoConverter extends CobwwwebImporter {
-
-  private static final Logger LOG = LoggerFactory.getLogger(CobwwwebNoConverter.class);
+public class CobwwwebNoConverter extends CobwwwebConverter {
 
   private static final String VRE_ID = "cwno";
-
-  // Base URL for import
   private static final String URL = "https://www2.hf.uio.no/tjenester/bibliografi/Robinsonades";
 
   public static void main(String[] args) throws Exception {
-    Stopwatch stopWatch = Stopwatch.createStarted();
-
-    CobwwwebNoConverter converter = null;
-    try {
-      Injector injector = ToolsInjectionModule.createInjector();
-      Repository repository = injector.getInstance(Repository.class);
-      IndexManager indexManager = injector.getInstance(IndexManager.class);
-
-      File outputDirectory = new File(new File("import"), VRE_ID);
-      outputDirectory.mkdirs();
-
-      converter = new CobwwwebNoConverter(repository, indexManager, outputDirectory);
-      converter.convertAll();
-    } finally {
-      if (converter != null) {
-        converter.close();
-      }
-      LOG.info("Time used: {}", stopWatch);
-    }
+    Pipeline.execute(new CobwwwebNoConverter());
   }
 
   // -------------------------------------------------------------------
@@ -105,18 +71,19 @@ public class CobwwwebNoConverter extends CobwwwebImporter {
   private final Map<String, Reference> references = Maps.newHashMap();
   private Set<String> relationTypeNames;
 
-  private final File outputDirectory;
-  private final EntityToJsonConverter jsonConverter;
-
-  public CobwwwebNoConverter(Repository repository, IndexManager indexManager, File outputDirectory) {
-    super(repository, indexManager, VRE_ID);
-    this.outputDirectory = outputDirectory;
-    jsonConverter = new EntityToJsonConverter();
+  public CobwwwebNoConverter() {
+    super(VRE_ID);
   }
 
-  public void convertAll() throws Exception {
+  @Override
+  public String getDescription() {
+    return "Convert Norwegian COBWWWEB data";
+  }
+
+  @Override
+  public void call() throws Exception {
     try {
-      openImportLog("cobwwweb-no-converter-log.txt");
+      openLog(getClass().getName() + ".txt");
 
       RelationTypeImporter importer = new RelationTypeImporter(null);
       importer.call(RelationTypeImporter.RELATION_TYPE_DEFS);
@@ -132,13 +99,8 @@ public class CobwwwebNoConverter extends CobwwwebImporter {
       convertRelations();
     } finally {
       displayErrorSummary();
-      closeImportLog();
+      closeLog();
     }
-  }
-
-  private <T extends DomainEntity> PrintWriter createPrintWriter(Class<T> type) {
-    String filename = TypeNames.getInternalName(type) + ".json";
-    return Files.createPrintWriter(outputDirectory, filename);
   }
 
   private void storeReference(String key, Class<? extends DomainEntity> type, String id) {

@@ -34,7 +34,7 @@ import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
-import nl.knaw.huygens.timbuctoo.tools.util.Progress;
+import nl.knaw.huygens.timbuctoo.tools.process.Progress;
 import nl.knaw.huygens.timbuctoo.util.Files;
 
 import org.apache.commons.io.LineIterator;

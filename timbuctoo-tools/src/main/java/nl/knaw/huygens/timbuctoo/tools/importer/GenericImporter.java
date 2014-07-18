@@ -29,7 +29,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.tools.util.Progress;
+import nl.knaw.huygens.timbuctoo.tools.process.Progress;
 
 /**
  * A sub class of the GenericDataHandler, that imports the data directly into the database. 
