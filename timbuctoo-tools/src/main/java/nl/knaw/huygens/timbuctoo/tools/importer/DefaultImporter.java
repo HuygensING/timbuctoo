@@ -176,11 +176,8 @@ public abstract class DefaultImporter {
 
   // --- Relations -------------------------------------------------------------
 
-  /** File with {@code RelationType} definitions; must be present on classpath. */
-  private static final String RELATION_TYPE_DEFS = "relationtype-defs.txt";
-
   protected void importRelationTypes() throws Exception {
-    new RelationTypeImporter(repository).importRelationTypes(RELATION_TYPE_DEFS);
+    new RelationTypeImporter(repository).call(RelationTypeImporter.RELATION_TYPE_DEFS);
   }
 
   protected final Map<String, Reference> relationTypes = Maps.newHashMap();

@@ -57,7 +57,9 @@ public class EntityToJsonConverter {
   }
 
   public <T extends Entity> void appendTo(PrintWriter writer, T entity) throws IOException {
-    writer.println(convert(entity));
+    if (entity != null) {
+      writer.println(convert(entity));
+    }
   }
 
 }

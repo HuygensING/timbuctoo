@@ -102,7 +102,7 @@ public abstract class CSVImporter {
   /**
    * Performs initialization before handling of a file.
    */
-  protected void initialize() {}
+  protected void initialize() throws Exception {}
 
   /**
    * Handles a parsed input line.

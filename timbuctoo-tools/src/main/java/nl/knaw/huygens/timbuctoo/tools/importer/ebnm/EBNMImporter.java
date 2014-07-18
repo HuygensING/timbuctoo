@@ -111,7 +111,7 @@ public class EBNMImporter extends DefaultImporter {
 
   private void setupRelationTypes() {
     try {
-      new RelationTypeImporter(repository).importRelationTypes(RELATION_TYPE_DEFS);
+      new RelationTypeImporter(repository).call(RELATION_TYPE_DEFS);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

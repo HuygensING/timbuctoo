@@ -31,6 +31,8 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.util.Progress;
 import nl.knaw.huygens.timbuctoo.util.Files;
@@ -98,6 +100,11 @@ public class JsonImporter extends CSVImporter {
   }
 
   @Override
+  protected void initialize() throws Exception {
+    handler.importRelationTypes();
+  }
+
+  @Override
   protected void handleLine(String[] items) throws Exception {
     File file = new File(directory, items[0]);
     Class<? extends DomainEntity> type = registry.getDomainEntityType(items[1]);
@@ -148,9 +155,7 @@ public class JsonImporter extends CSVImporter {
           if (!line.isEmpty()) {
             progress.step();
             line = prefix + line.substring(1);
-            storeEntity(type, line);
-            // FIX all data is required before indexing
-            // indexManager.addEntity(type, storedId);
+            handleEntity(type, line);
           }
         }
       } finally {
@@ -159,7 +164,34 @@ public class JsonImporter extends CSVImporter {
       }
     }
 
-    private <T extends DomainEntity> void storeEntity(Class<T> type, String line) throws Exception {
+    private <T extends DomainEntity> void handleEntity(Class<T> type, String line) throws Exception {
+      if (Relation.class.isAssignableFrom(type)) {
+        @SuppressWarnings("unchecked")
+        Class<? extends Relation> rtype = (Class<? extends Relation>) type;
+        handleRelation(rtype, line);
+      } else {
+        handleNonRelation(type, line);
+      }
+    }
+
+    private <T extends Relation> void handleRelation(Class<T> type, String line) throws Exception {
+      T entity = mapper.readValue(line, type);
+      String name = entity.getTypeId();
+      RelationType relationType = repository.getRelationTypeByName(name);
+
+      Reference typeRef = new Reference(type, relationType.getId());
+      Reference sourceRef = references.get(entity.getSourceId());
+      Reference targetRef = references.get(entity.getTargetId());
+      
+      if (typeRef != null && sourceRef != null && targetRef != null) {
+        String storedId = addRelation(type, typeRef, sourceRef, targetRef, change, line);
+        indexManager.addEntity(type, storedId);
+      } else {
+        System.err.printf("Error in: %s%n", line);
+      }
+    }
+
+    private <T extends DomainEntity> void handleNonRelation(Class<T> type, String line) throws Exception {
       T entity = mapper.readValue(line, type);
       String importId = entity.getId();
       String storedId = addDomainEntity(type, entity);
