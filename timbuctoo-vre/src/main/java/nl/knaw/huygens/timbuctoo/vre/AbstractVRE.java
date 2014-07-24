@@ -27,9 +27,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +44,17 @@ public abstract class AbstractVRE implements VRE {
 
   private final Scope scope;
 
+  private final IndexCollection indexCollection;
+
+  private final FacetedSearchResultConverter facetedSearchResultConverterMock;
+
   public AbstractVRE() {
+    this(new IndexCollection(), new FacetedSearchResultConverter());
+  }
+
+  public AbstractVRE(IndexCollection indexCollection, FacetedSearchResultConverter facetedSearchResultConverterMock) {
+    this.indexCollection = indexCollection;
+    this.facetedSearchResultConverterMock = facetedSearchResultConverterMock;
     try {
       scope = createScope();
     } catch (IOException e) {
@@ -92,11 +106,12 @@ public abstract class AbstractVRE implements VRE {
   }
 
   @Override
-  public <T extends FacetedSearchParameters<T>> SearchResult search(Class<? extends DomainEntity> entity, FacetedSearchParameters<T> searchParameters) throws SearchException,
-      SearchValidationException {
-    return null;
-    // TODO Auto-generated method stub
+  public <T extends FacetedSearchParameters<T>> SearchResult search(Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException, SearchValidationException {
 
+    Index index = indexCollection.getIndexByType(type);
+
+    FacetedSearchResult facetedSearchResult = index.search(searchParameters);
+
+    return facetedSearchResultConverterMock.convert(TypeNames.getInternalName(type), facetedSearchResult);
   }
-
 }
