@@ -31,7 +31,6 @@ import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultConverter;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
@@ -55,13 +54,11 @@ public class IndexFacade implements SearchManager, IndexManager {
   private final VREManager vreManager;
   private final Repository storageManager;
   private final SortableFieldFinder sortableFieldFinder;
-  private final FacetedSearchResultConverter facetedSearchResultConverter;
 
   @Inject
-  public IndexFacade(Repository storageManager, SortableFieldFinder sortableFieldFinder, FacetedSearchResultConverter facetedSearchResultConverter, VREManager vreManager) {
+  public IndexFacade(Repository storageManager, SortableFieldFinder sortableFieldFinder, VREManager vreManager) {
     this.storageManager = storageManager;
     this.sortableFieldFinder = sortableFieldFinder;
-    this.facetedSearchResultConverter = facetedSearchResultConverter;
     this.vreManager = vreManager;
   }
 

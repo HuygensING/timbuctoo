@@ -45,7 +45,6 @@ import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.timbuctoo.index.model.SubModel;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultConverter;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
@@ -68,7 +67,6 @@ public class IndexFacadeTest {
   private final Class<SubModel> type = SubModel.class;
   private IndexStatus indexStatusMock;
   private SortableFieldFinder sortableFieldFinderMock;
-  private FacetedSearchResultConverter facetedSearchResultConverterMock;
   private VREManager vreManagerMock;
 
   @Before
@@ -76,9 +74,8 @@ public class IndexFacadeTest {
     indexStatusMock = mock(IndexStatus.class);
     repositoryMock = mock(Repository.class);
     sortableFieldFinderMock = mock(SortableFieldFinder.class);
-    facetedSearchResultConverterMock = mock(FacetedSearchResultConverter.class);
     vreManagerMock = mock(VREManager.class);
-    instance = new IndexFacade(repositoryMock, sortableFieldFinderMock, facetedSearchResultConverterMock, vreManagerMock) {
+    instance = new IndexFacade(repositoryMock, sortableFieldFinderMock, vreManagerMock) {
       @Override
       protected IndexStatus creatIndexStatus() {
         return indexStatusMock;
