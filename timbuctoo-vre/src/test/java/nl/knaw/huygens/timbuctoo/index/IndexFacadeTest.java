@@ -60,7 +60,6 @@ import com.google.common.collect.Sets;
 
 public class IndexFacadeTest {
 
-  private static final String BASE_TYPE_STRING = "explicitlyannotatedmodel";
   private static final Class<ExplicitlyAnnotatedModel> BASE_TYPE = ExplicitlyAnnotatedModel.class;
   private static final Class<OtherIndexBaseType> OTHER_BASE_TYPE = OtherIndexBaseType.class;
   private static final String DEFAULT_ID = "id01234";
