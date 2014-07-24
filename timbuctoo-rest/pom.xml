@@ -21,7 +21,7 @@
     </dependency>
     <dependency>
       <groupId>nl.knaw.huygens</groupId>
-      <artifactId>timbuctoo-search</artifactId>
+      <artifactId>timbuctoo-vre</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

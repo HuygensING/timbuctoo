@@ -19,7 +19,7 @@
   <modules>
     <module>timbuctoo-core</module>
     <module>timbuctoo-rest</module>
-    <module>timbuctoo-search</module>
+    <module>timbuctoo-vre</module>
     <module>timbuctoo-tools</module>
     <module>timbuctoo-solr</module>
     <module>timbuctoo-services</module>
