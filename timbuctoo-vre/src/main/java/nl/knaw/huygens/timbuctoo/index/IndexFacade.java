@@ -27,18 +27,16 @@ import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 import java.util.List;
 import java.util.Set;
 
-import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultConverter;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
-import nl.knaw.huygens.timbuctoo.search.SearchException;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
-import nl.knaw.huygens.timbuctoo.search.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
+import nl.knaw.huygens.timbuctoo.vre.SearchException;
+import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -174,11 +172,7 @@ public class IndexFacade implements SearchManager, IndexManager {
     FullTextSearchFieldFinder ftsff = new FullTextSearchFieldFinder();
     searchParameters.setFullTextSearchFields(Lists.newArrayList(ftsff.findFields(type)));
 
-    Index index = vreManager.getIndexFor(vre, type);
-
-    FacetedSearchResult facetedSearchResult = index.search(searchParameters);
-
-    return facetedSearchResultConverter.convert(TypeNames.getInternalName(type), facetedSearchResult);
+    return vre.search(type, searchParameters);
   }
 
   private static interface IndexChanger {

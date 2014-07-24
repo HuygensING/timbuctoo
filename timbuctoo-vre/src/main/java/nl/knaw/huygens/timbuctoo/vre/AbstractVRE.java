@@ -27,7 +27,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,8 +86,17 @@ public abstract class AbstractVRE implements VRE {
     return scope.inScope(entity);
   }
 
+  @Override
   public <T extends DomainEntity> List<T> filter(List<T> entities) {
     return scope.filter(entities);
+  }
+
+  @Override
+  public <T extends FacetedSearchParameters<T>> SearchResult search(Class<? extends DomainEntity> entity, FacetedSearchParameters<T> searchParameters) throws SearchException,
+      SearchValidationException {
+    return null;
+    // TODO Auto-generated method stub
+
   }
 
 }

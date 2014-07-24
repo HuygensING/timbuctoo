@@ -39,7 +39,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
@@ -47,9 +46,9 @@ import nl.knaw.huygens.timbuctoo.index.model.SubModel;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultConverter;
-import nl.knaw.huygens.timbuctoo.search.SearchException;
-import nl.knaw.huygens.timbuctoo.search.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
+import nl.knaw.huygens.timbuctoo.vre.SearchException;
+import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -61,6 +60,7 @@ import com.google.common.collect.Sets;
 
 public class IndexFacadeTest {
 
+  private static final String BASE_TYPE_STRING = "explicitlyannotatedmodel";
   private static final Class<ExplicitlyAnnotatedModel> BASE_TYPE = ExplicitlyAnnotatedModel.class;
   private static final Class<OtherIndexBaseType> OTHER_BASE_TYPE = OtherIndexBaseType.class;
   private static final String DEFAULT_ID = "id01234";
@@ -492,23 +492,17 @@ public class IndexFacadeTest {
   @Test
   public void testSearch() throws SearchException, SearchValidationException {
     // setup
-    Index indexMock = mock(Index.class);
     VRE vreMock = mock(VRE.class);
     DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
     SearchResult searchResult = new SearchResult();
-    FacetedSearchResult facetedSearchResult = new FacetedSearchResult();
-    String typeString = "explicitlyannotatedmodel";
 
     // when
-    when(vreManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
-    when(indexMock.search(searchParameters)).thenReturn(facetedSearchResult);
-    when(facetedSearchResultConverterMock.convert(typeString, facetedSearchResult)).thenReturn(searchResult);
+    when(vreMock.search(BASE_TYPE, searchParameters)).thenReturn(searchResult);
 
     SearchResult actualSearchResult = instance.search(vreMock, BASE_TYPE, searchParameters);
 
     // verify
-    verify(indexMock).search(searchParameters);
-    verify(facetedSearchResultConverterMock).convert(typeString, facetedSearchResult);
+    verify(vreMock).search(BASE_TYPE, searchParameters);
     assertThat(actualSearchResult, is(searchResult));
   }
 
@@ -524,13 +518,11 @@ public class IndexFacadeTest {
 
   protected void testSearchIndexThrowsException(Class<? extends Exception> exceptionToThrow) throws SearchException, SearchValidationException {
     // setup
-    Index indexMock = mock(Index.class);
     VRE vreMock = mock(VRE.class);
     DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
 
     // when
-    when(vreManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
-    doThrow(exceptionToThrow).when(indexMock).search(searchParameters);
+    doThrow(exceptionToThrow).when(vreMock).search(BASE_TYPE, searchParameters);
 
     instance.search(vreMock, BASE_TYPE, searchParameters);
   }

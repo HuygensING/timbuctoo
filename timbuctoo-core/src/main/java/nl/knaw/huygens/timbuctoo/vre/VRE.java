@@ -2,6 +2,10 @@ package nl.knaw.huygens.timbuctoo.vre;
 
 import java.util.List;
 
+import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
+
 /*
  * #%L
  * Timbuctoo core
@@ -55,5 +59,16 @@ public interface VRE extends Scope {
    * Returns names of relation types that are considered to be receptions.
    */
   List<String> getReceptionNames();
+
+  /**
+   * Search the VRE for the items of the type of {@code entity}.
+   * @param entity the type to search.
+   * @param searchParameters the parameters the entity has to comply to.
+   * @return the search result
+   * @throws SearchException when the search request could not be processed.
+   * @throws SearchValidationException when the searchParameters are not valid.
+   */
+  // TODO Do we want a wrapper arround FacetedSearchParameters, so we have no references to the faceted search tools library?
+  <T extends FacetedSearchParameters<T>> SearchResult search(Class<? extends DomainEntity> entity, FacetedSearchParameters<T> searchParameters) throws SearchException, SearchValidationException;
 
 }

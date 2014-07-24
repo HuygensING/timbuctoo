@@ -47,8 +47,8 @@ import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.solr.SolrIndex;
 import nl.knaw.huygens.timbuctoo.index.solr.SolrInputDocumentCreator;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.search.SearchException;
-import nl.knaw.huygens.timbuctoo.search.SearchValidationException;
+import nl.knaw.huygens.timbuctoo.vre.SearchException;
+import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;

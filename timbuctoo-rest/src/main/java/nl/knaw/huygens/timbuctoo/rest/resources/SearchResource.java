@@ -63,10 +63,10 @@ import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
-import nl.knaw.huygens.timbuctoo.search.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchParametersConverter;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
