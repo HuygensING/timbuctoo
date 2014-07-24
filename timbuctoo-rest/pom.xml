@@ -167,6 +167,20 @@
       <version>1.4.7</version>
     </dependency>
 
+    <!-- leak prevention -->
+    <dependency>
+      <groupId>se.jiderhamn</groupId>
+      <artifactId>classloader-leak-prevention</artifactId>
+      <scope>runtime</scope>
+      <version>${classloader-leak-prevention.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
     <!-- ## End of main libraries ## -->
 
     <!-- ## Build helper libraries ## -->
