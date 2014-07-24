@@ -1,6 +1,5 @@
-package nl.knaw.huygens.timbuctoo.vre;
+package nl.knaw.huygens.timbuctoo.index;
 
-import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 public class IndexCollection {
