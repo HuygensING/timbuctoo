@@ -22,10 +22,17 @@ package nl.knaw.huygens.timbuctoo.search.converters;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.search.converters.DefaultFacetParameterMatcher.likeFacetParameter;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.junit.Assert.assertNotNull;
+
+import java.util.ArrayList;
+
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -38,14 +45,14 @@ public class RelationSearchParametersConverterTest {
     RelationSearchParametersConverter instance = new RelationSearchParametersConverter();
 
     RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
-    relationSearchParameters.setRelationTypeIds(Lists.newArrayList("id1", "id2"));
+    ArrayList<String> relationTypeIds = Lists.newArrayList("id1", "id2");
+    relationSearchParameters.setRelationTypeIds(relationTypeIds);
 
     // action
     SearchParametersV1 searchParameters = instance.toSearchParametersV1(relationSearchParameters);
 
     // verify
-    Assert.assertNotNull(searchParameters);
-    Assert.assertEquals(1, searchParameters.getFacetValues().size());
+    assertNotNull(searchParameters);
+    assertThat(searchParameters.getFacetValues(), contains(likeFacetParameter(Relation.TYPE_ID_FACET_NAME, relationTypeIds)));
   }
-
 }

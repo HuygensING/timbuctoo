@@ -25,13 +25,14 @@ package nl.knaw.huygens.timbuctoo.search.converters;
 import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetParameter;
+import nl.knaw.huygens.facetedsearch.model.parameters.FacetParameter;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
 import com.google.common.base.Objects;
 
-public class DefaultFacetParameterMatcher extends TypeSafeMatcher<DefaultFacetParameter> {
+public class DefaultFacetParameterMatcher extends TypeSafeMatcher<FacetParameter> {
 
   private final String name;
   private final List<String> values;
@@ -51,9 +52,15 @@ public class DefaultFacetParameterMatcher extends TypeSafeMatcher<DefaultFacetPa
   }
 
   @Override
-  protected boolean matchesSafely(DefaultFacetParameter item) {
-    boolean isEqual = Objects.equal(name, item.getName());
-    isEqual &= Objects.equal(values, item.getValues());
+  protected boolean matchesSafely(FacetParameter item) {
+    if (!(item instanceof DefaultFacetParameter)) {
+      return false;
+    }
+
+    DefaultFacetParameter other = (DefaultFacetParameter) item;
+
+    boolean isEqual = Objects.equal(name, other.getName());
+    isEqual &= Objects.equal(values, other.getValues());
 
     return isEqual;
   }
