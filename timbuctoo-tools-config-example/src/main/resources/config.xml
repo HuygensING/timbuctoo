@@ -37,6 +37,7 @@
       <commit_within_seconds>10</commit_within_seconds>
       <use_user_home>true</use_user_home> <!-- does solr use the user home dir -->
       <directory>{dir}</directory> <!-- folder to find solr cores in. -->
+      <data_dir>{data_dir}</data_dir> <!-- data folder of solr -->
       <!-- Maximum time before a commit in ms -->
       <commit_within>10000</commit_within>
     </solr>

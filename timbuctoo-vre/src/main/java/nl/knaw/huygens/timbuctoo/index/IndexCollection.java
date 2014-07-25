@@ -58,10 +58,19 @@ public class IndexCollection {
     IndexCollection indexCollection = new IndexCollection();
 
     for (Class<? extends DomainEntity> type : vre.getEntityTypes()) {
-      indexCollection.addIndex(type, indexFactory.createIndexFor(vre, type));
+      Index index = indexFactory.createIndexFor(vre, type);
+      indexCollection.addIndex(type, index);
     }
 
     return indexCollection;
+  }
+
+  /**
+   * Get all the indexes of this collection.
+   * @return a collection with indexes
+   */
+  public Collection<Index> getAll() {
+    return indexMap.values();
   }
 
   /**
@@ -106,11 +115,6 @@ public class IndexCollection {
       LOG.warn("Searching on a non existing index");
       return new FacetedSearchResult();
     }
-  }
-
-  public Collection<Index> getAll() {
-    // TODO Auto-generated method stub
-    return null;
   }
 
 }
