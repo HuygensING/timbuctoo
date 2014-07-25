@@ -80,7 +80,7 @@ public class SolrIndexFactoryTest {
     when(solrServerBuilderMock.setCoreName(name)).thenReturn(solrServerBuilderMock);
     when(solrServerBuilderMock.build(facetDefinitions)).thenReturn(solrServerMock);
     when(configurationMock.getSetting(SOLR_DATA_DIR_CONFIG_PROP)).thenReturn(DATA_DIR);
-    when(solrServerBuilderMock.addProperty(CoreDescriptor.CORE_DATADIR, DATA_DIR + name.replace('.', '/'))).thenReturn(solrServerBuilderMock);
+    when(solrServerBuilderMock.addProperty(CoreDescriptor.CORE_DATADIR, DATA_DIR + "/" + name.replace('.', '/'))).thenReturn(solrServerBuilderMock);
     when(facetedSearchLibraryFactoryMock.create(solrServerMock)).thenReturn(facetedSearchLibraryMock);
 
     SolrIndexFactory instance = new SolrIndexFactory(solrInputDocumentCreatorMock, solrServerBuilderMock, indexDescriptionFactoryMock, facetedSearchLibraryFactoryMock, indexNameCreatorMock,

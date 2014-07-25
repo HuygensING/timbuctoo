@@ -62,7 +62,8 @@ public class SolrIndexFactory implements IndexFactory {
   }
 
   private String getSolrDataDir(String name) {
-    return configuration.getSetting(SOLR_DATA_DIR_CONFIG_PROP) + name.replace('.', '/');
+
+    return String.format("%s/%s", configuration.getSetting(SOLR_DATA_DIR_CONFIG_PROP), name.replace('.', '/'));
   }
 
   @Override
