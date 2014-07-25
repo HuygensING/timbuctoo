@@ -27,6 +27,12 @@ public class IndexCollection {
     indexMap = Maps.newHashMap();
   }
 
+  /**
+   * Returns the index if the index for the type can be found, 
+   * else it returns an index that does nothing and returns an empty search result.
+   * @param type the type to find the index for
+   * @return the index
+   */
   public Index getIndexByType(Class<? extends DomainEntity> type) {
 
     return indexMap.containsKey(toBaseDomainEntity(type)) ? indexMap.get(type) : NO_OP_INDEX;
