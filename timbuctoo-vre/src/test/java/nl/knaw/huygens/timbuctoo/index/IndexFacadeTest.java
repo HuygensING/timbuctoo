@@ -81,7 +81,7 @@ public class IndexFacadeTest {
     vreManagerMock = mock(VREManager.class);
     instance = new IndexFacade(repositoryMock, sortableFieldFinderMock, facetedSearchResultConverterMock, vreManagerMock) {
       @Override
-      protected IndexStatus creatIndexStatus() {
+      protected IndexStatus createIndexStatus() {
         return indexStatusMock;
       }
     };
