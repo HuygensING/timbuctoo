@@ -162,10 +162,12 @@ public class RepoContextListener extends GuiceServletContextListener {
   }
 
   private void closeIndexManager() {
-    IndexManager indexManager = injector.getInstance(IndexManager.class);
+    if (injector != null) {
+      IndexManager indexManager = injector.getInstance(IndexManager.class);
 
-    if (indexManager != null) {
-      indexManager.close();
+      if (indexManager != null) {
+        indexManager.close();
+      }
     }
 
   }
