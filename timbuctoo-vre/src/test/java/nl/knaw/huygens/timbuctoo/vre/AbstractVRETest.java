@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.vre;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doThrow;
@@ -10,6 +11,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
@@ -21,6 +23,8 @@ import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultConverter;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 public class AbstractVRETest {
   private static final Class<ExplicitlyAnnotatedModel> TYPE = ExplicitlyAnnotatedModel.class;
@@ -65,13 +69,29 @@ public class AbstractVRETest {
   }
 
   @Test
-  public void testGetIndexForTypeRedirectsTheCallToIndexCollection() {
+  public void getIndexForTypeRedirectsTheCallToIndexCollection() {
     // action
     Index index = instance.getIndexForType(TYPE);
 
     // verify
     verify(indexCollectionMock).getIndexByType(TYPE);
     assertNotNull(index);
+  }
+
+  @Test
+  public void getIndexesShouldRerturnAllTheIndexesOfTheIndexCollection() {
+    // setup
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+
+    when(indexCollectionMock.getAll()).thenReturn(Lists.newArrayList(indexMock1, indexMock2));
+
+    // action
+    Collection<Index> indexes = instance.getIndexes();
+
+    // verify
+    verify(indexCollectionMock).getAll();
+    assertThat(indexes, contains(new Index[] { indexMock1, indexMock2 }));
   }
 
   @Test

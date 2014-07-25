@@ -31,7 +31,7 @@ import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
-import nl.knaw.huygens.timbuctoo.index.IndexMapCreator;
+import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Singleton;
 
@@ -58,10 +59,7 @@ public class VREManager {
       new WomenWritersVRE(), //
       new TestVRE());
 
-  private final Map<String, Index> indexes;
-
-  protected VREManager(Map<String, VRE> vres, Map<String, Index> indexes) {
-    this.indexes = indexes;
+  VREManager(Map<String, VRE> vres) {
     this.vres = vres;
   }
 
@@ -92,7 +90,13 @@ public class VREManager {
   }
 
   public Collection<Index> getAllIndexes() {
-    return indexes.values();
+    List<Index> indexes = Lists.newArrayList();
+
+    for (VRE vre : vres.values()) {
+      indexes.addAll(vre.getIndexes());
+    }
+
+    return indexes;
   }
 
   // ---------------------------------------------------------------------------
@@ -137,15 +141,15 @@ public class VREManager {
     }
   }
 
-  public static VREManager createInstance(List<VRE> vres, IndexNameCreator indexNameCreator, IndexMapCreator indexMapCreator) {
+  public static VREManager createInstance(List<VRE> vres, IndexNameCreator indexNameCreator, IndexFactory indexFactory) {
     Map<String, VRE> vreMap = Maps.newHashMap();
-    Map<String, Index> indexMap = Maps.newHashMap();
+
     for (VRE vre : vres) {
       vreMap.put(vre.getName(), vre);
-      indexMap.putAll(indexMapCreator.createIndexesFor(vre));
+      vre.initIndexes(indexFactory);
     }
 
-    return new VREManager(vreMap, indexMap);
+    return new VREManager(vreMap);
   }
 
 }

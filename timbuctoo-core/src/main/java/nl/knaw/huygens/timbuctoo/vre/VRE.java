@@ -1,9 +1,11 @@
 package nl.knaw.huygens.timbuctoo.vre;
 
+import java.util.Collection;
 import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.index.Index;
+import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
@@ -79,5 +81,16 @@ public interface VRE extends Scope {
    * @return the index
    */
   Index getIndexForType(Class<? extends DomainEntity> type);
+
+  /**
+   * Creates the indexes for types of the VRE.
+   * @param indexFactory the helper that creates the actual indexes.
+   */
+  void initIndexes(IndexFactory indexFactory);
+
+  /**
+   * @return all the indexes of the VRE.
+   */
+  Collection<Index> getIndexes();
 
 }

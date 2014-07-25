@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.index;
 
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -105,6 +106,11 @@ public class IndexCollection {
       LOG.warn("Searching on a non existing index");
       return new FacetedSearchResult();
     }
+  }
+
+  public Collection<Index> getAll() {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

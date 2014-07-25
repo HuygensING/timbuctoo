@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.vre;
  */
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +33,7 @@ import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexCollection;
+import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultConverter;
@@ -45,7 +47,7 @@ public abstract class AbstractVRE implements VRE {
 
   private final Scope scope;
 
-  private final IndexCollection indexCollection;
+  private IndexCollection indexCollection;
 
   private final FacetedSearchResultConverter facetedSearchResultConverter;
 
@@ -120,5 +122,15 @@ public abstract class AbstractVRE implements VRE {
   public Index getIndexForType(Class<? extends DomainEntity> type) {
 
     return indexCollection.getIndexByType(type);
+  }
+
+  @Override
+  public void initIndexes(IndexFactory indexFactory) {
+    this.indexCollection = IndexCollection.create(indexFactory, this);
+  }
+
+  @Override
+  public Collection<Index> getIndexes() {
+    return indexCollection.getAll();
   }
 }

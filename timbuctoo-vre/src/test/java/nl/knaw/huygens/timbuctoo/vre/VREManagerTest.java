@@ -25,15 +25,17 @@ package nl.knaw.huygens.timbuctoo.vre;
 import static nl.knaw.huygens.timbuctoo.vre.VREManagerMatcher.matchesVREManager;
 import static nl.knaw.huygens.timbuctoo.vre.VREMockBuilder.newVRE;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collection;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.index.Index;
-import nl.knaw.huygens.timbuctoo.index.IndexMapCreator;
+import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 
@@ -62,7 +64,7 @@ public class VREManagerTest {
     MockitoAnnotations.initMocks(this);
 
     indexNameCreatorMock = mock(IndexNameCreator.class);
-    instance = new VREManager(vreMapMock, indexMapMock);
+    instance = new VREManager(vreMapMock);
   }
 
   @Test
@@ -113,6 +115,28 @@ public class VREManagerTest {
   }
 
   @Test
+  public void getAllIndexesShouldReturnTheIndexesOfAllTheVREs() {
+    // setup
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+    Index indexMock3 = mock(Index.class);
+    Index indexMock4 = mock(Index.class);
+
+    VRE vreMock1 = newVRE().withIndexes(indexMock1, indexMock2).create();
+    VRE vreMock2 = newVRE().withIndexes(indexMock3, indexMock4).create();
+
+    when(vreMapMock.values()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
+
+    // action
+    Collection<Index> actualIndexes = instance.getAllIndexes();
+
+    // verify
+    verify(vreMock1).getIndexes();
+    verify(vreMock2).getIndexes();
+    assertThat(actualIndexes, contains(new Index[] { indexMock1, indexMock2, indexMock3, indexMock4 }));
+  }
+
+  @Test
   public void createInstanceCreatesAnInstanceWithGeneratedVREAndIndexMaps() {
     // setup
     String vreName1 = "VRE1";
@@ -125,47 +149,18 @@ public class VREManagerTest {
     VRE vre2 = newVRE().withName(vreName2).create();
     vres.put(vreName2, vre2);
 
-    String indexName1 = "VRE1Index1";
-    String indexName2 = "VRE1Index2";
-    String indexName3 = "VRE2Index1";
-    String indexName4 = "VRE2Index2";
-    Map<String, Index> vre1Indexes = createIndexMap(indexName1, indexName2);
-    Map<String, Index> vre2Indexes = createIndexMap(indexName3, indexName4);
-
-    Map<String, Index> combinedIndexes = Maps.newHashMap();
-    combinedIndexes.putAll(vre1Indexes);
-    combinedIndexes.putAll(vre2Indexes);
-
-    IndexMapCreator indexFactoryMock = mock(IndexMapCreator.class);
-    when(indexFactoryMock.createIndexesFor(vre1)).thenReturn(vre1Indexes);
-    when(indexFactoryMock.createIndexesFor(vre2)).thenReturn(vre2Indexes);
-
-    VREManager expectedVREManager = new VREManager(vres, combinedIndexes);
+    VREManager expectedVREManager = new VREManager(vres);
+    IndexFactory indexFactory = mock(IndexFactory.class);
 
     // action
     VREManager actualVREManager = VREManager.createInstance(//
         Lists.newArrayList(vre1, vre2), //
         indexNameCreatorMock, //
-        indexFactoryMock);
+        indexFactory);
 
     //verify
     assertThat(actualVREManager, matchesVREManager(expectedVREManager));
+    verify(vre1).initIndexes(indexFactory);
+    verify(vre2).initIndexes(indexFactory);
   }
-
-  private Map<String, Index> createIndexMap(String firstIndexName, String... indexNames) {
-    Map<String, Index> indexMap = Maps.newHashMap();
-
-    addMockIndexToMap(indexMap, firstIndexName);
-
-    for (String indexName : indexNames) {
-      addMockIndexToMap(indexMap, indexName);
-    }
-
-    return indexMap;
-  }
-
-  private void addMockIndexToMap(Map<String, Index> indexMap, String indexName) {
-    indexMap.put(indexName, mock(Index.class));
-  }
-
 }
