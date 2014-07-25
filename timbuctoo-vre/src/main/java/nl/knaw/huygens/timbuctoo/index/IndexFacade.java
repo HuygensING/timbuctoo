@@ -120,7 +120,7 @@ public class IndexFacade implements SearchManager, IndexManager {
 
   @Override
   public IndexStatus getStatus() {
-    IndexStatus indexStatus = creatIndexStatus();
+    IndexStatus indexStatus = createIndexStatus();
 
     for (VRE vre : vreManager.getAllVREs()) {
       for (Class<? extends DomainEntity> type : vre.getBaseEntityTypes()) {
@@ -136,7 +136,7 @@ public class IndexFacade implements SearchManager, IndexManager {
     return indexStatus;
   }
 
-  protected IndexStatus creatIndexStatus() {
+  protected IndexStatus createIndexStatus() {
     return new IndexStatus();
   }
 
