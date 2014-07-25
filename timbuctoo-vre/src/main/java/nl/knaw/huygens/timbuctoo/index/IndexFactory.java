@@ -23,9 +23,12 @@ package nl.knaw.huygens.timbuctoo.index;
  */
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 public interface IndexFactory {
 
   Index createIndexFor(Class<? extends DomainEntity> type, String name);
+
+  Index createIndexFor(VRE vre, Class<? extends DomainEntity> type);
 
 }

@@ -26,10 +26,12 @@ import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
 import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
+import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchLibraryFactory;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.apache.solr.core.CoreDescriptor;
 
@@ -61,5 +63,11 @@ public class SolrIndexFactory implements IndexFactory {
     FacetedSearchLibrary facetedSearchLibrary = this.facetedSearchLibraryFactory.create(abstractSolrServer);
 
     return new SolrIndex(name, solrDocumentCreator, abstractSolrServer, facetedSearchLibrary);
+  }
+
+  @Override
+  public Index createIndexFor(VRE vre, Class<? extends DomainEntity> type) {
+    // TODO Auto-generated method stub
+    return null;
   }
 }
