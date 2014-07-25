@@ -47,15 +47,15 @@ public abstract class AbstractVRE implements VRE {
 
   private final IndexCollection indexCollection;
 
-  private final FacetedSearchResultConverter facetedSearchResultConverterMock;
+  private final FacetedSearchResultConverter facetedSearchResultConverter;
 
   public AbstractVRE() {
     this(new IndexCollection(), new FacetedSearchResultConverter());
   }
 
-  public AbstractVRE(IndexCollection indexCollection, FacetedSearchResultConverter facetedSearchResultConverterMock) {
+  public AbstractVRE(IndexCollection indexCollection, FacetedSearchResultConverter facetedSearchResultConverter) {
     this.indexCollection = indexCollection;
-    this.facetedSearchResultConverterMock = facetedSearchResultConverterMock;
+    this.facetedSearchResultConverter = facetedSearchResultConverter;
     try {
       scope = createScope();
     } catch (IOException e) {
@@ -113,6 +113,6 @@ public abstract class AbstractVRE implements VRE {
 
     FacetedSearchResult facetedSearchResult = index.search(searchParameters);
 
-    return facetedSearchResultConverterMock.convert(TypeNames.getInternalName(type), facetedSearchResult);
+    return facetedSearchResultConverter.convert(TypeNames.getInternalName(type), facetedSearchResult);
   }
 }
