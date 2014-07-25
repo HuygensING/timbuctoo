@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.vre;
 import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
+import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
@@ -70,5 +71,13 @@ public interface VRE extends Scope {
    */
   // TODO Do we want a wrapper arround FacetedSearchParameters, so we have no references to the faceted search tools library?
   <T extends FacetedSearchParameters<T>> SearchResult search(Class<? extends DomainEntity> entity, FacetedSearchParameters<T> searchParameters) throws SearchException, SearchValidationException;
+
+  /**
+   * Returns the index if the index for the type can be found, 
+   * else it returns an index that does nothing and returns an empty search result.
+   * @param type the type to find the index for
+   * @return the index
+   */
+  Index getIndexForType(Class<? extends DomainEntity> type);
 
 }

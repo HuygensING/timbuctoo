@@ -58,13 +58,10 @@ public class VREManager {
       new WomenWritersVRE(), //
       new TestVRE());
 
-  private final IndexNameCreator indexNameCreator;
-
   private final Map<String, Index> indexes;
 
-  protected VREManager(Map<String, VRE> vres, Map<String, Index> indexes, IndexNameCreator indexNameCreator) {
+  protected VREManager(Map<String, VRE> vres, Map<String, Index> indexes) {
     this.indexes = indexes;
-    this.indexNameCreator = indexNameCreator;
     this.vres = vres;
   }
 
@@ -90,16 +87,8 @@ public class VREManager {
   }
 
   public Index getIndexFor(VRE vre, Class<? extends DomainEntity> type) {
-    String indexName = indexNameCreator.getIndexNameFor(vre, type);
 
-    Index index = indexes.get(indexName);
-    if (index == null) {
-      // see: http://en.wikipedia.org/wiki/Null_Object_pattern
-      LOG.debug("No index found {}, using a null Index", indexName);
-      index = VREManager.NO_OP_INDEX;
-    }
-
-    return index;
+    return vre.getIndexForType(type);
   }
 
   public Collection<Index> getAllIndexes() {
@@ -156,7 +145,7 @@ public class VREManager {
       indexMap.putAll(indexMapCreator.createIndexesFor(vre));
     }
 
-    return new VREManager(vreMap, indexMap, indexNameCreator);
+    return new VREManager(vreMap, indexMap);
   }
 
 }

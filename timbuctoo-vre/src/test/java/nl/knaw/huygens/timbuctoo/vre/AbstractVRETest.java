@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.vre;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -61,6 +62,16 @@ public class AbstractVRETest {
         return null;
       }
     };
+  }
+
+  @Test
+  public void testGetIndexForTypeRedirectsTheCallToIndexCollection() {
+    // action
+    Index index = instance.getIndexForType(TYPE);
+
+    // verify
+    verify(indexCollectionMock).getIndexByType(TYPE);
+    assertNotNull(index);
   }
 
   @Test

@@ -115,4 +115,10 @@ public abstract class AbstractVRE implements VRE {
 
     return facetedSearchResultConverter.convert(TypeNames.getInternalName(type), facetedSearchResult);
   }
+
+  @Override
+  public Index getIndexForType(Class<? extends DomainEntity> type) {
+
+    return indexCollection.getIndexByType(type);
+  }
 }
