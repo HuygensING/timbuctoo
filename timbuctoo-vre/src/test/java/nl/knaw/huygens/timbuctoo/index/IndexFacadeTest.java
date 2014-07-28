@@ -28,7 +28,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
@@ -57,7 +56,7 @@ public class IndexFacadeTest {
   private static final String DEFAULT_ID = "id01234";
   private IndexFacade instance;
   private Repository repositoryMock;
-  private final Class<SubModel> type = SubModel.class;
+  private static final Class<SubModel> TYPE = SubModel.class;
   private IndexStatus indexStatusMock;
   private VREManager vreManagerMock;
 
@@ -80,18 +79,18 @@ public class IndexFacadeTest {
     VRE vreMock = mock(VRE.class);
     Index indexMock = mock(Index.class);
 
-    List<ExplicitlyAnnotatedModel> variations = Lists.newArrayList(mock(BASE_TYPE), mock(type));
+    List<ExplicitlyAnnotatedModel> variations = Lists.newArrayList(mock(BASE_TYPE), mock(TYPE));
     List<ExplicitlyAnnotatedModel> filteredVariations = Lists.newArrayList();
     filteredVariations.add(mock(SubModel.class));
 
     // when
     when(repositoryMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
-    when(vreManagerMock.getIndexFor(vreMock, type)).thenReturn(indexMock);
+    when(vreManagerMock.getIndexFor(vreMock, TYPE)).thenReturn(indexMock);
     when(vreMock.filter(variations)).thenReturn(filteredVariations);
 
     // action
-    instance.addEntity(type, DEFAULT_ID);
+    instance.addEntity(TYPE, DEFAULT_ID);
 
     // verify
     verify(indexMock).add(filteredVariations);
@@ -113,13 +112,13 @@ public class IndexFacadeTest {
     // when
     when(repositoryMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
-    when(vreManagerMock.getIndexFor(vreMock1, type)).thenReturn(indexMock1);
-    when(vreManagerMock.getIndexFor(vreMock2, type)).thenReturn(indexMock2);
+    when(vreManagerMock.getIndexFor(vreMock1, TYPE)).thenReturn(indexMock1);
+    when(vreManagerMock.getIndexFor(vreMock2, TYPE)).thenReturn(indexMock2);
     when(vreMock1.filter(variations)).thenReturn(filteredVariations1);
     when(vreMock2.filter(variations)).thenReturn(filteredVariations2);
 
     // action
-    instance.addEntity(type, DEFAULT_ID);
+    instance.addEntity(TYPE, DEFAULT_ID);
 
     // verify
     verify(indexMock1).add(filteredVariations1);
@@ -155,13 +154,13 @@ public class IndexFacadeTest {
     // when
     when(repositoryMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
-    when(vreManagerMock.getIndexFor(vreMock, type)).thenReturn(indexMock);
+    when(vreManagerMock.getIndexFor(vreMock, TYPE)).thenReturn(indexMock);
     when(vreMock.filter(variations)).thenReturn(filteredVariations);
     doThrow(IndexException.class).when(indexMock).add(filteredVariations);
 
     try {
       // action
-      instance.addEntity(type, DEFAULT_ID);
+      instance.addEntity(TYPE, DEFAULT_ID);
     } finally {
       // verify
       verify(indexMock).add(filteredVariations);
@@ -199,17 +198,15 @@ public class IndexFacadeTest {
   public void testDelete() throws IndexException {
     // setup
     VRE vreMock = mock(VRE.class);
-    Index indexMock = mock(Index.class);
 
     // when
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
-    when(vreManagerMock.getIndexFor(vreMock, type)).thenReturn(indexMock);
 
     // action
-    instance.deleteEntity(type, DEFAULT_ID);
+    instance.deleteEntity(TYPE, DEFAULT_ID);
 
     //verify
-    verify(indexMock).deleteById(DEFAULT_ID);
+    verify(vreMock).deleteFromIndex(TYPE, DEFAULT_ID);
   }
 
   @Test
@@ -217,20 +214,16 @@ public class IndexFacadeTest {
     // setup
     VRE vreMock1 = mock(VRE.class);
     VRE vreMock2 = mock(VRE.class);
-    Index indexMock1 = mock(Index.class);
-    Index indexMock2 = mock(Index.class);
 
     // when
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
-    when(vreManagerMock.getIndexFor(vreMock1, type)).thenReturn(indexMock1);
-    when(vreManagerMock.getIndexFor(vreMock2, type)).thenReturn(indexMock2);
 
     // action
-    instance.deleteEntity(type, DEFAULT_ID);
+    instance.deleteEntity(TYPE, DEFAULT_ID);
 
     //verify
-    verify(indexMock1).deleteById(DEFAULT_ID);
-    verify(indexMock2).deleteById(DEFAULT_ID);
+    verify(vreMock1).deleteFromIndex(TYPE, DEFAULT_ID);
+    verify(vreMock2).deleteFromIndex(TYPE, DEFAULT_ID);
   }
 
   @Test(expected = IndexException.class)
@@ -238,22 +231,18 @@ public class IndexFacadeTest {
     // setup
     VRE vreMock1 = mock(VRE.class);
     VRE vreMock2 = mock(VRE.class);
-    Index indexMock1 = mock(Index.class);
 
     // when
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
-    when(vreManagerMock.getIndexFor(vreMock1, type)).thenReturn(indexMock1);
-    doThrow(IndexException.class).when(indexMock1).deleteById(DEFAULT_ID);
+    doThrow(IndexException.class).when(vreMock1).deleteFromIndex(TYPE, DEFAULT_ID);
 
     try {
       // action
-      instance.deleteEntity(type, DEFAULT_ID);
+      instance.deleteEntity(TYPE, DEFAULT_ID);
     } finally {
       //verify
-      verify(vreManagerMock).getAllVREs();
-      verify(vreManagerMock).getIndexFor(vreMock1, type);
-      verify(indexMock1).deleteById(DEFAULT_ID);
-      verifyNoMoreInteractions(vreManagerMock);
+      verify(vreMock1).deleteFromIndex(TYPE, DEFAULT_ID);
+      verifyZeroInteractions(vreMock2);
     }
   }
 
@@ -261,19 +250,16 @@ public class IndexFacadeTest {
   public void testDeleteEntities() throws IndexException {
     // setup
     VRE vreMock = mock(VRE.class);
-    Index indexMock = mock(Index.class);
-
     List<String> ids = Lists.newArrayList("id1", "id2", "id3");
 
     // when
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
-    when(vreManagerMock.getIndexFor(vreMock, type)).thenReturn(indexMock);
 
     // action
-    instance.deleteEntities(type, ids);
+    instance.deleteEntities(TYPE, ids);
 
     // verify
-    verify(indexMock).deleteById(ids);
+    verify(vreMock).deleteFromIndex(TYPE, ids);
   }
 
   @Test

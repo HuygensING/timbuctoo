@@ -17,6 +17,7 @@ import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexCollection;
+import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultConverter;
@@ -27,6 +28,7 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 
 public class AbstractVRETest {
+  private static final String ID = "ID";
   private static final Class<ExplicitlyAnnotatedModel> TYPE = ExplicitlyAnnotatedModel.class;
   private static final String TYPE_STRING = "explicitlyannotatedmodel";
   private AbstractVRE instance;
@@ -119,6 +121,25 @@ public class AbstractVRETest {
   @Test(expected = SearchValidationException.class)
   public void testSearchIndexThrowsAnSearchValidationException() throws SearchException, SearchValidationException {
     testSearchIndexThrowsAnException(SearchValidationException.class);
+  }
+
+  @Test
+  public void deleteFromIndexShouldDelegateTheCallToTheRightIndex() throws IndexException {
+    // action
+    instance.deleteFromIndex(TYPE, ID);
+
+    // verify
+    verify(indexMock).deleteById(ID);
+
+  }
+
+  @Test(expected = IndexException.class)
+  public void deleteFromIndexShouldThrowTheIndexExceptionsTheIndexThrows() throws IndexException {
+    // setup
+    doThrow(IndexException.class).when(indexMock).deleteById(ID);
+
+    // action
+    instance.deleteFromIndex(TYPE, ID);
   }
 
   private void testSearchIndexThrowsAnException(Class<? extends Exception> exceptionToThrow) throws SearchException, SearchValidationException {

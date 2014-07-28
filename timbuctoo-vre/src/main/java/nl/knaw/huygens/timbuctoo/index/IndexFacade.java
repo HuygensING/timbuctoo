@@ -87,16 +87,14 @@ public class IndexFacade implements IndexManager {
   @Override
   public <T extends DomainEntity> void deleteEntity(Class<T> type, String id) throws IndexException {
     for (VRE vre : vreManager.getAllVREs()) {
-      Index index = vreManager.getIndexFor(vre, type);
-      index.deleteById(id);
+      vre.deleteFromIndex(type, id);
     }
   }
 
   @Override
   public <T extends DomainEntity> void deleteEntities(Class<T> type, List<String> ids) throws IndexException {
     for (VRE vre : vreManager.getAllVREs()) {
-      Index index = vreManager.getIndexFor(vre, type);
-      index.deleteById(ids);
+      vre.deleteFromIndex(type, ids);
     }
   }
 

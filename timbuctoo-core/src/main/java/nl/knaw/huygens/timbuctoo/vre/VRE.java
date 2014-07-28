@@ -5,6 +5,7 @@ import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.index.Index;
+import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
@@ -92,5 +93,21 @@ public interface VRE extends Scope {
    * @return all the indexes of the VRE.
    */
   Collection<Index> getIndexes();
+
+  /**
+   * Delete an entity from the index.
+   * @param type the type to delete.
+   * @param id the id of the type to delete.
+   * @throws IndexException throw when the deletion does not succeed.
+   */
+  void deleteFromIndex(Class<? extends DomainEntity> type, String id) throws IndexException;
+
+  /**
+   * Delete multiple entities from the index.
+   * @param type the type to delete.
+   * @param ids the id's of the type to delete.
+   * @throws IndexException throw when the deletion does not succeed.
+   */
+  void deleteFromIndex(Class<? extends DomainEntity> type, List<String> ids);
 
 }
