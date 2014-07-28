@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
@@ -140,6 +141,17 @@ public class AbstractVRETest {
 
     // action
     instance.deleteFromIndex(TYPE, ID);
+  }
+
+  public void deleteFromIndexShouldRemoveMultipleItemsFromTheRightIndex() throws IndexException {
+    // setup
+    List<String> ids = Lists.newArrayList(ID, "id2", "id3");
+
+    // action
+    instance.deleteFromIndex(TYPE, ids);
+
+    // verify
+    verify(indexMock).deleteById(ids);
   }
 
   private void testSearchIndexThrowsAnException(Class<? extends Exception> exceptionToThrow) throws SearchException, SearchValidationException {

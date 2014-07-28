@@ -108,6 +108,6 @@ public interface VRE extends Scope {
    * @param ids the id's of the type to delete.
    * @throws IndexException throw when the deletion does not succeed.
    */
-  void deleteFromIndex(Class<? extends DomainEntity> type, List<String> ids);
+  void deleteFromIndex(Class<? extends DomainEntity> type, List<String> ids) throws IndexException;
 
 }

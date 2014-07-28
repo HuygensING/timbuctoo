@@ -154,8 +154,7 @@ public abstract class AbstractVRE implements VRE {
   }
 
   @Override
-  public void deleteFromIndex(Class<? extends DomainEntity> type, List<String> ids) {
-    // TODO Auto-generated method stub
-
+  public void deleteFromIndex(Class<? extends DomainEntity> type, List<String> ids) throws IndexException {
+    this.getIndexForType(type).deleteById(ids);
   }
 }
