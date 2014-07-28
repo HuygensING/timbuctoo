@@ -28,6 +28,7 @@ import static com.sun.jersey.api.client.ClientResponse.Status.INTERNAL_SERVER_ER
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -40,26 +41,18 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import nl.knaw.huygens.facetedsearch.model.DefaultFacet;
-import nl.knaw.huygens.facetedsearch.model.Facet;
-import nl.knaw.huygens.facetedsearch.model.FacetOption;
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
@@ -76,8 +69,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.client.GenericType;
@@ -85,6 +76,7 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class SearchResourceTest extends SearchResourceTestBase {
+  private static final String RELATIONS_PATH = "relations";
   private static final String TYPE_STRING = "person";
   protected static final String RELATION_TYPE_STRING = "testrelation";
   private SearchManager searchManager;
@@ -93,10 +85,6 @@ public class SearchResourceTest extends SearchResourceTestBase {
   public void setupSearchManager() {
     searchManager = injector.getInstance(SearchManager.class);
     when(searchManager.findSortableFields(Matchers.<Class<? extends DomainEntity>> any())).thenReturn(SORTABLE_FIELDS);
-  }
-
-  private void setupPublicUrl(String url) {
-    when(injector.getInstance(Configuration.class).getSetting("public_url")).thenReturn(url);
   }
 
   @Test
@@ -120,7 +108,7 @@ public class SearchResourceTest extends SearchResourceTestBase {
 
     // action
     String expected = getExpectedURL(ID);
-    ClientResponse response = searchResoure().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, searchParameters);
+    ClientResponse response = searchResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, searchParameters);
     String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
     // verify
@@ -140,7 +128,7 @@ public class SearchResourceTest extends SearchResourceTestBase {
     doThrow(new TimbuctooException(Response.Status.BAD_REQUEST, "Error")).when(searchRequestValidator).validate(anyString(), anyString(), any(SearchParametersV1.class));
 
     // action
-    ClientResponse response = searchResoure().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, searchParameters);
+    ClientResponse response = searchResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, searchParameters);
 
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(BAD_REQUEST));
@@ -155,7 +143,7 @@ public class SearchResourceTest extends SearchResourceTestBase {
     SearchParameters params = new SearchParameters().setTypeString(TYPE_STRING).setTerm(TERM);
     doThrow(Exception.class).when(vre).search(Matchers.<Class<? extends DomainEntity>> any(), any(SearchParametersV1.class));
 
-    ClientResponse response = searchResoure().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
+    ClientResponse response = searchResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
 
     assertEquals(Status.INTERNAL_SERVER_ERROR, response.getClientResponseStatus());
     verify(repository, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
@@ -171,114 +159,111 @@ public class SearchResourceTest extends SearchResourceTestBase {
     setSearchResult(vreMock, searchResult);
     doThrow(IOException.class).when(repository).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
 
-    ClientResponse response = searchResoure().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
+    ClientResponse response = searchResourceBuilder().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
 
     assertEquals(Status.INTERNAL_SERVER_ERROR, response.getClientResponseStatus());
     verify(vreManager).getVREById(anyString());
     verify(vreMock).search(Matchers.<Class<? extends DomainEntity>> any(), any(SearchParametersV1.class));
   }
 
+  @Override
+  protected WebResource searchResource(String... pathElements) {
+    WebResource resource = resource().path("search");
+    for (String pathElement : pathElements) {
+      resource = resource.path(pathElement);
+    }
+    return resource;
+  }
+
   @Test
   public void testGetSuccess() {
-    List<String> idList = Lists.newArrayList();
-    List<Person> personList = Lists.newArrayList();
+    // setup
+    SearchResult searchResult = new SearchResult();
+    searchResult.setSearchType(SEARCH_RESULT_TYPE_STRING);
 
-    int startIndex = 0;
-    int numberOfRows = 10;
-    createSearchResultOf100Persons(repository, idList, personList);
+    RegularClientSearchResult clientSearchResult = new RegularClientSearchResult();
 
-    List<Facet> facets = createFacets();
-    setUpSearchResult(idList, repository, facets);
+    final int defaultStart = 0;
+    final int defaultRows = 10;
 
-    WebResource resource = super.resource();
-    setupPublicUrl(resource.getURI().toString());
+    when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
+    when(regularClientSearchResultCreatorMock.create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
 
-    String nextUri = String.format("%ssearch/%s?start=10&rows=10", resource.getURI(), ID);
-    int returnedRows = 10;
-    Map<String, Object> expected = createExpectedResult(idList, personList, facets, startIndex, numberOfRows, SORTABLE_FIELDS, returnedRows, nextUri, null);
+    // action
+    ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
-    Map<String, Object> actual = resource.path("search").path(ID).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<Map<String, Object>>() {});
+    // verify
+    assertThat(response.getClientResponseStatus(), equalTo(Status.OK));
 
-    compareResults(expected, actual);
+    RegularClientSearchResult actualResult = response.getEntity(RegularClientSearchResult.class);
+    assertThat(actualResult, notNullValue(RegularClientSearchResult.class));
+
+    verify(repository).getEntity(SearchResult.class, ID);
+    verify(regularClientSearchResultCreatorMock).create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows);
+
   }
 
   @Test
   public void testGetSuccessWithStartAndRows() {
-    List<String> idList = Lists.newArrayList();
-    List<Person> personList = Lists.newArrayList();
-
+    // setup
     int startIndex = 20;
     int numberOfRows = 20;
-    createSearchResultOf100Persons(repository, idList, personList);
 
-    List<Facet> facets = createFacets();
+    SearchResult searchResult = new SearchResult();
+    searchResult.setSearchType(SEARCH_RESULT_TYPE_STRING);
 
-    setUpSearchResult(idList, repository, facets);
+    RegularClientSearchResult clientSearchResult = new RegularClientSearchResult();
 
     MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
     queryParameters.add("start", "20");
     queryParameters.add("rows", "20");
 
-    WebResource resource = super.resource();
-    setupPublicUrl(resource.getURI().toString());
+    when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
+    when(regularClientSearchResultCreatorMock.create(SEARCH_RESULT_TYPE, searchResult, startIndex, numberOfRows)).thenReturn(clientSearchResult);
 
-    String prevUri = String.format("%ssearch/%s?start=0&rows=20", resource.getURI(), ID);
-    String nextUri = String.format("%ssearch/%s?start=40&rows=20", resource.getURI(), ID);
-    int returnedRows = 20;
-    Map<String, Object> expected = createExpectedResult(idList, personList, facets, startIndex, numberOfRows, SORTABLE_FIELDS, returnedRows, nextUri, prevUri);
+    // action
+    ClientResponse clientResponse = searchResource(ID).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
-    Map<String, Object> actual = resource.path("search").path(ID).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE)
-        .get(new GenericType<Map<String, Object>>() {});
+    // verify
+    assertThat(clientResponse.getClientResponseStatus(), equalTo(Status.OK));
 
-    compareResults(expected, actual);
+    RegularClientSearchResult actualResult = clientResponse.getEntity(RegularClientSearchResult.class);
+    assertThat(actualResult, notNullValue(RegularClientSearchResult.class));
+
+    verify(repository).getEntity(SearchResult.class, ID);
+    verify(regularClientSearchResultCreatorMock).create(SEARCH_RESULT_TYPE, searchResult, startIndex, numberOfRows);
   }
 
   @Test
-  public void testGetSuccessWithStartAndRowsMoreThanMax() {
-    List<String> idList = Lists.newArrayList();
-    List<Person> personList = Lists.newArrayList();
+  public void testGetRelationSearch() {
+    // setup
+    SearchResult searchResult = new SearchResult();
+    searchResult.setSearchType(RELATION_SEARCH_RESULT_TYPE);
 
-    int startIndex = 10;
-    int numberOfRows = 100;
-    createSearchResultOf100Persons(repository, idList, personList);
+    RelationClientSearchResult clientSearchResult = new RelationClientSearchResult();
 
-    List<Facet> facets = createFacets();
+    final int defaultStart = 0;
+    final int defaultRows = 10;
 
-    setUpSearchResult(idList, repository, facets);
+    when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
+    when(relationClientSearchResultCreatorMock.create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
 
-    MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
-    queryParameters.add("start", "10");
-    queryParameters.add("rows", "100");
+    // action
+    ClientResponse response = searchResourceBuilder(RELATIONS_PATH, ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
-    WebResource resource = super.resource();
-    setupPublicUrl(resource.getURI().toString());
+    // verify
+    assertThat(response.getClientResponseStatus(), equalTo(Status.OK));
 
-    String prevUri = String.format("%ssearch/%s?start=0&rows=100", resource.getURI(), ID);
-    int returnedRows = 90;
-    Map<String, Object> expected = createExpectedResult(idList, personList, facets, startIndex, numberOfRows, SORTABLE_FIELDS, returnedRows, null, prevUri);
+    RegularClientSearchResult actualResult = response.getEntity(RegularClientSearchResult.class);
+    assertThat(actualResult, notNullValue(RegularClientSearchResult.class));
 
-    Map<String, Object> actual = resource.path("search").path(ID).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE)
-        .get(new GenericType<Map<String, Object>>() {});
-
-    compareResults(expected, actual);
-  }
-
-  @Test
-  public void testGetNoResults() {
-    setUpSearchResult(null, repository, Lists.<Facet> newArrayList());
-
-    Map<String, Object> expected = createExpectedResult(Lists.<String> newArrayList(), Lists.<Person> newArrayList(), Lists.<Facet> newArrayList(), 0, 0, SORTABLE_FIELDS, 0, null, null);
-
-    WebResource resource = super.resource();
-    Map<String, Object> actual = resource.path("search").path(ID).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<Map<String, Object>>() {});
-
-    compareResults(expected, actual);
+    verify(repository).getEntity(SearchResult.class, ID);
+    verify(relationClientSearchResultCreatorMock).create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows);
   }
 
   @Test
   public void testGetNoId() {
-    WebResource resource = super.resource();
-    ClientResponse response = resource.path("search").type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+    ClientResponse response = searchResourceBuilder().accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
     assertEquals(Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
   }
@@ -287,92 +272,23 @@ public class SearchResourceTest extends SearchResourceTestBase {
   public void testGetUnknownId() {
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(null);
 
-    WebResource resource = super.resource();
-    ClientResponse response = resource.path("search").path(ID).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+    ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
     assertEquals(Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
   @Test
   public void testGetSearchTypeUnknown() {
-    SearchResult searchResult = mock(SearchResult.class);
+    SearchResult searchResult = new SearchResult();
     searchResult.setId(ID);
     String unknownType = "unknown";
     searchResult.setSearchType(unknownType);
 
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
 
-    WebResource resource = super.resource();
-    ClientResponse response = resource.path("search").path(ID).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+    ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
-    assertEquals(BAD_REQUEST, response.getClientResponseStatus());
-  }
-
-  private Map<String, Object> createExpectedResult(List<String> idList, List<Person> personList, List<Facet> facets, int start, int rows, Set<String> sortableFields, int returnedRows, String next,
-      String prev) {
-    Map<String, Object> result = Maps.newHashMap();
-    int lastIndex = (start + rows) >= personList.size() ? personList.size() : (start + rows);
-
-    result.put("results", personList.subList(start, Math.max(lastIndex, 0)));
-    result.put("start", start); // start index of the results
-    result.put("rows", returnedRows); // number of results in the response
-    result.put("term", TERM); // search query
-    result.put("facets", facets); // all applying facets
-    result.put("numFound", idList.size()); // all found results
-    result.put("ids", idList.subList(start, rows)); //only the ids of the objects in the in response.
-    result.put("sortableFields", sortableFields);
-    result.put("_next", next);
-    result.put("_prev", prev);
-
-    return result;
-  }
-
-  private List<Facet> createFacets() {
-    List<Facet> facets = Lists.newArrayList();
-    FacetOption option1 = new FacetOption("17-5-1900", 1);
-    FacetOption option2 = new FacetOption("21-6", 2);
-    FacetOption option3 = new FacetOption("1780", 97);
-    DefaultFacet facet = new DefaultFacet("dynamic_s_birthDate", "birthdate");
-    facet.addOption(option1);
-    facet.addOption(option2);
-    facet.addOption(option3);
-    facets.add(facet);
-
-    return facets;
-  }
-
-  private void createSearchResultOf100Persons(Repository repository, final List<String> idList, final List<Person> personList) {
-    for (int i = 0; i < 100; i++) {
-      String personId = "" + i;
-      Person person = new Person();
-      person.setId(personId);
-      personList.add(person);
-      idList.add(personId);
-      when(repository.getEntity(Person.class, personId)).thenReturn(person);
-    }
-  }
-
-  private void setUpSearchResult(List<String> idList, Repository repository, List<Facet> facets) {
-    SearchResult result = mock(SearchResult.class);
-    when(result.getTerm()).thenReturn(TERM);
-    when(result.getId()).thenReturn(ID);
-    when(result.getSearchType()).thenReturn("person");
-    when(result.getIds()).thenReturn(idList);
-    when(result.getFacets()).thenReturn(facets);
-    when(repository.getEntity(SearchResult.class, ID)).thenReturn(result);
-  }
-
-  @SuppressWarnings("unchecked")
-  private void compareResults(Map<String, Object> expected, Map<String, Object> actual) {
-    assertEquals(((List<Person>) expected.get("results")).size(), ((List<Person>) actual.get("results")).size());
-    assertEquals(expected.get("term"), actual.get("term"));
-    assertEquals(expected.get("numFound"), actual.get("numFound"));
-    assertEquals(expected.get("start"), actual.get("start"));
-    assertEquals(expected.get("rows"), actual.get("rows"));
-    assertEquals(((List<Facet>) expected.get("facets")).size(), ((List<Facet>) actual.get("facets")).size());
-    assertEquals(((Collection<String>) expected.get("sortableFields")).size(), ((Collection<String>) actual.get("sortableFields")).size());
-    assertEquals(expected.get("_next"), actual.get("_next"));
-    assertEquals(expected.get("_prev"), actual.get("_prev"));
+    assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
   }
 
   /*
@@ -399,7 +315,7 @@ public class SearchResourceTest extends SearchResourceTestBase {
     when(repository.addSystemEntity(SearchResult.class, searchResultMock)).thenReturn(ID);
 
     // action
-    ClientResponse response = resource().path("search").path("relations").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
+    ClientResponse response = searchResourceBuilder(RELATIONS_PATH).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
 
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(CREATED));
@@ -421,7 +337,7 @@ public class SearchResourceTest extends SearchResourceTestBase {
     doThrow(new TimbuctooException(Response.Status.BAD_REQUEST, "Error")).when(searchRequestValidator).validateRelationRequest(anyString(), anyString(), any(RelationSearchParameters.class));
 
     // action
-    ClientResponse response = resource().path("search").path("relations").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
+    ClientResponse response = searchResourceBuilder(RELATIONS_PATH).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
 
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(BAD_REQUEST));
@@ -445,7 +361,7 @@ public class SearchResourceTest extends SearchResourceTestBase {
     doThrow(Exception.class).when(repository).addSystemEntity(SearchResult.class, searchResultMock);
 
     // action
-    ClientResponse response = resource().path("search").path("relations").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
+    ClientResponse response = searchResourceBuilder(RELATIONS_PATH).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
 
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(INTERNAL_SERVER_ERROR));
@@ -468,7 +384,7 @@ public class SearchResourceTest extends SearchResourceTestBase {
     doThrow(SearchException.class).when(relationSearcher).search(any(VRE.class), isNotNull(new GenericType<Class<? extends Relation>>() {}.getRawClass()), any(RelationSearchParameters.class));
 
     // action
-    ClientResponse response = resource().path("search").path("relations").type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
+    ClientResponse response = searchResourceBuilder(RELATIONS_PATH).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
 
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(INTERNAL_SERVER_ERROR));

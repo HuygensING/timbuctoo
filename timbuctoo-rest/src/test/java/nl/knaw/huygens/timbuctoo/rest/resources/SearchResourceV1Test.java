@@ -50,15 +50,11 @@ import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
-import nl.knaw.huygens.timbuctoo.rest.model.TestRelation;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RegularClientSearchResultCreator;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RelationClientSearchResultCreator;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -66,7 +62,6 @@ import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
@@ -79,33 +74,17 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class SearchResourceV1Test extends SearchResourceTestBase {
 
-  private static final Class<TestRelation> TEST_RELATION_TYPE = TestRelation.class;
-  private static final String SEARCH_RESULT_TYPE_STRING = "person";
   private static final Class<Class<? extends Relation>> RELATION_TYPE = new GenericType<Class<? extends Relation>>() {}.getRawClass();
   private static final String V1_PREFIX = "v1";
   private static final String TYPE_STRING = "persons";
   protected static final String RELATION_TYPE_STRING = "testrelations";
   private static final String RELATION_SEARCH_RESULT_TYPE = "testrelation";
-  private static final Class<? extends DomainEntity> SEARCH_RESULT_TYPE = Person.class;
-
-  private RegularClientSearchResultCreator regularClientSearchResultCreatorMock;
-  private RelationClientSearchResultCreator relationClientSearchResultCreatorMock;
-
-  @Before
-  public void setUpClientSearchResultCreators() {
-    regularClientSearchResultCreatorMock = injector.getInstance(RegularClientSearchResultCreator.class);
-    relationClientSearchResultCreatorMock = injector.getInstance(RelationClientSearchResultCreator.class);
-  }
-
   private void setupPublicUrl(String url) {
     when(injector.getInstance(Configuration.class).getSetting("public_url")).thenReturn(url);
   }
 
-  private WebResource.Builder searchResourceBuilder(String... pathElements) {
-    return searchResource(pathElements).type(MediaType.APPLICATION_JSON);
-  }
-
-  private WebResource searchResource(String... pathElements) {
+  @Override
+  protected WebResource searchResource(String... pathElements) {
     WebResource resource = resource().path(V1_PREFIX).path("search");
     for (String pathElement : pathElements) {
       resource = resource.path(pathElement);

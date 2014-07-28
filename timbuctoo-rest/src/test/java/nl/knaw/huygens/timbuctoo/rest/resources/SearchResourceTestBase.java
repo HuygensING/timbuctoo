@@ -11,7 +11,11 @@ import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.rest.model.TestRelation;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RegularClientSearchResultCreator;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RelationClientSearchResultCreator;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
@@ -32,6 +36,12 @@ public abstract class SearchResourceTestBase extends WebServiceTestSetup {
   protected static final String ID = "QURY0000000001";
   protected VREManager vreManager;
   protected SearchRequestValidator searchRequestValidator;
+  protected RegularClientSearchResultCreator regularClientSearchResultCreatorMock;
+  protected RelationClientSearchResultCreator relationClientSearchResultCreatorMock;
+  protected static final String RELATION_SEARCH_RESULT_TYPE = "testrelation";
+  protected static final String SEARCH_RESULT_TYPE_STRING = "person";
+  protected static final Class<? extends DomainEntity> SEARCH_RESULT_TYPE = Person.class;
+  protected static final Class<TestRelation> TEST_RELATION_TYPE = TestRelation.class;
 
   public SearchResourceTestBase() {
     super();
@@ -67,8 +77,16 @@ public abstract class SearchResourceTestBase extends WebServiceTestSetup {
     return vre;
   }
 
-  protected WebResource.Builder searchResoure() {
-    return resource().path("search").type(MediaType.APPLICATION_JSON);
+  protected abstract WebResource searchResource(String... pathElements);
+
+  protected WebResource.Builder searchResourceBuilder(String... pathElements) {
+    return searchResource(pathElements).type(MediaType.APPLICATION_JSON);
+  }
+
+  @Before
+  public void setUpClientSearchResultCreators() {
+    regularClientSearchResultCreatorMock = injector.getInstance(RegularClientSearchResultCreator.class);
+    relationClientSearchResultCreatorMock = injector.getInstance(RelationClientSearchResultCreator.class);
   }
 
 }

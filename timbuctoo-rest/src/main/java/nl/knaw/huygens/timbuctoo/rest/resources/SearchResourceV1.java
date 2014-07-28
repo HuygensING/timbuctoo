@@ -125,7 +125,7 @@ public class SearchResourceV1 extends ResourceBase {
   @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}")
   @APIDesc("Returns (paged) search results")
   @Produces({ MediaType.APPLICATION_JSON })
-  public Response regularGet( //
+  public Response get( //
       @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") final int start, //
       @QueryParam("rows") @DefaultValue("10") final int rows) {
