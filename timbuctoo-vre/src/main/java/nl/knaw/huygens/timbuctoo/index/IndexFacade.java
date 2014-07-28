@@ -28,7 +28,6 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -45,12 +44,10 @@ public class IndexFacade implements IndexManager {
 
   private final VREManager vreManager;
   private final Repository storageManager;
-  private final SortableFieldFinder sortableFieldFinder;
 
   @Inject
-  public IndexFacade(Repository storageManager, SortableFieldFinder sortableFieldFinder, VREManager vreManager) {
+  public IndexFacade(Repository storageManager, VREManager vreManager) {
     this.storageManager = storageManager;
-    this.sortableFieldFinder = sortableFieldFinder;
     this.vreManager = vreManager;
   }
 

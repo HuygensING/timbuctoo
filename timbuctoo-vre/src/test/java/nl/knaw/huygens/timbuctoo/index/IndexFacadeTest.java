@@ -41,7 +41,6 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.timbuctoo.index.model.SubModel;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -60,16 +59,14 @@ public class IndexFacadeTest {
   private Repository repositoryMock;
   private final Class<SubModel> type = SubModel.class;
   private IndexStatus indexStatusMock;
-  private SortableFieldFinder sortableFieldFinderMock;
   private VREManager vreManagerMock;
 
   @Before
   public void setUp() {
     indexStatusMock = mock(IndexStatus.class);
     repositoryMock = mock(Repository.class);
-    sortableFieldFinderMock = mock(SortableFieldFinder.class);
     vreManagerMock = mock(VREManager.class);
-    instance = new IndexFacade(repositoryMock, sortableFieldFinderMock, vreManagerMock) {
+    instance = new IndexFacade(repositoryMock, vreManagerMock) {
       @Override
       protected IndexStatus createIndexStatus() {
         return indexStatusMock;
