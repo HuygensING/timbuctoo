@@ -25,16 +25,10 @@ package nl.knaw.huygens.timbuctoo.index;
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 
 import java.util.List;
-import java.util.Set;
 
-import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
-import nl.knaw.huygens.timbuctoo.vre.SearchException;
-import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -45,7 +39,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
-public class IndexFacade implements SearchManager, IndexManager {
+public class IndexFacade implements IndexManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(IndexFacade.class);
 
@@ -154,18 +148,6 @@ public class IndexFacade implements SearchManager, IndexManager {
         LOG.error("closing of index {} went wrong", index.getName(), ex);
       }
     }
-  }
-
-  @Override
-  public Set<String> findSortableFields(Class<? extends DomainEntity> type) {
-    return sortableFieldFinder.findFields(type);
-  }
-
-  @Override
-  public <T extends FacetedSearchParameters<T>> SearchResult search(VRE vre, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException,
-      SearchValidationException {
-
-    return vre.search(type, searchParameters);
   }
 
   private static interface IndexChanger {

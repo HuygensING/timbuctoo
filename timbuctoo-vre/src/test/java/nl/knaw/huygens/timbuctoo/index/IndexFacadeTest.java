@@ -22,8 +22,6 @@ package nl.knaw.huygens.timbuctoo.index;
  * #L%
  */
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -39,15 +37,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.timbuctoo.index.model.SubModel;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
-import nl.knaw.huygens.timbuctoo.vre.SearchException;
-import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -473,54 +467,6 @@ public class IndexFacadeTest {
     // verify
     verify(indexMock1).close();
     verify(indexMock2).close();
-  }
-
-  @Test
-  public void testFindSortableFields() {
-
-    // action 
-    instance.findSortableFields(BASE_TYPE);
-
-    // verify
-    verify(sortableFieldFinderMock).findFields(BASE_TYPE);
-  }
-
-  @Test
-  public void testSearch() throws SearchException, SearchValidationException {
-    // setup
-    VRE vreMock = mock(VRE.class);
-    DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
-    SearchResult searchResult = new SearchResult();
-
-    // when
-    when(vreMock.search(BASE_TYPE, searchParameters)).thenReturn(searchResult);
-
-    SearchResult actualSearchResult = instance.search(vreMock, BASE_TYPE, searchParameters);
-
-    // verify
-    verify(vreMock).search(BASE_TYPE, searchParameters);
-    assertThat(actualSearchResult, is(searchResult));
-  }
-
-  @Test(expected = SearchException.class)
-  public void testSearchIndexThrowsSearchException() throws SearchException, SearchValidationException {
-    testSearchIndexThrowsException(SearchException.class);
-  }
-
-  @Test(expected = SearchValidationException.class)
-  public void testSearchIndexThrowsSearchValidationException() throws SearchException, SearchValidationException {
-    testSearchIndexThrowsException(SearchValidationException.class);
-  }
-
-  protected void testSearchIndexThrowsException(Class<? extends Exception> exceptionToThrow) throws SearchException, SearchValidationException {
-    // setup
-    VRE vreMock = mock(VRE.class);
-    DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
-
-    // when
-    doThrow(exceptionToThrow).when(vreMock).search(BASE_TYPE, searchParameters);
-
-    instance.search(vreMock, BASE_TYPE, searchParameters);
   }
 
   private static class OtherIndexBaseType extends DomainEntity {

@@ -57,7 +57,6 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
-import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchParametersConverter;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -65,7 +64,6 @@ import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 
@@ -79,13 +77,6 @@ public class SearchResourceTest extends SearchResourceTestBase {
   private static final String RELATIONS_PATH = "relations";
   private static final String TYPE_STRING = "person";
   protected static final String RELATION_TYPE_STRING = "testrelation";
-  private SearchManager searchManager;
-
-  @Before
-  public void setupSearchManager() {
-    searchManager = injector.getInstance(SearchManager.class);
-    when(searchManager.findSortableFields(Matchers.<Class<? extends DomainEntity>> any())).thenReturn(SORTABLE_FIELDS);
-  }
 
   @Test
   public void testPostSuccess() throws Exception {
