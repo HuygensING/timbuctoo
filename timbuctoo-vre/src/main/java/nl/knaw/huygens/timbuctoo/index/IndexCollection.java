@@ -35,8 +35,9 @@ public class IndexCollection {
    * @return the index
    */
   public Index getIndexByType(Class<? extends DomainEntity> type) {
+    Class<? extends DomainEntity> baseType = toBaseDomainEntity(type);
 
-    return indexMap.containsKey(toBaseDomainEntity(type)) ? indexMap.get(type) : NO_OP_INDEX;
+    return indexMap.containsKey(baseType) ? indexMap.get(baseType) : NO_OP_INDEX;
   }
 
   /**

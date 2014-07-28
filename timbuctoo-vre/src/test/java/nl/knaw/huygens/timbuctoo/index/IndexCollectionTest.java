@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -39,20 +40,21 @@ public class IndexCollectionTest {
   public void whenIndexCollectionHasAnIndexForTheRequestedTypeItShouldReturnIt() {
     Index index = instance.getIndexByType(TYPE_WITH_INDEX);
 
-    assertThat(index, is(not(instanceOf(NoOpIndex.class))));
+    assertThatIndexIsNotNullAndNotNoOpIndex(index);
   }
 
   @Test
   public void theIndexCollectionShouldMakeNoDifferenceBetweenPrimitivesAndProjectSpecificTypesWhenRetrievingAnIndex() {
     Index index = instance.getIndexByType(BASE_TYPE_WITH_INDEX);
 
-    assertThat(index, is(not(instanceOf(NoOpIndex.class))));
+    assertThatIndexIsNotNullAndNotNoOpIndex(index);
   }
 
   @Test
   public void whenIndexCollectionDoesNotHaveAnIndexForTheRequestedTypeItShouldReturnANoOPIndex() {
     Index index = instance.getIndexByType(TYPE_WITHOUT_INDEX);
 
+    assertThat(index, is(notNullValue(Index.class)));
     assertThat(index, is(instanceOf(NoOpIndex.class)));
   }
 
@@ -77,8 +79,12 @@ public class IndexCollectionTest {
     instance = IndexCollection.create(indexFactoryMock, vreMock);
 
     // verify
-    assertThat(instance.getIndexByType(type1), is(not(instanceOf(NoOpIndex.class))));
-    assertThat(instance.getIndexByType(type2), is(not(instanceOf(NoOpIndex.class))));
+    assertThatIndexIsNotNullAndNotNoOpIndex(instance.getIndexByType(type1));
+    assertThatIndexIsNotNullAndNotNoOpIndex(instance.getIndexByType(type2));
+  }
 
+  private void assertThatIndexIsNotNullAndNotNoOpIndex(Index index) {
+    assertThat(index, is(notNullValue(Index.class)));
+    assertThat(index, is(not(instanceOf(NoOpIndex.class))));
   }
 }
