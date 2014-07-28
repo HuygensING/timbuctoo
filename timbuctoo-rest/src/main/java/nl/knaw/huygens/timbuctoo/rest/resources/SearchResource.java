@@ -118,7 +118,7 @@ public class SearchResource extends ResourceBase {
 
     // Process
     try {
-      SearchResult result = searchManager.search(vre, type, searchParamsV1);
+      SearchResult result = vre.search(type, searchParamsV1);
       String queryId = putSearchResult(result);
       return Response.created(new URI(queryId)).build();
     } catch (SearchValidationException e) {

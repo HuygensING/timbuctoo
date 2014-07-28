@@ -37,9 +37,12 @@ import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultConverter;
+import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 public abstract class AbstractVRE implements VRE {
 
@@ -110,12 +113,18 @@ public abstract class AbstractVRE implements VRE {
 
   @Override
   public <T extends FacetedSearchParameters<T>> SearchResult search(Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException, SearchValidationException {
+    prepareSearchParameters(type, searchParameters);
 
     Index index = indexCollection.getIndexByType(type);
 
     FacetedSearchResult facetedSearchResult = index.search(searchParameters);
 
     return facetedSearchResultConverter.convert(TypeNames.getInternalName(type), facetedSearchResult);
+  }
+
+  protected <T extends FacetedSearchParameters<T>> void prepareSearchParameters(Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) {
+    FullTextSearchFieldFinder ftsff = new FullTextSearchFieldFinder();
+    searchParameters.setFullTextSearchFields(Lists.newArrayList(ftsff.findFields(type)));
   }
 
   @Override

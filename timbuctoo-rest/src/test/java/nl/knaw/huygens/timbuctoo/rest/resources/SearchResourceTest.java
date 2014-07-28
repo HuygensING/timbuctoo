@@ -63,7 +63,6 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
-import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchParametersConverter;
@@ -72,35 +71,23 @@ import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
-import org.mockito.Mockito;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
-public class SearchResourceTest extends WebServiceTestSetup {
-
-  private static final String RELATION_TYPE_STRING = "testrelation";
-  private static final Set<String> SORTABLE_FIELDS = Sets.newHashSet("test1", "test");
-  private static final String SCOPE_ID = "base";
-  private static final String TERM = "dynamic_t_name:Huygens";
-  private static final String LOCATION_HEADER = "Location";
+public class SearchResourceTest extends SearchResourceTestBase {
   private static final String TYPE_STRING = "person";
-  private static final String ID = "QURY0000000001";
-
-  private VREManager vreManager;
+  protected static final String RELATION_TYPE_STRING = "testrelation";
   private SearchManager searchManager;
-  private SearchRequestValidator searchRequestValidator;
 
   @Before
   public void setupSearchManager() {
@@ -108,45 +95,14 @@ public class SearchResourceTest extends WebServiceTestSetup {
     when(searchManager.findSortableFields(Matchers.<Class<? extends DomainEntity>> any())).thenReturn(SORTABLE_FIELDS);
   }
 
-  @Before
-  public void setUpSearchRequestValidator() {
-    searchRequestValidator = injector.getInstance(SearchRequestValidator.class);
-  }
-
-  @Before
-  public void instantiateVREManager() {
-    vreManager = injector.getInstance(VREManager.class);
-  }
-
-  private void setSearchResult(SearchResult searchResult) throws Exception {
-    when(searchManager.search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParametersV1.class))).thenReturn(searchResult);
-  }
-
   private void setupPublicUrl(String url) {
     when(injector.getInstance(Configuration.class).getSetting("public_url")).thenReturn(url);
-  }
-
-  private void setUpVREManager(boolean isTypeInScope, boolean isVREKnown) {
-
-    if (isVREKnown) {
-      VRE vre = mock(VRE.class);
-      when(vre.getName()).thenReturn(VRE_ID);
-      when(vre.getScopeId()).thenReturn(SCOPE_ID);
-      when(vre.inScope(Mockito.<Class<? extends DomainEntity>> any())).thenReturn(isTypeInScope);
-
-      when(vreManager.getVREById(anyString())).thenReturn(vre);
-    } else {
-      when(vreManager.getVREById(anyString())).thenReturn(null);
-    }
-  }
-
-  private WebResource.Builder searchResoure() {
-    return resource().path("search").type(MediaType.APPLICATION_JSON);
   }
 
   @Test
   public void testPostSuccess() throws Exception {
     final SearchParametersV1 searchParametersV1Mock = mock(SearchParametersV1.class);
+    VRE vreMock = setUpVREManager(true, true);
     // setup
     SearchParameters searchParameters = new SearchParameters();
     String typeString = "otherdomainentity";
@@ -158,10 +114,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     Class<OtherDomainEntity> type = OtherDomainEntity.class;
 
     SearchResult searchResult = mock(SearchResult.class);
-    setSearchResult(searchResult);
-
-    VRE vreMock = mock(VRE.class);
-    when(vreManager.getVREById(VRE_ID)).thenReturn(vreMock);
+    setSearchResult(vreMock, searchResult);
 
     when(repository.addSystemEntity(SearchResult.class, searchResult)).thenReturn(ID);
 
@@ -171,7 +124,7 @@ public class SearchResourceTest extends WebServiceTestSetup {
     String actual = response.getHeaders().getFirst(LOCATION_HEADER);
 
     // verify
-    verify(searchManager).search(vreMock, type, searchParametersV1Mock);
+    verify(vreMock).search(type, searchParametersV1Mock);
     assertEquals(Status.CREATED, response.getClientResponseStatus());
     assertEquals(expected, actual);
   }
@@ -191,36 +144,38 @@ public class SearchResourceTest extends WebServiceTestSetup {
 
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(BAD_REQUEST));
-    verifyZeroInteractions(repository, searchManager);
+    verifyZeroInteractions(repository, vreManager);
 
   }
 
   @Test
-  public void testPostSearchManagerThrowsAnException() throws Exception {
-    setUpVREManager(true, true);
+  public void testPostVREThrowsAnException() throws Exception {
+    VRE vre = setUpVREManager(true, true);
 
     SearchParameters params = new SearchParameters().setTypeString(TYPE_STRING).setTerm(TERM);
-    doThrow(Exception.class).when(searchManager).search(any(VRE.class), Matchers.<Class<? extends DomainEntity>> any(), any(SearchParametersV1.class));
+    doThrow(Exception.class).when(vre).search(Matchers.<Class<? extends DomainEntity>> any(), any(SearchParametersV1.class));
 
     ClientResponse response = searchResoure().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
 
     assertEquals(Status.INTERNAL_SERVER_ERROR, response.getClientResponseStatus());
     verify(repository, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(vre).search(Matchers.<Class<? extends DomainEntity>> any(), any(SearchParametersV1.class));
   }
 
   @Test
   public void testPostStorageManagerThrowsAnException() throws Exception {
-    setUpVREManager(true, true);
+    VRE vreMock = setUpVREManager(true, true);
 
     SearchParameters params = new SearchParameters().setTypeString(TYPE_STRING).setTerm(TERM);
     SearchResult searchResult = mock(SearchResult.class);
-    setSearchResult(searchResult);
+    setSearchResult(vreMock, searchResult);
     doThrow(IOException.class).when(repository).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
 
     ClientResponse response = searchResoure().header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
 
     assertEquals(Status.INTERNAL_SERVER_ERROR, response.getClientResponseStatus());
     verify(vreManager).getVREById(anyString());
+    verify(vreMock).search(Matchers.<Class<? extends DomainEntity>> any(), any(SearchParametersV1.class));
   }
 
   @Test
