@@ -265,39 +265,37 @@ public class IndexFacadeTest {
   @Test
   public void testDeleteAllEntities() throws IndexException {
     // setup
-    Index indexMock1 = mock(Index.class);
-    Index indexMock2 = mock(Index.class);
+    VRE vreMock1 = mock(VRE.class);
+    VRE vreMock2 = mock(VRE.class);
 
     // when
-    List<Index> indexes = Lists.newArrayList(indexMock1, indexMock2);
-    when(vreManagerMock.getAllIndexes()).thenReturn(indexes);
+    when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
 
     // action
     instance.deleteAllEntities();
 
     // verify
-    verify(indexMock1).clear();
-    verify(indexMock2).clear();
+    verify(vreMock1).clearIndexes();
+    verify(vreMock2).clearIndexes();
   }
 
   @Test(expected = IndexException.class)
-  public void testDeleteAllEntitiesIndexClearThrowsAnIndexException() throws IndexException {
+  public void testDeleteAllEntitiesVREClearIndexesThrowsAnIndexException() throws IndexException {
     // setup
-    Index indexMock1 = mock(Index.class);
-    Index indexMock2 = mock(Index.class);
+    VRE vreMock1 = mock(VRE.class);
+    VRE vreMock2 = mock(VRE.class);
 
     // when
-    List<Index> indexes = Lists.newArrayList(indexMock1, indexMock2);
-    when(vreManagerMock.getAllIndexes()).thenReturn(indexes);
-    doThrow(IndexException.class).when(indexMock1).clear();
+    when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
+    doThrow(IndexException.class).when(vreMock1).clearIndexes();
 
     try {
       // action
       instance.deleteAllEntities();
     } finally {
       // verify
-      verify(indexMock1).clear();
-      verifyZeroInteractions(indexMock2);
+      verify(vreMock1).clearIndexes();
+      verifyZeroInteractions(vreMock2);
     }
   }
 

@@ -157,4 +157,11 @@ public abstract class AbstractVRE implements VRE {
   public void deleteFromIndex(Class<? extends DomainEntity> type, List<String> ids) throws IndexException {
     this.getIndexForType(type).deleteById(ids);
   }
+
+  @Override
+  public void clearIndexes() throws IndexException {
+    for (Index index : indexCollection) {
+      index.clear();
+    }
+  }
 }

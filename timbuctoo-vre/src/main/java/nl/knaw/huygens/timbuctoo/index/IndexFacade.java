@@ -100,8 +100,8 @@ public class IndexFacade implements IndexManager {
 
   @Override
   public void deleteAllEntities() throws IndexException {
-    for (Index index : vreManager.getAllIndexes()) {
-      index.clear();
+    for (VRE vre : vreManager.getAllVREs()) {
+      vre.clearIndexes();
     }
   }
 

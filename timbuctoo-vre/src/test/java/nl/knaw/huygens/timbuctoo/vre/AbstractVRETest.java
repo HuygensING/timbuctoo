@@ -134,6 +134,18 @@ public class AbstractVRETest {
 
   }
 
+  private void testSearchIndexThrowsAnException(Class<? extends Exception> exceptionToThrow) throws SearchException, SearchValidationException {
+    doThrow(exceptionToThrow).when(indexMock).search(searchParameters);
+
+    try {
+      // action
+      instance.search(TYPE, searchParameters);
+    } finally {
+      verify(indexMock).search(searchParameters);
+      verifyZeroInteractions(facetedSearchResultConverterMock);
+    }
+  }
+
   @Test(expected = IndexException.class)
   public void deleteFromIndexShouldThrowTheIndexExceptionsTheIndexThrows() throws IndexException {
     // setup
@@ -143,6 +155,7 @@ public class AbstractVRETest {
     instance.deleteFromIndex(TYPE, ID);
   }
 
+  @Test
   public void deleteFromIndexShouldRemoveMultipleItemsFromTheRightIndex() throws IndexException {
     // setup
     List<String> ids = Lists.newArrayList(ID, "id2", "id3");
@@ -154,16 +167,51 @@ public class AbstractVRETest {
     verify(indexMock).deleteById(ids);
   }
 
-  private void testSearchIndexThrowsAnException(Class<? extends Exception> exceptionToThrow) throws SearchException, SearchValidationException {
-    doThrow(exceptionToThrow).when(indexMock).search(searchParameters);
+  @Test(expected = IndexException.class)
+  public void deleteMultipleFromIndexShouldThrowTheIndexExceptionsTheIndexThrows() throws IndexException {
+    // setup
+    List<String> ids = Lists.newArrayList(ID, "id2", "id3");
+    doThrow(IndexException.class).when(indexMock).deleteById(ids);
 
-    try {
-      // action
-      instance.search(TYPE, searchParameters);
-    } finally {
-      verify(indexMock).search(searchParameters);
-      verifyZeroInteractions(facetedSearchResultConverterMock);
-    }
+    // action
+    instance.deleteFromIndex(TYPE, ids);
+  }
+
+  @Test
+  public void clearEntitiesShouldClearAllTheIndexesOfThisVRE() throws IndexException {
+    // setup
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+
+    setupIndexIterator(indexMock1, indexMock2);
+
+    // action
+    instance.clearIndexes();
+
+    // verify
+    verify(indexMock1).clear();
+    verify(indexMock2).clear();
+  }
+
+  protected void setupIndexIterator(Index indexMock1, Index indexMock2) {
+    when(indexCollectionMock.iterator()).thenReturn(Lists.newArrayList(indexMock1, indexMock2).iterator());
+  }
+
+  @Test(expected = IndexException.class)
+  public void clearEntitiesShouldThrowAnExceptionWhenAnIndexThrowsAnException() throws IndexException {
+    // setup
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+
+    setupIndexIterator(indexMock1, indexMock2);
+    doThrow(IndexException.class).when(indexMock1).clear();
+
+    // action
+    instance.clearIndexes();
+
+    // verify
+    verify(indexMock1).clear();
+    verifyZeroInteractions(indexMock2);
   }
 
 }

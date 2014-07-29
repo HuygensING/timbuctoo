@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.index;
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 
-public class IndexCollection {
+public class IndexCollection implements Iterable<Index> {
 
   private static final NoOpIndex NO_OP_INDEX = new NoOpIndex();
 
@@ -116,6 +117,11 @@ public class IndexCollection {
       LOG.warn("Searching on a non existing index");
       return new FacetedSearchResult();
     }
+  }
+
+  @Override
+  public Iterator<Index> iterator() {
+    return getAll().iterator();
   }
 
 }

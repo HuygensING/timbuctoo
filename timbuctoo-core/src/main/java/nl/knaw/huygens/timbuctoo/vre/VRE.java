@@ -110,4 +110,10 @@ public interface VRE extends Scope {
    */
   void deleteFromIndex(Class<? extends DomainEntity> type, List<String> ids) throws IndexException;
 
+  /**
+   * Clears all the indexes of this VRE.
+   * @throws IndexException thrown when the clearing of an index fails.
+   */
+  void clearIndexes() throws IndexException;
+
 }
