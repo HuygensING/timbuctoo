@@ -137,4 +137,10 @@ public interface VRE extends Scope {
    */
   void close();
 
+  /**
+   * Commits all the changes on each of it's indexes.
+   * @throws IndexException thrown when a commit of one index failed.
+   */
+  void commitAll() throws IndexException;
+
 }

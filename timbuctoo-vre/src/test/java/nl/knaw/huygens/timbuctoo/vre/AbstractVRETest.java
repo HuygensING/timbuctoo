@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
@@ -208,12 +209,14 @@ public class AbstractVRETest {
     setupIndexIterator(indexMock1, indexMock2);
     doThrow(IndexException.class).when(indexMock1).clear();
 
-    // action
-    instance.clearIndexes();
-
-    // verify
-    verify(indexMock1).clear();
-    verifyZeroInteractions(indexMock2);
+    try {
+      // action
+      instance.clearIndexes();
+    } finally {
+      // verify
+      verify(indexMock1).clear();
+      verifyZeroInteractions(indexMock2);
+    }
 
   }
 
@@ -326,6 +329,41 @@ public class AbstractVRETest {
     // verify
     verify(indexMock1).close();
     verify(indexMock2).close();
+  }
+
+  @Test
+  public void commitAllCallsCommitOnAllTheIndexes() throws IndexException {
+    // setup
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+
+    setupIndexIterator(indexMock1, indexMock2);
+
+    // action
+    instance.commitAll();
+
+    // verify
+    verify(indexMock1).commit();
+    verify(indexMock2).commit();
+  }
+
+  @Test(expected = IndexException.class)
+  public void commitAllThrowsAnIndexExceptionWhenACommitOfAnIndexThrowsOne() throws IndexException {
+    // setup
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+
+    setupIndexIterator(indexMock1, indexMock2);
+    doThrow(IndexException.class).when(indexMock1).commit();
+
+    try {
+      // action
+      instance.commitAll();
+    } finally {
+      // verify
+      verify(indexMock1).commit();
+      verifyNoMoreInteractions(indexMock2);
+    }
   }
 
 }

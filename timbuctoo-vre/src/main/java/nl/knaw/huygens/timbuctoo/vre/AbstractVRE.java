@@ -185,4 +185,12 @@ public abstract class AbstractVRE implements VRE {
       }
     }
   }
+
+  @Override
+  public void commitAll() throws IndexException {
+    for (Index index : indexCollection) {
+      index.commit();
+    }
+
+  }
 }

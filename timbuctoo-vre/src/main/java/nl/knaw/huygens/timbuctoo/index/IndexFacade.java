@@ -128,8 +128,8 @@ public class IndexFacade implements IndexManager {
 
   @Override
   public void commitAll() throws IndexException {
-    for (Index index : vreManager.getAllIndexes()) {
-      index.commit();
+    for (VRE vre : vreManager.getAllVREs()) {
+      vre.commitAll();
     }
   }
 
