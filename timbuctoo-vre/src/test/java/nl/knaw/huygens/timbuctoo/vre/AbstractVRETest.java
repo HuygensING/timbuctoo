@@ -20,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexCollection;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultConverter;
 
@@ -37,10 +38,12 @@ public class AbstractVRETest {
   private DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
   private Index indexMock = mock(Index.class);
   private FacetedSearchResultConverter facetedSearchResultConverterMock = mock(FacetedSearchResultConverter.class);
+  private Scope scopeMock;
 
   @Before
   public void setUp() {
     indexCollectionMock = mock(IndexCollection.class);
+    scopeMock = mock(Scope.class);
     when(indexCollectionMock.getIndexByType(TYPE)).thenReturn(indexMock);
 
     instance = new AbstractVRE(indexCollectionMock, facetedSearchResultConverterMock) {
@@ -65,8 +68,7 @@ public class AbstractVRETest {
 
       @Override
       protected Scope createScope() throws IOException {
-        // TODO Auto-generated method stub
-        return null;
+        return scopeMock;
       }
     };
   }
@@ -193,7 +195,7 @@ public class AbstractVRETest {
     verify(indexMock2).clear();
   }
 
-  protected void setupIndexIterator(Index indexMock1, Index indexMock2) {
+  private void setupIndexIterator(Index indexMock1, Index indexMock2) {
     when(indexCollectionMock.iterator()).thenReturn(Lists.newArrayList(indexMock1, indexMock2).iterator());
   }
 
@@ -212,6 +214,84 @@ public class AbstractVRETest {
     // verify
     verify(indexMock1).clear();
     verifyZeroInteractions(indexMock2);
+
   }
 
+  @Test
+  public void addToIndexDeterminesTheIndexAndCallsItsAddFunctionWithAFilteredVariations() throws IndexException {
+    // setup
+    List<DomainEntity> variations = Lists.newArrayList();
+
+    ExplicitlyAnnotatedModel entityInScope = mock(TYPE);
+    List<DomainEntity> filteredVariations = Lists.newArrayList();
+    filteredVariations.add(entityInScope);
+
+    when(scopeMock.filter(variations)).thenReturn(filteredVariations);
+
+    // action
+    instance.addToIndex(TYPE, variations);
+
+    // verify
+    verify(indexMock).add(filteredVariations);
+  }
+
+  @Test(expected = IndexException.class)
+  public void addToIndexThrowsAnExceptionWhenIndexAddThrowsOne() throws IndexException {
+    // setup
+    List<DomainEntity> variations = Lists.newArrayList();
+
+    ExplicitlyAnnotatedModel entityInScope = mock(TYPE);
+    List<DomainEntity> filteredVariations = Lists.newArrayList();
+    filteredVariations.add(entityInScope);
+
+    when(scopeMock.filter(variations)).thenReturn(filteredVariations);
+    doThrow(IndexException.class).when(indexMock).add(filteredVariations);
+
+    try {
+      // action
+      instance.addToIndex(TYPE, variations);
+    } finally {
+      // verify
+      verify(indexMock).add(filteredVariations);
+    }
+  }
+
+  @Test
+  public void updateIndexDeterminesTheIndexAndCallsItsUpdateFunctionWithAFilteredVariations() throws IndexException {
+    // setup
+    List<DomainEntity> variations = Lists.newArrayList();
+
+    ExplicitlyAnnotatedModel entityInScope = mock(TYPE);
+    List<DomainEntity> filteredVariations = Lists.newArrayList();
+    filteredVariations.add(entityInScope);
+
+    when(scopeMock.filter(variations)).thenReturn(filteredVariations);
+
+    // action
+    instance.updateIndex(TYPE, variations);
+
+    // verify
+    verify(indexMock).update(filteredVariations);
+  }
+
+  @Test(expected = IndexException.class)
+  public void updateThrowsAnExceptionWhenIndexUpdateThrowsOne() throws IndexException {
+    // setup
+    List<DomainEntity> variations = Lists.newArrayList();
+
+    ExplicitlyAnnotatedModel entityInScope = mock(TYPE);
+    List<DomainEntity> filteredVariations = Lists.newArrayList();
+    filteredVariations.add(entityInScope);
+
+    when(scopeMock.filter(variations)).thenReturn(filteredVariations);
+    doThrow(IndexException.class).when(indexMock).update(filteredVariations);
+
+    try {
+      // action
+      instance.updateIndex(TYPE, variations);
+    } finally {
+      // verify
+      verify(indexMock).update(filteredVariations);
+    }
+  }
 }

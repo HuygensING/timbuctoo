@@ -116,4 +116,20 @@ public interface VRE extends Scope {
    */
   void clearIndexes() throws IndexException;
 
+  /**
+   * Add one or more variations of an entity to an index.
+   * @param type the type to determine the index for
+   * @param variations all the variations of some model
+   * @throws IndexException when the adding to the index fails
+   */
+  void addToIndex(Class<? extends DomainEntity> type, List<? extends DomainEntity> variations) throws IndexException;
+
+  /**
+   * Updates an entity that is already in the index.
+   * @param type the type to determine the index for
+   * @param variations all the variations of the entity.
+   * @throws IndexException when the adding to the index fails
+   */
+  void updateIndex(Class<? extends DomainEntity> type, List<? extends DomainEntity> variations) throws IndexException;
+
 }

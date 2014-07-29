@@ -55,8 +55,8 @@ public class IndexFacade implements IndexManager {
   public <T extends DomainEntity> void addEntity(Class<T> type, String id) throws IndexException {
     IndexChanger indexAdder = new IndexChanger() {
       @Override
-      public void executeIndexAction(Index index, List<? extends DomainEntity> variations) throws IndexException {
-        index.add(variations);
+      public void executeIndexAction(Class<? extends DomainEntity> type, VRE vre, List<? extends DomainEntity> variations) throws IndexException {
+        vre.addToIndex(type, variations);
       }
     };
     changeIndex(type, id, indexAdder);
@@ -67,8 +67,7 @@ public class IndexFacade implements IndexManager {
     List<? extends DomainEntity> variations = storageManager.getAllVariations(baseType, id);
     if (!variations.isEmpty()) {
       for (VRE vre : vreManager.getAllVREs()) {
-        Index index = vreManager.getIndexFor(vre, type);
-        indexChanger.executeIndexAction(index, vre.filter(variations));
+        indexChanger.executeIndexAction(baseType, vre, variations);
       }
     }
   }
@@ -77,8 +76,8 @@ public class IndexFacade implements IndexManager {
   public <T extends DomainEntity> void updateEntity(Class<T> type, String id) throws IndexException {
     IndexChanger indexUpdater = new IndexChanger() {
       @Override
-      public void executeIndexAction(Index index, List<? extends DomainEntity> variations) throws IndexException {
-        index.update(variations);
+      public void executeIndexAction(Class<? extends DomainEntity> type, VRE vre, List<? extends DomainEntity> variations) throws IndexException {
+        vre.updateIndex(type, variations);
       }
     };
     changeIndex(type, id, indexUpdater);
@@ -146,7 +145,7 @@ public class IndexFacade implements IndexManager {
   }
 
   private static interface IndexChanger {
-    void executeIndexAction(Index index, List<? extends DomainEntity> variations) throws IndexException;
+    void executeIndexAction(Class<? extends DomainEntity> type, VRE vre, List<? extends DomainEntity> variations) throws IndexException;
   }
 
 }
