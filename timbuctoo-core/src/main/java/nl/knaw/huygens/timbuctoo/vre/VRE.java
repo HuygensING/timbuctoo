@@ -132,4 +132,9 @@ public interface VRE extends Scope {
    */
   void updateIndex(Class<? extends DomainEntity> type, List<? extends DomainEntity> variations) throws IndexException;
 
+  /**
+   * Closes the VRE and all it's resources like {@link Index}es. 
+   */
+  void close();
+
 }

@@ -294,4 +294,38 @@ public class AbstractVRETest {
       verify(indexMock).update(filteredVariations);
     }
   }
+
+  @Test
+  public void closeTriesToCloseAllTheIndexes() throws IndexException {
+    // setup
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+
+    setupIndexIterator(indexMock1, indexMock2);
+
+    // action
+    instance.close();
+
+    // verify
+    verify(indexMock1).close();
+    verify(indexMock2).close();
+  }
+
+  @Test
+  public void closeTriesToCloseAllTheIndexesEvenIfOneThrowsAnException() throws IndexException {
+    // setup
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+
+    setupIndexIterator(indexMock1, indexMock2);
+    doThrow(IndexException.class).when(indexMock1).close();
+
+    // action
+    instance.close();
+
+    // verify
+    verify(indexMock1).close();
+    verify(indexMock2).close();
+  }
+
 }

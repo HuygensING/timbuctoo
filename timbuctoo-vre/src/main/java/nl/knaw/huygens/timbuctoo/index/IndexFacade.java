@@ -135,12 +135,8 @@ public class IndexFacade implements IndexManager {
 
   @Override
   public void close() {
-    for (Index index : vreManager.getAllIndexes()) {
-      try {
-        index.close();
-      } catch (IndexException ex) {
-        LOG.error("closing of index {} went wrong", index.getName(), ex);
-      }
+    for (VRE vre : vreManager.getAllVREs()) {
+      vre.close();
     }
   }
 

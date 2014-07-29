@@ -174,4 +174,15 @@ public abstract class AbstractVRE implements VRE {
   public void updateIndex(Class<? extends DomainEntity> type, List<? extends DomainEntity> variations) throws IndexException {
     indexCollection.getIndexByType(type).update(this.filter(variations));
   }
+
+  @Override
+  public void close() {
+    for (Index index : indexCollection) {
+      try {
+        index.close();
+      } catch (IndexException e) {
+        LOG.error("closing of index {} went wrong", index.getName(), e);
+      }
+    }
+  }
 }

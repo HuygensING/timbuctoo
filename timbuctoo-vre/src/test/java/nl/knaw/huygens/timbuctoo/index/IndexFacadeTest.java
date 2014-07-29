@@ -392,36 +392,17 @@ public class IndexFacadeTest {
   @Test
   public void testClose() throws IndexException {
     // setup
-    Index indexMock1 = mock(Index.class);
-    Index indexMock2 = mock(Index.class);
+    VRE vreMock1 = mock(VRE.class);
+    VRE vreMock2 = mock(VRE.class);
 
-    // when
-    when(vreManagerMock.getAllIndexes()).thenReturn(Lists.newArrayList(indexMock1, indexMock2));
-
-    // action
-    instance.close();
-
-    // verify
-    verify(indexMock1).close();
-    verify(indexMock2).close();
-  }
-
-  @Test
-  public void testCloseFirstThrowsIndexException() throws IndexException {
-    // setup
-    Index indexMock1 = mock(Index.class);
-    Index indexMock2 = mock(Index.class);
-
-    // when
-    when(vreManagerMock.getAllIndexes()).thenReturn(Lists.newArrayList(indexMock1, indexMock2));
-    doThrow(IndexException.class).when(indexMock1).close();
+    when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
 
     // action
     instance.close();
 
     // verify
-    verify(indexMock1).close();
-    verify(indexMock2).close();
+    verify(vreMock1).close();
+    verify(vreMock2).close();
   }
 
   private static class OtherIndexBaseType extends DomainEntity {
