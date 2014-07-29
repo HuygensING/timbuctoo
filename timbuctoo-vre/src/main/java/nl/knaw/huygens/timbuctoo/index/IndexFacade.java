@@ -31,16 +31,11 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
 public class IndexFacade implements IndexManager {
-
-  private static final Logger LOG = LoggerFactory.getLogger(IndexFacade.class);
 
   private final VREManager vreManager;
   private final Repository storageManager;
@@ -109,14 +104,7 @@ public class IndexFacade implements IndexManager {
     IndexStatus indexStatus = createIndexStatus();
 
     for (VRE vre : vreManager.getAllVREs()) {
-      for (Class<? extends DomainEntity> type : vre.getBaseEntityTypes()) {
-        Index index = vreManager.getIndexFor(vre, type);
-        try {
-          indexStatus.addCount(vre, type, index.getCount());
-        } catch (IndexException e) {
-          LOG.error("Failed to obtain status: {}", e.getMessage());
-        }
-      }
+      vre.addToIndexStatus(indexStatus);
     }
 
     return indexStatus;

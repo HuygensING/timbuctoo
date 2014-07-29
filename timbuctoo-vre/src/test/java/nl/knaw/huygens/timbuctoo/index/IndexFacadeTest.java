@@ -26,7 +26,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -34,7 +33,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
@@ -47,12 +45,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 public class IndexFacadeTest {
 
   private static final Class<ExplicitlyAnnotatedModel> BASE_TYPE = ExplicitlyAnnotatedModel.class;
-  private static final Class<OtherIndexBaseType> OTHER_BASE_TYPE = OtherIndexBaseType.class;
   private static final String DEFAULT_ID = "id01234";
   private IndexFacade instance;
   private Repository repositoryMock;
@@ -275,77 +271,20 @@ public class IndexFacadeTest {
 
   @Test
   public void testGetStatus() throws IndexException {
-    // setup
-    Set<Class<? extends DomainEntity>> baseTypes = Sets.newHashSet();
-    baseTypes.add(BASE_TYPE);
-    baseTypes.add(OTHER_BASE_TYPE);
-
     VRE vreMock1 = mock(VRE.class);
-    Index vre1BaseTypeIndex = mock(Index.class);
-    Index vre1OtherBaseTypeIndex = mock(Index.class);
-
     VRE vreMock2 = mock(VRE.class);
-    Index vre2BaseTypeIndex = mock(Index.class);
-    Index vre2OtherBaseTypeIndex = mock(Index.class);
 
     // when
     when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
-
-    doReturn(baseTypes).when(vreMock1).getBaseEntityTypes();
-    when(vreManagerMock.getIndexFor(vreMock1, BASE_TYPE)).thenReturn(vre1BaseTypeIndex);
-    when(vreManagerMock.getIndexFor(vreMock1, OTHER_BASE_TYPE)).thenReturn(vre1OtherBaseTypeIndex);
-    long itemCount1 = 42;
-    when(vre1BaseTypeIndex.getCount()).thenReturn(itemCount1);
-    long itemCount2 = 43;
-    when(vre1OtherBaseTypeIndex.getCount()).thenReturn(itemCount2);
-
-    doReturn(baseTypes).when(vreMock2).getBaseEntityTypes();
-    when(vreManagerMock.getIndexFor(vreMock2, BASE_TYPE)).thenReturn(vre2BaseTypeIndex);
-    when(vreManagerMock.getIndexFor(vreMock2, OTHER_BASE_TYPE)).thenReturn(vre2OtherBaseTypeIndex);
-    long itemCount3 = 44;
-    when(vre2BaseTypeIndex.getCount()).thenReturn(itemCount3);
-    long itemCount4 = 45;
-    when(vre2OtherBaseTypeIndex.getCount()).thenReturn(itemCount4);
 
     // action
     IndexStatus actualIndexStatus = instance.getStatus();
 
     // verify
-    verify(indexStatusMock).addCount(vreMock1, BASE_TYPE, itemCount1);
-    verify(indexStatusMock).addCount(vreMock1, OTHER_BASE_TYPE, itemCount2);
-    verify(indexStatusMock).addCount(vreMock2, BASE_TYPE, itemCount3);
-    verify(indexStatusMock).addCount(vreMock2, OTHER_BASE_TYPE, itemCount4);
+    verify(vreMock1).addToIndexStatus(indexStatusMock);
+    verify(vreMock2).addToIndexStatus(indexStatusMock);
 
     assertNotNull(actualIndexStatus);
-  }
-
-  @Test
-  public void testGetStatusWhenIndexThrowsIndexException() throws IndexException {
-    // setup
-    Set<Class<? extends DomainEntity>> baseTypes = Sets.newHashSet();
-    baseTypes.add(BASE_TYPE);
-    baseTypes.add(OTHER_BASE_TYPE);
-
-    VRE vreMock = mock(VRE.class);
-    Index indexMock = mock(Index.class);
-
-    // when
-    when(vreManagerMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
-    when(vreManagerMock.getIndexFor(vreMock, BASE_TYPE)).thenReturn(indexMock);
-    when(vreManagerMock.getIndexFor(vreMock, OTHER_BASE_TYPE)).thenReturn(indexMock);
-
-    when(vreMock.getBaseEntityTypes()).thenReturn(baseTypes);
-    doThrow(IndexException.class).when(indexMock).getCount();
-
-    // action
-    IndexStatus actualStatus = instance.getStatus();
-
-    // verify
-    verify(indexMock, times(2)).getCount();
-
-    verifyZeroInteractions(indexStatusMock);
-
-    assertNotNull(actualStatus);
   }
 
   @Test
@@ -402,12 +341,4 @@ public class IndexFacadeTest {
     verify(vreMock2).close();
   }
 
-  private static class OtherIndexBaseType extends DomainEntity {
-
-    @Override
-    public String getDisplayName() {
-      // TODO Auto-generated method stub
-      return null;
-    }
-  }
 }

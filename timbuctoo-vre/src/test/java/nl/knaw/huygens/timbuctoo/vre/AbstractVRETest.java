@@ -14,12 +14,14 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexCollection;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
+import nl.knaw.huygens.timbuctoo.index.IndexStatus;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
@@ -28,9 +30,13 @@ import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultConverter;
 import org.junit.Before;
 import org.junit.Test;
 
+import test.timbuctoo.index.model.Type1;
+
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class AbstractVRETest {
+  private static final Class<Type1> OTHER_TYPE = Type1.class;
   private static final String ID = "ID";
   private static final Class<ExplicitlyAnnotatedModel> TYPE = ExplicitlyAnnotatedModel.class;
   private static final String TYPE_STRING = "explicitlyannotatedmodel";
@@ -366,4 +372,61 @@ public class AbstractVRETest {
     }
   }
 
+  @SuppressWarnings("unchecked")
+  @Test
+  public void addToIndexStatusAddsTheStatusOfAllTheIndexesToTheIndexStatus() throws IndexException {
+    // setup
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+
+    setupScopeGetBaseEntityTypesWith(TYPE, OTHER_TYPE);
+
+    when(indexCollectionMock.getIndexByType(TYPE)).thenReturn(indexMock1);
+    when(indexCollectionMock.getIndexByType(OTHER_TYPE)).thenReturn(indexMock2);
+
+    long indexMock1Count = 100l;
+    when(indexMock1.getCount()).thenReturn(indexMock1Count);
+    long indexMock2Count = 133l;
+    when(indexMock2.getCount()).thenReturn(indexMock2Count);
+
+    IndexStatus indexStatus = mock(IndexStatus.class);
+
+    // action
+    instance.addToIndexStatus(indexStatus);
+
+    // verify
+    verify(indexStatus).addCount(instance, TYPE, indexMock1Count);
+    verify(indexStatus).addCount(instance, OTHER_TYPE, indexMock2Count);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void addToIndexStatusAddsAllTheIndexStatussesThatDoNotThrowAnException() throws IndexException {
+    // setup
+    Index indexMock1 = mock(Index.class);
+    Index indexMock2 = mock(Index.class);
+
+    setupScopeGetBaseEntityTypesWith(TYPE, OTHER_TYPE);
+
+    when(indexCollectionMock.getIndexByType(TYPE)).thenReturn(indexMock1);
+    when(indexCollectionMock.getIndexByType(OTHER_TYPE)).thenReturn(indexMock2);
+
+    doThrow(IndexException.class).when(indexMock1).getCount();
+    long indexMock2Count = 133l;
+    when(indexMock2.getCount()).thenReturn(indexMock2Count);
+
+    IndexStatus indexStatus = mock(IndexStatus.class);
+
+    // action
+    instance.addToIndexStatus(indexStatus);
+
+    // verify
+    verify(indexStatus).addCount(instance, OTHER_TYPE, indexMock2Count);
+    verifyNoMoreInteractions(indexStatus);
+  }
+
+  protected void setupScopeGetBaseEntityTypesWith(Class<? extends DomainEntity>... types) {
+    Set<Class<? extends DomainEntity>> typeSet = Sets.newHashSet(types);
+    when(scopeMock.getBaseEntityTypes()).thenReturn(typeSet);
+  }
 }

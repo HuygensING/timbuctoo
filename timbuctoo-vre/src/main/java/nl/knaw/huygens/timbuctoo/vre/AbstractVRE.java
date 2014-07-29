@@ -35,6 +35,7 @@ import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexCollection;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
+import nl.knaw.huygens.timbuctoo.index.IndexStatus;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultConverter;
@@ -190,6 +191,19 @@ public abstract class AbstractVRE implements VRE {
   public void commitAll() throws IndexException {
     for (Index index : indexCollection) {
       index.commit();
+    }
+  }
+
+  @Override
+  public void addToIndexStatus(IndexStatus indexStatus) {
+
+    for (Class<? extends DomainEntity> type : getBaseEntityTypes()) {
+      Index index = indexCollection.getIndexByType(type);
+      try {
+        indexStatus.addCount(this, type, index.getCount());
+      } catch (IndexException e) {
+        LOG.error("Failed to obtain status: {}", e.getMessage());
+      }
     }
 
   }

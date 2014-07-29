@@ -7,6 +7,7 @@ import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
+import nl.knaw.huygens.timbuctoo.index.IndexStatus;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
@@ -142,5 +143,11 @@ public interface VRE extends Scope {
    * @throws IndexException thrown when a commit of one index failed.
    */
   void commitAll() throws IndexException;
+
+  /**
+   * Adds the status of all the indexes to the index status.
+   * @param indexStatus
+   */
+  void addToIndexStatus(IndexStatus indexStatus);
 
 }
