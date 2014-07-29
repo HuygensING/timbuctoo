@@ -48,7 +48,6 @@ import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConve
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -70,7 +69,6 @@ public class SolrRelationSearcherTest {
   private RelationSearchParametersConverter relationSearcherParametersConverterMock;
   private FacetedSearchResultConverter facetedSearchResultConverterMock;
   private Index indexMock;
-  private VREManager vreManagerMock;
   private VRE vreMock;
   private TypeRegistry typeRegistryMock;
   private Repository repositoryMock;
@@ -92,7 +90,6 @@ public class SolrRelationSearcherTest {
 
     relationSearcherParametersConverterMock = mock(RelationSearchParametersConverter.class);
     indexMock = mock(Index.class);
-    vreManagerMock = mock(VREManager.class);
     vreMock = mock(VRE.class);
     typeRegistryMock = mock(TypeRegistry.class);
     repositoryMock = mock(Repository.class);
@@ -100,7 +97,7 @@ public class SolrRelationSearcherTest {
     facetedSearchResultConverterMock = mock(FacetedSearchResultConverter.class);
 
     doReturn(type).when(typeRegistryMock).getDomainEntityType(typeString);
-    when(vreManagerMock.getIndexFor(vreMock, type)).thenReturn(indexMock);
+    when(vreMock.getIndexForType(type)).thenReturn(indexMock);
     when(indexMock.search(searchParametersV1)).thenReturn(facetedSearchResult);
     facetedSearchResult.setRawResults(rawSearchResults);
     when(collectionConverterMock.toFilterableSet(rawSearchResults)).thenReturn(filterableResults);
@@ -108,7 +105,7 @@ public class SolrRelationSearcherTest {
     when(repositoryMock.getEntity(SearchResult.class, targetSearchId)).thenReturn(createSearchResult(targetIds));
     when(facetedSearchResultConverterMock.convert(typeString, facetedSearchResult)).thenReturn(searchResult);
 
-    instance = new SolrRelationSearcher(repositoryMock, vreManagerMock, relationSearcherParametersConverterMock, typeRegistryMock, collectionConverterMock, facetedSearchResultConverterMock);
+    instance = new SolrRelationSearcher(repositoryMock, relationSearcherParametersConverterMock, typeRegistryMock, collectionConverterMock, facetedSearchResultConverterMock);
   }
 
   private SearchResult createSearchResult(List<String> ids) {

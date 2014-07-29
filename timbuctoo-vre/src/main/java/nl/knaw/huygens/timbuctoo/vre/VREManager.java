@@ -27,30 +27,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
-import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
-import nl.knaw.huygens.timbuctoo.index.Index;
-import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Singleton;
 
 @Singleton
 public class VREManager {
 
-  private static final Logger LOG = LoggerFactory.getLogger(VREManager.class);
-
   private final Map<String, VRE> vres;
 
-  public static final NoOpIndex NO_OP_INDEX = new NoOpIndex();
   public static final List<VRE> VRE_LIST = ImmutableList.<VRE> of( //
       new AdminVRE(), //
       new BaseVRE(), //
@@ -84,62 +72,7 @@ public class VREManager {
     return vres.values();
   }
 
-  public Index getIndexFor(VRE vre, Class<? extends DomainEntity> type) {
-
-    return vre.getIndexForType(type);
-  }
-
-  public Collection<Index> getAllIndexes() {
-    List<Index> indexes = Lists.newArrayList();
-
-    for (VRE vre : vres.values()) {
-      indexes.addAll(vre.getIndexes());
-    }
-
-    return indexes;
-  }
-
   // ---------------------------------------------------------------------------
-
-  static class NoOpIndex implements Index {
-
-    @Override
-    public void add(List<? extends DomainEntity> variations) {}
-
-    @Override
-    public void update(List<? extends DomainEntity> variations) throws IndexException {}
-
-    @Override
-    public void deleteById(String id) {}
-
-    @Override
-    public void deleteById(List<String> ids) {}
-
-    @Override
-    public void clear() {}
-
-    @Override
-    public long getCount() {
-      return 0;
-    }
-
-    @Override
-    public void commit() {}
-
-    @Override
-    public void close() {}
-
-    @Override
-    public String getName() {
-      return null;
-    }
-
-    @Override
-    public <T extends FacetedSearchParameters<T>> FacetedSearchResult search(FacetedSearchParameters<T> searchParamaters) {
-      LOG.warn("Searching on a non existing index");
-      return new FacetedSearchResult();
-    }
-  }
 
   public static VREManager createInstance(List<VRE> vres, IndexNameCreator indexNameCreator, IndexFactory indexFactory) {
     Map<String, VRE> vreMap = Maps.newHashMap();

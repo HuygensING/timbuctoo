@@ -25,19 +25,16 @@ package nl.knaw.huygens.timbuctoo.vre;
 import static nl.knaw.huygens.timbuctoo.vre.VREManagerMatcher.matchesVREManager;
 import static nl.knaw.huygens.timbuctoo.vre.VREMockBuilder.newVRE;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Collection;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
-import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -68,26 +65,6 @@ public class VREManagerTest {
   }
 
   @Test
-  public void testGetIndexFor() {
-    // mock
-    VRE vreMock = mock(VRE.class);
-
-    Class<ExplicitlyAnnotatedModel> type = ExplicitlyAnnotatedModel.class;
-
-    Index indexMock = mock(Index.class);
-
-    // when
-    when(vreMock.getIndexForType(type)).thenReturn(indexMock);
-
-    // action
-    Index actualIndex = instance.getIndexFor(vreMock, type);
-
-    // verify
-    verify(vreMock).getIndexForType(type);
-    assertThat(actualIndex, equalTo(indexMock));
-  }
-
-  @Test
   public void getVREByIdShouldReturnTheVREWhenFound() {
     // setup
     VRE vreMock = mock(VRE.class);
@@ -112,28 +89,6 @@ public class VREManagerTest {
 
     //verify
     assertThat(actualVRE, equalTo(null));
-  }
-
-  @Test
-  public void getAllIndexesShouldReturnTheIndexesOfAllTheVREs() {
-    // setup
-    Index indexMock1 = mock(Index.class);
-    Index indexMock2 = mock(Index.class);
-    Index indexMock3 = mock(Index.class);
-    Index indexMock4 = mock(Index.class);
-
-    VRE vreMock1 = newVRE().withIndexes(indexMock1, indexMock2).create();
-    VRE vreMock2 = newVRE().withIndexes(indexMock3, indexMock4).create();
-
-    when(vreMapMock.values()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
-
-    // action
-    Collection<Index> actualIndexes = instance.getAllIndexes();
-
-    // verify
-    verify(vreMock1).getIndexes();
-    verify(vreMock2).getIndexes();
-    assertThat(actualIndexes, contains(new Index[] { indexMock1, indexMock2, indexMock3, indexMock4 }));
   }
 
   @Test

@@ -41,7 +41,6 @@ import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConve
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.apache.commons.lang3.time.StopWatch;
 
@@ -81,17 +80,15 @@ public class SolrRelationSearcher extends RelationSearcher {
     }
   }
 
-  private final VREManager vreManager;
   private final RelationSearchParametersConverter relationSearchParametersConverter;
   private final TypeRegistry typeRegistry;
   private final CollectionConverter collectionConverter;
   private final FacetedSearchResultConverter facetedSearchResultConverter;
 
   @Inject
-  public SolrRelationSearcher(Repository repository, VREManager vreManager, RelationSearchParametersConverter relationSearchParametersConverter, TypeRegistry typeRegistry,
-      CollectionConverter collectionConverter, FacetedSearchResultConverter facetedSearchResultConverter) {
+  public SolrRelationSearcher(Repository repository, RelationSearchParametersConverter relationSearchParametersConverter, TypeRegistry typeRegistry, CollectionConverter collectionConverter,
+      FacetedSearchResultConverter facetedSearchResultConverter) {
     super(repository);
-    this.vreManager = vreManager;
     this.relationSearchParametersConverter = relationSearchParametersConverter;
     this.typeRegistry = typeRegistry;
     this.collectionConverter = collectionConverter;
@@ -131,7 +128,7 @@ public class SolrRelationSearcher extends RelationSearcher {
     StopWatch getIndexStopWatch = new StopWatch();
     getIndexStopWatch.start();
 
-    Index index = vreManager.getIndexFor(vre, type);
+    Index index = vre.getIndexForType(type);
 
     getIndexStopWatch.stop();
     logStopWatchTimeInSeconds(getIndexStopWatch, "get index");
