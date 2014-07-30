@@ -25,7 +25,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexStatus;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.converters.FacetedSearchResultConverter;
+import nl.knaw.huygens.timbuctoo.search.converters.RegularFacetedSearchResultConverter;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +44,7 @@ public class AbstractVRETest {
   private IndexCollection indexCollectionMock;
   private DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
   private Index indexMock = mock(Index.class);
-  private FacetedSearchResultConverter facetedSearchResultConverterMock = mock(FacetedSearchResultConverter.class);
+  private RegularFacetedSearchResultConverter facetedSearchResultConverterMock = mock(RegularFacetedSearchResultConverter.class);
   private Scope scopeMock;
 
   @Before

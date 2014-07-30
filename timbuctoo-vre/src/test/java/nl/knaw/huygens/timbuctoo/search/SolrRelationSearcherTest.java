@@ -23,7 +23,6 @@ package nl.knaw.huygens.timbuctoo.search;
  */
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -45,7 +44,7 @@ import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.converters.FacetedSearchResultConverter;
+import nl.knaw.huygens.timbuctoo.search.converters.RelationFacetedSearchResultConverter;
 import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConverter;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
@@ -69,7 +68,7 @@ public class SolrRelationSearcherTest {
   private SearchParametersV1 searchParametersV1 = new SearchParametersV1();
   private Class<? extends DomainEntity> type = Relation.class;
   private RelationSearchParametersConverter relationSearcherParametersConverterMock;
-  private FacetedSearchResultConverter facetedSearchResultConverterMock;
+  private RelationFacetedSearchResultConverter facetedSearchResultConverterMock;
   private Index indexMock;
   private VRE vreMock;
   private TypeRegistry typeRegistryMock;
@@ -98,7 +97,7 @@ public class SolrRelationSearcherTest {
     typeRegistryMock = mock(TypeRegistry.class);
     repositoryMock = mock(Repository.class);
     collectionConverterMock = mock(CollectionConverter.class);
-    facetedSearchResultConverterMock = mock(FacetedSearchResultConverter.class);
+    facetedSearchResultConverterMock = mock(RelationFacetedSearchResultConverter.class);
     facetedSearchResultFilterMock = mock(RelationFacetedSearchResultFilter.class);
 
     doReturn(type).when(typeRegistryMock).getDomainEntityType(typeString);
@@ -110,11 +109,17 @@ public class SolrRelationSearcherTest {
     when(facetedSearchResultFilterMock.process(facetedSearchResult)).thenReturn(filteredFacetedSearchResult);
     when(facetedSearchResultConverterMock.convert(typeString, filteredFacetedSearchResult)).thenReturn(searchResult);
 
-    instance = new SolrRelationSearcher(repositoryMock, relationSearcherParametersConverterMock, typeRegistryMock, collectionConverterMock, facetedSearchResultConverterMock) {
+    instance = new SolrRelationSearcher(repositoryMock, relationSearcherParametersConverterMock, typeRegistryMock, collectionConverterMock) {
       @Override
-      protected RelationFacetedSearchResultFilter creaRelationFacetedSearchResultFilter(java.util.List<String> sourceIds, java.util.List<String> targetIds) {
+      protected RelationFacetedSearchResultFilter createRelationFacetedSearchResultFilter(java.util.List<String> sourceIds, java.util.List<String> targetIds) {
         return facetedSearchResultFilterMock;
       }
+
+      @Override
+      protected RelationFacetedSearchResultConverter createFacetedSearchResultConverter(List<String> sourceSearchIds, List<String> targetSearchIds) {
+        return facetedSearchResultConverterMock;
+      }
+
     };
   }
 
@@ -140,7 +145,7 @@ public class SolrRelationSearcherTest {
 
     verifyFilteringAndConversion();
 
-    verifySearchResult(actualResult);
+    assertThat(actualResult, equalTo(searchResult));
 
   }
 
@@ -148,12 +153,6 @@ public class SolrRelationSearcherTest {
     InOrder inOrder = Mockito.inOrder(facetedSearchResultFilterMock, facetedSearchResultConverterMock);
     inOrder.verify(facetedSearchResultFilterMock).process(facetedSearchResult);
     inOrder.verify(facetedSearchResultConverterMock).convert(typeString, filteredFacetedSearchResult);
-  }
-
-  protected void verifySearchResult(SearchResult actualResult) {
-    assertThat(actualResult, equalTo(searchResult));
-    assertThat(actualResult.getSourceIds(), containsInAnyOrder(sourceIds.toArray(new String[0])));
-    assertThat(actualResult.getTargetIds(), containsInAnyOrder(targetIds.toArray(new String[0])));
   }
 
   @Test
@@ -177,7 +176,7 @@ public class SolrRelationSearcherTest {
 
     verifyFilteringAndConversion();
 
-    verifySearchResult(actualResult);
+    assertThat(actualResult, equalTo(searchResult));
 
     assertThat(actualResult, equalTo(searchResult));
   }

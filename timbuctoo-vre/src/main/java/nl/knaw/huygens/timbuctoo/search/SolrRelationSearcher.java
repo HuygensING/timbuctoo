@@ -32,7 +32,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.converters.FacetedSearchResultConverter;
+import nl.knaw.huygens.timbuctoo.search.converters.RelationFacetedSearchResultConverter;
 import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConverter;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
@@ -46,17 +46,14 @@ public class SolrRelationSearcher extends RelationSearcher {
 
   private final RelationSearchParametersConverter relationSearchParametersConverter;
   private final TypeRegistry typeRegistry;
-  private final FacetedSearchResultConverter facetedSearchResultConverter;
   private final CollectionConverter collectionConverter;
 
   @Inject
-  public SolrRelationSearcher(Repository repository, RelationSearchParametersConverter relationSearchParametersConverter, TypeRegistry typeRegistry, CollectionConverter collectionConverter,
-      FacetedSearchResultConverter facetedSearchResultConverter) {
+  public SolrRelationSearcher(Repository repository, RelationSearchParametersConverter relationSearchParametersConverter, TypeRegistry typeRegistry, CollectionConverter collectionConverter) {
     super(repository);
     this.relationSearchParametersConverter = relationSearchParametersConverter;
     this.typeRegistry = typeRegistry;
     this.collectionConverter = collectionConverter;
-    this.facetedSearchResultConverter = facetedSearchResultConverter;
   }
 
   @Override
@@ -116,10 +113,7 @@ public class SolrRelationSearcher extends RelationSearcher {
     StopWatch convertSearchResultStopWatch = new StopWatch();
     convertSearchResultStopWatch.start();
 
-    SearchResult searchResult = facetedSearchResultConverter.convert(relationSearchParameters.getTypeString(), filteredSearchResult);
-    searchResult.setSourceIds(sourceSearchIds);
-    searchResult.setTargetIds(targetSearchIds);
-    searchResult.setRelationSearch(true);
+    SearchResult searchResult = convert(relationSearchParameters, sourceSearchIds, targetSearchIds, filteredSearchResult);
 
     convertSearchResultStopWatch.stop();
     logStopWatchTimeInSeconds(convertSearchResultStopWatch, "convert search result");
@@ -127,11 +121,20 @@ public class SolrRelationSearcher extends RelationSearcher {
     return searchResult;
   }
 
-  protected FacetedSearchResult filterSearchResult(List<String> sourceSearchIds, List<String> targetSearchIds, FacetedSearchResult facetedSearchResult) {
-    return creaRelationFacetedSearchResultFilter(sourceSearchIds, targetSearchIds).process(facetedSearchResult);
+  protected SearchResult convert(RelationSearchParameters relationSearchParameters, List<String> sourceSearchIds, List<String> targetSearchIds, FacetedSearchResult filteredSearchResult) {
+    SearchResult searchResult = createFacetedSearchResultConverter(sourceSearchIds, targetSearchIds).convert(relationSearchParameters.getTypeString(), filteredSearchResult);
+    return searchResult;
   }
 
-  protected RelationFacetedSearchResultFilter creaRelationFacetedSearchResultFilter(List<String> sourceIds, List<String> targetIds) {
+  protected RelationFacetedSearchResultConverter createFacetedSearchResultConverter(List<String> sourceSearchIds, List<String> targetSearchIds) {
+    return new RelationFacetedSearchResultConverter(sourceSearchIds, targetSearchIds);
+  }
+
+  protected FacetedSearchResult filterSearchResult(List<String> sourceSearchIds, List<String> targetSearchIds, FacetedSearchResult facetedSearchResult) {
+    return createRelationFacetedSearchResultFilter(sourceSearchIds, targetSearchIds).process(facetedSearchResult);
+  }
+
+  protected RelationFacetedSearchResultFilter createRelationFacetedSearchResultFilter(List<String> sourceIds, List<String> targetIds) {
     return new RelationFacetedSearchResultFilter(collectionConverter, sourceIds, targetIds);
   }
 

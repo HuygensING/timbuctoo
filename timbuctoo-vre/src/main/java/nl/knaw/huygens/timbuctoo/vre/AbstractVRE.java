@@ -39,7 +39,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexStatus;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
-import nl.knaw.huygens.timbuctoo.search.converters.FacetedSearchResultConverter;
+import nl.knaw.huygens.timbuctoo.search.converters.RegularFacetedSearchResultConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,13 +54,13 @@ public abstract class AbstractVRE implements VRE {
 
   private IndexCollection indexCollection;
 
-  private final FacetedSearchResultConverter facetedSearchResultConverter;
+  private final RegularFacetedSearchResultConverter facetedSearchResultConverter;
 
   public AbstractVRE() {
-    this(new IndexCollection(), new FacetedSearchResultConverter());
+    this(new IndexCollection(), new RegularFacetedSearchResultConverter());
   }
 
-  public AbstractVRE(IndexCollection indexCollection, FacetedSearchResultConverter facetedSearchResultConverter) {
+  public AbstractVRE(IndexCollection indexCollection, RegularFacetedSearchResultConverter facetedSearchResultConverter) {
     this.indexCollection = indexCollection;
     this.facetedSearchResultConverter = facetedSearchResultConverter;
     try {
