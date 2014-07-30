@@ -92,14 +92,6 @@ public interface VRE extends Scope {
       FacetedSearchResultConverter facetedSearchResultConverter, FacetedSearchResultProcessor... facetedSearchResultProcessors) throws SearchException, SearchValidationException;
 
   /**
-   * Returns the index if the index for the type can be found, 
-   * else it returns an index that does nothing and returns an empty search result.
-   * @param type the type to find the index for
-   * @return the index
-   */
-  Index getIndexForType(Class<? extends DomainEntity> type);
-
-  /**
    * Creates the indexes for types of the VRE.
    * @param indexFactory the helper that creates the actual indexes.
    */

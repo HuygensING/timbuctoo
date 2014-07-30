@@ -146,8 +146,13 @@ public abstract class AbstractVRE implements VRE {
     searchParameters.setFullTextSearchFields(Lists.newArrayList(ftsff.findFields(type)));
   }
 
-  @Override
-  public Index getIndexForType(Class<? extends DomainEntity> type) {
+  /**
+   * Returns the index if the index for the type can be found, 
+   * else it returns an index that does nothing and returns an empty search result.
+   * @param type the type to find the index for
+   * @return the index
+   */
+  private Index getIndexForType(Class<? extends DomainEntity> type) {
 
     return indexCollection.getIndexByType(type);
   }
