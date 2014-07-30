@@ -48,7 +48,7 @@ public class SortableFieldFinderTest {
 
   @Test
   public void testFindSortableFieldsWithName() {
-    Set<String> expected = Sets.newHashSet("blah", "test");
+    Set<String> expected = Sets.newHashSet("dynamic_sort_blah", "dynamic_sort_test");
     testFindSortableFields(expected, ClassWithNamedSortableFields.class);
   }
 

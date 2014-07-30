@@ -59,7 +59,7 @@ public class IndexedFieldFinderTest {
 
   @Test
   public void testFindFieldsSortableFields() {
-    testFindFields(ClassWithNamedSortableFields.class, "desc", "id", "test", "blah");
+    testFindFields(ClassWithNamedSortableFields.class, "desc", "id", "dynamic_sort_test", "dynamic_sort_blah");
   }
 
   @Test

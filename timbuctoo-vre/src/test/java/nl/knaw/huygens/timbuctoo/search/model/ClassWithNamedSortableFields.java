@@ -37,12 +37,12 @@ public class ClassWithNamedSortableFields extends DomainEntity {
     return null;
   }
 
-  @IndexAnnotation(fieldName = "test", isSortable = true)
+  @IndexAnnotation(fieldName = "dynamic_sort_test", isSortable = true)
   public String getTest() {
     return null;
   }
 
-  @IndexAnnotation(fieldName = "blah", isSortable = true)
+  @IndexAnnotation(fieldName = "dynamic_sort_blah", isSortable = true)
   public String getTest1() {
     return null;
   }
