@@ -27,6 +27,5 @@ public class RelationFacetedSearchResultConverterTest extends FacetedSearchResul
 
     // verify
     assertThat(actualSearchResult, likeRelationSearchResult(TYPE_STRING, IDS, SEARCH_TERM, SORT, FACETS, sourceIds, targetIds));
-    //verifySearchResult(expectedSearchResult, actualSearchResult);
   }
 }

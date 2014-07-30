@@ -38,7 +38,9 @@ import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexStatus;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
+import nl.knaw.huygens.timbuctoo.search.converters.FacetedSearchResultConverter;
 import nl.knaw.huygens.timbuctoo.search.converters.RegularFacetedSearchResultConverter;
 
 import org.slf4j.Logger;
@@ -119,11 +121,22 @@ public abstract class AbstractVRE implements VRE {
 
   @Override
   public <T extends FacetedSearchParameters<T>> SearchResult search(Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException, SearchValidationException {
+
+    return this.search(type, searchParameters, facetedSearchResultConverter);
+  }
+
+  @Override
+  public <T extends FacetedSearchParameters<T>> SearchResult search(Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters,
+      FacetedSearchResultConverter facetedSearchResultConverter, FacetedSearchResultProcessor... resultProcessors) throws SearchException, SearchValidationException {
     prepareSearchParameters(type, searchParameters);
 
     Index index = this.getIndexForType(type);
 
     FacetedSearchResult facetedSearchResult = index.search(searchParameters);
+
+    for (FacetedSearchResultProcessor processor : resultProcessors) {
+      facetedSearchResult = processor.process(facetedSearchResult);
+    }
 
     return facetedSearchResultConverter.convert(TypeNames.getInternalName(type), facetedSearchResult);
   }

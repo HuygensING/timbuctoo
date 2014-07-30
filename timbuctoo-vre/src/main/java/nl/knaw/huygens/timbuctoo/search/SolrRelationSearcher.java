@@ -24,12 +24,10 @@ package nl.knaw.huygens.timbuctoo.search;
 
 import java.util.List;
 
-import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.converters.RelationFacetedSearchResultConverter;
@@ -86,18 +84,11 @@ public class SolrRelationSearcher extends RelationSearcher {
     getEntityStopWatch.stop();
     logStopWatchTimeInSeconds(getEntityStopWatch, "get entity");
 
-    StopWatch getIndexStopWatch = new StopWatch();
-    getIndexStopWatch.start();
-
-    Index index = vre.getIndexForType(type);
-
-    getIndexStopWatch.stop();
-    logStopWatchTimeInSeconds(getIndexStopWatch, "get index");
-
     StopWatch searchStopWatch = new StopWatch();
     searchStopWatch.start();
 
-    FacetedSearchResult facetedSearchResult = index.search(searchParametersV1);
+    SearchResult searchResult = vre.search(type, searchParametersV1, createFacetedSearchResultConverter(sourceSearchIds, targetSearchIds),
+        createRelationFacetedSearchResultFilter(sourceSearchIds, targetSearchIds));
 
     searchStopWatch.stop();
     logStopWatchTimeInSeconds(searchStopWatch, "search");
@@ -105,15 +96,11 @@ public class SolrRelationSearcher extends RelationSearcher {
     StopWatch filterStopWatch = new StopWatch();
     filterStopWatch.start();
 
-    FacetedSearchResult filteredSearchResult = filterSearchResult(sourceSearchIds, targetSearchIds, facetedSearchResult);
-
     filterStopWatch.stop();
     logStopWatchTimeInSeconds(filterStopWatch, "filter");
 
     StopWatch convertSearchResultStopWatch = new StopWatch();
     convertSearchResultStopWatch.start();
-
-    SearchResult searchResult = convert(relationSearchParameters, sourceSearchIds, targetSearchIds, filteredSearchResult);
 
     convertSearchResultStopWatch.stop();
     logStopWatchTimeInSeconds(convertSearchResultStopWatch, "convert search result");
@@ -121,17 +108,8 @@ public class SolrRelationSearcher extends RelationSearcher {
     return searchResult;
   }
 
-  protected SearchResult convert(RelationSearchParameters relationSearchParameters, List<String> sourceSearchIds, List<String> targetSearchIds, FacetedSearchResult filteredSearchResult) {
-    SearchResult searchResult = createFacetedSearchResultConverter(sourceSearchIds, targetSearchIds).convert(relationSearchParameters.getTypeString(), filteredSearchResult);
-    return searchResult;
-  }
-
   protected RelationFacetedSearchResultConverter createFacetedSearchResultConverter(List<String> sourceSearchIds, List<String> targetSearchIds) {
     return new RelationFacetedSearchResultConverter(sourceSearchIds, targetSearchIds);
-  }
-
-  protected FacetedSearchResult filterSearchResult(List<String> sourceSearchIds, List<String> targetSearchIds, FacetedSearchResult facetedSearchResult) {
-    return createRelationFacetedSearchResultFilter(sourceSearchIds, targetSearchIds).process(facetedSearchResult);
   }
 
   protected RelationFacetedSearchResultFilter createRelationFacetedSearchResultFilter(List<String> sourceIds, List<String> targetIds) {
