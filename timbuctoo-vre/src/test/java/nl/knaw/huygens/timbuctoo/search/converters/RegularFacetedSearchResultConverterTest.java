@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.search;
+package nl.knaw.huygens.timbuctoo.search.converters;
 
 /*
  * #%L
@@ -22,15 +22,23 @@ package nl.knaw.huygens.timbuctoo.search;
  * #L%
  */
 
-/**
- * A wrapper for the validation exceptions thrown when searching.
- */
-public class SearchValidationException extends Exception {
+import static nl.knaw.huygens.timbuctoo.search.converters.SearchResultMatcher.likeSearchResult;
+import static org.hamcrest.MatcherAssert.assertThat;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
-  private static final long serialVersionUID = 1L;
+import org.junit.Test;
 
-  public SearchValidationException(Exception e) {
-    super(e);
+public class RegularFacetedSearchResultConverterTest extends FacetedSearchResultConverterTestBase {
+
+  @Test
+  public void testConvert() {
+    // setup
+    FacetedSearchResultConverter instance = new RegularFacetedSearchResultConverter();
+
+    // action
+    SearchResult actualSearchResult = instance.convert(TYPE_STRING, facetedSearchResult);
+
+    // verify
+    assertThat(actualSearchResult, likeSearchResult(TYPE_STRING, IDS, SEARCH_TERM, SORT, FACETS));
   }
-
 }

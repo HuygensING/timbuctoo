@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.search;
+package nl.knaw.huygens.timbuctoo.search.converters;
 
 /*
  * #%L
@@ -34,8 +34,9 @@ import com.google.common.collect.Lists;
 /**
  * Converts a FacetedSearchResult to a SearchResult, Timbuctoo uses. 
  */
-public class FacetedSearchResultConverter {
+public class RegularFacetedSearchResultConverter implements FacetedSearchResultConverter {
 
+  @Override
   public SearchResult convert(String typeString, FacetedSearchResult facetedSearchResult) {
     SearchResult searchResult = createSearchResult();
 

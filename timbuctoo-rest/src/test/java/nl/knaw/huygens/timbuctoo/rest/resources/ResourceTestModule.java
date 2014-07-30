@@ -40,7 +40,6 @@ import nl.knaw.huygens.timbuctoo.rest.util.search.RegularClientSearchResultCreat
 import nl.knaw.huygens.timbuctoo.rest.util.search.RelationClientSearchResultCreator;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
-import nl.knaw.huygens.timbuctoo.search.SearchManager;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchParametersConverter;
 import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
@@ -72,7 +71,6 @@ class ResourceTestModule extends JerseyServletModule {
   private JacksonJsonProvider jsonProvider;
   private Validator validator;
   private MailSender mailSender;
-  private SearchManager searchManager;
   private SecurityContextCreator securityContextCreator;
   private AuthorizationHandler authorizationHandler;
   private Broker broker;
@@ -94,7 +92,6 @@ class ResourceTestModule extends JerseyServletModule {
       jsonProvider = mock(JacksonJsonProvider.class);
       validator = mock(Validator.class);
       mailSender = mock(MailSender.class);
-      searchManager = mock(SearchManager.class);
       securityContextCreator = new UserSecurityContextCreator(repository);
       authorizationHandler = mock(AuthorizationHandler.class);
       broker = mock(Broker.class);
@@ -117,7 +114,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(config, repository, jsonProvider, validator, mailSender, searchManager, authorizationHandler, broker, indexProducer, persistenceProducer, vreManager, indexManager, searchRequestValidator,
+    reset(config, repository, jsonProvider, validator, mailSender, authorizationHandler, broker, indexProducer, persistenceProducer, vreManager, indexManager, searchRequestValidator,
         searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator);
   }
 
@@ -182,12 +179,6 @@ class ResourceTestModule extends JerseyServletModule {
   @Singleton
   public IndexManager provideIndexManager() {
     return indexManager;
-  }
-
-  @Provides
-  @Singleton
-  public SearchManager provideSearchManager() {
-    return searchManager;
   }
 
   @Provides

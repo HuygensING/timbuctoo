@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.index;
+package nl.knaw.huygens.timbuctoo.vre;
 
 /*
  * #%L
@@ -22,10 +22,12 @@ package nl.knaw.huygens.timbuctoo.index;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+public class SearchException extends Exception {
 
-public interface IndexFactory {
+  private static final long serialVersionUID = 1L;
 
-  Index createIndexFor(Class<? extends DomainEntity> type, String name);
+  public SearchException(Exception e) {
+    super(e);
+  }
 
 }

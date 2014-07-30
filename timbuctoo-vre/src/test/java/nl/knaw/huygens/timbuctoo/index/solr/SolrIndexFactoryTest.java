@@ -22,6 +22,8 @@ package nl.knaw.huygens.timbuctoo.index.solr;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.index.solr.SolrIndexFactory.SOLR_DATA_DIR_CONFIG_PROP;
+import static nl.knaw.huygens.timbuctoo.vre.VREMockBuilder.newVRE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -31,13 +33,13 @@ import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
 import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexDescriptionFactory;
-import nl.knaw.huygens.timbuctoo.index.solr.SolrIndex;
-import nl.knaw.huygens.timbuctoo.index.solr.SolrIndexFactory;
-import nl.knaw.huygens.timbuctoo.index.solr.SolrInputDocumentCreator;
+import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchLibraryFactory;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.apache.solr.core.CoreDescriptor;
 import org.junit.Test;
@@ -45,8 +47,11 @@ import org.junit.Test;
 import test.timbuctoo.index.model.Type1;
 
 public class SolrIndexFactoryTest {
+
+  private static final String DATA_DIR = "data/";
+
   @Test
-  public void testCreate() {
+  public void testCreateIndex() {
     // It should create a list of facet definitions.
     // It should create an AbstractSolrServer.
     // It should create a FacetedSearchLibrary
@@ -56,6 +61,10 @@ public class SolrIndexFactoryTest {
     IndexDescription facetDefinitions = mock(IndexDescription.class);
     FacetedSearchLibrary facetedSearchLibraryMock = mock(FacetedSearchLibrary.class);
     SolrInputDocumentCreator solrInputDocumentCreatorMock = mock(SolrInputDocumentCreator.class);
+    IndexNameCreator indexNameCreatorMock = mock(IndexNameCreator.class);
+    Configuration configurationMock = mock(Configuration.class);
+
+    VRE vre = newVRE().create();
 
     IndexDescriptionFactory indexDescriptionFactoryMock = mock(IndexDescriptionFactory.class);
     AbstractSolrServerBuilder solrServerBuilderMock = mock(AbstractSolrServerBuilder.class);
@@ -66,16 +75,19 @@ public class SolrIndexFactoryTest {
 
     Index expectedSolrIndex = new SolrIndex(name, solrInputDocumentCreatorMock, solrServerMock, facetedSearchLibraryMock);
 
+    when(indexNameCreatorMock.getIndexNameFor(vre, type)).thenReturn(name);
     when(indexDescriptionFactoryMock.create(type)).thenReturn(facetDefinitions);
     when(solrServerBuilderMock.setCoreName(name)).thenReturn(solrServerBuilderMock);
     when(solrServerBuilderMock.build(facetDefinitions)).thenReturn(solrServerMock);
-    when(solrServerBuilderMock.addProperty(CoreDescriptor.CORE_DATADIR, "data/" + name.replace('.', '/'))).thenReturn(solrServerBuilderMock);
+    when(configurationMock.getSetting(SOLR_DATA_DIR_CONFIG_PROP)).thenReturn(DATA_DIR);
+    when(solrServerBuilderMock.addProperty(CoreDescriptor.CORE_DATADIR, DATA_DIR + "/" + name.replace('.', '/'))).thenReturn(solrServerBuilderMock);
     when(facetedSearchLibraryFactoryMock.create(solrServerMock)).thenReturn(facetedSearchLibraryMock);
 
-    SolrIndexFactory instance = new SolrIndexFactory(solrInputDocumentCreatorMock, solrServerBuilderMock, indexDescriptionFactoryMock, facetedSearchLibraryFactoryMock);
+    SolrIndexFactory instance = new SolrIndexFactory(solrInputDocumentCreatorMock, solrServerBuilderMock, indexDescriptionFactoryMock, facetedSearchLibraryFactoryMock, indexNameCreatorMock,
+        configurationMock);
 
     // action
-    SolrIndex actualSolrIndex = instance.createIndexFor(type, name);
+    SolrIndex actualSolrIndex = instance.createIndexFor(vre, type);
 
     // verify
     assertThat(actualSolrIndex, is(equalTo(expectedSolrIndex)));

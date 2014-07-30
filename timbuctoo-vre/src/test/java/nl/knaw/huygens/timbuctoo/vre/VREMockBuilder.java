@@ -25,9 +25,16 @@ package nl.knaw.huygens.timbuctoo.vre;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+
+import nl.knaw.huygens.timbuctoo.index.Index;
+
+import com.google.common.collect.Lists;
+
 public class VREMockBuilder {
 
   private String name;
+  private List<Index> indexes;
 
   private VREMockBuilder() {}
 
@@ -40,9 +47,15 @@ public class VREMockBuilder {
     return this;
   }
 
+  public VREMockBuilder withIndexes(Index... indexes) {
+    this.indexes = Lists.newArrayList(indexes);
+    return this;
+  }
+
   public VRE create() {
     VRE vreMock = mock(VRE.class);
     when(vreMock.getName()).thenReturn(name);
+    when(vreMock.getIndexes()).thenReturn(indexes);
     return vreMock;
   }
 

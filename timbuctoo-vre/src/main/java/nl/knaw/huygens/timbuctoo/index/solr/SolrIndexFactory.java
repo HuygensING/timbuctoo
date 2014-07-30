@@ -26,37 +26,52 @@ import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
 import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.index.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
+import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchLibraryFactory;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.apache.solr.core.CoreDescriptor;
 
 import com.google.inject.Inject;
 
 public class SolrIndexFactory implements IndexFactory {
+  public static final String SOLR_DATA_DIR_CONFIG_PROP = "solr.data_dir";
 
   private final SolrInputDocumentCreator solrDocumentCreator;
   private final AbstractSolrServerBuilder solrServerBuilder;
   private final IndexDescriptionFactory indexDescriptionFactory;
   private final FacetedSearchLibraryFactory facetedSearchLibraryFactory;
+  private final IndexNameCreator indexNameCreator;
+  private final Configuration configuration;
+
+  //FIXME some abstractions are missing, there are too many dependencies.
 
   @Inject
   public SolrIndexFactory(SolrInputDocumentCreator solrInputDocumentCreator, AbstractSolrServerBuilder solrServerBuilder, IndexDescriptionFactory indexDescriptionFactory,
-      FacetedSearchLibraryFactory facetedSearchLibraryFactory) {
+      FacetedSearchLibraryFactory facetedSearchLibraryFactory, IndexNameCreator indexNameCreator, Configuration configuration) {
     this.solrDocumentCreator = solrInputDocumentCreator;
     this.solrServerBuilder = solrServerBuilder;
     this.indexDescriptionFactory = indexDescriptionFactory;
     this.facetedSearchLibraryFactory = facetedSearchLibraryFactory;
+    this.indexNameCreator = indexNameCreator;
+    this.configuration = configuration;
+  }
+
+  private String getSolrDataDir(String name) {
+
+    return String.format("%s/%s", configuration.getSetting(SOLR_DATA_DIR_CONFIG_PROP), name.replace('.', '/'));
   }
 
   @Override
-  public SolrIndex createIndexFor(Class<? extends DomainEntity> type, String name) {
+  public SolrIndex createIndexFor(VRE vre, Class<? extends DomainEntity> type) {
+    String name = indexNameCreator.getIndexNameFor(vre, type);
     IndexDescription indexDescription = this.indexDescriptionFactory.create(type);
     AbstractSolrServer abstractSolrServer = this.solrServerBuilder.setCoreName(name) //
-        //TODO extract the data dir name creation
-        .addProperty(CoreDescriptor.CORE_DATADIR, "data/" + name.replace('.', '/')) //
+        .addProperty(CoreDescriptor.CORE_DATADIR, getSolrDataDir(name)) //
         .build(indexDescription);
     FacetedSearchLibrary facetedSearchLibrary = this.facetedSearchLibraryFactory.create(abstractSolrServer);
 

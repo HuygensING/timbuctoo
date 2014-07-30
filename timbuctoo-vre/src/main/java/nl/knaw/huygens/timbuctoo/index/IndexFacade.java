@@ -25,45 +25,24 @@ package nl.knaw.huygens.timbuctoo.index;
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 
 import java.util.List;
-import java.util.Set;
 
-import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
-import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultConverter;
-import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
-import nl.knaw.huygens.timbuctoo.search.SearchException;
-import nl.knaw.huygens.timbuctoo.search.SearchManager;
-import nl.knaw.huygens.timbuctoo.search.SearchValidationException;
-import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
-public class IndexFacade implements SearchManager, IndexManager {
-
-  private static final Logger LOG = LoggerFactory.getLogger(IndexFacade.class);
+public class IndexFacade implements IndexManager {
 
   private final VREManager vreManager;
   private final Repository storageManager;
-  private final SortableFieldFinder sortableFieldFinder;
-  private final FacetedSearchResultConverter facetedSearchResultConverter;
 
   @Inject
-  public IndexFacade(Repository storageManager, SortableFieldFinder sortableFieldFinder, FacetedSearchResultConverter facetedSearchResultConverter, VREManager vreManager) {
+  public IndexFacade(Repository storageManager, VREManager vreManager) {
     this.storageManager = storageManager;
-    this.sortableFieldFinder = sortableFieldFinder;
-    this.facetedSearchResultConverter = facetedSearchResultConverter;
     this.vreManager = vreManager;
   }
 
@@ -71,8 +50,8 @@ public class IndexFacade implements SearchManager, IndexManager {
   public <T extends DomainEntity> void addEntity(Class<T> type, String id) throws IndexException {
     IndexChanger indexAdder = new IndexChanger() {
       @Override
-      public void executeIndexAction(Index index, List<? extends DomainEntity> variations) throws IndexException {
-        index.add(variations);
+      public void executeIndexAction(Class<? extends DomainEntity> type, VRE vre, List<? extends DomainEntity> variations) throws IndexException {
+        vre.addToIndex(type, variations);
       }
     };
     changeIndex(type, id, indexAdder);
@@ -83,8 +62,7 @@ public class IndexFacade implements SearchManager, IndexManager {
     List<? extends DomainEntity> variations = storageManager.getAllVariations(baseType, id);
     if (!variations.isEmpty()) {
       for (VRE vre : vreManager.getAllVREs()) {
-        Index index = vreManager.getIndexFor(vre, type);
-        indexChanger.executeIndexAction(index, vre.filter(variations));
+        indexChanger.executeIndexAction(baseType, vre, variations);
       }
     }
   }
@@ -93,8 +71,8 @@ public class IndexFacade implements SearchManager, IndexManager {
   public <T extends DomainEntity> void updateEntity(Class<T> type, String id) throws IndexException {
     IndexChanger indexUpdater = new IndexChanger() {
       @Override
-      public void executeIndexAction(Index index, List<? extends DomainEntity> variations) throws IndexException {
-        index.update(variations);
+      public void executeIndexAction(Class<? extends DomainEntity> type, VRE vre, List<? extends DomainEntity> variations) throws IndexException {
+        vre.updateIndex(type, variations);
       }
     };
     changeIndex(type, id, indexUpdater);
@@ -103,23 +81,21 @@ public class IndexFacade implements SearchManager, IndexManager {
   @Override
   public <T extends DomainEntity> void deleteEntity(Class<T> type, String id) throws IndexException {
     for (VRE vre : vreManager.getAllVREs()) {
-      Index index = vreManager.getIndexFor(vre, type);
-      index.deleteById(id);
+      vre.deleteFromIndex(type, id);
     }
   }
 
   @Override
   public <T extends DomainEntity> void deleteEntities(Class<T> type, List<String> ids) throws IndexException {
     for (VRE vre : vreManager.getAllVREs()) {
-      Index index = vreManager.getIndexFor(vre, type);
-      index.deleteById(ids);
+      vre.deleteFromIndex(type, ids);
     }
   }
 
   @Override
   public void deleteAllEntities() throws IndexException {
-    for (Index index : vreManager.getAllIndexes()) {
-      index.clear();
+    for (VRE vre : vreManager.getAllVREs()) {
+      vre.clearIndexes();
     }
   }
 
@@ -128,14 +104,7 @@ public class IndexFacade implements SearchManager, IndexManager {
     IndexStatus indexStatus = createIndexStatus();
 
     for (VRE vre : vreManager.getAllVREs()) {
-      for (Class<? extends DomainEntity> type : vre.getBaseEntityTypes()) {
-        Index index = vreManager.getIndexFor(vre, type);
-        try {
-          indexStatus.addCount(vre, type, index.getCount());
-        } catch (IndexException e) {
-          LOG.error("Failed to obtain status: {}", e.getMessage());
-        }
-      }
+      vre.addToIndexStatus(indexStatus);
     }
 
     return indexStatus;
@@ -147,42 +116,20 @@ public class IndexFacade implements SearchManager, IndexManager {
 
   @Override
   public void commitAll() throws IndexException {
-    for (Index index : vreManager.getAllIndexes()) {
-      index.commit();
+    for (VRE vre : vreManager.getAllVREs()) {
+      vre.commitAll();
     }
   }
 
   @Override
   public void close() {
-    for (Index index : vreManager.getAllIndexes()) {
-      try {
-        index.close();
-      } catch (IndexException ex) {
-        LOG.error("closing of index {} went wrong", index.getName(), ex);
-      }
+    for (VRE vre : vreManager.getAllVREs()) {
+      vre.close();
     }
   }
 
-  @Override
-  public Set<String> findSortableFields(Class<? extends DomainEntity> type) {
-    return sortableFieldFinder.findFields(type);
-  }
-
-  @Override
-  public <T extends FacetedSearchParameters<T>> SearchResult search(VRE vre, Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException,
-      SearchValidationException {
-    FullTextSearchFieldFinder ftsff = new FullTextSearchFieldFinder();
-    searchParameters.setFullTextSearchFields(Lists.newArrayList(ftsff.findFields(type)));
-
-    Index index = vreManager.getIndexFor(vre, type);
-
-    FacetedSearchResult facetedSearchResult = index.search(searchParameters);
-
-    return facetedSearchResultConverter.convert(TypeNames.getInternalName(type), facetedSearchResult);
-  }
-
   private static interface IndexChanger {
-    void executeIndexAction(Index index, List<? extends DomainEntity> variations) throws IndexException;
+    void executeIndexAction(Class<? extends DomainEntity> type, VRE vre, List<? extends DomainEntity> variations) throws IndexException;
   }
 
 }

@@ -61,10 +61,9 @@ import nl.knaw.huygens.timbuctoo.rest.util.search.RegularClientSearchResultCreat
 import nl.knaw.huygens.timbuctoo.rest.util.search.RelationClientSearchResultCreator;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
-import nl.knaw.huygens.timbuctoo.search.SearchManager;
-import nl.knaw.huygens.timbuctoo.search.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
@@ -85,8 +84,6 @@ public class SearchResourceV1 extends ResourceBase {
   private TypeRegistry registry;
   @Inject
   private Repository repository;
-  @Inject
-  private SearchManager searchManager;
   @Inject
   private VREManager vreManager;
   @Inject
@@ -113,7 +110,7 @@ public class SearchResourceV1 extends ResourceBase {
 
     // Process
     try {
-      SearchResult result = searchManager.search(vre, type, searchParams);
+      SearchResult result = vre.search(type, searchParams);
       String queryId = saveSearchResult(result);
       return Response.created(createHATEOASURI(queryId)).build();
     } catch (SearchValidationException e) {
@@ -128,7 +125,7 @@ public class SearchResourceV1 extends ResourceBase {
   @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}")
   @APIDesc("Returns (paged) search results")
   @Produces({ MediaType.APPLICATION_JSON })
-  public Response regularGet( //
+  public Response get( //
       @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") final int start, //
       @QueryParam("rows") @DefaultValue("10") final int rows) {

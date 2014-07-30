@@ -40,21 +40,18 @@ public class VREManagerMatcher extends TypeSafeMatcher<VREManager> {
   @Override
   public void describeTo(Description description) {
     description.appendText("VREManager with vres ").appendValue(expectedVREManager.getAllVREs()) //
-        .appendText(" and vre ids ").appendValue(expectedVREManager.getAvailableVREIds())//
-        .appendText(" and indexes ").appendValue(expectedVREManager.getAllIndexes());
+        .appendText(" and vre ids ").appendValue(expectedVREManager.getAvailableVREIds());
   }
 
   @Override
   protected void describeMismatchSafely(VREManager item, Description mismatchDescription) {
     mismatchDescription.appendText("VREManager with vres ").appendValue(item.getAllVREs()) //
-        .appendText(" and vre ids ").appendValue(item.getAvailableVREIds())//
-        .appendText(" and indexes ").appendValue(item.getAllIndexes());
+        .appendText(" and vre ids ").appendValue(item.getAvailableVREIds());
   }
 
   @Override
   protected boolean matchesSafely(VREManager item) {
-    boolean matches = everyItem(isIn(expectedVREManager.getAllIndexes())).matches(item.getAllIndexes());
-    matches &= everyItem(isIn(expectedVREManager.getAllVREs())).matches(item.getAllVREs());
+    boolean matches = everyItem(isIn(expectedVREManager.getAllVREs())).matches(item.getAllVREs());
     matches &= everyItem(isIn(expectedVREManager.getAvailableVREIds())).matches(item.getAvailableVREIds());
 
     return matches;

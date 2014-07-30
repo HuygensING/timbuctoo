@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.search;
+package nl.knaw.huygens.timbuctoo.vre;
 
 /*
  * #%L
@@ -22,11 +22,14 @@ package nl.knaw.huygens.timbuctoo.search;
  * #L%
  */
 
-public class SearchException extends Exception {
+/**
+ * A wrapper for the validation exceptions thrown when searching.
+ */
+public class SearchValidationException extends Exception {
 
   private static final long serialVersionUID = 1L;
 
-  public SearchException(Exception e) {
+  public SearchValidationException(Exception e) {
     super(e);
   }
 

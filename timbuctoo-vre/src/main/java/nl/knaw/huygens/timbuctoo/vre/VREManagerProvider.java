@@ -22,7 +22,7 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.index.IndexMapCreator;
+import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
 
 import com.google.inject.Inject;
@@ -31,10 +31,10 @@ import com.google.inject.Provider;
 public class VREManagerProvider implements Provider<VREManager> {
 
   private final IndexNameCreator indexNameCreator;
-  private final IndexMapCreator indexFactory;
+  private final IndexFactory indexFactory;
 
   @Inject
-  public VREManagerProvider(IndexNameCreator indexNameCreator, IndexMapCreator indexFactory) {
+  public VREManagerProvider(IndexNameCreator indexNameCreator, IndexFactory indexFactory) {
     this.indexNameCreator = indexNameCreator;
     this.indexFactory = indexFactory;
   }
