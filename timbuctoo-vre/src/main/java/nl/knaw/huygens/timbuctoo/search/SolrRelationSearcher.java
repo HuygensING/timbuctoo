@@ -22,12 +22,7 @@ package nl.knaw.huygens.timbuctoo.search;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID_FACET_NAME;
-import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID_FACET_NAME;
-
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.solr.RelationSearchParameters;
@@ -45,46 +40,14 @@ import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.apache.commons.lang3.time.StopWatch;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
 public class SolrRelationSearcher extends RelationSearcher {
 
-  private static final class TargetSourceIdRelationPredicate implements Predicate<Map<String, Object>> {
-    private final Set<String> targetSearchIds;
-    private final Set<String> sourceSearchIds;
-
-    private TargetSourceIdRelationPredicate(List<String> targetSearchIds, List<String> sourceSearchIds) {
-      this.targetSearchIds = Sets.newTreeSet(targetSearchIds);
-      this.sourceSearchIds = Sets.newTreeSet(sourceSearchIds);
-    }
-
-    @Override
-    public boolean apply(Map<String, Object> input) {
-
-      return sourceSearchIds.contains(getSourceIds(input)) && targetSearchIds.contains(getTargetIds(input));
-    }
-
-    private String getTargetIds(Map<String, Object> input) {
-      return getFirstValueAsString(input, TARGET_ID_FACET_NAME);
-    }
-
-    @SuppressWarnings("unchecked")
-    private String getFirstValueAsString(Map<String, Object> input, String fieldName) {
-      return ((List<String>) input.get(fieldName)).get(0);
-    }
-
-    private String getSourceIds(Map<String, Object> input) {
-      return getFirstValueAsString(input, SOURCE_ID_FACET_NAME);
-    }
-  }
-
   private final RelationSearchParametersConverter relationSearchParametersConverter;
   private final TypeRegistry typeRegistry;
-  private final CollectionConverter collectionConverter;
   private final FacetedSearchResultConverter facetedSearchResultConverter;
+  private final CollectionConverter collectionConverter;
 
   @Inject
   public SolrRelationSearcher(Repository repository, RelationSearchParametersConverter relationSearchParametersConverter, TypeRegistry typeRegistry, CollectionConverter collectionConverter,
@@ -145,9 +108,7 @@ public class SolrRelationSearcher extends RelationSearcher {
     StopWatch filterStopWatch = new StopWatch();
     filterStopWatch.start();
 
-    FilterableSet<Map<String, Object>> fitlerableResults = collectionConverter.toFilterableSet(facetedSearchResult.getRawResults());
-    Set<Map<String, Object>> filteredSet = fitlerableResults.filter(new TargetSourceIdRelationPredicate(targetSearchIds, sourceSearchIds));
-    facetedSearchResult.setRawResults(Lists.newArrayList(filteredSet));
+    FacetedSearchResult filteredSearchResult = filterSearchResult(sourceSearchIds, targetSearchIds, facetedSearchResult);
 
     filterStopWatch.stop();
     logStopWatchTimeInSeconds(filterStopWatch, "filter");
@@ -155,7 +116,7 @@ public class SolrRelationSearcher extends RelationSearcher {
     StopWatch convertSearchResultStopWatch = new StopWatch();
     convertSearchResultStopWatch.start();
 
-    SearchResult searchResult = facetedSearchResultConverter.convert(relationSearchParameters.getTypeString(), facetedSearchResult);
+    SearchResult searchResult = facetedSearchResultConverter.convert(relationSearchParameters.getTypeString(), filteredSearchResult);
     searchResult.setSourceIds(sourceSearchIds);
     searchResult.setTargetIds(targetSearchIds);
     searchResult.setRelationSearch(true);
@@ -164,6 +125,14 @@ public class SolrRelationSearcher extends RelationSearcher {
     logStopWatchTimeInSeconds(convertSearchResultStopWatch, "convert search result");
 
     return searchResult;
+  }
+
+  protected FacetedSearchResult filterSearchResult(List<String> sourceSearchIds, List<String> targetSearchIds, FacetedSearchResult facetedSearchResult) {
+    return creaRelationFacetedSearchResultFilter(sourceSearchIds, targetSearchIds).process(facetedSearchResult);
+  }
+
+  protected RelationFacetedSearchResultFilter creaRelationFacetedSearchResultFilter(List<String> sourceIds, List<String> targetIds) {
+    return new RelationFacetedSearchResultFilter(collectionConverter, sourceIds, targetIds);
   }
 
   private List<String> getSearchIds(String id) {
