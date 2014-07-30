@@ -25,7 +25,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexStatus;
 import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultConverter;
+import nl.knaw.huygens.timbuctoo.search.converters.FacetedSearchResultConverter;
 
 import org.junit.Before;
 import org.junit.Test;

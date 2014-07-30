@@ -38,8 +38,8 @@ import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexStatus;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultConverter;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
+import nl.knaw.huygens.timbuctoo.search.converters.FacetedSearchResultConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.search;
+package nl.knaw.huygens.timbuctoo.search.converters;
 
 /*
  * #%L
