@@ -29,7 +29,7 @@
     <!-- ## Main libraries ## -->
 
     <!-- Commons Configuration, assists with reading configuration files. -->
-    
+
     <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
@@ -70,7 +70,7 @@
       <scope>provided</scope>
     </dependency>
 
-   <!-- Jersey -->
+    <!-- Jersey -->
     <dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-client</artifactId>
@@ -181,6 +181,10 @@
                 <initialMemorySize>256m</initialMemorySize>
                 <maxMemorySize>1024m</maxMemorySize>
               </jvmSettings>
+            </program>
+            <program>
+              <name>reindex</name>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.other.ReIndexer</mainClass>
             </program>
             <program>
               <name>transformedDataImport</name>
