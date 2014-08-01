@@ -61,6 +61,28 @@
         </exclusion>
       </exclusions>
     </dependency>
+    
+    <!-- Huygens faceted search -->
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>facetedsearch-tools-model</artifactId>
+      <version>${faceted.search.tools.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j</artifactId>
+          <groupId>log4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>slf4j-log4j12</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>facetedsearch-tools-serialization</artifactId>
+      <version>${faceted.search.tools.version}</version>
+    </dependency>
 
     <!-- Apache validation -->
     <dependency>
@@ -205,6 +227,13 @@
       <groupId>com.sun.jersey.jersey-test-framework</groupId>
       <artifactId>jersey-test-framework-inmemory</artifactId>
       <version>${jersey.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Hamcrest -->
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <version>${hamcrest-library.version}</version>
       <scope>test</scope>
     </dependency>
     <!-- ## End test libraries ## -->
