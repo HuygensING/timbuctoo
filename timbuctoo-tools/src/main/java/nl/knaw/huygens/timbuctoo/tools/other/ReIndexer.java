@@ -18,6 +18,10 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+// kies logging of System.out
+// alle entities van een type naar binnehlaen is een slechte oplossing: itereer
+// waarom niet alles sluiten in een finally clause?
+
 public class ReIndexer {
   public final static Logger LOG = LoggerFactory.getLogger(ReIndexer.class);
 
@@ -48,4 +52,5 @@ public class ReIndexer {
     stopWatch.stop();
     System.out.println("time used: " + (stopWatch.getTime() / 1000));
   }
+
 }
