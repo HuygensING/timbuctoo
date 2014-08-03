@@ -92,7 +92,7 @@ public abstract class DefaultConverter implements Task {
   // --- Conversion log --------------------------------------------------------
 
   private Writer importLog;
-  private String source;
+  private String sourceName;
 
   protected void openLog(String fileName) throws IOException {
     File file = new File(fileName);
@@ -107,20 +107,16 @@ public abstract class DefaultConverter implements Task {
     }
   }
 
-  protected void openSource(String source) {
-    this.source = source;
-  }
-
-  protected void closeSource() {
-    source = null;
+  protected void logSourceName(String sourceName) {
+    this.sourceName = sourceName;
   }
 
   protected void log(String format, Object... args) {
     String text = String.format(format, args);
     if (importLog != null) {
       try {
-        if (source != null) {
-          importLog.write(String.format("-- %s%n", source));
+        if (sourceName != null) {
+          importLog.write(String.format("-- %s%n", sourceName));
         }
         importLog.write(text);
         return;

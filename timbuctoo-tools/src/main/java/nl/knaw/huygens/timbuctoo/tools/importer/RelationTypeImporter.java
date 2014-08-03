@@ -50,6 +50,10 @@ public class RelationTypeImporter extends CSVImporter {
     names = Sets.newTreeSet();
   }
 
+  public RelationTypeImporter() {
+    this(null);
+  }
+
   public Set<String> getNames() {
     return names;
   }

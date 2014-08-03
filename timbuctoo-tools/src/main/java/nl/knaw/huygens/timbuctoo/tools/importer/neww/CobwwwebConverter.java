@@ -49,7 +49,7 @@ public abstract class CobwwwebConverter extends DefaultConverter {
 
   protected String getResource(String... parts) throws Exception {
     String url = Joiner.on("/").join(parts);
-    openSource(url);
+    logSourceName(url);
     Client client = Client.create();
     WebResource webResource = client.resource(url);
     ClientResponse response = webResource.accept(MediaType.APPLICATION_XML).get(ClientResponse.class);
@@ -62,26 +62,38 @@ public abstract class CobwwwebConverter extends DefaultConverter {
   protected List<String> parseIdResource(String xml, String idElementName) {
     IdContext context = new IdContext();
     parseXml(xml, new IdVisitor(context, idElementName));
-    return context.ids;
+    return context.getIds();
   }
 
   protected void parseXml(String xml, Visitor visitor) {
     nl.knaw.huygens.tei.Document.createFromXml(xml).accept(visitor);
   }
 
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Context for storing the id's in the parsed XML.
+   */
   private class IdContext extends XmlContext {
-    public final List<String> ids = Lists.newArrayList();
+    private final List<String> ids = Lists.newArrayList();
+
+    public List<String> getIds() {
+      return ids;
+    }
 
     public void addId(String id) {
       // somewhat inefficent, but we want to preserve ordering
       if (ids.contains(id)) {
-        log("## Duplicate entry %s%n", id);
+        log("## Duplicate id: %s%n", id);
       } else {
         ids.add(id);
       }
     }
   }
 
+  /**
+   * Document visitor for handling the id's stored in the specified element.
+   */
   private class IdVisitor extends DelegatingVisitor<IdContext> {
     public IdVisitor(IdContext context, String idElementName) {
       super(context);
@@ -89,6 +101,9 @@ public abstract class CobwwwebConverter extends DefaultConverter {
     }
   }
 
+  /**
+   * Captures the text in the id-element and adds it to the context id-list.
+   */
   private class IdHandler extends DefaultElementHandler<IdContext> {
     @Override
     public Traversal enterElement(Element element, IdContext context) {

@@ -85,7 +85,7 @@ public class CobwwwebNoConverter extends CobwwwebConverter {
     try {
       openLog(getClass().getName() + ".txt");
 
-      RelationTypeImporter importer = new RelationTypeImporter(null);
+      RelationTypeImporter importer = new RelationTypeImporter();
       importer.call(RelationTypeImporter.RELATION_TYPE_DEFS);
       relationTypeNames = importer.getNames();
 
