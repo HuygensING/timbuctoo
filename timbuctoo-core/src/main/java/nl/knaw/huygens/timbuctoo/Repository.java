@@ -67,7 +67,7 @@ public class Repository {
   private static final Logger LOG = LoggerFactory.getLogger(Repository.class);
 
   /** Maximum number of relations added to an entity. */
-  private static final int DEFAULT_RELATION_LIMIT = 1000;
+  static final int DEFAULT_RELATION_LIMIT = 1000;
 
   private final TypeRegistry registry;
   private final Storage storage;
@@ -83,10 +83,10 @@ public class Repository {
     relationTypes = new RelationTypes(storage);
   }
 
-  public Repository(TypeRegistry registry, Storage storage, RelationTypes relationTypes) throws StorageException {
+  Repository(TypeRegistry registry, Storage storage, RelationTypes relationTypes, EntityMappers entityMappers) throws StorageException {
     this.registry = registry;
     this.storage = storage;
-    entityMappers = new EntityMappers(registry.getDomainEntityTypes());
+    this.entityMappers = entityMappers;
     ensureIndexes();
     this.relationTypes = relationTypes;
   }
@@ -233,7 +233,9 @@ public class Repository {
     T entity = null;
     try {
       entity = storage.getItem(type, id);
-      addRelationsTo(entity, DEFAULT_RELATION_LIMIT);
+      if (entity != null) {
+        entity.addRelations(this, DEFAULT_RELATION_LIMIT, entityMappers);
+      }
     } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
     }
@@ -244,7 +246,9 @@ public class Repository {
     T entity = null;
     try {
       entity = storage.getRevision(type, id, revision);
-      addRelationsTo(entity, DEFAULT_RELATION_LIMIT);
+      if (entity != null) {
+        entity.addRelations(this, DEFAULT_RELATION_LIMIT, entityMappers);
+      }
     } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
     }
@@ -277,7 +281,7 @@ public class Repository {
     try {
       List<T> variations = storage.getAllVariations(type, id);
       for (T variation : variations) {
-        addRelationsTo(variation, DEFAULT_RELATION_LIMIT);
+        variation.addRelations(this, DEFAULT_RELATION_LIMIT, entityMappers);
       }
       return variations;
     } catch (StorageException e) {
@@ -377,6 +381,10 @@ public class Repository {
     return storage.getRelationsByEntityId(Relation.class, id).getSome(limit);
   }
 
+  public List<? extends Relation> getRelationsByEntityId(String entityId, int limit, Class<? extends Relation> type) throws StorageException {
+    return storage.getRelationsByEntityId(type, entityId).getSome(limit);
+  }
+
   /**
    * Get all the relations that have the type in {@code relationTypIds}.
    * @param variation the project specific variation of the relation to get.
@@ -402,8 +410,9 @@ public class Repository {
    *
    * NOTE We retrieve relations where the entity is source or target with one query;
    * handling them separately would cause complications with reflexive relations.
+   * @param entityMappers 
    */
-  private <T extends DomainEntity> void addRelationsTo(T entity, int limit) throws StorageException {
+  private <T extends DomainEntity> void addRelationsTo(T entity, int limit, EntityMappers entityMappers) throws StorageException {
     if (entity != null && limit > 0) {
       String entityId = entity.getId();
       Class<? extends DomainEntity> entityType = entity.getClass();
@@ -411,7 +420,7 @@ public class Repository {
       checkState(mapper != null, "No EntityMapper for type %s", entityType);
       @SuppressWarnings("unchecked")
       Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
-      for (Relation relation : storage.getRelationsByEntityId(mappedType, entityId).getSome(limit)) {
+      for (Relation relation : getRelationsByEntityId(entityId, limit, mappedType)) {
         RelationType relType = getRelationTypeById(relation.getTypeId());
         checkState(relType != null, "Failed to retrieve relation type");
         if (relation.hasSourceId(entityId)) {

@@ -30,6 +30,7 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.JsonViews;
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
+import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -174,6 +175,17 @@ public abstract class DomainEntity extends Entity implements Variable {
     if (!BusinessRules.allowDomainEntityAdd(getClass())) {
       throw new ValidationException("Not allowed to add " + getClass());
     }
+  }
+
+  /**
+   * Add the relations to this entity.
+   * @param repository the repository to help with retrieving the relations
+   * @param limit maximum number of relations to add
+   * @param entityMappers helps to determine the relation class
+   */
+  public void addRelations(Repository repository, int limit, EntityMappers entityMappers) {
+    // TODO Auto-generated method stub
+
   }
 
 }

@@ -22,8 +22,11 @@ package nl.knaw.huygens.timbuctoo;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.Repository.DEFAULT_RELATION_LIMIT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.doThrow;
@@ -35,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -59,14 +63,16 @@ public class RepositoryTest {
   private Repository repository;
   private Change change;
   private RelationTypes relationTypesMock;
+  private EntityMappers entityMappersMock;
 
   @Before
   public void setup() throws Exception {
+    relationTypesMock = mock(RelationTypes.class);
     registryMock = mock(TypeRegistry.class);
     storageMock = mock(Storage.class);
-    relationTypesMock = mock(RelationTypes.class);
+    entityMappersMock = mock(EntityMappers.class);
 
-    repository = new Repository(registryMock, storageMock, relationTypesMock);
+    repository = new Repository(registryMock, storageMock, relationTypesMock, entityMappersMock);
     change = new Change("userId", "vreId");
   }
 
@@ -97,8 +103,89 @@ public class RepositoryTest {
 
   @Test
   public void testGetAllVariations() throws Exception {
-    repository.getAllVariations(BaseDomainEntity.class, "id");
-    verify(storageMock).getAllVariations(BaseDomainEntity.class, "id");
+    // setup
+    BaseDomainEntity entityMock1 = mock(BaseDomainEntity.class);
+    BaseDomainEntity entityMock2 = mock(BaseDomainEntity.class);
+    List<BaseDomainEntity> variations = Lists.newArrayList(entityMock1, entityMock2);
+
+    Class<BaseDomainEntity> type = BaseDomainEntity.class;
+    String id = "id";
+    when(storageMock.getAllVariations(type, id)).thenReturn(variations);
+
+    // action
+    List<BaseDomainEntity> actualVariations = repository.getAllVariations(type, id);
+
+    // verify
+    verify(storageMock).getAllVariations(type, id);
+    verify(entityMock1).addRelations(repository, DEFAULT_RELATION_LIMIT, entityMappersMock);
+    verify(entityMock2).addRelations(repository, DEFAULT_RELATION_LIMIT, entityMappersMock);
+    assertEquals(variations, actualVariations);
+  }
+
+  @Test
+  public void testGetEntityWithRelations() throws Exception {
+    // setup
+    BaseDomainEntity entityMock1 = mock(BaseDomainEntity.class);
+    Class<BaseDomainEntity> type = BaseDomainEntity.class;
+    String id = "id";
+    when(storageMock.getItem(type, id)).thenReturn(entityMock1);
+
+    // action
+    BaseDomainEntity entity = repository.getEntityWithRelations(type, id);
+
+    // verify
+    verify(storageMock).getItem(type, id);
+    verify(entityMock1).addRelations(repository, DEFAULT_RELATION_LIMIT, entityMappersMock);
+    assertEquals(entityMock1, entity);
+  }
+
+  @Test
+  public void testGetEntityWithRelationsWhenEntityIsNull() throws Exception {
+    // setup
+    Class<BaseDomainEntity> type = BaseDomainEntity.class;
+    String id = "id";
+    when(storageMock.getItem(type, id)).thenReturn(null);
+
+    // action
+    BaseDomainEntity entity = repository.getEntityWithRelations(type, id);
+
+    // verify
+    verify(storageMock).getItem(type, id);
+    assertThat(entity, is(nullValue(BaseDomainEntity.class)));
+  }
+
+  @Test
+  public void testGetRevisionWithRelations() throws Exception {
+    // setup
+    BaseDomainEntity entityMock1 = mock(BaseDomainEntity.class);
+    Class<BaseDomainEntity> type = BaseDomainEntity.class;
+    String id = "id";
+    int revision = 13;
+    when(storageMock.getRevision(type, id, revision)).thenReturn(entityMock1);
+
+    // action
+    BaseDomainEntity entity = repository.getRevisionWithRelations(type, id, revision);
+
+    // verify
+    verify(storageMock).getRevision(type, id, revision);
+    verify(entityMock1).addRelations(repository, DEFAULT_RELATION_LIMIT, entityMappersMock);
+    assertEquals(entityMock1, entity);
+  }
+
+  @Test
+  public void testGetRevisionWithRelationsRevisionIsNull() throws Exception {
+    // setup
+    Class<BaseDomainEntity> type = BaseDomainEntity.class;
+    String id = "id";
+    int revision = 13;
+    when(storageMock.getRevision(type, id, revision)).thenReturn(null);
+
+    // action
+    BaseDomainEntity entity = repository.getRevisionWithRelations(type, id, revision);
+
+    // verify
+    verify(storageMock).getRevision(type, id, revision);
+    assertThat(entity, is(nullValue(BaseDomainEntity.class)));
   }
 
   @Test
@@ -220,6 +307,7 @@ public class RepositoryTest {
     ArrayList<String> ids = Lists.newArrayList("id1", "id2", "id3");
     storageMock.getRelationIds(ids);
     verify(storageMock).getRelationIds(ids);
+
   }
 
   @Test
@@ -258,8 +346,6 @@ public class RepositoryTest {
     // setup
     List<String> relationTypeNames = Lists.newArrayList();
     List<String> relationTypeIds = Lists.newArrayList();
-
-    Repository repository = new Repository(registryMock, storageMock, relationTypesMock);
 
     when(relationTypesMock.getRelationTypeIdsByName(relationTypeNames)).thenReturn(relationTypeIds);
 
