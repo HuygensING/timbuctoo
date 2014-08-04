@@ -40,6 +40,10 @@ import com.google.common.collect.Lists;
  */
 public class RelationTypes {
 
+  static final String INVERSE_NAME_PROPERTY = "inverseName";
+
+  static final String REGULAR_NAME_PROPERTY = "regularName";
+
   private static final Logger LOG = LoggerFactory.getLogger(RelationTypes.class);
 
   private final Storage storage;
@@ -74,9 +78,9 @@ public class RelationTypes {
     nameCache = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<String, RelationType>() {
       @Override
       public RelationType load(String name) throws StorageException {
-        RelationType type = storage.findItemByProperty(RelationType.class, "regularName", name);
+        RelationType type = storage.findItemByProperty(RelationType.class, REGULAR_NAME_PROPERTY, name);
         if (type == null) {
-          type = storage.findItemByProperty(RelationType.class, "inverseName", name);
+          type = storage.findItemByProperty(RelationType.class, INVERSE_NAME_PROPERTY, name);
         }
         if (type == null) {
           // Not allowed to return null
