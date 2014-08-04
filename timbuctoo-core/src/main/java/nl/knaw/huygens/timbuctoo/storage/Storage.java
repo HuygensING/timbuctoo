@@ -147,6 +147,7 @@ public interface Storage {
 
   /**
    * Returns a list of all variations of the specified <em>primitive</em> entity.
+   * Returns an empty list when the combination of the {@code type} and {@code id} is not found.
    */
   <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException;
 
@@ -161,7 +162,6 @@ public interface Storage {
    */
   <T extends Relation> StorageIterator<T> findRelations(Class<T> type, String sourceId, String targetId, String relationTypeId) throws StorageException;
 
-  
   /**
    * Returns an iterator for all relations of the specified entity id.
    */
