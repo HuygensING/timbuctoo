@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import nl.knaw.huygens.timbuctoo.annotations.JsonViews;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,13 +51,13 @@ public class EntityToJsonConverter {
     writer = mapper.writerWithView(JsonViews.ExportView.class);
   }
 
-  public <T extends Entity> String convert(T entity) throws IOException {
-    return writer.writeValueAsString(entity).replaceAll(TYPE_INFO, "");
+  public String convert(Object value) throws IOException {
+    return writer.writeValueAsString(value).replaceAll(TYPE_INFO, "");
   }
 
-  public <T extends Entity> void appendTo(PrintWriter writer, T entity) throws IOException {
-    if (entity != null) {
-      writer.println(convert(entity));
+  public void appendTo(PrintWriter writer, Object value) throws IOException {
+    if (value != null) {
+      writer.println(convert(value));
     }
   }
 

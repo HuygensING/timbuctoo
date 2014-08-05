@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.tools.importer;
 
 /*
  * #%L
- * Timbuctoo core
+ * Timbuctoo tools
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
  * =======
@@ -24,23 +24,80 @@ package nl.knaw.huygens.timbuctoo.tools.importer;
 
 /**
  * A data transfer object for exporting and importing {@code Relation} entities.
- * 
- * The definition of a relation requires a way of specifying the source and the target entity.
- * The regular entity does this in terms of stored entity id's.
- * Upon import this is usually impossible.
- * A simple way of handling this is by providing a set of id's that are consistent in the set
- * of data to be imported.
- * A more complicated  way is to specify a field and a value of the entity; if this value
- * is unique the entity can be found.
  */
 public class RelationDTO {
 
-  public String typeName;
-  public String sourceType;
-  public String sourceKey;
-  public String sourceValue;
-  public String targetType;
-  public String targetKey;
-  public String targetValue;
+  /** The relation type name. */
+  private String typeName;
+  /** The internal name of the source entity. */
+  private String sourceType;
+  /** The field name of the source entity to use as key;
+   * if {@code null} the id supplied by the importer is used. */
+  private String sourceKey;
+  /** The value of the source entity for the specified key. */
+  private String sourceValue;
+  /** The internal name of the target entity. */
+  private String targetType;
+  /** The field name of the target entity to use as key;
+   * if {@code null} the id supplied by the importer is used. */
+  private String targetKey;
+  /** The value of the target entity for the specified key. */
+  private String targetValue;
+
+  public String getTypeName() {
+    return typeName;
+  }
+
+  public void setTypeName(String typeName) {
+    this.typeName = typeName;
+  }
+
+  public String getSourceType() {
+    return sourceType;
+  }
+
+  public void setSourceType(String sourceType) {
+    this.sourceType = sourceType;
+  }
+
+  public String getSourceKey() {
+    return sourceKey;
+  }
+
+  public void setSourceKey(String sourceKey) {
+    this.sourceKey = sourceKey;
+  }
+
+  public String getSourceValue() {
+    return sourceValue;
+  }
+
+  public void setSourceValue(String sourceValue) {
+    this.sourceValue = sourceValue;
+  }
+
+  public String getTargetType() {
+    return targetType;
+  }
+
+  public void setTargetType(String targetType) {
+    this.targetType = targetType;
+  }
+
+  public String getTargetKey() {
+    return targetKey;
+  }
+
+  public void setTargetKey(String targetKey) {
+    this.targetKey = targetKey;
+  }
+
+  public String getTargetValue() {
+    return targetValue;
+  }
+
+  public void setTargetValue(String targetValue) {
+    this.targetValue = targetValue;
+  }
 
 }
