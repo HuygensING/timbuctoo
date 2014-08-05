@@ -52,6 +52,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.storage.StorageStatus;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.util.KV;
+import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,19 +75,23 @@ public class Repository {
   private final EntityMappers entityMappers;
   private final RelationTypes relationTypes;
 
+  private final RelationRefCreator relationRefCreator;
+
   @Inject
-  public Repository(TypeRegistry registry, Storage storage) throws StorageException {
+  public Repository(TypeRegistry registry, Storage storage, RelationRefCreator relationRefCreator) throws StorageException {
     this.registry = registry;
     this.storage = storage;
+    this.relationRefCreator = relationRefCreator;
     entityMappers = new EntityMappers(registry.getDomainEntityTypes());
     ensureIndexes();
     relationTypes = new RelationTypes(storage);
   }
 
-  Repository(TypeRegistry registry, Storage storage, RelationTypes relationTypes, EntityMappers entityMappers) throws StorageException {
+  Repository(TypeRegistry registry, Storage storage, RelationTypes relationTypes, EntityMappers entityMappers, RelationRefCreator relationRefCreator) throws StorageException {
     this.registry = registry;
     this.storage = storage;
     this.entityMappers = entityMappers;
+    this.relationRefCreator = relationRefCreator;
     ensureIndexes();
     this.relationTypes = relationTypes;
   }
@@ -234,7 +239,7 @@ public class Repository {
     try {
       entity = storage.getItem(type, id);
       if (entity != null) {
-        entity.addRelations(this, DEFAULT_RELATION_LIMIT, entityMappers);
+        addRelationsToEntity(entity);
       }
     } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
@@ -247,7 +252,7 @@ public class Repository {
     try {
       entity = storage.getRevision(type, id, revision);
       if (entity != null) {
-        entity.addRelations(this, DEFAULT_RELATION_LIMIT, entityMappers);
+        addRelationsToEntity(entity);
       }
     } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
@@ -281,13 +286,17 @@ public class Repository {
     try {
       List<T> variations = storage.getAllVariations(type, id);
       for (T variation : variations) {
-        variation.addRelations(this, DEFAULT_RELATION_LIMIT, entityMappers);
+        addRelationsToEntity(variation);
       }
       return variations;
     } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
       return Collections.emptyList();
     }
+  }
+
+  private <T extends DomainEntity> void addRelationsToEntity(T entity) throws StorageException {
+    entity.addRelations(this, DEFAULT_RELATION_LIMIT, entityMappers, relationRefCreator);
   }
 
   public <T extends DomainEntity> List<T> getVersions(Class<T> type, String id) {
@@ -437,7 +446,7 @@ public class Repository {
 
   // Relations are defined between primitive domain entities
   // Map to a domain entity in the package from which an entity is requested
-  private RelationRef newRelationRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws StorageException {
+  public RelationRef newRelationRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws StorageException {
     String iname = reference.getType();
     Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
     type = mapper.map(type);

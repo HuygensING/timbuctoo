@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.model;
  */
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
 import java.util.Map;
@@ -30,9 +31,12 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.JsonViews;
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
+import nl.knaw.huygens.timbuctoo.config.EntityMapper;
 import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -182,10 +186,33 @@ public abstract class DomainEntity extends Entity implements Variable {
    * @param repository the repository to help with retrieving the relations
    * @param limit maximum number of relations to add
    * @param entityMappers helps to determine the relation class
+   * @param relationRefCreatorMock a factory for creating RelationRefs.
+   * @throws StorageException when the retrieving of the data fails.
    */
-  public void addRelations(Repository repository, int limit, EntityMappers entityMappers) {
-    // TODO Auto-generated method stub
+  public void addRelations(Repository repository, int limit, EntityMappers entityMappers, RelationRefCreator relationRefCreatorMock) throws StorageException {
+    if (limit > 0) {
+      String entityId = this.getId();
+      Class<? extends DomainEntity> entityType = this.getClass();
+      EntityMapper mapper = entityMappers.getEntityMapper(entityType);
 
+      checkState(mapper != null, "No EntityMapper for type %s", entityType);
+      @SuppressWarnings("unchecked")
+      Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
+
+      for (Relation relation : repository.getRelationsByEntityId(entityId, limit, mappedType)) {
+        RelationType relType = repository.getRelationTypeById(relation.getTypeId());
+        checkState(relType != null, "Failed to retrieve relation type");
+
+        if (relation.hasSourceId(entityId)) {
+          RelationRef ref = relationRefCreatorMock.newRelationRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+          this.addRelation(relType.getRegularName(), ref);
+        } else if (relation.hasTargetId(entityId)) {
+          RelationRef ref = relationRefCreatorMock.newRelationRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+          this.addRelation(relType.getInverseName(), ref);
+        }
+      }
+
+    }
   }
 
 }

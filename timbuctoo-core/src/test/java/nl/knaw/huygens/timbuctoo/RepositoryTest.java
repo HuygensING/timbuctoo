@@ -46,7 +46,9 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
@@ -64,6 +66,7 @@ public class RepositoryTest {
   private Change change;
   private RelationTypes relationTypesMock;
   private EntityMappers entityMappersMock;
+  private RelationRefCreator relationRefCreatorMock;
 
   @Before
   public void setup() throws Exception {
@@ -71,8 +74,9 @@ public class RepositoryTest {
     registryMock = mock(TypeRegistry.class);
     storageMock = mock(Storage.class);
     entityMappersMock = mock(EntityMappers.class);
+    relationRefCreatorMock = mock(RelationRefCreator.class);
 
-    repository = new Repository(registryMock, storageMock, relationTypesMock, entityMappersMock);
+    repository = new Repository(registryMock, storageMock, relationTypesMock, entityMappersMock, relationRefCreatorMock);
     change = new Change("userId", "vreId");
   }
 
@@ -117,9 +121,13 @@ public class RepositoryTest {
 
     // verify
     verify(storageMock).getAllVariations(type, id);
-    verify(entityMock1).addRelations(repository, DEFAULT_RELATION_LIMIT, entityMappersMock);
-    verify(entityMock2).addRelations(repository, DEFAULT_RELATION_LIMIT, entityMappersMock);
+    verifyRelationsAddedToEntity(entityMock1);
+    verifyRelationsAddedToEntity(entityMock2);
     assertEquals(variations, actualVariations);
+  }
+
+  private void verifyRelationsAddedToEntity(BaseDomainEntity entityMock) throws StorageException {
+    verify(entityMock).addRelations(repository, DEFAULT_RELATION_LIMIT, entityMappersMock, relationRefCreatorMock);
   }
 
   @Test
@@ -135,7 +143,7 @@ public class RepositoryTest {
 
     // verify
     verify(storageMock).getItem(type, id);
-    verify(entityMock1).addRelations(repository, DEFAULT_RELATION_LIMIT, entityMappersMock);
+    verifyRelationsAddedToEntity(entityMock1);
     assertEquals(entityMock1, entity);
   }
 
@@ -168,7 +176,7 @@ public class RepositoryTest {
 
     // verify
     verify(storageMock).getRevision(type, id, revision);
-    verify(entityMock1).addRelations(repository, DEFAULT_RELATION_LIMIT, entityMappersMock);
+    verifyRelationsAddedToEntity(entityMock1);
     assertEquals(entityMock1, entity);
   }
 
