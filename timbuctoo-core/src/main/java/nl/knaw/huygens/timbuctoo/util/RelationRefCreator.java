@@ -29,11 +29,11 @@ public class RelationRefCreator {
     String iname = reference.getType();
 
     Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
-    type = mapper.map(type);
-    iname = TypeNames.getInternalName(type);
-    String xname = registry.getXNameForIName(iname);
-    DomainEntity entity = storage.getItem(type, reference.getId());
+    Class<? extends DomainEntity> mappedType = mapper.map(type);
+    String mappedIName = TypeNames.getInternalName(mappedType);
+    String xname = registry.getXNameForIName(mappedIName);
+    DomainEntity entity = storage.getItem(mappedType, reference.getId());
 
-    return new RelationRef(iname, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
+    return new RelationRef(mappedIName, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
   }
 }
