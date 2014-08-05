@@ -22,6 +22,14 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.model.AddRelationsTestHelper.ENTITY_ID;
+import static nl.knaw.huygens.timbuctoo.model.AddRelationsTestHelper.RELATION_LIMIT;
+import static nl.knaw.huygens.timbuctoo.model.AddRelationsTestHelper.RELATION_TYPE;
+import static nl.knaw.huygens.timbuctoo.model.AddRelationsTestHelper.createRelationWhereEntityIsSource;
+import static nl.knaw.huygens.timbuctoo.model.AddRelationsTestHelper.createRelationWhereEntityIsTarget;
+import static nl.knaw.huygens.timbuctoo.model.AddRelationsTestHelper.setupEntityMappers;
+import static nl.knaw.huygens.timbuctoo.model.AddRelationsTestHelper.setupRepositoryWithRelationsForEntity;
+import static nl.knaw.huygens.timbuctoo.model.AddRelationsTestHelper.verifyRelationRefIsCreatedForRelation;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -35,7 +43,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.EntityMapper;
 import nl.knaw.huygens.timbuctoo.config.EntityMappers;
@@ -49,11 +56,7 @@ import com.google.common.collect.Lists;
 
 public class DomainEntityTest {
 
-  private static final String ENTITY_ID = "id";
-  private static final Class<Relation> RELATION_TYPE = Relation.class;
-  private static final int RELATION_LIMIT = 5;
   private DomainEntity entity;
-  private double relationNumber = 0;
   private EntityMapper entityMapperMock;
   private RelationRefCreator relationRefCreatorMock;
   private EntityMappers entityMappersMock;
@@ -69,7 +72,8 @@ public class DomainEntityTest {
     };
 
     entity.setId(ENTITY_ID);
-    setupEntityMappers();
+    entityMapperMock = mock(EntityMapper.class);
+    entityMappersMock = setupEntityMappers(entity.getClass(), entityMapperMock);
     relationRefCreatorMock = mock(RelationRefCreator.class);
   }
 
@@ -122,34 +126,25 @@ public class DomainEntityTest {
     boolean isRegularRelation = true;
     boolean isInverseRegularRelation = false;
 
-    Relation relation1 = createRelationWhereEntityIsSource(ENTITY_ID);
-    Relation relation2 = createRelationWhereEntityIsTarget(ENTITY_ID);
-    Repository repositoryMock = setupRepository(relation1, relation2);
+    Relation relation1 = createRelationWhereEntityIsSource(ENTITY_ID, 1);
+    Relation relation2 = createRelationWhereEntityIsTarget(ENTITY_ID, 2);
+    Repository repositoryMock = setupRepositoryWithRelationsForEntity(ENTITY_ID, relation1, relation2);
 
     // action
     entity.addRelations(repositoryMock, RELATION_LIMIT, entityMappersMock, relationRefCreatorMock);
 
     // verify
     verify(repositoryMock).getRelationsByEntityId(ENTITY_ID, RELATION_LIMIT, RELATION_TYPE);
-    verifyRelationRefIsCreatedForRelation(relation1, isRegularRelation);
-    verifyRelationRefIsCreatedForRelation(relation2, isInverseRegularRelation);
+    verifyRelationRefIsCreatedForRelation(relation1, isRegularRelation, relationRefCreatorMock, entityMapperMock);
+    verifyRelationRefIsCreatedForRelation(relation2, isInverseRegularRelation, relationRefCreatorMock, entityMapperMock);
     assertThat(entity.getRelationCount(), equalTo(2));
-  }
-
-  private Repository setupRepository(Relation... relations) throws StorageException {
-    Repository repositoryMock = mock(Repository.class);
-    doReturn(Lists.newArrayList(relations)).when(repositoryMock).getRelationsByEntityId(ENTITY_ID, RELATION_LIMIT, RELATION_TYPE);
-    when(repositoryMock.getRelationTypeById(anyString())).thenReturn(mock(RelationType.class));
-    when(repositoryMock.getRelationTypeById(anyString())).thenReturn(mock(RelationType.class));
-
-    return repositoryMock;
   }
 
   @Test(expected = StorageException.class)
   public void addRelationsThrowsAnExceptionIfRepositoryThrowsAnExceptionWhileRetrievingTheRelations() throws StorageException {
     // setup
-    Relation relation1 = createRelationWhereEntityIsSource(ENTITY_ID);
-    Relation relation2 = createRelationWhereEntityIsTarget(ENTITY_ID);
+    Relation relation1 = createRelationWhereEntityIsSource(ENTITY_ID, 1);
+    Relation relation2 = createRelationWhereEntityIsTarget(ENTITY_ID, 2);
     Repository repositoryMock = mock(Repository.class);
     doReturn(Lists.newArrayList(relation1, relation2)).when(repositoryMock).getRelationsByEntityId(ENTITY_ID, RELATION_LIMIT, RELATION_TYPE);
 
@@ -182,58 +177,21 @@ public class DomainEntityTest {
   @Test(expected = StorageException.class)
   public void addRelationsThrowsAnExceptionIfRelationRefCreatorThrowsAnException() throws StorageException {
     // setup
-    Relation relation1 = createRelationWhereEntityIsSource(ENTITY_ID);
-    Relation relation2 = createRelationWhereEntityIsTarget(ENTITY_ID);
+    Relation relation1 = createRelationWhereEntityIsSource(ENTITY_ID, 1);
+    Relation relation2 = createRelationWhereEntityIsTarget(ENTITY_ID, 2);
 
-    Repository repositoryMock = setupRepository(relation1, relation2);
+    Repository repositoryMock = setupRepositoryWithRelationsForEntity(ENTITY_ID, relation1, relation2);
 
     doThrow(StorageException.class).when(relationRefCreatorMock).newRelationRef(any(EntityMapper.class), any(Reference.class), anyString(), anyBoolean(), anyInt());
+
     try {
       // action
       entity.addRelations(repositoryMock, RELATION_LIMIT, entityMappersMock, relationRefCreatorMock);
     } finally {
+      // verify
       verify(repositoryMock).getRelationsByEntityId(ENTITY_ID, RELATION_LIMIT, RELATION_TYPE);
       verify(relationRefCreatorMock).newRelationRef(any(EntityMapper.class), any(Reference.class), anyString(), anyBoolean(), anyInt());
     }
   }
 
-  private EntityMappers setupEntityMappers() {
-    entityMappersMock = mock(EntityMappers.class);
-    entityMapperMock = mock(EntityMapper.class);
-    when(entityMappersMock.getEntityMapper(entity.getClass())).thenReturn(entityMapperMock);
-    doReturn(RELATION_TYPE).when(entityMapperMock).map(RELATION_TYPE);
-
-    return entityMappersMock;
-  }
-
-  private void verifyRelationRefIsCreatedForRelation(Relation relation, boolean isRegularRelation) throws StorageException {
-    Reference ref = null;
-    if (isRegularRelation) {
-      ref = relation.getTargetRef();
-    } else {
-      ref = relation.getSourceRef();
-    }
-    verify(relationRefCreatorMock).newRelationRef(entityMapperMock, ref, relation.getId(), relation.isAccepted(), relation.getRev());
-  }
-
-  protected Relation createRelationWhereEntityIsSource(String sourceId) {
-    return createRelation(sourceId, "targetId" + relationNumber, ENTITY_ID + relationNumber);
-  }
-
-  protected Relation createRelationWhereEntityIsTarget(String targetId) {
-    return createRelation("sourceId" + relationNumber, targetId, ENTITY_ID + relationNumber);
-  }
-
-  protected Relation createRelation(String sourceId, String targetId, String id) {
-    relationNumber++;
-
-    Relation relation = new Relation();
-    relation.setSourceId(sourceId);
-    relation.setSourceType("sourceType");
-    relation.setTargetId(targetId);
-    relation.setTargetType("targetType");
-    relation.setTypeId("typeId" + relationNumber);
-    relation.setId(id);
-    return relation;
-  }
 }
