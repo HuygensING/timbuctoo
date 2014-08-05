@@ -33,13 +33,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
- * Utility class for converting entities to JSON without type information
- * and administrative properties.
+ * Utility class for converting entities to JSON without empty properties.
  */
 public class EntityToJsonConverter {
-
-  /** Regular expression that matches type info of entities. */
-  private static final String TYPE_INFO = "\"@type\":\"\\w+\",";
 
   private final ObjectWriter writer;
 
@@ -52,7 +48,7 @@ public class EntityToJsonConverter {
   }
 
   public String convert(Object value) throws IOException {
-    return writer.writeValueAsString(value).replaceAll(TYPE_INFO, "");
+    return writer.writeValueAsString(value);
   }
 
   public void appendTo(PrintWriter writer, Object value) throws IOException {
