@@ -44,8 +44,8 @@ import nl.knaw.huygens.timbuctoo.model.cwno.CWNOPerson;
 import nl.knaw.huygens.timbuctoo.model.cwno.CWNORelation;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
-import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
 import nl.knaw.huygens.timbuctoo.tools.importer.CaptureHandler;
+import nl.knaw.huygens.timbuctoo.tools.importer.RelationDTO;
 import nl.knaw.huygens.timbuctoo.tools.importer.RelationTypeImporter;
 import nl.knaw.huygens.timbuctoo.tools.process.Pipeline;
 import nl.knaw.huygens.timbuctoo.tools.process.Progress;
@@ -55,6 +55,10 @@ import com.google.common.collect.Sets;
 
 /**
  * Reads data from Norwegian COBWWWEB webservice and converts it to json.
+ *
+ * The dataset contains persons, documents and relations between those.
+ * Relations are definied in terms of id's supplied by the service,
+ * they have no meaning outside that context.
  */
 public class CobwwwebNoConverter extends CobwwwebConverter {
 
@@ -83,7 +87,7 @@ public class CobwwwebNoConverter extends CobwwwebConverter {
   @Override
   public void call() throws Exception {
     try {
-      openLog(getClass().getName() + ".txt");
+      openLog(getClass().getSimpleName() + ".txt");
 
       RelationTypeImporter importer = new RelationTypeImporter();
       importer.call(RelationTypeImporter.RELATION_TYPE_DEFS);
@@ -294,7 +298,7 @@ public class CobwwwebNoConverter extends CobwwwebConverter {
   private void convertDocuments() throws Exception {
     Progress progress = new Progress();
     PrintWriter out = createPrintWriter(CWNODocument.class);
- 
+
     try {
       String xml = getResource(URL, "documents");
       List<String> documentIds = parseIdResource(xml, "documentId");
@@ -443,8 +447,9 @@ public class CobwwwebNoConverter extends CobwwwebConverter {
       for (String id : relationIds) {
         progress.step();
         xml = getResource(URL, "relation", id);
-        CWNORelation entity = parseRelationResource(xml, id);
-        jsonConverter.appendTo(out, entity);
+        RelationDTO relation = parseRelationResource(xml, id);
+
+        jsonConverter.appendTo(out, relation);
       }
     } finally {
       out.close();
@@ -452,22 +457,24 @@ public class CobwwwebNoConverter extends CobwwwebConverter {
     }
   }
 
-  private CWNORelation parseRelationResource(String xml, String id) {
+  private RelationDTO parseRelationResource(String xml, String id) {
     RelationContext context = new RelationContext(id);
     parseXml(xml, new RelationVisitor(context));
- 
-    Reference typeRef = getRelationTypeReference(context.relationTypeName);
+
+    Reference typeRef = getRelationTypeReference(context.typeName);
     Reference sourceRef = references.get(context.sourceId);
     Reference targetRef = references.get(context.targetId);
 
     if (typeRef != null && sourceRef != null && targetRef != null) {
-      return RelationBuilder.newInstance(CWNORelation.class) //
-        .withRelationTypeRef(typeRef) //
-        .withSourceRef(sourceRef) //
-        .withTargetRef(targetRef) //
-        .build();
-     } else {
-      log("Error in %s: %s --> %s%n", context.relationTypeName, context.sourceId, context.targetId);
+      RelationDTO relation = new RelationDTO();
+      relation.setTypeName(context.typeName);
+      relation.setSourceType(sourceRef.getType());
+      relation.setSourceValue(sourceRef.getId());
+      relation.setTargetType(targetRef.getType());
+      relation.setTargetValue(targetRef.getId());
+      return relation;
+    } else {
+      log("Error in %s: %s --> %s%n", context.typeName, context.sourceId, context.targetId);
       return null;
     }
   }
@@ -478,7 +485,7 @@ public class CobwwwebNoConverter extends CobwwwebConverter {
 
   private class RelationContext extends XmlContext {
     public String id;
-    public String relationTypeName = "";
+    public String typeName = "";
     public String sourceId = "";
     public String targetId = "";
 
@@ -536,13 +543,13 @@ public class CobwwwebNoConverter extends CobwwwebConverter {
     @Override
     public void handleContent(Element element, RelationContext context, String text) {
       if (text.equalsIgnoreCase("translation of")) {
-        context.relationTypeName = "hasTranslation";
+        context.typeName = "hasTranslation";
       } else if (text.equalsIgnoreCase("edition of")) {
-        context.relationTypeName = "hasEdition";
+        context.typeName = "hasEdition";
       } else if (text.equalsIgnoreCase("written by")) {
-        context.relationTypeName = "isCreatedBy";
+        context.typeName = "isCreatedBy";
       } else if (text.equalsIgnoreCase("pseudonym")) {
-        context.relationTypeName = "isPseudonymOf";
+        context.typeName = "isPseudonymOf";
       } else {
         context.error("Unexpected relation type: '%s'", text);
         System.exit(0);

@@ -41,18 +41,20 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 
+/**
+ * Base class for COBWWWEB converters.
+ */
 public abstract class CobwwwebConverter extends DefaultConverter {
 
   public CobwwwebConverter(String vreId) {
     super(vreId);
   }
 
-  protected String getResource(String... parts) throws Exception {
-    String url = Joiner.on("/").join(parts);
+  protected String getResource(String... urlParts) throws Exception {
+    String url = Joiner.on("/").join(urlParts);
     logSourceName(url);
-    Client client = Client.create();
-    WebResource webResource = client.resource(url);
-    ClientResponse response = webResource.accept(MediaType.APPLICATION_XML).get(ClientResponse.class);
+    WebResource resource = Client.create().resource(url);
+    ClientResponse response = resource.accept(MediaType.APPLICATION_XML).get(ClientResponse.class);
     if (response.getClientResponseStatus() != ClientResponse.Status.OK) {
       throw new IOException("Failed to retrieve " + url);
     }
