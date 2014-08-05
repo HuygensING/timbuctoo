@@ -26,7 +26,6 @@ import java.io.File;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -142,7 +141,6 @@ public class JsonImporter extends CSVImporter {
 
     public <T extends DomainEntity> void handleFile(File file, Class<T> type) throws Exception {
       printBoxedText("File: " + file.getName());
-      String prefix = String.format("{\"@type\":\"%s\",", TypeNames.getInternalName(type));
 
       // Get rid of existing stuff
       removeNonPersistentEntities(type);
@@ -154,7 +152,6 @@ public class JsonImporter extends CSVImporter {
           String line = iterator.nextLine().trim();
           if (!line.isEmpty()) {
             progress.step();
-            line = prefix + line.substring(1);
             handleEntity(type, line);
           }
         }
@@ -174,21 +171,25 @@ public class JsonImporter extends CSVImporter {
       }
     }
 
+    // First implementation: expect definition in terms of id's
     private <T extends Relation> void handleRelation(Class<T> type, String line) throws Exception {
-      T entity = mapper.readValue(line, type);
-      String name = entity.getTypeId();
-      RelationType relationType = repository.getRelationTypeByName(name);
+      RelationDTO dto = mapper.readValue(line, RelationDTO.class);
 
+      RelationType relationType = repository.getRelationTypeByName(dto.getTypeName());
       Reference typeRef = new Reference(type, relationType.getId());
-      Reference sourceRef = references.get(entity.getSourceId());
-      Reference targetRef = references.get(entity.getTargetId());
-      
+      Reference sourceRef = resolveEntity(dto.getSourceType(), dto.getSourceKey(), dto.getSourceValue());
+      Reference targetRef = resolveEntity(dto.getTargetType(), dto.getTargetKey(), dto.getTargetValue());
+
       if (typeRef != null && sourceRef != null && targetRef != null) {
         String storedId = addRelation(type, typeRef, sourceRef, targetRef, change, line);
         indexManager.addEntity(type, storedId);
       } else {
         System.err.printf("Error in: %s%n", line);
       }
+    }
+
+    private Reference resolveEntity(String iname, String key, String value) {
+      return references.get(value);
     }
 
     private <T extends DomainEntity> void handleNonRelation(Class<T> type, String line) throws Exception {

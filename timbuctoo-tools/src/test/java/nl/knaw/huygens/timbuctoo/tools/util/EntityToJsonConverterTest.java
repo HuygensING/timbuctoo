@@ -57,7 +57,7 @@ public class EntityToJsonConverterTest {
     EntityToJsonConverter converter = new EntityToJsonConverter();
     String json = converter.convert(language);
 
-    assertContains(false, json, "'@type'");
+    assertContains(true, json, "'@type'");
     assertContains(true, json, "'_id':'LANG00042'");
     assertContains(false, json, "'^rev'");
     assertContains(true, json, "'^code':'zzj'");
@@ -71,26 +71,25 @@ public class EntityToJsonConverterTest {
 
   @Test
   public void testSerializationOfComplexEntity() throws Exception {
-   EntityToJsonConverter converter = new EntityToJsonConverter();
-   ObjectMapper mapper = new ObjectMapper();
+    EntityToJsonConverter converter = new EntityToJsonConverter();
+    ObjectMapper mapper = new ObjectMapper();
 
-   BaseLocation location = createBaseLocation();
-   String json = converter.convert(location);
-   json = "{\"@type\":\"baselocation\"," + json.substring(1);
+    BaseLocation location = createBaseLocation();
+    String json = converter.convert(location);
 
-   BaseLocation converted = mapper.readValue(json, BaseLocation.class);
-   Assert.assertEquals("eng", converted.getDefLang());
-   Assert.assertEquals("re:derbyshire.eng", converted.getUrn());
-   Map<String, PlaceName> names = converted.getNames();
-   Assert.assertNotNull(names);
-   PlaceName name = names.get("eng");
-   Assert.assertNotNull(name);
-   Assert.assertNull(name.getDistrict());
-   Assert.assertNull(name.getSettlement());
-   Assert.assertEquals("Derbyshire", name.getRegion());
-   Assert.assertEquals("England", name.getCountry());
-   Assert.assertEquals("ENG", name.getCountryCode());
-   Assert.assertNull(name.getBloc());
+    BaseLocation converted = mapper.readValue(json, BaseLocation.class);
+    Assert.assertEquals("eng", converted.getDefLang());
+    Assert.assertEquals("re:derbyshire.eng", converted.getUrn());
+    Map<String, PlaceName> names = converted.getNames();
+    Assert.assertNotNull(names);
+    PlaceName name = names.get("eng");
+    Assert.assertNotNull(name);
+    Assert.assertNull(name.getDistrict());
+    Assert.assertNull(name.getSettlement());
+    Assert.assertEquals("Derbyshire", name.getRegion());
+    Assert.assertEquals("England", name.getCountry());
+    Assert.assertEquals("ENG", name.getCountryCode());
+    Assert.assertNull(name.getBloc());
   }
 
   private BaseLocation createBaseLocation() {
