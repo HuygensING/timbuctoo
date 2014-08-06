@@ -52,6 +52,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.storage.StorageStatus;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.util.KV;
+import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,26 +68,30 @@ public class Repository {
   private static final Logger LOG = LoggerFactory.getLogger(Repository.class);
 
   /** Maximum number of relations added to an entity. */
-  private static final int DEFAULT_RELATION_LIMIT = 1000;
+  static final int DEFAULT_RELATION_LIMIT = 1000;
 
   private final TypeRegistry registry;
   private final Storage storage;
   private final EntityMappers entityMappers;
   private final RelationTypes relationTypes;
 
+  private final RelationRefCreator relationRefCreator;
+
   @Inject
-  public Repository(TypeRegistry registry, Storage storage) throws StorageException {
+  public Repository(TypeRegistry registry, Storage storage, RelationRefCreator relationRefCreator) throws StorageException {
     this.registry = registry;
     this.storage = storage;
+    this.relationRefCreator = relationRefCreator;
     entityMappers = new EntityMappers(registry.getDomainEntityTypes());
     ensureIndexes();
     relationTypes = new RelationTypes(storage);
   }
 
-  public Repository(TypeRegistry registry, Storage storage, RelationTypes relationTypes) throws StorageException {
+  Repository(TypeRegistry registry, Storage storage, RelationTypes relationTypes, EntityMappers entityMappers, RelationRefCreator relationRefCreator) throws StorageException {
     this.registry = registry;
     this.storage = storage;
-    entityMappers = new EntityMappers(registry.getDomainEntityTypes());
+    this.entityMappers = entityMappers;
+    this.relationRefCreator = relationRefCreator;
     ensureIndexes();
     this.relationTypes = relationTypes;
   }
@@ -233,7 +238,9 @@ public class Repository {
     T entity = null;
     try {
       entity = storage.getItem(type, id);
-      addRelationsTo(entity, DEFAULT_RELATION_LIMIT);
+      if (entity != null) {
+        addRelationsToEntity(entity);
+      }
     } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
     }
@@ -244,7 +251,9 @@ public class Repository {
     T entity = null;
     try {
       entity = storage.getRevision(type, id, revision);
-      addRelationsTo(entity, DEFAULT_RELATION_LIMIT);
+      if (entity != null) {
+        addRelationsToEntity(entity);
+      }
     } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
     }
@@ -277,13 +286,17 @@ public class Repository {
     try {
       List<T> variations = storage.getAllVariations(type, id);
       for (T variation : variations) {
-        addRelationsTo(variation, DEFAULT_RELATION_LIMIT);
+        addRelationsToEntity(variation);
       }
       return variations;
     } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
       return Collections.emptyList();
     }
+  }
+
+  private <T extends DomainEntity> void addRelationsToEntity(T entity) throws StorageException {
+    entity.addRelations(this, DEFAULT_RELATION_LIMIT, entityMappers, relationRefCreator);
   }
 
   public <T extends DomainEntity> List<T> getVersions(Class<T> type, String id) {
@@ -377,6 +390,10 @@ public class Repository {
     return storage.getRelationsByEntityId(Relation.class, id).getSome(limit);
   }
 
+  public List<? extends Relation> getRelationsByEntityId(String entityId, int limit, Class<? extends Relation> type) throws StorageException {
+    return storage.getRelationsByEntityId(type, entityId).getSome(limit);
+  }
+
   /**
    * Get all the relations that have the type in {@code relationTypIds}.
    * @param variation the project specific variation of the relation to get.
@@ -402,8 +419,9 @@ public class Repository {
    *
    * NOTE We retrieve relations where the entity is source or target with one query;
    * handling them separately would cause complications with reflexive relations.
+   * @param entityMappers 
    */
-  private <T extends DomainEntity> void addRelationsTo(T entity, int limit) throws StorageException {
+  private <T extends DomainEntity> void addRelationsTo(T entity, int limit, EntityMappers entityMappers) throws StorageException {
     if (entity != null && limit > 0) {
       String entityId = entity.getId();
       Class<? extends DomainEntity> entityType = entity.getClass();
@@ -411,7 +429,7 @@ public class Repository {
       checkState(mapper != null, "No EntityMapper for type %s", entityType);
       @SuppressWarnings("unchecked")
       Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
-      for (Relation relation : storage.getRelationsByEntityId(mappedType, entityId).getSome(limit)) {
+      for (Relation relation : getRelationsByEntityId(entityId, limit, mappedType)) {
         RelationType relType = getRelationTypeById(relation.getTypeId());
         checkState(relType != null, "Failed to retrieve relation type");
         if (relation.hasSourceId(entityId)) {
@@ -428,7 +446,7 @@ public class Repository {
 
   // Relations are defined between primitive domain entities
   // Map to a domain entity in the package from which an entity is requested
-  private RelationRef newRelationRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws StorageException {
+  public RelationRef newRelationRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws StorageException {
     String iname = reference.getType();
     Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
     type = mapper.map(type);
@@ -448,10 +466,10 @@ public class Repository {
       String hasWorkLanguageId = relationTypes.getByName("hasWorkLanguage").getId();
 
       // if other relations are already attached, we don't need this query...
-      StorageIterator<Relation> iterator1 = storage.findRelations(Relation.class, null, entity.getId(), isCreatedById);
+      StorageIterator<Relation> iterator1 = findRelations(null, entity.getId(), isCreatedById);
       while (iterator1.hasNext()) {
         Relation relation1 = iterator1.next();
-        StorageIterator<Relation> iterator2 = storage.findRelations(Relation.class, relation1.getSourceId(), null, hasWorkLanguageId);
+        StorageIterator<Relation> iterator2 = findRelations(relation1.getSourceId(), null, hasWorkLanguageId);
         while (iterator2.hasNext()) {
           Relation relation2 = iterator2.next();
           languageIds.add(relation2.getTargetId());
@@ -468,6 +486,10 @@ public class Repository {
         }
       }
     }
+  }
+
+  public StorageIterator<Relation> findRelations(String sourceId, String targetId, String relationTypeId) throws StorageException {
+    return storage.findRelations(Relation.class, sourceId, targetId, relationTypeId);
   }
 
   // --- languages -------------------------------------------------------------
