@@ -20,12 +20,16 @@ public class AddRelationsTestHelper {
   public static final int RELATION_LIMIT = 5;
 
   public static Relation createRelation(String sourceId, String targetId, String id, double relationNumber) {
+    return createRelation(sourceId, targetId, id, "typeId" + relationNumber);
+  }
+
+  public static Relation createRelation(String sourceId, String targetId, String id, String relationType) {
     Relation relation = new Relation();
     relation.setSourceId(sourceId);
     relation.setSourceType("sourceType");
     relation.setTargetId(targetId);
     relation.setTargetType("targetType");
-    relation.setTypeId("typeId" + relationNumber);
+    relation.setTypeId(relationType);
     relation.setId(id);
     return relation;
   }

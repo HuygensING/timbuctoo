@@ -36,4 +36,9 @@ public class RelationRefCreator {
 
     return new RelationRef(mappedIName, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
   }
+
+  public RelationRef newRelationRef(String type, String xType, String id, String displayName, String relationId, boolean accepted, int rev) {
+    return new RelationRef(type, xType, id, displayName, relationId, accepted, rev);
+  }
+
 }

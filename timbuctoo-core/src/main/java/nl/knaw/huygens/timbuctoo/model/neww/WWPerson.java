@@ -23,18 +23,30 @@ package nl.knaw.huygens.timbuctoo.model.neww;
  */
 
 import java.util.List;
+import java.util.Set;
 
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class WWPerson extends Person {
 
+  static final String HAS_WORK_LANGUAGE_RELATION = "hasWorkLanguage";
+  static final String IS_CREATED_BY_RELATION = "isCreatedBy";
   private String bibliography;
   private String children;
   private List<String> fsPseudonyms;
@@ -210,6 +222,49 @@ public class WWPerson extends Person {
         return UNKNOWN;
       }
     }
+  }
+
+  @Override
+  public void addRelations(Repository repository, int limit, EntityMappers entityMappers, RelationRefCreator relationRefCreator) throws StorageException {
+    super.addRelations(repository, limit, entityMappers, relationRefCreator);
+
+    if (limit > 0) {
+      addDerivedRelationsTo(repository, relationRefCreator);
+    }
+  }
+
+  // Implements a single derived relation
+  // Note that it pertains to WWPerson only
+  private <T extends DomainEntity> void addDerivedRelationsTo(Repository repository, RelationRefCreator relationRefCreator) throws StorageException {
+    Set<String> languageIds = Sets.newHashSet();
+    String hasWorkLanguageId = repository.getRelationTypeByName(HAS_WORK_LANGUAGE_RELATION).getId();
+
+    // if other relations are already attached, we don't need this query...
+    StorageIterator<Relation> iterator1 = getCreatedByRelations(repository);
+    while (iterator1.hasNext()) {
+      Relation relation1 = iterator1.next();
+      StorageIterator<Relation> iterator2 = repository.findRelations(relation1.getSourceId(), null, hasWorkLanguageId);
+      while (iterator2.hasNext()) {
+        Relation relation2 = iterator2.next();
+        languageIds.add(relation2.getTargetId());
+      }
+      iterator2.close();
+    }
+    iterator1.close();
+
+    for (String languageId : languageIds) {
+      Language language = repository.getEntity(Language.class, languageId);
+      if (language != null) {
+        RelationRef ref = relationRefCreator.newRelationRef("language", "languages", languageId, language.getDisplayName(), null, true, 0);
+        this.addRelation("hasPersonLanguage", ref);
+      }
+    }
+  }
+
+  private StorageIterator<Relation> getCreatedByRelations(Repository repository) throws StorageException {
+    String isCreatedById = repository.getRelationTypeByName(IS_CREATED_BY_RELATION).getId();
+    StorageIterator<Relation> iterator1 = repository.findRelations(null, this.getId(), isCreatedById);
+    return iterator1;
   }
 
 }

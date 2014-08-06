@@ -466,10 +466,10 @@ public class Repository {
       String hasWorkLanguageId = relationTypes.getByName("hasWorkLanguage").getId();
 
       // if other relations are already attached, we don't need this query...
-      StorageIterator<Relation> iterator1 = storage.findRelations(Relation.class, null, entity.getId(), isCreatedById);
+      StorageIterator<Relation> iterator1 = findRelations(null, entity.getId(), isCreatedById);
       while (iterator1.hasNext()) {
         Relation relation1 = iterator1.next();
-        StorageIterator<Relation> iterator2 = storage.findRelations(Relation.class, relation1.getSourceId(), null, hasWorkLanguageId);
+        StorageIterator<Relation> iterator2 = findRelations(relation1.getSourceId(), null, hasWorkLanguageId);
         while (iterator2.hasNext()) {
           Relation relation2 = iterator2.next();
           languageIds.add(relation2.getTargetId());
@@ -486,6 +486,10 @@ public class Repository {
         }
       }
     }
+  }
+
+  public StorageIterator<Relation> findRelations(String sourceId, String targetId, String relationTypeId) throws StorageException {
+    return storage.findRelations(Relation.class, sourceId, targetId, relationTypeId);
   }
 
   // --- languages -------------------------------------------------------------
