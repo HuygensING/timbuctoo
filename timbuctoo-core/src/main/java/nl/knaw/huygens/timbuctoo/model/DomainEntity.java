@@ -186,10 +186,10 @@ public abstract class DomainEntity extends Entity implements Variable {
    * @param repository the repository to help with retrieving the relations
    * @param limit maximum number of relations to add
    * @param entityMappers helps to determine the relation class
-   * @param relationRefCreatorMock a factory for creating RelationRefs.
+   * @param relationRefCreator a factory for creating RelationRefs.
    * @throws StorageException when the retrieving of the data fails.
    */
-  public void addRelations(Repository repository, int limit, EntityMappers entityMappers, RelationRefCreator relationRefCreatorMock) throws StorageException {
+  public void addRelations(Repository repository, int limit, EntityMappers entityMappers, RelationRefCreator relationRefCreator) throws StorageException {
     if (limit > 0) {
       String entityId = this.getId();
       Class<? extends DomainEntity> entityType = this.getClass();
@@ -204,10 +204,10 @@ public abstract class DomainEntity extends Entity implements Variable {
         checkState(relType != null, "Failed to retrieve relation type");
 
         if (relation.hasSourceId(entityId)) {
-          RelationRef ref = relationRefCreatorMock.newRelationRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+          RelationRef ref = relationRefCreator.newRelationRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
           this.addRelation(relType.getRegularName(), ref);
         } else if (relation.hasTargetId(entityId)) {
-          RelationRef ref = relationRefCreatorMock.newRelationRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+          RelationRef ref = relationRefCreator.newRelationRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
           this.addRelation(relType.getInverseName(), ref);
         }
       }
