@@ -27,7 +27,6 @@ import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.FacetDefinition;
 import nl.knaw.huygens.facetedsearch.model.FacetDefinitionBuilder;
-import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -68,6 +67,6 @@ public class FacetFinder {
   }
 
   private FacetDefinition createFacetDefintion(IndexAnnotation indexAnnotation) {
-    return new FacetDefinitionBuilder(indexAnnotation.fieldName(), indexAnnotation.title(), FacetType.LIST).build();
+    return new FacetDefinitionBuilder(indexAnnotation.fieldName(), indexAnnotation.title(), indexAnnotation.facetType()).build();
   }
 }

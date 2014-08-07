@@ -30,7 +30,9 @@ import static org.hamcrest.Matchers.empty;
 import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.FacetDefinition;
+import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.search.model.ClassWithMultipleFacetTypes;
 import nl.knaw.huygens.timbuctoo.search.model.ComplexAnnotatedClass;
 import nl.knaw.huygens.timbuctoo.search.model.ComplexAnnotatedClassNoneFaceted;
 import nl.knaw.huygens.timbuctoo.search.model.ComplexAnnotatedClassNotAllFaceted;
@@ -56,7 +58,7 @@ public class FacetFinderTest {
   @Test
   public void testFindFacetDefinitionsAnnotatedClass() {
     List<FacetDefinitionMatcher> expectedFacets = Lists.newArrayList();
-    expectedFacets.add(createFacetDefinitionMatcher("dynamic_s_simple", "Simple"));
+    expectedFacets.add(createFacetDefinitionMatcher("dynamic_s_simple", "Simple", FacetType.LIST));
 
     testFindFacetDefinitions(SimpleAnnotatedClass.class, containsInAnyOrder(expectedFacets.toArray(new FacetDefinitionMatcher[0])));
   }
@@ -64,22 +66,22 @@ public class FacetFinderTest {
   @Test
   public void testFindFacetDefinitionsAnnotatedClassAndSuperClass() {
     List<FacetDefinitionMatcher> expectedFacets = Lists.newArrayList();
-    expectedFacets.add(createFacetDefinitionMatcher("dynamic_s_simple", "Simple"));
-    expectedFacets.add(createFacetDefinitionMatcher("dynamic_s_prop", "Property"));
+    expectedFacets.add(createFacetDefinitionMatcher("dynamic_s_simple", "Simple", FacetType.LIST));
+    expectedFacets.add(createFacetDefinitionMatcher("dynamic_s_prop", "Property", FacetType.LIST));
 
     testFindFacetDefinitions(SimpleAnnotatedSubClass.class, containsInAnyOrder(expectedFacets.toArray(new FacetDefinitionMatcher[0])));
   }
 
   @Test
   public void testFindFacetDefinitionsAnnotatedSuperClass() {
-    testFindFacetDefinitions(NonAnnotatedSubClass.class, contains(createFacetDefinitionMatcher("dynamic_s_simple", "Simple")));
+    testFindFacetDefinitions(NonAnnotatedSubClass.class, contains(createFacetDefinitionMatcher("dynamic_s_simple", "Simple", FacetType.LIST)));
   }
 
   @Test
   public void testFindFacetDefinitionsComplexAnnotatedClassAllFaceted() {
     List<FacetDefinitionMatcher> expectedFacets = Lists.newArrayList();
-    expectedFacets.add(createFacetDefinitionMatcher("dynamic_t_complex1", "Complex1"));
-    expectedFacets.add(createFacetDefinitionMatcher("dynamic_t_complex2", "Complex2"));
+    expectedFacets.add(createFacetDefinitionMatcher("dynamic_t_complex1", "Complex1", FacetType.LIST));
+    expectedFacets.add(createFacetDefinitionMatcher("dynamic_t_complex2", "Complex2", FacetType.LIST));
 
     testFindFacetDefinitions(ComplexAnnotatedClass.class, containsInAnyOrder(expectedFacets.toArray(new FacetDefinitionMatcher[0])));
   }
@@ -92,12 +94,24 @@ public class FacetFinderTest {
 
   @Test
   public void testFindFacetDefinitionsComplexAnnotatedClassSomeFaceted() {
-    testFindFacetDefinitions(ComplexAnnotatedClassNotAllFaceted.class, contains(createFacetDefinitionMatcher("dynamic_t_complex1", "Complex1")));
+    testFindFacetDefinitions(ComplexAnnotatedClassNotAllFaceted.class, contains(createFacetDefinitionMatcher("dynamic_t_complex1", "Complex1", FacetType.LIST)));
   }
 
-  private FacetDefinitionMatcher createFacetDefinitionMatcher(String name, String title) {
+  @Test
+  public void testFindFacetDefinitionsClassWithMultipleFacetTypes() {
+    List<FacetDefinitionMatcher> expectedFacets = Lists.newArrayList();
+    expectedFacets.add(createFacetDefinitionMatcher("dynamic_s_list", "", FacetType.LIST));
+    expectedFacets.add(createFacetDefinitionMatcher("dynamic_b_boolean", "", FacetType.BOOLEAN));
+    // FIXME #2635 Range facets are not yet supported.
+    //    expectedFacets.add(createFacetDefinitionMatcher("dynamic_r_range", "", FacetType.RANGE));
+    expectedFacets.add(createFacetDefinitionMatcher("dynamic_p_period", "", FacetType.PERIOD));
 
-    return new FacetDefinitionMatcher(name, title, nl.knaw.huygens.facetedsearch.model.FacetType.LIST);
+    testFindFacetDefinitions(ClassWithMultipleFacetTypes.class, containsInAnyOrder(expectedFacets.toArray(new FacetDefinitionMatcher[0])));
+  }
+
+  private FacetDefinitionMatcher createFacetDefinitionMatcher(String name, String title, FacetType facetType) {
+
+    return new FacetDefinitionMatcher(name, title, facetType);
   }
 
   private void testFindFacetDefinitions(Class<? extends DomainEntity> type, Matcher<Iterable<? extends FacetDefinition>> matcher) {
