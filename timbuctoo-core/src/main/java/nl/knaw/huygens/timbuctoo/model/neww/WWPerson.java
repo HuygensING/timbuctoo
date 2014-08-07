@@ -28,6 +28,7 @@ import java.util.Set;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.model.DerivedRelationType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -40,6 +41,7 @@ import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
 import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -205,6 +207,14 @@ public class WWPerson extends Person {
     return getRelations("hasReligion");
   }
 
+  @Override
+  @JsonIgnore
+  public List<DerivedRelationType> getDerivedRelationTypes() {
+    // adds works of pseudonyms of a person to that person
+    // return ImmutableList.of(new DerivedRelationType("isCreatorOf", "hasPseudonym", "isCreatorOf"));
+    return ImmutableList.of(new DerivedRelationType("hasPersonLanguage", "isCreatorOf", "hasWorkLanguage"));
+  }
+
   // ---------------------------------------------------------------------------
 
   // Not an enumerated type because of serialization problems.
@@ -255,7 +265,7 @@ public class WWPerson extends Person {
     for (String languageId : languageIds) {
       Language language = repository.getEntity(Language.class, languageId);
       if (language != null) {
-        RelationRef ref = relationRefCreator.newRelationRef("language", "languages", languageId, language.getDisplayName(), null, true, 0);
+        RelationRef ref = relationRefCreator.newReadOnlyRelationRef("language", "languages", languageId, language.getDisplayName());
         this.addRelation("hasPersonLanguage", ref);
       }
     }

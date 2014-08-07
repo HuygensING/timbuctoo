@@ -33,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.config.EntityMapper;
 import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DerivedRelationType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Language;
@@ -296,7 +297,8 @@ public class Repository {
   }
 
   private <T extends DomainEntity> void addRelationsToEntity(T entity) throws StorageException {
-    entity.addRelations(this, DEFAULT_RELATION_LIMIT, entityMappers, relationRefCreator);
+    // entity.addRelations(this, DEFAULT_RELATION_LIMIT, entityMappers, relationRefCreator);
+    addRelationsTo(entity, 1000, entityMappers);
   }
 
   public <T extends DomainEntity> List<T> getVersions(Class<T> type, String id) {
@@ -440,7 +442,7 @@ public class Repository {
           entity.addRelation(relType.getInverseName(), ref);
         }
       }
-      addDerivedRelationsTo(entity);
+      addDerivedRelations(entity, mapper);
     }
   }
 
@@ -457,8 +459,6 @@ public class Repository {
     return new RelationRef(iname, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
   }
 
-  // Implements a single derived relation
-  // Note that it pertains to WWPerson only
   private <T extends DomainEntity> void addDerivedRelationsTo(T entity) throws StorageException {
     if (entity.getClass() == WWPerson.class) {
       Set<String> languageIds = Sets.newHashSet();
@@ -490,6 +490,54 @@ public class Repository {
 
   public StorageIterator<Relation> findRelations(String sourceId, String targetId, String relationTypeId) throws StorageException {
     return storage.findRelations(Relation.class, sourceId, targetId, relationTypeId);
+  }
+
+  /**
+   * Returns all relations for the entity with the specified id with the specified relation type id.
+   * If {@code regular} is true the entity must be the source entity, else it must be the target entity.
+   */
+  public List<Relation> findRelations(String entityId, String relationTypeId, boolean regular) throws StorageException {
+    if (regular) {
+      return storage.findRelations(Relation.class, entityId, null, relationTypeId).getAll();
+    } else {
+      return storage.findRelations(Relation.class, null, entityId, relationTypeId).getAll();
+    }
+  }
+
+  /**
+   * Adds derived relations for the specified entity.
+   * Makes sure each relation is added only once.
+   */
+  protected <T extends DomainEntity> void addDerivedRelations(T entity, EntityMapper mapper) throws StorageException {
+    for (DerivedRelationType drtype : entity.getDerivedRelationTypes()) {
+      Set<String> ids = Sets.newHashSet();
+
+      RelationType relationType = getRelationTypeByName(drtype.getSecundaryTypeName());
+      boolean regular = relationType.getRegularName().equals(drtype.getSecundaryTypeName());
+      for (RelationRef ref : entity.getRelations(drtype.getPrimaryTypeName())) {
+        for (Relation relation : findRelations(ref.getId(), relationType.getId(), regular)) {
+          ids.add(regular ? relation.getTargetId() : relation.getSourceId());
+        }
+      }
+
+      // TODO extract method
+      String derivedTypeName = drtype.getDerivedTypeName();
+      relationType = getRelationTypeByName(derivedTypeName);
+      regular = relationType.getRegularName().equals(derivedTypeName);
+      String iname = regular ? relationType.getTargetTypeName() : relationType.getSourceTypeName();
+      Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
+      type = mapper.map(type);
+      iname = TypeNames.getInternalName(type);
+      String xname = registry.getXNameForIName(iname);
+
+      for (String id : ids) {
+        DomainEntity document = getEntity(type, id);
+        if (document != null) {
+          RelationRef ref = relationRefCreator.newReadOnlyRelationRef(iname, xname, id, document.getDisplayName());
+          entity.addRelation(derivedTypeName, ref);
+        }
+      }
+    }
   }
 
   // --- languages -------------------------------------------------------------

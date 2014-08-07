@@ -85,7 +85,7 @@ public class WWPersonTest {
     verifyRelationRefIsCreatedForRelation(relation1, true, relationRefCreatorMock, entityMapperMock);
     verifyRelationRefIsCreatedForRelation(relation2, false, relationRefCreatorMock, entityMapperMock);
 
-    verify(relationRefCreatorMock).newRelationRef(LANGUAGE_TYPE, LANGUAGE_X_TYPE, languageId, displayName, null, true, 0);
+    verify(relationRefCreatorMock).newReadOnlyRelationRef(LANGUAGE_TYPE, LANGUAGE_X_TYPE, languageId, displayName);
   }
 
   private void setupCreatedBy(Repository repositoryMock, String entityId, String... workIds) throws StorageException {
@@ -144,7 +144,7 @@ public class WWPersonTest {
   }
 
   private static class StorageRelationListItertator implements StorageIterator<Relation> {
-    private Iterator<Relation> relationIterator;
+    private final Iterator<Relation> relationIterator;
 
     public StorageRelationListItertator(Iterator<Relation> relationIterator) {
       this.relationIterator = relationIterator;

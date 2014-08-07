@@ -14,8 +14,8 @@ import com.google.inject.Singleton;
 
 @Singleton
 public class RelationRefCreator {
-  private TypeRegistry registry;
-  private Storage storage;
+  private final TypeRegistry registry;
+  private final Storage storage;
 
   @Inject
   public RelationRefCreator(TypeRegistry registry, Storage storage) {
@@ -37,8 +37,8 @@ public class RelationRefCreator {
     return new RelationRef(mappedIName, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
   }
 
-  public RelationRef newRelationRef(String type, String xType, String id, String displayName, String relationId, boolean accepted, int rev) {
-    return new RelationRef(type, xType, id, displayName, relationId, accepted, rev);
+  public RelationRef newReadOnlyRelationRef(String type, String xType, String id, String displayName) {
+    return new RelationRef(type, xType, id, displayName, null, true, 0);
   }
 
 }

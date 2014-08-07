@@ -181,6 +181,11 @@ public abstract class DomainEntity extends Entity implements Variable {
     }
   }
 
+  @JsonIgnore
+  public List<DerivedRelationType> getDerivedRelationTypes() {
+    return ImmutableList.of();
+  }
+
   /**
    * Add the relations to this entity.
    * @param repository the repository to help with retrieving the relations
