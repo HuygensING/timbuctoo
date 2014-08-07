@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.rest.model;
+package test.rest.model.projecta;
 
 /*
  * #%L
@@ -22,24 +22,22 @@ package nl.knaw.huygens.timbuctoo.rest.model;
  * #L%
  */
 
+import test.rest.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
-@EntityTypeName("basedomainentities")
-public class BaseDomainEntity extends DomainEntity {
+@EntityTypeName("projectadomainentities")
+public class ProjectADomainEntity extends BaseDomainEntity {
 
-  public String name;
-  public String generalTestDocValue;
+  public String projectAGeneralTestDocValue;
 
-  public BaseDomainEntity() {}
+  public ProjectADomainEntity() {}
 
-  public BaseDomainEntity(String id) {
-    setId(id);
+  public ProjectADomainEntity(String id) {
+    super(id);
   }
 
-  @Override
-  public String getDisplayName() {
-    return null;
+  public ProjectADomainEntity(String id, String projectAGeneralTestDocValue) {
+    super(id);
+    this.projectAGeneralTestDocValue = projectAGeneralTestDocValue;
   }
-
 }

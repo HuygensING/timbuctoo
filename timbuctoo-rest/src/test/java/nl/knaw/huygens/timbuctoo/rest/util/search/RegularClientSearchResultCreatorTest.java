@@ -35,12 +35,13 @@ import nl.knaw.huygens.timbuctoo.model.ClientEntityRepresentation;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.util.search.ClientEntityRepresentationCreator;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RegularClientSearchResultCreator;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import test.rest.model.projecta.OtherDomainEntity;
 
 import com.google.common.collect.Lists;
 

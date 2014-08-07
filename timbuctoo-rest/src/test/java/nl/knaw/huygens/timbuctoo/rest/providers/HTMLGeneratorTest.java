@@ -28,10 +28,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
-import nl.knaw.huygens.timbuctoo.rest.model.BaseDomainEntity;
-import nl.knaw.huygens.timbuctoo.rest.model.TestDomainEntity;
-import nl.knaw.huygens.timbuctoo.rest.model.TestSystemEntity;
-import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
 
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
@@ -39,6 +35,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import test.rest.model.BaseDomainEntity;
+import test.rest.model.TestDomainEntity;
+import test.rest.model.TestSystemEntity;
+import test.rest.model.projecta.ProjectADomainEntity;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -55,7 +56,7 @@ public class HTMLGeneratorTest {
 
   @BeforeClass
   public static void setupRegistry() throws ModelException {
-    registry = TypeRegistry.getInstance().init("timbuctoo.rest.model.*");
+    registry = TypeRegistry.getInstance().init("test.rest.model.*");
   }
 
   @AfterClass

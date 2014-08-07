@@ -57,9 +57,6 @@ import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.rest.model.BaseDomainEntity;
-import nl.knaw.huygens.timbuctoo.rest.model.projecta.OtherDomainEntity;
-import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -69,6 +66,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
+
+import test.rest.model.BaseDomainEntity;
+import test.rest.model.projecta.OtherDomainEntity;
+import test.rest.model.projecta.ProjectADomainEntity;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;

@@ -59,9 +59,9 @@ import com.sun.jersey.guice.JerseyServletModule;
 class ResourceTestModule extends JerseyServletModule {
 
   private static final String M0 = "timbuctoo.model";
-  private static final String M1 = "timbuctoo.rest.model";
-  private static final String M1A = "timbuctoo.rest.model.projecta";
-  private static final String M1B = "timbuctoo.rest.model.projectb";
+  private static final String M1 = "test.rest.model";
+  private static final String M1A = "test.rest.model.projecta";
+  private static final String M1B = "test.rest.model.projectb";
   private static final String PACKAGES = M0 + " " + M1 + " " + M1A + " " + M1B;
 
   //All the classes are instance variables because we need to be able to reset them after each test.

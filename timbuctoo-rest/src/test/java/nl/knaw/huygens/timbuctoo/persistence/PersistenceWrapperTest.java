@@ -29,10 +29,11 @@ import static org.mockito.Mockito.when;
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.config.Paths;
-import nl.knaw.huygens.timbuctoo.rest.model.TestDomainEntity;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import test.rest.model.TestDomainEntity;
 
 public class PersistenceWrapperTest {
 

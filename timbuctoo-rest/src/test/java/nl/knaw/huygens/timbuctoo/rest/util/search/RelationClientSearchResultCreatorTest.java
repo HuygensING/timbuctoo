@@ -33,12 +33,13 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.model.ClientRelationRepresentation;
 import nl.knaw.huygens.timbuctoo.model.RelationClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.rest.model.TestRelation;
 import nl.knaw.huygens.timbuctoo.rest.util.search.ClientRelationRepresentationCreator;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RelationClientSearchResultCreator;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import test.rest.model.TestRelation;
 
 import com.google.common.collect.Lists;
 

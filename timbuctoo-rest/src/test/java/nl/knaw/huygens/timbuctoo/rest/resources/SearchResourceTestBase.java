@@ -13,7 +13,6 @@ import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.rest.model.TestRelation;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RegularClientSearchResultCreator;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RelationClientSearchResultCreator;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
@@ -23,6 +22,8 @@ import nl.knaw.huygens.timbuctoo.vre.VREManager;
 import org.junit.Before;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
+
+import test.rest.model.TestRelation;
 
 import com.google.common.collect.Sets;
 import com.sun.jersey.api.client.WebResource;

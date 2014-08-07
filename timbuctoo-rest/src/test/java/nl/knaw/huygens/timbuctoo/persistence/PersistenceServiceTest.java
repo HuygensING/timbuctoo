@@ -34,11 +34,12 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
-import nl.knaw.huygens.timbuctoo.rest.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import test.rest.model.projecta.ProjectADomainEntity;
 
 public class PersistenceServiceTest {
 

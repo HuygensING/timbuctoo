@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.rest.model;
+package test.rest.model;
 
 /*
  * #%L
@@ -22,8 +22,24 @@ package nl.knaw.huygens.timbuctoo.rest.model;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
-public class TestRelation extends Relation {
+@EntityTypeName("basedomainentities")
+public class BaseDomainEntity extends DomainEntity {
+
+  public String name;
+  public String generalTestDocValue;
+
+  public BaseDomainEntity() {}
+
+  public BaseDomainEntity(String id) {
+    setId(id);
+  }
+
+  @Override
+  public String getDisplayName() {
+    return null;
+  }
 
 }
