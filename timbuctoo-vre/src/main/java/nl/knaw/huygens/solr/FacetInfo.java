@@ -22,7 +22,7 @@ package nl.knaw.huygens.solr;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.facet.FacetType;
+import nl.knaw.huygens.facetedsearch.model.FacetType;
 
 public class FacetInfo {
 

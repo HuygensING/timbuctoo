@@ -22,8 +22,9 @@ package nl.knaw.huygens.timbuctoo.facet;
  * #L%
  */
 
-
 import java.util.List;
+
+import nl.knaw.huygens.facetedsearch.model.FacetType;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;

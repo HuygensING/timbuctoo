@@ -27,6 +27,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import nl.knaw.huygens.facetedsearch.model.FacetType;
+
 /**
  * Fields are indexed by Solr using a default schema.
  * 

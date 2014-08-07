@@ -24,7 +24,7 @@ package nl.knaw.huygens.timbuctoo.model.neww;
 
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.facet.FacetType;
+import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
