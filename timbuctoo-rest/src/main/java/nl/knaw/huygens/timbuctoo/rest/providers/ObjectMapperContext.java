@@ -22,8 +22,6 @@ public class ObjectMapperContext implements ContextResolver<ObjectMapper> {
 
   @Override
   public ObjectMapper getContext(Class<?> type) {
-    System.out.println("get ObjectMapper");
-
     return mapper;
   }
 }
