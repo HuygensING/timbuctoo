@@ -42,7 +42,7 @@ public abstract class CSVImporter {
 
   private static final char SEPARATOR_CHAR = ';';
   private static final char QUOTE_CHAR = '"';
-  private static final int LINES_TO_SKIP = 4;
+  private static final int LINES_TO_SKIP = 0;
 
   protected final PrintWriter out;
   protected final int linesToSkip;
@@ -54,6 +54,10 @@ public abstract class CSVImporter {
     separatorChar = separator;
     quoteChar = quote;
     linesToSkip = skip;
+  }
+
+  public CSVImporter(PrintWriter out, char separator, char quote) {
+    this(out, separator, quote, LINES_TO_SKIP);
   }
 
   public CSVImporter(PrintWriter out) {
@@ -82,8 +86,7 @@ public abstract class CSVImporter {
       Reader fileReader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
       reader = new CSVReader(fileReader, separatorChar, quoteChar, linesToSkip);
       for (String[] line : reader.readAll()) {
-        // allow lines to be empty
-        if (line.length > 0) {
+        if (acceptLine(line)) {
           validateLine(line, itemsPerLine, verbose);
           handleLine(line);
         }
@@ -105,14 +108,22 @@ public abstract class CSVImporter {
   protected void initialize() throws Exception {}
 
   /**
-   * Handles a parsed input line.
-   */
-  protected abstract void handleLine(String[] items) throws Exception;
-
-  /**
    * Performa actions after file has been handled.
    */
   protected void handleEndOfFile() throws Exception {};
+
+  /**
+   * Return {@code true} if the line must be handled, {@code false} otherwise.
+   */
+  protected boolean acceptLine(String[] items) {
+    // Note: CSVReader converts an empty line to a single, empty item...
+    return (items.length != 0) && !items[0].isEmpty() && !items[0].startsWith("--");
+  }
+
+  /**
+   * Handles a parsed input line.
+   */
+  protected abstract void handleLine(String[] items) throws Exception;
 
   private void validateLine(String[] line, int itemsPerLine, boolean verbose) {
     boolean error = (line.length < itemsPerLine);

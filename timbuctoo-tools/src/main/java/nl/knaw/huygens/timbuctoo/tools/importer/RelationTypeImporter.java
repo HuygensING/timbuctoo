@@ -45,7 +45,7 @@ public class RelationTypeImporter extends CSVImporter {
   private Set<String> names;
 
   public RelationTypeImporter(Repository repository) {
-    super(new PrintWriter(System.err), ';', '"', 4);
+    super(new PrintWriter(System.err), ';', '"');
     this.repository = repository;
     names = Sets.newTreeSet();
   }

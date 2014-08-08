@@ -47,7 +47,7 @@ public class RelationTypeConcordance extends CSVImporter {
   private final Map<String, Mapping> map = Maps.newHashMap();
 
   public RelationTypeConcordance(File file) throws Exception {
-    super(new PrintWriter(System.err), ';', '"', 4);
+    super(new PrintWriter(System.err), ';', '"');
     if (file != null) {
       handleFile(file, 6, false);
     }
