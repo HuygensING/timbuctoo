@@ -26,10 +26,10 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Set;
 
-import com.google.common.collect.Sets;
-
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
+
+import com.google.common.collect.Sets;
 
 /**
  * Imports all relation types.
@@ -45,7 +45,7 @@ public class RelationTypeImporter extends CSVImporter {
   private Set<String> names;
 
   public RelationTypeImporter(Repository repository) {
-    super(new PrintWriter(System.err), ';', '"', 5);
+    super(new PrintWriter(System.err), ';', '"', 4);
     this.repository = repository;
     names = Sets.newTreeSet();
   }
