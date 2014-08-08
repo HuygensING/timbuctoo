@@ -41,13 +41,9 @@ public class RelationSearchResultFilterTest {
 
     List<Map<String, Object>> rawResults = Lists.newArrayList();
 
-    FacetedSearchResult searchResult = mock(FacetedSearchResult.class);
-    when(searchResult.getRawResults()).thenReturn(rawResults);
+    FacetedSearchResult searchResult = createFacetedSearchResult(rawResults);
 
-    HashSet<Map<String, Object>> filteredRawResults = Sets.<Map<String, Object>> newHashSet();
-
-    when(collectionConverterMock.toFilterableSet(rawResults)).thenReturn(filterableSetMock);
-    when(filterableSetMock.filter(Mockito.<Predicate<Map<String, Object>>> any())).thenReturn(filteredRawResults);
+    HashSet<Map<String, Object>> filteredRawResults = setUpFilteredResult(collectionConverterMock, rawResults);
 
     RelationFacetedSearchResultFilter instance = new RelationFacetedSearchResultFilter(collectionConverterMock, sourceSearchIds, targetSearchIds);
 
@@ -59,5 +55,69 @@ public class RelationSearchResultFilterTest {
     verify(searchResult).setRawResults(Lists.newArrayList(filteredRawResults));
     assertThat(actualSearchResult, notNullValue(FacetedSearchResult.class));
 
+  }
+
+  @Test
+  public void testProcessWhenSourceIdsAreNull() {
+    // setup
+    List<String> sourceSearchIds = null;
+    List<String> targetSearchIds = Lists.newArrayList();
+    CollectionConverter collectionConverterMock = mock(CollectionConverter.class);
+
+    List<Map<String, Object>> rawResults = Lists.newArrayList();
+
+    FacetedSearchResult searchResult = createFacetedSearchResult(rawResults);
+
+    HashSet<Map<String, Object>> filteredRawResults = setUpFilteredResult(collectionConverterMock, rawResults);
+
+    RelationFacetedSearchResultFilter instance = new RelationFacetedSearchResultFilter(collectionConverterMock, sourceSearchIds, targetSearchIds);
+
+    // action
+    FacetedSearchResult actualSearchResult = instance.process(searchResult);
+
+    // verify
+    verify(filterableSetMock).filter(Mockito.<Predicate<Map<String, Object>>> any());
+    verify(searchResult).setRawResults(Lists.newArrayList(filteredRawResults));
+    assertThat(actualSearchResult, notNullValue(FacetedSearchResult.class));
+
+  }
+
+  @Test
+  public void testProcessWhenTargetIdsAreNull() {
+    // setup
+    List<String> sourceSearchIds = Lists.newArrayList();
+    List<String> targetSearchIds = null;
+    CollectionConverter collectionConverterMock = mock(CollectionConverter.class);
+
+    List<Map<String, Object>> rawResults = Lists.newArrayList();
+
+    FacetedSearchResult searchResult = createFacetedSearchResult(rawResults);
+
+    HashSet<Map<String, Object>> filteredRawResults = setUpFilteredResult(collectionConverterMock, rawResults);
+
+    RelationFacetedSearchResultFilter instance = new RelationFacetedSearchResultFilter(collectionConverterMock, sourceSearchIds, targetSearchIds);
+
+    // action
+    FacetedSearchResult actualSearchResult = instance.process(searchResult);
+
+    // verify
+    verify(filterableSetMock).filter(Mockito.<Predicate<Map<String, Object>>> any());
+    verify(searchResult).setRawResults(Lists.newArrayList(filteredRawResults));
+    assertThat(actualSearchResult, notNullValue(FacetedSearchResult.class));
+
+  }
+
+  private FacetedSearchResult createFacetedSearchResult(List<Map<String, Object>> rawResults) {
+    FacetedSearchResult searchResult = mock(FacetedSearchResult.class);
+    when(searchResult.getRawResults()).thenReturn(rawResults);
+    return searchResult;
+  }
+
+  private HashSet<Map<String, Object>> setUpFilteredResult(CollectionConverter collectionConverterMock, List<Map<String, Object>> rawResults) {
+    HashSet<Map<String, Object>> filteredRawResults = Sets.<Map<String, Object>> newHashSet();
+
+    when(collectionConverterMock.toFilterableSet(rawResults)).thenReturn(filterableSetMock);
+    when(filterableSetMock.filter(Mockito.<Predicate<Map<String, Object>>> any())).thenReturn(filteredRawResults);
+    return filteredRawResults;
   }
 }

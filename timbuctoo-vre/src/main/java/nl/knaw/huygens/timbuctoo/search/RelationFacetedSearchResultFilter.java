@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.search;
 import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID_FACET_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID_FACET_NAME;
 
+import java.util.AbstractSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,8 +38,12 @@ public class RelationFacetedSearchResultFilter implements FacetedSearchResultPro
     private final Set<String> sourceSearchIds;
 
     private TargetSourceIdRelationPredicate(List<String> targetSearchIds, List<String> sourceSearchIds) {
-      this.targetSearchIds = Sets.newTreeSet(targetSearchIds);
-      this.sourceSearchIds = Sets.newTreeSet(sourceSearchIds);
+      this.targetSearchIds = createSet(targetSearchIds);
+      this.sourceSearchIds = createSet(sourceSearchIds);
+    }
+
+    private AbstractSet<String> createSet(List<String> targetSearchIds) {
+      return targetSearchIds != null ? Sets.newTreeSet(targetSearchIds) : Sets.<String> newHashSet();
     }
 
     @Override
