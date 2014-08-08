@@ -25,8 +25,14 @@ package nl.knaw.huygens.timbuctoo.model;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public abstract class ClientSearchResult {
 
+  private static final String PREV_KEY = "_prev";
+  private static final String NEXT_KEY = "_next";
   private Set<String> sortableFields;
   private int numFound;
   private List<? extends DomainEntity> results;
@@ -96,10 +102,14 @@ public abstract class ClientSearchResult {
     this.sortableFields = sortableFields;
   }
 
+  @JsonProperty(NEXT_KEY)
+  @JsonInclude(value = Include.NON_NULL)
   public void setNextLink(String nextLink) {
     this.nextLink = nextLink;
   }
 
+  @JsonProperty(PREV_KEY)
+  @JsonInclude(value = Include.NON_NULL)
   public void setPrevLink(String prevLink) {
     this.prevLink = prevLink;
   }
