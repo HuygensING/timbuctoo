@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
 import nl.knaw.huygens.timbuctoo.rest.filters.VREAuthorizationFilterFactory;
 
 import com.google.common.collect.Maps;
+import com.sun.jersey.api.container.filter.GZIPContentEncodingFilter;
 import com.sun.jersey.api.container.filter.LoggingFilter;
 import com.sun.jersey.api.container.filter.RolesAllowedResourceFilterFactory;
 import com.sun.jersey.api.core.PackagesResourceConfig;
@@ -44,10 +45,10 @@ public class ServletInjectionModule extends JerseyServletModule {
   protected void configureServlets() {
     Map<String, String> params = Maps.newHashMap();
     params.put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.timbuctoo.rest.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.timbuctoo.rest.providers");
-    params.put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, ServletInjectionModelHelper.getClassNamesString(LoggingFilter.class));
+    params.put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, ServletInjectionModelHelper.getClassNamesString(GZIPContentEncodingFilter.class, LoggingFilter.class));
     params.put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES, ServletInjectionModelHelper.getClassNamesString(SecurityResourceFilterFactory.class, VREAuthorizationFilterFactory.class,
         UserResourceFilterFactory.class, RolesAllowedResourceFilterFactory.class));
-    params.put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, ServletInjectionModelHelper.getClassNamesString(LoggingFilter.class, CORSFilter.class));
+    params.put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, ServletInjectionModelHelper.getClassNamesString(GZIPContentEncodingFilter.class, LoggingFilter.class, CORSFilter.class));
     params.put(ServletContainer.PROPERTY_WEB_PAGE_CONTENT_REGEX, "/static.*");
     filter("/*").through(GuiceContainer.class, params);
   }
