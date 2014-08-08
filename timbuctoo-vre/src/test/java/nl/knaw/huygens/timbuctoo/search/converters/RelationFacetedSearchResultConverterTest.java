@@ -12,20 +12,19 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 
 public class RelationFacetedSearchResultConverterTest extends FacetedSearchResultConverterTestBase {
-  private List<String> targetIds;
-  private List<String> sourceIds;
 
   @Test
   public void testConvert() {
     // setup
-    targetIds = Lists.newArrayList("id1");
-    sourceIds = Lists.newArrayList("id2");
-    FacetedSearchResultConverter instance = new RelationFacetedSearchResultConverter(sourceIds, targetIds);
+    List<String> targetIds = Lists.newArrayList("id1");
+    List<String> sourceIds = Lists.newArrayList("id2");
+    List<String> relationTypeIds = Lists.newArrayList("id3");
+    FacetedSearchResultConverter instance = new RelationFacetedSearchResultConverter(sourceIds, targetIds, relationTypeIds);
 
     // action
     SearchResult actualSearchResult = instance.convert(TYPE_STRING, facetedSearchResult);
 
     // verify
-    assertThat(actualSearchResult, likeRelationSearchResult(TYPE_STRING, IDS, SEARCH_TERM, SORT, FACETS, sourceIds, targetIds));
+    assertThat(actualSearchResult, likeRelationSearchResult(TYPE_STRING, IDS, SEARCH_TERM, SORT, FACETS, sourceIds, targetIds, relationTypeIds));
   }
 }

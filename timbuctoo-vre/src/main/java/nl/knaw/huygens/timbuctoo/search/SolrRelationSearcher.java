@@ -59,7 +59,7 @@ public class SolrRelationSearcher extends RelationSearcher {
     StopWatch getIdsStopWatch = new StopWatch();
     getIdsStopWatch.start();
 
-    getRelationTypeIds(vre, relationSearchParameters);
+    addRelationTypeIds(vre, relationSearchParameters);
     List<String> sourceSearchIds = getSearchIds(relationSearchParameters.getSourceSearchId());
     List<String> targetSearchIds = getSearchIds(relationSearchParameters.getTargetSearchId());
 
@@ -87,7 +87,7 @@ public class SolrRelationSearcher extends RelationSearcher {
     StopWatch searchStopWatch = new StopWatch();
     searchStopWatch.start();
 
-    SearchResult searchResult = vre.search(type, searchParametersV1, createFacetedSearchResultConverter(sourceSearchIds, targetSearchIds),
+    SearchResult searchResult = vre.search(type, searchParametersV1, createFacetedSearchResultConverter(sourceSearchIds, targetSearchIds, relationSearchParameters.getRelationTypeIds()),
         createRelationFacetedSearchResultFilter(sourceSearchIds, targetSearchIds));
 
     searchStopWatch.stop();
@@ -108,8 +108,8 @@ public class SolrRelationSearcher extends RelationSearcher {
     return searchResult;
   }
 
-  protected RelationFacetedSearchResultConverter createFacetedSearchResultConverter(List<String> sourceSearchIds, List<String> targetSearchIds) {
-    return new RelationFacetedSearchResultConverter(sourceSearchIds, targetSearchIds);
+  protected RelationFacetedSearchResultConverter createFacetedSearchResultConverter(List<String> sourceSearchIds, List<String> targetSearchIds, List<String> relationTypeIds) {
+    return new RelationFacetedSearchResultConverter(sourceSearchIds, targetSearchIds, relationTypeIds);
   }
 
   protected RelationFacetedSearchResultFilter createRelationFacetedSearchResultFilter(List<String> sourceIds, List<String> targetIds) {
@@ -122,7 +122,7 @@ public class SolrRelationSearcher extends RelationSearcher {
     return result.getIds();
   }
 
-  private void getRelationTypeIds(VRE vre, RelationSearchParameters relationSearchParameters) {
+  private void addRelationTypeIds(VRE vre, RelationSearchParameters relationSearchParameters) {
     if (relationSearchParameters.getRelationTypeIds() == null || relationSearchParameters.getRelationTypeIds().isEmpty()) {
       relationSearchParameters.setRelationTypeIds(repository.getRelationTypeIdsByName(vre.getReceptionNames()));
     }

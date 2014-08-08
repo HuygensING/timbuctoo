@@ -112,7 +112,7 @@ public class SolrRelationSearcherTest {
       }
 
       @Override
-      protected RelationFacetedSearchResultConverter createFacetedSearchResultConverter(List<String> sourceSearchIds, List<String> targetSearchIds) {
+      protected RelationFacetedSearchResultConverter createFacetedSearchResultConverter(List<String> sourceSearchIds, List<String> targetSearchIds, List<String> relationTypeIds) {
         return facetedSearchResultConverterMock;
       }
 

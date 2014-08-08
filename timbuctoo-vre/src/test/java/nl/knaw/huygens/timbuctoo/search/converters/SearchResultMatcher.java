@@ -72,18 +72,21 @@ public class SearchResultMatcher extends TypeSafeMatcher<SearchResult> {
   }
 
   public static SearchResultMatcher likeRelationSearchResult(String searchType, List<String> ids, String term, List<SortParameter> sort, List<Facet> facets, List<String> sourceIds,
-      List<String> targetIds) {
-    return new RelationSearchResultMatcher(searchType, ids, term, sort, facets, sourceIds, targetIds);
+      List<String> targetIds, List<String> relationTypeIds) {
+    return new RelationSearchResultMatcher(searchType, ids, term, sort, facets, sourceIds, targetIds, relationTypeIds);
   }
 
   private static class RelationSearchResultMatcher extends SearchResultMatcher {
-    private List<String> sourceIds;
-    private List<String> targetIds;
+    private final List<String> sourceIds;
+    private final List<String> targetIds;
+    private final List<String> relationTypeIds;
 
-    private RelationSearchResultMatcher(String searchType, List<String> ids, String term, List<SortParameter> sort, List<Facet> facets, List<String> sourceIds, List<String> targetIds) {
+    private RelationSearchResultMatcher(String searchType, List<String> ids, String term, List<SortParameter> sort, List<Facet> facets, List<String> sourceIds, List<String> targetIds,
+        List<String> relationTypeIds) {
       super(searchType, ids, term, sort, facets);
       this.sourceIds = sourceIds;
       this.targetIds = targetIds;
+      this.relationTypeIds = relationTypeIds;
     }
 
     @Override
@@ -92,7 +95,9 @@ public class SearchResultMatcher extends TypeSafeMatcher<SearchResult> {
       description.appendText(" sourceIds ") //
           .appendValue(sourceIds) //
           .appendText(" targetIds ")//
-          .appendValue(targetIds);
+          .appendValue(targetIds) //
+          .appendText(" relationTypeIds ") //
+          .appendValue(relationTypeIds);
 
     }
 
@@ -103,7 +108,9 @@ public class SearchResultMatcher extends TypeSafeMatcher<SearchResult> {
       mismatchDescription.appendText(" sourceIds ") //
           .appendValue(item.getSourceIds()) //
           .appendText(" targetIds ")//
-          .appendValue(item.getTargetIds());
+          .appendValue(item.getTargetIds()) //
+          .appendText(" relationTypeIds ") //
+          .appendValue(item.getRelationTypeIds());
     }
 
     @Override
@@ -111,6 +118,7 @@ public class SearchResultMatcher extends TypeSafeMatcher<SearchResult> {
       boolean isEqual = super.matchesSafely(item);
       isEqual &= Objects.equal(sourceIds, item.getSourceIds());
       isEqual &= Objects.equal(targetIds, item.getTargetIds());
+      isEqual &= Objects.equal(relationTypeIds, item.getRelationTypeIds());
       return isEqual;
     }
   }
