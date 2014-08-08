@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.search;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,12 +46,11 @@ public class RelationSearchResultFilterTest {
     RelationFacetedSearchResultFilter instance = new RelationFacetedSearchResultFilter(collectionConverterMock, sourceSearchIds, targetSearchIds);
 
     // action
-    FacetedSearchResult actualSearchResult = instance.process(searchResult);
+    instance.process(searchResult);
 
     // verify
     verify(filterableSetMock).filter(Mockito.<Predicate<Map<String, Object>>> any());
     verify(searchResult).setRawResults(Lists.newArrayList(filteredRawResults));
-    assertThat(actualSearchResult, notNullValue(FacetedSearchResult.class));
 
   }
 
@@ -73,12 +70,11 @@ public class RelationSearchResultFilterTest {
     RelationFacetedSearchResultFilter instance = new RelationFacetedSearchResultFilter(collectionConverterMock, sourceSearchIds, targetSearchIds);
 
     // action
-    FacetedSearchResult actualSearchResult = instance.process(searchResult);
+    instance.process(searchResult);
 
     // verify
     verify(filterableSetMock).filter(Mockito.<Predicate<Map<String, Object>>> any());
     verify(searchResult).setRawResults(Lists.newArrayList(filteredRawResults));
-    assertThat(actualSearchResult, notNullValue(FacetedSearchResult.class));
 
   }
 
@@ -98,13 +94,11 @@ public class RelationSearchResultFilterTest {
     RelationFacetedSearchResultFilter instance = new RelationFacetedSearchResultFilter(collectionConverterMock, sourceSearchIds, targetSearchIds);
 
     // action
-    FacetedSearchResult actualSearchResult = instance.process(searchResult);
+    instance.process(searchResult);
 
     // verify
     verify(filterableSetMock).filter(Mockito.<Predicate<Map<String, Object>>> any());
     verify(searchResult).setRawResults(Lists.newArrayList(filteredRawResults));
-    assertThat(actualSearchResult, notNullValue(FacetedSearchResult.class));
-
   }
 
   private FacetedSearchResult createFacetedSearchResult(List<Map<String, Object>> rawResults) {

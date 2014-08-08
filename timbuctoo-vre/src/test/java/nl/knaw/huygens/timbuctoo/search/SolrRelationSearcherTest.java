@@ -62,7 +62,6 @@ public class SolrRelationSearcherTest {
   private SolrRelationSearcher instance;
   private String typeString = "relation";
   private FacetedSearchResult facetedSearchResult = new FacetedSearchResult();
-  private FacetedSearchResult filteredFacetedSearchResult = new FacetedSearchResult();
   private SearchResult searchResult = new SearchResult();
   private SearchParametersV1 searchParametersV1 = new SearchParametersV1();
   private Class<? extends DomainEntity> type = Relation.class;
@@ -102,8 +101,7 @@ public class SolrRelationSearcherTest {
     when(repositoryMock.getEntity(SearchResult.class, sourceSearchId)).thenReturn(createSearchResult(sourceIds));
     when(repositoryMock.getEntity(SearchResult.class, targetSearchId)).thenReturn(createSearchResult(targetIds));
 
-    when(facetedSearchResultFilterMock.process(facetedSearchResult)).thenReturn(filteredFacetedSearchResult);
-    when(facetedSearchResultConverterMock.convert(typeString, filteredFacetedSearchResult)).thenReturn(searchResult);
+    when(facetedSearchResultConverterMock.convert(typeString, facetedSearchResult)).thenReturn(searchResult);
 
     instance = new SolrRelationSearcher(repositoryMock, relationSearcherParametersConverterMock, typeRegistryMock, collectionConverterMock) {
       @Override

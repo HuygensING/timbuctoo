@@ -135,7 +135,7 @@ public abstract class AbstractVRE implements VRE {
     FacetedSearchResult facetedSearchResult = index.search(searchParameters);
 
     for (FacetedSearchResultProcessor processor : resultProcessors) {
-      facetedSearchResult = processor.process(facetedSearchResult);
+      processor.process(facetedSearchResult);
     }
 
     return facetedSearchResultConverter.convert(TypeNames.getInternalName(type), facetedSearchResult);

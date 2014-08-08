@@ -4,9 +4,8 @@ import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 
 public interface FacetedSearchResultProcessor {
   /**
-   * Processes a {@code FacetedSearchResult} and returns the processed one.
-   * @param facetedSearchResult the {@code FacetedSearchResult} to process
-   * @return a processed {@code FacetedSearchResult}.
+   * Processes a {@link FacetedSearchResult}.
+   * @param facetedSearchResult the {@link FacetedSearchResult} to process
    */
-  public FacetedSearchResult process(FacetedSearchResult facetedSearchResult);
+  public void process(FacetedSearchResult facetedSearchResult);
 }
