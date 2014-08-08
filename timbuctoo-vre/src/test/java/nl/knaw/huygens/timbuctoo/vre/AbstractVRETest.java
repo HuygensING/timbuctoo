@@ -133,17 +133,13 @@ public class AbstractVRETest {
   @Test
   public void testCustomSearchWithSearchResultProcessors() throws SearchException, SearchValidationException {
     FacetedSearchResult facetedSearchResult = new FacetedSearchResult();
-    FacetedSearchResult processedResult1 = new FacetedSearchResult();
-    FacetedSearchResult processedResult2 = new FacetedSearchResult();
     SearchResult searchResult = new SearchResult();
 
     FacetedSearchResultProcessor resultProcessorMock1 = mock(FacetedSearchResultProcessor.class);
     FacetedSearchResultProcessor resultProcessorMock2 = mock(FacetedSearchResultProcessor.class);
 
     when(indexMock.search(searchParameters)).thenReturn(facetedSearchResult);
-    when(resultProcessorMock1.process(facetedSearchResult)).thenReturn(processedResult1);
-    when(resultProcessorMock2.process(processedResult1)).thenReturn(processedResult2);
-    when(resultConverterMock.convert(TYPE_STRING, processedResult2)).thenReturn(searchResult);
+    when(resultConverterMock.convert(TYPE_STRING, facetedSearchResult)).thenReturn(searchResult);
 
     // action
     SearchResult actualSearchResult = instance.search(TYPE, searchParameters, resultConverterMock, resultProcessorMock1, resultProcessorMock2);
@@ -152,8 +148,8 @@ public class AbstractVRETest {
     assertThat(actualSearchResult, is(searchResult));
     verify(indexMock).search(searchParameters);
     verify(resultProcessorMock1).process(facetedSearchResult);
-    verify(resultProcessorMock2).process(processedResult1);
-    verify(resultConverterMock).convert(TYPE_STRING, processedResult2);
+    verify(resultProcessorMock2).process(facetedSearchResult);
+    verify(resultConverterMock).convert(TYPE_STRING, facetedSearchResult);
   }
 
   @Test(expected = SearchException.class)

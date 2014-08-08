@@ -25,12 +25,10 @@ public class RelationFacetedSearchResultFilter implements FacetedSearchResultPro
   }
 
   @Override
-  public FacetedSearchResult process(FacetedSearchResult facetedSearchResult) {
+  public void process(FacetedSearchResult facetedSearchResult) {
     FilterableSet<Map<String, Object>> filterableRawResults = collectionConverter.toFilterableSet(facetedSearchResult.getRawResults());
 
     facetedSearchResult.setRawResults(Lists.newArrayList(filterableRawResults.filter(predicate)));
-
-    return facetedSearchResult;
   }
 
   private static final class TargetSourceIdRelationPredicate implements Predicate<Map<String, Object>> {
