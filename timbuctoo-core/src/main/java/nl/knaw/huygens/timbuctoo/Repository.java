@@ -43,7 +43,6 @@ import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
@@ -84,7 +83,7 @@ public class Repository {
     this.storage = storage;
     this.relationRefCreator = relationRefCreator;
     entityMappers = new EntityMappers(registry.getDomainEntityTypes());
-    ensureIndexes();
+    createIndexes();
     relationTypes = new RelationTypes(storage);
   }
 
@@ -93,19 +92,19 @@ public class Repository {
     this.storage = storage;
     this.entityMappers = entityMappers;
     this.relationRefCreator = relationRefCreator;
-    ensureIndexes();
+    createIndexes();
     this.relationTypes = relationTypes;
   }
 
   /**
    * Create indexes, if they don't already exist.
    */
-  private void ensureIndexes() throws StorageException {
-    storage.ensureIndex(false, Relation.class, Relation.TYPE_ID);
-    storage.ensureIndex(false, Relation.class, Relation.SOURCE_ID);
-    storage.ensureIndex(false, Relation.class, Relation.TARGET_ID);
-    storage.ensureIndex(false, Relation.class, Relation.SOURCE_ID, Relation.TARGET_ID);
-    storage.ensureIndex(true, Language.class, Language.CODE);
+  private void createIndexes() throws StorageException {
+    storage.createIndex(false, Relation.class, Relation.TYPE_ID);
+    storage.createIndex(false, Relation.class, Relation.SOURCE_ID);
+    storage.createIndex(false, Relation.class, Relation.TARGET_ID);
+    storage.createIndex(false, Relation.class, Relation.SOURCE_ID, Relation.TARGET_ID);
+    storage.createIndex(true, Language.class, Language.CODE);
   }
 
   /**
@@ -457,35 +456,6 @@ public class Repository {
     DomainEntity entity = storage.getItem(type, reference.getId());
 
     return new RelationRef(iname, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
-  }
-
-  private <T extends DomainEntity> void addDerivedRelationsTo(T entity) throws StorageException {
-    if (entity.getClass() == WWPerson.class) {
-      Set<String> languageIds = Sets.newHashSet();
-      String isCreatedById = relationTypes.getByName("isCreatedBy").getId();
-      String hasWorkLanguageId = relationTypes.getByName("hasWorkLanguage").getId();
-
-      // if other relations are already attached, we don't need this query...
-      StorageIterator<Relation> iterator1 = findRelations(null, entity.getId(), isCreatedById);
-      while (iterator1.hasNext()) {
-        Relation relation1 = iterator1.next();
-        StorageIterator<Relation> iterator2 = findRelations(relation1.getSourceId(), null, hasWorkLanguageId);
-        while (iterator2.hasNext()) {
-          Relation relation2 = iterator2.next();
-          languageIds.add(relation2.getTargetId());
-        }
-        iterator2.close();
-      }
-      iterator1.close();
-
-      for (String languageId : languageIds) {
-        Language language = storage.getItem(Language.class, languageId);
-        if (language != null) {
-          RelationRef ref = new RelationRef("language", "languages", languageId, language.getDisplayName(), null, true, 0);
-          entity.addRelation("hasPersonLanguage", ref);
-        }
-      }
-    }
   }
 
   public StorageIterator<Relation> findRelations(String sourceId, String targetId, String relationTypeId) throws StorageException {

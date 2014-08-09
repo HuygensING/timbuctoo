@@ -77,7 +77,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testCreateIndexWithOneKey() throws Exception {
-    storage.ensureIndex(true, TestSystemEntity.class, "name");
+    storage.createIndex(true, TestSystemEntity.class, "name");
 
     DBObject keys = new BasicDBObject(propertyName(TestSystemEntity.class, "name"), 1);
     DBObject options = new BasicDBObject("unique", true);
@@ -86,7 +86,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testCreateIndexWithTwoKeys() throws Exception {
-    storage.ensureIndex(false, TestSystemEntity.class, "name", "^rev");
+    storage.createIndex(false, TestSystemEntity.class, "name", "^rev");
 
     DBObject keys = new BasicDBObject(propertyName(TestSystemEntity.class, "name"), 1) //
         .append(propertyName(TestSystemEntity.class, "^rev"), 1);

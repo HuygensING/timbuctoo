@@ -91,7 +91,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public void ensureIndex(boolean unique, Class<? extends Entity> type, String... fields) throws StorageException {
+  public void createIndex(boolean unique, Class<? extends Entity> type, String... fields) throws StorageException {
     DBObject keys = new BasicDBObject();
     for (String field : fields) {
       keys.put(propertyName(type, field), 1);
