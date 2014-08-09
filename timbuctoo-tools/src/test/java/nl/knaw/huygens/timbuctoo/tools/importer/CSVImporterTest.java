@@ -49,12 +49,12 @@ public class CSVImporterTest {
     testLineCount(2, "-- comment", "-- comment", "1", "-- comment", "2");
   }
 
-  private void testLineCount(int expectedNumberOfLines, String... lines) throws Exception {
+  private void testLineCount(int expectedNumberOfHandledLines, String... lines) throws Exception {
     String input = Joiner.on('\n').join(lines);
     InputStream stream = IOUtils.toInputStream(input, "UTF-8");
     TestImporter importer = new TestImporter();
     importer.handleFile(stream, 0, false);
-    assertThat(importer.getCount(), equalTo(expectedNumberOfLines));
+    assertThat(importer.getCount(), equalTo(expectedNumberOfHandledLines));
   }
 
   private static class TestImporter extends CSVImporter {

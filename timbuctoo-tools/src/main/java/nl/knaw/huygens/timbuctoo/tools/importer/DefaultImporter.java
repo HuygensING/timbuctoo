@@ -46,6 +46,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.process.Progress;
+import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -60,11 +61,13 @@ public abstract class DefaultImporter {
 
   protected final Repository repository;
   protected final IndexManager indexManager;
+  protected final EncodingFixer encodingFixer;
   protected final Change change;
 
   public DefaultImporter(Repository repository, IndexManager indexManager, String vreId) {
     this.repository = Preconditions.checkNotNull(repository);
     this.indexManager = Preconditions.checkNotNull(indexManager);
+    encodingFixer = new EncodingFixer();
     change = new Change("importer", vreId);
   }
 

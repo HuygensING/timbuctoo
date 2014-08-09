@@ -60,7 +60,6 @@ import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
-import nl.knaw.huygens.timbuctoo.tools.util.EncodingFixer;
 import nl.knaw.huygens.timbuctoo.util.Files;
 
 import org.apache.commons.io.FileUtils;
@@ -142,7 +141,7 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   private <T> T readJsonValue(File file, Class<T> valueType) throws Exception {
     String text = Files.readTextFromFile(file);
     // For Dutch Caribbean it seems OK to map "Ã " --> "à "
-    String converted = EncodingFixer.convert2(text).replaceAll("Ã ", "à ");
+    String converted = encodingFixer.convert2(text).replaceAll("Ã ", "à ");
     if (!converted.equals(text)) {
       int n = text.length() - converted.length();
       handleError("Fixed %d character encoding error%s in '%s'", n, (n == 1) ? "" : "s", file.getName());

@@ -22,23 +22,25 @@ package nl.knaw.huygens.timbuctoo.tools.util;
  * #L%
  */
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 public class EncodingFixerTest {
 
-  @Test
+  @org.junit.Test
   public void testConversion() {
-    Assert.assertEquals("Belvédère", EncodingFixer.convert1("BelvÃ©dÃ¨re"));
-    Assert.assertEquals("Curaçao", EncodingFixer.convert1("CuraÃ§ao"));
-    Assert.assertEquals("Wolffenbüttel", EncodingFixer.convert1("WolffenbÃ¼ttel"));
-    Assert.assertEquals("notariële", EncodingFixer.convert1("notariÃ«le"));
+    EncodingFixer fixer = new EncodingFixer();
+    assertThat(fixer.convert1("BelvÃ©dÃ¨re"), equalTo("Belvédère"));
+    assertThat(fixer.convert1("CuraÃ§ao"), equalTo("Curaçao"));
+    assertThat(fixer.convert1("WolffenbÃ¼ttel"), equalTo("Wolffenbüttel"));
+    assertThat(fixer.convert1("notariÃ«le"), equalTo("notariële"));
   }
 
-  @Test
+  @org.junit.Test
   public void testInvariance() {
-    Assert.assertEquals("Belvédère", EncodingFixer.convert1("Belvédère"));
-    Assert.assertEquals("Curaçao", EncodingFixer.convert1("Curaçao"));
+    EncodingFixer fixer = new EncodingFixer();
+    assertThat(fixer.convert1("Belvédère"), equalTo("Belvédère"));
+    assertThat(fixer.convert1("Curaçao"), equalTo("Curaçao"));
   }
 
 }

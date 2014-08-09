@@ -22,6 +22,12 @@ package nl.knaw.huygens.timbuctoo.tools.util;
  * #L%
  */
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+
 import java.io.IOException;
 import java.util.Map;
 
@@ -31,21 +37,17 @@ import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
 import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class EntityToJsonConverterTest {
 
-  @BeforeClass
+  @org.junit.BeforeClass
   public static void setupRegistry() throws ModelException {
     // needed for type resolver
     TypeRegistry.getInstance().init("timbuctoo.model.*");
   }
 
-  @Test
+  @org.junit.Test
   public void testConversion() throws IOException {
     Language language = new Language();
     language.setId("LANG00042");
@@ -54,42 +56,37 @@ public class EntityToJsonConverterTest {
     language.setName("Zuojiang Zhuang");
     language.setCore(false);
 
-    EntityToJsonConverter converter = new EntityToJsonConverter();
-    String json = converter.convert(language);
+    String json = new EntityToJsonConverter().convert(language);
 
-    assertContains(true, json, "'@type'");
-    assertContains(true, json, "'_id':'LANG00042'");
-    assertContains(false, json, "'^rev'");
-    assertContains(true, json, "'^code':'zzj'");
-    assertContains(true, json, "'name':'Zuojiang Zhuang'");
-    assertContains(true, json, "'core':false");
+    assertThat(json, containsString("\"@type\""));
+    assertThat(json, containsString("\"_id\":\"LANG00042\""));
+    assertThat(json, not(containsString("\"^rev\"")));
+    assertThat(json, containsString("\"^code\":\"zzj\""));
+    assertThat(json, containsString("\"name\":\"Zuojiang Zhuang\""));
+    assertThat(json, containsString("\"core\":false"));
   }
 
-  private void assertContains(boolean expected, String json, String text) {
-    Assert.assertEquals(expected, json.contains(text.replaceAll("'", "\"")));
-  }
-
-  @Test
+  @org.junit.Test
   public void testSerializationOfComplexEntity() throws Exception {
-    EntityToJsonConverter converter = new EntityToJsonConverter();
-    ObjectMapper mapper = new ObjectMapper();
-
     BaseLocation location = createBaseLocation();
-    String json = converter.convert(location);
 
-    BaseLocation converted = mapper.readValue(json, BaseLocation.class);
-    Assert.assertEquals("eng", converted.getDefLang());
-    Assert.assertEquals("re:derbyshire.eng", converted.getUrn());
+    String json = new EntityToJsonConverter().convert(location);
+    BaseLocation converted = new ObjectMapper().readValue(json, BaseLocation.class);
+
+    assertThat(converted.getDefLang(), equalTo("eng"));
+    assertThat(converted.getUrn(), equalTo("re:derbyshire.eng"));
+
     Map<String, PlaceName> names = converted.getNames();
-    Assert.assertNotNull(names);
+    assertThat(names, not(nullValue()));
+
     PlaceName name = names.get("eng");
-    Assert.assertNotNull(name);
-    Assert.assertNull(name.getDistrict());
-    Assert.assertNull(name.getSettlement());
-    Assert.assertEquals("Derbyshire", name.getRegion());
-    Assert.assertEquals("England", name.getCountry());
-    Assert.assertEquals("ENG", name.getCountryCode());
-    Assert.assertNull(name.getBloc());
+    assertThat(name, not(nullValue()));
+    assertThat(name.getDistrict(), nullValue());
+    assertThat(name.getSettlement(), nullValue());
+    assertThat(name.getRegion(), equalTo("Derbyshire"));
+    assertThat(name.getCountry(), equalTo("England"));
+    assertThat(name.getCountryCode(), equalTo("ENG"));
+    assertThat(name.getBloc(), nullValue());
   }
 
   private BaseLocation createBaseLocation() {

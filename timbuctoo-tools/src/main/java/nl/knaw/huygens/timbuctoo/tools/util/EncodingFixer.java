@@ -70,11 +70,11 @@ public class EncodingFixer {
     }
   }
 
-  public static String convert1(String text) {
+  public String convert1(String text) {
     return StringUtils.replaceEach(text, SOURCE, TARGET);
   }
 
-  public static String convert2(String text) {
+  public String convert2(String text) {
     String conv1 = convert1(text);
     if (!conv1.equals(text)) {
       String conv2 = convert1(conv1);
