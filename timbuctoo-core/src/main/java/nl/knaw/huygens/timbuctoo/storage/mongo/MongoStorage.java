@@ -96,7 +96,7 @@ public class MongoStorage implements Storage {
     for (String field : fields) {
       keys.put(propertyName(type, field), 1);
     }
-    mongoDB.ensureIndex(getDBCollection(type), keys, new BasicDBObject("unique", unique));
+    mongoDB.createIndex(getDBCollection(type), keys, new BasicDBObject("unique", unique));
   }
 
   @Override
