@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.search;
 
 import nl.knaw.huygens.facetedsearch.model.FacetDefinition;
 import nl.knaw.huygens.facetedsearch.model.FacetType;
+import nl.knaw.huygens.facetedsearch.model.RangeFacetDefinition;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
@@ -65,6 +66,41 @@ public class FacetDefinitionMatcher extends TypeSafeMatcher<FacetDefinition> {
     isEqual &= Objects.equal(expectedType, item.getType());
 
     return isEqual;
+  }
+
+  public static FacetDefinitionMatcher matchesFacetDefinition(String name, String title, FacetType type) {
+    return new FacetDefinitionMatcher(name, title, type);
+  }
+
+  public static RangeFacetDefinitionMatcher matchesRangeFacetDefinition(String name, String title, FacetType type, String lowerFieldName, String upperFieldName) {
+    return new RangeFacetDefinitionMatcher(name, title, type, lowerFieldName, upperFieldName);
+  }
+
+  private static class RangeFacetDefinitionMatcher extends FacetDefinitionMatcher {
+
+    private final String lowerFieldName;
+    private final String upperFieldName;
+
+    public RangeFacetDefinitionMatcher(String name, String title, FacetType type, String lowerFieldName, String upperFieldName) {
+      super(name, title, type);
+      this.lowerFieldName = lowerFieldName;
+      this.upperFieldName = upperFieldName;
+    }
+
+    @Override
+    protected boolean matchesSafely(FacetDefinition item) {
+      if (!(item instanceof RangeFacetDefinition)) {
+        return false;
+      }
+      boolean isEqual = super.matchesSafely(item);
+      RangeFacetDefinition rangeFacetDefinition = (RangeFacetDefinition) item;
+
+      isEqual &= Objects.equal(lowerFieldName, rangeFacetDefinition.getLowerLimitField());
+      isEqual &= Objects.equal(upperFieldName, rangeFacetDefinition.getUpperLimitField());
+
+      return isEqual;
+    }
+
   }
 
 }

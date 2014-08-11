@@ -27,6 +27,7 @@ import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.FacetDefinition;
 import nl.knaw.huygens.facetedsearch.model.FacetDefinitionBuilder;
+import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -37,6 +38,8 @@ public class FacetFinder {
 
   private static final Class<IndexAnnotations> INDEX_ANNOTATIONS_CLASS = IndexAnnotations.class;
   private static final Class<IndexAnnotation> INDEX_ANNOTATION_CLASS = IndexAnnotation.class;
+  private static final String LOWER_LIMIT_POST_FIX = "low";
+  private static final String UPPER_LIMIT_POST_FIX = "high";
 
   public List<FacetDefinition> findFacetDefinitions(Class<? extends Entity> type) {
     List<FacetDefinition> facetDefinitions = Lists.newArrayList();
@@ -67,6 +70,25 @@ public class FacetFinder {
   }
 
   private FacetDefinition createFacetDefintion(IndexAnnotation indexAnnotation) {
-    return new FacetDefinitionBuilder(indexAnnotation.fieldName(), indexAnnotation.title(), indexAnnotation.facetType()).build();
+    FacetDefinitionBuilder facetDefinitionBuilder = new FacetDefinitionBuilder(indexAnnotation.fieldName(), indexAnnotation.title(), indexAnnotation.facetType());
+
+    if (indexAnnotation.facetType() == FacetType.RANGE) {
+      facetDefinitionBuilder.setLowerLimitField(createLowerLimitField(indexAnnotation));
+      facetDefinitionBuilder.setUpperLimitField(createUpperLimitField(indexAnnotation));
+    }
+
+    return facetDefinitionBuilder.build();
+  }
+
+  private String createUpperLimitField(IndexAnnotation indexAnnotation) {
+    return createRangeFieldName(indexAnnotation, UPPER_LIMIT_POST_FIX);
+  }
+
+  private String createRangeFieldName(IndexAnnotation indexAnnotation, String postFix) {
+    return String.format("%s_%s", indexAnnotation.fieldName(), postFix);
+  }
+
+  private String createLowerLimitField(IndexAnnotation indexAnnotation) {
+    return createRangeFieldName(indexAnnotation, LOWER_LIMIT_POST_FIX);
   }
 }

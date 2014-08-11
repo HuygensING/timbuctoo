@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 public class ClassWithMultipleFacetTypes extends DomainEntity {
   private String test;
   private boolean bool;
-  //  private int integer;
+  private int integer;
   private String period;
 
   @Override
@@ -34,15 +34,14 @@ public class ClassWithMultipleFacetTypes extends DomainEntity {
     this.bool = bool;
   }
 
-  // FIXME #2635 Range facets are not yet supported.
-  //  @IndexAnnotation(fieldName = "dynamic_r_range", facetType = FacetType.RANGE, isFaceted = true)
-  //  public int getInteger() {
-  //    return integer;
-  //  }
+  @IndexAnnotation(fieldName = "dynamic_r_range", facetType = FacetType.RANGE, isFaceted = true)
+  public int getInteger() {
+    return integer;
+  }
 
-  //  public void setInteger(int integer) {
-  //    this.integer = integer;
-  //  }
+  public void setInteger(int integer) {
+    this.integer = integer;
+  }
 
   @IndexAnnotation(fieldName = "dynamic_p_period", facetType = FacetType.PERIOD, isFaceted = true)
   public String getPeriod() {
