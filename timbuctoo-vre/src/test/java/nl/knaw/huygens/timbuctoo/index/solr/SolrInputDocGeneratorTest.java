@@ -25,15 +25,14 @@ package nl.knaw.huygens.timbuctoo.index.solr;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
+import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.index.model.TestExtraBaseDoc;
-import nl.knaw.huygens.timbuctoo.index.solr.SolrInputDocGenerator;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.apache.solr.common.SolrInputDocument;
@@ -49,19 +48,67 @@ public class SolrInputDocGeneratorTest {
     return createEntity(displayName, "" + id);
   }
 
-  private Entity createEntity(String displayName, String id) {
-    TestExtraBaseDoc entity = mock(TestExtraBaseDoc.class);
-    when(entity.getId()).thenReturn(id);
-    when(entity.getDisplayName()).thenReturn(displayName);
+  private Entity createEntity(final String displayName, String id) {
+    TestExtraBaseDoc entity = new TestExtraBaseDoc() {
+      @Override
+      public String getDisplayName() {
+        return displayName;
+      }
+    };
+    entity.setId(id);
     return entity;
   }
 
-  private IndexAnnotation createIndexAnnotation(boolean canBeEmpty, String fieldName) {
-    IndexAnnotation annotation = mock(IndexAnnotation.class);
-    when(annotation.canBeEmpty()).thenReturn(canBeEmpty);
-    when(annotation.fieldName()).thenReturn(fieldName);
-    when(annotation.isFaceted()).thenReturn(false);
-    when(annotation.accessors()).thenReturn(new String[] {});
+  private IndexAnnotation createIndexAnnotation(final boolean canBeEmpty, final String fieldName) {
+    IndexAnnotation annotation = new IndexAnnotation() {
+
+      @Override
+      public Class<? extends Annotation> annotationType() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public String title() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public boolean isSortable() {
+        // TODO Auto-generated method stub
+        return false;
+      }
+
+      @Override
+      public boolean isFaceted() {
+        // TODO Auto-generated method stub
+        return false;
+      }
+
+      @Override
+      public String fieldName() {
+        // TODO Auto-generated method stub
+        return fieldName;
+      }
+
+      @Override
+      public FacetType facetType() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public boolean canBeEmpty() {
+        return canBeEmpty;
+      }
+
+      @Override
+      public String[] accessors() {
+        // TODO Auto-generated method stub
+        return new String[] {};
+      }
+    };
     return annotation;
   }
 
