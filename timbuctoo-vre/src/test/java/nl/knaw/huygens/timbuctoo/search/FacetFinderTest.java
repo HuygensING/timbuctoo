@@ -104,7 +104,7 @@ public class FacetFinderTest {
     List<FacetDefinitionMatcher> expectedFacets = Lists.newArrayList();
     expectedFacets.add(matchesFacetDefinition("dynamic_s_list", "", FacetType.LIST));
     expectedFacets.add(matchesFacetDefinition("dynamic_b_boolean", "", FacetType.BOOLEAN));
-    expectedFacets.add(matchesRangeFacetDefinition("dynamic_r_range", "", FacetType.RANGE, "dynamic_r_range_low", "dynamic_r_range_high"));
+    expectedFacets.add(matchesRangeFacetDefinition("dynamic_d_range", "", FacetType.RANGE, "dynamic_d_range_low", "dynamic_d_range_high"));
     expectedFacets.add(matchesFacetDefinition("dynamic_p_period", "", FacetType.PERIOD));
 
     testFindFacetDefinitions(ClassWithMultipleFacetTypes.class, containsInAnyOrder(expectedFacets.toArray(new FacetDefinitionMatcher[0])));

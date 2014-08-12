@@ -22,6 +22,10 @@ package nl.knaw.huygens.timbuctoo.index.solr;
  * #L%
  */
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -34,6 +38,8 @@ import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.index.model.TestExtraBaseDoc;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.search.model.ClassWithMultipleFacetTypes;
 
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
@@ -131,6 +137,36 @@ public class SolrInputDocGeneratorTest {
     Object actual = field.getFirstValue();
 
     assertEquals(expected, actual);
+  }
+
+  @Test
+  // Datable is currently the only supported type for ranges.
+  public void testGetResultOneDocumentWithDatableRangeFacetField() throws NoSuchMethodException {
+    ClassWithMultipleFacetTypes entity = new ClassWithMultipleFacetTypes();
+    Datable datable = new Datable("2014");
+    entity.setDatable(datable);
+
+    SolrInputDocGenerator generator = new SolrInputDocGenerator(entity);
+
+    String fieldName = "dynamic_d_range";
+    String lowFieldName = "dynamic_d_range_low";
+    String highFieldName = "dynamic_d_range_high";
+
+    processMethod(entity, generator, "getDatable", false, fieldName);
+
+    SolrInputDocument solrInputDocument = generator.getResult();
+
+    SolrInputField lowField = solrInputDocument.getField(lowFieldName);
+    SolrInputField highField = solrInputDocument.getField(highFieldName);
+    SolrInputField field = solrInputDocument.getField(fieldName);
+
+    assertThat(field, is(nullValue(SolrInputField.class)));
+    assertThat(getValueAsString(lowField), is(equalTo("20140101")));
+    assertThat(getValueAsString(highField), is(equalTo("20141231")));
+  }
+
+  private String getValueAsString(SolrInputField field) {
+    return field.getValue().toString();
   }
 
   @Test

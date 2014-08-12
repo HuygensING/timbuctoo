@@ -3,11 +3,12 @@ package nl.knaw.huygens.timbuctoo.search.model;
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 public class ClassWithMultipleFacetTypes extends DomainEntity {
   private String test;
   private boolean bool;
-  private int integer;
+  private Datable datable;
   private String period;
 
   @Override
@@ -34,13 +35,13 @@ public class ClassWithMultipleFacetTypes extends DomainEntity {
     this.bool = bool;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_r_range", facetType = FacetType.RANGE, isFaceted = true)
-  public int getInteger() {
-    return integer;
+  @IndexAnnotation(fieldName = "dynamic_d_range", facetType = FacetType.RANGE, isFaceted = true)
+  public Datable getDatable() {
+    return datable;
   }
 
-  public void setInteger(int integer) {
-    this.integer = integer;
+  public void setDatable(Datable datable) {
+    this.datable = datable;
   }
 
   @IndexAnnotation(fieldName = "dynamic_p_period", facetType = FacetType.PERIOD, isFaceted = true)

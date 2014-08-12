@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Objects;
 
 @SuppressWarnings("serial")
-public class Datable implements Comparable<Datable>, Serializable {
+public class Datable implements Comparable<Datable>, Serializable, Range {
 
   /** Central European Time */
   static final TimeZone CET = TimeZone.getTimeZone("CET");
@@ -303,5 +303,17 @@ public class Datable implements Comparable<Datable>, Serializable {
   @Override
   public int hashCode() {
     return Objects.hashCode(edtf);
+  }
+
+  @Override
+  public Object getUpperLimit() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public Object getLowerLimit() {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

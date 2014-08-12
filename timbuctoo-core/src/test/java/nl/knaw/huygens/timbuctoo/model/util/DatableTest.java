@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.model.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -266,5 +267,25 @@ public class DatableTest {
     Datable second = new Datable("20131010");
 
     assertEquals(1, first.compareTo(second));
+  }
+
+  @Test
+  public void testGetUpperLimit() {
+    fail("Yet to be implemented");
+  }
+
+  @Test
+  public void testGetUpperLimitNoEndDateSpecified() {
+    fail("Yet to be implemented");
+  }
+
+  @Test
+  public void testGetLowerLimit() {
+    fail("Yet to be implemented");
+  }
+
+  @Test
+  public void testGetLowerLimitNoBeginDateSpecified() {
+    fail("Yet to be implemented");
   }
 }
