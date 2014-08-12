@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -293,6 +294,7 @@ public class DatableTest {
 
   @Test
   public void testGetLowerLimit() {
+<<<<<<< HEAD
     Datable datable = new Datable("2013");
 
     assertThat(datable.getLowerLimit(), equalTo(getStringAsObject("20130101")));

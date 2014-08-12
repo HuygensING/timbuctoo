@@ -152,7 +152,11 @@ public class SolrInputDocGeneratorTest {
     String lowFieldName = "dynamic_d_range_low";
     String highFieldName = "dynamic_d_range_high";
 
+<<<<<<< HEAD
     processMethod(entity, generator, "getDatable", false, fieldName, FacetType.RANGE);
+=======
+    processMethod(entity, generator, "getDatable", false, fieldName);
+>>>>>>> [#2635] Commit to save the ideas
 
     SolrInputDocument solrInputDocument = generator.getResult();
 

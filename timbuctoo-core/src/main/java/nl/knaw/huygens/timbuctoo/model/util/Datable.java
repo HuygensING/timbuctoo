@@ -300,6 +300,7 @@ public class Datable implements Comparable<Datable>, Serializable, Range {
     return Objects.hashCode(edtf);
   }
 
+<<<<<<< HEAD
   //------------------------------------------------------
   // Range implementation
   //------------------------------------------------------
