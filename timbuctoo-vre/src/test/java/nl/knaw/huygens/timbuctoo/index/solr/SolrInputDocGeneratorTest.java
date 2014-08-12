@@ -42,7 +42,6 @@ import nl.knaw.huygens.timbuctoo.search.model.ClassWithMultipleFacetTypes;
 
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import test.timbuctoo.index.model.TestExtraBaseDoc;
@@ -140,7 +139,6 @@ public class SolrInputDocGeneratorTest {
     assertEquals(expected, actual);
   }
 
-  @Ignore("Ignore until the code is implemented")
   @Test
   // Datable is currently the only supported type for ranges.
   public void testGetResultOneDocumentWithDatableRangeFacetField() throws NoSuchMethodException {
@@ -154,11 +152,7 @@ public class SolrInputDocGeneratorTest {
     String lowFieldName = "dynamic_d_range_low";
     String highFieldName = "dynamic_d_range_high";
 
-<<<<<<< HEAD
     processMethod(entity, generator, "getDatable", false, fieldName, FacetType.RANGE);
-=======
-    processMethod(entity, generator, "getDatable", false, fieldName);
->>>>>>> [#2635] Commit to save the ideas
 
     SolrInputDocument solrInputDocument = generator.getResult();
 
