@@ -29,7 +29,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -305,6 +304,12 @@ public class DatableTest {
   }
 
   @Test
+  @Test
+  public void testGetLowerLimitNoFromDateSpecified() {
+    assertThat(RANGE_WITHOUT_FROM_DATE.getLowerLimit(), is(nullValue()));
+  }
+
+  @Test
   public void testIsValidRange() {
     assertThat(new Datable("2013").isValidRange(), is(true));
   }
@@ -319,7 +324,4 @@ public class DatableTest {
     assertThat(RANGE_WITHOUT_END_DATE.isValidRange(), is(false));
   }
 
-  public void testGetLowerLimitNoBeginDateSpecified() {
-    fail("Yet to be implemented");
-  }
 }
