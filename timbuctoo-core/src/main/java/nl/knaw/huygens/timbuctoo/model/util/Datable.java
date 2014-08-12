@@ -23,6 +23,8 @@ package nl.knaw.huygens.timbuctoo.model.util;
  */
 
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -35,6 +37,7 @@ public class Datable implements Comparable<Datable>, Serializable, Range {
 
   /** Central European Time */
   static final TimeZone CET = TimeZone.getTimeZone("CET");
+  private static final DateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
 
   public enum Certainty {
     HIGH, MEDIUM, LOW
@@ -52,14 +55,6 @@ public class Datable implements Comparable<Datable>, Serializable, Range {
 
   public String getEDTF() {
     return edtf;
-  }
-
-  public boolean isValid() {
-    return (fromDate != null) || (toDate != null);
-  }
-
-  public boolean isRange() {
-    return false;
   }
 
   public boolean isFloruit() {
@@ -305,15 +300,26 @@ public class Datable implements Comparable<Datable>, Serializable, Range {
     return Objects.hashCode(edtf);
   }
 
+  //------------------------------------------------------
+  // Range implementation
+  //------------------------------------------------------
+
+  @Override
+  public boolean isValidRange() {
+    return (fromDate != null) && (toDate != null);
+  }
+
   @Override
   public Object getUpperLimit() {
-    // TODO Auto-generated method stub
-    return null;
+    return formatDate(toDate);
+  }
+
+  private String formatDate(Date date) {
+    return date != null ? FORMAT.format(date) : null;
   }
 
   @Override
   public Object getLowerLimit() {
-    // TODO Auto-generated method stub
-    return null;
+    return formatDate(fromDate);
   }
 }
