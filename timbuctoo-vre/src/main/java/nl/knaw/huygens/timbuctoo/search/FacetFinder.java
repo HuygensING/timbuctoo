@@ -34,12 +34,16 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import com.google.common.collect.Lists;
 
+/*
+ *  It shares logic with nl.knaw.huygens.timbuctoo.index.SolrInputDocGenerator.
+ *  See issue #2642
+ */
 public class FacetFinder {
 
   private static final Class<IndexAnnotations> INDEX_ANNOTATIONS_CLASS = IndexAnnotations.class;
   private static final Class<IndexAnnotation> INDEX_ANNOTATION_CLASS = IndexAnnotation.class;
-  private static final String LOWER_LIMIT_POST_FIX = "low";
-  private static final String UPPER_LIMIT_POST_FIX = "high";
+  public static final String LOWER_LIMIT_POST_FIX = "low";
+  public static final String UPPER_LIMIT_POST_FIX = "high";
 
   public List<FacetDefinition> findFacetDefinitions(Class<? extends Entity> type) {
     List<FacetDefinition> facetDefinitions = Lists.newArrayList();
