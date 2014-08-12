@@ -188,10 +188,11 @@
     </dependency>
 
     <!-- ## Test dependencies ## -->
+    <!-- Hamcrest dependency should be on top see http://stackoverflow.com/a/16735373 -->
     <!-- Hamcrest library -->
     <dependency>
       <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
+      <artifactId>hamcrest-all</artifactId>
       <version>${hamcrest-library.version}</version>
       <scope>test</scope>
     </dependency>
