@@ -245,13 +245,6 @@
       <version>${jersey.version}</version>
       <scope>test</scope>
     </dependency>
-    <!-- Hamcrest -->
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
-      <version>${hamcrest-library.version}</version>
-      <scope>test</scope>
-    </dependency>
     <!-- ## End test libraries ## -->
 
     <!-- ## Runtime dependencies ## -->
