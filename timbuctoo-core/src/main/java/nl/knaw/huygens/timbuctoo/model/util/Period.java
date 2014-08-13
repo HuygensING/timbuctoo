@@ -30,29 +30,20 @@ public class Period {
   public Period() {}
 
   public Period(Datable startDate, Datable endDate) {
-    setStartDate(startDate);
-    setEndDate(endDate);
+    this.startDate = startDate;
+    this.endDate = endDate;
   }
 
   public Period(String startDate, String endDate) {
-    setStartDate(new Datable(startDate));
-    setEndDate(new Datable(endDate));
+    this(new Datable(startDate), new Datable(endDate));
   }
 
   public Datable getStartDate() {
     return startDate;
   }
 
-  public void setStartDate(Datable startDate) {
-    this.startDate = startDate;
-  }
-
   public Datable getEndDate() {
     return endDate;
-  }
-
-  public void setEndDate(Datable endDate) {
-    this.endDate = endDate;
   }
 
 }
