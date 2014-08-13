@@ -243,6 +243,8 @@ public class Repository {
       }
     } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
+      e.printStackTrace();
+      e.printStackTrace();
     }
     return entity;
   }
@@ -256,6 +258,7 @@ public class Repository {
       }
     } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
+      e.printStackTrace();
     }
     return entity;
   }
@@ -265,6 +268,7 @@ public class Repository {
       return storage.findItemByProperty(type, field, value);
     } catch (StorageException e) {
       LOG.error("Error while handling {}", type.getName());
+      e.printStackTrace();
       return null;
     }
   }
@@ -278,6 +282,7 @@ public class Repository {
       return storage.findItem(type, example);
     } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), example.getId());
+      e.printStackTrace();
       return null;
     }
   }
@@ -291,6 +296,7 @@ public class Repository {
       return variations;
     } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
+      e.printStackTrace();
       return Collections.emptyList();
     }
   }
@@ -305,6 +311,7 @@ public class Repository {
       return storage.getAllRevisions(type, id);
     } catch (StorageException e) {
       LOG.error("Error while handling {} {}", type.getName(), id);
+      e.printStackTrace();
       return Lists.newArrayList();
     }
   }

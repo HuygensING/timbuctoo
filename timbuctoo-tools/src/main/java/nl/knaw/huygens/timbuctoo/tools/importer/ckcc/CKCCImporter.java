@@ -48,8 +48,8 @@ import nl.knaw.huygens.timbuctoo.model.ckcc.CKCCDocument;
 import nl.knaw.huygens.timbuctoo.model.ckcc.CKCCPerson;
 import nl.knaw.huygens.timbuctoo.model.ckcc.CKCCRelation;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.FloruitPeriod;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
-import nl.knaw.huygens.timbuctoo.model.util.Period;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
@@ -369,13 +369,13 @@ public class CKCCImporter extends DefaultImporter {
       return Traversal.NEXT;
     }
 
-    private Period createFloruit(String start, String end) {
+    private FloruitPeriod createFloruit(String start, String end) {
       if (!StringUtils.isBlank(start) && !StringUtils.isBlank(end)) {
-        return new Period(start, end);
+        return new FloruitPeriod(start, end);
       } else if (!StringUtils.isBlank(start) && StringUtils.isBlank(end)) {
-        return new Period(start, start);
+        return new FloruitPeriod(start);
       } else if (!StringUtils.isBlank(end) && StringUtils.isBlank(start)) {
-        return new Period(end, end);
+        return new FloruitPeriod(end);
       } else {
         return null;
       }

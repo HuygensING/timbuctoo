@@ -28,8 +28,8 @@ import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.FloruitPeriod;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
-import nl.knaw.huygens.timbuctoo.model.util.Period;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.util.Text;
 
@@ -63,7 +63,7 @@ public class Person extends DomainEntity {
   private Datable deathDate;
   private List<String> types;
   private List<Link> links;
-  private Period floruit;
+  private FloruitPeriod floruit;
 
   public Person() {
     names = new Names();
@@ -238,11 +238,11 @@ public class Person extends DomainEntity {
 
   // ---------------------------------------------------------------------------
 
-  public Period getFloruit() {
+  public FloruitPeriod getFloruit() {
     return floruit;
   }
 
-  public void setFloruit(Period floruit) {
+  public void setFloruit(FloruitPeriod floruit) {
     this.floruit = floruit;
   }
 
