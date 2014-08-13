@@ -36,7 +36,6 @@ import java.util.Collection;
 
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.index.model.TestExtraBaseDoc;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.search.model.ClassWithMultipleFacetTypes;
@@ -44,6 +43,8 @@ import nl.knaw.huygens.timbuctoo.search.model.ClassWithMultipleFacetTypes;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 import org.junit.Test;
+
+import test.timbuctoo.index.model.TestExtraBaseDoc;
 
 public class SolrInputDocGeneratorTest {
 

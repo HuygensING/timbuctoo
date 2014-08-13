@@ -34,7 +34,6 @@ import java.util.Set;
 import nl.knaw.huygens.facetedsearch.model.FacetDefinition;
 import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
 import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescriptionBuilder;
-import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.search.FacetFinder;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
@@ -42,6 +41,8 @@ import nl.knaw.huygens.timbuctoo.search.IndexedFieldFinder;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 
 import org.junit.Test;
+
+import test.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;

@@ -26,12 +26,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
-import nl.knaw.huygens.timbuctoo.index.model.SubModel;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.junit.Test;
+
+import test.timbuctoo.index.model.ExplicitlyAnnotatedModel;
+import test.timbuctoo.index.model.SubModel;
 
 public class IndexNameCreatorTest {
   @Test
