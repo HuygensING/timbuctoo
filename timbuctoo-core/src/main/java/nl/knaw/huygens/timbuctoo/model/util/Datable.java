@@ -263,7 +263,7 @@ public class Datable implements Comparable<Datable>, Serializable, Range {
   @Override
   public int compareTo(Datable other) {
     if (other == null) {
-      return 0;
+      throw new NullPointerException(); // to be conform the Comparable API.
     }
 
     int compareFrom = getFromDate().compareTo(other.getFromDate());
