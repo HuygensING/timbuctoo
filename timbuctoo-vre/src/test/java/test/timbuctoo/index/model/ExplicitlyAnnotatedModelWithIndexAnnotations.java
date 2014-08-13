@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.index.model;
+package test.timbuctoo.index.model;
 
 /*
  * #%L

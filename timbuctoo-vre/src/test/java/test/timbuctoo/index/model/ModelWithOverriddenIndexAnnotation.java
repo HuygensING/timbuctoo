@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.index.model;
+package test.timbuctoo.index.model;
 
 /*
  * #%L
@@ -25,21 +25,15 @@ package nl.knaw.huygens.timbuctoo.index.model;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
-public class ImplicitlyAnnotatedModel extends DomainEntity {
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+public class ModelWithOverriddenIndexAnnotation extends DomainEntity {
 
   @Override
-  public String getId() {
-    return "";
-  }
-
-  @Override
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "description")
   public String getDisplayName() {
     return null;
-  }
-
-  @IndexAnnotation
-  public String getString() {
-    return "";
   }
 
 }

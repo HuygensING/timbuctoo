@@ -35,14 +35,15 @@ import java.util.Collections;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
-import nl.knaw.huygens.timbuctoo.index.model.SubModel;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import test.timbuctoo.index.model.ExplicitlyAnnotatedModel;
+import test.timbuctoo.index.model.SubModel;
 
 import com.google.common.collect.Lists;
 

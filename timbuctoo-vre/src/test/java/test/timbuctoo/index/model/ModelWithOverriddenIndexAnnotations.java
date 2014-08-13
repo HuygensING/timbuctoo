@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.index.model;
+package test.timbuctoo.index.model;
 
 /*
  * #%L
@@ -22,20 +22,15 @@ package nl.knaw.huygens.timbuctoo.index.model;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-@EntityTypeName("testextrabasedoc")
-public class TestExtraBaseDoc extends DomainEntity {
+public class ModelWithOverriddenIndexAnnotations extends ExplicitlyAnnotatedModelWithIndexAnnotations {
 
   @Override
-  @JsonIgnore
-  @IndexAnnotation(fieldName = "desc")
-  public String getDisplayName() {
-    return null;
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "test"), @IndexAnnotation(fieldName = "test2"), @IndexAnnotation(fieldName = "test3") })
+  public String getString() {
+    return super.getString();
   }
 
 }

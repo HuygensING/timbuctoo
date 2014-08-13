@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.index.model;
+package test.timbuctoo.index.model;
 
 /*
  * #%L
@@ -22,6 +22,24 @@ package nl.knaw.huygens.timbuctoo.index.model;
  * #L%
  */
 
-public class SubModelWithIndexAnnotations extends ExplicitlyAnnotatedModelWithIndexAnnotations {
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+
+public class ImplicitlyAnnotatedModel extends DomainEntity {
+
+  @Override
+  public String getId() {
+    return "";
+  }
+
+  @Override
+  public String getDisplayName() {
+    return null;
+  }
+
+  @IndexAnnotation
+  public String getString() {
+    return "";
+  }
 
 }

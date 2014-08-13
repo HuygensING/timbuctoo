@@ -21,7 +21,6 @@ import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexCollection;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexStatus;
-import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
@@ -30,6 +29,7 @@ import nl.knaw.huygens.timbuctoo.search.converters.RegularFacetedSearchResultCon
 import org.junit.Before;
 import org.junit.Test;
 
+import test.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import test.timbuctoo.index.model.Type1;
 
 import com.google.common.collect.Lists;

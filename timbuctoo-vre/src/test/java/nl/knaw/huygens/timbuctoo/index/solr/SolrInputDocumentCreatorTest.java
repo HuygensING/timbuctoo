@@ -28,14 +28,15 @@ import static org.mockito.Mockito.verify;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.index.ModelIterator;
-import nl.knaw.huygens.timbuctoo.index.model.ExplicitlyAnnotatedModel;
-import nl.knaw.huygens.timbuctoo.index.model.SubModel;
 import nl.knaw.huygens.timbuctoo.index.solr.SolrInputDocGenerator;
 import nl.knaw.huygens.timbuctoo.index.solr.SolrInputDocumentCreator;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.Test;
+
+import test.timbuctoo.index.model.ExplicitlyAnnotatedModel;
+import test.timbuctoo.index.model.SubModel;
 
 import com.google.common.collect.Lists;
 
