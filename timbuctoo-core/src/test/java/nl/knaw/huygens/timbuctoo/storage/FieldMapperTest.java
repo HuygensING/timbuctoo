@@ -22,9 +22,13 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.SEPARATOR;
 import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.util.Map;
 
@@ -37,8 +41,6 @@ import nl.knaw.huygens.timbuctoo.variation.model.MongoObjectMapperEntity;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import com.google.common.collect.Maps;
 
 public class FieldMapperTest {
 
@@ -53,103 +55,102 @@ public class FieldMapperTest {
 
   @Test
   public void testPropertyNameForEntity() {
-    assertEquals("_x", propertyName(Entity.class, "_x"));
-    assertEquals("^x", propertyName(Entity.class, "^x"));
-    assertEquals("@x", propertyName(Entity.class, "@x"));
-    assertEquals("entity" + FieldMapper.SEPARATOR + "xx", propertyName(Entity.class, "xx"));
+    assertThat(propertyName(Entity.class, "_x"), equalTo("_x"));
+    assertThat(propertyName(Entity.class, "^x"), equalTo("^x"));
+    assertThat(propertyName(Entity.class, "@x"), equalTo("@x"));
+    assertThat(propertyName(Entity.class, "xx"), equalTo("entity" + SEPARATOR + "xx"));
   }
 
   @Test
   public void testPropertyNameForSystemEntity() {
-    assertEquals("_x", propertyName(SystemEntity.class, "_x"));
-    assertEquals("^x", propertyName(SystemEntity.class, "^x"));
-    assertEquals("@x", propertyName(SystemEntity.class, "@x"));
-    assertEquals("systementity" + FieldMapper.SEPARATOR + "xx", propertyName(SystemEntity.class, "xx"));
+    assertThat(propertyName(SystemEntity.class, "_x"), equalTo("_x"));
+    assertThat(propertyName(SystemEntity.class, "^x"), equalTo("^x"));
+    assertThat(propertyName(SystemEntity.class, "@x"), equalTo("@x"));
+    assertThat(propertyName(SystemEntity.class, "xx"), equalTo("systementity" + SEPARATOR + "xx"));
   }
 
   @Test
   public void testPropertyNameForDomainEntity() {
-    assertEquals("_x", propertyName(DomainEntity.class, "_x"));
-    assertEquals("^x", propertyName(DomainEntity.class, "^x"));
-    assertEquals("@x", propertyName(DomainEntity.class, "@x"));
-    assertEquals("domainentity" + FieldMapper.SEPARATOR + "xx", propertyName(DomainEntity.class, "xx"));
+    assertThat(propertyName(DomainEntity.class, "_x"), equalTo("_x"));
+    assertThat(propertyName(DomainEntity.class, "^x"), equalTo("^x"));
+    assertThat(propertyName(DomainEntity.class, "@x"), equalTo("@x"));
+    assertThat(propertyName(DomainEntity.class, "xx"), equalTo("domainentity" + SEPARATOR + "xx"));
   }
 
   @Test
   public void testPropertyNameForUser() {
-    assertEquals("_x", propertyName(User.class, "_x"));
-    assertEquals("^x", propertyName(User.class, "^x"));
-    assertEquals("@x", propertyName(User.class, "@x"));
-    assertEquals("user" + FieldMapper.SEPARATOR + "xx", propertyName(User.class, "xx"));
+    assertThat(propertyName(User.class, "_x"), equalTo("_x"));
+    assertThat(propertyName(User.class, "^x"), equalTo("^x"));
+    assertThat(propertyName(User.class, "@x"), equalTo("@x"));
+    assertThat(propertyName(User.class, "xx"), equalTo("user" + SEPARATOR + "xx"));
   }
 
   @Test
   public void testPropertyNameForPerson() {
-    assertEquals("_x", propertyName(Person.class, "_x"));
-    assertEquals("^x", propertyName(Person.class, "^x"));
-    assertEquals("@x", propertyName(Person.class, "@x"));
-    assertEquals("person" + FieldMapper.SEPARATOR + "xx", propertyName(Person.class, "xx"));
+    assertThat(propertyName(Person.class, "_x"), equalTo("_x"));
+    assertThat(propertyName(Person.class, "^x"), equalTo("^x"));
+    assertThat(propertyName(Person.class, "@x"), equalTo("@x"));
+    assertThat(propertyName(Person.class, "xx"), equalTo("person" + SEPARATOR + "xx"));
   }
 
   private static class Foo {}
 
   @Test
   public void testGetFieldMap() {
-    Map<String, String> expected = Maps.newHashMap();
-    expected.put("primitiveTestCollection", propertyName(Foo.class, "primitiveTestCollection"));
-    expected.put("nonPrimitiveTestCollection", propertyName(Foo.class, "nonPrimitiveTestCollection"));
-    expected.put("name", propertyName(Foo.class, "name"));
-    expected.put("testValue1", propertyName(Foo.class, "testValue1"));
-    expected.put("testValue2", propertyName(Foo.class, "testValue2"));
-    expected.put("annotatedProperty", propertyName(Foo.class, "propAnnotated"));
-    expected.put("propWithAnnotatedAccessors", propertyName(Foo.class, "pwaa"));
-    expected.put("type", propertyName(Foo.class, "type"));
-    expected.put("date", propertyName(Foo.class, "date"));
-    expected.put("personName", propertyName(Foo.class, "personName"));
+    Map<String, String> map = fieldMapper.getFieldMap(Foo.class, TYPE);
 
-    assertEquals(expected, fieldMapper.getFieldMap(Foo.class, TYPE));
+    assertThat(map, hasEntry("primitiveTestCollection", propertyName(Foo.class, "primitiveTestCollection")));
+    assertThat(map, hasEntry("nonPrimitiveTestCollection", propertyName(Foo.class, "nonPrimitiveTestCollection")));
+    assertThat(map, hasEntry("name", propertyName(Foo.class, "name")));
+    assertThat(map, hasEntry("testValue1", propertyName(Foo.class, "testValue1")));
+    assertThat(map, hasEntry("testValue2", propertyName(Foo.class, "testValue2")));
+    assertThat(map, hasEntry("annotatedProperty", propertyName(Foo.class, "propAnnotated")));
+    assertThat(map, hasEntry("propWithAnnotatedAccessors", propertyName(Foo.class, "pwaa")));
+    assertThat(map, hasEntry("type", propertyName(Foo.class, "type")));
+    assertThat(map, hasEntry("date", propertyName(Foo.class, "date")));
+    assertThat(map, hasEntry("personName", propertyName(Foo.class, "personName")));
   }
 
   @Test
   public void testGetFieldNameSimpleField() throws Exception {
-    assertEquals("name", fieldMapper.getFieldName(TYPE, TYPE.getDeclaredField("name")));
+    assertThat(fieldMapper.getFieldName(TYPE, TYPE.getDeclaredField("name")), equalTo("name"));
   }
 
   @Test
   public void testGetFieldNameForFieldWithAnnotation() throws Exception {
-    assertEquals("propAnnotated", fieldMapper.getFieldName(TYPE, TYPE.getDeclaredField("annotatedProperty")));
+    assertThat(fieldMapper.getFieldName(TYPE, TYPE.getDeclaredField("annotatedProperty")), equalTo("propAnnotated"));
   }
 
   @Test
   public void testGetFieldNameFieldForAccessorWithAnnotation() throws Exception {
-    assertEquals("pwaa", fieldMapper.getFieldName(TYPE, TYPE.getDeclaredField("propWithAnnotatedAccessors")));
+    assertThat(fieldMapper.getFieldName(TYPE, TYPE.getDeclaredField("propWithAnnotatedAccessors")), equalTo("pwaa"));
   }
 
   @Test
   public void testGetFieldNameForEntity() throws Exception {
-    assertEquals("_id", fieldMapper.getFieldName(Entity.class, Entity.class.getDeclaredField("id")));
+    assertThat(fieldMapper.getFieldName(Entity.class, Entity.class.getDeclaredField("id")), equalTo("_id"));
   }
 
   @Test
   public void testGetFieldNameForDomainEntity() throws Exception {
-    assertEquals("_id", fieldMapper.getFieldName(DomainEntity.class, Entity.class.getDeclaredField("id")));
+    assertThat(fieldMapper.getFieldName(DomainEntity.class, Entity.class.getDeclaredField("id")), equalTo("_id"));
   }
 
   @Test
   public void testGetFieldNameForSystemEntity() throws Exception {
-    assertEquals("_id", fieldMapper.getFieldName(SystemEntity.class, Entity.class.getDeclaredField("id")));
+    assertThat(fieldMapper.getFieldName(SystemEntity.class, Entity.class.getDeclaredField("id")), equalTo("_id"));
   }
 
   @Test
   public void testGetTypeNameOfFieldNameWithSeparator() {
     String fieldName = propertyName("test", "testField");
-    assertEquals("test", fieldMapper.getTypeNameOfFieldName(fieldName));
+    assertThat(fieldMapper.getTypeNameOfFieldName(fieldName), equalTo("test"));
   }
 
   @Test
   public void testGetTypeNameOfFieldNameWithoutSeparator() {
     String fieldName = "testField";
-    assertNull(fieldMapper.getTypeNameOfFieldName(fieldName));
+    assertThat(fieldMapper.getTypeNameOfFieldName(fieldName), is(nullValue()));
   }
 
   @Test(expected = NullPointerException.class)
