@@ -377,7 +377,7 @@ public class CKCCImporter extends DefaultImporter {
       } else if (!StringUtils.isBlank(end) && StringUtils.isBlank(start)) {
         return new Period(end, end);
       } else {
-        return new Period();
+        return null;
       }
     }
   }
