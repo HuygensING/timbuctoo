@@ -49,6 +49,7 @@ import nl.knaw.huygens.timbuctoo.model.ckcc.CKCCPerson;
 import nl.knaw.huygens.timbuctoo.model.ckcc.CKCCRelation;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
+import nl.knaw.huygens.timbuctoo.model.util.Period;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
@@ -63,6 +64,7 @@ import nl.knaw.huygens.timbuctoo.util.Text;
 import nl.knaw.huygens.timbuctoo.vre.CKCCVRE;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -347,21 +349,36 @@ public class CKCCImporter extends DefaultImporter {
   private class FloruitHandler extends DefaultElementHandler<ImportContext> {
     @Override
     public Traversal enterElement(Element element, ImportContext context) {
+      String start = null;
+      String end = null;
       if (element.hasAttribute("when")) {
         String text = element.getAttribute("when");
-        context.person.setBirthDate(new Datable("open/" + text));
-        context.person.setDeathDate(new Datable(text + "/open"));
+        start = text;
+        end = text;
       } else {
         // The use of "notBefore" and "notAfter" is consistent with CKCC,
         // but probably not as how it is intended in the TEI guidelines!
         if (element.hasAttribute("notBefore")) {
-          context.person.setBirthDate(new Datable("open/" + element.getAttribute("notBefore")));
+          start = element.getAttribute("notBefore");
         }
         if (element.hasAttribute("notAfter")) {
-          context.person.setDeathDate(new Datable(element.getAttribute("notAfter") + "/open"));
+          end = element.getAttribute("notAfter");
         }
+        context.person.setFloruit(createFloruit(start, end));
       }
       return Traversal.NEXT;
+    }
+
+    private Period createFloruit(String start, String end) {
+      if (!StringUtils.isBlank(start) && !StringUtils.isBlank(end)) {
+        return new Period(start, end);
+      } else if (!StringUtils.isBlank(start) && StringUtils.isBlank(end)) {
+        return new Period(start, start);
+      } else if (!StringUtils.isBlank(end) && StringUtils.isBlank(start)) {
+        return new Period(end, end);
+      } else {
+        return new Period();
+      }
     }
   }
 
