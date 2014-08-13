@@ -304,12 +304,6 @@ public class DatableTest {
   }
 
   @Test
-  @Test
-  public void testGetLowerLimitNoFromDateSpecified() {
-    assertThat(RANGE_WITHOUT_FROM_DATE.getLowerLimit(), is(nullValue()));
-  }
-
-  @Test
   public void testIsValidRange() {
     assertThat(new Datable("2013").isValidRange(), is(true));
   }
