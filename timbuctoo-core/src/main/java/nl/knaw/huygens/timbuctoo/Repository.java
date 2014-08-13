@@ -242,11 +242,19 @@ public class Repository {
         addRelationsToEntity(entity);
       }
     } catch (StorageException e) {
-      LOG.error("Error while handling {} {}", type.getName(), id);
-      e.printStackTrace();
-      e.printStackTrace();
+      logError("getEntityWithRelations", e, type, id);
     }
     return entity;
+  }
+
+  private <T extends DomainEntity> void logError(String action, StorageException e, Class<T> type, String id) {
+    LOG.error("Error while handling ({}) {} {}", action, type.getName(), id);
+    LOG.debug("Exception", e);
+  }
+
+  private <T extends Entity> void logError(String action, Class<T> type, StorageException e) {
+    LOG.error("Error while handling ({}) {}", action, type.getName());
+    LOG.debug("Exception", e);
   }
 
   public <T extends DomainEntity> T getRevisionWithRelations(Class<T> type, String id, int revision) {
@@ -257,8 +265,7 @@ public class Repository {
         addRelationsToEntity(entity);
       }
     } catch (StorageException e) {
-      LOG.error("Error while handling {} {}", type.getName(), id);
-      e.printStackTrace();
+      logError("getRevisionWithRelations", e, type, id);
     }
     return entity;
   }
@@ -267,8 +274,7 @@ public class Repository {
     try {
       return storage.findItemByProperty(type, field, value);
     } catch (StorageException e) {
-      LOG.error("Error while handling {}", type.getName());
-      e.printStackTrace();
+      logError("findEntity by field", type, e);
       return null;
     }
   }
@@ -281,8 +287,7 @@ public class Repository {
     try {
       return storage.findItem(type, example);
     } catch (StorageException e) {
-      LOG.error("Error while handling {} {}", type.getName(), example.getId());
-      e.printStackTrace();
+      logError("findEntity with example", type, e);
       return null;
     }
   }
@@ -295,8 +300,7 @@ public class Repository {
       }
       return variations;
     } catch (StorageException e) {
-      LOG.error("Error while handling {} {}", type.getName(), id);
-      e.printStackTrace();
+      logError("getAllVariations", e, type, id);
       return Collections.emptyList();
     }
   }
@@ -310,8 +314,7 @@ public class Repository {
     try {
       return storage.getAllRevisions(type, id);
     } catch (StorageException e) {
-      LOG.error("Error while handling {} {}", type.getName(), id);
-      e.printStackTrace();
+      logError("getVersions", e, type, id);
       return Lists.newArrayList();
     }
   }
