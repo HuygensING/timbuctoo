@@ -22,16 +22,21 @@ package nl.knaw.huygens.timbuctoo.index.solr;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.search.FacetFinder.LOWER_LIMIT_POST_FIX;
+import static nl.knaw.huygens.timbuctoo.search.FacetFinder.UPPER_LIMIT_POST_FIX;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.index.AnnotatedMethodProcessor;
 import nl.knaw.huygens.timbuctoo.index.Utils;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.util.Range;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -91,23 +96,47 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
   /**
    * Index this part of the item.
    */
-  private void indexMethodOnce(SolrInputDocument doc, Entity instance, Method m, IndexAnnotation argData) {
+  private void indexMethodOnce(SolrInputDocument doc, Entity instance, Method m, IndexAnnotation indexAnnotation) {
     // Determine index field name:
-    String name = argData.fieldName();
+    String name = indexAnnotation.fieldName();
     if (name.length() == 0) {
       name = Utils.getFieldName(m);
     }
 
-    boolean canBeEmpty = argData.canBeEmpty();
+    boolean canBeEmpty = indexAnnotation.canBeEmpty();
 
     // Java reflect is pretty picky:
     try {
       Object value = m.invoke(instance);
-      String[] getters = argData.accessors();
-      indexObject(doc, name, value, canBeEmpty, getters);
+      String[] getters = indexAnnotation.accessors();
+      FacetType facetType = indexAnnotation.facetType();
+      if (facetType == FacetType.RANGE) {
+        indexRange(doc, name, value, canBeEmpty, getters);
+      } else {
+        indexObject(doc, name, value, canBeEmpty, getters);
+      }
     } catch (Exception ex) {
       throw new RuntimeException(ex);
     }
+  }
+
+  /*
+   *  FIXME awful hack to index range facets. It shares logic with nl.knaw.huygens.timbuctoo.search.FacetFinder.
+   *  See issue #2642
+   */
+  private void indexRange(SolrInputDocument doc, String name, Object value, boolean canBeEmpty, String[] getters) {
+    if (!(value instanceof Range)) {
+      return;
+    }
+
+    Range range = (Range) value;
+
+    if (!range.isValidRange()) {
+      return;
+    }
+
+    doc.addField(String.format("%s_%s", name, LOWER_LIMIT_POST_FIX), range.getLowerLimit());
+    doc.addField(String.format("%s_%s", name, UPPER_LIMIT_POST_FIX), range.getUpperLimit());
   }
 
   /**

@@ -22,6 +22,10 @@ package nl.knaw.huygens.timbuctoo.model.util;
  * #L%
  */
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -37,6 +41,9 @@ import org.junit.Test;
 import com.google.common.base.Objects;
 
 public class DatableTest {
+
+  private static final Datable RANGE_WITHOUT_END_DATE = new Datable("2013/open");
+  private static final Datable RANGE_WITHOUT_FROM_DATE = new Datable("open/2013");
 
   private void assertDate(String expectedAsText, Date date) {
     if (date == null) {
@@ -267,4 +274,48 @@ public class DatableTest {
 
     assertEquals(1, first.compareTo(second));
   }
+
+  @Test
+  public void testGetUpperLimit() {
+    Datable datable = new Datable("2013");
+
+    assertThat(datable.getUpperLimit(), equalTo(getStringAsObject("20131231")));
+  }
+
+  private Object getStringAsObject(String string) {
+    return string;
+  }
+
+  @Test
+  public void testGetUpperLimitNoEndDateSpecified() {
+    assertThat(RANGE_WITHOUT_END_DATE.getUpperLimit(), is(nullValue()));
+  }
+
+  @Test
+  public void testGetLowerLimit() {
+    Datable datable = new Datable("2013");
+
+    assertThat(datable.getLowerLimit(), equalTo(getStringAsObject("20130101")));
+  }
+
+  @Test
+  public void testGetLowerLimitNoFromDateSpecified() {
+    assertThat(RANGE_WITHOUT_FROM_DATE.getLowerLimit(), is(nullValue()));
+  }
+
+  @Test
+  public void testIsValidRange() {
+    assertThat(new Datable("2013").isValidRange(), is(true));
+  }
+
+  @Test
+  public void testIsValidRangeWithOutFromDate() {
+    assertThat(RANGE_WITHOUT_FROM_DATE.isValidRange(), is(false));
+  }
+
+  @Test
+  public void testIsValidRangeWithOutToDate() {
+    assertThat(RANGE_WITHOUT_END_DATE.isValidRange(), is(false));
+  }
+
 }

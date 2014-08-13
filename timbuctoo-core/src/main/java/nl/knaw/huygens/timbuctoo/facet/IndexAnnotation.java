@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 
 /**
- * Fields are indexed by Solr using a default schema.
+ * Fields are indexed by Solr using a default schema. The annotations should be added to methods that have a return value.
  * 
  * Predefined fields are:
  *   <field name="id" type="string" indexed="true" stored="true" required="true"/>

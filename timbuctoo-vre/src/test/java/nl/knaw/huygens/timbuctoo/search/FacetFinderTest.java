@@ -22,6 +22,8 @@ package nl.knaw.huygens.timbuctoo.search;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.search.FacetDefinitionMatcher.matchesFacetDefinition;
+import static nl.knaw.huygens.timbuctoo.search.FacetDefinitionMatcher.matchesRangeFacetDefinition;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -44,6 +46,8 @@ import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 
+import test.timbuctoo.index.model.ModelWithInvalidRangeFacet;
+
 import com.google.common.collect.Lists;
 
 public class FacetFinderTest {
@@ -58,7 +62,7 @@ public class FacetFinderTest {
   @Test
   public void testFindFacetDefinitionsAnnotatedClass() {
     List<FacetDefinitionMatcher> expectedFacets = Lists.newArrayList();
-    expectedFacets.add(createFacetDefinitionMatcher("dynamic_s_simple", "Simple", FacetType.LIST));
+    expectedFacets.add(matchesFacetDefinition("dynamic_s_simple", "Simple", FacetType.LIST));
 
     testFindFacetDefinitions(SimpleAnnotatedClass.class, containsInAnyOrder(expectedFacets.toArray(new FacetDefinitionMatcher[0])));
   }
@@ -66,24 +70,47 @@ public class FacetFinderTest {
   @Test
   public void testFindFacetDefinitionsAnnotatedClassAndSuperClass() {
     List<FacetDefinitionMatcher> expectedFacets = Lists.newArrayList();
-    expectedFacets.add(createFacetDefinitionMatcher("dynamic_s_simple", "Simple", FacetType.LIST));
-    expectedFacets.add(createFacetDefinitionMatcher("dynamic_s_prop", "Property", FacetType.LIST));
+    expectedFacets.add(matchesFacetDefinition("dynamic_s_simple", "Simple", FacetType.LIST));
+    expectedFacets.add(matchesFacetDefinition("dynamic_s_prop", "Property", FacetType.LIST));
 
     testFindFacetDefinitions(SimpleAnnotatedSubClass.class, containsInAnyOrder(expectedFacets.toArray(new FacetDefinitionMatcher[0])));
   }
 
   @Test
   public void testFindFacetDefinitionsAnnotatedSuperClass() {
-    testFindFacetDefinitions(NonAnnotatedSubClass.class, contains(createFacetDefinitionMatcher("dynamic_s_simple", "Simple", FacetType.LIST)));
+    testFindFacetDefinitions(NonAnnotatedSubClass.class, contains(matchesFacetDefinition("dynamic_s_simple", "Simple", FacetType.LIST)));
   }
 
   @Test
   public void testFindFacetDefinitionsComplexAnnotatedClassAllFaceted() {
     List<FacetDefinitionMatcher> expectedFacets = Lists.newArrayList();
-    expectedFacets.add(createFacetDefinitionMatcher("dynamic_t_complex1", "Complex1", FacetType.LIST));
-    expectedFacets.add(createFacetDefinitionMatcher("dynamic_t_complex2", "Complex2", FacetType.LIST));
+    expectedFacets.add(matchesFacetDefinition("dynamic_t_complex1", "Complex1", FacetType.LIST));
+    expectedFacets.add(matchesFacetDefinition("dynamic_t_complex2", "Complex2", FacetType.LIST));
 
     testFindFacetDefinitions(ComplexAnnotatedClass.class, containsInAnyOrder(expectedFacets.toArray(new FacetDefinitionMatcher[0])));
+  }
+
+  @Test
+  public void testFindFacetDefinitionsComplexAnnotatedClassSomeFaceted() {
+    testFindFacetDefinitions(ComplexAnnotatedClassNotAllFaceted.class, contains(matchesFacetDefinition("dynamic_t_complex1", "Complex1", FacetType.LIST)));
+  }
+
+  @Test
+  public void testFindFacetDefinitionsClassWithMultipleFacetTypes() {
+    List<FacetDefinitionMatcher> expectedFacets = Lists.newArrayList();
+    expectedFacets.add(matchesFacetDefinition("dynamic_s_list", "", FacetType.LIST));
+    expectedFacets.add(matchesFacetDefinition("dynamic_b_boolean", "", FacetType.BOOLEAN));
+    expectedFacets.add(matchesRangeFacetDefinition("dynamic_d_range", "", FacetType.RANGE, "dynamic_d_range_low", "dynamic_d_range_high"));
+    expectedFacets.add(matchesFacetDefinition("dynamic_p_period", "", FacetType.PERIOD));
+
+    testFindFacetDefinitions(ClassWithMultipleFacetTypes.class, containsInAnyOrder(expectedFacets.toArray(new FacetDefinitionMatcher[0])));
+  }
+
+  private void testFindFacetDefinitions(Class<? extends DomainEntity> type, Matcher<Iterable<? extends FacetDefinition>> matcher) {
+    List<FacetDefinition> actualFacets = instance.findFacetDefinitions(type);
+
+    assertThat(actualFacets, matcher);
+
   }
 
   @Test
@@ -92,32 +119,8 @@ public class FacetFinderTest {
     assertThat(actualFacets, empty());
   }
 
-  @Test
-  public void testFindFacetDefinitionsComplexAnnotatedClassSomeFaceted() {
-    testFindFacetDefinitions(ComplexAnnotatedClassNotAllFaceted.class, contains(createFacetDefinitionMatcher("dynamic_t_complex1", "Complex1", FacetType.LIST)));
-  }
-
-  @Test
-  public void testFindFacetDefinitionsClassWithMultipleFacetTypes() {
-    List<FacetDefinitionMatcher> expectedFacets = Lists.newArrayList();
-    expectedFacets.add(createFacetDefinitionMatcher("dynamic_s_list", "", FacetType.LIST));
-    expectedFacets.add(createFacetDefinitionMatcher("dynamic_b_boolean", "", FacetType.BOOLEAN));
-    // FIXME #2635 Range facets are not yet supported.
-    //    expectedFacets.add(createFacetDefinitionMatcher("dynamic_r_range", "", FacetType.RANGE));
-    expectedFacets.add(createFacetDefinitionMatcher("dynamic_p_period", "", FacetType.PERIOD));
-
-    testFindFacetDefinitions(ClassWithMultipleFacetTypes.class, containsInAnyOrder(expectedFacets.toArray(new FacetDefinitionMatcher[0])));
-  }
-
-  private FacetDefinitionMatcher createFacetDefinitionMatcher(String name, String title, FacetType facetType) {
-
-    return new FacetDefinitionMatcher(name, title, facetType);
-  }
-
-  private void testFindFacetDefinitions(Class<? extends DomainEntity> type, Matcher<Iterable<? extends FacetDefinition>> matcher) {
-    List<FacetDefinition> actualFacets = instance.findFacetDefinitions(type);
-
-    assertThat(actualFacets, matcher);
-
+  @Test(expected = InvalidRangeFacetException.class)
+  public void testFindFacetDefinitionsInvalidRangeFacet() {
+    instance.findFacetDefinitions(ModelWithInvalidRangeFacet.class);
   }
 }

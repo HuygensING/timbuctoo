@@ -27,16 +27,24 @@ import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.FacetDefinition;
 import nl.knaw.huygens.facetedsearch.model.FacetDefinitionBuilder;
+import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.util.Range;
 
 import com.google.common.collect.Lists;
 
+/*
+ *  It shares logic with nl.knaw.huygens.timbuctoo.index.SolrInputDocGenerator.
+ *  See issue #2642
+ */
 public class FacetFinder {
 
   private static final Class<IndexAnnotations> INDEX_ANNOTATIONS_CLASS = IndexAnnotations.class;
   private static final Class<IndexAnnotation> INDEX_ANNOTATION_CLASS = IndexAnnotation.class;
+  public static final String LOWER_LIMIT_POST_FIX = "low";
+  public static final String UPPER_LIMIT_POST_FIX = "high";
 
   public List<FacetDefinition> findFacetDefinitions(Class<? extends Entity> type) {
     List<FacetDefinition> facetDefinitions = Lists.newArrayList();
@@ -45,13 +53,13 @@ public class FacetFinder {
     for (Method method : methods) {
       if (method.isAnnotationPresent(INDEX_ANNOTATION_CLASS)) {
         IndexAnnotation indexAnnotation = method.getAnnotation(INDEX_ANNOTATION_CLASS);
-        addFacetDefinition(facetDefinitions, indexAnnotation);
+        addFacetDefinition(facetDefinitions, indexAnnotation, method);
 
       } else if (method.isAnnotationPresent(INDEX_ANNOTATIONS_CLASS)) {
         IndexAnnotations indexAnnotations = method.getAnnotation(INDEX_ANNOTATIONS_CLASS);
         IndexAnnotation[] values = indexAnnotations.value();
         for (IndexAnnotation indexAnnotation : values) {
-          addFacetDefinition(facetDefinitions, indexAnnotation);
+          addFacetDefinition(facetDefinitions, indexAnnotation, method);
         }
       }
     }
@@ -59,14 +67,38 @@ public class FacetFinder {
     return facetDefinitions;
   }
 
-  private void addFacetDefinition(List<FacetDefinition> facetDefinitions, IndexAnnotation indexAnnotation) {
+  private void addFacetDefinition(List<FacetDefinition> facetDefinitions, IndexAnnotation indexAnnotation, Method method) {
     if (indexAnnotation.isFaceted()) {
-      FacetDefinition definition = createFacetDefintion(indexAnnotation);
+      FacetDefinition definition = createFacetDefintion(indexAnnotation, method);
       facetDefinitions.add(definition);
     }
   }
 
-  private FacetDefinition createFacetDefintion(IndexAnnotation indexAnnotation) {
-    return new FacetDefinitionBuilder(indexAnnotation.fieldName(), indexAnnotation.title(), indexAnnotation.facetType()).build();
+  private FacetDefinition createFacetDefintion(IndexAnnotation indexAnnotation, Method method) {
+    FacetDefinitionBuilder facetDefinitionBuilder = new FacetDefinitionBuilder(indexAnnotation.fieldName(), indexAnnotation.title(), indexAnnotation.facetType());
+
+    if (indexAnnotation.facetType() == FacetType.RANGE) {
+      Class<?> type = method.getReturnType();
+      if (!Range.class.isAssignableFrom(type)) {
+        throw new InvalidRangeFacetException(type + " is not a range.");
+      }
+
+      facetDefinitionBuilder.setLowerLimitField(createLowerLimitField(indexAnnotation));
+      facetDefinitionBuilder.setUpperLimitField(createUpperLimitField(indexAnnotation));
+    }
+
+    return facetDefinitionBuilder.build();
+  }
+
+  private String createUpperLimitField(IndexAnnotation indexAnnotation) {
+    return createRangeFieldName(indexAnnotation, UPPER_LIMIT_POST_FIX);
+  }
+
+  private String createRangeFieldName(IndexAnnotation indexAnnotation, String postFix) {
+    return String.format("%s_%s", indexAnnotation.fieldName(), postFix);
+  }
+
+  private String createLowerLimitField(IndexAnnotation indexAnnotation) {
+    return createRangeFieldName(indexAnnotation, LOWER_LIMIT_POST_FIX);
   }
 }
