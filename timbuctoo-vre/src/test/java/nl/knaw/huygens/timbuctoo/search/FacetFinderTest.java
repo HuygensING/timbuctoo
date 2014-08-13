@@ -46,6 +46,8 @@ import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 
+import test.timbuctoo.index.model.ModelWithInvalidRangeFacet;
+
 import com.google.common.collect.Lists;
 
 public class FacetFinderTest {
@@ -89,12 +91,6 @@ public class FacetFinderTest {
   }
 
   @Test
-  public void testFindFacetDefinitionsComplexAnnotatedClassNonFaceted() {
-    List<FacetDefinition> actualFacets = instance.findFacetDefinitions(ComplexAnnotatedClassNoneFaceted.class);
-    assertThat(actualFacets, empty());
-  }
-
-  @Test
   public void testFindFacetDefinitionsComplexAnnotatedClassSomeFaceted() {
     testFindFacetDefinitions(ComplexAnnotatedClassNotAllFaceted.class, contains(matchesFacetDefinition("dynamic_t_complex1", "Complex1", FacetType.LIST)));
   }
@@ -115,5 +111,16 @@ public class FacetFinderTest {
 
     assertThat(actualFacets, matcher);
 
+  }
+
+  @Test
+  public void testFindFacetDefinitionsComplexAnnotatedClassNonFaceted() {
+    List<FacetDefinition> actualFacets = instance.findFacetDefinitions(ComplexAnnotatedClassNoneFaceted.class);
+    assertThat(actualFacets, empty());
+  }
+
+  @Test(expected = InvalidRangeFacetException.class)
+  public void testFindFacetDefinitionsInvalidRangeFacet() {
+    instance.findFacetDefinitions(ModelWithInvalidRangeFacet.class);
   }
 }

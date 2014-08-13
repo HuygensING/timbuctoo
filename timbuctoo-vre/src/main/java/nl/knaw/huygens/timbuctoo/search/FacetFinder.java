@@ -31,6 +31,7 @@ import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.util.Range;
 
 import com.google.common.collect.Lists;
 
@@ -52,13 +53,13 @@ public class FacetFinder {
     for (Method method : methods) {
       if (method.isAnnotationPresent(INDEX_ANNOTATION_CLASS)) {
         IndexAnnotation indexAnnotation = method.getAnnotation(INDEX_ANNOTATION_CLASS);
-        addFacetDefinition(facetDefinitions, indexAnnotation);
+        addFacetDefinition(facetDefinitions, indexAnnotation, method);
 
       } else if (method.isAnnotationPresent(INDEX_ANNOTATIONS_CLASS)) {
         IndexAnnotations indexAnnotations = method.getAnnotation(INDEX_ANNOTATIONS_CLASS);
         IndexAnnotation[] values = indexAnnotations.value();
         for (IndexAnnotation indexAnnotation : values) {
-          addFacetDefinition(facetDefinitions, indexAnnotation);
+          addFacetDefinition(facetDefinitions, indexAnnotation, method);
         }
       }
     }
@@ -66,17 +67,22 @@ public class FacetFinder {
     return facetDefinitions;
   }
 
-  private void addFacetDefinition(List<FacetDefinition> facetDefinitions, IndexAnnotation indexAnnotation) {
+  private void addFacetDefinition(List<FacetDefinition> facetDefinitions, IndexAnnotation indexAnnotation, Method method) {
     if (indexAnnotation.isFaceted()) {
-      FacetDefinition definition = createFacetDefintion(indexAnnotation);
+      FacetDefinition definition = createFacetDefintion(indexAnnotation, method);
       facetDefinitions.add(definition);
     }
   }
 
-  private FacetDefinition createFacetDefintion(IndexAnnotation indexAnnotation) {
+  private FacetDefinition createFacetDefintion(IndexAnnotation indexAnnotation, Method method) {
     FacetDefinitionBuilder facetDefinitionBuilder = new FacetDefinitionBuilder(indexAnnotation.fieldName(), indexAnnotation.title(), indexAnnotation.facetType());
 
     if (indexAnnotation.facetType() == FacetType.RANGE) {
+      Class<?> type = method.getReturnType();
+      if (!Range.class.isAssignableFrom(type)) {
+        throw new InvalidRangeFacetException(type + " is not a range.");
+      }
+
       facetDefinitionBuilder.setLowerLimitField(createLowerLimitField(indexAnnotation));
       facetDefinitionBuilder.setUpperLimitField(createUpperLimitField(indexAnnotation));
     }
