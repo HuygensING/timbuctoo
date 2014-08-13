@@ -22,7 +22,9 @@ package nl.knaw.huygens.timbuctoo.model.util;
  * #L%
  */
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.isEmptyString;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 
 import org.junit.Test;
@@ -31,18 +33,18 @@ public class PersonNameBuilderTest {
 
   @Test
   public void testSeparator() {
-    assertEquals("", PersonNameBuilder.separator(null, null));
-    assertEquals("", PersonNameBuilder.separator(Type.FORENAME, null));
-    assertEquals("", PersonNameBuilder.separator(null, Type.SURNAME));
-    assertEquals(" ", PersonNameBuilder.separator(Type.FORENAME, Type.SURNAME));
-    assertEquals(", ", PersonNameBuilder.separator(Type.SURNAME, Type.FORENAME));
+    assertThat(PersonNameBuilder.separator(null, null), isEmptyString());
+    assertThat(PersonNameBuilder.separator(Type.FORENAME, null), isEmptyString());
+    assertThat(PersonNameBuilder.separator(null, Type.SURNAME), isEmptyString());
+    assertThat(PersonNameBuilder.separator(Type.FORENAME, Type.SURNAME), equalTo(" "));
+    assertThat(PersonNameBuilder.separator(Type.SURNAME, Type.FORENAME), equalTo(", "));
   }
 
   @Test
   public void testOneComponent() {
     PersonNameBuilder builder = new PersonNameBuilder();
     builder.addComponent(new PersonNameComponent(Type.FORENAME, "Christiaan"));
-    assertEquals("Christiaan", builder.getName());
+    assertThat(builder.getName(), equalTo("Christiaan"));
   }
 
   @Test
@@ -50,7 +52,7 @@ public class PersonNameBuilderTest {
     PersonNameBuilder builder = new PersonNameBuilder();
     builder.addComponent(new PersonNameComponent(Type.FORENAME, "Christiaan"));
     builder.addComponent(new PersonNameComponent(Type.SURNAME, "Huygens"));
-    assertEquals("Christiaan Huygens", builder.getName());
+    assertThat(builder.getName(), equalTo("Christiaan Huygens"));
   }
 
   @Test
@@ -58,7 +60,7 @@ public class PersonNameBuilderTest {
     PersonNameBuilder builder = new PersonNameBuilder();
     builder.addComponent(new PersonNameComponent(Type.SURNAME, "Huygens"));
     builder.addComponent(new PersonNameComponent(Type.FORENAME, "Christiaan"));
-    assertEquals("Huygens, Christiaan", builder.getName());
+    assertThat(builder.getName(), equalTo("Huygens, Christiaan"));
   }
 
 }
