@@ -131,7 +131,7 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
 
     Range range = (Range) value;
 
-    if (!range.isValidRange()) {
+    if (!range.isValid()) {
       return;
     }
 

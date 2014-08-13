@@ -116,9 +116,11 @@ public class Person extends DomainEntity {
       if (floruit) {
         builder.append("fl. ");
       }
+
       if (birthYear != 0) {
         builder.append(birthYear);
       }
+
       if (deathYear > birthYear) {
         builder.append("-");
         if (deathYear != 0) {
@@ -127,6 +129,7 @@ public class Person extends DomainEntity {
       } else if (!floruit) {
         builder.append("-");
       }
+
       builder.append(")");
       return builder.toString();
     }

@@ -42,9 +42,6 @@ import com.google.common.base.Objects;
 
 public class DatableTest {
 
-  private static final Datable RANGE_WITHOUT_END_DATE = new Datable("2013/open");
-  private static final Datable RANGE_WITHOUT_FROM_DATE = new Datable("open/2013");
-
   private void assertDate(String expectedAsText, Date date) {
     if (date == null) {
       Assert.assertEquals("open", expectedAsText);
@@ -209,20 +206,6 @@ public class DatableTest {
   }
 
   @Test
-  public void convert_YEAR_RANGE_OPEN_START() {
-    String edtf = "open/1648";
-    Assert.assertTrue(EDTFPattern.YEAR_RANGE_OPEN_START.matches(edtf));
-    testDatable("open", "1648-12-31:12", Datable.Certainty.LOW, new Datable(edtf));
-  }
-
-  @Test
-  public void convert_YEAR_RANGE_OPEN_END() {
-    String edtf = "1648/open";
-    Assert.assertTrue(EDTFPattern.YEAR_RANGE_OPEN_END.matches(edtf));
-    testDatable("1648-01-01:12", "open", Datable.Certainty.LOW, new Datable(edtf));
-  }
-
-  @Test
   public void testYearConversion() throws ParseException {
     Datable datable = new Datable("1709/1710");
     Assert.assertEquals(1709, datable.getFromYear());
@@ -288,7 +271,8 @@ public class DatableTest {
 
   @Test
   public void testGetUpperLimitNoEndDateSpecified() {
-    assertThat(RANGE_WITHOUT_END_DATE.getUpperLimit(), is(nullValue()));
+    Datable rangeWithoutEndDate = new Datable("2013/open");
+    assertThat(rangeWithoutEndDate.getUpperLimit(), is(nullValue()));
   }
 
   @Test
@@ -300,22 +284,19 @@ public class DatableTest {
 
   @Test
   public void testGetLowerLimitNoFromDateSpecified() {
-    assertThat(RANGE_WITHOUT_FROM_DATE.getLowerLimit(), is(nullValue()));
+    Datable rangeWithoutFromDate = new Datable("open/2013");
+    assertThat(rangeWithoutFromDate.getLowerLimit(), is(nullValue()));
   }
 
   @Test
   public void testIsValidRange() {
-    assertThat(new Datable("2013").isValidRange(), is(true));
+    assertThat(new Datable("2013").isValid(), is(true));
   }
 
   @Test
-  public void testIsValidRangeWithOutFromDate() {
-    assertThat(RANGE_WITHOUT_FROM_DATE.isValidRange(), is(false));
-  }
-
-  @Test
-  public void testIsValidRangeWithOutToDate() {
-    assertThat(RANGE_WITHOUT_END_DATE.isValidRange(), is(false));
+  public void testIsValidRangeWithUnknownPattern() {
+    Datable rangeWithoutUnknown = new Datable("unknown");
+    assertThat(rangeWithoutUnknown.isValid(), is(false));
   }
 
 }

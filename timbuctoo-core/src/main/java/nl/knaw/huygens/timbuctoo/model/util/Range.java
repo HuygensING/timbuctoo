@@ -5,5 +5,5 @@ public interface Range {
 
   Object getLowerLimit();
 
-  public abstract boolean isValidRange();
+  boolean isValid();
 }
