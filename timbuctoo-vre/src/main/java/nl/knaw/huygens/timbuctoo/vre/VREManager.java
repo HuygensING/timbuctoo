@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
-import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
@@ -74,7 +73,7 @@ public class VREManager {
 
   // ---------------------------------------------------------------------------
 
-  public static VREManager createInstance(List<VRE> vres, IndexNameCreator indexNameCreator, IndexFactory indexFactory) {
+  public static VREManager createInstance(List<VRE> vres, IndexFactory indexFactory) {
     Map<String, VRE> vreMap = Maps.newHashMap();
 
     for (VRE vre : vres) {

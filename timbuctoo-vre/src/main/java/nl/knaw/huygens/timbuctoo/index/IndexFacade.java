@@ -37,12 +37,12 @@ import com.google.inject.Singleton;
 @Singleton
 public class IndexFacade implements IndexManager {
 
+  private final Repository repository;
   private final VREManager vreManager;
-  private final Repository storageManager;
 
   @Inject
-  public IndexFacade(Repository storageManager, VREManager vreManager) {
-    this.storageManager = storageManager;
+  public IndexFacade(Repository repository, VREManager vreManager) {
+    this.repository = repository;
     this.vreManager = vreManager;
   }
 
@@ -59,7 +59,7 @@ public class IndexFacade implements IndexManager {
 
   private <T extends DomainEntity> void changeIndex(Class<T> type, String id, IndexChanger indexChanger) throws IndexException {
     Class<? extends DomainEntity> baseType = toBaseDomainEntity(type);
-    List<? extends DomainEntity> variations = storageManager.getAllVariations(baseType, id);
+    List<? extends DomainEntity> variations = repository.getAllVariations(baseType, id);
     if (!variations.isEmpty()) {
       for (VRE vre : vreManager.getAllVREs()) {
         indexChanger.executeIndexAction(baseType, vre, variations);

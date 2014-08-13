@@ -34,7 +34,6 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
-import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -52,15 +51,11 @@ public class VREManagerTest {
   @Mock
   private Map<String, VRE> vreMapMock;
 
-  private IndexNameCreator indexNameCreatorMock;
-
   private VREManager instance;
 
   @Before
-  public void setUp() {
+  public void setup() {
     MockitoAnnotations.initMocks(this);
-
-    indexNameCreatorMock = mock(IndexNameCreator.class);
     instance = new VREManager(vreMapMock);
   }
 
@@ -108,14 +103,12 @@ public class VREManagerTest {
     IndexFactory indexFactory = mock(IndexFactory.class);
 
     // action
-    VREManager actualVREManager = VREManager.createInstance(//
-        Lists.newArrayList(vre1, vre2), //
-        indexNameCreatorMock, //
-        indexFactory);
+    VREManager actualVREManager = VREManager.createInstance(Lists.newArrayList(vre1, vre2), indexFactory);
 
     //verify
     assertThat(actualVREManager, matchesVREManager(expectedVREManager));
     verify(vre1).initIndexes(indexFactory);
     verify(vre2).initIndexes(indexFactory);
   }
+
 }

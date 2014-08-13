@@ -23,25 +23,22 @@ package nl.knaw.huygens.timbuctoo.vre;
  */
 
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
-import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 public class VREManagerProvider implements Provider<VREManager> {
 
-  private final IndexNameCreator indexNameCreator;
   private final IndexFactory indexFactory;
 
   @Inject
-  public VREManagerProvider(IndexNameCreator indexNameCreator, IndexFactory indexFactory) {
-    this.indexNameCreator = indexNameCreator;
+  public VREManagerProvider(IndexFactory indexFactory) {
     this.indexFactory = indexFactory;
   }
 
   @Override
   public VREManager get() {
-    return VREManager.createInstance(VREManager.VRE_LIST, indexNameCreator, indexFactory);
+    return VREManager.createInstance(VREManager.VRE_LIST, indexFactory);
   }
 
 }
