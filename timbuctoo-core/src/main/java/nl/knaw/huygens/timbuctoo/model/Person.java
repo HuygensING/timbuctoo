@@ -28,6 +28,7 @@ import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.FloruitPeriod;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.util.Text;
@@ -62,6 +63,7 @@ public class Person extends DomainEntity {
   private Datable deathDate;
   private List<String> types;
   private List<Link> links;
+  private FloruitPeriod floruit;
 
   public Person() {
     names = new Names();
@@ -80,55 +82,58 @@ public class Person extends DomainEntity {
   }
 
   private String period() {
-    boolean floruit = false;
-    int birthYear = 0;
-    int deathYear = 0;
-
     Datable birthDate = getBirthDate();
-    if (birthDate != null) {
-      if (birthDate.getFromDate() != null) {
-        birthYear = birthDate.getFromYear();
-      } else {
-        floruit = true;
-        if (birthDate.getToDate() != null) {
-          birthYear = birthDate.getToYear();
-        }
-      }
-    }
-
     Datable deathDate = getDeathDate();
-    if (deathDate != null) {
-      if (deathDate.getToDate() != null) {
-        deathYear = deathDate.getToYear();
-      } else {
-        floruit = true;
-        if (deathDate.getFromDate() != null) {
-          deathYear = deathDate.getFromYear();
-        }
-      }
+
+    if (birthDate == null && deathDate == null && floruit == null) {
+      return "";
     }
 
-    if (birthYear != 0 || deathYear != 0) {
-      StringBuilder builder = new StringBuilder();
-      builder.append(" (");
-      if (floruit) {
-        builder.append("fl. ");
+    StringBuilder sb = new StringBuilder();
+    sb.append(" (");
+
+    if (birthDate != null || deathDate != null) {
+
+      if (birthDate != null) {
+        sb.append(getBirthYear(birthDate));
       }
-      if (birthYear != 0) {
-        builder.append(birthYear);
+
+      sb.append(" - ");
+
+      if (deathDate != null) {
+        sb.append(getDeathYear(deathDate));
       }
-      if (deathYear > birthYear) {
-        builder.append("-");
-        if (deathYear != 0) {
-          builder.append(deathYear);
-        }
-      } else if (!floruit) {
-        builder.append("-");
-      }
-      builder.append(")");
-      return builder.toString();
+    } else if (floruit != null) {
+      sb.append(floruit);
     }
-    return "";
+
+    sb.append(")");
+
+    return sb.toString();
+  }
+
+  private int getDeathYear(Datable deathDate) {
+    int deathYear = 0;
+    if (deathDate.getToDate() != null) {
+      deathYear = deathDate.getToYear();
+    } else {
+      if (deathDate.getFromDate() != null) {
+        deathYear = deathDate.getFromYear();
+      }
+    }
+    return deathYear;
+  }
+
+  private int getBirthYear(Datable birthDate) {
+    int birthYear = 0;
+    if (birthDate.getFromDate() != null) {
+      birthYear = birthDate.getFromYear();
+    } else {
+      if (birthDate.getToDate() != null) {
+        birthYear = birthDate.getToYear();
+      }
+    }
+    return birthYear;
   }
 
   @JsonIgnore
@@ -232,6 +237,14 @@ public class Person extends DomainEntity {
   }
 
   // ---------------------------------------------------------------------------
+
+  public FloruitPeriod getFloruit() {
+    return floruit;
+  }
+
+  public void setFloruit(FloruitPeriod floruit) {
+    this.floruit = floruit;
+  }
 
   // Not an enumerated type because of serialization problems.
   public static class Type {
