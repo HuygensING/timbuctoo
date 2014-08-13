@@ -352,9 +352,8 @@ public class CKCCImporter extends DefaultImporter {
       String start = null;
       String end = null;
       if (element.hasAttribute("when")) {
-        String text = element.getAttribute("when");
-        start = text;
-        end = text;
+        start = element.getAttribute("when");
+        end = start;
       } else {
         // The use of "notBefore" and "notAfter" is consistent with CKCC,
         // but probably not as how it is intended in the TEI guidelines!
@@ -364,8 +363,8 @@ public class CKCCImporter extends DefaultImporter {
         if (element.hasAttribute("notAfter")) {
           end = element.getAttribute("notAfter");
         }
-        context.person.setFloruit(createFloruit(start, end));
       }
+      context.person.setFloruit(createFloruit(start, end));
       return Traversal.NEXT;
     }
 

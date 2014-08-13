@@ -21,6 +21,20 @@ public class FloruitPeriod extends Period {
 
   @Override
   public String toString() {
-    return super.toString();
+    StringBuilder sb = new StringBuilder();
+    sb.append("fl. ");
+
+    int fromYear = getStartDate().getFromYear();
+    int toYear = getEndDate().getToYear();
+    sb.append(fromYear);
+
+    if (fromYear == toYear) {
+
+    } else {
+      sb.append(" - ");
+      sb.append(toYear);
+    }
+
+    return sb.toString();
   }
 }
