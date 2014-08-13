@@ -50,7 +50,7 @@ public class ReIndexer {
     repository.close();
     indexManager.close();
     stopWatch.stop();
-    System.out.println("time used: " + (stopWatch.getTime() / 1000));
+    LOG.info("Time used: {} s", (stopWatch.getTime() / 1000));
   }
 
 }
