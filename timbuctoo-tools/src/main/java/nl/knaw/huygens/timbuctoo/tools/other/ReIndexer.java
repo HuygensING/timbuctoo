@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.process.Progress;
 
@@ -18,11 +19,8 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-// kies logging of System.out
-// alle entities van een type naar binnehlaen is een slechte oplossing: itereer
-// waarom niet alles sluiten in een finally clause?
-
 public class ReIndexer {
+  private static final int MILI_SECONDS_TO_MINUTES = 60000;
   public final static Logger LOG = LoggerFactory.getLogger(ReIndexer.class);
 
   public static void main(String[] args) throws ConfigurationException, IndexException {
@@ -38,19 +36,22 @@ public class ReIndexer {
     LOG.info("Clearing index");
     indexManager.deleteAllEntities();
 
-    for (Class<? extends DomainEntity> primitiveType : registry.getPrimitiveDomainEntityTypes()) {
-      LOG.info("indexing for: {}", TypeNames.getInternalName(primitiveType));
-      Progress progress = new Progress();
-      for (DomainEntity entity : repository.getDomainEntities(primitiveType).getAll()) {
-        indexManager.addEntity(primitiveType, entity.getId());
-        progress.step();
+    try {
+      for (Class<? extends DomainEntity> primitiveType : registry.getPrimitiveDomainEntityTypes()) {
+        LOG.info("indexing for: {}", TypeNames.getInternalName(primitiveType));
+        Progress progress = new Progress();
+        for (StorageIterator<? extends DomainEntity> iterator = repository.getDomainEntities(primitiveType); iterator.hasNext();) {
+          indexManager.addEntity(primitiveType, iterator.next().getId());
+          progress.step();
+        }
+        progress.done();
       }
-      progress.done();
+    } finally {
+      repository.close();
+      indexManager.close();
+      stopWatch.stop();
+      LOG.info("Time used: {} m", (stopWatch.getTime() / (double) MILI_SECONDS_TO_MINUTES));
     }
-    repository.close();
-    indexManager.close();
-    stopWatch.stop();
-    LOG.info("Time used: {} s", (stopWatch.getTime() / 1000));
   }
 
 }
