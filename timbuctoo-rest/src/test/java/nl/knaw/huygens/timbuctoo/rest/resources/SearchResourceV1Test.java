@@ -109,7 +109,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
 
     assertEquals(Status.CREATED, response.getClientResponseStatus());
     assertEquals(expected, actual);
-    verify(vreManager).getVREById(anyString());
+    verify(repository).getVREById(anyString());
     verifyVRESearchIsCalled(vreMock);
   }
 
@@ -128,7 +128,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
 
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(Status.BAD_REQUEST));
-    verifyZeroInteractions(repository, vreManager);
+    verifyZeroInteractions(repository);
 
   }
 
@@ -162,7 +162,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     ClientResponse response = searchResourceBuilder(TYPE_STRING).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
 
     assertEquals(Status.INTERNAL_SERVER_ERROR, response.getClientResponseStatus());
-    verify(vreManager).getVREById(anyString());
+    verify(repository).getVREById(anyString());
     verifyVRESearchIsCalled(vreMock);
   }
 
@@ -301,7 +301,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
 
     RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
 
-    when(vreManager.getVREById(VRE_ID)).thenReturn(vreMock);
+    when(repository.getVREById(VRE_ID)).thenReturn(vreMock);
     when(relationSearcher.search(any(VRE.class), isNotNull(new GenericType<Class<? extends DomainEntity>>() {}.getRawClass()), any(RelationSearchParameters.class))).thenReturn(searchResultMock);
     when(repository.addSystemEntity(SearchResult.class, searchResultMock)).thenReturn(ID);
 
@@ -332,7 +332,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
 
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(BAD_REQUEST));
-    verifyZeroInteractions(vreManager, repository, relationSearcher);
+    verifyZeroInteractions(repository, relationSearcher);
   }
 
   @Test
@@ -345,7 +345,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
 
     RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
 
-    when(vreManager.getVREById(VRE_ID)).thenReturn(vreMock);
+    when(repository.getVREById(VRE_ID)).thenReturn(vreMock);
     when(relationSearcher.search(any(VRE.class), isNotNull(RELATION_TYPE), any(RelationSearchParameters.class))).thenReturn(searchResultMock);
     doThrow(Exception.class).when(repository).addSystemEntity(SearchResult.class, searchResultMock);
 
@@ -368,7 +368,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     final VRE vreMock = mock(VRE.class);
     RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
 
-    when(vreManager.getVREById(VRE_ID)).thenReturn(vreMock);
+    when(repository.getVREById(VRE_ID)).thenReturn(vreMock);
     doThrow(SearchException.class).when(relationSearcher).search(any(VRE.class), isNotNull(RELATION_TYPE), any(RelationSearchParameters.class));
 
     // action
@@ -379,7 +379,6 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
 
     verify(searchRequestValidator).validateRelationRequest(anyString(), anyString(), any(RelationSearchParameters.class));
     verify(relationSearcher).search(any(VRE.class), isNotNull(RELATION_TYPE), any(RelationSearchParameters.class));
-    verifyZeroInteractions(repository);
   }
 
   private String getRelationSearchURL(String id) {

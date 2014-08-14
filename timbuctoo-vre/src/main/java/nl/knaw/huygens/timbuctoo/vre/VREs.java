@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.vre;
 
 /*
  * #%L
- * Timbuctoo search
+ * Timbuctoo vre
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
  * =======
@@ -22,23 +22,37 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
+import java.util.List;
+
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
+import com.google.inject.Singleton;
 
-public class VREManagerProvider implements Provider<VREManager> {
+/**
+ * Provides access to the active VRE's, currently a fixed list.
+ */
+@Singleton
+public class VREs implements VRECollection {
 
-  private final IndexFactory indexFactory;
+  private static final List<VRE> VRE_LIST = ImmutableList.<VRE> of( //
+    new AdminVRE(), //
+    new BaseVRE(), //
+    new CKCCVRE(), //
+    new DutchCaribbeanVRE(), //
+    new WomenWritersVRE(), //
+    new TestVRE());
 
   @Inject
-  public VREManagerProvider(IndexFactory indexFactory) {
-    this.indexFactory = indexFactory;
+  public VREs(IndexFactory indexFactory) {
+    for (VRE vre: VRE_LIST) {
+      vre.initIndexes(indexFactory);
+    }
   }
 
-  @Override
-  public VREManager get() {
-    return VREManager.createInstance(VREManager.VRE_LIST, indexFactory);
+  public List<VRE> getVREs() {
+    return VRE_LIST;
   }
 
 }

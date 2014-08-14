@@ -37,7 +37,6 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +51,6 @@ public class SearchRequestValidatorTest {
   private static final String VALID_VRE_ID = "vreID";
   private SearchRequestValidator instance;
   private SearchParametersV1 unusedSearchParametersV1 = null;
-  private VREManager vreManagerMock;
   private TypeRegistry typeRegistryMock;
   private VRE vreMock;
   private RelationSearchParameters unusedRelationSearchParameters = null;
@@ -66,16 +64,15 @@ public class SearchRequestValidatorTest {
   private String nullTypeString;
 
   @Before
-  public void setUp() {
-    vreManagerMock = mock(VREManager.class);
+  public void setup() {
     typeRegistryMock = mock(TypeRegistry.class);
-    vreMock = mock(VRE.class);
-    when(vreManagerMock.getVREById(VALID_VRE_ID)).thenReturn(vreMock);
-    when(vreManagerMock.getVREById(INVALID_VRE_ID)).thenReturn(null);
-
     repositoryMock = mock(Repository.class);
 
-    instance = new SearchRequestValidator(vreManagerMock, typeRegistryMock, repositoryMock);
+    vreMock = mock(VRE.class);
+    when(repositoryMock.getVREById(VALID_VRE_ID)).thenReturn(vreMock);
+    when(repositoryMock.getVREById(INVALID_VRE_ID)).thenReturn(null);
+
+    instance = new SearchRequestValidator(typeRegistryMock, repositoryMock);
   }
 
   @Test(expected = TimbuctooException.class)

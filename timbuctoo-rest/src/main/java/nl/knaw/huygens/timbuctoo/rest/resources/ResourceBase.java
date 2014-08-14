@@ -45,8 +45,9 @@ public class ResourceBase {
    * Checks the specified reference
    * and throws a {@code TimbuctooException} if the reference is {@code null}.
    */
-  protected <T> void checkNotNull(T reference, Status status, String errorMessageTemplate, Object... errorMessageArgs) {
+  protected <T> T checkNotNull(T reference, Status status, String errorMessageTemplate, Object... errorMessageArgs) {
     checkCondition(reference != null, status, errorMessageTemplate, errorMessageArgs);
+    return reference;
   }
 
 }

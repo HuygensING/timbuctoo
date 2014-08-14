@@ -52,6 +52,7 @@ import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
 import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -63,6 +64,7 @@ public class RepositoryTest {
 
   private TypeRegistry registryMock;
   private Storage storageMock;
+  private VRECollection vreCollectionMock;
   private Repository repository;
   private Change change;
   private RelationTypes relationTypesMock;
@@ -73,11 +75,12 @@ public class RepositoryTest {
   public void setup() throws Exception {
     relationTypesMock = mock(RelationTypes.class);
     registryMock = mock(TypeRegistry.class);
+    vreCollectionMock = mock(VRECollection.class);
     storageMock = mock(Storage.class);
     entityMappersMock = mock(EntityMappers.class);
     relationRefCreatorMock = mock(RelationRefCreator.class);
 
-    repository = new Repository(registryMock, storageMock, relationTypesMock, entityMappersMock, relationRefCreatorMock);
+    repository = new Repository(registryMock, storageMock, vreCollectionMock, relationTypesMock, entityMappersMock, relationRefCreatorMock);
     change = new Change("userId", "vreId");
   }
 

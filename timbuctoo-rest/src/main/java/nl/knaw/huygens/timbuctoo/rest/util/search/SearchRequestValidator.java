@@ -37,7 +37,6 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -45,13 +44,11 @@ import com.google.inject.Inject;
 
 public class SearchRequestValidator {
 
-  private final VREManager vreManager;
   private final TypeRegistry typeRegistry;
   private final Repository repository;
 
   @Inject
-  public SearchRequestValidator(VREManager vreManager, TypeRegistry typeRegistry, Repository repository) {
-    this.vreManager = vreManager;
+  public SearchRequestValidator(TypeRegistry typeRegistry, Repository repository) {
     this.typeRegistry = typeRegistry;
     this.repository = repository;
   }
@@ -76,7 +73,7 @@ public class SearchRequestValidator {
 
   private VRE isValidVRE(String vreId) {
     checkNotNull(vreId, BAD_REQUEST, "No VRE id specified");
-    VRE vre = vreManager.getVREById(vreId);
+    VRE vre = repository.getVREById(vreId);
     checkNotNull(vre, BAD_REQUEST, "No VRE with id \"%s\"", vreId);
     return vre;
   }

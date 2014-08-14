@@ -30,8 +30,8 @@ import nl.knaw.huygens.timbuctoo.index.IndexFacade;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.index.solr.SolrIndexFactory;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
-import nl.knaw.huygens.timbuctoo.vre.VREManagerProvider;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+import nl.knaw.huygens.timbuctoo.vre.VREs;
 
 import org.apache.commons.configuration.ConfigurationException;
 
@@ -39,7 +39,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 /**
- * A class to make it possible to use Guice @see http://code.google.com/p/google-guice . 
+ * A class to make it possible to use Guice @see http://code.google.com/p/google-guice.
  */
 public class ToolsInjectionModule extends BasicInjectionModule {
 
@@ -56,8 +56,8 @@ public class ToolsInjectionModule extends BasicInjectionModule {
   protected void configure() {
     super.configure();
     bind(IndexManager.class).to(IndexFacade.class);
-    bind(VREManager.class).toProvider(VREManagerProvider.class);
     bind(IndexFactory.class).to(SolrIndexFactory.class);
+    bind(VRECollection.class).to(VREs.class);
     bind(AbstractSolrServerBuilder.class).toProvider(AbstractSolrServerBuilderProvider.class);
   }
 

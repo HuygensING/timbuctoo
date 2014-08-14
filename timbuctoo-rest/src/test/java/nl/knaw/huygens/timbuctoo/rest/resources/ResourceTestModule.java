@@ -44,7 +44,6 @@ import nl.knaw.huygens.timbuctoo.search.converters.SearchParametersConverter;
 import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Provides;
@@ -76,7 +75,6 @@ class ResourceTestModule extends JerseyServletModule {
   private Broker broker;
   private Producer indexProducer;
   private Producer persistenceProducer;
-  private VREManager vreManager;
   private IndexManager indexManager;
   private SearchRequestValidator searchRequestValidator;
   private SearchParametersConverter searchParametersConverter;
@@ -97,7 +95,6 @@ class ResourceTestModule extends JerseyServletModule {
       broker = mock(Broker.class);
       indexProducer = mock(Producer.class);
       persistenceProducer = mock(Producer.class);
-      vreManager = mock(VREManager.class);
       indexManager = mock(IndexManager.class);
       searchRequestValidator = mock(SearchRequestValidator.class);
       searchParametersConverter = mock(SearchParametersConverter.class);
@@ -114,7 +111,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(config, repository, jsonProvider, validator, mailSender, authorizationHandler, broker, indexProducer, persistenceProducer, vreManager, indexManager, searchRequestValidator,
+    reset(config, repository, jsonProvider, validator, mailSender, authorizationHandler, broker, indexProducer, persistenceProducer, indexManager, searchRequestValidator,
         searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator);
   }
 
@@ -211,12 +208,6 @@ class ResourceTestModule extends JerseyServletModule {
   @Named("persistenceProducer")
   public Producer providePersistenceProducer() {
     return persistenceProducer;
-  }
-
-  @Singleton
-  @Provides
-  public VREManager provideVreManager() {
-    return vreManager;
   }
 
   @Singleton

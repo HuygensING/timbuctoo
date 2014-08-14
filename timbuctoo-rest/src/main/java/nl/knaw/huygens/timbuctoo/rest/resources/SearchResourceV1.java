@@ -65,7 +65,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,8 +84,6 @@ public class SearchResourceV1 extends ResourceBase {
   @Inject
   private Repository repository;
   @Inject
-  private VREManager vreManager;
-  @Inject
   private Configuration config;
   @Inject
   private SearchRequestValidator searchRequestValidator;
@@ -105,7 +102,7 @@ public class SearchResourceV1 extends ResourceBase {
 
     searchRequestValidator.validate(vreId, typeString, searchParams);
 
-    VRE vre = vreManager.getVREById(vreId);
+    VRE vre = repository.getVREById(vreId);
     Class<? extends DomainEntity> type = registry.getTypeForXName(typeString);
 
     // Process
@@ -139,7 +136,7 @@ public class SearchResourceV1 extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    final ClientSearchResult clientSearchResult = getClientSearchResultCreator(type).create(type, result, start, rows);
+    ClientSearchResult clientSearchResult = getClientSearchResultCreator(type).create(type, result, start, rows);
     return Response.ok(clientSearchResult).build();
   }
 
@@ -175,7 +172,7 @@ public class SearchResourceV1 extends ResourceBase {
 
     searchRequestValidator.validateRelationRequest(vreId, relationTypeString, params);
 
-    VRE vre = vreManager.getVREById(vreId);
+    VRE vre = repository.getVREById(vreId);
 
     // Process
     try {

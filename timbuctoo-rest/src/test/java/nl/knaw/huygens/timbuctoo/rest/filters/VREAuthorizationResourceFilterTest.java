@@ -29,10 +29,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.filters.VREAuthorizationFilterFactory.VREAuthorizationResourceFilter;
 import nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.After;
 import org.junit.Before;
@@ -45,17 +45,17 @@ public class VREAuthorizationResourceFilterTest {
 
   private static final String VRE_ID = "testVRE";
   private VREAuthorizationResourceFilter instance;
-  private VREManager vreManager;
+  private Repository repository;
 
   @Before
   public void setUp() {
-    vreManager = mock(VREManager.class);
-    instance = new VREAuthorizationResourceFilter(vreManager);
+    repository = mock(Repository.class);
+    instance = new VREAuthorizationResourceFilter(repository);
   }
 
   @After
   public void tearDown() {
-    vreManager = null;
+    repository = null;
     instance = null;
   }
 
@@ -63,11 +63,11 @@ public class VREAuthorizationResourceFilterTest {
   public void testFilterValidVREId() {
     ContainerRequest request = setupRequestForDomainEntities(VRE_ID);
 
-    setUpVREManager(VRE_ID, true);
+    setupVREManager(VRE_ID, true);
 
     instance.filter(request);
 
-    verify(vreManager, only()).doesVREExist(VRE_ID);
+    verify(repository, only()).doesVREExist(VRE_ID);
   }
 
   @Test(expected = TimbuctooException.class)
@@ -78,7 +78,7 @@ public class VREAuthorizationResourceFilterTest {
       instance.filter(request);
     } catch (TimbuctooException e) {
       assertEquals(Status.UNAUTHORIZED.getStatusCode(), e.getResponse().getStatus());
-      verifyZeroInteractions(vreManager);
+      verifyZeroInteractions(repository);
       throw e;
     }
   }
@@ -86,13 +86,13 @@ public class VREAuthorizationResourceFilterTest {
   @Test(expected = TimbuctooException.class)
   public void testFilterUnknownVRE() {
     ContainerRequest request = setupRequestForDomainEntities(VRE_ID);
-    setUpVREManager(VRE_ID, false);
+    setupVREManager(VRE_ID, false);
 
     try {
       instance.filter(request);
     } catch (TimbuctooException e) {
       assertEquals(Status.FORBIDDEN.getStatusCode(), e.getResponse().getStatus());
-      verify(vreManager, only()).doesVREExist(VRE_ID);
+      verify(repository, only()).doesVREExist(VRE_ID);
       throw e;
     }
   }
@@ -103,8 +103,8 @@ public class VREAuthorizationResourceFilterTest {
     return request;
   }
 
-  private void setUpVREManager(String vreId, boolean vreExists) {
-    when(vreManager.doesVREExist(vreId)).thenReturn(vreExists);
+  private void setupVREManager(String vreId, boolean vreExists) {
+    when(repository.doesVREExist(vreId)).thenReturn(vreExists);
   }
 
 }

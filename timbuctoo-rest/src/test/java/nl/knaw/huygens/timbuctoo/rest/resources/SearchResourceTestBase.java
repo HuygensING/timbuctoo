@@ -17,7 +17,6 @@ import nl.knaw.huygens.timbuctoo.rest.util.search.RegularClientSearchResultCreat
 import nl.knaw.huygens.timbuctoo.rest.util.search.RelationClientSearchResultCreator;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.Before;
 import org.mockito.Matchers;
@@ -35,7 +34,7 @@ public abstract class SearchResourceTestBase extends WebServiceTestSetup {
   protected static final String TERM = "dynamic_t_name:Huygens";
   protected static final String LOCATION_HEADER = "Location";
   protected static final String ID = "QURY0000000001";
-  protected VREManager vreManager;
+
   protected SearchRequestValidator searchRequestValidator;
   protected RegularClientSearchResultCreator regularClientSearchResultCreatorMock;
   protected RelationClientSearchResultCreator relationClientSearchResultCreatorMock;
@@ -53,11 +52,6 @@ public abstract class SearchResourceTestBase extends WebServiceTestSetup {
     searchRequestValidator = injector.getInstance(SearchRequestValidator.class);
   }
 
-  @Before
-  public void instantiateVREManager() {
-    vreManager = injector.getInstance(VREManager.class);
-  }
-
   protected void setSearchResult(VRE vreMock, SearchResult searchResult) throws Exception {
     when(vreMock.search(Matchers.<Class<? extends DomainEntity>> any(), any(SearchParametersV1.class))).thenReturn(searchResult);
   }
@@ -73,7 +67,7 @@ public abstract class SearchResourceTestBase extends WebServiceTestSetup {
 
     }
 
-    when(vreManager.getVREById(anyString())).thenReturn(vre);
+    when(repository.getVREById(anyString())).thenReturn(vre);
 
     return vre;
   }

@@ -29,7 +29,6 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -38,12 +37,10 @@ import com.google.inject.Singleton;
 public class IndexFacade implements IndexManager {
 
   private final Repository repository;
-  private final VREManager vreManager;
 
   @Inject
-  public IndexFacade(Repository repository, VREManager vreManager) {
+  public IndexFacade(Repository repository) {
     this.repository = repository;
-    this.vreManager = vreManager;
   }
 
   @Override
@@ -61,7 +58,7 @@ public class IndexFacade implements IndexManager {
     Class<? extends DomainEntity> baseType = toBaseDomainEntity(type);
     List<? extends DomainEntity> variations = repository.getAllVariations(baseType, id);
     if (!variations.isEmpty()) {
-      for (VRE vre : vreManager.getAllVREs()) {
+      for (VRE vre : repository.getAllVREs()) {
         indexChanger.executeIndexAction(baseType, vre, variations);
       }
     }
@@ -80,21 +77,21 @@ public class IndexFacade implements IndexManager {
 
   @Override
   public <T extends DomainEntity> void deleteEntity(Class<T> type, String id) throws IndexException {
-    for (VRE vre : vreManager.getAllVREs()) {
+    for (VRE vre : repository.getAllVREs()) {
       vre.deleteFromIndex(type, id);
     }
   }
 
   @Override
   public <T extends DomainEntity> void deleteEntities(Class<T> type, List<String> ids) throws IndexException {
-    for (VRE vre : vreManager.getAllVREs()) {
+    for (VRE vre : repository.getAllVREs()) {
       vre.deleteFromIndex(type, ids);
     }
   }
 
   @Override
   public void deleteAllEntities() throws IndexException {
-    for (VRE vre : vreManager.getAllVREs()) {
+    for (VRE vre : repository.getAllVREs()) {
       vre.clearIndexes();
     }
   }
@@ -103,7 +100,7 @@ public class IndexFacade implements IndexManager {
   public IndexStatus getStatus() {
     IndexStatus indexStatus = createIndexStatus();
 
-    for (VRE vre : vreManager.getAllVREs()) {
+    for (VRE vre : repository.getAllVREs()) {
       vre.addToIndexStatus(indexStatus);
     }
 
@@ -116,14 +113,14 @@ public class IndexFacade implements IndexManager {
 
   @Override
   public void commitAll() throws IndexException {
-    for (VRE vre : vreManager.getAllVREs()) {
+    for (VRE vre : repository.getAllVREs()) {
       vre.commitAll();
     }
   }
 
   @Override
   public void close() {
-    for (VRE vre : vreManager.getAllVREs()) {
+    for (VRE vre : repository.getAllVREs()) {
       vre.close();
     }
   }

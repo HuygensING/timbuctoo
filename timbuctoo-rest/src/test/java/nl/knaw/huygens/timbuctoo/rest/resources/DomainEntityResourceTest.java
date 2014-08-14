@@ -60,7 +60,6 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -454,8 +453,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPostWrongType() throws Exception {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
-    VREManager vreManager = injector.getInstance(VREManager.class);
-    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+    when(repository.doesVREExist(VRE_ID)).thenReturn(true);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
     whenJsonProviderReadFromThenReturn(entity);
@@ -537,9 +535,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testDeleteDocumentDoesNotExist() throws Exception {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
-    VREManager vreManager = injector.getInstance(VREManager.class);
-    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
-
+    when(repository.doesVREExist(VRE_ID)).thenReturn(true);
     when(repository.getEntity(BASE_TYPE, DEFAULT_ID)).thenReturn(null);
 
     ClientResponse response = createResource(null, BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
@@ -552,8 +548,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testDeleteTypeDoesNotExist() throws Exception {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
-    VREManager vreManager = injector.getInstance(VREManager.class);
-    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+    when(repository.doesVREExist(VRE_ID)).thenReturn(true);
 
     ClientResponse response = createResource(null, "unknownEntities", DEFAULT_ID).type(MediaType.APPLICATION_JSON_TYPE).header("Authorization", AUTHORIZATION).header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
@@ -720,8 +715,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutPIDTypeDoesNotExist() throws Exception {
     setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
 
-    VREManager vreManager = injector.getInstance(VREManager.class);
-    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+    when(repository.doesVREExist(VRE_ID)).thenReturn(true);
 
     ClientResponse response = doPutPIDRequest("unknowntypes");
 
@@ -735,8 +729,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutPIDUserNotAllowed() throws Exception {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
-    VREManager vreManager = injector.getInstance(VREManager.class);
-    when(vreManager.doesVREExist(VRE_ID)).thenReturn(true);
+    when(repository.doesVREExist(VRE_ID)).thenReturn(true);
 
     ClientResponse response = doPutPIDRequest("unknowntypes");
 

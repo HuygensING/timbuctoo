@@ -73,7 +73,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,14 +95,12 @@ public class DomainEntityResource extends ResourceBase {
   private final TypeRegistry typeRegistry;
   private final Repository repository;
   private final Broker broker;
-  private final VREManager vreManager;
 
   @Inject
-  public DomainEntityResource(TypeRegistry registry, Repository repository, Broker broker, VREManager vreManager) {
+  public DomainEntityResource(TypeRegistry registry, Repository repository, Broker broker) {
     this.typeRegistry = registry;
     this.repository = repository;
     this.broker = broker;
-    this.vreManager = vreManager;
   }
 
   // --- API -----------------------------------------------------------
@@ -182,12 +179,10 @@ public class DomainEntityResource extends ResourceBase {
 
     if (revision == null) {
       DomainEntity entity = repository.getEntityWithRelations(type, id);
-      checkNotNull(entity, NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
-      return entity;
+      return checkNotNull(entity, NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
     } else {
       DomainEntity entity = repository.getRevisionWithRelations(type, id, revision);
-      checkNotNull(entity, NOT_FOUND, "No %s with id %s and revision %s", type.getSimpleName(), id, revision);
-      return entity;
+      return checkNotNull(entity, NOT_FOUND, "No %s with id %s and revision %s", type.getSimpleName(), id, revision);
     }
   }
 
@@ -328,15 +323,11 @@ public class DomainEntityResource extends ResourceBase {
   // ---------------------------------------------------------------------------
 
   private Class<? extends DomainEntity> getValidEntityType(String name) {
-    Class<? extends DomainEntity> type = typeRegistry.getTypeForXName(name);
-    checkNotNull(type, NOT_FOUND, "No domain entity collection %s", name);
-    return type;
+    return checkNotNull(typeRegistry.getTypeForXName(name), NOT_FOUND, "No domain entity collection %s", name);
   }
 
   private VRE getValidVRE(String id) {
-    VRE vre = vreManager.getVREById(id);
-    checkNotNull(vre, NOT_FOUND, "No VRE with id %s", id);
-    return vre;
+    return checkNotNull(repository.getVREById(id), NOT_FOUND, "No VRE with id %s", id);
   }
 
 }

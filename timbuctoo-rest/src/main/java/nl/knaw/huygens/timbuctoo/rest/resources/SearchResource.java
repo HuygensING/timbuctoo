@@ -59,7 +59,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -78,8 +77,6 @@ public class SearchResource extends ResourceBase {
   private TypeRegistry registry;
   @Inject
   private Repository repository;
-  @Inject
-  private VREManager vreManager;
 
   @Inject
   private SearchRequestValidator searchRequestValidator;
@@ -102,7 +99,7 @@ public class SearchResource extends ResourceBase {
     String typeString = StringUtils.trimToNull(searchParams.getTypeString());
     searchRequestValidator.validate(vreId, registry.getXNameForIName(typeString), searchParamsV1);
 
-    VRE vre = vreManager.getVREById(vreId);
+    VRE vre = repository.getVREById(vreId);
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
 
     // Process
@@ -136,7 +133,7 @@ public class SearchResource extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    final ClientSearchResult clientSearchResult = regularSearchResultCreator.create(type, result, start, rows);
+    ClientSearchResult clientSearchResult = regularSearchResultCreator.create(type, result, start, rows);
     return Response.ok(clientSearchResult).build();
   }
 
@@ -160,7 +157,7 @@ public class SearchResource extends ResourceBase {
 
     searchRequestValidator.validateRelationRequest(vreId, registry.getXNameForIName(typeString), params);
 
-    VRE vre = vreManager.getVREById(vreId);
+    VRE vre = repository.getVREById(vreId);
 
     // Process
     try {
@@ -190,7 +187,8 @@ public class SearchResource extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    final ClientSearchResult clientSearchResult = relationSearchResultCreator.create(type, result, start, rows);
+    ClientSearchResult clientSearchResult = relationSearchResultCreator.create(type, result, start, rows);
     return Response.ok(clientSearchResult).build();
   }
+
 }

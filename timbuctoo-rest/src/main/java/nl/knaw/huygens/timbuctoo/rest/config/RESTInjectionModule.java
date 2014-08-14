@@ -51,8 +51,8 @@ import nl.knaw.huygens.timbuctoo.security.ExampleVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.SecurityType;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
-import nl.knaw.huygens.timbuctoo.vre.VREManagerProvider;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+import nl.knaw.huygens.timbuctoo.vre.VREs;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -73,7 +73,7 @@ public class RESTInjectionModule extends BasicInjectionModule {
 
     bind(AbstractSolrServerBuilder.class).toProvider(AbstractSolrServerBuilderProvider.class);
     bind(IndexFactory.class).to(SolrIndexFactory.class);
-    bind(VREManager.class).toProvider(VREManagerProvider.class).in(Singleton.class);
+    bind(VRECollection.class).to(VREs.class);
 
     bind(SecurityContextCreator.class).to(UserSecurityContextCreator.class);
     bind(Broker.class).to(ActiveMQBroker.class);

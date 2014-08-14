@@ -39,7 +39,6 @@ import nl.knaw.huygens.timbuctoo.rest.config.ServletInjectionModelHelper;
 import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
 import nl.knaw.huygens.timbuctoo.rest.filters.VREAuthorizationFilterFactory;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VREManager;
 
 import org.junit.After;
 import org.junit.Before;
@@ -58,7 +57,7 @@ import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
 
 /* abstract class names should not end with Test, 
- * because the build script tries to execute all the classes with a Test postfix. 
+ * because the build script tries to execute all the classes with a Test suffix. 
  */
 public abstract class WebServiceTestSetup extends JerseyTest {
 
@@ -145,9 +144,8 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   }
 
   protected void makeVREAvailable(VRE vre, String vreId) {
-    VREManager vreManager = injector.getInstance(VREManager.class);
-    when(vreManager.doesVREExist(vreId)).thenReturn(true);
-    when(vreManager.getVREById(vreId)).thenReturn(vre);
+    when(repository.doesVREExist(vreId)).thenReturn(true);
+    when(repository.getVREById(vreId)).thenReturn(vre);
   }
 
   /**
@@ -156,8 +154,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
    * @param vreExists {@code true} when the VRE has to exists {@code false} if not.
    */
   protected void setUpVREManager(String vreId, boolean vreExists) {
-    VREManager vreManager = injector.getInstance(VREManager.class);
-    when(vreManager.doesVREExist(vreId)).thenReturn(vreExists);
+    when(repository.doesVREExist(vreId)).thenReturn(vreExists);
   }
 
   @SuppressWarnings("unchecked")
