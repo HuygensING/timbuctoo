@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.index.solr;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 import static nl.knaw.huygens.timbuctoo.index.solr.SolrIndexFactory.SOLR_DATA_DIR_CONFIG_PROP;
 import static nl.knaw.huygens.timbuctoo.vre.VREMockBuilder.newVRE;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,21 +35,49 @@ import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexDescriptionFactory;
-import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchLibraryFactory;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.apache.solr.core.CoreDescriptor;
+import org.junit.Before;
 import org.junit.Test;
 
+import test.timbuctoo.index.model.ExplicitlyAnnotatedModel;
+import test.timbuctoo.index.model.SubModel;
 import test.timbuctoo.index.model.Type1;
 
 public class SolrIndexFactoryTest {
 
   private static final String DATA_DIR = "data/";
+
+  private AbstractSolrServer solrServerMock;
+  private IndexDescription facetDefinitions;
+  private FacetedSearchLibrary facetedSearchLibraryMock;
+  private SolrInputDocumentCreator solrInputDocumentCreatorMock;
+  private Configuration configurationMock;
+  private IndexDescriptionFactory indexDescriptionFactoryMock;
+  private AbstractSolrServerBuilder solrServerBuilderMock;
+  private FacetedSearchLibraryFactory facetedSearchLibraryFactoryMock ;
+  
+  private SolrIndexFactory instance ;
+
+  @Before
+  public void setup() {
+    solrServerMock = mock(AbstractSolrServer.class);
+    facetDefinitions = mock(IndexDescription.class);
+    facetedSearchLibraryMock = mock(FacetedSearchLibrary.class);
+    solrInputDocumentCreatorMock = mock(SolrInputDocumentCreator.class);
+    configurationMock = mock(Configuration.class);
+    indexDescriptionFactoryMock = mock(IndexDescriptionFactory.class);
+    solrServerBuilderMock = mock(AbstractSolrServerBuilder.class);
+    facetedSearchLibraryFactoryMock = mock(FacetedSearchLibraryFactory.class);
+
+    instance = new SolrIndexFactory(solrInputDocumentCreatorMock, solrServerBuilderMock, indexDescriptionFactoryMock, facetedSearchLibraryFactoryMock, configurationMock);
+  }
 
   @Test
   public void testCreateIndex() {
@@ -57,34 +86,20 @@ public class SolrIndexFactoryTest {
     // It should create a FacetedSearchLibrary
 
     // setup
-    AbstractSolrServer solrServerMock = mock(AbstractSolrServer.class);
-    IndexDescription facetDefinitions = mock(IndexDescription.class);
-    FacetedSearchLibrary facetedSearchLibraryMock = mock(FacetedSearchLibrary.class);
-    SolrInputDocumentCreator solrInputDocumentCreatorMock = mock(SolrInputDocumentCreator.class);
-    IndexNameCreator indexNameCreatorMock = mock(IndexNameCreator.class);
-    Configuration configurationMock = mock(Configuration.class);
+    String scopeId = "scopeid";
+    VRE vre = newVRE().withScopeId(scopeId).create();
 
-    VRE vre = newVRE().create();
-
-    IndexDescriptionFactory indexDescriptionFactoryMock = mock(IndexDescriptionFactory.class);
-    AbstractSolrServerBuilder solrServerBuilderMock = mock(AbstractSolrServerBuilder.class);
-    FacetedSearchLibraryFactory facetedSearchLibraryFactoryMock = mock(FacetedSearchLibraryFactory.class);
-
-    String name = "test";
     Class<? extends DomainEntity> type = Type1.class;
+    String indexName = String.format("%s.%s", scopeId, TypeNames.getInternalName(toBaseDomainEntity(type)));
 
-    Index expectedSolrIndex = new SolrIndex(name, solrInputDocumentCreatorMock, solrServerMock, facetedSearchLibraryMock);
+    Index expectedSolrIndex = new SolrIndex(indexName, solrInputDocumentCreatorMock, solrServerMock, facetedSearchLibraryMock);
 
-    when(indexNameCreatorMock.getIndexNameFor(vre, type)).thenReturn(name);
     when(indexDescriptionFactoryMock.create(type)).thenReturn(facetDefinitions);
-    when(solrServerBuilderMock.setCoreName(name)).thenReturn(solrServerBuilderMock);
+    when(solrServerBuilderMock.setCoreName(indexName)).thenReturn(solrServerBuilderMock);
     when(solrServerBuilderMock.build(facetDefinitions)).thenReturn(solrServerMock);
     when(configurationMock.getSetting(SOLR_DATA_DIR_CONFIG_PROP)).thenReturn(DATA_DIR);
-    when(solrServerBuilderMock.addProperty(CoreDescriptor.CORE_DATADIR, DATA_DIR + "/" + name.replace('.', '/'))).thenReturn(solrServerBuilderMock);
+    when(solrServerBuilderMock.addProperty(CoreDescriptor.CORE_DATADIR, DATA_DIR + "/" + indexName.replace('.', '/'))).thenReturn(solrServerBuilderMock);
     when(facetedSearchLibraryFactoryMock.create(solrServerMock)).thenReturn(facetedSearchLibraryMock);
-
-    SolrIndexFactory instance = new SolrIndexFactory(solrInputDocumentCreatorMock, solrServerBuilderMock, indexDescriptionFactoryMock, facetedSearchLibraryFactoryMock, indexNameCreatorMock,
-        configurationMock);
 
     // action
     SolrIndex actualSolrIndex = instance.createIndexFor(vre, type);
@@ -92,4 +107,33 @@ public class SolrIndexFactoryTest {
     // verify
     assertThat(actualSolrIndex, is(equalTo(expectedSolrIndex)));
   }
+
+  @Test
+  public void testGetIndexNameForBaseType() {
+    // setup
+    Class<? extends DomainEntity> type = ExplicitlyAnnotatedModel.class;
+    VRE vreMock = mock(VRE.class);
+    when(vreMock.getScopeId()).thenReturn("scopeName");
+
+    // action
+    String indexName = instance.getIndexNameFor(vreMock, type);
+
+    // verify
+    assertThat(indexName, equalTo("scopeName.explicitlyannotatedmodel"));
+  }
+
+  @Test
+  public void testGetIndexNameForSubType() {
+    // setup
+    Class<? extends DomainEntity> type = SubModel.class;
+    VRE vreMock = mock(VRE.class);
+    when(vreMock.getScopeId()).thenReturn("scopeName");
+
+    // action
+    String indexName = instance.getIndexNameFor(vreMock, type);
+
+    // verify
+    assertThat(indexName, equalTo("scopeName.explicitlyannotatedmodel"));
+  }
+
 }

@@ -34,6 +34,7 @@ import com.google.common.collect.Lists;
 public class VREMockBuilder {
 
   private String name;
+  private String scopeId;
   private List<Index> indexes;
 
   private VREMockBuilder() {}
@@ -47,16 +48,22 @@ public class VREMockBuilder {
     return this;
   }
 
+  public VREMockBuilder withScopeId(String scopeId) {
+    this.scopeId = scopeId;
+    return this;
+  }
+
   public VREMockBuilder withIndexes(Index... indexes) {
     this.indexes = Lists.newArrayList(indexes);
     return this;
   }
 
   public VRE create() {
-    VRE vreMock = mock(VRE.class);
-    when(vreMock.getName()).thenReturn(name);
-    when(vreMock.getIndexes()).thenReturn(indexes);
-    return vreMock;
+    VRE vre = mock(VRE.class);
+    when(vre.getName()).thenReturn(name);
+    when(vre.getScopeId()).thenReturn(scopeId);
+    when(vre.getIndexes()).thenReturn(indexes);
+    return vre;
   }
 
 }

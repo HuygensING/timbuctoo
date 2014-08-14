@@ -22,59 +22,65 @@ package nl.knaw.huygens.timbuctoo.index.solr;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
 import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.index.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
-import nl.knaw.huygens.timbuctoo.index.IndexNameCreator;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchLibraryFactory;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.apache.solr.core.CoreDescriptor;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 
 public class SolrIndexFactory implements IndexFactory {
+
   public static final String SOLR_DATA_DIR_CONFIG_PROP = "solr.data_dir";
 
   private final SolrInputDocumentCreator solrDocumentCreator;
   private final AbstractSolrServerBuilder solrServerBuilder;
   private final IndexDescriptionFactory indexDescriptionFactory;
   private final FacetedSearchLibraryFactory facetedSearchLibraryFactory;
-  private final IndexNameCreator indexNameCreator;
   private final Configuration configuration;
 
-  //FIXME some abstractions are missing, there are too many dependencies.
+  // FIXME some abstractions are missing, there are too many dependencies.
 
   @Inject
   public SolrIndexFactory(SolrInputDocumentCreator solrInputDocumentCreator, AbstractSolrServerBuilder solrServerBuilder, IndexDescriptionFactory indexDescriptionFactory,
-      FacetedSearchLibraryFactory facetedSearchLibraryFactory, IndexNameCreator indexNameCreator, Configuration configuration) {
+      FacetedSearchLibraryFactory facetedSearchLibraryFactory, Configuration configuration) {
     this.solrDocumentCreator = solrInputDocumentCreator;
     this.solrServerBuilder = solrServerBuilder;
     this.indexDescriptionFactory = indexDescriptionFactory;
     this.facetedSearchLibraryFactory = facetedSearchLibraryFactory;
-    this.indexNameCreator = indexNameCreator;
     this.configuration = configuration;
-  }
-
-  private String getSolrDataDir(String name) {
-
-    return String.format("%s/%s", configuration.getSetting(SOLR_DATA_DIR_CONFIG_PROP), name.replace('.', '/'));
   }
 
   @Override
   public SolrIndex createIndexFor(VRE vre, Class<? extends DomainEntity> type) {
-    String name = indexNameCreator.getIndexNameFor(vre, type);
-    IndexDescription indexDescription = this.indexDescriptionFactory.create(type);
-    AbstractSolrServer abstractSolrServer = this.solrServerBuilder.setCoreName(name) //
+    String name = getIndexNameFor(vre, type);
+    IndexDescription indexDescription = indexDescriptionFactory.create(type);
+    AbstractSolrServer abstractSolrServer = solrServerBuilder.setCoreName(name) //
         .addProperty(CoreDescriptor.CORE_DATADIR, getSolrDataDir(name)) //
         .build(indexDescription);
-    FacetedSearchLibrary facetedSearchLibrary = this.facetedSearchLibraryFactory.create(abstractSolrServer);
+    FacetedSearchLibrary facetedSearchLibrary = facetedSearchLibraryFactory.create(abstractSolrServer);
 
     return new SolrIndex(name, solrDocumentCreator, abstractSolrServer, facetedSearchLibrary);
   }
+
+  @VisibleForTesting
+  String getIndexNameFor(VRE vre, Class<? extends DomainEntity> type) {
+    return String.format("%s.%s", vre.getScopeId(), TypeNames.getInternalName(toBaseDomainEntity(type)));
+  }
+
+  private String getSolrDataDir(String name) {
+    return String.format("%s/%s", configuration.getSetting(SOLR_DATA_DIR_CONFIG_PROP), name.replace('.', '/'));
+  }
+
 }
