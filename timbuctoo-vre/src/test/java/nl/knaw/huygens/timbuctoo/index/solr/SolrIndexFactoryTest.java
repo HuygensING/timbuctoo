@@ -22,20 +22,18 @@ package nl.knaw.huygens.timbuctoo.index.solr;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 import static nl.knaw.huygens.timbuctoo.index.solr.SolrIndexFactory.SOLR_DATA_DIR_CONFIG_PROP;
 import static nl.knaw.huygens.timbuctoo.vre.VREMockBuilder.newVRE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
 import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -90,7 +88,7 @@ public class SolrIndexFactoryTest {
     VRE vre = newVRE().withScopeId(scopeId).create();
 
     Class<? extends DomainEntity> type = Type1.class;
-    String indexName = String.format("%s.%s", scopeId, TypeNames.getInternalName(toBaseDomainEntity(type)));
+    String indexName = instance.getIndexNameFor(vre, type);
 
     Index expectedSolrIndex = new SolrIndex(indexName, solrInputDocumentCreatorMock, solrServerMock, facetedSearchLibraryMock);
 
@@ -105,35 +103,23 @@ public class SolrIndexFactoryTest {
     SolrIndex actualSolrIndex = instance.createIndexFor(vre, type);
 
     // verify
-    assertThat(actualSolrIndex, is(equalTo(expectedSolrIndex)));
+    assertThat(actualSolrIndex, equalTo(expectedSolrIndex));
   }
 
   @Test
   public void testGetIndexNameForBaseType() {
-    // setup
+    VRE vre = newVRE().withScopeId("scope1").create();
     Class<? extends DomainEntity> type = ExplicitlyAnnotatedModel.class;
-    VRE vreMock = mock(VRE.class);
-    when(vreMock.getScopeId()).thenReturn("scopeName");
 
-    // action
-    String indexName = instance.getIndexNameFor(vreMock, type);
-
-    // verify
-    assertThat(indexName, equalTo("scopeName.explicitlyannotatedmodel"));
+    assertThat(instance.getIndexNameFor(vre, type), equalTo("scope1.explicitlyannotatedmodel"));
   }
 
   @Test
   public void testGetIndexNameForSubType() {
-    // setup
+    VRE vre = newVRE().withScopeId("scope2").create();
     Class<? extends DomainEntity> type = SubModel.class;
-    VRE vreMock = mock(VRE.class);
-    when(vreMock.getScopeId()).thenReturn("scopeName");
 
-    // action
-    String indexName = instance.getIndexNameFor(vreMock, type);
-
-    // verify
-    assertThat(indexName, equalTo("scopeName.explicitlyannotatedmodel"));
+    assertThat(instance.getIndexNameFor(vre, type), equalTo("scope2.explicitlyannotatedmodel"));
   }
 
 }
