@@ -75,7 +75,7 @@ public class RelationClientSearchResultCreatorTest extends ClientSearchResultCre
     List<TestRelation> result = setupRepository(type, idsToGet);
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
         .withIds(idsToGet) //
-        .withNumFound(NUMBER_OF_RESULTS_FOUND) //
+        .withNumFound(TEN_RESULTS_FOUND) //
         .withRefs(REFS) //
         .withResults(result) //
         .withStart(start) //
@@ -104,7 +104,7 @@ public class RelationClientSearchResultCreatorTest extends ClientSearchResultCre
     List<TestRelation> result = setupRepository(type, idsToGet);
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
         .withIds(idsToGet) //
-        .withNumFound(NUMBER_OF_RESULTS_FOUND) //
+        .withNumFound(TEN_RESULTS_FOUND) //
         .withRefs(REFS) //
         .withResults(result) //
         .withStart(start) //
@@ -135,7 +135,7 @@ public class RelationClientSearchResultCreatorTest extends ClientSearchResultCre
     List<TestRelation> result = setupRepository(type, idsToGet);
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
         .withIds(idsToGet) //
-        .withNumFound(NUMBER_OF_RESULTS_FOUND) //
+        .withNumFound(TEN_RESULTS_FOUND) //
         .withRefs(REFS) //
         .withResults(result) //
         .withStart(normalizedStart) //
@@ -164,7 +164,7 @@ public class RelationClientSearchResultCreatorTest extends ClientSearchResultCre
     List<TestRelation> result = setupRepository(type, idsToGet);
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
         .withIds(idsToGet) //
-        .withNumFound(NUMBER_OF_RESULTS_FOUND) //
+        .withNumFound(TEN_RESULTS_FOUND) //
         .withRefs(REFS) //
         .withResults(result) //
         .withStart(start) //
@@ -195,7 +195,7 @@ public class RelationClientSearchResultCreatorTest extends ClientSearchResultCre
     List<TestRelation> result = setupRepository(type, idsToGet);
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
         .withIds(idsToGet) //
-        .withNumFound(NUMBER_OF_RESULTS_FOUND) //
+        .withNumFound(TEN_RESULTS_FOUND) //
         .withRefs(REFS) //
         .withResults(result) //
         .withStart(start) //

@@ -84,7 +84,7 @@ public class RegularClientSearchResultCreatorTest extends ClientSearchResultCrea
     ClientSearchResultMatcher<RegularClientSearchResult> clientSearchResultMatcher = newRegularClientSearchResultMatcherBuilder() //
         .withTerm(TERM) //
         .withFacets(FACET_LIST) //
-        .withNumFound(NUMBER_OF_RESULTS_FOUND) //
+        .withNumFound(TEN_RESULTS_FOUND) //
         .withIds(idsToGet) //
         .withRefs(UNIMPORTANT_REF_LIST) //
         .withResults(result) //
@@ -117,7 +117,7 @@ public class RegularClientSearchResultCreatorTest extends ClientSearchResultCrea
     ClientSearchResultMatcher<RegularClientSearchResult> clientSearchResultMatcher = newRegularClientSearchResultMatcherBuilder() //
         .withTerm(TERM) //
         .withFacets(FACET_LIST) //
-        .withNumFound(NUMBER_OF_RESULTS_FOUND) //
+        .withNumFound(TEN_RESULTS_FOUND) //
         .withIds(idsToGet) //
         .withRefs(UNIMPORTANT_REF_LIST) //
         .withResults(result) //
@@ -146,7 +146,7 @@ public class RegularClientSearchResultCreatorTest extends ClientSearchResultCrea
     ClientSearchResultMatcher<RegularClientSearchResult> clientSearchResultMatcher = newRegularClientSearchResultMatcherBuilder() //
         .withTerm(TERM) //
         .withFacets(FACET_LIST) //
-        .withNumFound(NUMBER_OF_RESULTS_FOUND) //
+        .withNumFound(TEN_RESULTS_FOUND) //
         .withIds(idsToGet) //
         .withRefs(UNIMPORTANT_REF_LIST) //
         .withResults(result) //
@@ -178,7 +178,7 @@ public class RegularClientSearchResultCreatorTest extends ClientSearchResultCrea
     ClientSearchResultMatcher<RegularClientSearchResult> clientSearchResultMatcher = newRegularClientSearchResultMatcherBuilder() //
         .withTerm(TERM) //
         .withFacets(FACET_LIST) //
-        .withNumFound(NUMBER_OF_RESULTS_FOUND) //
+        .withNumFound(TEN_RESULTS_FOUND) //
         .withIds(idsToGet) //
         .withRefs(UNIMPORTANT_REF_LIST) //
         .withResults(result) //
@@ -207,7 +207,7 @@ public class RegularClientSearchResultCreatorTest extends ClientSearchResultCrea
     ClientSearchResultMatcher<RegularClientSearchResult> clientSearchResultMatcher = newRegularClientSearchResultMatcherBuilder() //
         .withTerm(TERM) //
         .withFacets(FACET_LIST) //
-        .withNumFound(NUMBER_OF_RESULTS_FOUND) //
+        .withNumFound(TEN_RESULTS_FOUND) //
         .withIds(idsToGet) //
         .withRefs(UNIMPORTANT_REF_LIST) //
         .withResults(result) //
