@@ -302,6 +302,7 @@
     <!-- This is an example of using the KeywordTokenizer along
          With various TokenFilterFactories to produce a sortable field
          that does not include some properties of the source text
+         inspired by http://stackoverflow.com/a/13361226
       -->
     <fieldType name="alphaOnlySort" class="solr.TextField" sortMissingLast="true" omitNorms="true">
       <analyzer>
@@ -326,8 +327,9 @@
              
              http://java.sun.com/j2se/1.5.0/docs/api/java/util/regex/package-summary.html
           -->
+        <filter class="nl.knaw.huygens.analysis.lucene.DiacriticsFilterFactory"/>
         <filter class="solr.PatternReplaceFilterFactory"
-                pattern="([^a-z])" replacement="" replace="all"
+                pattern="([^\p{L}])" replacement="" replace="all"
         />
       </analyzer>
     </fieldType>
