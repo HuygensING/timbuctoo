@@ -127,8 +127,8 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   @Override
   protected AppDescriptor configure() {
     WebAppDescriptor webAppDescriptor = new WebAppDescriptor.Builder().build();
-    webAppDescriptor.getInitParams()
-        .put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.timbuctoo.rest.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.timbuctoo.rest.providers");
+    webAppDescriptor.getInitParams().put(PackagesResourceConfig.PROPERTY_PACKAGES,
+        "nl.knaw.huygens.timbuctoo.rest.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.timbuctoo.rest.providers;nl.knaw.huygens.facetedsearch.serialization.providers;");
     webAppDescriptor.getInitParams().put(
         ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
         ServletInjectionModelHelper.getClassNamesString(SecurityResourceFilterFactory.class, VREAuthorizationFilterFactory.class, UserResourceFilterFactory.class,

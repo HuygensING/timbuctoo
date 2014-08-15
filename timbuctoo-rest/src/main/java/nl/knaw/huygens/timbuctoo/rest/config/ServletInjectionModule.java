@@ -44,7 +44,8 @@ public class ServletInjectionModule extends JerseyServletModule {
   @Override
   protected void configureServlets() {
     Map<String, String> params = Maps.newHashMap();
-    params.put(PackagesResourceConfig.PROPERTY_PACKAGES, "nl.knaw.huygens.timbuctoo.rest.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.timbuctoo.rest.providers");
+    params.put(PackagesResourceConfig.PROPERTY_PACKAGES,
+        "nl.knaw.huygens.timbuctoo.rest.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.timbuctoo.rest.providers;nl.knaw.huygens.facetedsearch.serialization.providers;");
     params.put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, ServletInjectionModelHelper.getClassNamesString(GZIPContentEncodingFilter.class, LoggingFilter.class));
     params.put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES, ServletInjectionModelHelper.getClassNamesString(SecurityResourceFilterFactory.class, VREAuthorizationFilterFactory.class,
         UserResourceFilterFactory.class, RolesAllowedResourceFilterFactory.class));
