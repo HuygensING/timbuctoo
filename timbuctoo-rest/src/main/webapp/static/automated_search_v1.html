@@ -81,6 +81,14 @@ text {
   pointer-events: none;
   text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
 }
+
+#navigation {
+	width: 20%;
+	text-align: center;
+}
+#navigation a{
+	padding: 10px;
+}
 </style>
 
 </head>
@@ -123,6 +131,8 @@ text {
 </table>
 <p><a href="#" onclick="doPost()">Search</a></p>
 
+<div id="navigation">
+</div>
 <h2>Results</h2>
 <div id="results">
 </div>
@@ -163,7 +173,7 @@ text {
         var queryURL = xhr.getResponseHeader('Location') || 'None';
         $('#searchid').val(queryURL);
         errorToken.hide();
-        doGet()
+        doGet(queryURL)
       },
       error: function (xhr, status, errorThrown){
         errorToken.text(status + ' : ' + errorThrown);
@@ -183,20 +193,36 @@ text {
 	  return sortParameters;
   }
 
-  function doGet() {
-    var searchUrl = $('#searchid').val();
+  function doGet(url) {
     var start = $('#start').val() || '0';
     var rows = $('#rows').val() || '10';
     jQuery.ajax({
-      url: searchUrl,
+      url: url,
       type: 'GET',
       data: {'start': start, 'rows': rows},
       contentType: 'application/json; charset=utf-8',
       success: function (data) {
       	buildResultsTable(data);
       	buildSortfields(data);
+      	createNavigation(data);
       }
     });
+  }
+  
+  function createNavigation(data){
+	  var navigation = $('#navigation');
+	  navigation.empty();
+	  var nextLink = data['_next'];
+	  var prevLink = data['_prev'];
+	
+	  addLink(navigation, '<', prevLink);
+	  addLink(navigation, '>', nextLink);
+  }
+  
+  function addLink(navigation, linkName, url){
+	if( url !== null && url !== '' && url !== undefined){
+	  navigation.append('<a href="#" onClick="doGet(\'' + url + '\')">'+linkName+'</a>');  
+	}	
   }
   
   function buildSortfields(data){
