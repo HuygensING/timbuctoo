@@ -96,7 +96,8 @@ public class RegularClientSearchResultMatcher extends ClientSearchResultMatcher<
 
   @Override
   protected boolean matchesSafely(RegularClientSearchResult item) {
-    boolean isEqual = Objects.equal(term, item.getTerm());
+    boolean isEqual = super.matchesSafely(item);
+    isEqual &= Objects.equal(term, item.getTerm());
     isEqual &= Objects.equal(facets, item.getFacets());
     isEqual &= Objects.equal(refs, item.getRefs());
 
