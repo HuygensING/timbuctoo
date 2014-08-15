@@ -30,11 +30,9 @@ import org.apache.commons.lang.StringUtils;
 
 public class SortableFieldFinder extends AbstractFieldFinder {
 
-  private static final String SORTABLE_FIELD_PREFIX = "dynamic_sort_";
-
   @Override
   protected void addField(Set<String> fields, IndexAnnotation indexAnnotation) {
-    if (StringUtils.startsWith(indexAnnotation.fieldName(), SORTABLE_FIELD_PREFIX)) {
+    if (indexAnnotation.isSortable() && StringUtils.isNotBlank(indexAnnotation.fieldName())) {
       fields.add(indexAnnotation.fieldName());
     }
   }
