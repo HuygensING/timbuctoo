@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.Repository.DEFAULT_RELATION_LIMIT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -46,7 +45,6 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
 import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
@@ -126,13 +124,7 @@ public class RepositoryTest {
 
     // verify
     verify(storageMock).getAllVariations(type, id);
-    verifyRelationsAddedToEntity(entityMock1);
-    verifyRelationsAddedToEntity(entityMock2);
     assertEquals(variations, actualVariations);
-  }
-
-  private void verifyRelationsAddedToEntity(BaseDomainEntity entityMock) throws StorageException {
-    verify(entityMock).addRelations(repository, DEFAULT_RELATION_LIMIT, entityMappersMock, relationRefCreatorMock);
   }
 
   @Ignore
@@ -149,7 +141,6 @@ public class RepositoryTest {
 
     // verify
     verify(storageMock).getItem(type, id);
-    verifyRelationsAddedToEntity(entityMock1);
     assertEquals(entityMock1, entity);
   }
 
@@ -183,7 +174,6 @@ public class RepositoryTest {
 
     // verify
     verify(storageMock).getRevision(type, id, revision);
-    verifyRelationsAddedToEntity(entityMock1);
     assertEquals(entityMock1, entity);
   }
 
