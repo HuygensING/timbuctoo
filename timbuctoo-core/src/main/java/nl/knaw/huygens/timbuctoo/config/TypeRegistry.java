@@ -147,7 +147,11 @@ public class TypeRegistry {
     Set<Class<? extends Role>> roles = Sets.newHashSet();
     for (ClassInfo info : getClassInfoSet(classPath, packageName)) {
       Class<?> type = info.load();
-      if (isEntity(type) && !shouldNotRegister(type)) {
+      if (shouldNotRegister(type)) {
+        continue;
+      }
+
+      if (isEntity(type)) {
         if (BusinessRules.isValidSystemEntity(type)) {
           registerSystemEntity(toSystemEntity(type));
         } else if (BusinessRules.isValidDomainEntity(type)) {
@@ -160,7 +164,7 @@ public class TypeRegistry {
           throw new ModelException("Invalid entity %s", type);
         }
         LOG.debug("Registered entity {}", type.getName());
-      } else if (isRole(type) && !shouldNotRegister(type)) {
+      } else if (isRole(type)) {
         if (BusinessRules.isValidRole(type)) {
           Class<? extends Role> roleType = toRole(type);
           registerRole(roleType);
