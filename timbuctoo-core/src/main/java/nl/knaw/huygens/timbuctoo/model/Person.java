@@ -152,6 +152,7 @@ public class Person extends DomainEntity {
     return defaultName().getSortName();
   }
 
+  @IndexAnnotation(fieldName = "dynamic_s_types", isFaceted = true)
   public List<String> getTypes() {
     return types;
   }
