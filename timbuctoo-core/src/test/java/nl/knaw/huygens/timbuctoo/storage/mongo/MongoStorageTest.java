@@ -34,13 +34,14 @@ import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
-import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import test.variation.model.BaseDomainEntity;
+import test.variation.model.TestSystemEntity;
+import test.variation.model.projecta.ProjectADomainEntity;
 
 import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;

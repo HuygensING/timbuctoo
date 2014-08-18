@@ -23,10 +23,11 @@ package nl.knaw.huygens.timbuctoo.config;
  */
 
 import static org.junit.Assert.assertEquals;
-import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.VTestSystemEntity;
 
 import org.junit.Test;
+
+import test.variation.model.BaseDomainEntity;
+import test.variation.model.VTestSystemEntity;
 
 public class TypeNamesTest {
 

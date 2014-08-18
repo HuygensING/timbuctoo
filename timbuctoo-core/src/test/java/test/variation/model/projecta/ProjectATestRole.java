@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation.model.projecta;
+package test.variation.model.projecta;
 
 /*
  * #%L
@@ -22,39 +22,40 @@ package nl.knaw.huygens.timbuctoo.variation.model.projecta;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.model.util.PersonName;
-import nl.knaw.huygens.timbuctoo.variation.model.TestConcreteDoc;
+import test.variation.model.TestRole;
 
 import com.google.common.base.Objects;
 
-public class ProjectATestDocWithPersonName extends TestConcreteDoc {
-  private PersonName personName;
+public class ProjectATestRole extends TestRole {
+  private String projectATestRoleName;
 
-  public PersonName getPersonName() {
-    return personName;
+  public String getProjectATestRoleName() {
+    return projectATestRoleName;
   }
 
-  public void setPersonName(PersonName personName) {
-    this.personName = personName;
+  public void setProjectATestRoleName(String projectATestRoleName) {
+    this.projectATestRoleName = projectATestRoleName;
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof ProjectATestDocWithPersonName)) {
+    if (!(obj instanceof ProjectATestRole)) {
       return false;
     }
-    ProjectATestDocWithPersonName other = (ProjectATestDocWithPersonName) obj;
+    ProjectATestRole other = (ProjectATestRole) obj;
+    boolean isEqual = super.equals(obj);
+    isEqual &= Objects.equal(other.projectATestRoleName, projectATestRoleName);
 
-    return Objects.equal(other.personName, personName);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(personName);
+    return isEqual;
   }
 
   @Override
   public String toString() {
-    return "ProjectATestDocWithPersonName{\npersonName: " + personName + "\n}";
+    return "ProjectATestRole{\nroleName: " + getRoleName() + "\nprojectATestRoleName: " + projectATestRoleName + "\n}";
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(getRoleName(), projectATestRoleName);
   }
 }

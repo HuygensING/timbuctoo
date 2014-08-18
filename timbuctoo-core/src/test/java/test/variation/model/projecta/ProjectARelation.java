@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation.model.projecta;
+package test.variation.model.projecta;
 
 /*
  * #%L
@@ -22,16 +22,10 @@ package nl.knaw.huygens.timbuctoo.variation.model.projecta;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
-import nl.knaw.huygens.timbuctoo.variation.model.DomainEntityWithIndexAnnotations;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 
-public class ModelWithOverriddenIndexAnnotations extends DomainEntityWithIndexAnnotations {
+public class ProjectARelation extends Relation {
 
-  @Override
-  @IndexAnnotations({ @IndexAnnotation(fieldName = "test"), @IndexAnnotation(fieldName = "test2"), @IndexAnnotation(fieldName = "test3") })
-  public String getString() {
-    return super.getString();
-  }
+  public ProjectARelation() {}
 
 }

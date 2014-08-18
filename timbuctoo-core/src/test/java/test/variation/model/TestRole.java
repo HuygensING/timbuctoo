@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation.model.projecta;
+package test.variation.model;
 
 /*
  * #%L
@@ -22,40 +22,41 @@ package nl.knaw.huygens.timbuctoo.variation.model.projecta;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.variation.model.TestRole;
+import nl.knaw.huygens.timbuctoo.model.Role;
 
 import com.google.common.base.Objects;
 
-public class ProjectATestRole extends TestRole {
-  private String projectATestRoleName;
+public class TestRole extends Role {
 
-  public String getProjectATestRoleName() {
-    return projectATestRoleName;
+  private String roleName;
+
+  public String getRoleName() {
+    return roleName;
   }
 
-  public void setProjectATestRoleName(String projectATestRoleName) {
-    this.projectATestRoleName = projectATestRoleName;
+  public void setRoleName(String roleName) {
+    this.roleName = roleName;
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof ProjectATestRole)) {
+    if (!(obj instanceof TestRole)) {
       return false;
     }
-    ProjectATestRole other = (ProjectATestRole) obj;
-    boolean isEqual = super.equals(obj);
-    isEqual &= Objects.equal(other.projectATestRoleName, projectATestRoleName);
 
-    return isEqual;
+    TestRole other = (TestRole) obj;
+
+    return Objects.equal(other.roleName, roleName);
   }
 
   @Override
   public String toString() {
-    return "ProjectATestRole{\nroleName: " + getRoleName() + "\nprojectATestRoleName: " + projectATestRoleName + "\n}";
+    return "TestRole{\nroleName: " + roleName + "\n}";
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(getRoleName(), projectATestRoleName);
+    return Objects.hashCode(roleName);
   }
+
 }

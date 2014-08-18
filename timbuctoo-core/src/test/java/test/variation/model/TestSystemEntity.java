@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation.model;
+package test.variation.model;
 
 /*
  * #%L
@@ -22,32 +22,37 @@ package nl.knaw.huygens.timbuctoo.variation.model;
  * #L%
  */
 
-import java.util.List;
+import java.util.Date;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
 
 @IDPrefix("TSTD")
-public class MongoObjectMapperEntity extends SystemEntity {
+public class TestSystemEntity extends SystemEntity {
 
-  private List<String> primitiveTestCollection;
-  // Will not serialize if non-null
-  private List<? extends SystemEntity> nonPrimitiveTestCollection;
   private String name;
   private String testValue1;
   private String testValue2;
   @JsonProperty("propAnnotated")
   private String annotatedProperty;
   private String propWithAnnotatedAccessors;
-  private Class<?> type;
-  private Datable date;
-  private PersonName personName;
+  private Date date;
+
+  public TestSystemEntity() {}
+
+  public TestSystemEntity(String id) {
+    setId(id);
+  }
+
+  public TestSystemEntity(String id, String name) {
+    setId(id);
+    this.name = name;
+  }
 
   @Override
   @JsonIgnore
@@ -62,6 +67,11 @@ public class MongoObjectMapperEntity extends SystemEntity {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public TestSystemEntity withName(String name) {
+    this.name = name;
+    return this;
   }
 
   public String getTestValue1() {
@@ -98,44 +108,39 @@ public class MongoObjectMapperEntity extends SystemEntity {
     this.propWithAnnotatedAccessors = propWithAnnotatedAccessors;
   }
 
-  public List<String> getPrimitiveTestCollection() {
-    return primitiveTestCollection;
-  }
-
-  public void setPrimitiveTestCollection(List<String> primitiveTestCollection) {
-    this.primitiveTestCollection = primitiveTestCollection;
-  }
-
-  public List<? extends SystemEntity> getNonPrimitiveTestCollection() {
-    return nonPrimitiveTestCollection;
-  }
-
-  public void setNonPrimitiveTestCollection(List<? extends SystemEntity> nonPrimitiveTestCollection) {
-    this.nonPrimitiveTestCollection = nonPrimitiveTestCollection;
-  }
-
-  public Class<?> getType() {
-    return type;
-  }
-
-  public void setType(Class<?> type) {
-    this.type = type;
-  }
-
-  public Datable getDate() {
+  public Date getDate() {
     return date;
   }
 
-  public void setDate(Datable date) {
+  public void setDate(Date date) {
     this.date = date;
   }
 
-  public PersonName getPersonName() {
-    return personName;
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof TestSystemEntity)) {
+      return false;
+    }
+
+    boolean isEqual = true;
+    TestSystemEntity other = (TestSystemEntity) obj;
+    isEqual &= Objects.equal(other.name, name);
+    isEqual &= Objects.equal(other.testValue1, testValue1);
+    isEqual &= Objects.equal(other.testValue2, testValue2);
+    isEqual &= Objects.equal(other.annotatedProperty, annotatedProperty);
+    isEqual &= Objects.equal(other.propWithAnnotatedAccessors, propWithAnnotatedAccessors);
+
+    return isEqual;
   }
 
-  public void setPersonName(PersonName personName) {
-    this.personName = personName;
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(name, testValue1, testValue2, annotatedProperty, propWithAnnotatedAccessors);
   }
 
+  @Override
+  public String toString() {
+    return "TestSystemEntity{\nname: " + name + "\ntestValue1: " + testValue1 + "\ntestValue2: " + testValue2 + "\nannotatedProperty: " + annotatedProperty + "propWithAnnotatedAccessors: "
+        + propWithAnnotatedAccessors + "\n}";
+  }
 }

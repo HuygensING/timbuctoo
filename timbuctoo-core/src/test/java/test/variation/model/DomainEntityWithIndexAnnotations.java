@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.vre;
+package test.variation.model;
 
 /*
  * #%L
@@ -22,39 +22,36 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-
-import java.io.IOException;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Reference;
 
-import org.junit.Test;
-
-import test.variation.model.DomainEntityWithIndexAnnotations;
-import test.variation.model.projecta.ProjectADomainEntity;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
-public class PackageScopeTest {
-  // mock
-  DomainEntity inscopeEntity = new DomainEntityWithIndexAnnotations();
-  DomainEntity outOfScopeEnitty = new ProjectADomainEntity();
+public class DomainEntityWithIndexAnnotations extends DomainEntity {
 
-  @Test
-  public void testFilter() throws IOException {
-    PackageScope instance = new PackageScope("test.variation.model");
+  protected List<Reference> variations = Lists.newArrayList();
 
-    List<DomainEntity> entities = Lists.newArrayList();
-    entities.add(inscopeEntity);
-    entities.add(outOfScopeEnitty);
-
-    // action
-    List<DomainEntity> filteredResult = instance.filter(entities);
-
-    // verify
-    assertThat(filteredResult, contains(inscopeEntity));
-
+  @Override
+  @IndexAnnotation(fieldName = "id")
+  public String getId() {
+    return "";
   }
+
+  @Override
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "desc")
+  public String getDisplayName() {
+    return null;
+  }
+
+  @IndexAnnotations(value = { @IndexAnnotation(fieldName = "test"), @IndexAnnotation(fieldName = "test2") })
+  public String getString() {
+    return "";
+  }
+
 }

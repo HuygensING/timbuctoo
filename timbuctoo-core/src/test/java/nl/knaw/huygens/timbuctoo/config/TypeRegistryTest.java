@@ -34,14 +34,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.NewTestRole;
-import nl.knaw.huygens.timbuctoo.variation.model.TestRole;
-import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.VTestSystemEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectANewTestRole;
-import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectATestRole;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -51,11 +43,19 @@ import test.model.PrimitiveDomainEntity;
 import test.model.projecta.OtherADomainEntity;
 import test.model.projecta.SubADomainEntity;
 import test.model.projectb.SubBDomainEntity;
+import test.variation.model.BaseDomainEntity;
+import test.variation.model.NewTestRole;
+import test.variation.model.TestRole;
+import test.variation.model.TestSystemEntity;
+import test.variation.model.VTestSystemEntity;
+import test.variation.model.projecta.ProjectADomainEntity;
+import test.variation.model.projecta.ProjectANewTestRole;
+import test.variation.model.projecta.ProjectATestRole;
 
 public class TypeRegistryTest {
 
-  private static final String PROJECT_A_MODEL = "timbuctoo.variation.model.projecta";
-  private static final String MODEL_PACKAGE = "timbuctoo.variation.model";
+  private static final String PROJECT_A_MODEL = "test.variation.model.projecta";
+  private static final String MODEL_PACKAGE = "test.variation.model";
 
   private TypeRegistry registry;
 

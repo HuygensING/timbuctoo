@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation.model;
+package test.variation.model;
 
 /*
  * #%L
@@ -22,13 +22,24 @@ package nl.knaw.huygens.timbuctoo.variation.model;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
-@EntityTypeName("mysystementity")
-public class VTestSystemEntity extends SystemEntity {
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+public class TestConcreteDoc extends DomainEntity {
+
+  public String name;
+
+  public TestConcreteDoc() {}
+
+  public TestConcreteDoc(String id) {
+    setId(id);
+  }
 
   @Override
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "desc")
   public String getDisplayName() {
     return null;
   }

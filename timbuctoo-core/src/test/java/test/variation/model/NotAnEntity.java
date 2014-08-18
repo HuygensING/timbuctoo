@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation.model.projecta;
+package test.variation.model;
 
 /*
  * #%L
@@ -22,10 +22,6 @@ package nl.knaw.huygens.timbuctoo.variation.model.projecta;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.model.Relation;
-
-public class ProjectARelation extends Relation {
-
-  public ProjectARelation() {}
+public class NotAnEntity {
 
 }

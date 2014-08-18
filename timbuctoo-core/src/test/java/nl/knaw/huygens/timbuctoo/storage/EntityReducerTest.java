@@ -35,8 +35,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntityPrimitive;
-import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntityPrimitiveCollections;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -51,6 +49,8 @@ import test.model.projecta.SubADomainEntity;
 import test.model.projecta.TestRoleA1;
 import test.model.projecta.TestRoleA2;
 import test.model.projectb.SubBDomainEntity;
+import test.variation.model.TestSystemEntityPrimitive;
+import test.variation.model.TestSystemEntityPrimitiveCollections;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

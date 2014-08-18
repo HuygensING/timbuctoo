@@ -37,10 +37,11 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.variation.model.MongoObjectMapperEntity;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import test.variation.model.MongoObjectMapperEntity;
 
 public class FieldMapperTest {
 

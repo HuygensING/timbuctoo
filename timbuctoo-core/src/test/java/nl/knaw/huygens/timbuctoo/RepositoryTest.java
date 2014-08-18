@@ -47,14 +47,15 @@ import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
-import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.projecta.ProjectADomainEntity;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import test.variation.model.BaseDomainEntity;
+import test.variation.model.TestSystemEntity;
+import test.variation.model.projecta.ProjectADomainEntity;
 
 import com.google.common.collect.Lists;
 

@@ -26,13 +26,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
-import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntity;
-import nl.knaw.huygens.timbuctoo.variation.model.TestSystemEntityPrimitive;
 
 import org.junit.Test;
 
 import test.model.projecta.SubADomainEntity;
+import test.variation.model.BaseDomainEntity;
+import test.variation.model.TestSystemEntity;
+import test.variation.model.TestSystemEntityPrimitive;
 
 public class ReferenceTest {
   @Test

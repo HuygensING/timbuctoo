@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation.model;
+package test.variation.model.projecta;
 
 /*
  * #%L
@@ -22,41 +22,16 @@ package nl.knaw.huygens.timbuctoo.variation.model;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.model.Role;
+import test.variation.model.DomainEntityWithIndexAnnotations;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 
-import com.google.common.base.Objects;
-
-public class TestRole extends Role {
-
-  private String roleName;
-
-  public String getRoleName() {
-    return roleName;
-  }
-
-  public void setRoleName(String roleName) {
-    this.roleName = roleName;
-  }
+public class ModelWithOverriddenIndexAnnotations extends DomainEntityWithIndexAnnotations {
 
   @Override
-  public boolean equals(Object obj) {
-    if (!(obj instanceof TestRole)) {
-      return false;
-    }
-
-    TestRole other = (TestRole) obj;
-
-    return Objects.equal(other.roleName, roleName);
-  }
-
-  @Override
-  public String toString() {
-    return "TestRole{\nroleName: " + roleName + "\n}";
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(roleName);
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "test"), @IndexAnnotation(fieldName = "test2"), @IndexAnnotation(fieldName = "test3") })
+  public String getString() {
+    return super.getString();
   }
 
 }

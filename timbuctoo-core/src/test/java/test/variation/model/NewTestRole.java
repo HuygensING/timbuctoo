@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation.model;
+package test.variation.model;
 
 /*
  * #%L
@@ -22,26 +22,40 @@ package nl.knaw.huygens.timbuctoo.variation.model;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Role;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Objects;
 
-public class TestConcreteDoc extends DomainEntity {
+public class NewTestRole extends Role {
 
-  public String name;
+  private String newTestRoleName;
 
-  public TestConcreteDoc() {}
+  public String getNewTestRoleName() {
+    return newTestRoleName;
+  }
 
-  public TestConcreteDoc(String id) {
-    setId(id);
+  public void setNewTestRoleName(String newTestRoleName) {
+    this.newTestRoleName = newTestRoleName;
   }
 
   @Override
-  @JsonIgnore
-  @IndexAnnotation(fieldName = "desc")
-  public String getDisplayName() {
-    return null;
+  public boolean equals(Object obj) {
+    if (!(obj instanceof NewTestRole)) {
+      return false;
+    }
+
+    NewTestRole other = (NewTestRole) obj;
+
+    return Objects.equal(other.newTestRoleName, newTestRoleName);
   }
 
+  @Override
+  public String toString() {
+    return "NewTestRole{\nnewTestRoleName: " + newTestRoleName + "\n}";
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(newTestRoleName);
+  }
 }

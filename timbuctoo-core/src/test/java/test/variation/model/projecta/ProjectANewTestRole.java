@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation.model;
+package test.variation.model.projecta;
 
 /*
  * #%L
@@ -22,6 +22,23 @@ package nl.knaw.huygens.timbuctoo.variation.model;
  * #L%
  */
 
-public class NotAnEntity {
+import test.variation.model.NewTestRole;
 
+import com.google.common.base.Objects;
+
+public class ProjectANewTestRole extends NewTestRole {
+  private String projectANewTestRoleName;
+
+  public String getProjectANewTestRoleName() {
+    return projectANewTestRoleName;
+  }
+
+  public void setProjectANewTestRoleName(String projectANewTestRoleName) {
+    this.projectANewTestRoleName = projectANewTestRoleName;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(getNewTestRoleName(), projectANewTestRoleName);
+  }
 }

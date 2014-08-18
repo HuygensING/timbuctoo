@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.variation.model.projecta;
+package test.variation.model.projecta;
 
 /*
  * #%L
@@ -22,7 +22,7 @@ package nl.knaw.huygens.timbuctoo.variation.model.projecta;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.variation.model.BaseDomainEntity;
+import test.variation.model.BaseDomainEntity;
 
 import com.google.common.base.Objects;
 

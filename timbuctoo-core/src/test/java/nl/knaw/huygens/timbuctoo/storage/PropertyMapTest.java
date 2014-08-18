@@ -32,10 +32,11 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
-import nl.knaw.huygens.timbuctoo.variation.model.MongoObjectMapperEntity;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import test.variation.model.MongoObjectMapperEntity;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
