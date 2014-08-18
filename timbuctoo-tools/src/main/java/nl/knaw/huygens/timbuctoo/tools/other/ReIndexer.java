@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.tools.other;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
@@ -26,6 +27,7 @@ import com.google.inject.Injector;
 public class ReIndexer {
   private static final int MILLI_SECONDS_TO_MINUTES = 60000;
   public final static Logger LOG = LoggerFactory.getLogger(ReIndexer.class);
+  private static AtomicInteger counter = new AtomicInteger();
 
   public static void main(String[] args) throws ConfigurationException, IndexException, InterruptedException {
     StopWatch stopWatch = new StopWatch();
@@ -54,6 +56,7 @@ public class ReIndexer {
   private static void indexAsynchrounous(Repository repository, IndexManager indexManager, TypeRegistry registry) throws InterruptedException {
     ExecutorService executor = Executors.newFixedThreadPool(registry.getPrimitiveDomainEntityTypes().size());
     for (Class<? extends DomainEntity> primitiveType : registry.getPrimitiveDomainEntityTypes()) {
+      LOG.info("Task started, threads active: {}", counter.incrementAndGet());
       Runnable indexer = new Indexer(primitiveType, repository, indexManager);
       executor.execute(indexer);
     }
@@ -99,6 +102,7 @@ public class ReIndexer {
         }
       }
       LOG.info("End indexing for {}.", typeName);
+      LOG.info("Threads active: {}", counter.decrementAndGet());
     }
   }
 
