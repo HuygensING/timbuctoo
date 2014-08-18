@@ -54,7 +54,7 @@ public class RelationClientSearchResultCreator extends ClientSearchResultCreator
     List<String> ids = getIds(searchResult);
     int numFound = ids.size();
     int normalizedStart = mapToRange(start, 0, numFound);
-    int normalizedRows = mapToRange(rows, 0, numFound - start);
+    int normalizedRows = mapToRange(rows, 0, numFound - normalizedStart);
     int end = normalizedStart + normalizedRows;
 
     List<String> idsToRetrieve = ids.subList(normalizedStart, end);
@@ -67,8 +67,8 @@ public class RelationClientSearchResultCreator extends ClientSearchResultCreator
     clientSearchResult.setNumFound(numFound);
     clientSearchResult.setRefs(clientRelationRepresentationCreator.createRefs(type, results));
     clientSearchResult.setSortableFields(sortableFieldFinder.findFields(type));
-    setNextLink(normalizedStart, normalizedRows, clientSearchResult, numFound, end, queryId);
-    setPreviousLink(normalizedStart, normalizedRows, clientSearchResult, queryId);
+    setNextLink(normalizedStart, rows, clientSearchResult, numFound, end, queryId);
+    setPreviousLink(normalizedStart, rows, clientSearchResult, queryId);
 
     return clientSearchResult;
   }

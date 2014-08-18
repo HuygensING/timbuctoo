@@ -33,8 +33,6 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.model.ClientRelationRepresentation;
 import nl.knaw.huygens.timbuctoo.model.RelationClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.rest.util.search.ClientRelationRepresentationCreator;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RelationClientSearchResultCreator;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -204,6 +202,39 @@ public class RelationClientSearchResultCreatorTest extends ClientSearchResultCre
         .build();
 
     when(clientRelationRepresentationCreatorMock.createRefs(type, result)).thenReturn(REFS);
+
+    testCreate(start, rows, type, searchResult, likeRelationClientResult);
+  }
+
+  @Test
+  public void testCreateStartGreaterThanNumFound() throws InstantiationException, IllegalAccessException {
+    // setup
+    int start = 11;
+    int rows = 10;
+    int normalizedStart = 10;
+    int normalizedRows = 0;
+
+    Class<TestRelation> type = TestRelation.class;
+    SearchResult searchResult = new SearchResult();
+    searchResult.setIds(ID_LIST_WITH_TEN_IDS);
+    searchResult.setId(QUERY_ID);
+
+    final List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(normalizedStart, 10);
+    List<TestRelation> result = setupRepository(type, idsToGet);
+    RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
+        .withIds(idsToGet) //
+        .withNumFound(TEN_RESULTS_FOUND) //
+        .withRefs(REFS) //
+        .withResults(result) //
+        .withStart(normalizedStart) //
+        .withRows(normalizedRows) //
+        .withSortableFields(SORTABLE_FIELDS) //
+        .withPrevLink(PREV_LINK) //
+        .build();
+
+    int prevStart = 0;
+    when(clientRelationRepresentationCreatorMock.createRefs(type, result)).thenReturn(REFS);
+    when(hateoasURICreatorMock.createHATEOASURIAsString(prevStart, rows, QUERY_ID)).thenReturn(PREV_LINK);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult);
   }

@@ -52,7 +52,7 @@ public class RegularClientSearchResultCreator extends ClientSearchResultCreator 
     List<String> ids = getIds(searchResult);
     int numFound = ids.size();
     int normalizedStart = mapToRange(start, 0, numFound);
-    int normalizedRows = mapToRange(rows, 0, numFound - start);
+    int normalizedRows = mapToRange(rows, 0, numFound - normalizedStart);
     int end = normalizedStart + normalizedRows;
 
     List<String> idsToRetrieve = ids.subList(normalizedStart, end);
@@ -70,7 +70,7 @@ public class RegularClientSearchResultCreator extends ClientSearchResultCreator 
     clientSearchResult.setTerm(searchResult.getTerm());
     clientSearchResult.setFacets(searchResult.getFacets());
 
-    setPreviousLink(start, rows, clientSearchResult, queryId);
+    setPreviousLink(normalizedStart, rows, clientSearchResult, queryId);
 
     setNextLink(start, rows, clientSearchResult, numFound, end, queryId);
 

@@ -77,7 +77,7 @@ public abstract class ClientSearchResultCreator {
     if (start > 0) {
       int prevStart = Math.max(start - rows, 0);
       String prev = hateoasURICreator.createHATEOASURIAsString(prevStart, rows, queryId);
-      clientSearchResult.setPrevLink(prev.toString());
+      clientSearchResult.setPrevLink(prev);
     }
   }
 

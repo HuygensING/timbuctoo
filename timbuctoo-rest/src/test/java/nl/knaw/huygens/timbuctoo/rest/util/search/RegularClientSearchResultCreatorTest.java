@@ -35,8 +35,6 @@ import nl.knaw.huygens.timbuctoo.model.ClientEntityRepresentation;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.rest.util.search.ClientEntityRepresentationCreator;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RegularClientSearchResultCreator;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -78,21 +76,20 @@ public class RegularClientSearchResultCreatorTest extends ClientSearchResultCrea
     int rows = 10;
     int normalizedStart = 0;
     int normalizedRows = 10;
-    final ArrayList<String> idsToGet = ID_LIST_WITH_TEN_IDS;
-    List<OtherDomainEntity> result = setupRepository(TYPE, idsToGet);
+    List<OtherDomainEntity> result = setupRepository(TYPE, ID_LIST_WITH_TEN_IDS);
 
     ClientSearchResultMatcher<RegularClientSearchResult> clientSearchResultMatcher = newRegularClientSearchResultMatcherBuilder() //
         .withTerm(TERM) //
         .withFacets(FACET_LIST) //
         .withNumFound(TEN_RESULTS_FOUND) //
-        .withIds(idsToGet) //
+        .withIds(ID_LIST_WITH_TEN_IDS) //
         .withRefs(UNIMPORTANT_REF_LIST) //
         .withResults(result) //
         .withStart(normalizedStart) //
         .withRows(normalizedRows) //
         .withSortableFields(SORTABLE_FIELDS) //
-        .withNextLink(nullNextLink) //
-        .withPrevLink(nullPrevLink) //
+        .withNextLink(NULL_NEXT_LINK) //
+        .withPrevLink(NULL_PREV_LINK) //
         .build();
 
     when(entityRefCreatorMock.createRefs(TYPE, result)).thenReturn(UNIMPORTANT_REF_LIST);
@@ -108,7 +105,7 @@ public class RegularClientSearchResultCreatorTest extends ClientSearchResultCrea
     int normalizedRows = 9;
     int normalizedStart = 1;
 
-    final List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(start, 10);
+    final List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(normalizedStart, 10);
     List<OtherDomainEntity> result = setupRepository(TYPE, idsToGet);
 
     final int previousStart = 0;
@@ -124,7 +121,7 @@ public class RegularClientSearchResultCreatorTest extends ClientSearchResultCrea
         .withStart(normalizedStart) //
         .withRows(normalizedRows) //
         .withSortableFields(SORTABLE_FIELDS) //
-        .withNextLink(nullNextLink) //
+        .withNextLink(NULL_NEXT_LINK) //
         .withPrevLink(PREV_LINK) //
         .build();
 
@@ -153,8 +150,8 @@ public class RegularClientSearchResultCreatorTest extends ClientSearchResultCrea
         .withStart(normalizedStart) //
         .withRows(normalizedRows) //
         .withSortableFields(SORTABLE_FIELDS) //
-        .withNextLink(nullNextLink) //
-        .withPrevLink(nullPrevLink) //
+        .withNextLink(NULL_NEXT_LINK) //
+        .withPrevLink(NULL_PREV_LINK) //
         .build();
 
     when(entityRefCreatorMock.createRefs(TYPE, result)).thenReturn(UNIMPORTANT_REF_LIST);
@@ -186,7 +183,7 @@ public class RegularClientSearchResultCreatorTest extends ClientSearchResultCrea
         .withRows(normalizedRows) //
         .withSortableFields(SORTABLE_FIELDS) //
         .withNextLink(NEXT_LINK) //
-        .withPrevLink(nullPrevLink) //
+        .withPrevLink(NULL_PREV_LINK) //
         .build();
 
     when(entityRefCreatorMock.createRefs(TYPE, result)).thenReturn(UNIMPORTANT_REF_LIST);
@@ -214,8 +211,8 @@ public class RegularClientSearchResultCreatorTest extends ClientSearchResultCrea
         .withStart(normalizedStart) //
         .withRows(normalizedRows) //
         .withSortableFields(SORTABLE_FIELDS) //
-        .withNextLink(nullNextLink) //
-        .withPrevLink(nullPrevLink) //
+        .withNextLink(NULL_NEXT_LINK) //
+        .withPrevLink(NULL_PREV_LINK) //
         .build();
 
     when(entityRefCreatorMock.createRefs(TYPE, result)).thenReturn(UNIMPORTANT_REF_LIST);
@@ -230,6 +227,38 @@ public class RegularClientSearchResultCreatorTest extends ClientSearchResultCrea
 
     // verify
     assertThat(clientSearchResult, matcher);
+  }
+
+  @Test
+  public void testCreateStartIsGreaterThanNumFound() throws InstantiationException, IllegalAccessException {
+    int start = 11;
+    int rows = 10;
+    final int normalizedStart = 10;
+    int normalizedRows = 0;
+
+    final List<String> idsToGet = Lists.newArrayList();
+    List<OtherDomainEntity> result = setupRepository(TYPE, idsToGet);
+
+    int prevStart = 0;
+    when(hateoasURICreatorMock.createHATEOASURIAsString(prevStart, rows, QUERY_ID)).thenReturn(PREV_LINK);
+
+    ClientSearchResultMatcher<RegularClientSearchResult> clientSearchResultMatcher = newRegularClientSearchResultMatcherBuilder() //
+        .withTerm(TERM) //
+        .withFacets(FACET_LIST) //
+        .withNumFound(TEN_RESULTS_FOUND) //
+        .withIds(idsToGet) //
+        .withRefs(UNIMPORTANT_REF_LIST) //
+        .withResults(result) //
+        .withStart(normalizedStart) //
+        .withRows(normalizedRows) //
+        .withSortableFields(SORTABLE_FIELDS) //
+        .withNextLink(NULL_NEXT_LINK) //
+        .withPrevLink(PREV_LINK) //
+        .build();
+
+    when(entityRefCreatorMock.createRefs(TYPE, result)).thenReturn(UNIMPORTANT_REF_LIST);
+
+    testCreate(TYPE, defaultSearchResult, start, rows, clientSearchResultMatcher);
   }
 
   @Test
@@ -256,8 +285,8 @@ public class RegularClientSearchResultCreatorTest extends ClientSearchResultCrea
         .withStart(normalizedStart) //
         .withRows(normalizedRows) //
         .withSortableFields(SORTABLE_FIELDS) //
-        .withNextLink(nullNextLink) //
-        .withPrevLink(nullPrevLink) //
+        .withNextLink(NULL_NEXT_LINK) //
+        .withPrevLink(NULL_PREV_LINK) //
         .build();
 
     SearchResult emptySearchResult = new SearchResult();

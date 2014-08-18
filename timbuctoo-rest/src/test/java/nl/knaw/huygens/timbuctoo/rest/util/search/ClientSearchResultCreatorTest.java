@@ -41,14 +41,14 @@ public class ClientSearchResultCreatorTest {
 
   protected static final String NEXT_LINK = "http://www.test.com/next";
   protected static final String PREV_LINK = "http://www.test.com/prev";
+  protected static final String NULL_PREV_LINK = null;
+  protected static final String NULL_NEXT_LINK = null;
   protected static final ArrayList<String> ID_LIST_WITH_TEN_IDS = Lists.newArrayList("id1", "id2", "id3", "id4", "id5", "id6", "id7", "id8", "id9", "id10");
   protected static final int TEN_RESULTS_FOUND = ID_LIST_WITH_TEN_IDS.size();
   protected static final String QUERY_ID = "queryId";
   protected static final HashSet<String> SORTABLE_FIELDS = Sets.newHashSet();
   protected Repository repositoryMock;
   protected SortableFieldFinder sortableFieldFinderMock;
-  protected String nullPrevLink;
-  protected String nullNextLink;
   protected HATEOASURICreator hateoasURICreatorMock;
 
   public void initializeRepository() {
