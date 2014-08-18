@@ -81,7 +81,13 @@ public class BusinessRules {
   }
 
   // -------------------------------------------------------------------
-
+  /**
+   * Checks if the super class is the desired level.
+   * @param cls the sub class of {@code target}
+   * @param target the super class to find the level for
+   * @param level the maximum number of levels between {@code cls} and {@code target} 
+   * @return {@code true} in the level of {@code target} is lower or equal to {@code level} else {@code false}. 
+   */
   private static boolean superclass(Class<?> cls, Class<?> target, int level) {
     while (cls != null && level > 0) {
       cls = cls.getSuperclass();
