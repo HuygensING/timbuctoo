@@ -36,7 +36,9 @@ import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import test.model.OtherPrimitiveDomainEntity;
 import test.model.PrimitiveDomainEntity;
@@ -56,6 +58,12 @@ public class TypeRegistryTest {
 
   private static final String PROJECT_A_MODEL = "test.variation.model.projecta";
   private static final String MODEL_PACKAGE = "test.variation.model";
+  private static final String PACKAGE_WITH_INVALID_SYSTEM_ENTITY = " test.different.model.with_invalid_system_entity";
+  private static final String PACKAGE_WITH_INVALID_DOMAIN_ENTITY = " test.different.model.with_invalid_domain_entity";
+  private static final String PACKAGE_WITH_INVALID_ROLE = " test.different.model.with_invalid_role";
+
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
 
   private TypeRegistry registry;
 
@@ -72,6 +80,27 @@ public class TypeRegistryTest {
   @Test(expected = ModelException.class)
   public void testEntityTypeNamesMustBeDifferent() throws ModelException {
     registry.init(MODEL_PACKAGE + " " + MODEL_PACKAGE);
+  }
+
+  @Test
+  public void testPackageWithInvalidSystemEntity() throws ModelException {
+    exception.expect(ModelException.class);
+    exception.expectMessage("InvalidSystemEntity is not a direct sub class of SystemEntity.");
+    registry.init(PACKAGE_WITH_INVALID_SYSTEM_ENTITY);
+  }
+
+  @Test
+  public void testPackageWithInvalidDomainEntity() throws ModelException {
+    exception.expect(ModelException.class);
+    exception.expectMessage("InvalidDomainEntity is not a direct sub class of DomainEntity or a sub class of a direct sub class of DomainEntity.");
+    registry.init(PACKAGE_WITH_INVALID_DOMAIN_ENTITY);
+  }
+
+  @Test
+  public void testPackageWithInvalidRole() throws ModelException {
+    exception.expect(ModelException.class);
+    exception.expectMessage("InvalidRole is not a direct sub class of Role or a sub class of a direct sub class of Role.");
+    registry.init(PACKAGE_WITH_INVALID_ROLE);
   }
 
   @Test

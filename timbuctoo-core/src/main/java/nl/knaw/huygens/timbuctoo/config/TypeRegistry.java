@@ -151,26 +151,31 @@ public class TypeRegistry {
         continue;
       }
 
-      if (isEntity(type)) {
+      if (isSystemEntity(type)) {
         if (BusinessRules.isValidSystemEntity(type)) {
           registerSystemEntity(toSystemEntity(type));
-        } else if (BusinessRules.isValidDomainEntity(type)) {
+          LOG.debug("Registered system entity {}", type.getName());
+        } else {
+          throw new ModelException("%s is not a direct sub class of SystemEntity.", type.getSimpleName());
+        }
+      } else if (isDomainEntity(type)) {
+        if (BusinessRules.isValidDomainEntity(type)) {
           Class<? extends DomainEntity> entityType = toDomainEntity(type);
           registerDomainEntity(entityType);
           if (!Relation.class.isAssignableFrom(entityType)) {
             allowedRoles.put(entityType, roles);
           }
+          LOG.debug("Registered domain entity {}", type.getName());
         } else {
-          throw new ModelException("Invalid entity %s", type);
+          throw new ModelException("%s is not a direct sub class of DomainEntity or a sub class of a direct sub class of DomainEntity.", type.getSimpleName());
         }
-        LOG.debug("Registered entity {}", type.getName());
       } else if (isRole(type)) {
         if (BusinessRules.isValidRole(type)) {
           Class<? extends Role> roleType = toRole(type);
           registerRole(roleType);
           roles.add(roleType);
         } else {
-          throw new ModelException("Invalid role %s", type);
+          throw new ModelException("%s is not a direct sub class of Role or a sub class of a direct sub class of Role.", type.getSimpleName());
         }
       }
     }
