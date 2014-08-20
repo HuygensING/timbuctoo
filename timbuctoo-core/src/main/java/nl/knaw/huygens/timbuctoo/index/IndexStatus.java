@@ -45,10 +45,10 @@ public class IndexStatus {
   }
 
   public void addCount(VRE vre, Class<? extends DomainEntity> type, long count) {
-    List<KV<Long>> list = counts.get(vre.getScopeId());
+    List<KV<Long>> list = counts.get(vre.getVreId());
     if (list == null) {
       list = Lists.newArrayList();
-      counts.put(vre.getScopeId(), list);
+      counts.put(vre.getVreId(), list);
     }
     list.add(new KV<Long>(type.getSimpleName(), count));
   }

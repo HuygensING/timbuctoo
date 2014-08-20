@@ -40,7 +40,7 @@ public class AdminVRE extends AbstractVRE {
   }
 
   @Override
-  public String getName() {
+  public String getVreId() {
     return "Admin";
   }
 

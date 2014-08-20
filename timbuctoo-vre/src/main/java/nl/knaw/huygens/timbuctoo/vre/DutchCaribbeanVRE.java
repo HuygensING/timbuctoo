@@ -37,7 +37,7 @@ public class DutchCaribbeanVRE extends AbstractVRE {
   }
 
   @Override
-  public String getName() {
+  public String getVreId() {
     return "DutchCaribbean";
   }
 

@@ -41,17 +41,17 @@ import nl.knaw.huygens.timbuctoo.search.converters.FacetedSearchResultConverter;
 public interface VRE extends Scope {
 
   /**
-   * Returns the unique id of this VRE.
+   * Returns the unique id of the scope of this VRE.
    */
   String getScopeId();
 
   /**
-   * Returns the unique name of this VRE.
+   * Returns the unique id of this VRE.
    */
-  String getName();
+  String getVreId();
 
   /**
-   * Returns the unique name of this VRE.
+   * Returns a description of this VRE.
    */
   String getDescription();
 

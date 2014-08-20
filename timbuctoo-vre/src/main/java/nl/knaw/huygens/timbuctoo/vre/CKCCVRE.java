@@ -39,7 +39,7 @@ public class CKCCVRE extends AbstractVRE {
   }
 
   @Override
-  public String getName() {
+  public String getVreId() {
     return NAME;
   }
 
