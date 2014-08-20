@@ -22,10 +22,12 @@ package nl.knaw.huygens.timbuctoo.security;
  * #L%
  */
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -34,15 +36,19 @@ import static org.mockito.Mockito.when;
 
 import java.security.Principal;
 
+import javax.ws.rs.core.SecurityContext;
+
 import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.User;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.verification.VerificationMode;
 
 public class UserSecurityContextCreatorTest {
 
@@ -72,12 +78,47 @@ public class UserSecurityContextCreatorTest {
 
     SecurityInformation securityInformation = createSecurityInformation(DISPLAY_NAME, USER_ID);
 
+    userIsFoundTheFirstTime(user, example);
+
+    // action
+    SecurityContext context = instance.createSecurityContext(securityInformation);
+
+    // verify
+    assertThatContextContainsUser(context, user);
+    verifyUserSearchedFor(only(), example);
+  }
+
+  @Test
+  public void testCreateSecurityContextUnknownUser() throws Exception {
+    SecurityInformation securityInformation = createSecurityInformation(DISPLAY_NAME, USER_ID);
+    User user = createUser(DISPLAY_NAME, USER_ID);
+
+    User example = new User();
+    example.setPersistentId(USER_ID);
+
+    userIsFoundTheSecondTime(user, example);
+
+    // action
+    SecurityContext context = instance.createSecurityContext(securityInformation);
+
+    // verify
+    assertThatContextContainsUser(context, user);
+    verifyUserSearchedFor(times(2), example);
+    verifyUserIsSaved(example);
+  }
+
+  @Test
+  public void testCreateSecurityContextParamNull() {
+    assertNull(instance.createSecurityContext(null));
+  }
+
+  private void userIsFoundTheFirstTime(User user, User example) {
     when(repository.findEntity(User.class, example)).thenReturn(user);
+  }
 
-    instance.createSecurityContext(securityInformation);
-
-    verify(repository, only()).findEntity(User.class, example);
-    verify(repository, never()).addSystemEntity(Matchers.<Class<User>> any(), any(User.class));
+  private void assertThatContextContainsUser(SecurityContext context, User user) {
+    assertThat(context, is(instanceOf(UserSecurityContext.class)));
+    assertThat(((UserSecurityContext) context).getUser(), is(equalTo(user)));
   }
 
   protected User createUser(String displayName, String userId) {
@@ -97,24 +138,16 @@ public class UserSecurityContextCreatorTest {
     return securityInformation;
   }
 
-  @Test
-  public void testCreateSecurityContextUnknownUser() throws Exception {
-    SecurityInformation securityInformation = createSecurityInformation(DISPLAY_NAME, USER_ID);
-    User user = createUser(DISPLAY_NAME, USER_ID);
-
-    User example = new User();
-    example.setPersistentId(USER_ID);
-
-    when(repository.findEntity(Matchers.<Class<User>> any(), any(User.class))).thenReturn(null, user);
-
-    instance.createSecurityContext(securityInformation);
-
-    verify(repository, times(2)).findEntity(Matchers.<Class<User>> any(), any(User.class));
-    verify(repository, times(1)).addSystemEntity(Matchers.<Class<User>> any(), any(User.class));
+  private void userIsFoundTheSecondTime(User user, User example) {
+    when(repository.findEntity(User.class, example)).thenReturn(null, user);
   }
 
-  @Test
-  public void testCreateSecurityContextParamNull() {
-    assertNull(instance.createSecurityContext(null));
+  private void verifyUserIsSaved(User example) throws StorageException, ValidationException {
+    verify(repository, times(1)).addSystemEntity(User.class, example);
   }
+
+  private void verifyUserSearchedFor(VerificationMode verifictionMode, User example) {
+    verify(repository, verifictionMode).findEntity(User.class, example);
+  }
+
 }
