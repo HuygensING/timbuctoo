@@ -106,6 +106,17 @@ public class Configuration {
     return xmlConfig.getString(key + "[@" + property + "]", defaultValue);
   }
 
+  /**
+   * Returns all elements with the specified key.
+   */
+  public List<String> getSettingList(String key) {
+    List<String> list = Lists.newArrayList();
+    for (Object item : xmlConfig.getList(SETTINGS_PREFIX + key)) {
+      list.add(item.toString());
+    }
+    return list;
+  }
+
   public Map<String, String> getAll() {
     Iterator<String> it = xmlConfig.getKeys(SETTINGS_PREFIX);
     Map<String, String> rv = Maps.newHashMap();
