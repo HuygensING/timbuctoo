@@ -26,8 +26,8 @@ import javax.ws.rs.core.SecurityContext;
 
 import nl.knaw.huygens.security.client.SecurityContextCreator;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
-import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.User;
+import nl.knaw.huygens.timbuctoo.storage.JsonFileHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,11 +38,11 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
 
   private static final Logger LOG = LoggerFactory.getLogger(UserSecurityContextCreator.class);
 
-  private final Repository repository;
+  private final JsonFileHandler jsonFileWriter;
 
   @Inject
-  public UserSecurityContextCreator(Repository repository) {
-    this.repository = repository;
+  public UserSecurityContextCreator(JsonFileHandler jsonFileWriter) {
+    this.jsonFileWriter = jsonFileWriter;
   }
 
   @Override
@@ -79,7 +79,7 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
     user.setOrganisation(securityInformation.getOrganization());
 
     try {
-      repository.addSystemEntity(User.class, user);
+      jsonFileWriter.addSystemEntity(User.class, user);
     } catch (Exception e) {
       LOG.error(e.getMessage());
     }
@@ -91,7 +91,7 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
 
   private User findUser(final User example) {
 
-    return repository.findEntity(User.class, example);
+    return jsonFileWriter.findEntity(User.class, example);
   }
 
 }

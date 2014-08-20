@@ -40,8 +40,8 @@ import javax.ws.rs.core.SecurityContext;
 
 import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
-import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.User;
+import nl.knaw.huygens.timbuctoo.storage.JsonFileHandler;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -56,17 +56,17 @@ public class UserSecurityContextCreatorTest {
   private static final String DISPLAY_NAME = "displayName";
 
   private UserSecurityContextCreator instance;
-  private Repository repository;
+  private JsonFileHandler jsonFileWriter;
 
   @Before
   public void setUp() {
-    repository = mock(Repository.class);
-    instance = new UserSecurityContextCreator(repository);
+    jsonFileWriter = mock(JsonFileHandler.class);
+    instance = new UserSecurityContextCreator(jsonFileWriter);
   }
 
   @After
   public void tearDown() {
-    reset(repository);
+    reset(jsonFileWriter);
   }
 
   @Test
@@ -113,7 +113,7 @@ public class UserSecurityContextCreatorTest {
   }
 
   private void userIsFoundTheFirstTime(User user, User example) {
-    when(repository.findEntity(User.class, example)).thenReturn(user);
+    when(jsonFileWriter.findEntity(User.class, example)).thenReturn(user);
   }
 
   private void assertThatContextContainsUser(SecurityContext context, User user) {
@@ -139,15 +139,15 @@ public class UserSecurityContextCreatorTest {
   }
 
   private void userIsFoundTheSecondTime(User user, User example) {
-    when(repository.findEntity(User.class, example)).thenReturn(null, user);
+    when(jsonFileWriter.findEntity(User.class, example)).thenReturn(null, user);
   }
 
   private void verifyUserIsSaved(User example) throws StorageException, ValidationException {
-    verify(repository, times(1)).addSystemEntity(User.class, example);
+    verify(jsonFileWriter, times(1)).addSystemEntity(User.class, example);
   }
 
   private void verifyUserSearchedFor(VerificationMode verifictionMode, User example) {
-    verify(repository, verifictionMode).findEntity(User.class, example);
+    verify(jsonFileWriter, verifictionMode).findEntity(User.class, example);
   }
 
 }

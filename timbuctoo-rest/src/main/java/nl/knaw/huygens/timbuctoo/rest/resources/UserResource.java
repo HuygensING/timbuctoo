@@ -51,12 +51,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.security.UserRoles;
+import nl.knaw.huygens.timbuctoo.storage.JsonFileHandler;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -72,12 +72,12 @@ public class UserResource extends ResourceBase {
   private static final String VRE_AUTHORIZATION_PATH = VRE_AUTHORIZATION_COLLECTION_PATH + "/{vre: \\w+}";
   private static final String ID_PARAM = "id";
 
-  private final Repository repository;
+  private final JsonFileHandler jsonFileHandler;
   private final MailSender mailSender;
 
   @Inject
-  public UserResource(Repository repository, MailSender mailSender) {
-    this.repository = repository;
+  public UserResource(JsonFileHandler jsonFileHandler, MailSender mailSender) {
+    this.jsonFileHandler = jsonFileHandler;
     this.mailSender = mailSender;
   }
 
@@ -85,7 +85,7 @@ public class UserResource extends ResourceBase {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
   public List<User> getAll(@QueryParam("rows") @DefaultValue("200") int rows, @QueryParam("start") int start) {
-    return repository.getSystemEntities(User.class).skip(start).getSome(rows);
+    return jsonFileHandler.getSystemEntities(User.class).skip(start).getSome(rows);
   }
 
   @GET
@@ -93,7 +93,7 @@ public class UserResource extends ResourceBase {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
   public User get(@PathParam(ID_PARAM) String id) {
-    User user = repository.getEntity(User.class, id);
+    User user = jsonFileHandler.getEntity(User.class, id);
     checkNotNull(user, Status.NOT_FOUND, "No User with id %s", id);
     return user;
   }
@@ -103,11 +103,11 @@ public class UserResource extends ResourceBase {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed({ ADMIN_ROLE, USER_ROLE, UNVERIFIED_USER_ROLE })
   public User getMyUserData(@QueryParam(USER_ID_KEY) String id, @QueryParam("VRE_ID") String vreId) {
-    User user = repository.getEntity(User.class, id);
+    User user = jsonFileHandler.getEntity(User.class, id);
     checkNotNull(user, Status.NOT_FOUND, "No User with id %s", id);
 
     VREAuthorization example = new VREAuthorization(vreId, id);
-    VREAuthorization authorization = repository.findEntity(VREAuthorization.class, example);
+    VREAuthorization authorization = jsonFileHandler.findEntity(VREAuthorization.class, example);
 
     user.setVreAuthorization(authorization);
     return user;
@@ -119,7 +119,7 @@ public class UserResource extends ResourceBase {
   @RolesAllowed(ADMIN_ROLE)
   public Response put(@PathParam(ID_PARAM) String id, User user) {
     try {
-      repository.updateSystemEntity(User.class, user);
+      jsonFileHandler.updateSystemEntity(User.class, user);
     } catch (StorageException e) {
       throw new TimbuctooException(Status.NOT_FOUND, "User %s not found", id);
     }
@@ -151,9 +151,9 @@ public class UserResource extends ResourceBase {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
   public Response delete(@PathParam(ID_PARAM) String id) throws StorageException {
-    User user = repository.getEntity(User.class, id);
+    User user = jsonFileHandler.getEntity(User.class, id);
     checkNotNull(user, Status.NOT_FOUND, "No User with id %s", id);
-    repository.deleteSystemEntity(user);
+    jsonFileHandler.deleteSystemEntity(user);
     return Response.status(Status.NO_CONTENT).build();
   }
 
@@ -186,7 +186,7 @@ public class UserResource extends ResourceBase {
     checkIfInScope(authorization.getVreId(), userVREId);
 
     String vreId = authorization.getVreId();
-    repository.addSystemEntity(VREAuthorization.class, authorization);
+    jsonFileHandler.addSystemEntity(VREAuthorization.class, authorization);
 
     return Response.created(new URI(vreId)).build();
   }
@@ -206,7 +206,7 @@ public class UserResource extends ResourceBase {
     checkNotNull(authorization, Status.BAD_REQUEST, "Missing VREAuthorization");
     checkIfInScope(vreId, userVREId);
     findVREAuthorization(vreId, userId);
-    repository.updateSystemEntity(VREAuthorization.class, authorization);
+    jsonFileHandler.updateSystemEntity(VREAuthorization.class, authorization);
   }
 
   @DELETE
@@ -219,7 +219,7 @@ public class UserResource extends ResourceBase {
   ) throws StorageException {
     checkIfInScope(vreId, userVREId);
     VREAuthorization authorization = findVREAuthorization(vreId, userId);
-    repository.deleteSystemEntity(authorization);
+    jsonFileHandler.deleteSystemEntity(authorization);
   }
 
   /**
@@ -237,7 +237,7 @@ public class UserResource extends ResourceBase {
 
   private VREAuthorization findVREAuthorization(String vreId, String userId) {
     VREAuthorization example = new VREAuthorization(vreId, userId);
-    VREAuthorization authorization = repository.findEntity(VREAuthorization.class, example);
+    VREAuthorization authorization = jsonFileHandler.findEntity(VREAuthorization.class, example);
     checkNotNull(authorization, Status.NOT_FOUND, "Missing VREAuthorization for userId %s and vreId %s", userId, vreId);
     return authorization;
   }
