@@ -34,11 +34,6 @@ public class CKCCVRE extends AbstractVRE {
   }
 
   @Override
-  public String getScopeId() {
-    return "ckcc";
-  }
-
-  @Override
   public String getVreId() {
     return NAME;
   }

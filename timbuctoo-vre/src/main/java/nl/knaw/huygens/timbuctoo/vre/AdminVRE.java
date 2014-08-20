@@ -35,11 +35,6 @@ public class AdminVRE extends AbstractVRE {
   }
 
   @Override
-  public String getScopeId() {
-    return "admin";
-  }
-
-  @Override
   public String getVreId() {
     return "Admin";
   }

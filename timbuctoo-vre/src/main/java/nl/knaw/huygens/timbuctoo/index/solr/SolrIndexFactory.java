@@ -76,7 +76,7 @@ public class SolrIndexFactory implements IndexFactory {
 
   @VisibleForTesting
   String getIndexNameFor(VRE vre, Class<? extends DomainEntity> type) {
-    return String.format("%s.%s", vre.getScopeId(), TypeNames.getInternalName(toBaseDomainEntity(type)));
+    return String.format("%s.%s", vre.getVreId().toLowerCase(), TypeNames.getInternalName(toBaseDomainEntity(type)));
   }
 
   private String getSolrDataDir(String name) {

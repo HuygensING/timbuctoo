@@ -29,7 +29,6 @@ import com.sun.jersey.api.client.WebResource;
 
 public abstract class SearchResourceTestBase extends WebServiceTestSetup {
 
-  private static final String SCOPE_ID = "base";
   protected static final Set<String> SORTABLE_FIELDS = Sets.newHashSet("test1", "test");
   protected static final String TERM = "dynamic_t_name:Huygens";
   protected static final String LOCATION_HEADER = "Location";
@@ -62,7 +61,6 @@ public abstract class SearchResourceTestBase extends WebServiceTestSetup {
     if (isVREKnown) {
       vre = mock(VRE.class);
       when(vre.getVreId()).thenReturn(VRE_ID);
-      when(vre.getScopeId()).thenReturn(SCOPE_ID);
       when(vre.inScope(Mockito.<Class<? extends DomainEntity>> any())).thenReturn(isTypeInScope);
     }
 
