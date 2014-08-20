@@ -36,19 +36,22 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public class AbstractVRETest {
+
   private static final Class<Type1> OTHER_TYPE = Type1.class;
   private static final String ID = "ID";
   private static final Class<ExplicitlyAnnotatedModel> TYPE = ExplicitlyAnnotatedModel.class;
   private static final String TYPE_STRING = "explicitlyannotatedmodel";
+
+  private final DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
+  private final Index indexMock = mock(Index.class);
+  private final RegularFacetedSearchResultConverter resultConverterMock = mock(RegularFacetedSearchResultConverter.class);
+
   private AbstractVRE instance;
   private IndexCollection indexCollectionMock;
-  private DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
-  private Index indexMock = mock(Index.class);
-  private RegularFacetedSearchResultConverter resultConverterMock = mock(RegularFacetedSearchResultConverter.class);
   private Scope scopeMock;
 
   @Before
-  public void setUp() {
+  public void setup() {
     indexCollectionMock = mock(IndexCollection.class);
     scopeMock = mock(Scope.class);
     when(indexCollectionMock.getIndexByType(TYPE)).thenReturn(indexMock);
@@ -57,19 +60,16 @@ public class AbstractVRETest {
 
       @Override
       public String getScopeId() {
-        // TODO Auto-generated method stub
         return null;
       }
 
       @Override
-      public String getName() {
-        // TODO Auto-generated method stub
+      public String getVreId() {
         return null;
       }
 
       @Override
       public String getDescription() {
-        // TODO Auto-generated method stub
         return null;
       }
 

@@ -61,10 +61,9 @@ public abstract class SearchResourceTestBase extends WebServiceTestSetup {
 
     if (isVREKnown) {
       vre = mock(VRE.class);
-      when(vre.getName()).thenReturn(VRE_ID);
+      when(vre.getVreId()).thenReturn(VRE_ID);
       when(vre.getScopeId()).thenReturn(SCOPE_ID);
       when(vre.inScope(Mockito.<Class<? extends DomainEntity>> any())).thenReturn(isTypeInScope);
-
     }
 
     when(repository.getVREById(anyString())).thenReturn(vre);

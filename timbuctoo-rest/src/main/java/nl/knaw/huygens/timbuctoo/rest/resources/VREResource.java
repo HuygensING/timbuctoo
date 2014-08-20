@@ -56,7 +56,7 @@ public class VREResource extends ResourceBase {
   public Set<String> getAvailableVREs() {
     Set<String> ids = Sets.newTreeSet();
     for (VRE vre : repository.getAllVREs()) {
-      ids.add(vre.getName());
+      ids.add(vre.getVreId());
     }
     return ids;
   }
@@ -70,7 +70,7 @@ public class VREResource extends ResourceBase {
     checkNotNull(vre, Status.NOT_FOUND, "No VRE with id %s", vreId);
 
     VREInfo info = new VREInfo();
-    info.setName(vre.getName());
+    info.setName(vre.getVreId());
     info.setDescription(vre.getDescription());
 
     String prefix = vre.getDomainEntityPrefix();

@@ -94,7 +94,8 @@ public class Repository {
     vreMap = initVREMap(vreCollection);
   }
 
-  Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationTypes relationTypes, EntityMappers entityMappers, RelationRefCreator relationRefCreator) throws StorageException {
+  Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationTypes relationTypes, EntityMappers entityMappers, RelationRefCreator relationRefCreator)
+      throws StorageException {
     this.registry = registry;
     this.storage = storage;
     this.entityMappers = entityMappers;
@@ -151,7 +152,7 @@ public class Repository {
   private Map<String, VRE> initVREMap(VRECollection collection) {
     Map<String, VRE> map = Maps.newTreeMap();
     for (VRE vre : collection.getVREs()) {
-      map.put(vre.getName(), vre);
+      map.put(vre.getVreId(), vre);
     }
     return map;
   }

@@ -33,8 +33,8 @@ import com.google.common.collect.Lists;
 
 public class VREMockBuilder {
 
-  private String name;
   private String scopeId;
+  private String vreId;
   private List<Index> indexes;
 
   private VREMockBuilder() {}
@@ -43,8 +43,8 @@ public class VREMockBuilder {
     return new VREMockBuilder();
   }
 
-  public VREMockBuilder withName(String name) {
-    this.name = name;
+  public VREMockBuilder withVreId(String vreId) {
+    this.vreId = vreId;
     return this;
   }
 
@@ -60,7 +60,7 @@ public class VREMockBuilder {
 
   public VRE create() {
     VRE vre = mock(VRE.class);
-    when(vre.getName()).thenReturn(name);
+    when(vre.getVreId()).thenReturn(vreId);
     when(vre.getScopeId()).thenReturn(scopeId);
     when(vre.getIndexes()).thenReturn(indexes);
     return vre;

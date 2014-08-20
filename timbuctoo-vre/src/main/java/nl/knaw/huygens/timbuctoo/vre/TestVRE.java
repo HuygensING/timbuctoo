@@ -37,7 +37,7 @@ public class TestVRE extends AbstractVRE {
   }
 
   @Override
-  public String getName() {
+  public String getVreId() {
     return "TestVRE";
   }
 

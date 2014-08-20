@@ -38,7 +38,7 @@ public class CobwwwebNoVRE extends AbstractVRE {
   }
 
   @Override
-  public String getName() {
+  public String getVreId() {
     return "CobwwwebNo";
   }
 

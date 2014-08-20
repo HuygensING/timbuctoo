@@ -40,7 +40,7 @@ public class BaseVRE extends AbstractVRE {
   }
 
   @Override
-  public String getName() {
+  public String getVreId() {
     return "Base";
   }
 
